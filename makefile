@@ -1,21 +1,20 @@
-OBJS = main.o Compiler.o Lexer.o
 CC = g++
 DEBUG = -g
 CFLAGS = -Wall -c $(DEBUG)
 LFLAGS = -Wall $(DEBUG)
 
-eddic : $(OBJS)
-	$(CC) $(LFLAGS) $(OBJS) -o eddic
+eddic : eddi.o Compiler.o Lexer.o
+	$(CC) $(LFLAGS) -o bin/eddic bin/eddi.o bin/Compiler.o bin/Lexer.o
 
-main.o : main.cpp Compiler.h
-	$(CC) $(CFLAGS) main.cpp
+eddi.o : src/main.cpp src/Compiler.h
+	$(CC) $(CFLAGS) -o bin/eddi.o src/main.cpp
 
-Compiler.o : Compiler.h Compiler.cpp Lexer.h
-	$(CC) $(CFLAGS) Compiler.cpp
+Compiler.o : src/Compiler.h src/Compiler.cpp src/Lexer.h src/ByteCode.h
+	$(CC) $(CFLAGS) -o bin/Compiler.o src/Compiler.cpp
 
-Lexer.o : Lexer.h Lexer.cpp
-	$(CC) $(CFLAGS) Lexer.cpp
+Lexer.o : src/Lexer.h src/Lexer.cpp
+	$(CC) $(CFLAGS) -o bin/Lexer.o src/Lexer.cpp
 
 clean:
-	\rm *.o eddic
+	rm -f bin/*
 
