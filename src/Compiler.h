@@ -12,8 +12,6 @@ class Compiler {
     int compile (string file);
   private:
     int compile (ifstream* inStream, ofstream* outStream);
-    void writeOneOperandCall(ofstream* outStream, int bytecode, string litteral);
-    void writeSimpleCall(ofstream* outStream, int bytecode);
 };
 
 #endif

@@ -105,16 +105,3 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 
 	return 0;
 }
-
-
-void Compiler::writeOneOperandCall(ofstream* outStream, int bytecode, string litteral){
-	OneOperandCall call(bytecode, litteral);
-
-	outStream->write((char*)&call, sizeof(call));
-}
-
-void Compiler::writeSimpleCall(ofstream* outStream, int bytecode){
-	SimpleCall call(bytecode);
-
-	outStream->write((char*)&call, sizeof(call));
-}
