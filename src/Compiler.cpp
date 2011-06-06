@@ -49,14 +49,14 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 		
 		lexer.next();
 		
-		if(!lexer.isLeftParenth()){
+		if(!lexer.isLeftParenth() || !lexer.hasMoreToken()){
 			cout << "A call must be followed by a left parenth";
 			return 1;
 		} 
 		
 		lexer.next();
 
-		if(!lexer.isLitteral()){
+		if(!lexer.isLitteral() || !lexer.hasMoreToken()){
 			cout << "Can only pass litteral to a call";
 			return 1;
 		}
@@ -65,7 +65,7 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 
 		lexer.next();
 
-		if(!lexer.isRightParenth()){
+		if(!lexer.isRightParenth() || !lexer.hasMoreToken()){
 			cout << "The call must be closed with a right parenth";
 			return 1;
 		}
