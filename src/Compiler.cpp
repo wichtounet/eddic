@@ -79,10 +79,7 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 
 		writeOneOperandCall(outStream, PUSH, litteral);
 		writeSimpleCall(outStream, PRINT);
-
-		cout << "PUSH " << litteral << endl;
-		cout << "PRINT " << endl;
-
+		
 		lexer.next();
 	}
 	
