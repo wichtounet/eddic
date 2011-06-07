@@ -5,8 +5,9 @@
 #include <time.h>
 
 #include "Compiler.h"
-#include "ByteCode.h"
 #include "Lexer.h"
+
+#include "../lib/eddi-commons/ByteCode.h"
 
 using namespace std;
 
