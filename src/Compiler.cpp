@@ -42,25 +42,31 @@ int Compiler::compile(string file){
 int Compiler::compile(ifstream* inStream, ofstream* outStream){
 	Lexer lexer(inStream);
 	
-	lexer.next();
+	while(lexer.next()){
+		if(!lexer.isCall()){
+			cout << "An instruction can only start with a call" << endl;
 
-	while(lexer.isCall() && lexer.hasMoreToken()){
-		string call = lexer.getCurrentToken();		
+			return 1;
+		}
+
+		string call = lexer.getCurrentToken();
+
+		if(call != "PRINT"){
+			cout << "The call \"" << call << "\" does not exist" << endl;
+
+			return 1;	
+		}	
 		
-		lexer.next();
-		
-		if(!lexer.isLeftParenth()){
+		if(!lexer.next() || !lexer.isLeftParenth()){
 			cout << "A call must be followed by a left parenth" << endl;
 			return 1;
 		} 
 		
-		if(!lexer.hasMoreToken()){
+		if(!lexer.next()){
 			cout << "Not enough arguments to the call" << endl;
 			return 1;
 		} 
 		
-		lexer.next();
-
 		if(!lexer.isLitteral()){
 			cout << "Can only pass litteral to a call" << endl;
 			return 1;
@@ -68,25 +74,21 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 
 		string litteral = lexer.getCurrentToken();
 		
-		if(!lexer.hasMoreToken()){
+		if(!lexer.next()){
 			cout << "The call must be closed with a right parenth" << endl;
 			return 1;
 		} 
-
-		lexer.next();
-
+		
 		if(!lexer.isRightParenth()){
 			cout << "The call must be closed with a right parenth" << endl;
 			return 1;
 		}
 		
-		if(!lexer.hasMoreToken()){
+		if(!lexer.next()){
 			cout << "Every instruction must be closed by ;" << endl;
 			return 1;
 		} 
 		
-		lexer.next();
-
 		if(!lexer.isStop()){
 			cout << "Every instruction must be closed by ;" << endl;
 			return 1;
@@ -94,13 +96,6 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 
 		writeOneOperandCall(outStream, PUSH, litteral);
 		writeSimpleCall(outStream, PRINT);
-		
-		lexer.next();
-	}
-	
-	if(lexer.hasMoreToken()){
-		cout << "An instruction can only start with a call" << endl;
-		return 1;
 	}
 
 	return 0;

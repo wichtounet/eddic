@@ -8,11 +8,7 @@ using namespace std;
 
 Lexer::Lexer(ifstream* inStream) : stream(inStream) {}
 
-bool Lexer::hasMoreToken(){
-	return !stream->eof();
-}
-
-void Lexer::next(){
+bool Lexer::next(){
 	char current;
 	*stream >> current;
 
@@ -35,6 +31,16 @@ void Lexer::next(){
 
 		stream->putback(current);
 	}
+
+	if(stream->eof()){
+		return false;
+	}
+
+	if(currentToken[0] == 0){
+		return false;
+	}
+	
+	return true;
 }
 
 string Lexer::getCurrentToken(){

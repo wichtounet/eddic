@@ -12,9 +12,8 @@ class Lexer {
     string currentToken;
   public:
     Lexer(ifstream* inStream);
-    void next();
+    bool next();
     string getCurrentToken();
-    bool hasMoreToken();
     bool isCall();
     bool isLitteral();
     bool isParenth();
