@@ -2,19 +2,20 @@
 #include <iomanip>
 #include <fstream>
 
-#include <time.h>
-
 #include <commons/ByteCode.h>
+#include <commons/Timer.h>
 
 #include "Compiler.h"
 #include "Lexer.h"
+
+#include <unistd.h>
 
 using namespace std;
 
 int Compiler::compile(string file){
 	cout << "Compile " << file << endl;
 
-	int start = time(NULL);
+	Timer timer;
 
 	ifstream inFile;
 	inFile.open(file.c_str());
@@ -32,11 +33,9 @@ int Compiler::compile(string file){
 
 	inFile.close();
 	outFile.close();
-
-	int end = time(NULL);
-
-	cout << "Compilation finished in " << (end - start) << "ms" << endl;
-
+	
+	cout << "Compilation took " << timer.elapsed() << "ms" << endl;
+	
 	return code;
 }
 
