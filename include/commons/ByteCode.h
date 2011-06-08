@@ -6,10 +6,12 @@
 
 using namespace std;
 
-static const int PUSH = 0;
-static const int PRINT = 1; 
+enum ByteCode {
+	PUSH = 0,
+	PRINT = 1
+};
 
-void writeOneOperandCall(ofstream* outStream, int bytecode, string litteral);
-void writeSimpleCall(ofstream* outStream, int bytecode);
+void writeOneOperandCall(ofstream* outStream, ByteCode bytecode, string litteral);
+void writeSimpleCall(ofstream* outStream, ByteCode bytecode);
 
 #endif
