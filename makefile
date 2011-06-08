@@ -6,7 +6,7 @@ LFLAGS = -Wall $(DEBUG) -leddi-commons
 eddic : eddi.o Compiler.o Lexer.o
 	$(CC) $(LFLAGS) -o bin/eddic bin/eddi.o bin/Compiler.o bin/Lexer.o
 
-eddi.o : src/eddi.cpp srcincludeCompiler.h
+eddi.o : src/eddi.cpp include/Compiler.h
 	$(CC) $(CFLAGS) -o bin/eddi.o src/eddi.cpp
 
 Compiler.o : include/Compiler.h src/Compiler.cpp include/Lexer.h
