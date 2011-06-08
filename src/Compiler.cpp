@@ -4,10 +4,10 @@
 
 #include <time.h>
 
+#include <commons/ByteCode.h>
+
 #include "Compiler.h"
 #include "Lexer.h"
-
-#include "../lib/eddi-commons/ByteCode.h"
 
 using namespace std;
 

@@ -1,18 +1,18 @@
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG)
-LFLAGS = -Wall $(DEBUG)
+CFLAGS = -Wall -c $(DEBUG) -Iinclude 
+LFLAGS = -Wall $(DEBUG) -leddi-commons 
 
 eddic : eddi.o Compiler.o Lexer.o
-	$(CC) $(LFLAGS) -L. -leddi-commons -o bin/eddic bin/eddi.o bin/Compiler.o bin/Lexer.o
+	$(CC) $(LFLAGS) -o bin/eddic bin/eddi.o bin/Compiler.o bin/Lexer.o
 
-eddi.o : src/eddi.cpp src/Compiler.h
+eddi.o : src/eddi.cpp srcincludeCompiler.h
 	$(CC) $(CFLAGS) -o bin/eddi.o src/eddi.cpp
 
-Compiler.o : src/Compiler.h src/Compiler.cpp src/Lexer.h
+Compiler.o : include/Compiler.h src/Compiler.cpp include/Lexer.h
 	$(CC) $(CFLAGS) -o bin/Compiler.o src/Compiler.cpp
 
-Lexer.o : src/Lexer.h src/Lexer.cpp
+Lexer.o : include/Lexer.h src/Lexer.cpp
 	$(CC) $(CFLAGS) -o bin/Lexer.o src/Lexer.cpp
 
 clean:
