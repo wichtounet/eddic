@@ -74,25 +74,15 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 
 		string litteral = lexer.getCurrentToken();
 		
-		if(!lexer.next()){
+		if(!lexer.next() || !lexer.isRightParenth()){
 			cout << "The call must be closed with a right parenth" << endl;
 			return 1;
 		} 
 		
-		if(!lexer.isRightParenth()){
-			cout << "The call must be closed with a right parenth" << endl;
-			return 1;
-		}
-		
-		if(!lexer.next()){
+		if(!lexer.next() || !lexer.isStop()){
 			cout << "Every instruction must be closed by ;" << endl;
 			return 1;
 		} 
-		
-		if(!lexer.isStop()){
-			cout << "Every instruction must be closed by ;" << endl;
-			return 1;
-		}
 
 		writeOneOperandCall(outStream, PUSH, litteral);
 		writeSimpleCall(outStream, PRINT);
