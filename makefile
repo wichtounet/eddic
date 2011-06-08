@@ -1,6 +1,6 @@
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG) -Iinclude 
+CFLAGS = -Wall -o2 -c $(DEBUG) -Iinclude 
 LFLAGS = -Wall $(DEBUG) -leddi-commons 
 
 eddic : eddi.o Compiler.o Lexer.o
