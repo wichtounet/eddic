@@ -43,6 +43,8 @@ int Compiler::compile(string file){
 int Compiler::compile(ifstream* inStream, ofstream* outStream){
 	Lexer lexer(inStream);
 	
+	writeHeader(outStream);
+
 	while(lexer.next()){
 		if(!lexer.isCall()){
 			cout << "An instruction can only start with a call" << endl;

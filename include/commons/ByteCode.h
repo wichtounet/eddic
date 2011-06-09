@@ -16,6 +16,7 @@ enum ByteCode {
 
 void writeOneOperandCall(ofstream* outStream, ByteCode bytecode, string litteral);
 void writeSimpleCall(ofstream* outStream, ByteCode bytecode);
+void writeHeader(ofstream* stream);
 void writeEnd(ofstream* stream);
 void writeLitteral(ofstream* stream, string value);
 
@@ -24,5 +25,6 @@ void writeLitteral(ofstream* stream, string value);
 ByteCode readByteCode(ifstream* stream);
 char readConstantType(ifstream* stream);
 string readLitteral(ifstream* stream);
+int readHeader(ifstream* stream);
 
 #endif
