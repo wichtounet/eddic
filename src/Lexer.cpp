@@ -12,6 +12,14 @@ bool Lexer::next(){
 	char current;
 	*stream >> current;
 
+	while((current == '\n' || current == ' ') && !stream->eof()){
+		*stream >> current;
+	}
+
+	if(stream->eof()){
+		return false;
+	}
+
 	if(current == '(' || current == ')' || current == ';'){
 		currentToken = string(1, current);
 	} else if(current == '"'){
@@ -25,7 +33,7 @@ bool Lexer::next(){
 	} else {	
 		currentToken = string(1, current);
 
-		while(*stream >> current && !(current == '(' || current == ')' || current == ';')){
+		while(*stream >> current && !(current == '(' || current == ')' || current == ';' || current == ' ')){
 			currentToken += current;
 		}
 

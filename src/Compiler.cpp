@@ -19,6 +19,7 @@ int Compiler::compile(string file){
 
 	ifstream inFile;
 	inFile.open(file.c_str());
+	inFile.unsetf(ios_base::skipws);
 
 	if(!inFile){
 		cout << "Unable to open " << file << endl;
@@ -83,7 +84,7 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 			cout << "Every instruction must be closed by ;" << endl;
 			return 1;
 		} 
-
+		
 		writeOneOperandCall(outStream, PUSH, litteral);
 		writeSimpleCall(outStream, PRINT);
 	}
