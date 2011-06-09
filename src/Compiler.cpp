@@ -89,5 +89,7 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 		writeSimpleCall(outStream, PRINT);
 	}
 
+	writeEnd(outStream);
+
 	return 0;
 }
