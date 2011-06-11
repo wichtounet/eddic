@@ -12,19 +12,4 @@ enum ByteCode {
 	END = 2
 };
 
-/* Write operations */
-
-void writeOneOperandCall(ofstream* outStream, ByteCode bytecode, string litteral);
-void writeSimpleCall(ofstream* outStream, ByteCode bytecode);
-void writeHeader(ofstream* stream);
-void writeEnd(ofstream* stream);
-void writeLitteral(ofstream* stream, string value);
-
-/* Read operations */
-
-ByteCode readByteCode(ifstream* stream);
-char readConstantType(ifstream* stream);
-string readLitteral(ifstream* stream);
-int readHeader(ifstream* stream);
-
 #endif

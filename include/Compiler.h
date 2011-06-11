@@ -5,13 +5,15 @@
 #include <iomanip>
 #include <fstream>
 
+#include "ByteCodeFileWriter.h"
+
 using namespace std;
 
 class Compiler {
   public:
     int compile (string file);
   private:
-    int compile (ifstream* inStream, ofstream* outStream);
+    int compile (ifstream* inStream, ByteCodeFileWriter* outStream);
 };
 
 #endif

@@ -5,6 +5,7 @@
 #include <commons/ByteCode.h>
 #include <commons/Timer.h>
 
+#include "ByteCodeFileWriter.h"
 #include "Compiler.h"
 #include "Lexer.h"
 
@@ -27,23 +28,23 @@ int Compiler::compile(string file){
 		return 1;
 	}
 
-	ofstream outFile;
-	outFile.open("main.v", ios::binary);
-
-	int code = compile(&inFile, &outFile);
+	ByteCodeFileWriter writer("main.v");
+	
+	int code = compile(&inFile, &writer);
 
 	inFile.close();
-	outFile.close();
+
+	writer.close();
 	
 	cout << "Compilation took " << timer.elapsed() << "ms" << endl;
 	
 	return code;
 }
 
-int Compiler::compile(ifstream* inStream, ofstream* outStream){
+int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 	Lexer lexer(inStream);
 	
-	writeHeader(outStream);
+	writer->writeHeader();
 
 	while(lexer.next()){
 		if(!lexer.isCall()){
@@ -87,11 +88,11 @@ int Compiler::compile(ifstream* inStream, ofstream* outStream){
 			return 1;
 		} 
 		
-		writeOneOperandCall(outStream, PUSH, litteral);
-		writeSimpleCall(outStream, PRINT);
+		writer->writeOneOperandCall(PUSH, litteral);
+		writer->writeSimpleCall( PRINT);
 	}
 
-	writeEnd(outStream);
+	writer->writeEnd();
 
 	return 0;
 }
