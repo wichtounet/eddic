@@ -28,7 +28,16 @@ int Compiler::compile(string file){
 		return 1;
 	}
 
-	ByteCodeFileWriter writer("main.v");
+	size_t ext_pos = file.find_last_of( '.' );
+
+	string output = "main.v";
+
+    	if ( ext_pos != string::npos ){
+		output = file;
+		output.replace( ext_pos + 1, output.size() - 1, "v" );
+	}
+
+	ByteCodeFileWriter writer(output);
 	
 	int code = compile(&inFile, &writer);
 
