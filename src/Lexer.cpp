@@ -51,30 +51,30 @@ bool Lexer::next(){
 	return true;
 }
 
-string Lexer::getCurrentToken(){
+string Lexer::getCurrentToken() const{
 	return currentToken;
 }
 
-bool Lexer::isCall(){
+bool Lexer::isCall() const{
 	return !isParenth() && !isLitteral() && !isStop();
 }
 
-bool Lexer::isLitteral(){
+bool Lexer::isLitteral() const{
 	return currentToken[0] == '"';
 }
 
-bool Lexer::isParenth(){
+bool Lexer::isParenth() const{
 	return isLeftParenth() || isRightParenth();
 }
 
-bool Lexer::isLeftParenth(){
+bool Lexer::isLeftParenth() const{
 	return currentToken[0] == '(';
 }
 
-bool Lexer::isRightParenth(){
+bool Lexer::isRightParenth() const{
 	return currentToken[0] == ')';
 }
 
-bool Lexer::isStop(){
+bool Lexer::isStop() const{
 	return currentToken[0] == ';';
 }

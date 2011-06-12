@@ -13,13 +13,13 @@ class Lexer {
   public:
     Lexer(ifstream* inStream);
     bool next();
-    string getCurrentToken();
-    bool isCall();
-    bool isLitteral();
-    bool isParenth();
-    bool isLeftParenth();
-    bool isRightParenth();
-    bool isStop();
+    string getCurrentToken() const;
+    bool isCall() const;
+    bool isLitteral() const;
+    bool isParenth() const;
+    bool isLeftParenth() const;
+    bool isRightParenth() const;
+    bool isStop() const;
 };
 
 #endif
