@@ -2,6 +2,8 @@
 #include <iomanip>
 #include <fstream>
 
+#include <stdio.h>
+
 #include <commons/ByteCode.h>
 #include <commons/Timer.h>
 
@@ -42,8 +44,11 @@ int Compiler::compile(string file){
 	int code = compile(&inFile, &writer);
 
 	inFile.close();
-
 	writer.close();
+
+	if(code != 0){
+		remove(output.c_str());
+	}
 	
 	cout << "Compilation took " << timer.elapsed() << "ms" << endl;
 	
