@@ -10,8 +10,7 @@ std::ostream& binary_write(std::ostream* stream, const T& value){
 }
 
 template<typename T>
-std::istream & binary_read(std::istream* stream, T& value)
-{
+std::istream & binary_read(std::istream* stream, T& value){
     return stream->read(reinterpret_cast<char*>(&value), sizeof(T));
 }
 

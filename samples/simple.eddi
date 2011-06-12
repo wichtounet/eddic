@@ -1,5 +1,5 @@
-PRINT("Hello World");
-PRINT ("Hello World");
-PRINT ("Hello World") ; 
- PRINT("Hello World");
- PRINT (    "Hello World"     ) ;   
+Print("Hello World");
+Print ("Hello World");
+Print ("Hello World") ; 
+ Print("Hello World");
+ Print (    "Hello World"     ) ;   

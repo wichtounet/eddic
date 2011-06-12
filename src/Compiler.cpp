@@ -55,7 +55,7 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 
 		string call = lexer.getCurrentToken();
 
-		if(call != "PRINT"){
+		if(call != "Print"){
 			cout << "The call \"" << call << "\" does not exist" << endl;
 
 			return 1;	
