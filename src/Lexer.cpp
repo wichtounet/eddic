@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <ctype.h>
 
 #include "Lexer.h"
 
@@ -27,9 +28,10 @@ bool Lexer::next(){
 		return false;
 	}
 
-	if(current == '(' || current == ')' || current == ';'){
+	//If is a special char
+	if(current == '(' || current == ')' || current == ';' || current == '='){
 		currentToken = string(1, current);
-	} else if(current == '"'){
+	} else if(current == '"'){	//If starts with "
 		currentToken = string(1, current);
 
 		while(*stream >> current && current != '"'){
@@ -40,7 +42,7 @@ bool Lexer::next(){
 	} else {	
 		currentToken = string(1, current);
 
-		while(*stream >> current && !(current == '(' || current == ')' || current == ';' || current == ' ')){
+		while(*stream >> current && isalpha(current)){
 			currentToken += current;
 		}
 
@@ -63,7 +65,7 @@ string Lexer::getCurrentToken() const{
 }
 
 bool Lexer::isCall() const{
-	return !isParenth() && !isLitteral() && !isStop();
+	return isalpha(currentToken[0]);
 }
 
 bool Lexer::isLitteral() const{
