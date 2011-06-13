@@ -22,6 +22,7 @@ class Lexer {
     bool next();
     string getCurrentToken() const;
     bool isWord() const;
+    bool isAssign() const;
     bool isLitteral() const;
     bool isParenth() const;
     bool isLeftParenth() const;

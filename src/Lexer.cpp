@@ -27,11 +27,8 @@ bool Lexer::next(){
 	if(stream->eof()){
 		return false;
 	}
-
-	//If is a special char
-	if(current == '(' || current == ')' || current == ';' || current == '='){
-		currentToken = string(1, current);
-	} else if(current == '"'){	//If starts with "
+	
+	if(current == '"'){
 		currentToken = string(1, current);
 
 		while(*stream >> current && current != '"'){
@@ -39,7 +36,7 @@ bool Lexer::next(){
 		}
 
 		currentToken += current;
-	} else {	
+	} else if(isalpha(current)){	
 		currentToken = string(1, current);
 
 		while(*stream >> current && isalpha(current)){
@@ -47,6 +44,8 @@ bool Lexer::next(){
 		}
 
 		stream->putback(current);
+	} else {
+		currentToken = string(1, current);
 	}
 
 	if(stream->eof()){
@@ -70,6 +69,10 @@ bool Lexer::isWord() const{
 
 bool Lexer::isLitteral() const{
 	return currentToken[0] == '"';
+}
+
+bool Lexer::isAssign() const{
+	return currentToken == "=";
 }
 
 bool Lexer::isParenth() const{

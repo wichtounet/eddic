@@ -69,48 +69,57 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 
 	while(lexer.next()){
 		if(!lexer.isWord()){
-			cout << "An instruction can only start with a call" << endl;
+			cout << "An instruction can only start with a call or an assignation" << endl;
 
 			return 1;
 		}
 
-		string call = lexer.getCurrentToken();
+		string word = lexer.getCurrentToken();
 
-		if(call != "Print"){
-			cout << "The call \"" << call << "\" does not exist" << endl;
-
-			return 1;	
-		}	
-		
-		if(!lexer.next() || !lexer.isLeftParenth()){
-			cout << "A call must be followed by a left parenth" << endl;
-			return 1;
-		} 
-		
 		if(!lexer.next()){
-			cout << "Not enough arguments to the call" << endl;
-			return 1;
-		} 
-		
-		if(!lexer.isLitteral()){
-			cout << "Can only pass litteral to a call" << endl;
+			cout << "Incomplete instruction" << endl;
+
 			return 1;
 		}
 
-		string litteral = lexer.getCurrentToken();
+		if(lexer.isLeftParenth()){ //is a call
+			if(word != "Print"){
+				cout << "The call \"" << word << "\" does not exist" << endl;
+
+				return 1;	
+			}
+
+			if(!lexer.next()){
+				cout << "Not enough arguments to the call" << endl;
+				return 1;
+			} 
 		
-		if(!lexer.next() || !lexer.isRightParenth()){
-			cout << "The call must be closed with a right parenth" << endl;
+			if(!lexer.isLitteral()){
+				cout << "Can only pass litteral to a call" << endl;
+				return 1;
+			}
+
+			string litteral = lexer.getCurrentToken();
+		
+			if(!lexer.next() || !lexer.isRightParenth()){
+				cout << "The call must be closed with a right parenth" << endl;
+				return 1;
+			} 
+		
+			if(!lexer.next() || !lexer.isStop()){
+				cout << "Every instruction must be closed by ;" << endl;
+				return 1;
+			} 
+		
+			writer->writeOneOperandCall(PUSH, litteral);
+			writer->writeSimpleCall( PRINT);
+		} else if(lexer.isAssign()){ //is an assign
+
+		} else {
+			cout << "Not an instruction " << endl;
+
 			return 1;
-		} 
-		
-		if(!lexer.next() || !lexer.isStop()){
-			cout << "Every instruction must be closed by ;" << endl;
-			return 1;
-		} 
-		
-		writer->writeOneOperandCall(PUSH, litteral);
-		writer->writeSimpleCall( PRINT);
+		}
 	}
 
 	writer->writeEnd();
