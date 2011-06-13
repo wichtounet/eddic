@@ -16,7 +16,7 @@
 
 using namespace std;
 
-ByteCodeFileWriter::ByteCodeFileWriter(string path){
+void ByteCodeFileWriter::open(string path){
 	stream.open(path.c_str(), ios::binary);
 }
 

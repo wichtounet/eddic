@@ -14,7 +14,9 @@
 
 using namespace std;
 
-Lexer::Lexer(ifstream* inStream) : stream(inStream) {}
+void Lexer::lex(ifstream* inStream){
+	stream = inStream;
+}
 
 bool Lexer::next(){
 	char current;

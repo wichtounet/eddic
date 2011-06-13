@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <fstream>
 
+#include "Lexer.h"
 #include "ByteCodeFileWriter.h"
 
 using namespace std;
@@ -20,7 +21,9 @@ class Compiler {
   public:
     int compile (string file);
   private:
-    int compile (ifstream* inStream, ByteCodeFileWriter* outStream);
+    int compile ();
+    Lexer lexer;
+    ByteCodeFileWriter writer;
 };
 
 #endif

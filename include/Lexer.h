@@ -18,7 +18,8 @@ class Lexer {
     ifstream* stream;
     string currentToken;
   public:
-    Lexer(ifstream* inStream);
+    Lexer() {};
+    void lex(ifstream* inStream);
     bool next();
     string getCurrentToken() const;
     bool isWord() const;

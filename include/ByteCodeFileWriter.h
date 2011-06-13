@@ -21,7 +21,8 @@ class ByteCodeFileWriter {
   private:
 	ofstream stream;
   public:
-	ByteCodeFileWriter(string path);
+	ByteCodeFileWriter() {};
+	void open(string path);
 	void close();
 	void writeOneOperandCall(ByteCode bytecode, string litteral);
 	void writeOneOperandCall(ByteCode bytecode, int value);

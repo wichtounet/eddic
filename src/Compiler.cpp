@@ -47,9 +47,11 @@ int Compiler::compile(string file){
 		output.replace( ext_pos + 1, output.size() - 1, "v" );
 	}
 
-	ByteCodeFileWriter writer(output);
+	writer.open(output);
 	
-	int code = compile(&inFile, &writer);
+	lexer.lex(&inFile);
+	
+	int code = compile();
 
 	inFile.close();
 	writer.close();
@@ -63,10 +65,8 @@ int Compiler::compile(string file){
 	return code;
 }
 
-int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
-	Lexer lexer(inStream);
-	
-	writer->writeHeader();
+int Compiler::compile(){
+	writer.writeHeader();
 
 	map<string, int> variables;
 	int currentVariable = 0;
@@ -100,7 +100,7 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 		
 			if(lexer.isLitteral()){
 				string litteral = lexer.getCurrentToken();
-				writer->writeOneOperandCall(PUSHS, litteral);
+				writer.writeOneOperandCall(PUSHS, litteral);
 			} else if(lexer.isWord()){
 				string variable = lexer.getCurrentToken();
 
@@ -110,7 +110,7 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 					return 1;
 				}
 
-				writer->writeOneOperandCall(PUSHV, variable);
+				writer.writeOneOperandCall(PUSHV, variable);
 			} else {
 				cout << "Can only pass litteral or a variable to a call" << endl;
 				return 1;
@@ -127,7 +127,7 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 				return 1;
 			} 
 		
-			writer->writeSimpleCall( PRINT);
+			writer.writeSimpleCall( PRINT);
 		} else if(lexer.isAssign()){ //is an assign
 			if(!lexer.next() || !lexer.isLitteral()){
 				cout << "Need a litteral on the right part of the assignation" << endl;
@@ -145,8 +145,8 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 				variables[word] = currentVariable++;
 			}
 			
-			writer->writeOneOperandCall(PUSHS, litteral);
-			writer->writeOneOperandCall(ASSIGN, variables[word]);
+			writer.writeOneOperandCall(PUSHS, litteral);
+			writer.writeOneOperandCall(ASSIGN, variables[word]);
 		} else {
 			cout << "Not an instruction " << endl;
 
@@ -154,7 +154,7 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 		}
 	}
 
-	writer->writeEnd();
+	writer.writeEnd();
 
 	return 0;
 }
