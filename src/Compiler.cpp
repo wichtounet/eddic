@@ -93,60 +93,68 @@ void Compiler::compile() throw (CompilerException){
 		}
 
 		if(lexer.isLeftParenth()){ //is a call
-			if(word != "Print"){
-				throw CompilerException("The call \"" + word + "\" does not exist");
-			}
-
-			if(!lexer.next()){
-				throw CompilerException("Not enough arguments to the call");
-			} 
-		
-			if(lexer.isLitteral()){
-				string litteral = lexer.getCurrentToken();
-				writer.writeOneOperandCall(PUSHS, litteral);
-			} else if(lexer.isWord()){
-				string variable = lexer.getCurrentToken();
-
-				if(variables.find(variable) == variables.end()){
-					throw CompilerException("The variable \"" + variable + "\" does not exist");
-				}
-
-				writer.writeOneOperandCall(PUSHV, variable);
-			} else {
-				throw CompilerException("Can only pass litteral or a variable to a call");
-			}
-
-		
-			if(!lexer.next() || !lexer.isRightParenth()){
-				throw CompilerException("The call must be closed with a right parenth");
-			} 
-		
-			if(!lexer.next() || !lexer.isStop()){
-				throw CompilerException("Every instruction must be closed by a semicolon");
-			} 
-		
-			writer.writeSimpleCall( PRINT);
+			parseCall(word, variables);
 		} else if(lexer.isAssign()){ //is an assign
-			if(!lexer.next() || !lexer.isLitteral()){
-				throw CompilerException("Need a litteral on the right part of the assignation");
-			} 
-
-			string litteral = lexer.getCurrentToken();
-		
-			if(!lexer.next() || !lexer.isStop()){
-				throw CompilerException("Every instruction must be closed by a semicolon");
-			}
-			
-			if(variables.find(word) == variables.end()){
-				variables[word] = currentVariable++;
-			}
-			
-			writer.writeOneOperandCall(PUSHS, litteral);
-			writer.writeOneOperandCall(ASSIGN, variables[word]);
+			parseAssign(word, variables, currentVariable);
 		} else {
 			throw CompilerException("Not an instruction");
 		}
 	}
 
 	writer.writeEnd();
+}
+
+void Compiler::parseCall(string call, map<string, int>& variables) throw (CompilerException){
+	if(call != "Print"){
+		throw CompilerException("The call \"" + call + "\" does not exist");
+	}
+
+	if(!lexer.next()){
+		throw CompilerException("Not enough arguments to the call");
+	} 
+
+	if(lexer.isLitteral()){
+		string litteral = lexer.getCurrentToken();
+		writer.writeOneOperandCall(PUSHS, litteral);
+	} else if(lexer.isWord()){
+		string variable = lexer.getCurrentToken();
+
+		if(variables.find(variable) == variables.end()){
+			throw CompilerException("The variable \"" + variable + "\" does not exist");
+		}
+
+		writer.writeOneOperandCall(PUSHV, variable);
+	} else {
+		throw CompilerException("Can only pass litteral or a variable to a call");
+	}
+
+
+	if(!lexer.next() || !lexer.isRightParenth()){
+		throw CompilerException("The call must be closed with a right parenth");
+	} 
+
+	if(!lexer.next() || !lexer.isStop()){
+		throw CompilerException("Every instruction must be closed by a semicolon");
+	} 
+
+	writer.writeSimpleCall( PRINT);
+} 
+
+void Compiler::parseAssign(string variable, map<string, int>& variables, int& currentVariable) throw (CompilerException){
+	if(!lexer.next() || !lexer.isLitteral()){
+		throw CompilerException("Need a litteral on the right part of the assignation");
+	} 
+
+	string litteral = lexer.getCurrentToken();
+
+	if(!lexer.next() || !lexer.isStop()){
+		throw CompilerException("Every instruction must be closed by a semicolon");
+	}
+	
+	if(variables.find(variable) == variables.end()){
+		variables[variable] = currentVariable++;
+	}
+	
+	writer.writeOneOperandCall(PUSHS, litteral);
+	writer.writeOneOperandCall(ASSIGN, variables[variable]);
 }

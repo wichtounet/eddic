@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <map>
 
 #include "Lexer.h"
 #include "ByteCodeFileWriter.h"
@@ -33,6 +34,10 @@ class Compiler {
     void compile () throw (CompilerException);
     Lexer lexer;
     ByteCodeFileWriter writer;
+
+
+    void parseCall(string call, map<string, int>& variables) throw (CompilerException);
+    void parseAssign(string variable, map<string, int>& variables, int& currentVariable) throw (CompilerException);
 };
 
 #endif
