@@ -75,13 +75,13 @@ bool Lexer::isParenth() const{
 }
 
 bool Lexer::isLeftParenth() const{
-	return currentToken[0] == '(';
+	return currentToken == "(";
 }
 
 bool Lexer::isRightParenth() const{
-	return currentToken[0] == ')';
+	return currentToken == ")";
 }
 
 bool Lexer::isStop() const{
-	return currentToken[0] == ';';
+	return currentToken == ";";
 }
