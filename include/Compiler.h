@@ -13,19 +13,11 @@
 #include <fstream>
 #include <map>
 
+#include "CompilerException.h"
 #include "Lexer.h"
 #include "ByteCodeFileWriter.h"
 
 using namespace std;
-
-class CompilerException: public exception {
-  private:
-    string message;
-  public:
-    CompilerException(string m) : message(m) {};
-    ~CompilerException() throw() {};
-    const char* what() throw();
-};
 
 class Compiler {
   public:

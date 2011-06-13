@@ -11,6 +11,7 @@
 #include <map>
 
 #include <stdio.h>
+#include <unistd.h>
 
 #include <commons/ByteCode.h>
 #include <commons/Timer.h>
@@ -18,14 +19,9 @@
 #include "ByteCodeFileWriter.h"
 #include "Compiler.h"
 #include "Lexer.h"
-
-#include <unistd.h>
+#include "CompilerException.h"
 
 using namespace std;
-
-const char* CompilerException::what() throw() {
-	return message.c_str();
-}
 
 int Compiler::compile(string file){
 	cout << "Compile " << file << endl;
