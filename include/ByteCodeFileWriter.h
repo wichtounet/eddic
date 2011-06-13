@@ -24,6 +24,7 @@ class ByteCodeFileWriter {
 	ByteCodeFileWriter(string path);
 	void close();
 	void writeOneOperandCall(ByteCode bytecode, string litteral);
+	void writeOneOperandCall(ByteCode bytecode, int value);
 	void writeSimpleCall(ByteCode bytecode);
 	void writeHeader();
 	void writeEnd();

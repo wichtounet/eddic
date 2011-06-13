@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <map>
 
 #include <stdio.h>
 
@@ -67,6 +68,9 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 	
 	writer->writeHeader();
 
+	map<string, int> variables;
+	int currentVariable = 0;
+
 	while(lexer.next()){
 		if(!lexer.isWord()){
 			cout << "An instruction can only start with a call or an assignation" << endl;
@@ -94,12 +98,24 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 				return 1;
 			} 
 		
-			if(!lexer.isLitteral()){
-				cout << "Can only pass litteral to a call" << endl;
+			if(lexer.isLitteral()){
+				string litteral = lexer.getCurrentToken();
+				writer->writeOneOperandCall(PUSHS, litteral);
+			} else if(lexer.isWord()){
+				string variable = lexer.getCurrentToken();
+
+				if(variables.find(variable) == variables.end()){
+					cout << "The variable \"" << variable << "\" does not exist" << endl;
+					
+					return 1;
+				}
+
+				writer->writeOneOperandCall(PUSHV, variable);
+			} else {
+				cout << "Can only pass litteral or a variable to a call" << endl;
 				return 1;
 			}
 
-			string litteral = lexer.getCurrentToken();
 		
 			if(!lexer.next() || !lexer.isRightParenth()){
 				cout << "The call must be closed with a right parenth" << endl;
@@ -111,10 +127,26 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 				return 1;
 			} 
 		
-			writer->writeOneOperandCall(PUSH, litteral);
 			writer->writeSimpleCall( PRINT);
 		} else if(lexer.isAssign()){ //is an assign
+			if(!lexer.next() || !lexer.isLitteral()){
+				cout << "Need a litteral on the right part of the assignation" << endl;
+				return 1;
+			} 
 
+			string litteral = lexer.getCurrentToken();
+		
+			if(!lexer.next() || !lexer.isStop()){
+				cout << "Every instruction must be closed by ;" << endl;
+				return 1;
+			}
+			
+			if(variables.find(word) == variables.end()){
+				variables[word] = currentVariable++;
+			}
+			
+			writer->writeOneOperandCall(PUSHS, litteral);
+			writer->writeOneOperandCall(ASSIGN, variables[word]);
 		} else {
 			cout << "Not an instruction " << endl;
 

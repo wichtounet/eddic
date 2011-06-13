@@ -30,6 +30,11 @@ void ByteCodeFileWriter::writeOneOperandCall(ByteCode bytecode, string litteral)
 	writeLitteral(litteral);
 }
 
+void ByteCodeFileWriter::writeOneOperandCall(ByteCode bytecode, int value){
+	binary_write(&stream, (int) bytecode);
+	binary_write(&stream, value);
+}
+
 void ByteCodeFileWriter::writeSimpleCall(ByteCode bytecode){
 	binary_write(&stream, (int) bytecode);
 }

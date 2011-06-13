@@ -1,5 +1,12 @@
 Print("Hello World");
+a = "Variable a";
 Print ("Hello World");
+Print (a);
+Print ( a );
+b = "Variable b";
+a = "Reassign variable a";
 Print ("Hello World") ; 
- Print("Hello World");
- Print (    "Hello World"     ) ;   
+Print (a); 
+Print (b); 
+Print (a); 
+ Print ( "Test passed successfully" ) ;
