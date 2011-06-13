@@ -68,7 +68,7 @@ int Compiler::compile(ifstream* inStream, ByteCodeFileWriter* writer){
 	writer->writeHeader();
 
 	while(lexer.next()){
-		if(!lexer.isCall()){
+		if(!lexer.isWord()){
 			cout << "An instruction can only start with a call" << endl;
 
 			return 1;

@@ -64,7 +64,7 @@ string Lexer::getCurrentToken() const{
 	return currentToken;
 }
 
-bool Lexer::isCall() const{
+bool Lexer::isWord() const{
 	return isalpha(currentToken[0]);
 }
 

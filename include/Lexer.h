@@ -21,7 +21,7 @@ class Lexer {
     Lexer(ifstream* inStream);
     bool next();
     string getCurrentToken() const;
-    bool isCall() const;
+    bool isWord() const;
     bool isLitteral() const;
     bool isParenth() const;
     bool isLeftParenth() const;
