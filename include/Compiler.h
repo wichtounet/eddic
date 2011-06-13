@@ -17,11 +17,20 @@
 
 using namespace std;
 
+class CompilerException: public exception {
+  private:
+    string message;
+  public:
+    CompilerException(string m) : message(m) {};
+    ~CompilerException() throw() {};
+    const char* what() throw();
+};
+
 class Compiler {
   public:
     int compile (string file);
   private:
-    int compile ();
+    void compile () throw (CompilerException);
     Lexer lexer;
     ByteCodeFileWriter writer;
 };

@@ -23,6 +23,10 @@
 
 using namespace std;
 
+const char* CompilerException::what() throw() {
+	return message.c_str();
+}
+
 int Compiler::compile(string file){
 	cout << "Compile " << file << endl;
 
@@ -51,8 +55,14 @@ int Compiler::compile(string file){
 	
 	lexer.lex(&inFile);
 	
-	int code = compile();
-
+	int code = 0;
+	try {
+		compile();
+	} catch (CompilerException e){
+		cout << e.what() << endl;
+		code = 1;
+	}
+	
 	inFile.close();
 	writer.close();
 
@@ -65,7 +75,7 @@ int Compiler::compile(string file){
 	return code;
 }
 
-int Compiler::compile(){
+void Compiler::compile() throw (CompilerException){
 	writer.writeHeader();
 
 	map<string, int> variables;
@@ -73,29 +83,22 @@ int Compiler::compile(){
 
 	while(lexer.next()){
 		if(!lexer.isWord()){
-			cout << "An instruction can only start with a call or an assignation" << endl;
-
-			return 1;
+			throw CompilerException("An instruction can only start with a call or an assignation");
 		}
 
 		string word = lexer.getCurrentToken();
 
 		if(!lexer.next()){
-			cout << "Incomplete instruction" << endl;
-
-			return 1;
+			throw CompilerException("Incomplete instruction");
 		}
 
 		if(lexer.isLeftParenth()){ //is a call
 			if(word != "Print"){
-				cout << "The call \"" << word << "\" does not exist" << endl;
-
-				return 1;	
+				throw CompilerException("The call \"" + word + "\" does not exist");
 			}
 
 			if(!lexer.next()){
-				cout << "Not enough arguments to the call" << endl;
-				return 1;
+				throw CompilerException("Not enough arguments to the call");
 			} 
 		
 			if(lexer.isLitteral()){
@@ -105,40 +108,33 @@ int Compiler::compile(){
 				string variable = lexer.getCurrentToken();
 
 				if(variables.find(variable) == variables.end()){
-					cout << "The variable \"" << variable << "\" does not exist" << endl;
-					
-					return 1;
+					throw CompilerException("The variable \"" + variable + "\" does not exist");
 				}
 
 				writer.writeOneOperandCall(PUSHV, variable);
 			} else {
-				cout << "Can only pass litteral or a variable to a call" << endl;
-				return 1;
+				throw CompilerException("Can only pass litteral or a variable to a call");
 			}
 
 		
 			if(!lexer.next() || !lexer.isRightParenth()){
-				cout << "The call must be closed with a right parenth" << endl;
-				return 1;
+				throw CompilerException("The call must be closed with a right parenth");
 			} 
 		
 			if(!lexer.next() || !lexer.isStop()){
-				cout << "Every instruction must be closed by ;" << endl;
-				return 1;
+				throw CompilerException("Every instruction must be closed by a semicolon");
 			} 
 		
 			writer.writeSimpleCall( PRINT);
 		} else if(lexer.isAssign()){ //is an assign
 			if(!lexer.next() || !lexer.isLitteral()){
-				cout << "Need a litteral on the right part of the assignation" << endl;
-				return 1;
+				throw CompilerException("Need a litteral on the right part of the assignation");
 			} 
 
 			string litteral = lexer.getCurrentToken();
 		
 			if(!lexer.next() || !lexer.isStop()){
-				cout << "Every instruction must be closed by ;" << endl;
-				return 1;
+				throw CompilerException("Every instruction must be closed by a semicolon");
 			}
 			
 			if(variables.find(word) == variables.end()){
@@ -148,13 +144,9 @@ int Compiler::compile(){
 			writer.writeOneOperandCall(PUSHS, litteral);
 			writer.writeOneOperandCall(ASSIGN, variables[word]);
 		} else {
-			cout << "Not an instruction " << endl;
-
-			return 1;
+			throw CompilerException("Not an instruction");
 		}
 	}
 
 	writer.writeEnd();
-
-	return 0;
 }
