@@ -12,12 +12,17 @@
 #include "commons/ByteCode.h"
 #include "commons/IO.h"
 
+#include "CompilerException.h"
 #include "ByteCodeFileWriter.h"
 
 using namespace std;
 
-void ByteCodeFileWriter::open(string path){
+void ByteCodeFileWriter::open(string path) throw (CompilerException) {
 	stream.open(path.c_str(), ios::binary);
+
+	if(!stream){
+		throw CompilerException("Unable to open the output file");
+	}
 }
 
 void ByteCodeFileWriter::close(){

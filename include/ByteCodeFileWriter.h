@@ -15,21 +15,23 @@
 #include "commons/IO.h"
 #include "commons/ByteCode.h"
 
+#include "CompilerException.h"
+
 using namespace std;
 
 class ByteCodeFileWriter {
   private:
-	ofstream stream;
+	std::ofstream stream;
   public:
 	ByteCodeFileWriter() {};
-	void open(string path);
+	void open(std::string path) throw (CompilerException) ;
 	void close();
-	void writeOneOperandCall(ByteCode bytecode, string litteral);
+	void writeOneOperandCall(ByteCode bytecode, std::string litteral);
 	void writeOneOperandCall(ByteCode bytecode, int value);
 	void writeSimpleCall(ByteCode bytecode);
 	void writeHeader();
 	void writeEnd();
-	void writeLitteral(string value);
+	void writeLitteral(std::string value);
 
 };
 
