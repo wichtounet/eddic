@@ -7,7 +7,7 @@
 
 #include "Variables.h"
 
-using namespace std;
+using std::string;
 
 Variables::Variables(){
 	currentVariable = 0;
@@ -21,7 +21,7 @@ unsigned int Variables::index(std::string variable){
 	return variables[variable];
 }
 
-void Variables::createIfNotExists(std::string variable){
+void Variables::createIfNotExists(string variable){
 	if(!exists(variable)){
 		variables[variable] = currentVariable++;
 	}
