@@ -5,24 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <map>
-
-#include <stdio.h>
-#include <unistd.h>
-
 #include <commons/ByteCode.h>
 #include <commons/Timer.h>
 
-#include "ByteCodeFileWriter.h"
 #include "Compiler.h"
-#include "Lexer.h"
-#include "CompilerException.h"
-#include "Variables.h"
 
-using namespace std;
+using std::string;
+using std::cout;
+using std::endl;
 
 int Compiler::compile(string file){
 	cout << "Compile " << file << endl;

@@ -5,14 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
 #include <cctype>
 
 #include "Lexer.h"
 
-using namespace std;
+using std::string;
+using std::ios_base;
 
 void Lexer::lex(string file) throw(CompilerException) {
 	stream.open(file.c_str());

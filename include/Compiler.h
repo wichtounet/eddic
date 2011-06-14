@@ -9,27 +9,22 @@
 #define COMPILER_H
 
 #include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <map>
 
 #include "Variables.h"
 #include "CompilerException.h"
 #include "Lexer.h"
 #include "ByteCodeFileWriter.h"
 
-using namespace std;
-
 class Compiler {
   public:
-    int compile (string file);
+    int compile (std::string file);
   private:
     void compile () throw (CompilerException);
     ByteCodeFileWriter writer;
     Lexer lexer;
     
-    void parseCall(string call, Variables& variables) throw (CompilerException);
-    void parseAssign(string variable, Variables& variables) throw (CompilerException);
+    void parseCall(std::string call, Variables& variables) throw (CompilerException);
+    void parseAssign(std::string variable, Variables& variables) throw (CompilerException);
 };
 
 #endif

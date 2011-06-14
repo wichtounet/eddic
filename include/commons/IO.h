@@ -9,7 +9,6 @@
 #define IO_H
 
 #include <iostream>
-#include <iomanip>
 
 template<typename T>
 std::ostream& binary_write(std::ostream* stream, const T& value){

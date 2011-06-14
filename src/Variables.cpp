@@ -5,9 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-#include <iomanip>
-
 #include "Variables.h"
 
 using namespace std;

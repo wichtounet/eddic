@@ -9,8 +9,6 @@
 #define VARIABLES_H
 
 #include <iostream>
-#include <iomanip>
-#include <fstream>
 #include <map>
 
 class Variables {

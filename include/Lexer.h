@@ -8,8 +8,6 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <iostream>
-#include <iomanip>
 #include <fstream>
 
 #include "CompilerException.h"

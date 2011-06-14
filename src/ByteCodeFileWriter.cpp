@@ -5,17 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-
 #include "commons/ByteCode.h"
 #include "commons/IO.h"
 
-#include "CompilerException.h"
 #include "ByteCodeFileWriter.h"
 
-using namespace std;
+using std::string;
+using std::ios;
 
 void ByteCodeFileWriter::open(string path) throw (CompilerException) {
 	stream.open(path.c_str(), ios::binary);

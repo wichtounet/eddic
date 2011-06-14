@@ -8,16 +8,11 @@
 #ifndef BYTECODE_FILE_READER_H
 #define BYTECODE_FILE_READER_H
 
-#include <iostream>
-#include <iomanip>
 #include <fstream>
 
-#include "commons/IO.h"
 #include "commons/ByteCode.h"
 
 #include "CompilerException.h"
-
-using namespace std;
 
 class ByteCodeFileWriter {
   private:

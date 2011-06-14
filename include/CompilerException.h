@@ -9,7 +9,6 @@
 #define COMPILER_EXCEPTION_H
 
 #include <iostream>
-#include <iomanip>
 
 class CompilerException: public std::exception {
   private:
