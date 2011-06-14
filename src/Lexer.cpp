@@ -8,7 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <ctype.h>
+#include <cctype>
 
 #include "Lexer.h"
 
@@ -22,7 +22,7 @@ bool Lexer::next(){
 	char current;
 	*stream >> current;
 
-	while((current == '\n' || current == ' ') && !stream->eof()){
+	while(isspace(current) && !stream->eof()){
 		*stream >> current;
 	}
 
