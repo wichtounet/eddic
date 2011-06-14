@@ -24,10 +24,9 @@ class Compiler {
     int compile (string file);
   private:
     void compile () throw (CompilerException);
-    Lexer lexer;
     ByteCodeFileWriter writer;
-
-
+    Lexer lexer;
+    
     void parseCall(string call, map<string, int>& variables) throw (CompilerException);
     void parseAssign(string variable, map<string, int>& variables, int& currentVariable) throw (CompilerException);
 };

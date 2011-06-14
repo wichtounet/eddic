@@ -28,17 +28,7 @@ int Compiler::compile(string file){
 
 	Timer timer;
 
-	ifstream inFile;
-	inFile.open(file.c_str());
-	inFile.unsetf(ios_base::skipws);
-
-	if(!inFile){
-		cout << "Unable to open " << file << endl;
-		
-		return 1;
-	}
-
-	size_t ext_pos = file.find_last_of( '.' );
+	string::size_type ext_pos = file.find_last_of( '.' );
 
 	string output = "main.v";
 
@@ -46,20 +36,20 @@ int Compiler::compile(string file){
 		output = file;
 		output.replace( ext_pos + 1, output.size() - 1, "v" );
 	}
-
-	writer.open(output);
-	
-	lexer.lex(&inFile);
 	
 	int code = 0;
 	try {
+		writer.open(output);
+
+		lexer.lex(file);
+
 		compile();
 	} catch (CompilerException e){
 		cout << e.what() << endl;
 		code = 1;
 	}
 	
-	inFile.close();
+	lexer.close();
 	writer.close();
 
 	if(code != 0){

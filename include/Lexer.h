@@ -12,16 +12,17 @@
 #include <iomanip>
 #include <fstream>
 
-using namespace std;
+#include "CompilerException.h"
 
 class Lexer {
-    ifstream* stream;
-    string currentToken;
+  private:
+    std::ifstream stream;
+    std::string currentToken;
   public:
-    Lexer() {};
-    void lex(ifstream* inStream);
+    void lex(std::string file) throw(CompilerException) ;
+    void close();
     bool next();
-    string getCurrentToken() const;
+    std::string getCurrentToken() const;
     bool isWord() const;
     bool isAssign() const;
     bool isLitteral() const;

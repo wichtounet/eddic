@@ -14,26 +14,35 @@
 
 using namespace std;
 
-void Lexer::lex(ifstream* inStream){
-	stream = inStream;
+void Lexer::lex(string file) throw(CompilerException) {
+	stream.open(file.c_str());
+	stream.unsetf(ios_base::skipws);
+
+	if(!stream){
+		throw CompilerException("Unable to open the input file"); 
+	}
+}
+
+void Lexer::close(){
+	stream.close();
 }
 
 bool Lexer::next(){
 	char current;
-	*stream >> current;
+	stream >> current;
 
-	while(isspace(current) && !stream->eof()){
-		*stream >> current;
+	while(isspace(current) && !stream.eof()){
+		stream >> current;
 	}
 
-	if(stream->eof()){
+	if(stream.eof()){
 		return false;
 	}
 	
 	if(current == '"'){
 		currentToken = string(1, current);
 
-		while(*stream >> current && current != '"'){
+		while(stream >> current && current != '"'){
 			currentToken += current;
 		}
 
@@ -41,16 +50,16 @@ bool Lexer::next(){
 	} else if(isalpha(current)){	
 		currentToken = string(1, current);
 
-		while(*stream >> current && isalpha(current)){
+		while(stream >> current && isalpha(current)){
 			currentToken += current;
 		}
 
-		stream->putback(current);
+		stream.putback(current);
 	} else {
 		currentToken = string(1, current);
 	}
 
-	if(stream->eof()){
+	if(stream.eof()){
 		return false;
 	}
 
