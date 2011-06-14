@@ -20,6 +20,7 @@
 #include "Compiler.h"
 #include "Lexer.h"
 #include "CompilerException.h"
+#include "Variables.h"
 
 using namespace std;
 
@@ -64,8 +65,7 @@ int Compiler::compile(string file){
 void Compiler::compile() throw (CompilerException){
 	writer.writeHeader();
 
-	map<string, int> variables;
-	int currentVariable = 0;
+	Variables variables;
 
 	while(lexer.next()){
 		if(!lexer.isWord()){
@@ -81,7 +81,7 @@ void Compiler::compile() throw (CompilerException){
 		if(lexer.isLeftParenth()){ //is a call
 			parseCall(word, variables);
 		} else if(lexer.isAssign()){ //is an assign
-			parseAssign(word, variables, currentVariable);
+			parseAssign(word, variables);
 		} else {
 			throw CompilerException("Not an instruction");
 		}
@@ -90,7 +90,7 @@ void Compiler::compile() throw (CompilerException){
 	writer.writeEnd();
 }
 
-void Compiler::parseCall(string call, map<string, int>& variables) throw (CompilerException){
+void Compiler::parseCall(string call, Variables& variables) throw (CompilerException){
 	if(call != "Print"){
 		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
@@ -105,11 +105,11 @@ void Compiler::parseCall(string call, map<string, int>& variables) throw (Compil
 	} else if(lexer.isWord()){
 		string variable = lexer.getCurrentToken();
 
-		if(variables.find(variable) == variables.end()){
+		if(!variables.exists(variable)){
 			throw CompilerException("The variable \"" + variable + "\" does not exist");
 		}
 
-		writer.writeOneOperandCall(PUSHV, variable);
+		writer.writeOneOperandCall(PUSHV, variables.index(variable));
 	} else {
 		throw CompilerException("Can only pass litteral or a variable to a call");
 	}
@@ -126,7 +126,7 @@ void Compiler::parseCall(string call, map<string, int>& variables) throw (Compil
 	writer.writeSimpleCall( PRINT);
 } 
 
-void Compiler::parseAssign(string variable, map<string, int>& variables, int& currentVariable) throw (CompilerException){
+void Compiler::parseAssign(string variable, Variables& variables) throw (CompilerException){
 	if(!lexer.next() || !lexer.isLitteral()){
 		throw CompilerException("Need a litteral on the right part of the assignation");
 	} 
@@ -137,10 +137,8 @@ void Compiler::parseAssign(string variable, map<string, int>& variables, int& cu
 		throw CompilerException("Every instruction must be closed by a semicolon");
 	}
 	
-	if(variables.find(variable) == variables.end()){
-		variables[variable] = currentVariable++;
-	}
+	variables.createIfNotExists(variable);
 	
 	writer.writeOneOperandCall(PUSHS, litteral);
-	writer.writeOneOperandCall(ASSIGN, variables[variable]);
+	writer.writeOneOperandCall(ASSIGN, variables.index(variable));
 }
