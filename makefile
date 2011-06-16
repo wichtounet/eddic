@@ -27,5 +27,5 @@ bin/Variables.o : include/Variables.h src/Variables.cpp
 
 clean:
 	rm -f bin/*
-	rm main.v
+	rm -f samples/*.v
 
