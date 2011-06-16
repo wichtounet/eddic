@@ -53,6 +53,14 @@ bool Lexer::next(){
 		}
 
 		stream.putback(current);
+	} else if(isdigit(current)) {
+		currentToken = string(1, current);
+
+		while(stream >> current && isdigit(current)){
+			currentToken += current;
+		}
+
+		stream.putback(current);
 	} else {
 		currentToken = string(1, current);
 	}
@@ -98,4 +106,8 @@ bool Lexer::isRightParenth() const{
 
 bool Lexer::isStop() const{
 	return currentToken == ";";
+}
+   
+bool Lexer::isInteger() const {
+	return isdigit(currentToken[0]);
 }

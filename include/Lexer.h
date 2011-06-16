@@ -28,6 +28,7 @@ class Lexer {
     bool isLeftParenth() const;
     bool isRightParenth() const;
     bool isStop() const;
+    bool isInteger() const;
 };
 
 #endif
