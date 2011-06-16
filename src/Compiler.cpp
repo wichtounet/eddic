@@ -117,18 +117,28 @@ void Compiler::parseCall(string call, Variables& variables) throw (CompilerExcep
 } 
 
 void Compiler::parseAssign(string variable, Variables& variables) throw (CompilerException){
-	if(!lexer.next() || !lexer.isLitteral()){
-		throw CompilerException("Need a litteral on the right part of the assignation");
+	if(!lexer.next()){
+		throw CompilerException("Need something to assign to the variable");
 	} 
+	
+	if(lexer.isLitteral()){
+		string litteral = lexer.getCurrentToken();
 
-	string litteral = lexer.getCurrentToken();
+		writer.writeOneOperandCall(PUSHS, litteral);
+	} else if(lexer.isWord()){
+		string variableRight = lexer.getCurrentToken();
 
+		if(!variables.exists(variableRight)){
+			throw CompilerException("The variable \"" + variableRight + "\" does not exist");
+		}
+
+		writer.writeOneOperandCall(PUSHV, variables.index(variableRight));
+	}
+	
 	if(!lexer.next() || !lexer.isStop()){
 		throw CompilerException("Every instruction must be closed by a semicolon");
 	}
 	
 	variables.createIfNotExists(variable);
-	
-	writer.writeOneOperandCall(PUSHS, litteral);
 	writer.writeOneOperandCall(ASSIGN, variables.index(variable));
 }

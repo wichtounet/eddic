@@ -9,4 +9,8 @@ Print ("Hello World") ;
 Print (a); 
 Print (b); 
 Print (a); 
+ Print ( "Test" ) ;
+a = b;
+Print (a); 
+Print (b); 
  Print ( "Test passed successfully" ) ;
