@@ -4,3 +4,4 @@ bin/*
 *.so
 lib/*
 *.v
+samples/perfs.eddi
