@@ -9,11 +9,19 @@
 #define BYTECODE_H
 
 enum ByteCode {
-	PUSHS = 0,
-	PRINT = 1,
-	END = 2,
-	PUSHV = 3,
-	ASSIGN = 4
+	END = 0, 
+
+	SLOAD = 10, 
+	ILOAD = 11,
+	
+	SSTORE = 20,
+	ISTORE = 21,
+
+	LDCI = 30,
+	LDCS = 31,
+
+	PRINTI = 40,
+	PRINTS = 41
 };
 
 #endif

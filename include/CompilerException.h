@@ -10,11 +10,23 @@
 
 #include <iostream>
 
+#include <sstream>
+
+template <typename T>
+std::string NumberToString ( T Number )
+{
+	std::stringstream ss;
+	ss << Number;
+	return ss.str();
+}
+
 class CompilerException: public std::exception {
   private:
     std::string message;
+    std::string file;
+    int line;
   public:
-    CompilerException(std::string m) : message(m) {};
+    CompilerException(std::string m, std::string f, int l) : message(m), file(f), line(l) {};
     ~CompilerException() throw() {};
     const char* what() throw();
 };

@@ -1,16 +1,2 @@
-Print("Hello World");
-a = "Variable a";
-Print ("Hello World");
-Print (a);
-Print ( a );
-b = "Variable b";
-a = "Reassign variable a";
-Print ("Hello World") ; 
-Print (a); 
-Print (b); 
-Print (a); 
- Print ( "Test" ) ;
-a = b;
-Print (a); 
-Print (b); 
- Print ( "Test passed successfully" ) ;
+int a = 1;
+string b = "asdf";

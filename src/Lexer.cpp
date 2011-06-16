@@ -12,12 +12,13 @@
 using std::string;
 using std::ios_base;
 
+//TODO Use another kind of exception
 void Lexer::lex(string file) throw(CompilerException) {
 	stream.open(file.c_str());
 	stream.unsetf(ios_base::skipws);
 
 	if(!stream){
-		throw CompilerException("Unable to open the input file"); 
+		throw CompilerException("Unable to open the input file", __FILE__,__LINE__); 
 	}
 
 	currentType = NOTHING;

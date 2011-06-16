@@ -8,5 +8,11 @@
 #include "CompilerException.h"
 
 const char* CompilerException::what() throw() {
-	return message.c_str();
+	std::string log = file;
+	log += ":";
+	log += NumberToString<int>(line);
+	log += " ";
+	log += message;
+	
+	return log.c_str();
 }
