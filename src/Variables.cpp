@@ -7,6 +7,7 @@
 
 #include "Variables.h"
 
+using std::map;
 using std::string;
 
 Variables::Variables(){
@@ -18,7 +19,13 @@ bool Variables::exists(string variable) const{
 }
 
 unsigned int Variables::index(std::string variable) const{
-	return variables[variable];
+	map<string, unsigned int>::const_iterator it = variables.find(variable);
+
+	if(it == variables.end()){
+		return -1;
+	}
+		
+	return it->second;
 }
 
 void Variables::createIfNotExists(string variable){
