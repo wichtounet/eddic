@@ -12,10 +12,22 @@
 
 #include "CompilerException.h"
 
+enum TokenType {
+	NOTHING,
+	WORD,
+	ASSIGN,
+	LITTERAL,
+	LEFT_PARENTH,
+	RIGHT_PARENTH,
+	STOP,
+	INTEGER
+};
+
 class Lexer {
   private:
     std::ifstream stream;
     std::string currentToken;
+    TokenType currentType;
   public:
     void lex(std::string file) throw(CompilerException) ;
     void close();

@@ -19,6 +19,8 @@ void Lexer::lex(string file) throw(CompilerException) {
 	if(!stream){
 		throw CompilerException("Unable to open the input file"); 
 	}
+
+	currentType = NOTHING;
 }
 
 void Lexer::close(){
@@ -34,6 +36,8 @@ bool Lexer::next(){
 	}
 
 	if(stream.eof()){
+		currentType = NOTHING;
+		
 		return false;
 	}
 	
@@ -45,6 +49,10 @@ bool Lexer::next(){
 		}
 
 		currentToken += current;
+		
+		currentType = LITTERAL;
+			
+		return true;
 	} else if(isalpha(current)){	
 		currentToken = string(1, current);
 
@@ -53,6 +61,10 @@ bool Lexer::next(){
 		}
 
 		stream.putback(current);
+		
+		currentType = WORD;
+			
+		return true;
 	} else if(isdigit(current)) {
 		currentToken = string(1, current);
 
@@ -61,19 +73,34 @@ bool Lexer::next(){
 		}
 
 		stream.putback(current);
-	} else {
-		currentToken = string(1, current);
-	}
-
-	if(stream.eof()){
-		return false;
-	}
-
-	if(currentToken[0] == 0){
-		return false;
+		
+		currentType = INTEGER;
+			
+		return true;
+	} 
+	
+	switch (current) {
+		case ';': 
+			currentType = STOP;
+			currentToken = ";";
+			return true;
+		case '=': 
+			currentType = ASSIGN;
+			currentToken = "=";
+			return true;
+		case '(': 
+			currentType = LEFT_PARENTH;
+			currentToken = "(";
+			return true;
+		case ')': 
+			currentType = RIGHT_PARENTH;
+			currentToken = ")";
+			return true;
 	}
 	
-	return true;
+	//TODO Consider throwing an exception indicating that unexpected characters were found
+
+	return false;
 }
 
 string Lexer::getCurrentToken() const{
@@ -81,33 +108,33 @@ string Lexer::getCurrentToken() const{
 }
 
 bool Lexer::isWord() const{
-	return isalpha(currentToken[0]);
+	return currentType == WORD;
 }
 
 bool Lexer::isLitteral() const{
-	return currentToken[0] == '"';
+	return currentType == LITTERAL;
 }
 
 bool Lexer::isAssign() const{
-	return currentToken == "=";
+	return currentType == ASSIGN;
 }
 
 bool Lexer::isParenth() const{
-	return isLeftParenth() || isRightParenth();
+	return currentType == LEFT_PARENTH || currentType == RIGHT_PARENTH;
 }
 
 bool Lexer::isLeftParenth() const{
-	return currentToken == "(";
+	return currentType == LEFT_PARENTH;
 }
 
 bool Lexer::isRightParenth() const{
-	return currentToken == ")";
+	return currentType == RIGHT_PARENTH;
 }
 
 bool Lexer::isStop() const{
-	return currentToken == ";";
+	return currentType == STOP;
 }
    
 bool Lexer::isInteger() const {
-	return isdigit(currentToken[0]);
+	return currentType == INTEGER;
 }
