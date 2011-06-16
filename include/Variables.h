@@ -17,8 +17,8 @@ class Variables {
     unsigned int currentVariable;
   public:
     Variables();
-    bool exists(std::string variable);
-    unsigned int index(std::string variable);
+    bool exists(std::string variable) const;
+    unsigned int index(std::string variable) const;
     void createIfNotExists(std::string variable);
 };
 

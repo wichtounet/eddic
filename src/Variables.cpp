@@ -13,11 +13,11 @@ Variables::Variables(){
 	currentVariable = 0;
 }
 
-bool Variables::exists(string variable){
+bool Variables::exists(string variable) const{
 	return variables.find(variable) != variables.end();
 }
 
-unsigned int Variables::index(std::string variable){
+unsigned int Variables::index(std::string variable) const{
 	return variables[variable];
 }
 
