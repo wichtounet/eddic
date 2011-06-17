@@ -28,12 +28,9 @@ class Compiler {
   public:
     int compile (std::string file);
   private:
-    void compile () throw (CompilerException);
+    void compile (Program& program);
     ByteCodeFileWriter writer;
     Lexer lexer;
-    
-    void parseCall(std::string call, Variables& variables) throw (CompilerException);
-    void parseAssign(std::string variable, Variables& variables) throw (CompilerException);
 };
 
 #endif

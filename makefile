@@ -2,7 +2,7 @@ CC = g++
 DEBUG = -g
 CFLAGS = -Wall -o2 -c $(DEBUG) -Iinclude 
 LFLAGS = -Wall $(DEBUG) -leddi-commons 
-OBJECTS = bin/eddi.o bin/Compiler.o bin/Lexer.o bin/ByteCodeFileWriter.o bin/CompilerException.o bin/Variables.o
+OBJECTS = bin/eddi.o bin/Compiler.o bin/Lexer.o bin/ByteCodeFileWriter.o bin/CompilerException.o bin/Variables.o bin/Parser.o bin/Program.o
 
 bin/eddic : $(OBJECTS)
 	$(CC) $(LFLAGS) -o bin/eddic $(OBJECTS)
@@ -24,6 +24,12 @@ bin/ByteCodeFileWriter.o : include/ByteCodeFileWriter.h src/ByteCodeFileWriter.c
 
 bin/Variables.o : include/Variables.h src/Variables.cpp
 	$(CC) $(CFLAGS) -o bin/Variables.o src/Variables.cpp
+
+bin/Parser.o : include/Parser.h src/Parser.cpp
+	$(CC) $(CFLAGS) -o bin/Parser.o src/Parser.cpp
+
+bin/Program.o : include/Program.h src/Program.cpp
+	$(CC) $(CFLAGS) -o bin/Program.o src/Program.cpp
 
 clean:
 	rm -f bin/*
