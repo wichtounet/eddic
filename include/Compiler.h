@@ -14,6 +14,8 @@
 #include "CompilerException.h"
 #include "Lexer.h"
 #include "ByteCodeFileWriter.h"
+#include "Nodes.h"
+#include "StringPool.h"
 
 //TODO Move it to commons (with the sstream include)
 template <class T>
@@ -28,9 +30,11 @@ class Compiler {
   public:
     int compile (std::string file);
   private:
-    void compile (Program& program);
+    void compile (Program* program);
     ByteCodeFileWriter writer;
     Lexer lexer;
+	void check(Program* program, Variables& variables);
+	void checkStrings(Program* program, StringPool& pool);
 };
 
 #endif

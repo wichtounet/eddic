@@ -10,19 +10,16 @@
 #include <commons/Types.h>
 
 #include "Parser.h"
-#include "Value.h"
-#include "Call.h"
-#include "Assignment.h"
-#include "Declaration.h"
+#include "Nodes.h"
 
 using std::string;
 using std::ios_base;
 
-void parseCall(Lexer& lexer, Program& program, string call) throw (CompilerException);
-void parseDeclaration(Lexer& lexer, Program& program, string type) throw (CompilerException);
-void parseAssignment(Lexer& lexer, Program& program, string variable) throw (CompilerException);
+void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerException);
+void parseDeclaration(Lexer& lexer, Program* program, string type) throw (CompilerException);
+void parseAssignment(Lexer& lexer, Program* program, string variable) throw (CompilerException);
 
-Program Parser::parse() throw (CompilerException) {
+Program* Parser::parse() throw (CompilerException) {
 	Program* program = new Program();
 
 	while(lexer.next()){
@@ -37,17 +34,17 @@ Program Parser::parse() throw (CompilerException) {
 		}
 
 		if(lexer.isLeftParenth()){ //is a call
-			parseCall(lexer, *program, word);
+			parseCall(lexer, program, word);
 		} else if(lexer.isWord()){ //is a declaration
-			parseDeclaration(lexer, *program, word);
+			parseDeclaration(lexer, program, word);
 		} else if(lexer.isAssign()){ //is an assign
-			parseAssignment(lexer, *program, word);
+			parseAssignment(lexer, program, word);
 		} else {
 			throw CompilerException("Not an instruction", __FILE__,__LINE__);
 		}
 	}
 	
-	return *program;
+	return program;
 }
 
 //TODO Move it to commons (with the sstream include)
@@ -59,7 +56,7 @@ T toNumber (std::string text){
 	return result;
 }
 
-Value* readValue(Lexer& lexer){
+ParseNode* readValue(Lexer& lexer){
 	if(lexer.isLitteral()){		
 		string litteral = lexer.getCurrentToken();
 
@@ -67,7 +64,7 @@ Value* readValue(Lexer& lexer){
 	} else if(lexer.isWord()){
 		string variableRight = lexer.getCurrentToken();
 		
-		return new Variable(variableRight);
+		return new VariableValue(variableRight);
 	} else if(lexer.isInteger()){
 		string integer = lexer.getCurrentToken();
 		int value = toNumber<int>(integer);
@@ -80,7 +77,7 @@ Value* readValue(Lexer& lexer){
 
 //TODO : put the three following functions as member functions
 
-void parseCall(Lexer& lexer, Program& program, string call) throw (CompilerException){
+void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerException){
 	if(call != "Print"){
 		throw CompilerException("The call \"" + call + "\" does not exist", __FILE__,__LINE__);
 	}
@@ -89,7 +86,7 @@ void parseCall(Lexer& lexer, Program& program, string call) throw (CompilerExcep
 		throw CompilerException("Not enough arguments to the call", __FILE__, __LINE__);
 	} 
 	
-	Value* value = readValue(lexer);
+	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isRightParenth()){
 		throw CompilerException("The call must be closed with a right parenth", __FILE__,__LINE__);
@@ -99,10 +96,14 @@ void parseCall(Lexer& lexer, Program& program, string call) throw (CompilerExcep
 		throw CompilerException("Every instruction must be closed by a semicolon", __FILE__,__LINE__);
 	} 
 
-	program.addInstruction(new Call(call, value));
+	Print* print = new Print();
+
+	print->addLast(value);
+
+	program->addLast(print);
 } 
 
-void parseDeclaration(Lexer& lexer, Program& program, string typeName) throw (CompilerException){
+void parseDeclaration(Lexer& lexer, Program* program, string typeName) throw (CompilerException){
 	if(typeName != "int" && typeName != "string"){
 		throw CompilerException("Invalid type", __FILE__,__LINE__);
 	}
@@ -125,25 +126,33 @@ void parseDeclaration(Lexer& lexer, Program& program, string typeName) throw (Co
 		throw CompilerException("Need something to assign to the variable", __FILE__,__LINE__);
 	}
 	
-	Value* value = readValue(lexer);
+	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isStop()){
 		throw CompilerException("Every instruction must be closed by a semicolon", __FILE__,__LINE__);
 	}
 
-	program.addInstruction(new Declaration(type, variable, value));
+	Declaration* declare = new Declaration(type, variable);
+
+	declare->addLast(value);
+
+	program->addLast(declare);
 }
 
-void parseAssignment(Lexer& lexer, Program& program, string variable) throw (CompilerException){
+void parseAssignment(Lexer& lexer, Program* program, string variable) throw (CompilerException){
 	if(!lexer.next()){
 		throw CompilerException("Need something to assign to the variable", __FILE__,__LINE__);
 	}
 	
-	Value* value = readValue(lexer);
+	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isStop()){
 		throw CompilerException("Every instruction must be closed by a semicolon", __FILE__,__LINE__);
 	}
 
-	program.addInstruction(new Assignment(variable, value));
+	Assignment* assign = new Assignment(variable); 
+
+	assign->addLast(value);
+
+	program->addLast(assign);
 }

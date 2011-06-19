@@ -5,18 +5,4 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cctype>
-
 #include "Program.h"
-
-void Program::addInstruction(Instruction* instruction){
-	instructions.push_back(instruction);
-}
-
-std::vector<Instruction*>::iterator Program::begin(){
-	return instructions.begin();
-}
-
-std::vector<Instruction*>::iterator Program::end(){
-	return instructions.end();
-}

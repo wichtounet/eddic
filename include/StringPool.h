@@ -5,20 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ASSIGNMENT_H
-#define ASSIGNMENT_H
+#ifndef STRING_POOL_H
+#define STRING_POOL_H
 
-#include "Instruction.h"
-#include "Value.h"
+#include <string>
+#include <map>
 
-class Assignment : public Instruction {
+#include "ParseNode.h"
+
+class StringPool : public ParseNode {
 	private:
-		std::string m_variable;
-		Value* m_value;
+		std::map<std::string, int> pool;
+		unsigned int currentString;
 	public:
-		Assignment(std::string variable, Value* value) : m_variable(variable), m_value(value) {};
-		std::string variable(){return m_variable;};
-		Value* value(){return m_value;};
+		StringPool(){currentString = 0;}
+		int index(std::string value);
+		void write(ByteCodeFileWriter& writer);	
 };
 
 #endif

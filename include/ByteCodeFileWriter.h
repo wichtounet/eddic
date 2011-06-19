@@ -27,7 +27,7 @@ class ByteCodeFileWriter {
 	void writeHeader();
 	void writeEnd();
 	void writeLitteral(std::string value);
-
+	void writeInt(int value);
 };
 
 #endif

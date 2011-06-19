@@ -11,15 +11,32 @@
 #include <iostream>
 #include <map>
 
+#include <commons/Types.h>
+
+class Variable {
+	private:
+		std::string m_name;
+		Type m_type;
+		int m_index;
+	public:
+		Variable(std::string name, Type type, int index) : m_name(name), m_type(type), m_index(index) {}
+		std::string name(){return m_name;}
+		int index(){return m_index;}
+		Type type(){return m_type;}
+};
+
 class Variables {
   private:
-    std::map<std::string, unsigned int> variables;
+    std::map<std::string, Variable*> variables;
     unsigned int currentVariable;
   public:
-    Variables();
+	Variables(){currentVariable = 0;};
+	~Variables();
     bool exists(std::string variable) const;
     unsigned int index(std::string variable) const;
-    void createIfNotExists(std::string variable);
+    Variable* create(std::string variable, Type type);
+	Variable* find(std::string variable);
+
 };
 
 #endif

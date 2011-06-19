@@ -12,14 +12,14 @@
 
 #include "CompilerException.h"
 #include "Lexer.h"
-#include "Program.h"
+#include "Nodes.h"
 
 class Parser {
   private:
     Lexer& lexer;
   public:
 	Parser(Lexer& l) : lexer(l) {};
-	Program parse() throw (CompilerException) ;
+	Program* parse() throw (CompilerException) ;
 };
 
 #endif

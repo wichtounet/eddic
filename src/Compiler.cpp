@@ -9,7 +9,6 @@
 #include <commons/Timer.h>
 
 #include "Compiler.h"
-#include "Program.h"
 #include "Parser.h"
 
 using std::string;
@@ -37,15 +36,19 @@ int Compiler::compile(string file){
 		Parser parser(lexer);
 
 		Program* program = parser.parse();
-		
+	
+		Variables variables;
+		StringPool* pool = new StringPool();
+
 		//Semantical analysis
-			//Type checking
-			//Variable checking
-			//String pool creation
-		
+		check(program, variables);
+		checkStrings(program, *pool);
+
 		writer.open(output);
 
-		compile(*program);
+		compile(program);
+
+		delete program;
 	} catch (CompilerException e){
 		cout << e.what() << endl;
 		code = 1;
@@ -63,6 +66,34 @@ int Compiler::compile(string file){
 	return code;
 }
 
-void compile(Program& program){
-	
+void Compiler::compile(Program* program){
+	writer.writeHeader();
+
+	program->write(writer);
+
+	writer.writeEnd();
+}
+
+void Compiler::check(Program* program, Variables& variables){
+	NodeIterator it = program->begin();
+	NodeIterator end = program->end();
+
+	for( ; it != end; ++it){
+		ParseNode* node = *it;
+
+		node->checkVariables(variables);
+	}
+}
+
+void Compiler::checkStrings(Program* program, StringPool& pool){
+	NodeIterator it = program->begin();
+	NodeIterator end = program->end();
+
+	for( ; it != end; ++it){
+		ParseNode* node = *it;
+
+		node->checkStrings(pool);
+	}
+
+	program->addFirst(&pool);
 }
