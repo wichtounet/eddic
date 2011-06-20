@@ -18,7 +18,7 @@ void Lexer::lex(string file) throw(CompilerException) {
 	stream.unsetf(ios_base::skipws);
 
 	if(!stream){
-		throw CompilerException("Unable to open the input file", __FILE__,__LINE__); 
+		throw CompilerException("Unable to open the input file"); 
 	}
 
 	currentType = NOTHING;

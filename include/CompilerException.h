@@ -26,7 +26,7 @@ class CompilerException: public std::exception {
     std::string file;
     int line;
   public:
-    CompilerException(std::string m, std::string f, int l) : message(m), file(f), line(l) {};
+    CompilerException(std::string m) : message(m) {};
     ~CompilerException() throw() {};
     const char* what() throw();
 };

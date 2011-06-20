@@ -10,7 +10,7 @@
 
 void Declaration::checkVariables(Variables& variables) throw (CompilerException){
 	if(variables.exists(m_variable)){
-		throw CompilerException("Variable has already been declared", __FILE__, __LINE__);
+		throw CompilerException("Variable has already been declared");
 	}
 
 	Variable* var = variables.create(m_variable, m_type);
@@ -20,13 +20,13 @@ void Declaration::checkVariables(Variables& variables) throw (CompilerException)
 	Value* value = dynamic_cast<Value*>(*begin());
 
 	if(value->type() != m_type){
-		throw CompilerException("Incompatible type", __FILE__, __LINE__);
+		throw CompilerException("Incompatible type");
 	}
 }
 
 void Assignment::checkVariables(Variables& variables) throw (CompilerException){
 	if(!variables.exists(m_variable)){
-		throw CompilerException("Variable has not  been declared", __FILE__, __LINE__);
+		throw CompilerException("Variable has not  been declared");
 	}
 
 	Variable* var = variables.find(m_variable);
@@ -36,13 +36,13 @@ void Assignment::checkVariables(Variables& variables) throw (CompilerException){
 	Value* value = dynamic_cast<Value*>(*begin());
 
 	if(value->type() != var->type()){
-		throw CompilerException("Incompatible type", __FILE__, __LINE__);
+		throw CompilerException("Incompatible type");
 	}
 }
 
 void VariableValue::checkVariables(Variables& variables) throw (CompilerException){
 	if(!variables.exists(m_variable)){
-		throw CompilerException("Variable has not been declared", __FILE__, __LINE__);
+		throw CompilerException("Variable has not been declared");
 	}
 
 	Variable* variable = variables.find(m_variable);

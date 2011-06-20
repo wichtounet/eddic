@@ -24,13 +24,13 @@ Program* Parser::parse() throw (CompilerException) {
 
 	while(lexer.next()){
 		if(!lexer.isWord()){
-			throw CompilerException("An instruction can only start with a call or an assignation", __FILE__,__LINE__);
+			throw CompilerException("An instruction can only start with a call or an assignation");
 		}
 
 		string word = lexer.getCurrentToken();
 
 		if(!lexer.next()){
-			throw CompilerException("Incomplete instruction", __FILE__,__LINE__);
+			throw CompilerException("Incomplete instruction");
 		}
 
 		if(lexer.isLeftParenth()){ //is a call
@@ -40,7 +40,7 @@ Program* Parser::parse() throw (CompilerException) {
 		} else if(lexer.isAssign()){ //is an assign
 			parseAssignment(lexer, program, word);
 		} else {
-			throw CompilerException("Not an instruction", __FILE__,__LINE__);
+			throw CompilerException("Not an instruction");
 		}
 	}
 	
@@ -79,21 +79,21 @@ ParseNode* readValue(Lexer& lexer){
 
 void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerException){
 	if(call != "Print"){
-		throw CompilerException("The call \"" + call + "\" does not exist", __FILE__,__LINE__);
+		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
 
 	if(!lexer.next()){
-		throw CompilerException("Not enough arguments to the call", __FILE__, __LINE__);
+		throw CompilerException("Not enough arguments to the call");
 	} 
 	
 	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isRightParenth()){
-		throw CompilerException("The call must be closed with a right parenth", __FILE__,__LINE__);
+		throw CompilerException("The call must be closed with a right parenth");
 	} 
 
 	if(!lexer.next() || !lexer.isStop()){
-		throw CompilerException("Every instruction must be closed by a semicolon", __FILE__,__LINE__);
+		throw CompilerException("Every instruction must be closed by a semicolon");
 	} 
 
 	Print* print = new Print();
@@ -105,7 +105,7 @@ void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerExcep
 
 void parseDeclaration(Lexer& lexer, Program* program, string typeName) throw (CompilerException){
 	if(typeName != "int" && typeName != "string"){
-		throw CompilerException("Invalid type", __FILE__,__LINE__);
+		throw CompilerException("Invalid type");
 	}
 
 	//Move that elsewhere (Types.h ?)
@@ -119,17 +119,17 @@ void parseDeclaration(Lexer& lexer, Program* program, string typeName) throw (Co
 	string variable = lexer.getCurrentToken();
 
 	if(!lexer.next() || !lexer.isAssign()){
-		throw CompilerException("A variable declaration must followed by '='", __FILE__,__LINE__);
+		throw CompilerException("A variable declaration must followed by '='");
 	} 
 
 	if(!lexer.next()){
-		throw CompilerException("Need something to assign to the variable", __FILE__,__LINE__);
+		throw CompilerException("Need something to assign to the variable");
 	}
 	
 	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isStop()){
-		throw CompilerException("Every instruction must be closed by a semicolon", __FILE__,__LINE__);
+		throw CompilerException("Every instruction must be closed by a semicolon");
 	}
 
 	Declaration* declare = new Declaration(type, variable);
@@ -141,13 +141,13 @@ void parseDeclaration(Lexer& lexer, Program* program, string typeName) throw (Co
 
 void parseAssignment(Lexer& lexer, Program* program, string variable) throw (CompilerException){
 	if(!lexer.next()){
-		throw CompilerException("Need something to assign to the variable", __FILE__,__LINE__);
+		throw CompilerException("Need something to assign to the variable");
 	}
 	
 	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isStop()){
-		throw CompilerException("Every instruction must be closed by a semicolon", __FILE__,__LINE__);
+		throw CompilerException("Every instruction must be closed by a semicolon");
 	}
 
 	Assignment* assign = new Assignment(variable); 
