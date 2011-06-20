@@ -4,3 +4,5 @@ Print(1);
 Print("Test");
 Print(a);
 Print(b);
+b = "new b";
+Prinb(b);
