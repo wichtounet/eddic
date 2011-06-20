@@ -93,8 +93,7 @@ void Parser::parseDeclaration(Program* program, string typeName) throw (Compiler
 	if(typeName != "int" && typeName != "string"){
 		throw CompilerException("Invalid type");
 	}
-
-	//Move that elsewhere (Types.h ?)
+	
 	Type type;
 	if(typeName == "int"){
 		type = INT;

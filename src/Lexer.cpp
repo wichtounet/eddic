@@ -12,7 +12,6 @@
 using std::string;
 using std::ios_base;
 
-//TODO Use another kind of exception
 void Lexer::lex(string file) throw(CompilerException) {
 	stream.open(file.c_str());
 	stream.unsetf(ios_base::skipws);
@@ -99,8 +98,6 @@ bool Lexer::next(){
 			return true;
 	}
 	
-	//TODO Consider throwing an exception indicating that unexpected characters were found
-
 	return false;
 }
 

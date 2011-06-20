@@ -13,7 +13,6 @@
 using std::string;
 using std::ios;
 
-//TODO Use another kind of exception
 void ByteCodeFileWriter::open(string path) throw (CompilerException) {
 	stream.open(path.c_str(), ios::binary);
 
