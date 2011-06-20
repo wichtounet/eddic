@@ -20,27 +20,29 @@ enum TokenType {
 	LEFT_PARENTH,
 	RIGHT_PARENTH,
 	STOP,
-	INTEGER
+	INTEGER, 
+	ADDITION
 };
 
 class Lexer {
-  private:
-    std::ifstream stream;
-    std::string currentToken;
-    TokenType currentType;
-  public:
-    void lex(std::string file) throw(CompilerException) ;
-    void close();
-    bool next();
-    std::string getCurrentToken() const;
-    bool isWord() const;
-    bool isAssign() const;
-    bool isLitteral() const;
-    bool isParenth() const;
-    bool isLeftParenth() const;
-    bool isRightParenth() const;
-    bool isStop() const;
-    bool isInteger() const;
+    private:
+    	std::ifstream stream;
+    	std::string currentToken;
+    	TokenType currentType;
+    public:
+    	void lex(std::string file) throw(CompilerException) ;
+    	void close();
+    	bool next();
+    	std::string getCurrentToken() const;
+    	bool isWord() const;
+    	bool isAssign() const;
+    	bool isLitteral() const;
+    	bool isParenth() const;
+    	bool isLeftParenth() const;
+    	bool isRightParenth() const;
+    	bool isStop() const;
+    	bool isInteger() const;
+	bool isAddition() const;
 };
 
 #endif

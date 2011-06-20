@@ -96,6 +96,10 @@ bool Lexer::next(){
 			currentType = RIGHT_PARENTH;
 			currentToken = ")";
 			return true;
+		case '+':
+			currentType = ADDITION;
+			currentToken = "+";
+			return true;
 	}
 	
 	return false;
@@ -135,4 +139,8 @@ bool Lexer::isStop() const{
    
 bool Lexer::isInteger() const {
 	return currentType == INTEGER;
+}
+
+bool Lexer::isAddition() const {
+	return currentType == ADDITION;
 }
