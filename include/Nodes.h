@@ -83,4 +83,10 @@ class VariableValue : public Value {
 		void write(ByteCodeFileWriter& writer);	
 };
 
+class Addition : public Value {
+	public:
+		void checkVariables(Variables& variables) throw (CompilerException);
+		void write(ByteCodeFileWriter& writer); 
+};
+
 #endif
