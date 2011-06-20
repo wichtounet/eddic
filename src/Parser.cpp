@@ -8,6 +8,7 @@
 #include <cctype>
 
 #include <commons/Types.h>
+#include <commons/Utils.h>
 
 #include "Parser.h"
 #include "Nodes.h"
@@ -45,15 +46,6 @@ Program* Parser::parse() throw (CompilerException) {
 	}
 	
 	return program;
-}
-
-//TODO Move it to commons (with the sstream include)
-template <class T>
-T toNumber (std::string text){
-	std::stringstream ss(text);
-	T result;
-	ss >> result;
-	return result;
 }
 
 ParseNode* readValue(Lexer& lexer){

@@ -8,23 +8,12 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#include <sstream>
-
 #include "Variables.h"
 #include "CompilerException.h"
 #include "Lexer.h"
 #include "ByteCodeFileWriter.h"
 #include "Nodes.h"
 #include "StringPool.h"
-
-//TODO Move it to commons (with the sstream include)
-template <class T>
-T toNumber (std::string text){
-	std::stringstream ss(text);
-	T result;
-	ss >> result;
-	return result;
-}
 
 class Compiler {
   public:
