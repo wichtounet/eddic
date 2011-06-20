@@ -5,4 +5,4 @@ Print("Test");
 Print(a);
 Print(b);
 b = "new b";
-Prinb(b);
+Print(b);
