@@ -8,8 +8,9 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#include <string>
+
 #include "Variables.h"
-#include "CompilerException.h"
 #include "Lexer.h"
 #include "ByteCodeFileWriter.h"
 #include "Nodes.h"
@@ -19,9 +20,9 @@ class Compiler {
   public:
     int compile (std::string file);
   private:
-    void compile (Program* program);
-    ByteCodeFileWriter writer;
     Lexer lexer;
+    ByteCodeFileWriter writer;
+    void compile (Program* program);
 	void check(Program* program, Variables& variables);
 	void checkStrings(Program* program, StringPool& pool);
 };

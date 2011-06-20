@@ -8,23 +8,11 @@
 #ifndef COMPILER_EXCEPTION_H
 #define COMPILER_EXCEPTION_H
 
-#include <iostream>
-
-#include <sstream>
-
-template <typename T>
-std::string NumberToString ( T Number )
-{
-	std::stringstream ss;
-	ss << Number;
-	return ss.str();
-}
+#include <string>
 
 class CompilerException: public std::exception {
   private:
     std::string message;
-    std::string file;
-    int line;
   public:
     CompilerException(std::string m) : message(m) {};
     ~CompilerException() throw() {};

@@ -8,7 +8,7 @@
 #ifndef VARIABLES_H
 #define VARIABLES_H
 
-#include <iostream>
+#include <string>
 #include <map>
 
 #include <commons/Types.h>

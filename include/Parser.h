@@ -8,7 +8,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <fstream>
+#include <string>
 
 #include "CompilerException.h"
 #include "Lexer.h"

@@ -5,7 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <commons/ByteCode.h>
+#include <iostream>
+
 #include <commons/Timer.h>
 
 #include "Compiler.h"
