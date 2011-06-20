@@ -1,2 +1,6 @@
 int a = 1;
 string b = "asdf";
+Print(1);
+Print("Test");
+Print(a);
+Print(b);
