@@ -24,7 +24,7 @@ int Compiler::compile(string file){
 
 	string output = "main.v";
 
-    if ( ext_pos != string::npos ){
+	if ( ext_pos != string::npos ){
 		output = file;
 		output.replace( ext_pos + 1, output.size() - 1, "v" );
 	}

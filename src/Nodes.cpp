@@ -25,7 +25,7 @@ void Declaration::checkVariables(Variables& variables) throw (CompilerException)
 }
 
 void Assignment::checkVariables(Variables& variables) throw (CompilerException){
-	if(variables.exists(m_variable)){
+	if(!variables.exists(m_variable)){
 		throw CompilerException("Variable has not  been declared", __FILE__, __LINE__);
 	}
 
@@ -90,7 +90,9 @@ void Assignment::write(ByteCodeFileWriter& writer){
 void Print::write(ByteCodeFileWriter& writer){
 	(*begin())->write(writer);	
 	
-	switch(m_type){
+	Value* value = dynamic_cast<Value*>(*begin());
+	
+	switch(value->type()){
 		case INT:
 			writer.writeSimpleCall(PRINTI);
 
@@ -120,5 +122,5 @@ void VariableValue::write(ByteCodeFileWriter& writer){
 }
 
 void Litteral::write(ByteCodeFileWriter& writer){
-	writer.writeOneOperandCall(LDCS, m_litteral);
+	writer.writeOneOperandCall(LDCS, m_index);
 }
