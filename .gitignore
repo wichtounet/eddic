@@ -5,3 +5,5 @@ bin/*
 lib/*
 *.v
 samples/perfs.eddi
+*.swp
+*.swo
