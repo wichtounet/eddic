@@ -9,6 +9,9 @@
 #define LEXER_H
 
 #include <fstream>
+#include <string>
+#include <utility>
+#include <stack>
 
 #include "CompilerException.h"
 
@@ -29,10 +32,15 @@ class Lexer {
     	std::ifstream stream;
     	std::string currentToken;
     	TokenType currentType;
+	std::stack < std::pair< std::string, TokenType > > read;
+	std::stack < std::pair< std::string, TokenType > > buffer;
+	
+	bool readNext();
     public:
     	void lex(std::string file) throw(CompilerException) ;
     	void close();
     	bool next();
+	void pushBack();
     	std::string getCurrentToken() const;
     	bool isWord() const;
     	bool isAssign() const;

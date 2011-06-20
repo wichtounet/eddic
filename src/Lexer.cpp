@@ -9,6 +9,7 @@
 
 #include "Lexer.h"
 
+using std::pair;
 using std::string;
 using std::ios_base;
 
@@ -27,7 +28,36 @@ void Lexer::close(){
 	stream.close();
 }
 
+#include <iostream>
+
 bool Lexer::next(){
+	if(!buffer.empty()){
+		pair<string, TokenType> old = buffer.top();
+
+		currentToken = old.first;
+		currentType = old.second;
+		
+		buffer.pop();
+
+		return true;
+	} else if(readNext()){
+		read.push(make_pair(currentToken, currentType));
+
+		return true;
+	}
+
+	return false;
+}
+
+void Lexer::pushBack(){
+	pair<string, TokenType> old = read.top();
+
+	buffer.push(old);
+
+	read.pop();
+}
+
+bool Lexer::readNext(){
 	char current;
 	stream >> current;
 
@@ -37,7 +67,7 @@ bool Lexer::next(){
 
 	if(stream.eof()){
 		currentType = NOTHING;
-		
+			
 		return false;
 	}
 	
