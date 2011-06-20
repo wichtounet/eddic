@@ -16,10 +16,6 @@
 using std::string;
 using std::ios_base;
 
-void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerException);
-void parseDeclaration(Lexer& lexer, Program* program, string type) throw (CompilerException);
-void parseAssignment(Lexer& lexer, Program* program, string variable) throw (CompilerException);
-
 Program* Parser::parse() throw (CompilerException) {
 	Program* program = new Program();
 
@@ -35,11 +31,11 @@ Program* Parser::parse() throw (CompilerException) {
 		}
 
 		if(lexer.isLeftParenth()){ //is a call
-			parseCall(lexer, program, word);
+			parseCall(program, word);
 		} else if(lexer.isWord()){ //is a declaration
-			parseDeclaration(lexer, program, word);
+			parseDeclaration(program, word);
 		} else if(lexer.isAssign()){ //is an assign
-			parseAssignment(lexer, program, word);
+			parseAssignment(program, word);
 		} else {
 			throw CompilerException("Not an instruction");
 		}
@@ -67,9 +63,7 @@ ParseNode* readValue(Lexer& lexer){
 	return NULL;
 }
 
-//TODO : put the three following functions as member functions
-
-void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerException){
+void Parser::parseCall(Program* program, string call) throw (CompilerException){
 	if(call != "Print"){
 		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
@@ -95,7 +89,7 @@ void parseCall(Lexer& lexer, Program* program, string call) throw (CompilerExcep
 	program->addLast(print);
 } 
 
-void parseDeclaration(Lexer& lexer, Program* program, string typeName) throw (CompilerException){
+void Parser::parseDeclaration(Program* program, string typeName) throw (CompilerException){
 	if(typeName != "int" && typeName != "string"){
 		throw CompilerException("Invalid type");
 	}
@@ -131,7 +125,7 @@ void parseDeclaration(Lexer& lexer, Program* program, string typeName) throw (Co
 	program->addLast(declare);
 }
 
-void parseAssignment(Lexer& lexer, Program* program, string variable) throw (CompilerException){
+void Parser::parseAssignment(Program* program, string variable) throw (CompilerException){
 	if(!lexer.next()){
 		throw CompilerException("Need something to assign to the variable");
 	}

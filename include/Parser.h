@@ -15,11 +15,14 @@
 #include "Nodes.h"
 
 class Parser {
-  private:
-    Lexer& lexer;
-  public:
-	Parser(Lexer& l) : lexer(l) {};
-	Program* parse() throw (CompilerException) ;
+  	private:
+    	Lexer& lexer;
+  	public:
+		Parser(Lexer& l) : lexer(l) {};
+		Program* parse() throw (CompilerException) ;
+		void parseCall(Program* program, std::string call) throw (CompilerException);
+		void parseDeclaration(Program* program, std::string type) throw (CompilerException);
+		void parseAssignment(Program* program, std::string variable) throw (CompilerException);
 };
 
 #endif
