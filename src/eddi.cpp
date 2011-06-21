@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "Options.h"
 #include "Compiler.h"
 
 #include <iostream>
@@ -16,9 +17,27 @@ using std::endl;
 int main(int argc, const char* argv[]) {
 	if(argc == 1){
 		cout << "Not enough arguments. Provide a file to compile" << endl;
+
+		return -1;
+	}
+
+	for(int i = 1; i < argc - 1; i++){
+		string arg = argv[i];
+
+		if(arg == "-o" || arg == "--optimize-all"){
+			Options::set(OPTIMIZE_ALL);
+		} else if(arg == "--optimize-integers"){
+			Options::set(OPTIMIZE_INTEGERS);
+		} else if(arg == "--optimize-strings"){
+			Options::set(OPTIMIZE_STRINGS);
+		} else {
+			cout << "Unrecognized option \"" << arg << "\"" << endl;
+
+			return -1;
+		}
 	}
 
 	Compiler compiler;
 	
-	return compiler.compile(argv[1]);
+	return compiler.compile(argv[argc - 1]);
 }
