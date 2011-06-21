@@ -44,22 +44,41 @@ Program* Parser::parse() throw (CompilerException) {
 }
 
 ParseNode* readValue(Lexer& lexer){
+	if(!lexer.next()){
+		throw CompilerException("Waiting for a value");
+	} 
+	
+	ParseNode* node = NULL;
+
 	if(lexer.isLitteral()){		
 		string litteral = lexer.getCurrentToken();
 
-		return new Litteral(litteral);
+		node = new Litteral(litteral);
 	} else if(lexer.isWord()){
 		string variableRight = lexer.getCurrentToken();
 		
-		return new VariableValue(variableRight);
+		node = new VariableValue(variableRight);
 	} else if(lexer.isInteger()){
 		string integer = lexer.getCurrentToken();
 		int value = toNumber<int>(integer);
 
-		return new Integer(value);
+		node = new Integer(value);
 	}
 
-	return NULL;
+	lexer.next();
+
+	if(lexer.isAddition()){
+		ParseNode* add = new Addition();
+
+		add->addLast(node);
+		add->addLast(readValue(lexer));
+
+		return add;
+	} else {
+		lexer.pushBack();
+	}
+
+	return node;
 }
 
 void Parser::parseCall(Program* program, string call) throw (CompilerException){
@@ -67,10 +86,6 @@ void Parser::parseCall(Program* program, string call) throw (CompilerException){
 		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
 
-	if(!lexer.next()){
-		throw CompilerException("Not enough arguments to the call");
-	} 
-	
 	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isRightParenth()){
@@ -105,10 +120,6 @@ void Parser::parseDeclaration(Program* program, string typeName) throw (Compiler
 	if(!lexer.next() || !lexer.isAssign()){
 		throw CompilerException("A variable declaration must followed by '='");
 	} 
-
-	if(!lexer.next()){
-		throw CompilerException("Need something to assign to the variable");
-	}
 	
 	ParseNode* value = readValue(lexer);
 	
@@ -124,10 +135,6 @@ void Parser::parseDeclaration(Program* program, string typeName) throw (Compiler
 }
 
 void Parser::parseAssignment(Program* program, string variable) throw (CompilerException){
-	if(!lexer.next()){
-		throw CompilerException("Need something to assign to the variable");
-	}
-	
 	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isStop()){

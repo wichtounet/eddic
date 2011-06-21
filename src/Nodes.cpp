@@ -19,6 +19,8 @@ void Declaration::checkVariables(Variables& variables) throw (CompilerException)
 
 	Value* value = dynamic_cast<Value*>(*begin());
 
+	value->checkVariables(variables);
+
 	if(value->type() != m_type){
 		throw CompilerException("Incompatible type");
 	}
@@ -34,6 +36,8 @@ void Assignment::checkVariables(Variables& variables) throw (CompilerException){
 	m_index = var->index();
 	
 	Value* value = dynamic_cast<Value*>(*begin());
+
+	value->checkVariables(variables);
 
 	if(value->type() != var->type()){
 		throw CompilerException("Incompatible type");
@@ -123,4 +127,36 @@ void VariableValue::write(ByteCodeFileWriter& writer){
 
 void Litteral::write(ByteCodeFileWriter& writer){
 	writer.writeOneOperandCall(LDCS, m_index);
+}
+
+void Addition::checkVariables(Variables& variables) throw (CompilerException){
+	NodeIterator it = begin();
+
+	Value* lhs = dynamic_cast<Value*>(*it++);
+	Value* rhs = dynamic_cast<Value*>(*it);
+
+	lhs->checkVariables(variables);
+	rhs->checkVariables(variables);
+
+	if(lhs->type() != rhs->type()){
+		throw new CompilerException("Can only add two values of the same type");
+	}
+
+	m_type = lhs->type();
+}
+
+void Addition::write(ByteCodeFileWriter& writer){
+	NodeIterator it = begin();
+
+	Value* lhs = dynamic_cast<Value*>(*it++);
+	Value* rhs = dynamic_cast<Value*>(*it);
+
+	lhs->write(writer);
+	rhs->write(writer);
+
+	if(m_type == INT){
+		writer.writeSimpleCall(IADD);
+	} else {
+		writer.writeSimpleCall(SADD);
+	}
 }

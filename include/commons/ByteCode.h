@@ -21,7 +21,10 @@ enum ByteCode {
 	LDCS = 31,
 
 	PRINTI = 40,
-	PRINTS = 41
+	PRINTS = 41, 
+
+	IADD = 50, 
+	SADD = 51
 };
 
 #endif
