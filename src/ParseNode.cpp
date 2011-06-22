@@ -10,10 +10,11 @@
 using std::list;
 
 ParseNode::~ParseNode(){
-	list<ParseNode*>::const_iterator it = childs.begin();
-	list<ParseNode*>::const_iterator end = childs.end();
+	for(list<ParseNode*>::const_iterator it = childs.begin(); it != childs.end(); ++it){
+		delete *it;
+	}
 
-	for( ; it != end; ++it){
+	for(list<ParseNode*>::const_iterator it = trash.begin(); it != trash.end(); ++it){
 		delete *it;
 	}
 }
@@ -70,7 +71,9 @@ void ParseNode::replace(ParseNode* old, ParseNode* node){
 	list<ParseNode*>::iterator it = childs.begin();
 	list<ParseNode*>::const_iterator end = childs.end();
 
+	trash.push_back(old);
 	old->parent = NULL;
+	
 	node->parent = this;
 
 	for( ; it != end; ++it){
@@ -85,6 +88,7 @@ void ParseNode::replace(ParseNode* old, ParseNode* node){
 void ParseNode::remove(ParseNode* node){
 	childs.remove(node);
 
+	trash.push_back(node);
 	node->parent = NULL;
 }
 

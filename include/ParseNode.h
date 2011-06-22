@@ -22,7 +22,8 @@ class StringPool;
 
 class ParseNode {
 	private:
-		std::list<ParseNode*> childs;	
+		std::list<ParseNode*> childs;
+		std::list<ParseNode*> trash;	
 	protected:
 		ParseNode* parent;
 	public:
