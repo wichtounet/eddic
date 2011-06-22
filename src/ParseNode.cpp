@@ -47,15 +47,22 @@ void ParseNode::checkStrings(StringPool& pool){
 
 void ParseNode::addLast(ParseNode* node){
 	childs.push_back(node);
+
+	node->parent = this;
 }
 
 void ParseNode::addFirst(ParseNode* node){
 	childs.push_front(node);
+	
+	node->parent = this;
 }
 
 void ParseNode::replace(ParseNode* old, ParseNode* node){
 	list<ParseNode*>::iterator it = childs.begin();
 	list<ParseNode*>::const_iterator end = childs.end();
+
+	old->parent = NULL;
+	node->parent = this;
 
 	for( ; it != end; ++it){
 		if(*it == old){
@@ -68,6 +75,8 @@ void ParseNode::replace(ParseNode* old, ParseNode* node){
 
 void ParseNode::remove(ParseNode* node){
 	childs.remove(node);
+
+	node->parent = NULL;
 }
 
 NodeIterator ParseNode::begin(){

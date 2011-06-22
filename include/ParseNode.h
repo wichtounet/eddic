@@ -22,8 +22,10 @@ class StringPool;
 
 class ParseNode {
 	private:
+		ParseNode* parent;
 		std::list<ParseNode*> childs;	
 	public:
+		ParseNode() : parent(NULL){};
 		virtual ~ParseNode();
 		virtual void write(ByteCodeFileWriter& writer);
 		virtual void checkVariables(Variables& variables) throw (CompilerException);
