@@ -45,6 +45,15 @@ void ParseNode::checkStrings(StringPool& pool){
 	}
 }
 
+void ParseNode::optimize(){
+	list<ParseNode*>::const_iterator it = childs.begin();
+	list<ParseNode*>::const_iterator end = childs.end();
+
+	for( ; it != end; ++it){
+		(*it)->optimize();
+	}
+}
+
 void ParseNode::addLast(ParseNode* node){
 	childs.push_back(node);
 

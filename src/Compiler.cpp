@@ -45,6 +45,9 @@ int Compiler::compile(string file){
 		check(program, variables);
 		checkStrings(program, *pool);
 
+		//Optimize the parse tree
+		program->optimize();
+
 		writer.open(output);
 
 		compile(program);
