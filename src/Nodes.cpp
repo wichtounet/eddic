@@ -160,3 +160,29 @@ void Addition::write(ByteCodeFileWriter& writer){
 		writer.writeSimpleCall(SADD);
 	}
 }
+
+bool Value::isConstant(){
+	return false;
+}
+
+bool Litteral::isConstant(){
+	return true;
+}
+
+bool Integer::isConstant(){
+	return true;
+}
+
+bool VariableValue::isConstant(){
+	return false;
+}
+
+bool Addition::isConstant(){
+	NodeIterator it = begin();
+
+	Value* lhs = dynamic_cast<Value*>(*it++);
+	Value* rhs = dynamic_cast<Value*>(*it);
+
+	return lhs->isConstant() && rhs->isConstant();
+}
+
