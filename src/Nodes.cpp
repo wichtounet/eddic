@@ -150,13 +150,8 @@ void Addition::checkVariables(Variables& variables) throw (CompilerException){
 }
 
 void Addition::write(ByteCodeFileWriter& writer){
-	NodeIterator it = begin();
-
-	Value* lhs = dynamic_cast<Value*>(*it++);
-	Value* rhs = dynamic_cast<Value*>(*it);
-
-	lhs->write(writer);
-	rhs->write(writer);
+	lhs()->write(writer);
+	rhs()->write(writer);
 
 	if(m_type == INT){
 		writer.writeSimpleCall(IADD);
@@ -184,12 +179,7 @@ bool VariableValue::isConstant(){
 }
 
 bool Addition::isConstant(){
-	NodeIterator it = begin();
-
-	Value* lhs = dynamic_cast<Value*>(*it++);
-	Value* rhs = dynamic_cast<Value*>(*it);
-
-	return lhs->isConstant() && rhs->isConstant();
+	return lhs()->isConstant() && rhs()->isConstant();
 }
 
 //Values
@@ -219,12 +209,7 @@ int Addition::getIntValue(){
 		throw "Not a constant";
 	}
 
-	NodeIterator it = begin();
-
-	Value* lhs = dynamic_cast<Value*>(*it++);
-	Value* rhs = dynamic_cast<Value*>(*it);
-
-	return lhs->getIntValue() + rhs->getIntValue();	
+	return lhs()->getIntValue() + rhs()->getIntValue();	
 }
 
 string Addition::getStringValue(){
@@ -236,12 +221,7 @@ string Addition::getStringValue(){
 		throw "Not a constant";
 	}
 	
-	NodeIterator it = begin();
-
-	Value* lhs = dynamic_cast<Value*>(*it++);
-	Value* rhs = dynamic_cast<Value*>(*it);
-	
-	return lhs->getStringValue() + rhs->getStringValue();
+	return lhs()->getStringValue() + rhs()->getStringValue();
 }
 
 //Optimizations
@@ -260,11 +240,16 @@ void Addition::optimize(){
 		}
 	}
 	
-	NodeIterator it = begin();
+	lhs()->optimize();
+	rhs()->optimize();	
+}
 
-	Value* lhs = dynamic_cast<Value*>(*it++);
-	Value* rhs = dynamic_cast<Value*>(*it);
+//Utilities
 
-	lhs->optimize();
-	rhs->optimize();	
+Value* Addition::lhs(){
+	return dynamic_cast<Value*>(*begin());
+}
+
+Value* Addition::rhs(){
+	return dynamic_cast<Value*>(*++begin());
 }

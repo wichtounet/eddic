@@ -99,6 +99,8 @@ class Addition : public Value {
 		void optimize();
 		std::string getStringValue();
 		int getIntValue();
+		Value* lhs();
+		Value* rhs();
 };
 
 #endif
