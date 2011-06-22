@@ -8,6 +8,10 @@
 #include "Nodes.h"
 #include "StringPool.h"
 
+#include <cassert>
+
+using std::string;
+
 void Declaration::checkVariables(Variables& variables) throw (CompilerException){
 	if(variables.exists(m_variable)){
 		throw CompilerException("Variable has already been declared");
@@ -161,6 +165,8 @@ void Addition::write(ByteCodeFileWriter& writer){
 	}
 }
 
+//Constantness
+
 bool Value::isConstant(){
 	return false;
 }
@@ -186,3 +192,79 @@ bool Addition::isConstant(){
 	return lhs->isConstant() && rhs->isConstant();
 }
 
+//Values
+
+string Value::getStringValue(){
+	throw "Not constant";
+}
+
+int Value::getIntValue(){
+	throw "Not constant";
+}
+
+int Integer::getIntValue(){
+	return m_value;
+}
+
+string Litteral::getStringValue(){
+	return m_litteral;
+}
+
+int Addition::getIntValue(){
+	if(type() != INT){
+		throw "Invalid type";
+	}
+
+	if(!isConstant()){
+		throw "Not a constant";
+	}
+
+	NodeIterator it = begin();
+
+	Value* lhs = dynamic_cast<Value*>(*it++);
+	Value* rhs = dynamic_cast<Value*>(*it);
+
+	return lhs->getIntValue() + rhs->getIntValue();	
+}
+
+string Addition::getStringValue(){
+	if(type() != STRING){
+		throw "Invalid type"; 
+	}
+
+	if(!isConstant()){
+		throw "Not a constant";
+	}
+	
+	NodeIterator it = begin();
+
+	Value* lhs = dynamic_cast<Value*>(*it++);
+	Value* rhs = dynamic_cast<Value*>(*it);
+	
+	return lhs->getStringValue() + rhs->getStringValue();
+}
+
+//Optimizations
+
+void Addition::optimize(){
+	//If both of the values are constant, we'll replace the addition with the value of the addition
+	if(isConstant()){
+		NodeIterator it = begin();
+
+		if(type() == INT){
+			Value* value = new Integer(getIntValue());
+			
+			parent->replace(this, value);
+		} else if(type() == STRING){
+			//No optimization at this time
+		}
+	}
+	
+	NodeIterator it = begin();
+
+	Value* lhs = dynamic_cast<Value*>(*it++);
+	Value* rhs = dynamic_cast<Value*>(*it);
+
+	lhs->optimize();
+	rhs->optimize();	
+}

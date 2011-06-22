@@ -54,6 +54,8 @@ class Value : public ParseNode {
 	public:
 		Type type(){return m_type;};
 		virtual bool isConstant();
+		virtual std::string getStringValue();
+		virtual int getIntValue();
 };
 
 class Litteral : public Value {
@@ -64,7 +66,8 @@ class Litteral : public Value {
 		Litteral(std::string litteral) : m_litteral(litteral) {m_type = STRING;};
 		void checkStrings(StringPool& pool);
 		void write(ByteCodeFileWriter& writer);
-		virtual bool isConstant();
+		bool isConstant();
+		std::string getStringValue();
 };
 
 class Integer : public Value {
@@ -73,7 +76,8 @@ class Integer : public Value {
 	public:
 		Integer(int value) : m_value(value) {m_type = INT;};
 		void write(ByteCodeFileWriter& writer);	
-		virtual bool isConstant();
+		bool isConstant();
+		int getIntValue();
 };
 
 class VariableValue : public Value {
@@ -84,14 +88,17 @@ class VariableValue : public Value {
 		VariableValue(std::string variable) : m_variable(variable) {};
 		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer);	
-		virtual bool isConstant();
+		bool isConstant();
 };
 
 class Addition : public Value {
 	public:
 		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer); 
-		virtual bool isConstant();
+		bool isConstant();
+		void optimize();
+		std::string getStringValue();
+		int getIntValue();
 };
 
 #endif
