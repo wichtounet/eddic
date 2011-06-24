@@ -7,6 +7,7 @@
 
 #include "Nodes.h"
 #include "StringPool.h"
+#include "Options.h"
 
 #include <cassert>
 
@@ -232,11 +233,15 @@ void Addition::optimize(){
 		NodeIterator it = begin();
 
 		if(type() == INT){
-			Value* value = new Integer(getIntValue());
-			
-			parent->replace(this, value);
+			if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+				Value* value = new Integer(getIntValue());
+
+				parent->replace(this, value);
+			}
 		} else if(type() == STRING){
-			//No optimization at this time
+			if(Options::isSet(OPTIMIZE_STRINGS) || Options::isSet(OPTIMIZE_ALL)){
+				//No optimization at this time
+			}
 		}
 	}
 	
