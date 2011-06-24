@@ -26,6 +26,4 @@ class Options {
 		static bool isSet(Option option){ return options[option]; }
 };
 
-std::map<Option, bool> Options::options;
-
 #endif
