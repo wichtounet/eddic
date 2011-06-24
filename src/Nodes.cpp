@@ -134,7 +134,7 @@ void Litteral::write(ByteCodeFileWriter& writer){
 	writer.writeOneOperandCall(LDCS, m_index);
 }
 
-void Addition::checkVariables(Variables& variables) throw (CompilerException){
+void BinaryOperator::checkVariables(Variables& variables) throw (CompilerException){
 	NodeIterator it = begin();
 
 	Value* lhs = dynamic_cast<Value*>(*it++);
@@ -143,11 +143,23 @@ void Addition::checkVariables(Variables& variables) throw (CompilerException){
 	lhs->checkVariables(variables);
 	rhs->checkVariables(variables);
 
-	if(lhs->type() != rhs->type()){
+	m_type = checkTypes(lhs->type(), rhs->type());
+}
+
+Type Addition::checkTypes(Type left, Type right) throw (CompilerException){
+	if(left != right){
 		throw new CompilerException("Can only add two values of the same type");
 	}
 
-	m_type = lhs->type();
+	return left;
+}
+
+Type Subtraction::checkTypes(Type left, Type right) throw (CompilerException){
+	if(left != right || left != INT){
+		throw new CompilerException("Can only subtract two integers");
+	}
+
+	return left;
 }
 
 void Addition::write(ByteCodeFileWriter& writer){
@@ -159,6 +171,13 @@ void Addition::write(ByteCodeFileWriter& writer){
 	} else {
 		writer.writeSimpleCall(SADD);
 	}
+}
+
+void Subtraction::write(ByteCodeFileWriter& writer){
+	lhs()->write(writer);
+	rhs()->write(writer);
+
+	writer.writeSimpleCall(ISUB);
 }
 
 //Constantness
@@ -179,7 +198,7 @@ bool VariableValue::isConstant(){
 	return false;
 }
 
-bool Addition::isConstant(){
+bool BinaryOperator::isConstant(){
 	return lhs()->isConstant() && rhs()->isConstant();
 }
 
@@ -201,7 +220,7 @@ string Litteral::getStringValue(){
 	return m_litteral;
 }
 
-int Addition::getIntValue(){
+int BinaryOperator::getIntValue(){
 	if(type() != INT){
 		throw "Invalid type";
 	}
@@ -210,10 +229,10 @@ int Addition::getIntValue(){
 		throw "Not a constant";
 	}
 
-	return lhs()->getIntValue() + rhs()->getIntValue();	
+	return compute(lhs()->getIntValue(), rhs()->getIntValue());
 }
 
-string Addition::getStringValue(){
+string BinaryOperator::getStringValue(){
 	if(type() != STRING){
 		throw "Invalid type"; 
 	}
@@ -222,7 +241,28 @@ string Addition::getStringValue(){
 		throw "Not a constant";
 	}
 	
-	return lhs()->getStringValue() + rhs()->getStringValue();
+	return compute(lhs()->getStringValue(), rhs()->getStringValue());
+}
+
+
+int BinaryOperator::compute(int left, int right){
+	throw "Invalid type"; 
+}
+
+string BinaryOperator::compute(string left, string right){
+	throw "Invalid type"; 
+}
+
+int Addition::compute(int left, int right){
+	return left + right;
+}
+
+string Addition::compute(string left, string right){
+	return left + right;
+}
+
+int Subtraction::compute(int left, int right){
+	return left - right;
 }
 
 //Optimizations
@@ -230,8 +270,6 @@ string Addition::getStringValue(){
 void Addition::optimize(){
 	//If both of the values are constant, we'll replace the addition with the value of the addition
 	if(isConstant()){
-		NodeIterator it = begin();
-
 		if(type() == INT){
 			if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
 				Value* value = new Integer(getIntValue());
@@ -249,12 +287,26 @@ void Addition::optimize(){
 	rhs()->optimize();	
 }
 
+void Subtraction::optimize(){
+	//If both of the values are constant, we'll replace the subtraction with the value of the subtraction
+	if(isConstant()){
+		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+			Value* value = new Integer(getIntValue());
+
+			parent->replace(this, value);
+		}
+	}
+	
+	lhs()->optimize();
+	rhs()->optimize();	
+}
+
 //Utilities
 
-Value* Addition::lhs(){
+Value* BinaryOperator::lhs(){
 	return dynamic_cast<Value*>(*begin());
 }
 
-Value* Addition::rhs(){
+Value* BinaryOperator::rhs(){
 	return dynamic_cast<Value*>(*++begin());
 }
