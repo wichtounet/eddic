@@ -130,6 +130,18 @@ bool Lexer::readNext(){
 			currentType = ADDITION;
 			currentToken = "+";
 			return true;
+		case '-':
+			currentType = SUBTRACTION;
+			currentToken = "-";
+			return true;
+		case '*':
+			currentType = MULTIPLICATION;
+			currentToken = "*";
+			return true;
+		case '/':
+			currentType = DIVISION;
+			currentToken = "/";
+			return true;
 	}
 	
 	return false;
@@ -173,4 +185,16 @@ bool Lexer::isInteger() const {
 
 bool Lexer::isAddition() const {
 	return currentType == ADDITION;
+}
+
+bool Lexer::isSubtraction() const {
+	return currentType == SUBTRACTION;
+}
+
+bool Lexer::isMultiplication() const {
+	return currentType == MULTIPLICATION;
+}
+
+bool Lexer::isDivision() const {
+	return currentType == DIVISION;
 }

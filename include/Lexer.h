@@ -24,7 +24,10 @@ enum TokenType {
 	RIGHT_PARENTH,
 	STOP,
 	INTEGER, 
-	ADDITION
+	ADDITION,
+	SUBTRACTION,
+	MULTIPLICATION,
+	DIVISION
 };
 
 class Lexer {
@@ -51,6 +54,9 @@ class Lexer {
     	bool isStop() const;
     	bool isInteger() const;
 	bool isAddition() const;
+	bool isSubtraction() const;
+	bool isMultiplication() const;
+	bool isDivision() const;
 };
 
 #endif
