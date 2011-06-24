@@ -5,7 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
 #include <cctype>
+#include <list>
 
 #include <commons/Types.h>
 #include <commons/Utils.h>
@@ -15,6 +17,7 @@
 
 using std::string;
 using std::ios_base;
+using std::list;
 
 Program* Parser::parse() throw (CompilerException) {
 	Program* program = new Program();
@@ -44,50 +47,7 @@ Program* Parser::parse() throw (CompilerException) {
 	return program;
 }
 
-ParseNode* readValue(Lexer& lexer){
-	if(!lexer.next()){
-		throw CompilerException("Waiting for a value");
-	} 
-	
-	ParseNode* node = NULL;
-
-	if(lexer.isLitteral()){		
-		string litteral = lexer.getCurrentToken();
-
-		node = new Litteral(litteral);
-	} else if(lexer.isWord()){
-		string variableRight = lexer.getCurrentToken();
-		
-		node = new VariableValue(variableRight);
-	} else if(lexer.isInteger()){
-		string integer = lexer.getCurrentToken();
-		int value = toNumber<int>(integer);
-
-		node = new Integer(value);
-	}
-
-	lexer.next();
-
-	if(lexer.isAddition()){
-		ParseNode* add = new Addition();
-
-		add->addLast(node);
-		add->addLast(readValue(lexer));
-
-		return add;
-	} else if(lexer.isSubtraction()){
-		ParseNode* subtract = new Subtraction();
-
-		subtract->addLast(node);
-		subtract->addLast(readValue(lexer));
-
-		return subtract;
-	} else {
-		lexer.pushBack();
-	}
-
-	return node;
-}
+ParseNode* readValue(Lexer& lexer);
 
 void Parser::parseCall(Program* program, string call) throw (CompilerException){
 	if(call != "Print"){
@@ -155,3 +115,164 @@ void Parser::parseAssignment(Program* program, string variable) throw (CompilerE
 
 	program->addLast(assign);
 }
+
+enum Operator {
+	ADD, MUL, SUB, DIV, ERROR
+};
+
+class Part {
+	public: 
+		virtual bool isResolved() = 0;
+		virtual Operator getOperator() { return ERROR; }
+		virtual Value* getValue(){ return NULL; }
+};
+
+class Resolved : public Part {
+	public: 	
+		Resolved(Value* v) : value(v) {}
+		bool isResolved() { return true; }
+		Value* getValue() { return value; }
+
+	private: 
+		Value* value;
+};
+
+class Unresolved : public Part {
+	public: 
+		Unresolved(Operator o) : op(o) {}
+		bool isResolved() { return false; }
+		Operator getOperator() { return op; }
+
+	private: 
+		Operator op;
+};
+
+int priority(Operator op){
+	switch(op){
+		case MUL:
+		case DIV:
+			return 10;
+		case ADD:
+		case SUB:
+			return 0;
+		default:
+			return -1; //TOOD should never happen
+	}
+}
+
+ParseNode* readValue(Lexer& lexer){
+	list<Part*> parts;
+
+	while(true){
+		if(!lexer.next()){
+			throw CompilerException("Waiting for a value");
+		} 
+
+		Value* node = NULL;
+
+		if(lexer.isLitteral()){		
+			string litteral = lexer.getCurrentToken();
+
+			node = new Litteral(litteral);
+		} else if(lexer.isWord()){
+			string variableRight = lexer.getCurrentToken();
+
+			node = new VariableValue(variableRight);
+		} else if(lexer.isInteger()){
+			string integer = lexer.getCurrentToken();
+			int value = toNumber<int>(integer);
+
+			node = new Integer(value);
+		} else {
+			throw CompilerException("Invalid value");
+		}
+
+		parts.push_back(new Resolved(node));
+
+		if(!lexer.next()){
+			break;
+		}
+
+		if(lexer.isAddition()){
+			parts.push_back(new Unresolved(ADD));
+		} else if(lexer.isSubtraction()){
+			parts.push_back(new Unresolved(SUB));
+		} else {
+			lexer.pushBack();
+			break;
+		}
+	}
+
+	while(parts.size() > 3){
+		int i = 0;
+		int debug = 0;
+		int maxPriority = -1;
+		list<Part*>::iterator it, end, max;
+		for(it = parts.begin(), end = parts.end(); it != end; ++it){
+			Part* part = *it;
+
+			if(!part->isResolved()){
+				if(priority(part->getOperator()) > maxPriority){
+					maxPriority = priority(part->getOperator());
+					max = it;
+					i = debug;
+				}
+			}
+
+			debug++;
+		}
+
+		list<Part*>::iterator first = max;
+		--first;
+
+		Part* left = *first;
+		Part* center = *max;
+
+		++max;
+		Part* right = *max;
+
+		Value* lhs = left->getValue();
+		Operator op = center->getOperator();
+		Value* rhs = right->getValue();
+
+		Value* value = NULL;
+
+		if(op == ADD){
+			value = new Addition();
+		} else if(op == SUB){
+			value = new Subtraction();
+		}
+
+		value->addLast(lhs);
+		value->addLast(rhs);
+
+		parts.erase(first, ++max);
+		parts.insert(max, new Resolved(value));
+	}
+
+	Value* value;
+
+	if(parts.size() == 1){
+		value = (*parts.begin())->getValue();
+	} else {
+		list<Part*>::iterator it = parts.begin();
+			
+		Value* lhs = (*it++)->getValue();
+		Operator op = (*it++)->getOperator();
+		Value* rhs = (*it++)->getValue();
+		
+		if(op == ADD){
+			value = new Addition();
+		} else if(op == SUB){
+			value = new Subtraction();
+		}
+
+		value->addLast(lhs);
+		value->addLast(rhs);
+	}
+
+	parts.clear();
+
+	return value;
+}
+
