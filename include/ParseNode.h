@@ -9,6 +9,7 @@
 #define PARSE_NODE_H
 
 #include <list>
+#include <vector>
 
 #include "ByteCodeFileWriter.h"
 #include "Variables.h"
@@ -23,7 +24,7 @@ class StringPool;
 class ParseNode {
 	private:
 		std::list<ParseNode*> childs;
-		std::list<ParseNode*> trash;	
+		std::vector<ParseNode*> trash;	
 	protected:
 		ParseNode* parent;
 	public:

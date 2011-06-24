@@ -8,14 +8,15 @@
 #include "ParseNode.h"
 
 using std::list;
+using std::vector;
 
 ParseNode::~ParseNode(){
 	for(list<ParseNode*>::const_iterator it = childs.begin(); it != childs.end(); ++it){
 		delete *it;
 	}
 
-	for(list<ParseNode*>::const_iterator it = trash.begin(); it != trash.end(); ++it){
-		delete *it;
+	for(vector<ParseNode*>::const_iterator tit = trash.begin(); tit != trash.end(); ++tit){
+		delete *tit;
 	}
 }
 
