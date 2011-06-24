@@ -10,4 +10,3 @@ Print(d);
 Print(e);
 Print(a + 4);
 Print(c + 4 + 5 + 56 + 6);
-Print("asdf" + d);
