@@ -2,7 +2,7 @@ CC = g++
 DEBUG = -g
 CFLAGS = -Wall -o2 -c $(DEBUG) -Iinclude 
 LFLAGS = -Wall $(DEBUG) -leddi-commons 
-OBJECTS = bin/eddi.o bin/Compiler.o bin/Lexer.o bin/ByteCodeFileWriter.o bin/CompilerException.o bin/Variables.o bin/Parser.o bin/ParseNode.o bin/Nodes.o bin/StringPool.o bin/Options.o
+OBJECTS = bin/eddi.o bin/Compiler.o bin/Lexer.o bin/ByteCodeFileWriter.o bin/CompilerException.o bin/Variables.o bin/Parser.o bin/ParseNode.o bin/Nodes.o bin/StringPool.o bin/Options.o bin/Operators.o
 
 bin/eddic : $(OBJECTS)
 	$(CC) $(LFLAGS) -o bin/eddic $(OBJECTS)
@@ -33,6 +33,9 @@ bin/ParseNode.o : include/ParseNode.h src/ParseNode.cpp
 
 bin/Nodes.o : include/Nodes.h src/Nodes.cpp
 	$(CC) $(CFLAGS) -o bin/Nodes.o src/Nodes.cpp
+
+bin/Operators.o : include/Nodes.h include/Operators.h src/Operators.cpp
+	$(CC) $(CFLAGS) -o bin/Operators.o src/Operators.cpp
 
 bin/StringPool.o : include/StringPool.h src/StringPool.cpp
 	$(CC) $(CFLAGS) -o bin/StringPool.o src/StringPool.cpp

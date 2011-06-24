@@ -11,6 +11,7 @@
 #include <commons/Utils.h>
 
 #include "Parser.h"
+#include "Operators.h"
 
 using std::string;
 using std::ios_base;

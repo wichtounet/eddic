@@ -91,38 +91,4 @@ class VariableValue : public Value {
 		bool isConstant();
 };
 
-class BinaryOperator : public Value {
-	protected:
-		bool isConstant();
-		Value* lhs();
-		Value* rhs();
-		void checkVariables(Variables& variables) throw (CompilerException);
-		std::string getStringValue();
-		int getIntValue();
-
-		virtual Type checkTypes(Type left, Type right) throw (CompilerException) = 0;
-		virtual std::string compute(std::string left, std::string right);
-		virtual int compute(int left, int right);
-};
-
-class Addition : public BinaryOperator {
-	public:
-		void write(ByteCodeFileWriter& writer); 
-		void optimize();
-
-		Type checkTypes(Type left, Type right) throw (CompilerException);
-		std::string compute(std::string left, std::string right);
-		int compute(int left, int right);
-};
-
-class Subtraction : public BinaryOperator {
-	public:
-		void write(ByteCodeFileWriter& writer); 
-		void optimize();
-
-		Type checkTypes(Type left, Type right) throw (CompilerException);
-		int compute(int left, int right);
-};
-
-
 #endif
