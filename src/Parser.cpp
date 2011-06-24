@@ -74,6 +74,13 @@ ParseNode* readValue(Lexer& lexer){
 		add->addLast(readValue(lexer));
 
 		return add;
+	} else if(lexer.isSubtraction()){
+		ParseNode* subtract = new Subtraction();
+
+		subtract->addLast(node);
+		subtract->addLast(readValue(lexer));
+
+		return subtract;
 	} else {
 		lexer.pushBack();
 	}
