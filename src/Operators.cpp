@@ -28,33 +28,17 @@ void BinaryOperator::checkVariables(Variables& variables) throw (CompilerExcepti
 	m_type = checkTypes(lhs->type(), rhs->type());
 }
 
+Type BinaryOperator::checkTypes(Type left, Type right) throw (CompilerException){
+	if(left != right || left != INT){
+		throw new CompilerException("Can only compute two integers");
+	}
+
+	return left;
+}
+
 Type Addition::checkTypes(Type left, Type right) throw (CompilerException){
 	if(left != right){
 		throw new CompilerException("Can only add two values of the same type");
-	}
-
-	return left;
-}
-
-Type Subtraction::checkTypes(Type left, Type right) throw (CompilerException){
-	if(left != right || left != INT){
-		throw new CompilerException("Can only subtract two integers");
-	}
-
-	return left;
-}
-
-Type Multiplication::checkTypes(Type left, Type right) throw (CompilerException){
-	if(left != right || left != INT){
-		throw new CompilerException("Can only subtract two integers");
-	}
-
-	return left;
-}
-
-Type Division::checkTypes(Type left, Type right) throw (CompilerException){
-	if(left != right || left != INT){
-		throw new CompilerException("Can only subtract two integers");
 	}
 
 	return left;
@@ -156,6 +140,19 @@ int Division::compute(int left, int right){
 
 //Optimizations
 
+void BinaryOperator::optimize(){
+	if(isConstant()){
+		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+			Value* value = new Integer(getIntValue());
+
+			parent->replace(this, value);
+		}
+	}
+	
+	lhs->optimize();
+	rhs->optimize();	
+}
+
 void Addition::optimize(){
 	if(isConstant()){
 		if(type() == INT){
@@ -168,45 +165,6 @@ void Addition::optimize(){
 			if(Options::isSet(OPTIMIZE_STRINGS) || Options::isSet(OPTIMIZE_ALL)){
 				//No optimization at this time
 			}
-		}
-	}
-	
-	lhs->optimize();
-	rhs->optimize();	
-}
-
-void Subtraction::optimize(){
-	if(isConstant()){
-		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
-			Value* value = new Integer(getIntValue());
-
-			parent->replace(this, value);
-		}
-	}
-	
-	lhs->optimize();
-	rhs->optimize();	
-}
-
-void Multiplication::optimize(){
-	if(isConstant()){
-		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
-			Value* value = new Integer(getIntValue());
-
-			parent->replace(this, value);
-		}
-	}
-	
-	lhs->optimize();
-	rhs->optimize();	
-}
-
-void Division::optimize(){
-	if(isConstant()){
-		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
-			Value* value = new Integer(getIntValue());
-
-			parent->replace(this, value);
 		}
 	}
 	

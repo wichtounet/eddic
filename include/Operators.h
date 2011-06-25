@@ -21,8 +21,9 @@ class BinaryOperator : public Value {
 		void checkVariables(Variables& variables) throw (CompilerException);
 		std::string getStringValue();
 		int getIntValue();
+		void optimize();
 
-		virtual Type checkTypes(Type left, Type right) throw (CompilerException) = 0;
+		virtual Type checkTypes(Type left, Type right) throw (CompilerException);
 		virtual std::string compute(std::string left, std::string right);
 		virtual int compute(int left, int right);
 };
@@ -44,9 +45,7 @@ class Subtraction : public BinaryOperator {
 		Subtraction(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 		
 		void write(ByteCodeFileWriter& writer); 
-		void optimize();
 
-		Type checkTypes(Type left, Type right) throw (CompilerException);
 		int compute(int left, int right);
 };
 
@@ -55,9 +54,7 @@ class Multiplication : public BinaryOperator {
 		Multiplication(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 		
 		void write(ByteCodeFileWriter& writer); 
-		void optimize();
 
-		Type checkTypes(Type left, Type right) throw (CompilerException);
 		int compute(int left, int right);
 };
 
@@ -66,9 +63,7 @@ class Division : public BinaryOperator {
 		Division(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 		
 		void write(ByteCodeFileWriter& writer); 
-		void optimize();
 
-		Type checkTypes(Type left, Type right) throw (CompilerException);
 		int compute(int left, int right);
 };
 
