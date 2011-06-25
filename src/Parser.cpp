@@ -238,13 +238,10 @@ ParseNode* readValue(Lexer& lexer){
 		Value* value = NULL;
 
 		if(op == ADD){
-			value = new Addition();
+			value = new Addition(lhs, rhs);
 		} else if(op == SUB){
-			value = new Subtraction();
+			value = new Subtraction(lhs, rhs);
 		}
-
-		value->addLast(lhs);
-		value->addLast(rhs);
 
 		parts.erase(first, ++max);
 		parts.insert(max, new Resolved(value));
@@ -262,13 +259,10 @@ ParseNode* readValue(Lexer& lexer){
 		Value* rhs = (*it++)->getValue();
 		
 		if(op == ADD){
-			value = new Addition();
+			value = new Addition(lhs, rhs);
 		} else if(op == SUB){
-			value = new Subtraction();
+			value = new Subtraction(lhs, rhs);
 		}
-
-		value->addLast(lhs);
-		value->addLast(rhs);
 	}
 
 	parts.clear();

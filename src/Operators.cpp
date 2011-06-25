@@ -12,14 +12,16 @@
 
 using std::string;
 
+//Constructors
+
+BinaryOperator::BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {
+	addLast(l);
+	addLast(r);
+}
+
 //Checks
 
 void BinaryOperator::checkVariables(Variables& variables) throw (CompilerException){
-	NodeIterator it = begin();
-
-	Value* lhs = dynamic_cast<Value*>(*it++);
-	Value* rhs = dynamic_cast<Value*>(*it);
-
 	lhs->checkVariables(variables);
 	rhs->checkVariables(variables);
 
@@ -45,8 +47,8 @@ Type Subtraction::checkTypes(Type left, Type right) throw (CompilerException){
 //Writes
 
 void Addition::write(ByteCodeFileWriter& writer){
-	lhs()->write(writer);
-	rhs()->write(writer);
+	lhs->write(writer);
+	rhs->write(writer);
 
 	if(m_type == INT){
 		writer.writeSimpleCall(IADD);
@@ -56,8 +58,8 @@ void Addition::write(ByteCodeFileWriter& writer){
 }
 
 void Subtraction::write(ByteCodeFileWriter& writer){
-	lhs()->write(writer);
-	rhs()->write(writer);
+	lhs->write(writer);
+	rhs->write(writer);
 
 	writer.writeSimpleCall(ISUB);
 }
@@ -65,7 +67,7 @@ void Subtraction::write(ByteCodeFileWriter& writer){
 //Constantness
 
 bool BinaryOperator::isConstant(){
-	return lhs()->isConstant() && rhs()->isConstant();
+	return lhs->isConstant() && rhs->isConstant();
 }
 
 //Values
@@ -79,7 +81,7 @@ int BinaryOperator::getIntValue(){
 		throw "Not a constant";
 	}
 
-	return compute(lhs()->getIntValue(), rhs()->getIntValue());
+	return compute(lhs->getIntValue(), rhs->getIntValue());
 }
 
 string BinaryOperator::getStringValue(){
@@ -91,7 +93,7 @@ string BinaryOperator::getStringValue(){
 		throw "Not a constant";
 	}
 	
-	return compute(lhs()->getStringValue(), rhs()->getStringValue());
+	return compute(lhs->getStringValue(), rhs->getStringValue());
 }
 
 int BinaryOperator::compute(int left, int right){
@@ -132,8 +134,8 @@ void Addition::optimize(){
 		}
 	}
 	
-	lhs()->optimize();
-	rhs()->optimize();	
+	lhs->optimize();
+	rhs->optimize();	
 }
 
 void Subtraction::optimize(){
@@ -146,16 +148,6 @@ void Subtraction::optimize(){
 		}
 	}
 	
-	lhs()->optimize();
-	rhs()->optimize();	
-}
-
-//Utilities
-
-Value* BinaryOperator::lhs(){
-	return dynamic_cast<Value*>(*begin());
-}
-
-Value* BinaryOperator::rhs(){
-	return dynamic_cast<Value*>(*++begin());
+	lhs->optimize();
+	rhs->optimize();	
 }

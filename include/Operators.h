@@ -12,9 +12,12 @@
 
 class BinaryOperator : public Value {
 	protected:
+		Value* lhs;
+		Value* rhs;
+
+		BinaryOperator(Value* lhs, Value* rhs);
+
 		bool isConstant();
-		Value* lhs();
-		Value* rhs();
 		void checkVariables(Variables& variables) throw (CompilerException);
 		std::string getStringValue();
 		int getIntValue();
@@ -26,6 +29,8 @@ class BinaryOperator : public Value {
 
 class Addition : public BinaryOperator {
 	public:
+		Addition(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+
 		void write(ByteCodeFileWriter& writer); 
 		void optimize();
 
@@ -36,6 +41,8 @@ class Addition : public BinaryOperator {
 
 class Subtraction : public BinaryOperator {
 	public:
+		Subtraction(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+		
 		void write(ByteCodeFileWriter& writer); 
 		void optimize();
 
