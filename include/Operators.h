@@ -50,4 +50,26 @@ class Subtraction : public BinaryOperator {
 		int compute(int left, int right);
 };
 
+class Multiplication : public BinaryOperator {
+	public:
+		Multiplication(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+		
+		void write(ByteCodeFileWriter& writer); 
+		void optimize();
+
+		Type checkTypes(Type left, Type right) throw (CompilerException);
+		int compute(int left, int right);
+};
+
+class Division : public BinaryOperator {
+	public:
+		Division(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+		
+		void write(ByteCodeFileWriter& writer); 
+		void optimize();
+
+		Type checkTypes(Type left, Type right) throw (CompilerException);
+		int compute(int left, int right);
+};
+
 #endif

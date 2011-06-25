@@ -44,6 +44,22 @@ Type Subtraction::checkTypes(Type left, Type right) throw (CompilerException){
 	return left;
 }
 
+Type Multiplication::checkTypes(Type left, Type right) throw (CompilerException){
+	if(left != right || left != INT){
+		throw new CompilerException("Can only subtract two integers");
+	}
+
+	return left;
+}
+
+Type Division::checkTypes(Type left, Type right) throw (CompilerException){
+	if(left != right || left != INT){
+		throw new CompilerException("Can only subtract two integers");
+	}
+
+	return left;
+}
+
 //Writes
 
 void Addition::write(ByteCodeFileWriter& writer){
@@ -62,6 +78,20 @@ void Subtraction::write(ByteCodeFileWriter& writer){
 	rhs->write(writer);
 
 	writer.writeSimpleCall(ISUB);
+}
+
+void Multiplication::write(ByteCodeFileWriter& writer){
+	lhs->write(writer);
+	rhs->write(writer);
+
+	writer.writeSimpleCall(IMUL);
+}
+
+void Division::write(ByteCodeFileWriter& writer){
+	lhs->write(writer);
+	rhs->write(writer);
+
+	writer.writeSimpleCall(IMUL);
 }
 
 //Constantness
@@ -116,10 +146,17 @@ int Subtraction::compute(int left, int right){
 	return left - right;
 }
 
+int Multiplication::compute(int left, int right){
+	return left * right;
+}
+
+int Division::compute(int left, int right){
+	return left / right;
+}
+
 //Optimizations
 
 void Addition::optimize(){
-	//If both of the values are constant, we'll replace the addition with the value of the addition
 	if(isConstant()){
 		if(type() == INT){
 			if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
@@ -139,7 +176,32 @@ void Addition::optimize(){
 }
 
 void Subtraction::optimize(){
-	//If both of the values are constant, we'll replace the subtraction with the value of the subtraction
+	if(isConstant()){
+		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+			Value* value = new Integer(getIntValue());
+
+			parent->replace(this, value);
+		}
+	}
+	
+	lhs->optimize();
+	rhs->optimize();	
+}
+
+void Multiplication::optimize(){
+	if(isConstant()){
+		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+			Value* value = new Integer(getIntValue());
+
+			parent->replace(this, value);
+		}
+	}
+	
+	lhs->optimize();
+	rhs->optimize();	
+}
+
+void Division::optimize(){
 	if(isConstant()){
 		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
 			Value* value = new Integer(getIntValue());

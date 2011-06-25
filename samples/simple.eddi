@@ -1,4 +1,4 @@
-int a = 2 + 2;
+int a = 2 + 2 * 2 / 3 + 3 * 2;
 string b = "test" + "2";
 int c = a + 3;
 string d = "test" + b;

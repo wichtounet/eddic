@@ -26,7 +26,11 @@ enum ByteCode {
 	IADD = 50, 
 	SADD = 51,
 
-	ISUB = 60
+	ISUB = 60, 
+
+	IMUL = 70, 
+
+	IDIV = 80
 };
 
 #endif

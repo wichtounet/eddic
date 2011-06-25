@@ -197,6 +197,10 @@ ParseNode* readValue(Lexer& lexer){
 			parts.push_back(new Unresolved(ADD));
 		} else if(lexer.isSubtraction()){
 			parts.push_back(new Unresolved(SUB));
+		} else if(lexer.isMultiplication()){
+			parts.push_back(new Unresolved(MUL));
+		} else if(lexer.isDivision()){
+			parts.push_back(new Unresolved(DIV));
 		} else {
 			lexer.pushBack();
 			break;
@@ -241,6 +245,10 @@ ParseNode* readValue(Lexer& lexer){
 			value = new Addition(lhs, rhs);
 		} else if(op == SUB){
 			value = new Subtraction(lhs, rhs);
+		} else if(op == MUL) {
+			value = new Multiplication(lhs, rhs);
+		} else if(op == DIV){
+			value = new Division(lhs, rhs);
 		}
 
 		parts.erase(first, ++max);
@@ -262,6 +270,10 @@ ParseNode* readValue(Lexer& lexer){
 			value = new Addition(lhs, rhs);
 		} else if(op == SUB){
 			value = new Subtraction(lhs, rhs);
+		} else if(op == MUL) {
+			value = new Multiplication(lhs, rhs);
+		} else if(op == DIV){
+			value = new Division(lhs, rhs);
 		}
 	}
 
