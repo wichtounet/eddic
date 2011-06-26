@@ -14,15 +14,21 @@ using std::string;
 using std::cout;
 using std::endl;
 
+void printUsage();
+
 int main(int argc, const char* argv[]) {
 	if(argc == 1){
-		cout << "Not enough arguments. Provide a file to compile" << endl;
+		cout << "eddic: no input files" << endl;
 
 		return -1;
 	}
 
-	for(int i = 1; i < argc - 1; i++){
+	for(int i = 1; i < argc; i++){
 		string arg = argv[i];
+
+		if(arg[0] != '-'){
+			break;
+		}
 
 		if(arg == "-o" || arg == "--optimize-all"){
 			Options::set(OPTIMIZE_ALL);
@@ -33,6 +39,8 @@ int main(int argc, const char* argv[]) {
 		} else {
 			cout << "Unrecognized option \"" << arg << "\"" << endl;
 
+			printUsage();
+
 			return -1;
 		}
 	}
@@ -40,4 +48,14 @@ int main(int argc, const char* argv[]) {
 	Compiler compiler;
 	
 	return compiler.compile(argv[argc - 1]);
+}
+
+void printUsage(){
+	cout << "Usage: eddic [options] file" << endl;
+
+	cout << "Options:" << endl;
+	cout << "  -h, --help               Display this information" << endl;
+	cout << "  -o, --optimize-all       Enable all optimizations" << endl;
+	cout << "  --optimize-strings       Enable the optimizations on strings" << endl;
+	cout << "  --optimize-integers      Enable the optimizations on integers" << endl;
 }
