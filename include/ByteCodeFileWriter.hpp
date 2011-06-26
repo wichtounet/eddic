@@ -10,9 +10,9 @@
 
 #include <fstream>
 
-#include "commons/ByteCode.h"
+#include "commons/ByteCode.hpp"
 
-#include "CompilerException.h"
+#include "CompilerException.hpp"
 
 class ByteCodeFileWriter {
   private:

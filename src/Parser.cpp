@@ -9,11 +9,11 @@
 #include <cctype>
 #include <list>
 
-#include <commons/Types.h>
-#include <commons/Utils.h>
+#include <commons/Types.hpp>
+#include <commons/Utils.hpp>
 
-#include "Parser.h"
-#include "Operators.h"
+#include "Parser.hpp"
+#include "Operators.hpp"
 
 using std::string;
 using std::ios_base;

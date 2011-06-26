@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Options.h"
-#include "Compiler.h"
+#include "Options.hpp"
+#include "Compiler.hpp"
 
 #include <iostream>
 

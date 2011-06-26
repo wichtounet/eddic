@@ -13,7 +13,7 @@
 #include <utility>
 #include <stack>
 
-#include "CompilerException.h"
+#include "CompilerException.hpp"
 
 enum TokenType {
 	NOTHING,

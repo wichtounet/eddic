@@ -5,10 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "commons/ByteCode.h"
-#include "commons/IO.h"
+#include "commons/ByteCode.hpp"
+#include "commons/IO.hpp"
 
-#include "ByteCodeFileWriter.h"
+#include "ByteCodeFileWriter.hpp"
 
 using std::string;
 using std::ios;

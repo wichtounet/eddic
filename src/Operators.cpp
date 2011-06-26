@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Operators.h"
-#include "Options.h"
+#include "Operators.hpp"
+#include "Options.hpp"
 
 #include <cassert>
 

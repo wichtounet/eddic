@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 
-#include <commons/Types.h>
+#include <commons/Types.hpp>
 
 class Variable {
 	private:

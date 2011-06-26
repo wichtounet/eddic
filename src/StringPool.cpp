@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "StringPool.h"
+#include "StringPool.hpp"
 
 using std::string;
 

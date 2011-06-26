@@ -10,9 +10,9 @@
 
 #include <string>
 
-#include "CompilerException.h"
-#include "Lexer.h"
-#include "Nodes.h"
+#include "CompilerException.hpp"
+#include "Lexer.hpp"
+#include "Nodes.hpp"
 
 class Parser {
   	private:

@@ -8,7 +8,7 @@
 #ifndef OPERATORS_H
 #define OPERATORS_H
 
-#include "Nodes.h"
+#include "Nodes.hpp"
 
 class BinaryOperator : public Value {
 	protected:

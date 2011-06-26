@@ -7,40 +7,40 @@ OBJECTS = bin/eddi.o bin/Compiler.o bin/Lexer.o bin/ByteCodeFileWriter.o bin/Com
 bin/eddic : $(OBJECTS)
 	$(CC) $(LFLAGS) -o bin/eddic $(OBJECTS)
 
-bin/eddi.o : src/eddi.cpp include/Compiler.h
+bin/eddi.o : src/eddi.cpp include/Compiler.hpp
 	$(CC) $(CFLAGS) -o bin/eddi.o src/eddi.cpp
 
-bin/Compiler.o : include/Compiler.h src/Compiler.cpp include/Lexer.h
+bin/Compiler.o : include/Compiler.hpp src/Compiler.cpp include/Lexer.hpp
 	$(CC) $(CFLAGS) -o bin/Compiler.o src/Compiler.cpp
 
-bin/CompilerException.o : include/CompilerException.h src/CompilerException.cpp
+bin/CompilerException.o : include/CompilerException.hpp src/CompilerException.cpp
 	$(CC) $(CFLAGS) -o bin/CompilerException.o src/CompilerException.cpp
 
-bin/Lexer.o : include/Lexer.h src/Lexer.cpp
+bin/Lexer.o : include/Lexer.hpp src/Lexer.cpp
 	$(CC) $(CFLAGS) -o bin/Lexer.o src/Lexer.cpp
 
-bin/ByteCodeFileWriter.o : include/ByteCodeFileWriter.h src/ByteCodeFileWriter.cpp
+bin/ByteCodeFileWriter.o : include/ByteCodeFileWriter.hpp src/ByteCodeFileWriter.cpp
 	$(CC) $(CFLAGS) -o bin/ByteCodeFileWriter.o src/ByteCodeFileWriter.cpp
 
-bin/Variables.o : include/Variables.h src/Variables.cpp
+bin/Variables.o : include/Variables.hpp src/Variables.cpp
 	$(CC) $(CFLAGS) -o bin/Variables.o src/Variables.cpp
 
-bin/Parser.o : include/Parser.h src/Parser.cpp
+bin/Parser.o : include/Parser.hpp src/Parser.cpp
 	$(CC) $(CFLAGS) -o bin/Parser.o src/Parser.cpp
 
-bin/ParseNode.o : include/ParseNode.h src/ParseNode.cpp
+bin/ParseNode.o : include/ParseNode.hpp src/ParseNode.cpp
 	$(CC) $(CFLAGS) -o bin/ParseNode.o src/ParseNode.cpp
 
-bin/Nodes.o : include/Nodes.h src/Nodes.cpp
+bin/Nodes.o : include/Nodes.hpp src/Nodes.cpp
 	$(CC) $(CFLAGS) -o bin/Nodes.o src/Nodes.cpp
 
-bin/Operators.o : include/Nodes.h include/Operators.h src/Operators.cpp
+bin/Operators.o : include/Nodes.hpp include/Operators.hpp src/Operators.cpp
 	$(CC) $(CFLAGS) -o bin/Operators.o src/Operators.cpp
 
-bin/StringPool.o : include/StringPool.h src/StringPool.cpp
+bin/StringPool.o : include/StringPool.hpp src/StringPool.cpp
 	$(CC) $(CFLAGS) -o bin/StringPool.o src/StringPool.cpp
 
-bin/Options.o : include/Options.h src/Options.cpp
+bin/Options.o : include/Options.hpp src/Options.cpp
 	$(CC) $(CFLAGS) -o bin/Options.o src/Options.cpp
 
 clean:

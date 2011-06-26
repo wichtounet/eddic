@@ -10,9 +10,9 @@
 
 #include <string>
 
-#include <commons/Types.h>
+#include <commons/Types.hpp>
 
-#include "ParseNode.h"
+#include "ParseNode.hpp"
 
 class Program : public ParseNode {
 	//Nothing

@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "ParseNode.h"
+#include "ParseNode.hpp"
 
 using std::list;
 using std::vector;

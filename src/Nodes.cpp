@@ -5,9 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Nodes.h"
-#include "StringPool.h"
-#include "Options.h"
+#include "Nodes.hpp"
+#include "StringPool.hpp"
+#include "Options.hpp"
 
 #include <cassert>
 

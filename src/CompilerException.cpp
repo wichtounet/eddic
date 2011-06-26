@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "CompilerException.h"
+#include "CompilerException.hpp"
 
 const char* CompilerException::what() throw() {
 	return message.c_str();

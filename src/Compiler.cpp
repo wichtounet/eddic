@@ -7,10 +7,10 @@
 
 #include <iostream>
 
-#include <commons/Timer.h>
+#include <commons/Timer.hpp>
 
-#include "Compiler.h"
-#include "Parser.h"
+#include "Compiler.hpp"
+#include "Parser.hpp"
 
 using std::string;
 using std::cout;

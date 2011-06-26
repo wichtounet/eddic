@@ -5,6 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Options.h"
+#include "Options.hpp"
 
 std::map<Option, bool> Options::options;

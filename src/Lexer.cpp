@@ -7,7 +7,7 @@
 
 #include <cctype>
 
-#include "Lexer.h"
+#include "Lexer.hpp"
 
 using std::pair;
 using std::string;

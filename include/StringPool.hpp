@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 
-#include "ParseNode.h"
+#include "ParseNode.hpp"
 
 class StringPool : public ParseNode {
 	private:

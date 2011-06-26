@@ -11,9 +11,9 @@
 #include <list>
 #include <vector>
 
-#include "ByteCodeFileWriter.h"
-#include "Variables.h"
-#include "CompilerException.h"
+#include "ByteCodeFileWriter.hpp"
+#include "Variables.hpp"
+#include "CompilerException.hpp"
 
 class ParseNode;
 
