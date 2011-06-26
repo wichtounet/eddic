@@ -142,6 +142,10 @@ bool Lexer::readNext(){
 			currentType = DIVISION;
 			currentToken = "/";
 			return true;
+		case '%':
+			currentType = MODULO;
+			currentToken = "%";
+			return true;
 	}
 	
 	return false;
@@ -193,6 +197,10 @@ bool Lexer::isSubtraction() const {
 
 bool Lexer::isMultiplication() const {
 	return currentType == MULTIPLICATION;
+}
+
+bool Lexer::isModulo() const {
+	return currentType == MODULO;
 }
 
 bool Lexer::isDivision() const {

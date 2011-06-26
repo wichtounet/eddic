@@ -67,4 +67,13 @@ class Division : public BinaryOperator {
 		int compute(int left, int right);
 };
 
+class Modulo : public BinaryOperator {
+	public:
+		Modulo(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+		
+		void write(ByteCodeFileWriter& writer); 
+
+		int compute(int left, int right);
+};
+
 #endif

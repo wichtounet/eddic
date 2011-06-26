@@ -78,6 +78,13 @@ void Division::write(ByteCodeFileWriter& writer){
 	writer.writeSimpleCall(IMUL);
 }
 
+void Modulo::write(ByteCodeFileWriter& writer){
+	lhs->write(writer);
+	rhs->write(writer);
+
+	writer.writeSimpleCall(IMOD);
+}
+
 //Constantness
 
 bool BinaryOperator::isConstant(){
@@ -136,6 +143,10 @@ int Multiplication::compute(int left, int right){
 
 int Division::compute(int left, int right){
 	return left / right;
+}
+
+int Modulo::compute(int left, int right){
+	return left % right;
 }
 
 //Optimizations

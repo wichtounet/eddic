@@ -37,21 +37,20 @@ int Compiler::compile(string file){
 		Parser parser(lexer);
 
 		Program* program = parser.parse();
-	
+
 		Variables variables;
 		StringPool* pool = new StringPool();
 
 		//Semantical analysis
 		check(program, variables);
 		checkStrings(program, *pool);
-
+		
 		//Optimize the parse tree
 		program->optimize();
-
 		writer.open(output);
 
 		compile(program);
-
+		
 		delete program;
 	} catch (CompilerException e){
 		cout << e.what() << endl;

@@ -27,7 +27,8 @@ enum TokenType {
 	ADDITION,
 	SUBTRACTION,
 	MULTIPLICATION,
-	DIVISION
+	DIVISION,
+	MODULO
 };
 
 class Lexer {
@@ -57,6 +58,7 @@ class Lexer {
 	bool isSubtraction() const;
 	bool isMultiplication() const;
 	bool isDivision() const;
+	bool isModulo() const;
 };
 
 #endif

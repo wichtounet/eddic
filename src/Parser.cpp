@@ -117,7 +117,7 @@ void Parser::parseAssignment(Program* program, string variable) throw (CompilerE
 }
 
 enum Operator {
-	ADD, MUL, SUB, DIV, ERROR
+	ADD, MUL, SUB, DIV, MOD, ERROR
 };
 
 class Part {
@@ -151,6 +151,7 @@ int priority(Operator op){
 	switch(op){
 		case MUL:
 		case DIV:
+		case MOD:
 			return 10;
 		case ADD:
 		case SUB:
@@ -201,13 +202,15 @@ ParseNode* readValue(Lexer& lexer){
 			parts.push_back(new Unresolved(MUL));
 		} else if(lexer.isDivision()){
 			parts.push_back(new Unresolved(DIV));
+		} else if(lexer.isModulo()){
+			parts.push_back(new Unresolved(MOD));
 		} else {
 			lexer.pushBack();
 			break;
 		}
 	}
 
-	while(parts.size() > 3){
+	while(parts.size() > 1){
 		int i = 0;
 		int debug = 0;
 		int maxPriority = -1;
@@ -249,33 +252,15 @@ ParseNode* readValue(Lexer& lexer){
 			value = new Multiplication(lhs, rhs);
 		} else if(op == DIV){
 			value = new Division(lhs, rhs);
+		} else if(op == MOD){
+			value = new Modulo(lhs, rhs);
 		}
 
 		parts.erase(first, ++max);
 		parts.insert(max, new Resolved(value));
 	}
 
-	Value* value;
-
-	if(parts.size() == 1){
-		value = (*parts.begin())->getValue();
-	} else {
-		list<Part*>::iterator it = parts.begin();
-			
-		Value* lhs = (*it++)->getValue();
-		Operator op = (*it++)->getOperator();
-		Value* rhs = (*it++)->getValue();
-		
-		if(op == ADD){
-			value = new Addition(lhs, rhs);
-		} else if(op == SUB){
-			value = new Subtraction(lhs, rhs);
-		} else if(op == MUL) {
-			value = new Multiplication(lhs, rhs);
-		} else if(op == DIV){
-			value = new Division(lhs, rhs);
-		}
-	}
+	Value* value = (*parts.begin())->getValue();
 
 	parts.clear();
 

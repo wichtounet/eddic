@@ -30,7 +30,9 @@ enum ByteCode {
 
 	IMUL = 70, 
 
-	IDIV = 80
+	IDIV = 80,
+	
+	IMOD = 90
 };
 
 #endif
