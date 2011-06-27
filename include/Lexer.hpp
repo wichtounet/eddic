@@ -20,8 +20,12 @@ enum TokenType {
 	WORD,
 	ASSIGN,
 	LITTERAL,
+
 	LEFT_PARENTH,
 	RIGHT_PARENTH,
+	LEFT_BRACE,
+	RIGHT_BRACE,
+
 	STOP,
 	INTEGER, 
 	ADDITION,
@@ -66,6 +70,8 @@ class Lexer {
     	bool isParenth() const;
     	bool isLeftParenth() const;
     	bool isRightParenth() const;
+    	bool isLeftBrace() const;
+    	bool isRightBrace() const;
     	bool isStop() const;
     	bool isInteger() const;
 	bool isAddition() const;

@@ -123,8 +123,30 @@ ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerExcept
 	return assign;
 }
 
+Condition* readCondition(Lexer& lexer);
+
 ParseNode* Parser::parseIf() throw (CompilerException){
-	//Parse IF
+	if(!lexer.next() || !lexer.isLeftParenth()){
+		throw CompilerException("An if instruction must be followed by a condition surrounded by parenth");
+	}
+
+	Condition* condition = readCondition(lexer);
+		
+	if(!lexer.next() || !lexer.isRightParenth()){
+		throw CompilerException("Waiting for a closing parenth");
+	}
+
+	if(!lexer.next() || !lexer.isLeftBrace()){
+		throw CompilerException("Waiting for a left brace");
+	}	
+
+	//Read body
+
+	if(!lexer.next() || !lexer.isRightBrace()){
+		throw CompilerException("Waiting for a left brace");
+	}	
+
+	//Read else if there is one
 }
 enum Operator {
 	ADD, MUL, SUB, DIV, MOD, ERROR
@@ -275,5 +297,9 @@ ParseNode* readValue(Lexer& lexer){
 	parts.clear();
 
 	return value;
+}
+
+Condition* readCondition(Lexer& lexer){
+	//Read a condition
 }
 

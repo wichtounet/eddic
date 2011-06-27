@@ -142,6 +142,12 @@ bool Lexer::readNext(){
 		case ')': 
 			currentType = RIGHT_PARENTH;
 			return true;
+		case '{': 
+			currentType = LEFT_BRACE;
+			return true;
+		case '}': 
+			currentType = RIGHT_BRACE;
+			return true;
 		case '+':
 			currentType = ADDITION;
 			return true;
@@ -222,6 +228,14 @@ bool Lexer::isLeftParenth() const{
 
 bool Lexer::isRightParenth() const{
 	return currentType == RIGHT_PARENTH;
+}
+
+bool Lexer::isLeftBrace() const{
+	return currentType == LEFT_BRACE;
+}
+
+bool Lexer::isRightBrace() const{
+	return currentType == RIGHT_BRACE;
 }
 
 bool Lexer::isStop() const{
