@@ -48,6 +48,7 @@ class Assignment : public ParseNode {
 		void write(ByteCodeFileWriter& writer);	
 };
 
+
 class Value : public ParseNode {
 	protected:
 		Type m_type;
@@ -89,6 +90,42 @@ class VariableValue : public Value {
 		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer);	
 		bool isConstant();
+};
+
+class Condition : public ParseNode {
+	private: 
+		Value* lhs;
+		Value* rhs;
+
+	public:
+		virtual void write(ByteCodeFileWriter& writer);
+		virtual void checkVariables(Variables& variables) throw (CompilerException);
+		virtual void checkStrings(StringPool& pool);
+		virtual void optimize();
+};
+
+class Else;
+
+class If : public ParseNode {
+	private: 
+		Condition* condition;
+		Else* elseBlock;		
+
+	public:
+		virtual ~If();
+		virtual void write(ByteCodeFileWriter& writer);
+		virtual void checkVariables(Variables& variables) throw (CompilerException);
+		virtual void checkStrings(StringPool& pool);
+		virtual void optimize();
+		
+};
+
+class Else : public ParseNode {
+	public:
+		virtual void write(ByteCodeFileWriter& writer);
+		virtual void checkVariables(Variables& variables) throw (CompilerException);
+		virtual void checkStrings(StringPool& pool);
+		virtual void optimize();
 };
 
 #endif

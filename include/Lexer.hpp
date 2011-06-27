@@ -28,7 +28,21 @@ enum TokenType {
 	SUBTRACTION,
 	MULTIPLICATION,
 	DIVISION,
-	MODULO
+	MODULO, 
+	TRUE, 
+	FALSE,
+
+	//Boolean operators
+	EQUALS,
+	NOT_EQUALS,
+	GREATER,
+	LESS,
+	GREATER_EQUALS,
+	LESS_EQUALS,
+
+	//Branches
+	IF,
+	ELSE
 };
 
 class Lexer {
@@ -59,6 +73,18 @@ class Lexer {
 	bool isMultiplication() const;
 	bool isDivision() const;
 	bool isModulo() const;
+	bool isEquals() const;
+	bool isNotEquals() const;
+	bool isGreater() const;
+	bool isLess() const;
+	bool isGreaterOrEquals() const;
+	bool isLessOrEquals() const;
+	bool isIf() const;
+	bool isElse() const;
+	bool isBooleanOperator() const;
+	bool isBoolean() const;
+	bool isTrue() const;
+	bool isFalse() const;
 };
 
 #endif

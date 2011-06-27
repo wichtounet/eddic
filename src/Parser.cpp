@@ -21,8 +21,15 @@ using std::list;
 
 Program* Parser::parse() throw (CompilerException) {
 	Program* program = new Program();
-
+	
+	//Improve the content of the loop
 	while(lexer.next()){
+		if(lexer.isIf()){
+			program->addLast(parseIf());
+			
+			continue;
+		}		
+
 		if(!lexer.isWord()){
 			throw CompilerException("An instruction can only start with a call or an assignation");
 		}
@@ -34,11 +41,11 @@ Program* Parser::parse() throw (CompilerException) {
 		}
 
 		if(lexer.isLeftParenth()){ //is a call
-			parseCall(program, word);
+			program->addLast(parseCall(word));
 		} else if(lexer.isWord()){ //is a declaration
-			parseDeclaration(program, word);
+			program->addLast(parseDeclaration(word));
 		} else if(lexer.isAssign()){ //is an assign
-			parseAssignment(program, word);
+			program->addLast(parseAssignment(word));
 		} else {
 			throw CompilerException("Not an instruction");
 		}
@@ -49,7 +56,7 @@ Program* Parser::parse() throw (CompilerException) {
 
 ParseNode* readValue(Lexer& lexer);
 
-void Parser::parseCall(Program* program, string call) throw (CompilerException){
+ParseNode* Parser::parseCall(const string& call) throw (CompilerException){
 	if(call != "Print"){
 		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
@@ -68,10 +75,10 @@ void Parser::parseCall(Program* program, string call) throw (CompilerException){
 
 	print->addLast(value);
 
-	program->addLast(print);
+	return print; 
 } 
 
-void Parser::parseDeclaration(Program* program, string typeName) throw (CompilerException){
+ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerException){
 	if(typeName != "int" && typeName != "string"){
 		throw CompilerException("Invalid type");
 	}
@@ -99,10 +106,10 @@ void Parser::parseDeclaration(Program* program, string typeName) throw (Compiler
 
 	declare->addLast(value);
 
-	program->addLast(declare);
+	return declare;
 }
 
-void Parser::parseAssignment(Program* program, string variable) throw (CompilerException){
+ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerException){
 	ParseNode* value = readValue(lexer);
 	
 	if(!lexer.next() || !lexer.isStop()){
@@ -113,9 +120,12 @@ void Parser::parseAssignment(Program* program, string variable) throw (CompilerE
 
 	assign->addLast(value);
 
-	program->addLast(assign);
+	return assign;
 }
 
+ParseNode* Parser::parseIf() throw (CompilerException){
+	//Parse IF
+}
 enum Operator {
 	ADD, MUL, SUB, DIV, MOD, ERROR
 };
@@ -157,7 +167,7 @@ int priority(Operator op){
 		case SUB:
 			return 0;
 		default:
-			return -1; //TOOD should never happen
+			return -1; //TODO should never happen
 	}
 }
 

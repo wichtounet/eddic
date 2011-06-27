@@ -91,8 +91,18 @@ bool Lexer::readNext(){
 		}
 
 		stream.putback(current);
-		
-		currentType = WORD;
+	
+		if(currentToken == "true"){
+			currentType = TRUE;
+		} else if(currentToken == "false"){
+			currentType = FALSE;
+		} else if(currentToken == "if"){
+			currentType = FALSE;
+		} else if(currentToken == "else"){
+			currentType = FALSE;
+		} else {
+			currentType = WORD;
+		}
 			
 		return true;
 	} else if(isdigit(current)) {
@@ -115,36 +125,71 @@ bool Lexer::readNext(){
 			currentToken = ";";
 			return true;
 		case '=': 
-			currentType = ASSIGN;
-			currentToken = "=";
+			stream >> current;
+
+			if(current == '='){
+				currentType = EQUALS;
+			} else {
+				stream.putback(current);
+			
+				currentType = ASSIGN;
+			}
+
 			return true;
 		case '(': 
 			currentType = LEFT_PARENTH;
-			currentToken = "(";
 			return true;
 		case ')': 
 			currentType = RIGHT_PARENTH;
-			currentToken = ")";
 			return true;
 		case '+':
 			currentType = ADDITION;
-			currentToken = "+";
 			return true;
 		case '-':
 			currentType = SUBTRACTION;
-			currentToken = "-";
 			return true;
 		case '*':
 			currentType = MULTIPLICATION;
-			currentToken = "*";
 			return true;
 		case '/':
 			currentType = DIVISION;
-			currentToken = "/";
 			return true;
 		case '%':
 			currentType = MODULO;
-			currentToken = "%";
+			return true;
+		case '!':
+			stream >> current;
+
+			if(current == '='){
+				currentType = NOT_EQUALS;
+			} else {
+				return false;
+			}
+
+			return true;
+		case '<':
+			stream >> current;
+
+			if(current == '='){
+				currentType = LESS_EQUALS;
+			} else {
+				stream.putback(current);
+				
+				currentType = LESS;
+			}
+
+			return true;
+		case '>':
+			stream >> current;			
+
+			if(current == '='){
+				currentType = GREATER_EQUALS;
+			} else {
+				stream.putback(current);
+				
+				currentType = GREATER;
+			}
+
 			return true;
 	}
 	
@@ -205,4 +250,52 @@ bool Lexer::isModulo() const {
 
 bool Lexer::isDivision() const {
 	return currentType == DIVISION;
+}
+
+bool Lexer::isEquals() const {
+	return currentType == EQUALS;
+}
+
+bool Lexer::isNotEquals() const {
+	return currentType == NOT_EQUALS;
+}
+
+bool Lexer::isGreater() const {
+	return currentType == GREATER;
+}
+
+bool Lexer::isLess() const {
+	return currentType == LESS;
+}
+
+bool Lexer::isGreaterOrEquals() const {
+	return currentType == GREATER_EQUALS;
+}
+
+bool Lexer::isLessOrEquals() const {
+	return currentType == LESS_EQUALS;
+}
+
+bool Lexer::isIf() const {
+	return currentType == IF;
+}
+
+bool Lexer::isElse() const {
+	return currentType == ELSE;
+}
+
+bool Lexer::isBooleanOperator() const {
+	return currentType >= EQUALS && currentType <= LESS_EQUALS;
+}
+
+bool Lexer::isBoolean() const {
+	return currentType == TRUE || currentType == FALSE;
+}
+
+bool Lexer::isTrue() const {
+	return currentType == TRUE;
+}
+
+bool Lexer::isFalse() const {
+	return currentType == FALSE;
 }
