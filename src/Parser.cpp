@@ -54,6 +54,36 @@ Program* Parser::parse() throw (CompilerException) {
 	return program;
 }
 
+inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) throw (CompilerException){
+	if(!lexer.next() || !lexer.isRightParenth()){
+		throw CompilerException(message);
+	} 
+}
+
+inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) throw (CompilerException){
+	if(!lexer.next() || !lexer.isLeftParenth()){
+		throw CompilerException(message);
+	} 
+}
+
+inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) throw (CompilerException){
+	if(!lexer.next() || !lexer.isRightBrace()){
+		throw CompilerException(message);
+	} 
+}
+
+inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) throw (CompilerException){
+	if(!lexer.next() || !lexer.isLeftBrace()){
+		throw CompilerException(message);
+	} 
+}
+
+inline static void assertNextIsStop(Lexer& lexer, const string& message) throw (CompilerException){
+	if(!lexer.next() || !lexer.isStop()){
+		throw CompilerException(message);
+	} 
+}
+
 ParseNode* readValue(Lexer& lexer);
 
 ParseNode* Parser::parseCall(const string& call) throw (CompilerException){
@@ -62,14 +92,9 @@ ParseNode* Parser::parseCall(const string& call) throw (CompilerException){
 	}
 
 	ParseNode* value = readValue(lexer);
-	
-	if(!lexer.next() || !lexer.isRightParenth()){
-		throw CompilerException("The call must be closed with a right parenth");
-	} 
 
-	if(!lexer.next() || !lexer.isStop()){
-		throw CompilerException("Every instruction must be closed by a semicolon");
-	} 
+	assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
+	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
 	Print* print = new Print();
 
@@ -98,9 +123,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerExcep
 	
 	ParseNode* value = readValue(lexer);
 	
-	if(!lexer.next() || !lexer.isStop()){
-		throw CompilerException("Every instruction must be closed by a semicolon");
-	}
+	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
 	Declaration* declare = new Declaration(type, variable);
 
@@ -112,9 +135,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerExcep
 ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerException){
 	ParseNode* value = readValue(lexer);
 	
-	if(!lexer.next() || !lexer.isStop()){
-		throw CompilerException("Every instruction must be closed by a semicolon");
-	}
+	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
 	Assignment* assign = new Assignment(variable); 
 
@@ -126,25 +147,17 @@ ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerExcept
 Condition* readCondition(Lexer& lexer);
 
 ParseNode* Parser::parseIf() throw (CompilerException){
-	if(!lexer.next() || !lexer.isLeftParenth()){
-		throw CompilerException("An if instruction must be followed by a condition surrounded by parenth");
-	}
-
+	assertNextIsLeftParenth(lexer, "An if instruction must be followed by a condition surrounded by parenth");
+	
 	Condition* condition = readCondition(lexer);
-		
-	if(!lexer.next() || !lexer.isRightParenth()){
-		throw CompilerException("Waiting for a closing parenth");
-	}
 
-	if(!lexer.next() || !lexer.isLeftBrace()){
-		throw CompilerException("Waiting for a left brace");
-	}	
+	assertNextIsRightParenth(lexer, "The condition of the if must be closed by a right parenth");
+
+	assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
 	//Read body
 
-	if(!lexer.next() || !lexer.isRightBrace()){
-		throw CompilerException("Waiting for a left brace");
-	}	
+	assertNextIsRightBrace(lexer, "Waiting for a right brace");
 
 	//Read else if there is one
 }
