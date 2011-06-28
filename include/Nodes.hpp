@@ -36,7 +36,7 @@ class Declaration : public ParseNode {
 		Value* value;
 
 	public:
-		Declaration(Type type, std::string variable, Value* v) : m_type(type), m_variable(variable), value(v) {};
+		Declaration(Type type, const std::string& variable, Value* v) : m_type(type), m_variable(variable), value(v) {};
 		~Declaration(){delete value;}
 
 		void checkVariables(Variables& variables) throw (CompilerException);
@@ -63,7 +63,7 @@ class Assignment : public ParseNode {
 		Value* value;
 	
 	public:
-		Assignment(std::string variable, Value* v) : m_variable(variable), value(v) {};
+		Assignment(const std::string& variable, Value* v) : m_variable(variable), value(v) {};
 		~Assignment(){delete value;}
 		
 		void checkVariables(Variables& variables) throw (CompilerException);
@@ -75,7 +75,7 @@ class Litteral : public Value {
 		std::string m_litteral;
 		int m_index;
 	public:
-		Litteral(std::string litteral) : m_litteral(litteral) {m_type = STRING;};
+		Litteral(const std::string& litteral) : m_litteral(litteral) {m_type = STRING;};
 		void checkStrings(StringPool& pool);
 		void write(ByteCodeFileWriter& writer);
 		bool isConstant();
@@ -97,7 +97,7 @@ class VariableValue : public Value {
 		std::string m_variable;
 		int m_index;
 	public:
-		VariableValue(std::string variable) : m_variable(variable) {};
+		VariableValue(const std::string& variable) : m_variable(variable) {};
 		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer);	
 		bool isConstant();

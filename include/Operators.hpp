@@ -29,7 +29,7 @@ class BinaryOperator : public Value {
 		void optimize();
 
 		virtual Type checkTypes(Type left, Type right) throw (CompilerException);
-		virtual std::string compute(std::string left, std::string right);
+		virtual std::string compute(const std::string& left, const std::string& right);
 		virtual int compute(int left, int right);
 };
 
@@ -41,7 +41,7 @@ class Addition : public BinaryOperator {
 		void optimize();
 
 		Type checkTypes(Type left, Type right) throw (CompilerException);
-		std::string compute(std::string left, std::string right);
+		std::string compute(const std::string& left, const std::string& right);
 		int compute(int left, int right);
 };
 

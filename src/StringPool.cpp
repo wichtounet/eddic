@@ -9,7 +9,7 @@
 
 using std::string;
 
-int StringPool::index(string value){
+int StringPool::index(const std::string& value){
 	if(pool.find(value) == pool.end()){
 		pool[value] = ++currentString;
 	}

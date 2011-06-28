@@ -19,7 +19,7 @@ Variables::~Variables(){
 	}
 }
 
-Variable* Variables::find(std::string variable){
+Variable* Variables::find(const std::string& variable){
 	map<string, Variable*>::const_iterator it = variables.find(variable);
 
 	if(it == variables.end()){
@@ -29,11 +29,11 @@ Variable* Variables::find(std::string variable){
 	return it->second;
 }
 
-bool Variables::exists(string variable) const{
+bool Variables::exists(const std::string& variable) const{
 	return variables.find(variable) != variables.end();
 }
 
-unsigned int Variables::index(std::string variable) const{
+unsigned int Variables::index(const std::string& variable) const{
 	map<string, Variable*>::const_iterator it = variables.find(variable);
 
 	if(it == variables.end()){
@@ -43,7 +43,7 @@ unsigned int Variables::index(std::string variable) const{
 	return it->second->index();
 }
 
-Variable* Variables::create(string variable, Type type){
+Variable* Variables::create(const std::string& variable, Type type){
 	Variable* v = new Variable(variable, type, currentVariable++);
 
 	variables[variable] = v;

@@ -19,7 +19,7 @@ class StringPool : public ParseNode {
 		unsigned int currentString;
 	public:
 		StringPool(){currentString = 0;}
-		int index(std::string value);
+		int index(const std::string& value);
 		void write(ByteCodeFileWriter& writer);	
 };
 

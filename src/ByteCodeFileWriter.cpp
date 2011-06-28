@@ -13,7 +13,7 @@
 using std::string;
 using std::ios;
 
-void ByteCodeFileWriter::open(string path) throw (CompilerException) {
+void ByteCodeFileWriter::open(const std::string& path) throw (CompilerException) {
 	stream.open(path.c_str(), ios::binary);
 
 	if(!stream){
@@ -25,7 +25,7 @@ void ByteCodeFileWriter::close(){
 	stream.close();
 }
 
-void ByteCodeFileWriter::writeOneOperandCall(ByteCode bytecode, string litteral){
+void ByteCodeFileWriter::writeOneOperandCall(ByteCode bytecode, const std::string& litteral){
 	binary_write(&stream, (int) bytecode);
 	
 	writeLitteral(litteral);
@@ -48,7 +48,7 @@ void ByteCodeFileWriter::writeEnd(){
 	binary_write(&stream, (int) END);
 }
 
-void ByteCodeFileWriter::writeLitteral(string litteral){
+void ByteCodeFileWriter::writeLitteral(const std::string& litteral){
 	binary_write(&stream, litteral.length() - 2);
 	binary_write(&stream, litteral.substr(1, litteral.length() - 2));
 }

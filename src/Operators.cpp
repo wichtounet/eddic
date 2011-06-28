@@ -114,7 +114,7 @@ int BinaryOperator::compute(int left, int right){
 	throw "Invalid type"; 
 }
 
-string BinaryOperator::compute(string left, string right){
+string BinaryOperator::compute(const std::string& left, const std::string& right){
 	throw "Invalid type"; 
 }
 
@@ -122,7 +122,7 @@ int Addition::compute(int left, int right){
 	return left + right;
 }
 
-string Addition::compute(string left, string right){
+string Addition::compute(const std::string& left, const std::string& right){
 	return left + right;
 }
 
