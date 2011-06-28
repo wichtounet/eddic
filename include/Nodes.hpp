@@ -18,37 +18,6 @@ class Program : public ParseNode {
 	//Nothing
 };
 
-class Declaration : public ParseNode {
-	private: 
-		Type m_type;
-		std::string m_variable;
-		int m_index;
-	public:
-		Declaration(Type type, std::string variable) : m_type(type), m_variable(variable) {};
-		void checkVariables(Variables& variables) throw (CompilerException);
-		void write(ByteCodeFileWriter& writer);	
-		int index(){return m_index;}
-};
-
-class Print : public ParseNode {
-	private: 
-		Type m_type;
-	public:
-		Print(){};
-		void write(ByteCodeFileWriter& writer);	
-};
-
-class Assignment : public ParseNode {
-	private: 
-		std::string m_variable;
-		int m_index;
-	public:
-		Assignment(std::string variable) : m_variable(variable) {};
-		void checkVariables(Variables& variables) throw (CompilerException);
-		void write(ByteCodeFileWriter& writer);	
-};
-
-
 class Value : public ParseNode {
 	protected:
 		Type m_type;
@@ -57,6 +26,42 @@ class Value : public ParseNode {
 		virtual bool isConstant();
 		virtual std::string getStringValue();
 		virtual int getIntValue();
+};
+
+class Declaration : public ParseNode {
+	private: 
+		Type m_type;
+		std::string m_variable;
+		int m_index;
+		Value* value;
+
+	public:
+		Declaration(Type type, std::string variable, Value* v) : m_type(type), m_variable(variable), value(v) {};
+		void checkVariables(Variables& variables) throw (CompilerException);
+		void write(ByteCodeFileWriter& writer);	
+		int index(){return m_index;}
+};
+
+class Print : public ParseNode {
+	private: 
+		Type m_type;
+		Value* value;
+
+	public:
+		Print(Value* v) : value(v)  {};
+		void write(ByteCodeFileWriter& writer);	
+};
+
+class Assignment : public ParseNode {
+	private: 
+		std::string m_variable;
+		int m_index;
+		Value* value;
+	
+	public:
+		Assignment(std::string variable, Value* v) : m_variable(variable), value(v) {};
+		void checkVariables(Variables& variables) throw (CompilerException);
+		void write(ByteCodeFileWriter& writer);	
 };
 
 class Litteral : public Value {
@@ -108,10 +113,11 @@ class Else;
 
 class If : public ParseNode {
 	private: 
-		Condition* condition;
-		Else* elseBlock;		
+		Condition* m_condition;
+		Else* m_elseBlock;		
 
 	public:
+		If(Condition* condition) : m_condition(condition) {}
 		virtual ~If();
 		virtual void write(ByteCodeFileWriter& writer);
 		virtual void checkVariables(Variables& variables) throw (CompilerException);

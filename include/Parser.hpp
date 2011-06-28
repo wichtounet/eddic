@@ -20,6 +20,7 @@ class Parser {
   	public:
 		Parser(Lexer& l) : lexer(l) {};
 		Program* parse() throw (CompilerException) ;
+		ParseNode* readInstruction() throw (CompilerException);
 		ParseNode* parseCall(const std::string& call) throw (CompilerException);
 		ParseNode* parseDeclaration(const std::string& type) throw (CompilerException);
 		ParseNode* parseAssignment(const std::string& variable) throw (CompilerException);

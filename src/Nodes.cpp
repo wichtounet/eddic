@@ -22,8 +22,6 @@ void Declaration::checkVariables(Variables& variables) throw (CompilerException)
 
 	m_index = var->index();
 
-	Value* value = dynamic_cast<Value*>(*begin());
-
 	value->checkVariables(variables);
 
 	if(value->type() != m_type){
@@ -40,8 +38,6 @@ void Assignment::checkVariables(Variables& variables) throw (CompilerException){
 
 	m_index = var->index();
 	
-	Value* value = dynamic_cast<Value*>(*begin());
-
 	value->checkVariables(variables);
 
 	if(value->type() != var->type()){
@@ -65,7 +61,7 @@ void Litteral::checkStrings(StringPool& pool){
 }
 
 void Declaration::write(ByteCodeFileWriter& writer){
-	(*begin())->write(writer);	
+	value->write(writer);	
 	
 	switch(m_type){
 		case INT:
@@ -80,9 +76,7 @@ void Declaration::write(ByteCodeFileWriter& writer){
 }
 
 void Assignment::write(ByteCodeFileWriter& writer){
-	(*begin())->write(writer);	
-	
-	Value* value = dynamic_cast<Value*>(*begin());
+	value->write(writer);	
 	
 	switch(value->type()){
 		case INT:
@@ -97,9 +91,7 @@ void Assignment::write(ByteCodeFileWriter& writer){
 }
 
 void Print::write(ByteCodeFileWriter& writer){
-	(*begin())->write(writer);	
-	
-	Value* value = dynamic_cast<Value*>(*begin());
+	value->write(writer);	
 	
 	switch(value->type()){
 		case INT:

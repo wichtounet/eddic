@@ -19,36 +19,38 @@ using std::string;
 using std::ios_base;
 using std::list;
 
+//TODO Review this method
+ParseNode* Parser::readInstruction() throw (CompilerException){
+	if(lexer.isIf()){
+		return parseIf();
+	}		
+
+	if(!lexer.isWord()){
+		throw CompilerException("An instruction can only start with a call or an assignation");
+	}
+
+	string word = lexer.getCurrentToken();
+
+	if(!lexer.next()){
+		throw CompilerException("Incomplete instruction");
+	}
+
+	if(lexer.isLeftParenth()){ //is a call
+		return parseCall(word);
+	} else if(lexer.isWord()){ //is a declaration
+		return parseDeclaration(word);
+	} else if(lexer.isAssign()){ //is an assign
+		return parseAssignment(word);
+	} else {
+		throw CompilerException("Not an instruction");
+	}
+}
+
 Program* Parser::parse() throw (CompilerException) {
 	Program* program = new Program();
 	
-	//Improve the content of the loop
 	while(lexer.next()){
-		if(lexer.isIf()){
-			program->addLast(parseIf());
-			
-			continue;
-		}		
-
-		if(!lexer.isWord()){
-			throw CompilerException("An instruction can only start with a call or an assignation");
-		}
-
-		string word = lexer.getCurrentToken();
-
-		if(!lexer.next()){
-			throw CompilerException("Incomplete instruction");
-		}
-
-		if(lexer.isLeftParenth()){ //is a call
-			program->addLast(parseCall(word));
-		} else if(lexer.isWord()){ //is a declaration
-			program->addLast(parseDeclaration(word));
-		} else if(lexer.isAssign()){ //is an assign
-			program->addLast(parseAssignment(word));
-		} else {
-			throw CompilerException("Not an instruction");
-		}
+		program->addLast(readInstruction());
 	}
 	
 	return program;
@@ -84,23 +86,19 @@ inline static void assertNextIsStop(Lexer& lexer, const string& message) throw (
 	} 
 }
 
-ParseNode* readValue(Lexer& lexer);
+Value* readValue(Lexer& lexer);
 
 ParseNode* Parser::parseCall(const string& call) throw (CompilerException){
 	if(call != "Print"){
 		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
 
-	ParseNode* value = readValue(lexer);
+	Value* value = readValue(lexer);
 
 	assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-	Print* print = new Print();
-
-	print->addLast(value);
-
-	return print; 
+	return new Print(value); 
 } 
 
 ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerException){
@@ -121,27 +119,19 @@ ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerExcep
 		throw CompilerException("A variable declaration must followed by '='");
 	} 
 	
-	ParseNode* value = readValue(lexer);
+	Value* value = readValue(lexer);
 	
 	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-	Declaration* declare = new Declaration(type, variable);
-
-	declare->addLast(value);
-
-	return declare;
+	return new Declaration(type, variable, value);
 }
 
 ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerException){
-	ParseNode* value = readValue(lexer);
+	Value* value = readValue(lexer);
 	
 	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-	Assignment* assign = new Assignment(variable); 
-
-	assign->addLast(value);
-
-	return assign;
+	return new Assignment(variable, value); 
 }
 
 Condition* readCondition(Lexer& lexer);
@@ -155,12 +145,30 @@ ParseNode* Parser::parseIf() throw (CompilerException){
 
 	assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-	//Read body
+	ParseNode* block = NULL;	
 
-	assertNextIsRightBrace(lexer, "Waiting for a right brace");
+	//If* block = new If(condition);
 
-	//Read else if there is one
-}
+	//Do not use an infinite loop
+	while(true){
+		if(lexer.next() && lexer.isRightBrace()){
+			break;
+		}
+
+		block->addLast(readInstruction());
+	}	
+
+	if(lexer.next() && lexer.isElse()){
+		//Parse Else block
+	} else {
+		lexer.pushBack();
+	}
+	
+	//Read else there is one
+
+	return block;
+};
+
 enum Operator {
 	ADD, MUL, SUB, DIV, MOD, ERROR
 };
@@ -206,7 +214,7 @@ int priority(Operator op){
 	}
 }
 
-ParseNode* readValue(Lexer& lexer){
+Value* readValue(Lexer& lexer){
 	list<Part*> parts;
 
 	while(true){
@@ -313,6 +321,10 @@ ParseNode* readValue(Lexer& lexer){
 }
 
 Condition* readCondition(Lexer& lexer){
+	Condition* condition = NULL;
+		
 	//Read a condition
+
+	return condition; 
 }
 
