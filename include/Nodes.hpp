@@ -103,41 +103,4 @@ class VariableValue : public Value {
 		bool isConstant();
 };
 
-class Condition : public ParseNode {
-	private: 
-		Value* lhs;
-		Value* rhs;
-
-	public:
-		virtual void write(ByteCodeFileWriter& writer);
-		virtual void checkVariables(Variables& variables) throw (CompilerException);
-		virtual void checkStrings(StringPool& pool);
-		virtual void optimize();
-};
-
-class Else;
-
-class If : public ParseNode {
-	private: 
-		Condition* m_condition;
-		Else* m_elseBlock;		
-
-	public:
-		If(Condition* condition) : m_condition(condition) {}
-		virtual ~If();
-		virtual void write(ByteCodeFileWriter& writer);
-		virtual void checkVariables(Variables& variables) throw (CompilerException);
-		virtual void checkStrings(StringPool& pool);
-		virtual void optimize();
-		
-};
-
-class Else : public ParseNode {
-	public:
-		virtual void write(ByteCodeFileWriter& writer);
-		virtual void checkVariables(Variables& variables) throw (CompilerException);
-		virtual void checkStrings(StringPool& pool);
-		virtual void optimize();
-};
-
 #endif

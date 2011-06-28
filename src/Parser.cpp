@@ -20,7 +20,7 @@ using std::ios_base;
 using std::list;
 
 //TODO Review this method
-ParseNode* Parser::readInstruction() throw (CompilerException){
+ParseNode* Parser::parseInstruction() throw (CompilerException){
 	if(lexer.isIf()){
 		return parseIf();
 	}		
@@ -50,7 +50,7 @@ Program* Parser::parse() throw (CompilerException) {
 	Program* program = new Program();
 	
 	while(lexer.next()){
-		program->addLast(readInstruction());
+		program->addLast(parseInstruction());
 	}
 	
 	return program;
@@ -86,14 +86,12 @@ inline static void assertNextIsStop(Lexer& lexer, const string& message) throw (
 	} 
 }
 
-Value* readValue(Lexer& lexer);
-
 ParseNode* Parser::parseCall(const string& call) throw (CompilerException){
 	if(call != "Print"){
 		throw CompilerException("The call \"" + call + "\" does not exist");
 	}
 
-	Value* value = readValue(lexer);
+	Value* value = parseValue();
 
 	assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
@@ -119,7 +117,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerExcep
 		throw CompilerException("A variable declaration must followed by '='");
 	} 
 	
-	Value* value = readValue(lexer);
+	Value* value = parseValue();
 	
 	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
@@ -127,47 +125,56 @@ ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerExcep
 }
 
 ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerException){
-	Value* value = readValue(lexer);
+	Value* value = parseValue();
 	
 	assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
 	return new Assignment(variable, value); 
 }
 
-Condition* readCondition(Lexer& lexer);
-
 ParseNode* Parser::parseIf() throw (CompilerException){
 	assertNextIsLeftParenth(lexer, "An if instruction must be followed by a condition surrounded by parenth");
 	
-	Condition* condition = readCondition(lexer);
+	Condition* condition = parseCondition();
 
 	assertNextIsRightParenth(lexer, "The condition of the if must be closed by a right parenth");
 
 	assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-	ParseNode* block = NULL;	
+	If* block = new If(condition);
 
-	//If* block = new If(condition);
-
-	//Do not use an infinite loop
-	while(true){
-		if(lexer.next() && lexer.isRightBrace()){
-			break;
-		}
-
-		block->addLast(readInstruction());
+	while(lexer.next() && !lexer.isRightBrace()){
+		block->addLast(parseInstruction());
 	}	
 
+	if(!lexer.isRightBrace()){
+		throw new CompilerException("If body must be closed with right brace");
+	}
+
 	if(lexer.next() && lexer.isElse()){
-		//Parse Else block
+		block->setElse(parseElse());
 	} else {
 		lexer.pushBack();
 	}
-	
-	//Read else there is one
 
 	return block;
-};
+}
+
+Else* Parser::parseElse() throw (CompilerException) {
+	Else* block = new Else();
+
+	assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
+
+	while(lexer.next() && !lexer.isRightBrace()){
+		block->addLast(parseInstruction());
+	}	
+
+	if(!lexer.isRightBrace()){
+		throw new CompilerException("else body must be closed with right brace");
+	}
+
+	return block;
+}
 
 enum Operator {
 	ADD, MUL, SUB, DIV, MOD, ERROR
@@ -214,7 +221,7 @@ int priority(Operator op){
 	}
 }
 
-Value* readValue(Lexer& lexer){
+Value* Parser::parseValue() throw (CompilerException) {
 	list<Part*> parts;
 
 	while(true){
@@ -320,7 +327,7 @@ Value* readValue(Lexer& lexer){
 	return value;
 }
 
-Condition* readCondition(Lexer& lexer){
+Condition* Parser::parseCondition() throw (CompilerException){
 	Condition* condition = NULL;
 		
 	//Read a condition
