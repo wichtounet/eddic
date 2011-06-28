@@ -15,7 +15,7 @@ class BinaryOperator : public Value {
 		Value* lhs;
 		Value* rhs;
 
-		BinaryOperator(Value* lhs, Value* rhs);
+		BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {}
 
 		bool isConstant();
 		void checkVariables(Variables& variables) throw (CompilerException);

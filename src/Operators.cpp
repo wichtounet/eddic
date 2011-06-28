@@ -12,13 +12,6 @@
 
 using std::string;
 
-//Constructors
-
-BinaryOperator::BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {
-	addLast(l);
-	addLast(r);
-}
-
 //Checks
 
 void BinaryOperator::checkVariables(Variables& variables) throw (CompilerException){
