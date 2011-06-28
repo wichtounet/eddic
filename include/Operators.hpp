@@ -16,6 +16,11 @@ class BinaryOperator : public Value {
 		Value* rhs;
 
 		BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {}
+		
+		virtual ~BinaryOperator(){
+			delete lhs;
+			delete rhs;
+		}
 
 		bool isConstant();
 		void checkVariables(Variables& variables) throw (CompilerException);
