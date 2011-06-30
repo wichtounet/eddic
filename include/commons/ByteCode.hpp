@@ -11,6 +11,8 @@
 enum ByteCode {
 	END = 0, 
 
+	LABEL = 5,
+
 	SLOAD = 10, 
 	ILOAD = 11,
 	
@@ -32,7 +34,18 @@ enum ByteCode {
 
 	IDIV = 80,
 	
-	IMOD = 90
+	IMOD = 90,
+
+	EQUALS = 100, 
+	NOT_EQUALS = 101, 
+	GREATER_THAN = 102,
+	LESS_THAN = 103,
+	GREATER_THAN_EQUALS = 104, 
+	LESS_THAN_EQUALS = 105,
+	
+	JUMP = 120, 
+	JUMP_IF = 121, 
+	JUMP_IF_NOT = 122
 };
 
 #endif

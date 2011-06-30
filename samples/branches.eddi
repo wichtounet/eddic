@@ -1,0 +1,20 @@
+Print("Hello 1");
+
+Print("Hello 2");
+
+if(3 > 2){
+	Print("Hello 4");
+	Print("Hello 5");
+}
+
+Print("Test");
+
+if(2 > 3){
+	Print("pee");
+	Print("2");
+} else {
+	Print("or poo");
+	Print("That is the question");
+}
+
+Print("This is the end of the world");

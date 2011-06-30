@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
 #include <cctype>
 
 #include "Lexer.hpp"
@@ -27,8 +28,6 @@ void Lexer::lex(string file) throw(CompilerException) {
 void Lexer::close(){
 	stream.close();
 }
-
-#include <iostream>
 
 bool Lexer::next(){
 	if(!buffer.empty()){
@@ -58,6 +57,10 @@ void Lexer::pushBack(){
 }
 
 bool Lexer::readNext(){
+	if(stream.eof()){
+		return false;
+	}	
+
 	char current;
 	stream >> current;
 
@@ -70,7 +73,7 @@ bool Lexer::readNext(){
 			
 		return false;
 	}
-	
+
 	if(current == '"'){
 		currentToken = string(1, current);
 
@@ -97,13 +100,13 @@ bool Lexer::readNext(){
 		} else if(currentToken == "false"){
 			currentType = FALSE;
 		} else if(currentToken == "if"){
-			currentType = FALSE;
+			currentType = IF;
 		} else if(currentToken == "else"){
-			currentType = FALSE;
+			currentType = ELSE;
 		} else {
 			currentType = WORD;
 		}
-			
+
 		return true;
 	} else if(isdigit(current)) {
 		currentToken = string(1, current);
@@ -128,7 +131,7 @@ bool Lexer::readNext(){
 			stream >> current;
 
 			if(current == '='){
-				currentType = EQUALS;
+				currentType = EQUALS_TOKEN;
 			} else {
 				stream.putback(current);
 			
@@ -167,7 +170,7 @@ bool Lexer::readNext(){
 			stream >> current;
 
 			if(current == '='){
-				currentType = NOT_EQUALS;
+				currentType = NOT_EQUALS_TOKEN;
 			} else {
 				return false;
 			}
@@ -177,11 +180,11 @@ bool Lexer::readNext(){
 			stream >> current;
 
 			if(current == '='){
-				currentType = LESS_EQUALS;
+				currentType = LESS_EQUALS_TOKEN;
 			} else {
 				stream.putback(current);
 				
-				currentType = LESS;
+				currentType = LESS_TOKEN;
 			}
 
 			return true;
@@ -189,11 +192,11 @@ bool Lexer::readNext(){
 			stream >> current;			
 
 			if(current == '='){
-				currentType = GREATER_EQUALS;
+				currentType = GREATER_EQUALS_TOKEN;
 			} else {
 				stream.putback(current);
 				
-				currentType = GREATER;
+				currentType = GREATER_TOKEN;
 			}
 
 			return true;
@@ -267,27 +270,27 @@ bool Lexer::isDivision() const {
 }
 
 bool Lexer::isEquals() const {
-	return currentType == EQUALS;
+	return currentType == EQUALS_TOKEN;
 }
 
 bool Lexer::isNotEquals() const {
-	return currentType == NOT_EQUALS;
+	return currentType == NOT_EQUALS_TOKEN;
 }
 
 bool Lexer::isGreater() const {
-	return currentType == GREATER;
+	return currentType == GREATER_TOKEN;
 }
 
 bool Lexer::isLess() const {
-	return currentType == LESS;
+	return currentType == LESS_TOKEN;
 }
 
 bool Lexer::isGreaterOrEquals() const {
-	return currentType == GREATER_EQUALS;
+	return currentType == GREATER_EQUALS_TOKEN;
 }
 
 bool Lexer::isLessOrEquals() const {
-	return currentType == LESS_EQUALS;
+	return currentType == LESS_EQUALS_TOKEN;
 }
 
 bool Lexer::isIf() const {
@@ -299,7 +302,7 @@ bool Lexer::isElse() const {
 }
 
 bool Lexer::isBooleanOperator() const {
-	return currentType >= EQUALS && currentType <= LESS_EQUALS;
+	return currentType >= EQUALS_TOKEN && currentType <= LESS_EQUALS_TOKEN;
 }
 
 bool Lexer::isBoolean() const {

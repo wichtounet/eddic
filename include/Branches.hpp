@@ -10,13 +10,23 @@
 
 #include "Nodes.hpp"
 
+enum BooleanOperator {
+	GREATER_OPERATOR,
+	LESS_OPERATOR, 
+	EQUALS_OPERATOR,
+	NOT_EQUALS_OPERATOR, 
+	GREATER_EQUALS_OPERATOR,
+	LESS_EQUALS_OPERATOR
+};
+
 class Condition : public ParseNode {
 	private: 
 		Value* lhs;
 		Value* rhs;
+		BooleanOperator operation;
 
 	public:
-		Condition(Value* l, Value* r) : lhs(l), rhs(r) {}
+		Condition(Value* l, Value* r, BooleanOperator o) : lhs(l), rhs(r), operation(o) {}
 		
 		virtual ~Condition(){
 			delete lhs;
@@ -30,11 +40,7 @@ class Condition : public ParseNode {
 };
 
 class Else : public ParseNode {
-	public:
-		virtual void write(ByteCodeFileWriter& writer);
-		virtual void checkVariables(Variables& variables) throw (CompilerException);
-		virtual void checkStrings(StringPool& pool);
-		virtual void optimize();
+	//Nothing special to do now
 };
 
 class If : public ParseNode {

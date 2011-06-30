@@ -143,19 +143,25 @@ ParseNode* Parser::parseIf() throw (CompilerException){
 
 	If* block = new If(condition);
 
-	while(lexer.next() && !lexer.isRightBrace()){
+	lexer.next();
+
+	while(!lexer.isRightBrace()){
 		block->addLast(parseInstruction());
-	}	
+
+		lexer.next();
+	}
 
 	if(!lexer.isRightBrace()){
 		throw new CompilerException("If body must be closed with right brace");
 	}
 
-	if(lexer.next() && lexer.isElse()){
-		block->setElse(parseElse());
-	} else {
-		lexer.pushBack();
-	}
+	if(lexer.next()){
+		if(lexer.isElse()){
+			block->setElse(parseElse());
+		} else {
+			lexer.pushBack();
+		}
+	} 
 
 	return block;
 }
@@ -328,10 +334,31 @@ Value* Parser::parseValue() throw (CompilerException) {
 }
 
 Condition* Parser::parseCondition() throw (CompilerException){
-	Condition* condition = NULL;
-		
-	//Read a condition
+	Value* lhs = parseValue();
 
-	return condition; 
+	if(!lexer.next()){
+		throw new CompilerException("waiting for a boolean operator");
+	}
+
+	BooleanOperator operation;
+	if(lexer.isGreater()){
+		operation = GREATER_OPERATOR;
+	} else if(lexer.isLess()){
+		operation = LESS_OPERATOR;
+	} else if(lexer.isEquals()){
+		operation = EQUALS_OPERATOR;
+	} else if(lexer.isNotEquals()){
+		operation = NOT_EQUALS_OPERATOR;
+	} else if(lexer.isGreaterOrEquals()){
+		operation = GREATER_EQUALS_OPERATOR;
+	} else if(lexer.isLessOrEquals()){
+		operation = LESS_EQUALS_OPERATOR;
+	} else {
+		throw new CompilerException("waiting for a boolean operator");
+	}
+	
+	Value* rhs = parseValue();	
+
+	return new Condition(lhs, rhs, operation); 
 }
 
