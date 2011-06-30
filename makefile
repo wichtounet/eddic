@@ -37,7 +37,7 @@ bin/Nodes.o : include/Nodes.hpp src/Nodes.cpp include/ParseNode.hpp
 bin/Operators.o : include/Operators.hpp src/Operators.cpp include/Nodes.hpp include/ParseNode.hpp
 	$(CC) $(CFLAGS) -o bin/Operators.o src/Operators.cpp
 
-bin/Branches.o : include/Branches.hpp include/Branches.hpp include/Nodes.hpp include/ParseNode.hpp
+bin/Branches.o : include/Branches.hpp src/Branches.cpp include/Nodes.hpp include/ParseNode.hpp
 	$(CC) $(CFLAGS) -o bin/Branches.o src/Branches.cpp
 
 bin/StringPool.o : include/StringPool.hpp src/StringPool.cpp
