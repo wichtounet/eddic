@@ -36,6 +36,10 @@ void Condition::write(ByteCodeFileWriter& writer){
 void Condition::checkVariables(Variables& variables) throw (CompilerException){
 	lhs->checkVariables(variables);
 	rhs->checkVariables(variables);
+
+	if(lhs->type() != INT || rhs->type() != INT){
+		throw new CompilerException("Can only compare integers");
+	}
 }
 
 void Condition::checkStrings(StringPool& pool){
