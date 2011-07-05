@@ -29,6 +29,10 @@ void Declaration::checkVariables(Variables& variables) throw (CompilerException)
 	}
 }
 
+void Declaration::checkStrings(StringPool& pool){
+	value->checkStrings(pool);
+}
+
 void Assignment::checkVariables(Variables& variables) throw (CompilerException){
 	if(!variables.exists(m_variable)){
 		throw CompilerException("Variable has not  been declared");
@@ -45,6 +49,10 @@ void Assignment::checkVariables(Variables& variables) throw (CompilerException){
 	}
 }
 
+void Assignment::checkStrings(StringPool& pool){
+	value->checkStrings(pool);
+}
+
 void VariableValue::checkVariables(Variables& variables) throw (CompilerException){
 	if(!variables.exists(m_variable)){
 		throw CompilerException("Variable has not been declared");
@@ -56,7 +64,11 @@ void VariableValue::checkVariables(Variables& variables) throw (CompilerExceptio
 	m_index = variable->index();
 }
 
+#include <iostream>
+
 void Litteral::checkStrings(StringPool& pool){
+	std::cout << "Litteral::check " << m_litteral << std::endl;
+
 	m_index = pool.index(m_litteral);	
 }
 
@@ -103,6 +115,14 @@ void Print::write(ByteCodeFileWriter& writer){
 
 			break;
 	}
+}
+
+void Print::checkStrings(StringPool& pool){
+	value->checkStrings(pool);
+}
+
+void Print::checkVariables(Variables& variables) throw (CompilerException) {
+	value->checkVariables(variables);
 }
 
 void Integer::write(ByteCodeFileWriter& writer){

@@ -60,7 +60,7 @@ void If::write(ByteCodeFileWriter& writer){
 
 	int a = labels++;
 
-	writer.writeOneOperandCall(JUMP_IF, a);
+	writer.writeOneOperandCall(JUMP_IF_NOT, a);
 	
 	ParseNode::write(writer);
 

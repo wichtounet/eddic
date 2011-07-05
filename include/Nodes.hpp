@@ -39,6 +39,7 @@ class Declaration : public ParseNode {
 		Declaration(Type type, const std::string& variable, Value* v) : m_type(type), m_variable(variable), value(v) {};
 		~Declaration(){delete value;}
 
+		void checkStrings(StringPool& pool);
 		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer);	
 		int index(){return m_index;}
@@ -53,6 +54,8 @@ class Print : public ParseNode {
 		Print(Value* v) : value(v)  {};
 		~Print(){delete value;}
 		
+		void checkStrings(StringPool& pool);
+		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer);	
 };
 
@@ -66,6 +69,7 @@ class Assignment : public ParseNode {
 		Assignment(const std::string& variable, Value* v) : m_variable(variable), value(v) {};
 		~Assignment(){delete value;}
 		
+		void checkStrings(StringPool& pool);
 		void checkVariables(Variables& variables) throw (CompilerException);
 		void write(ByteCodeFileWriter& writer);	
 };

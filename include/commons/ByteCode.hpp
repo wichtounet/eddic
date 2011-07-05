@@ -10,7 +10,7 @@
 
 enum ByteCode {
 	END = 0, 
-
+	
 	LABEL = 5,
 
 	SLOAD = 10, 
@@ -21,9 +21,10 @@ enum ByteCode {
 
 	LDCI = 30,
 	LDCS = 31,
-
-	PRINTI = 40,
-	PRINTS = 41, 
+	
+	JUMP = 40, 
+	JUMP_IF = 41, 
+	JUMP_IF_NOT = 42,
 
 	IADD = 50, 
 	SADD = 51,
@@ -43,9 +44,8 @@ enum ByteCode {
 	GREATER_THAN_EQUALS = 104, 
 	LESS_THAN_EQUALS = 105,
 	
-	JUMP = 120, 
-	JUMP_IF = 121, 
-	JUMP_IF_NOT = 122
+	PRINTI = 110,
+	PRINTS = 111, 
 };
 
 #endif

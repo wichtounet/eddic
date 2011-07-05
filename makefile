@@ -1,5 +1,5 @@
 CC = g++
-DEBUG = -g
+DEBUG = 
 CFLAGS = -Wall -Wextra -o3 -c $(DEBUG) -Iinclude 
 LFLAGS = -Wall -Wextra $(DEBUG) -leddi-commons 
 OBJECTS = bin/eddi.o bin/Compiler.o bin/Lexer.o bin/ByteCodeFileWriter.o bin/CompilerException.o bin/Variables.o bin/Parser.o bin/ParseNode.o bin/Nodes.o bin/StringPool.o bin/Options.o bin/Operators.o bin/Branches.o
