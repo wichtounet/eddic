@@ -64,11 +64,7 @@ void VariableValue::checkVariables(Variables& variables) throw (CompilerExceptio
 	m_index = variable->index();
 }
 
-#include <iostream>
-
 void Litteral::checkStrings(StringPool& pool){
-	std::cout << "Litteral::check " << m_litteral << std::endl;
-
 	m_index = pool.index(m_litteral);	
 }
 

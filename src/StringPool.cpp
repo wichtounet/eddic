@@ -7,8 +7,6 @@
 
 #include "StringPool.hpp"
 
-#include <iostream>
-
 using std::string;
 
 int StringPool::index(const std::string& value){
@@ -21,8 +19,6 @@ int StringPool::index(const std::string& value){
 		
 void StringPool::write(ByteCodeFileWriter& writer){
 	writer.writeInt(pool.size());
-
-	std::cout << "Write pool, size = " << pool.size() << std::endl;
 
 	std::map<std::string, int>::const_iterator it;
 	for(it = pool.begin(); it != pool.end(); ++it){

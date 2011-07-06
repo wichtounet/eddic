@@ -38,11 +38,7 @@ void ParseNode::checkVariables(Variables& variables) throw (CompilerException){
 	}
 }
 
-#include <iostream>
-
 void ParseNode::checkStrings(StringPool& pool){
-	std::cout << "ParseNode :: checkstrings" << std::endl;
-
 	list<ParseNode*>::const_iterator it = childs.begin();
 	list<ParseNode*>::const_iterator end = childs.end();
 
