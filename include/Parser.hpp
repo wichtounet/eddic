@@ -25,6 +25,7 @@ class Parser {
 		ParseNode* parseAssignment(const std::string& variable) throw (CompilerException);
 		ParseNode* parseIf() throw (CompilerException);
 		Condition* parseCondition() throw (CompilerException);
+		ElseIf* parseElseIf() throw (CompilerException);
 		Else* parseElse() throw (CompilerException);
 		Value* parseValue() throw (CompilerException);
   	

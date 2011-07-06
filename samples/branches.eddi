@@ -12,6 +12,8 @@ Print("Test");
 if(2 > 3){
 	Print("pee");
 	Print("2");
+} else if(6 > 3){ 
+	Print("Too bad");
 } else {
 	Print("or poo");
 	Print("That is the question");

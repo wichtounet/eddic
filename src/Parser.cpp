@@ -155,14 +155,56 @@ ParseNode* Parser::parseIf() throw (CompilerException){
 		throw new CompilerException("If body must be closed with right brace");
 	}
 
-	if(lexer.next()){
-		if(lexer.isElse()){
-			block->setElse(parseElse());
-		} else {
-			lexer.pushBack();
-		}
-	} 
+	while(true){
+		if(lexer.next()){
+			if(lexer.isElse()){
+				lexer.next();
 
+				if(lexer.isIf()){
+					block->addElseIf(parseElseIf());
+				} else {
+					lexer.pushBack();
+
+					block->setElse(parseElse());
+
+					break;
+				}	
+			} else {
+				lexer.pushBack();
+
+				break;
+			}
+		} else {
+			break;
+		}
+	}
+
+	return block;
+}
+
+ElseIf* Parser::parseElseIf() throw (CompilerException) {
+	assertNextIsLeftParenth(lexer, "An else if instruction must be followed by a condition surrounded by parenth");
+	
+	Condition* condition = parseCondition();
+
+	assertNextIsRightParenth(lexer, "The condition of the else if must be closed by a right parenth");
+
+	assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+
+	ElseIf* block = new ElseIf(condition);
+
+	lexer.next();
+
+	while(!lexer.isRightBrace()){
+		block->addLast(parseInstruction());
+
+		lexer.next();
+	}
+
+	if(!lexer.isRightBrace()){
+		throw new CompilerException("Else ff body must be closed with right brace");
+	}
+	
 	return block;
 }
 

@@ -9,6 +9,7 @@
 #define BRANCHES_H
 
 #include "Nodes.hpp"
+#include <vector>
 
 enum BooleanOperator {
 	GREATER_OPERATOR,
@@ -43,18 +44,34 @@ class Else : public ParseNode {
 	//Nothing special to do now
 };
 
+class ElseIf : public ParseNode {
+	private: 
+		Condition* m_condition;
+
+	public:
+		ElseIf(Condition* condition) : m_condition(condition) {}
+		
+		virtual ~ElseIf(){
+			delete m_condition;
+		}
+		
+		virtual void checkVariables(Variables& variables) throw (CompilerException);
+		virtual void checkStrings(StringPool& pool);
+		virtual void optimize();
+		
+		Condition* condition(){ return m_condition; }
+};
+
 class If : public ParseNode {
 	private: 
 		Condition* m_condition;
 		Else* m_elseBlock;		
+		std::vector<ElseIf*> elseIfs;
 
 	public:
-		If(Condition* condition) : m_condition(condition) {}
+		If(Condition* condition) : m_condition(condition), m_elseBlock(NULL) {}
 		
-		virtual ~If(){
-			delete m_condition;
-			delete m_elseBlock; //Can be null, problem ? 
-		}
+		virtual ~If();
 		
 		virtual void write(ByteCodeFileWriter& writer);
 		virtual void checkVariables(Variables& variables) throw (CompilerException);
@@ -62,6 +79,7 @@ class If : public ParseNode {
 		virtual void optimize();
 
 		void setElse(Else* elseBlock){m_elseBlock = elseBlock; }
+		void addElseIf(ElseIf* elseIf){elseIfs.push_back(elseIf);}
 };
 
 #endif
