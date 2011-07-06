@@ -6,6 +6,9 @@
 //=======================================================================
 
 #include "ParseNode.hpp"
+#include "Variables.hpp"
+#include "StringPool.hpp"
+#include "ByteCodeFileWriter.hpp"
 
 using std::list;
 using std::vector;

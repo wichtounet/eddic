@@ -7,6 +7,8 @@
 
 #include "Operators.hpp"
 #include "Options.hpp"
+#include "ByteCodeFileWriter.hpp"
+#include "Variables.hpp"
 
 #include <cassert>
 

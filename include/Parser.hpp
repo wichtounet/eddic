@@ -11,13 +11,18 @@
 #include <string>
 
 #include "CompilerException.hpp"
-#include "Lexer.hpp"
-#include "Nodes.hpp"
-#include "Branches.hpp"
+
+class Lexer;
+class Program;
+class ParseNode;
+class ElseIf;
+class Else;
+class Value;
+class Condition;
 
 class Parser {
   	private:
-	    	Lexer& lexer;
+		Lexer& lexer;
 		
 		ParseNode* parseInstruction() throw (CompilerException);
 		ParseNode* parseCall(const std::string& call) throw (CompilerException);

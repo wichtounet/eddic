@@ -9,7 +9,10 @@
 
 #include <commons/Timer.hpp>
 
+#include "StringPool.hpp"
+#include "Variables.hpp"
 #include "Compiler.hpp"
+#include "Nodes.hpp"
 #include "Parser.hpp"
 
 using std::string;

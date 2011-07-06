@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "StringPool.hpp"
+#include "ByteCodeFileWriter.hpp"
+#include "ParseNode.hpp"
 
 using std::string;
 

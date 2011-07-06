@@ -10,11 +10,12 @@
 
 #include <string>
 
-#include "Variables.hpp"
 #include "Lexer.hpp"
 #include "ByteCodeFileWriter.hpp"
-#include "Nodes.hpp"
-#include "StringPool.hpp"
+
+class Program;
+class Variables;
+class StringPool;
 
 class Compiler {
   public:

@@ -8,6 +8,8 @@
 #include "Nodes.hpp"
 #include "StringPool.hpp"
 #include "Options.hpp"
+#include "ByteCodeFileWriter.hpp"
+#include "Variables.hpp"
 
 #include <cassert>
 

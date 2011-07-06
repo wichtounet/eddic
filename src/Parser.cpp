@@ -14,6 +14,8 @@
 
 #include "Parser.hpp"
 #include "Operators.hpp"
+#include "Lexer.hpp"
+#include "Branches.hpp"
 
 using std::string;
 using std::ios_base;

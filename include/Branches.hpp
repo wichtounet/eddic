@@ -8,8 +8,9 @@
 #ifndef BRANCHES_H
 #define BRANCHES_H
 
-#include "Nodes.hpp"
 #include <vector>
+
+#include "Nodes.hpp"
 
 enum BooleanOperator {
 	GREATER_OPERATOR,

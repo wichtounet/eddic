@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "Branches.hpp"
+#include "ByteCodeFileWriter.hpp"
+#include "Variables.hpp"
 
 void Condition::write(ByteCodeFileWriter& writer){
 	lhs->write(writer);

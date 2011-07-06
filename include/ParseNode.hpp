@@ -11,15 +11,15 @@
 #include <list>
 #include <vector>
 
-#include "ByteCodeFileWriter.hpp"
-#include "Variables.hpp"
 #include "CompilerException.hpp"
 
 class ParseNode;
 
 typedef std::list<ParseNode*>::const_iterator NodeIterator;
 
+class ByteCodeFileWriter;
 class StringPool;
+class Variables;
 
 class ParseNode {
 	private:
