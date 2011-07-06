@@ -221,10 +221,6 @@ bool Lexer::isAssign() const{
 	return currentType == ASSIGN;
 }
 
-bool Lexer::isParenth() const{
-	return currentType == LEFT_PARENTH || currentType == RIGHT_PARENTH;
-}
-
 bool Lexer::isLeftParenth() const{
 	return currentType == LEFT_PARENTH;
 }

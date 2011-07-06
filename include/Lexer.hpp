@@ -67,7 +67,6 @@ class Lexer {
     	bool isWord() const;
     	bool isAssign() const;
     	bool isLitteral() const;
-    	bool isParenth() const;
     	bool isLeftParenth() const;
     	bool isRightParenth() const;
     	bool isLeftBrace() const;
