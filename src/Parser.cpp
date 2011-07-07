@@ -378,6 +378,16 @@ Value* Parser::parseValue() throw (CompilerException) {
 }
 
 Condition* Parser::parseCondition() throw (CompilerException){
+	lexer.next();
+
+	if(lexer.isTrue()){
+		return new True();
+	} else if(lexer.isFalse()){
+		return new False();
+	} else {
+		lexer.pushBack();
+	}
+
 	Value* lhs = parseValue();
 
 	if(!lexer.next()){
@@ -403,6 +413,6 @@ Condition* Parser::parseCondition() throw (CompilerException){
 	
 	Value* rhs = parseValue();	
 
-	return new Condition(lhs, rhs, operation); 
+	return new BooleanComparison(lhs, rhs, operation); 
 }
 

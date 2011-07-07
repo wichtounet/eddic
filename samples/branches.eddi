@@ -7,6 +7,16 @@ if(3 > 2){
 	Print("Hello 5");
 }
 
+if(true){
+	Print("true");
+}
+
+if(false){
+	Print("false");
+} else {
+	Print("Yippikai");
+}
+
 Print("Test");
 
 if(2 > 3){

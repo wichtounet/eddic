@@ -22,15 +22,19 @@ enum BooleanOperator {
 };
 
 class Condition : public ParseNode {
+	//Do nothing
+};
+
+class BooleanComparison : public Condition {
 	private: 
 		Value* lhs;
 		Value* rhs;
 		BooleanOperator operation;
 
 	public:
-		Condition(Value* l, Value* r, BooleanOperator o) : lhs(l), rhs(r), operation(o) {}
+		BooleanComparison(Value* l, Value* r, BooleanOperator o) : lhs(l), rhs(r), operation(o) {}
 		
-		virtual ~Condition(){
+		virtual ~BooleanComparison(){
 			delete lhs;
 			delete rhs;
 		}
@@ -39,6 +43,14 @@ class Condition : public ParseNode {
 		virtual void checkVariables(Variables& variables) throw (CompilerException);
 		virtual void checkStrings(StringPool& pool);
 		virtual void optimize();
+};
+
+class True : public Condition {
+	virtual void write(ByteCodeFileWriter& writer);
+};
+
+class False : public Condition {
+	virtual void write(ByteCodeFileWriter& writer);
 };
 
 class Else : public ParseNode {

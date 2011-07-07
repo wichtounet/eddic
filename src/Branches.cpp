@@ -9,7 +9,15 @@
 #include "ByteCodeFileWriter.hpp"
 #include "Variables.hpp"
 
-void Condition::write(ByteCodeFileWriter& writer){
+void True::write(ByteCodeFileWriter& writer){
+	writer.writeOneOperandCall(LDCI, 1);
+}
+
+void False::write(ByteCodeFileWriter& writer){
+	writer.writeOneOperandCall(LDCI, 0);
+}
+
+void BooleanComparison::write(ByteCodeFileWriter& writer){
 	lhs->write(writer);
 	rhs->write(writer);
 
@@ -35,7 +43,7 @@ void Condition::write(ByteCodeFileWriter& writer){
 	}
 }
 
-void Condition::checkVariables(Variables& variables) throw (CompilerException){
+void BooleanComparison::checkVariables(Variables& variables) throw (CompilerException){
 	lhs->checkVariables(variables);
 	rhs->checkVariables(variables);
 
@@ -44,12 +52,12 @@ void Condition::checkVariables(Variables& variables) throw (CompilerException){
 	}
 }
 
-void Condition::checkStrings(StringPool& pool){
+void BooleanComparison::checkStrings(StringPool& pool){
 	lhs->checkStrings(pool);
 	rhs->checkStrings(pool);
 }
 
-void Condition::optimize(){
+void BooleanComparison::optimize(){
 	lhs->optimize();
 	rhs->optimize();		
 }
