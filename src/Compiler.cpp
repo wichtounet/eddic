@@ -52,9 +52,10 @@ int Compiler::compile(string file){
 		program->optimize();
 
 		writer.open(output);
-		compile(program);
+		compile(program, *pool);
 		
 		delete program;
+		delete pool;
 
 		//TODO compile and link the assembly into an executable
 	} catch (CompilerException e){
@@ -74,12 +75,14 @@ int Compiler::compile(string file){
 	return code;
 }
 
-void Compiler::compile(Program* program){
+void Compiler::compile(Program* program, StringPool& pool){
 	writer.writeHeader();
 
 	program->write(writer);
 
 	writer.writeEnd();
+
+	pool.write(writer);
 }
 
 void Compiler::check(Program* program, Variables& variables){
@@ -102,6 +105,4 @@ void Compiler::checkStrings(Program* program, StringPool& pool){
 
 		node->checkStrings(pool);
 	}
-
-	program->addFirst(&pool);
 }

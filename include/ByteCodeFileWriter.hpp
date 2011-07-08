@@ -16,7 +16,7 @@
 
 class ByteCodeFileWriter {
   private:
-	std::ofstream stream;
+	std::ofstream m_stream;
   public:
 	ByteCodeFileWriter() {};
 	void open(const std::string& path) throw (CompilerException) ;
@@ -28,6 +28,8 @@ class ByteCodeFileWriter {
 	void writeEnd();
 	void writeLitteral(const std::string& value);
 	void writeInt(int value);
+
+	std::ofstream& stream(){return m_stream;}
 
 	void nativeWrite(std::string);
 };

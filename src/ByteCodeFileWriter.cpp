@@ -14,15 +14,15 @@ using std::string;
 using std::ios;
 
 void ByteCodeFileWriter::open(const std::string& path) throw (CompilerException) {
-	stream.open(path.c_str());
+	m_stream.open(path.c_str());
 
-	if(!stream){
+	if(!m_stream){
 		throw CompilerException("Unable to open the output file");
 	}
 }
 
 void ByteCodeFileWriter::close(){
-	stream.close();
+	m_stream.close();
 }
 
 void ByteCodeFileWriter::writeOneOperandCall(ByteCode bytecode, const std::string& litteral){
@@ -47,20 +47,20 @@ void ByteCodeFileWriter::writeHeader(){
         nativeWrite(".main");
 }
 
-void writePrintString(std::ofstream& stream){
-	stream << "print_string:";
-		stream << "pushl %ebp";
-		stream << "movl %esp, %ebp";
-		stream << "movl $0, %esi";
+void writePrintString(std::ofstream& m_stream){
+	m_stream << "print_string:" << std::endl;
+		m_stream << "pushl %ebp" << std::endl;
+		m_stream << "movl %esp, %ebp" << std::endl;
+		m_stream << "movl $0, %esi" << std::endl;
 
-		stream << "movl $4, %eax";
-		stream << "movl $1, %ebx";
-		stream << "movl 12(%esp), %ecx";
-		stream << "movl 8(%esp), %edx";
-		stream << "int $0x80";
+		m_stream << "movl $4, %eax" << std::endl;
+		m_stream << "movl $1, %ebx" << std::endl;
+		m_stream << "movl 12(%esp), %ecx" << std::endl;
+		m_stream << "movl 8(%esp), %edx" << std::endl;
+		m_stream << "int $0x80" << std::endl;
 
-		stream << "leave";
-		stream << "ret";
+		m_stream << "leave" << std::endl;
+		m_stream << "ret" << std::endl;
 }
 
 void ByteCodeFileWriter::writeEnd(){
@@ -69,7 +69,7 @@ void ByteCodeFileWriter::writeEnd(){
         nativeWrite("int $0x80");
 
 	//TODO Write only if necessary
-	writePrintString(stream);
+	writePrintString(m_stream);
 }
 
 void ByteCodeFileWriter::writeLitteral(const std::string& litteral){
@@ -82,5 +82,5 @@ void ByteCodeFileWriter::writeInt(int value){
 }
 
 void ByteCodeFileWriter::nativeWrite(std::string instruction){
-	stream << instruction << std::endl;
+	m_stream << instruction << std::endl;
 }

@@ -23,7 +23,7 @@ class Compiler {
   private:
     Lexer lexer;
     ByteCodeFileWriter writer;
-    void compile (Program* program);
+    void compile (Program* program, StringPool& pool);
 	void check(Program* program, Variables& variables);
 	void checkStrings(Program* program, StringPool& pool);
 };

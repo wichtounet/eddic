@@ -67,7 +67,7 @@ void VariableValue::checkVariables(Variables& variables) throw (CompilerExceptio
 }
 
 void Litteral::checkStrings(StringPool& pool){
-	m_index = pool.index(m_litteral);	
+	m_label = pool.index(m_litteral);	
 }
 
 void Declaration::write(ByteCodeFileWriter& writer){
@@ -105,11 +105,13 @@ void Print::write(ByteCodeFileWriter& writer){
 	
 	switch(value->type()){
 		case INT:
-			writer.writeSimpleCall(PRINTI);
+			writer.nativeWrite("call print_integer");
+			writer.nativeWrite("addl $4, %esp");
 
 			break;
 		case STRING:
-			writer.writeSimpleCall(PRINTS);
+			writer.nativeWrite("call print_string");
+			writer.nativeWrite("addl $8, %esp");
 
 			break;
 	}
@@ -141,7 +143,8 @@ void VariableValue::write(ByteCodeFileWriter& writer){
 }
 
 void Litteral::write(ByteCodeFileWriter& writer){
-	writer.writeOneOperandCall(LDCS, m_index);
+	writer.stream() << "pushl $" << "S" << m_label << std::endl;
+	writer.stream() << "pushl $" << m_litteral.size() << std::endl;
 }
 
 //Constantness
