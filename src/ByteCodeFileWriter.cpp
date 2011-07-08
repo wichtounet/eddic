@@ -56,3 +56,9 @@ void ByteCodeFileWriter::writeLitteral(const std::string& litteral){
 void ByteCodeFileWriter::writeInt(int value){
 	binary_write(&stream, value);
 }
+	
+
+void ByteCodeFileWriter::nativeWrite(std::string instruction){
+	//TODO Really write
+	std::cout << instruction << std::endl;
+}
