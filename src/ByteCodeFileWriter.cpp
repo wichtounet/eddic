@@ -47,10 +47,29 @@ void ByteCodeFileWriter::writeHeader(){
         nativeWrite(".main");
 }
 
+void writePrintString(std::ofstream& stream){
+	stream << "print_string:";
+		stream << "pushl %ebp";
+		stream << "movl %esp, %ebp";
+		stream << "movl $0, %esi";
+
+		stream << "movl $4, %eax";
+		stream << "movl $1, %ebx";
+		stream << "movl 12(%esp), %ecx";
+		stream << "movl 8(%esp), %edx";
+		stream << "int $0x80";
+
+		stream << "leave";
+		stream << "ret";
+}
+
 void ByteCodeFileWriter::writeEnd(){
 	nativeWrite("mov $1, %eax");
         nativeWrite("mov $0, %ebx");
         nativeWrite("int $0x80");
+
+	//TODO Write only if necessary
+	writePrintString(stream);
 }
 
 void ByteCodeFileWriter::writeLitteral(const std::string& litteral){

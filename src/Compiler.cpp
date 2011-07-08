@@ -50,11 +50,13 @@ int Compiler::compile(string file){
 		
 		//Optimize the parse tree
 		program->optimize();
-		writer.open(output);
 
+		writer.open(output);
 		compile(program);
 		
 		delete program;
+
+		//TODO compile and link the assembly into an executable
 	} catch (CompilerException e){
 		cout << e.what() << endl;
 		code = 1;
