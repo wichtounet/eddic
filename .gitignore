@@ -8,3 +8,4 @@ lib/*
 samples/perfs.eddi
 *.swp
 *.swo
+a.out
