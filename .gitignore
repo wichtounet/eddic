@@ -4,6 +4,7 @@ bin/*
 *.so
 lib/*
 *.v
+*.asm
 samples/perfs.eddi
 *.swp
 *.swo
