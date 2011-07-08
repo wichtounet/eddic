@@ -19,19 +19,14 @@ using std::string;
 using std::cout;
 using std::endl;
 
+void execCommand(string command);
+
 int Compiler::compile(string file){
 	cout << "Compile " << file << endl;
 
 	Timer timer;
 
-	string::size_type ext_pos = file.find_last_of( '.' );
-
-	string output = "main.asm";
-
-	if ( ext_pos != string::npos ){
-		output = file;
-		output.replace( ext_pos + 1, output.size() - 1, "asm" );
-	}
+	string output = "a.out";
 	
 	int code = 0;
 	try {
@@ -51,11 +46,24 @@ int Compiler::compile(string file){
 		//Optimize the parse tree
 		program->optimize();
 
-		writer.open(output);
+		writer.open("output.asm");
 		compile(program, *pool);
 		
 		delete program;
 		delete pool;
+
+		string asCommand = "as --32 -o output.o output.asm";
+
+		execCommand(asCommand);
+
+		string ldCommand = "ld -m elf_i386 -s -o ";
+		ldCommand += output;
+		ldCommand += " output.o";
+
+		execCommand(ldCommand);
+
+//as --32 -o assembly.o assembly.asm 
+//ld -m elf_i386 -s -o assembly assembly.o
 
 		//TODO compile and link the assembly into an executable
 	} catch (CompilerException e){
@@ -73,6 +81,18 @@ int Compiler::compile(string file){
 	cout << "Compilation took " << timer.elapsed() << "ms" << endl;
 	
 	return code;
+}
+
+void execCommand(string command){
+	char buffer[1024];
+	
+	FILE* stream = popen(command.c_str(), "r");
+
+	while(fgets(buffer, 1024, stream) != NULL){
+		cout << buffer;
+	}
+	
+	pclose(stream);
 }
 
 void Compiler::compile(Program* program, StringPool& pool){

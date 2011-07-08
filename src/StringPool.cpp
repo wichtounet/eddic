@@ -9,13 +9,16 @@
 #include "ByteCodeFileWriter.hpp"
 #include "ParseNode.hpp"
 
+#include <sstream>
+
 using std::string;
 
 std::string StringPool::label(const std::string& value){
 	if(pool.find(value) == pool.end()){
-		std::string label = "S";
-		label += ++currentString;
-		pool[value] = label;
+		std::stringstream ss;
+		ss << "S";
+		ss << ++currentString;
+		pool[value] = ss.str();
 	}
 
 	return pool[value];
