@@ -29,7 +29,6 @@ class ByteCodeFileWriter {
 	void writeLitteral(const std::string& value);
 	void writeInt(int value);
 
-
 	void nativeWrite(std::string);
 };
 
