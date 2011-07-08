@@ -11,9 +11,11 @@
 
 using std::string;
 
-int StringPool::index(const std::string& value){
+std::string StringPool::label(const std::string& value){
 	if(pool.find(value) == pool.end()){
-		pool[value] = ++currentString;
+		std::string label = "S";
+		label += ++currentString;
+		pool[value] = label;
 	}
 
 	return pool[value];
@@ -22,9 +24,9 @@ int StringPool::index(const std::string& value){
 void StringPool::write(ByteCodeFileWriter& writer){
 	writer.stream() << ".data" << std::endl;
 
-	std::map<std::string, int>::const_iterator it;
+	std::map<std::string, std::string>::const_iterator it;
 	for(it = pool.begin(); it != pool.end(); ++it){
-		writer.stream() << "S" << it->second << ":" << std::endl;
+		writer.stream() << it->second << ":" << std::endl;
 		writer.stream() << ".string " << it->first << std::endl;		
 	}	
 }

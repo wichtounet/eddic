@@ -15,11 +15,11 @@
 
 class StringPool : public ParseNode {
 	private:
-		std::map<std::string, int> pool;
+		std::map<std::string, std::string> pool;
 		unsigned int currentString;
 	public:
 		StringPool(){currentString = 0;}
-		int index(const std::string& value);
+		std::string label(const std::string& value);
 		void write(ByteCodeFileWriter& writer);	
 };
 

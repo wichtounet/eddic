@@ -67,7 +67,7 @@ void VariableValue::checkVariables(Variables& variables) throw (CompilerExceptio
 }
 
 void Litteral::checkStrings(StringPool& pool){
-	m_label = pool.index(m_litteral);	
+	m_label = pool.label(m_litteral);	
 }
 
 void Declaration::write(ByteCodeFileWriter& writer){
@@ -143,7 +143,7 @@ void VariableValue::write(ByteCodeFileWriter& writer){
 }
 
 void Litteral::write(ByteCodeFileWriter& writer){
-	writer.stream() << "pushl $" << "S" << m_label << std::endl;
+	writer.stream() << "pushl $" << m_label << std::endl;
 	writer.stream() << "pushl $" << m_litteral.size() << std::endl;
 }
 

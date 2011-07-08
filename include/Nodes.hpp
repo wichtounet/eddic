@@ -77,7 +77,7 @@ class Assignment : public ParseNode {
 class Litteral : public Value {
 	private:
 		std::string m_litteral;
-		int m_label;
+		std::string m_label;
 	public:
 		Litteral(const std::string& litteral) : m_litteral(litteral) {m_type = STRING;};
 		void checkStrings(StringPool& pool);
