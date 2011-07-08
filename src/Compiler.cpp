@@ -26,11 +26,11 @@ int Compiler::compile(string file){
 
 	string::size_type ext_pos = file.find_last_of( '.' );
 
-	string output = "main.v";
+	string output = "main.asm";
 
 	if ( ext_pos != string::npos ){
 		output = file;
-		output.replace( ext_pos + 1, output.size() - 1, "v" );
+		output.replace( ext_pos + 1, output.size() - 1, "asm" );
 	}
 	
 	int code = 0;
