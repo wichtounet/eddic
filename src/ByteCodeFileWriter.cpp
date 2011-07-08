@@ -44,7 +44,7 @@ void ByteCodeFileWriter::writeHeader(){
         nativeWrite(".text");
         nativeWrite(".globl main");
 
-        nativeWrite(".main");
+        nativeWrite("main:");
 }
 
 void writePrintString(std::ofstream& m_stream){

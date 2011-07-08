@@ -20,6 +20,8 @@ int StringPool::index(const std::string& value){
 }
 		
 void StringPool::write(ByteCodeFileWriter& writer){
+	writer.stream() << ".data" << std::endl;
+
 	std::map<std::string, int>::const_iterator it;
 	for(it = pool.begin(); it != pool.end(); ++it){
 		writer.stream() << "S" << it->second << ":" << std::endl;
