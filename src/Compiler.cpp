@@ -61,11 +61,6 @@ int Compiler::compile(string file){
 		ldCommand += " output.o";
 
 		execCommand(ldCommand);
-
-//as --32 -o assembly.o assembly.asm 
-//ld -m elf_i386 -s -o assembly assembly.o
-
-		//TODO compile and link the assembly into an executable
 	} catch (CompilerException e){
 		cout << e.what() << endl;
 		code = 1;
