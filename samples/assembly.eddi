@@ -1,1 +1,4 @@
 Print("Hello 1");
+Print(555);
+Print("Salut");
+Print(666);

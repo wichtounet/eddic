@@ -126,7 +126,7 @@ void Print::checkVariables(Variables& variables) throw (CompilerException) {
 }
 
 void Integer::write(ByteCodeFileWriter& writer){
-	writer.writeOneOperandCall(LDCI, m_value);	
+	writer.stream() << "pushl $" << m_value << std::endl;
 }
 
 void VariableValue::write(ByteCodeFileWriter& writer){
