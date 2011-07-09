@@ -18,7 +18,7 @@ class StringPool : public ParseNode {
 		std::map<std::string, std::string> pool;
 		unsigned int currentString;
 	public:
-		StringPool(){currentString = 0;}
+		StringPool();
 		std::string label(const std::string& value);
 		void write(ByteCodeFileWriter& writer);	
 };

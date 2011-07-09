@@ -108,11 +108,23 @@ void Print::write(ByteCodeFileWriter& writer){
 			writer.nativeWrite("call print_integer");
 			writer.nativeWrite("addl $4, %esp");
 
+			//TODO Optimize that shit
+			writer.nativeWrite("pushl $S1");
+			writer.nativeWrite("pushl $1");
+			writer.nativeWrite("call print_string");
+			writer.nativeWrite("addl $8, %esp");
+
 			break;
 		case STRING:
 			writer.nativeWrite("call print_string");
 			writer.nativeWrite("addl $8, %esp");
 
+			//TODO Optimize that shit
+			writer.nativeWrite("pushl $S1");
+			writer.nativeWrite("pushl $1");
+			writer.nativeWrite("call print_string");
+			writer.nativeWrite("addl $8, %esp");
+			
 			break;
 	}
 }
@@ -144,7 +156,7 @@ void VariableValue::write(ByteCodeFileWriter& writer){
 
 void Litteral::write(ByteCodeFileWriter& writer){
 	writer.stream() << "pushl $" << m_label << std::endl;
-	writer.stream() << "pushl $" << m_litteral.size() << std::endl;
+	writer.stream() << "pushl $" << (m_litteral.size() - 2) << std::endl;
 }
 
 //Constantness

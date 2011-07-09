@@ -1,4 +1,2 @@
-Print("Hello 1");
-Print(555);
-Print("Salut");
-Print(666);
+Print("test");
+Print(1);
