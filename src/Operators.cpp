@@ -60,28 +60,46 @@ void Subtraction::write(ByteCodeFileWriter& writer){
 	lhs->write(writer);
 	rhs->write(writer);
 
-	writer.writeSimpleCall(ISUB);
+	writer.stream() << "movl (%esp), %ecx" << std::endl;
+	writer.stream() << "movl 4(%esp), %eax" << std::endl;
+	writer.stream() << "subl %ecx, %eax" << std::endl;
+	writer.stream() << "addl $8, %esp" << std::endl;
+	writer.stream() << "pushl %eax" << std::endl;
 }
 
 void Multiplication::write(ByteCodeFileWriter& writer){
 	lhs->write(writer);
 	rhs->write(writer);
 
-	writer.writeSimpleCall(IMUL);
+	writer.stream() << "movl (%esp), %eax" << std::endl;
+	writer.stream() << "movl 4(%esp), %ecx" << std::endl;
+	writer.stream() << "mull %ecx" << std::endl;
+	writer.stream() << "addl $8, %esp" << std::endl;
+	writer.stream() << "pushl %eax" << std::endl;
 }
 
 void Division::write(ByteCodeFileWriter& writer){
 	lhs->write(writer);
 	rhs->write(writer);
 
-	writer.writeSimpleCall(IMUL);
+	writer.stream() << "movl (%esp), %ecx" << std::endl;
+	writer.stream() << "movl 4(%esp), %eax" << std::endl;
+	writer.stream() << "movl $0, %edx" << std::endl;
+	writer.stream() << "divl %ecx" << std::endl;
+	writer.stream() << "addl $8, %esp" << std::endl;
+	writer.stream() << "pushl %eax" << std::endl;
 }
 
 void Modulo::write(ByteCodeFileWriter& writer){
 	lhs->write(writer);
 	rhs->write(writer);
 
-	writer.writeSimpleCall(IMOD);
+	writer.stream() << "movl (%esp), %ecx" << std::endl;
+	writer.stream() << "movl 4(%esp), %eax" << std::endl;
+	writer.stream() << "movl $0, %edx" << std::endl;
+	writer.stream() << "divl %ecx" << std::endl;
+	writer.stream() << "addl $8, %esp" << std::endl;
+	writer.stream() << "pushl %edx" << std::endl;
 }
 
 //Constantness
