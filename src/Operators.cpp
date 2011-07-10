@@ -46,7 +46,11 @@ void Addition::write(ByteCodeFileWriter& writer){
 	rhs->write(writer);
 
 	if(m_type == INT){
-		writer.writeSimpleCall(IADD);
+		writer.stream() << "movl (%esp), %eax" << std::endl;
+		writer.stream() << "movl 4(%esp), %ecx" << std::endl;
+		writer.stream() << "addl %ecx, %eax" << std::endl;
+		writer.stream() << "addl $8, %esp" << std::endl;
+		writer.stream() << "pushl %eax" << std::endl;
 	} else {
 		writer.writeSimpleCall(SADD);
 	}
