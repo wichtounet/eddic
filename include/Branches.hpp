@@ -12,45 +12,35 @@
 
 #include "Nodes.hpp"
 
-enum BooleanOperator {
+enum BooleanCondition {
 	GREATER_OPERATOR,
 	LESS_OPERATOR, 
 	EQUALS_OPERATOR,
 	NOT_EQUALS_OPERATOR, 
 	GREATER_EQUALS_OPERATOR,
-	LESS_EQUALS_OPERATOR
+	LESS_EQUALS_OPERATOR,
+	TRUE_VALUE,
+	FALSE_VALUE
 };
 
-class Condition : public ParseNode {
-	//Do nothing
-};
-
-class BooleanComparison : public Condition {
-	private: 
-		Value* lhs;
-		Value* rhs;
-		BooleanOperator operation;
+class Condition {
+	private:	
+		BooleanCondition m_condition;
+		Value* m_lhs;
+		Value* m_rhs;
 
 	public:
-		BooleanComparison(Value* l, Value* r, BooleanOperator o) : lhs(l), rhs(r), operation(o) {}
-		
-		virtual ~BooleanComparison(){
-			delete lhs;
-			delete rhs;
+		Condition(BooleanCondition condition) : m_condition(condition), m_lhs(NULL), m_rhs(NULL) {}
+		Condition(BooleanCondition condition, Value* lhs, Value* rhs) : m_condition(condition), m_lhs(lhs), m_rhs(rhs) {}
+		~Condition(){
+			delete m_lhs;
+			delete m_rhs;
 		}
 
-		virtual void write(ByteCodeFileWriter& writer);
-		virtual void checkVariables(Variables& variables) throw (CompilerException);
-		virtual void checkStrings(StringPool& pool);
-		virtual void optimize();
-};
-
-class True : public Condition {
-	virtual void write(ByteCodeFileWriter& writer);
-};
-
-class False : public Condition {
-	virtual void write(ByteCodeFileWriter& writer);
+		Value* lhs(){ return m_lhs; }
+		Value* rhs(){ return m_rhs; }
+		BooleanCondition condition(){ return m_condition; }
+		bool isOperator(){ return m_lhs == NULL || m_rhs == NULL; }
 };
 
 class Else : public ParseNode {
@@ -93,6 +83,8 @@ class If : public ParseNode {
 
 		void setElse(Else* elseBlock){m_elseBlock = elseBlock; }
 		void addElseIf(ElseIf* elseIf){elseIfs.push_back(elseIf);}
+		
+		Condition* condition(){ return m_condition; }
 };
 
 #endif

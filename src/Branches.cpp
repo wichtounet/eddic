@@ -9,59 +9,6 @@
 #include "ByteCodeFileWriter.hpp"
 #include "Variables.hpp"
 
-void True::write(ByteCodeFileWriter& writer){
-	writer.writeOneOperandCall(LDCI, 1);
-}
-
-void False::write(ByteCodeFileWriter& writer){
-	writer.writeOneOperandCall(LDCI, 0);
-}
-
-void BooleanComparison::write(ByteCodeFileWriter& writer){
-	lhs->write(writer);
-	rhs->write(writer);
-
-	switch(operation){
-		case GREATER_OPERATOR:
-			writer.writeSimpleCall(GREATER_THAN);
-			return;
-		case LESS_OPERATOR: 
-			writer.writeSimpleCall(LESS_THAN);
-			return;
-		case EQUALS_OPERATOR:
-			writer.writeSimpleCall(EQUALS);
-			return;
-		case NOT_EQUALS_OPERATOR: 
-			writer.writeSimpleCall(NOT_EQUALS);
-			return;
-		case GREATER_EQUALS_OPERATOR:
-			writer.writeSimpleCall(GREATER_THAN_EQUALS);
-			return;
-		case LESS_EQUALS_OPERATOR : 
-			writer.writeSimpleCall(LESS_THAN_EQUALS);
-			return;
-	}
-}
-
-void BooleanComparison::checkVariables(Variables& variables) throw (CompilerException){
-	lhs->checkVariables(variables);
-	rhs->checkVariables(variables);
-
-	if(lhs->type() != INT || rhs->type() != INT){
-		throw new CompilerException("Can only compare integers");
-	}
-}
-
-void BooleanComparison::checkStrings(StringPool& pool){
-	lhs->checkStrings(pool);
-	rhs->checkStrings(pool);
-}
-
-void BooleanComparison::optimize(){
-	lhs->optimize();
-	rhs->optimize();		
-}
-
 If::~If(){
 	delete m_condition;
 	delete m_elseBlock; //Can be null, problem ? 
@@ -71,50 +18,92 @@ If::~If(){
 	}
 }
 
+void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label){
+	if(condition->isOperator()){
+		condition->lhs()->write(writer);
+		condition->rhs()->write(writer);
+	}
+
+	switch(condition->condition()){
+		case TRUE_VALUE:
+			//No need to jump	
+			
+			break;
+		case FALSE_VALUE:
+			writer.stream() << "jmp L" << label << std::endl;
+			
+			break;
+		case GREATER_OPERATOR:
+			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "jle L" << label << std::endl; 
+			
+			break;
+		case GREATER_EQUALS_OPERATOR:
+			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "jl L" << label << std::endl; 
+			
+			break;
+		case LESS_OPERATOR:
+			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "jge L" << label << std::endl; 
+			
+			break;
+		case LESS_EQUALS_OPERATOR:
+			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "jg L" << label << std::endl; 
+			
+			break;
+		case EQUALS_OPERATOR:
+			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "jne L" << label << std::endl; 
+			
+			break;
+		case NOT_EQUALS_OPERATOR:
+			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "je L" << label << std::endl; 
+			
+			break;
+	}
+}
+
 void If::write(ByteCodeFileWriter& writer){
 	//Make something accessible for others operations
 	static int labels = 0;
 
 	if(elseIfs.empty()){
-		m_condition->write(writer);
-	
 		int a = labels++;
 
-		writer.writeOneOperandCall(JUMP_IF_NOT, a);
+		writeCondition(writer, m_condition, a);
 
 		ParseNode::write(writer);
 
 		if(m_elseBlock){
 			int b = labels++;
 
-			writer.writeOneOperandCall(JUMP, b);
+			writer.stream() << "jump L" << b << std::endl;
 
-			writer.writeOneOperandCall(LABEL, a);
+			writer.stream() << "L" << a << ":" << std::endl;
 
 			m_elseBlock->write(writer);
 
-			writer.writeOneOperandCall(LABEL, b);
+			writer.stream() << "L" << b << ":" << std::endl;
 		} else {
-			writer.writeOneOperandCall(LABEL, a);
+			writer.stream() << "L" << a << ":" << std::endl;
 		}
 	} else {
-		m_condition->write(writer);
-
 		int end = labels++;
 		int next = labels++;
 
-		writer.writeOneOperandCall(JUMP_IF_NOT, next);
+		writeCondition(writer, m_condition, next);
 
 		ParseNode::write(writer);
 
-		writer.writeOneOperandCall(JUMP, end);
+		writer.stream() << "jmp L" << end << std::endl;
 
 		for(std::vector<ElseIf*>::size_type i = 0; i < elseIfs.size(); ++i){
 			ElseIf* elseIf = elseIfs[i];
 			
-			writer.writeOneOperandCall(LABEL, next);
-			
-			elseIf->condition()->write(writer);
+			writer.stream() << "L" << next << ":" << std::endl;
 		
 			//Last elseif
 			if(i == elseIfs.size() - 1){
@@ -126,26 +115,35 @@ void If::write(ByteCodeFileWriter& writer){
 			} else {
 				next = labels++;
 			}
+			
+			writeCondition(writer, elseIf->condition(), next);
 	
 			writer.writeOneOperandCall(JUMP_IF_NOT, next);
 
 			elseIf->write(writer);
 
-			writer.writeOneOperandCall(JUMP, end);
+			writer.stream() << "jmp L" << end << std::endl;
 		}
 
 		if(m_elseBlock){
-			writer.writeOneOperandCall(LABEL, next);
+			writer.stream() << "L" << next << ":" << std::endl;
 			
 			m_elseBlock->write(writer);
 		}
 		
-		writer.writeOneOperandCall(LABEL, end);
+		writer.stream() << "L" << end << ":" << std::endl;
 	}
 }
 
 void If::checkVariables(Variables& variables) throw (CompilerException){
-	m_condition->checkVariables(variables);
+	if(m_condition->isOperator()){
+		m_condition->lhs()->checkVariables(variables);
+		m_condition->rhs()->checkVariables(variables);
+
+		if(m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT){
+			throw new CompilerException("Can only compare integers");
+		}
+	}
 
 	if(m_elseBlock){
 		m_elseBlock->checkVariables(variables);
@@ -159,8 +157,11 @@ void If::checkVariables(Variables& variables) throw (CompilerException){
 }
 
 void If::checkStrings(StringPool& pool){
-	m_condition->checkStrings(pool);
-
+	if(m_condition->isOperator()){
+		m_condition->lhs()->checkStrings(pool);
+		m_condition->rhs()->checkStrings(pool);
+	}
+	
 	if(m_elseBlock){
 		m_elseBlock->checkStrings(pool);
 	}
@@ -173,8 +174,11 @@ void If::checkStrings(StringPool& pool){
 }
 
 void If::optimize(){
-	m_condition->optimize();
-	
+	if(m_condition->isOperator()){
+		m_condition->lhs()->optimize();
+		m_condition->rhs()->optimize();		
+	}
+
 	for(std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it){
 		(*it)->optimize();
 	}
@@ -183,19 +187,32 @@ void If::optimize(){
 }
 
 void ElseIf::checkVariables(Variables& variables) throw (CompilerException){
-	m_condition->checkVariables(variables);
+	if(m_condition->isOperator()){
+		m_condition->lhs()->checkVariables(variables);
+		m_condition->rhs()->checkVariables(variables);
+
+		if(m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT){
+			throw new CompilerException("Can only compare integers");
+		}
+	}
 
 	ParseNode::checkVariables(variables);	
 }
 
 void ElseIf::checkStrings(StringPool& pool){
-	m_condition->checkStrings(pool);
+	if(m_condition->isOperator()){
+		m_condition->lhs()->checkStrings(pool);
+		m_condition->rhs()->checkStrings(pool);
+	}
 
 	ParseNode::checkStrings(pool);	
 }
 
 void ElseIf::optimize(){
-	m_condition->optimize();
+	if(m_condition->isOperator()){
+		m_condition->lhs()->optimize();
+		m_condition->rhs()->optimize();		
+	}
 
 	ParseNode::optimize();
 }

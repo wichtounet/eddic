@@ -381,9 +381,9 @@ Condition* Parser::parseCondition() throw (CompilerException){
 	lexer.next();
 
 	if(lexer.isTrue()){
-		return new True();
+		return new Condition(TRUE_VALUE);
 	} else if(lexer.isFalse()){
-		return new False();
+		return new Condition(FALSE_VALUE);
 	} else {
 		lexer.pushBack();
 	}
@@ -394,7 +394,7 @@ Condition* Parser::parseCondition() throw (CompilerException){
 		throw new CompilerException("waiting for a boolean operator");
 	}
 
-	BooleanOperator operation;
+	BooleanCondition operation;
 	if(lexer.isGreater()){
 		operation = GREATER_OPERATOR;
 	} else if(lexer.isLess()){
@@ -413,6 +413,6 @@ Condition* Parser::parseCondition() throw (CompilerException){
 	
 	Value* rhs = parseValue();	
 
-	return new BooleanComparison(lhs, rhs, operation); 
+	return new Condition(operation, lhs, rhs); 
 }
 
