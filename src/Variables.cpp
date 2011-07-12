@@ -50,3 +50,20 @@ Variable* Variables::create(const std::string& variable, Type type){
 
 	return v;
 }
+
+void write(ByteCodeFileWriter& writer){
+	map<string, Variable*>::const_iterator it = variables.begin();
+	map<string, Variable*>::const_iterator end = variables.end();
+	
+	for( ; it != end; ++it){
+		if(*it->type() == INTEGER){
+			writer.stream() << "VI" << *it->index() << ":" << std::endl;
+			writer.stream() << ".long 0" << std::endl;
+		} else if(*it->type() == STRING){
+			writer.stream() << "VS" << *it->index() << ":" << std::endl;
+			writer.stream() << ".long 0" << std::endl;
+			writer.stream() << ".long 0" << std::endl;	
+		}
+	}
+}
+

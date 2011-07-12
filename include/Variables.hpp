@@ -13,6 +13,8 @@
 
 #include <commons/Types.hpp>
 
+#include "ByteCodeFileWriter.hpp"
+
 class Variable {
 	private:
 		std::string m_name;
@@ -26,17 +28,17 @@ class Variable {
 };
 
 class Variables {
-  private:
-    std::map<std::string, Variable*> variables;
-    unsigned int currentVariable;
-  public:
-	Variables(){currentVariable = 0;};
-	~Variables();
-    bool exists(const std::string& variable) const;
-    unsigned int index(const std::string& variable) const;
-    Variable* create(const std::string& variable, Type type);
-	Variable* find(const std::string& variable);
-
+	private:
+		std::map<std::string, Variable*> variables;
+		unsigned int currentVariable;
+	public:
+		Variables(){currentVariable = 0;};
+		~Variables();
+		bool exists(const std::string& variable) const;
+		unsigned int index(const std::string& variable) const;
+		Variable* create(const std::string& variable, Type type);
+		Variable* find(const std::string& variable);
+		void write(ByteCodeFileWriter& writer);
 };
 
 #endif
