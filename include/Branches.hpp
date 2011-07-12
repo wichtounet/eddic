@@ -40,7 +40,7 @@ class Condition {
 		Value* lhs(){ return m_lhs; }
 		Value* rhs(){ return m_rhs; }
 		BooleanCondition condition(){ return m_condition; }
-		bool isOperator(){ return m_lhs == NULL || m_rhs == NULL; }
+		bool isOperator(){ return m_lhs != NULL || m_rhs != NULL; }
 };
 
 class Else : public ParseNode {

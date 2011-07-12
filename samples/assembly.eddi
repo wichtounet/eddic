@@ -13,3 +13,23 @@ Print(7 % 5);
 
 Print("444 - 333");
 Print(444 - 333);
+
+if(4 > 3){
+	Print("Cool");
+} else {
+	Print("Pas cool");
+}
+
+if(3 == 3){
+	Print("Cool");
+} else {
+	Print("Pas cool");
+}
+
+if(55 < 33){
+	Print("Pas cool");
+} else if(33 <= 11){
+	Print("Pas cool");
+} else {
+	Print("Cool");
+}

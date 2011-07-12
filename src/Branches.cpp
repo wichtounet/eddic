@@ -22,6 +22,10 @@ void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label)
 	if(condition->isOperator()){
 		condition->lhs()->write(writer);
 		condition->rhs()->write(writer);
+
+		writer.stream() << "movl 4(%esp), %eax" << std::endl;
+		writer.stream() << "movl (%esp), %ebx" << std::endl;
+		writer.stream() << "addl $8, %esp" << std::endl;
 	}
 
 	switch(condition->condition()){
@@ -34,32 +38,32 @@ void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label)
 			
 			break;
 		case GREATER_OPERATOR:
-			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "cmpl %ebx, %eax" << std::endl;
 			writer.stream() << "jle L" << label << std::endl; 
 			
 			break;
 		case GREATER_EQUALS_OPERATOR:
-			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "cmpl %ebx, %eax" << std::endl;
 			writer.stream() << "jl L" << label << std::endl; 
 			
 			break;
 		case LESS_OPERATOR:
-			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "cmpl %ebx, %eax" << std::endl;
 			writer.stream() << "jge L" << label << std::endl; 
 			
 			break;
 		case LESS_EQUALS_OPERATOR:
-			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "cmpl %ebx, %eax" << std::endl;
 			writer.stream() << "jg L" << label << std::endl; 
 			
 			break;
 		case EQUALS_OPERATOR:
-			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "cmpl %ebx, %eax" << std::endl;
 			writer.stream() << "jne L" << label << std::endl; 
 			
 			break;
 		case NOT_EQUALS_OPERATOR:
-			writer.stream() << "cmpl (%esp), 4(%esp)" << std::endl;
+			writer.stream() << "cmpl %ebx, %eax" << std::endl;
 			writer.stream() << "je L" << label << std::endl; 
 			
 			break;
@@ -80,7 +84,7 @@ void If::write(ByteCodeFileWriter& writer){
 		if(m_elseBlock){
 			int b = labels++;
 
-			writer.stream() << "jump L" << b << std::endl;
+			writer.stream() << "jmp L" << b << std::endl;
 
 			writer.stream() << "L" << a << ":" << std::endl;
 
