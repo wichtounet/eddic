@@ -148,8 +148,7 @@ void Integer::write(ByteCodeFileWriter& writer){
 void VariableValue::write(ByteCodeFileWriter& writer){
 	switch(m_type){
 		case INT:
-			writer.stream() << "movl VI" << m_index << ", %eax" << std::endl;
-			writer.stream() << "pushl %eax" << std::endl;
+			writer.stream() << "pushl VI" << m_index << std::endl;
 
 			break;
 		case STRING:
