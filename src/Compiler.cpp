@@ -48,6 +48,8 @@ int Compiler::compile(string file){
 
 		writer.open("output.asm");
 		compile(program, *pool);
+
+		variables.write(writer);
 		
 		delete program;
 		delete pool;

@@ -69,7 +69,6 @@ void writePrintString(std::ofstream& m_stream){
 
 void writePrintInteger(std::ofstream& m_stream){
 	m_stream << "print_integer:" << std::endl 
-		 << "print_integer:" << std::endl
 		 << "pushl %ebp" << std::endl
 		 << "movl %esp, %ebp" << std::endl
 		 << "movl 8(%ebp), %eax" << std::endl

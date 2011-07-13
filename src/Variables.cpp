@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "Variables.hpp"
+#include "commons/Types.hpp"
 
 using std::map;
 using std::string;
@@ -51,16 +52,16 @@ Variable* Variables::create(const std::string& variable, Type type){
 	return v;
 }
 
-void write(ByteCodeFileWriter& writer){
+void Variables::write(ByteCodeFileWriter& writer){
 	map<string, Variable*>::const_iterator it = variables.begin();
 	map<string, Variable*>::const_iterator end = variables.end();
 	
 	for( ; it != end; ++it){
-		if(*it->type() == INTEGER){
-			writer.stream() << "VI" << *it->index() << ":" << std::endl;
+		if(it->second->type() == INT){
+			writer.stream() << "VI" << it->second->index() << ":" << std::endl;
 			writer.stream() << ".long 0" << std::endl;
-		} else if(*it->type() == STRING){
-			writer.stream() << "VS" << *it->index() << ":" << std::endl;
+		} else if(it->second->type() == STRING){
+			writer.stream() << "VS" << it->second->index() << ":" << std::endl;
 			writer.stream() << ".long 0" << std::endl;
 			writer.stream() << ".long 0" << std::endl;	
 		}

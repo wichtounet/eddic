@@ -75,7 +75,9 @@ void Declaration::write(ByteCodeFileWriter& writer){
 	
 	switch(m_type){
 		case INT:
-			writer.writeOneOperandCall(ISTORE, m_index);
+			writer.stream() << "movl (%esp), %eax" << std::endl;
+			writer.stream() << "movl %eax, VI" << m_index << "" << std::endl; 
+			writer.stream() << "addl $4, %esp" << std::endl;
 
 			break;
 		case STRING:
@@ -90,7 +92,9 @@ void Assignment::write(ByteCodeFileWriter& writer){
 	
 	switch(value->type()){
 		case INT:
-			writer.writeOneOperandCall(ISTORE, m_index);
+			writer.stream() << "movl (%esp), %eax" << std::endl;
+			writer.stream() << "movl %eax, VI" << m_index << "" << std::endl; 
+			writer.stream() << "addl $4, %esp" << std::endl;
 
 			break;
 		case STRING:
@@ -144,7 +148,8 @@ void Integer::write(ByteCodeFileWriter& writer){
 void VariableValue::write(ByteCodeFileWriter& writer){
 	switch(m_type){
 		case INT:
-			writer.writeOneOperandCall(ILOAD, m_index);
+			writer.stream() << "movl VI" << m_index << ", %eax" << std::endl;
+			writer.stream() << "pushl %eax" << std::endl;
 
 			break;
 		case STRING:
