@@ -152,7 +152,8 @@ void VariableValue::write(ByteCodeFileWriter& writer){
 
 			break;
 		case STRING:
-			writer.writeOneOperandCall(SLOAD, m_index);
+			writer.stream() << "pushl $VS" << m_index << std::endl;
+			writer.stream() << "pushl 4(VS" << m_index << ")" << std::endl;
 
 			break;
 	}
