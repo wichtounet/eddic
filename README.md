@@ -6,10 +6,11 @@ The compiler of the EDDI programming language.
 
 To build the compiler, you need to install the [eddi-commons](http://github.com/wichtounet/eddi-commons/) library. 
 
-Then, you juste have to use make to build the compiler : 
+Then, you juste have to use cmake to build the compiler : 
 
     $ git clone git://github.com/wichtounet/eddic.git
     $ cd eddic
+    $ cmake .
     $ make
 
 ## Usage ##
