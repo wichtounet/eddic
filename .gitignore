@@ -9,3 +9,7 @@ samples/perfs.eddi
 *.swp
 *.swo
 a.out
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
