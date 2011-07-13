@@ -16,8 +16,8 @@ endif()
 include_directories(include)
 
 add_executable(
-	eddic
+	bin/eddic
 	src/Branches.cpp src/eddi.cpp src/Options.cpp src/Variables.cpp src/ByteCodeFileWriter.cpp src/Lexer.cpp src/ParseNode.cpp src/Compiler.cpp src/Nodes.cpp src/Parser.cpp src/CompilerException.cpp src/Operators.cpp src/StringPool.cpp
 )
 
-target_link_libraries(eddic eddi-commons)
+target_link_libraries(bin/eddic eddi-commons)
