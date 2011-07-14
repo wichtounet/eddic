@@ -4,9 +4,7 @@ The compiler of the EDDI programming language.
 
 ## Building ##
 
-To build the compiler, you need to install the [eddi-commons](http://github.com/wichtounet/eddi-commons/) library. 
-
-Then, you juste have to use cmake to build the compiler : 
+You juste have to use cmake to build the compiler : 
 
     $ git clone git://github.com/wichtounet/eddic.git
     $ cd eddic
@@ -20,7 +18,7 @@ You can compile an EDDI source file using the compiler easily. For example, with
     $ cd eddic
     $ ./bin/eddic samples/simple.eddi
 
-That will create a simple.v file in the samples folder. You can then run this file using the EDDI virtual machine ([eddivm](http://github.com/wichtounet/eddivm/)). 
+That will create a a.outfile in the current folder. You can then run this file as any other executable on your computer. 
 
 ## Troubleshooting ##
 
