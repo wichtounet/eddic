@@ -9,21 +9,34 @@
 #define OPTIONS_H
 
 #include <map>
+#include <string>
 
-enum Option {
+enum BooleanOption {
 	OPTIMIZE_ALL,
 	OPTIMIZE_INTEGERS,
 	OPTIMIZE_STRINGS
 };
 
+enum ValueOption {
+	OUTPUT
+};
+
 class Options {
 	private:
-		static std::map<Option, bool> options;
+		static std::map<BooleanOption, bool> booleanOptions;
+		static std::map<ValueOption, std::string> valueOptions;
 
 	public:
-		static void set(Option option){ options[option] = true; }
-		static void unset(Option option){ options[option] = false; }
-		static bool isSet(Option option){ return options[option]; }
+		static void setDefaults(){
+			set(OUTPUT, "a.out");
+		}
+
+		static void set(BooleanOption option){ booleanOptions[option] = true; }
+		static void unset(BooleanOption option){ booleanOptions[option] = false; }
+		static bool isSet(BooleanOption option){ return booleanOptions[option]; }
+	
+		static void set(ValueOption option, std::string value) { valueOptions[option] = value; }
+		static std::string get(ValueOption option){ return valueOptions[option]; }
 };
 
 #endif

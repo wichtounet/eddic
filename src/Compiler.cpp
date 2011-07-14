@@ -9,7 +9,7 @@
 #include <cstdio>
 
 #include "Timer.hpp"
-
+#include "Options.hpp"
 #include "StringPool.hpp"
 #include "Variables.hpp"
 #include "Compiler.hpp"
@@ -27,7 +27,7 @@ int Compiler::compile(string file){
 
 	Timer timer;
 
-	string output = "a.out";
+	string output = Options::get(OUTPUT);
 	
 	int code = 0;
 	try {

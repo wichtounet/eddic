@@ -7,4 +7,5 @@
 
 #include "Options.hpp"
 
-std::map<Option, bool> Options::options;
+std::map<BooleanOption, bool> Options::booleanOptions;
+std::map<ValueOption, std::string> Options::valueOptions;
