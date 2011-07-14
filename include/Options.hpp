@@ -12,7 +12,6 @@
 #include <string>
 
 enum BooleanOption {
-	OPTIMIZE_ALL,
 	OPTIMIZE_INTEGERS,
 	OPTIMIZE_STRINGS
 };

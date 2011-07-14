@@ -36,7 +36,8 @@ int main(int argc, const char* argv[]) {
 		}
 
 		if(arg == "--optimize-all"){
-			Options::set(OPTIMIZE_ALL);
+			Options::set(OPTIMIZE_INTEGERS);
+			Options::set(OPTIMIZE_STRINGS);
 		} else if(arg == "--optimize-integers"){
 			Options::set(OPTIMIZE_INTEGERS);
 		} else if(arg == "--optimize-strings"){

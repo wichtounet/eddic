@@ -170,7 +170,7 @@ int Modulo::compute(int left, int right){
 
 void BinaryOperator::optimize(){
 	if(isConstant()){
-		if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+		if(Options::isSet(OPTIMIZE_INTEGERS)){
 			Value* value = new Integer(getIntValue());
 
 			parent->replace(this, value);
@@ -184,13 +184,13 @@ void BinaryOperator::optimize(){
 void Addition::optimize(){
 	if(isConstant()){
 		if(type() == INT){
-			if(Options::isSet(OPTIMIZE_INTEGERS) || Options::isSet(OPTIMIZE_ALL)){
+			if(Options::isSet(OPTIMIZE_INTEGERS)){
 				Value* value = new Integer(getIntValue());
 
 				parent->replace(this, value);
 			}
 		} else if(type() == STRING){
-			if(Options::isSet(OPTIMIZE_STRINGS) || Options::isSet(OPTIMIZE_ALL)){
+			if(Options::isSet(OPTIMIZE_STRINGS)){
 				//No optimization at this time
 			}
 		}
