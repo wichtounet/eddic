@@ -15,7 +15,10 @@ endif()
 
 include_directories(include)
 
-add_executable(
-	bin/eddic
-	src/Branches.cpp src/eddi.cpp src/Options.cpp src/Variables.cpp src/ByteCodeFileWriter.cpp src/Lexer.cpp src/ParseNode.cpp src/Compiler.cpp src/Nodes.cpp src/Parser.cpp src/CompilerException.cpp src/Operators.cpp src/StringPool.cpp src/Timer.cpp
+file(
+	GLOB_RECURSE
+	source_files
+	src/*
 )
+
+add_executable(bin/eddic ${source_files})
