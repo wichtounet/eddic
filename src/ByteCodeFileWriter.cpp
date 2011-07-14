@@ -9,6 +9,7 @@
 
 using std::string;
 using std::ios;
+using std::endl;
 
 void ByteCodeFileWriter::open(const std::string& path) throw (CompilerException) {
 	m_stream.open(path.c_str());
@@ -23,13 +24,14 @@ void ByteCodeFileWriter::close(){
 }
 
 void ByteCodeFileWriter::writeHeader(){
-        nativeWrite(".text");
-        nativeWrite(".globl main");
-
-        nativeWrite("main:");
+        m_stream << ".text" << endl
+		<< ".globl main" << endl
+		<< endl
+		<< "main:" << endl;
 }
 
 void writePrintString(std::ofstream& m_stream){
+	m_stream << std::endl;
 	m_stream << "print_string:" << std::endl;
 		m_stream << "pushl %ebp" << std::endl;
 		m_stream << "movl %esp, %ebp" << std::endl;
@@ -46,6 +48,7 @@ void writePrintString(std::ofstream& m_stream){
 }
 
 void writePrintInteger(std::ofstream& m_stream){
+	m_stream << std::endl;
 	m_stream << "print_integer:" << std::endl 
 		 << "pushl %ebp" << std::endl
 		 << "movl %esp, %ebp" << std::endl
@@ -85,15 +88,11 @@ void writePrintInteger(std::ofstream& m_stream){
 }
 
 void ByteCodeFileWriter::writeEnd(){
-	nativeWrite("mov $1, %eax");
-        nativeWrite("mov $0, %ebx");
-        nativeWrite("int $0x80");
+	m_stream << "mov $1, %eax" << endl
+        	<< "mov $0, %ebx" << endl
+        	<< "int $0x80" << endl;
 
 	//TODO Write only if necessary
 	writePrintString(m_stream);
 	writePrintInteger(m_stream);
-}
-
-void ByteCodeFileWriter::nativeWrite(std::string instruction){
-	m_stream << instruction << std::endl;
 }

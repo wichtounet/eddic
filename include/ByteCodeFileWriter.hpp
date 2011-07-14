@@ -23,8 +23,6 @@ class ByteCodeFileWriter {
 	void writeEnd();
 
 	std::ofstream& stream(){return m_stream;}
-
-	void nativeWrite(std::string);
 };
 
 #endif

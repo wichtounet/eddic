@@ -14,6 +14,7 @@
 #include <cassert>
 
 using std::string;
+using std::endl;
 
 void Declaration::checkVariables(Variables& variables) throw (CompilerException){
 	if(variables.exists(m_variable)){
@@ -109,25 +110,25 @@ void Print::write(ByteCodeFileWriter& writer){
 	
 	switch(value->type()){
 		case INT:
-			writer.nativeWrite("call print_integer");
-			writer.nativeWrite("addl $4, %esp");
+			writer.stream() << "call print_integer" << endl;
+			writer.stream() << "addl $4, %esp" << endl;
 
 			//TODO Optimize that shit
-			writer.nativeWrite("pushl $S1");
-			writer.nativeWrite("pushl $1");
-			writer.nativeWrite("call print_string");
-			writer.nativeWrite("addl $8, %esp");
+			writer.stream() << "pushl $S1" << endl;
+			writer.stream() << "pushl $1" << endl;
+			writer.stream() << "call print_string" << endl;
+			writer.stream() << "addl $8, %esp" << endl;
 
 			break;
 		case STRING:
-			writer.nativeWrite("call print_string");
-			writer.nativeWrite("addl $8, %esp");
+			writer.stream() << "call print_string" << endl;
+			writer.stream() << "addl $8, %esp" << endl;
 
 			//TODO Optimize that shit
-			writer.nativeWrite("pushl $S1");
-			writer.nativeWrite("pushl $1");
-			writer.nativeWrite("call print_string");
-			writer.nativeWrite("addl $8, %esp");
+			writer.stream() << "pushl $S1" << endl;
+			writer.stream() << "pushl $1" << endl;
+			writer.stream() << "call print_string" << endl;
+			writer.stream() << "addl $8, %esp" << endl;
 			
 			break;
 	}
