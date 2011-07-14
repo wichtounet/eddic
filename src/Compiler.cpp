@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <iostream>
+#include <cstdio>
 
 #include "Timer.hpp"
 
@@ -63,6 +64,10 @@ int Compiler::compile(string file){
 		ldCommand += " output.o";
 
 		execCommand(ldCommand);
+
+		//Remove temporary files
+		remove("output.asm");
+		remove("output.o");
 	} catch (CompilerException e){
 		cout << e.what() << endl;
 		code = 1;
