@@ -13,6 +13,8 @@
 
 #include "ParseNode.hpp"
 
+namespace eddic {
+
 class StringPool : public ParseNode {
 	private:
 		std::map<std::string, std::string> pool;
@@ -22,5 +24,7 @@ class StringPool : public ParseNode {
 		std::string label(const std::string& value);
 		void write(ByteCodeFileWriter& writer);	
 };
+
+} //end of eddic
 
 #endif

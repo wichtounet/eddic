@@ -15,6 +15,8 @@
 
 #include "CompilerException.hpp"
 
+namespace eddic {
+
 enum TokenType {
 	NOTHING,
 	WORD,
@@ -91,5 +93,7 @@ class Lexer {
 	bool isTrue() const;
 	bool isFalse() const;
 };
+
+} //end of eddic
 
 #endif

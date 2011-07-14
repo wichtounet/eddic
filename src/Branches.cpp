@@ -9,6 +9,8 @@
 #include "ByteCodeFileWriter.hpp"
 #include "Variables.hpp"
 
+using namespace eddic;
+
 If::~If(){
 	delete m_condition;
 	delete m_elseBlock; //Can be null, problem ? 

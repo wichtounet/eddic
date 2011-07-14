@@ -20,6 +20,8 @@ using std::string;
 using std::cout;
 using std::endl;
 
+using namespace eddic;
+
 void execCommand(string command);
 
 int Compiler::compile(string file){

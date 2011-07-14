@@ -12,6 +12,8 @@
 
 #include "Nodes.hpp"
 
+namespace eddic {
+
 enum BooleanCondition {
 	GREATER_OPERATOR,
 	LESS_OPERATOR, 
@@ -86,5 +88,7 @@ class If : public ParseNode {
 		
 		Condition* condition(){ return m_condition; }
 };
+
+} //end of eddic
 
 #endif

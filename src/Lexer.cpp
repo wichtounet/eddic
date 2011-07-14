@@ -14,6 +14,8 @@ using std::pair;
 using std::string;
 using std::ios_base;
 
+using namespace eddic;
+
 void Lexer::lex(string file) throw(CompilerException) {
 	stream.open(file.c_str());
 	stream.unsetf(ios_base::skipws);

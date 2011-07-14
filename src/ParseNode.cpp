@@ -13,6 +13,8 @@
 using std::list;
 using std::vector;
 
+using namespace eddic;
+
 ParseNode::~ParseNode(){
 	for(list<ParseNode*>::const_iterator it = childs.begin(); it != childs.end(); ++it){
 		delete *it;

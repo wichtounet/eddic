@@ -11,6 +11,8 @@ using std::string;
 using std::ios;
 using std::endl;
 
+using namespace eddic;
+
 void ByteCodeFileWriter::open(const std::string& path) throw (CompilerException) {
 	m_stream.open(path.c_str());
 

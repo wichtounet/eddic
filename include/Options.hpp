@@ -11,6 +11,8 @@
 #include <map>
 #include <string>
 
+namespace eddic {
+
 enum BooleanOption {
 	OPTIMIZE_INTEGERS,
 	OPTIMIZE_STRINGS
@@ -37,5 +39,7 @@ class Options {
 		static void set(ValueOption option, std::string value) { valueOptions[option] = value; }
 		static std::string get(ValueOption option){ return valueOptions[option]; }
 };
+
+} //end of eddic
 
 #endif

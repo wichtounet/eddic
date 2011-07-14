@@ -7,5 +7,7 @@
 
 #include "Options.hpp"
 
+using namespace eddic;
+
 std::map<BooleanOption, bool> Options::booleanOptions;
 std::map<ValueOption, std::string> Options::valueOptions;

@@ -10,6 +10,8 @@
 
 #include "Nodes.hpp"
 
+namespace eddic {
+
 class BinaryOperator : public Value {
 	protected:
 		Value* lhs;
@@ -80,5 +82,7 @@ class Modulo : public BinaryOperator {
 
 		int compute(int left, int right);
 };
+
+} //end of eddic
 
 #endif

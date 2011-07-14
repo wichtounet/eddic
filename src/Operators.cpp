@@ -14,6 +14,8 @@
 
 using std::string;
 
+using namespace eddic;
+
 //Checks
 
 void BinaryOperator::checkVariables(Variables& variables) throw (CompilerException){

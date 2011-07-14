@@ -12,6 +12,8 @@
 
 #include "CompilerException.hpp"
 
+namespace eddic {
+
 class ByteCodeFileWriter {
   private:
 	std::ofstream m_stream;
@@ -24,5 +26,7 @@ class ByteCodeFileWriter {
 
 	std::ofstream& stream(){return m_stream;}
 };
+
+} //end of eddic
 
 #endif

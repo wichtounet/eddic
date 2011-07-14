@@ -8,9 +8,13 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+namespace eddic {
+
 enum Type {
 	STRING = 0, 
 	INT = 1
 };
+
+} //end of eddic
 
 #endif

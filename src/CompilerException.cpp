@@ -7,6 +7,8 @@
 
 #include "CompilerException.hpp"
 
+using namespace eddic;
+
 const char* CompilerException::what() throw() {
 	return message.c_str();
 }

@@ -13,6 +13,8 @@
 
 #include "CompilerException.hpp"
 
+namespace eddic {
+
 class ParseNode;
 
 typedef std::list<ParseNode*>::const_iterator NodeIterator;
@@ -41,5 +43,7 @@ class ParseNode {
 		NodeIterator begin();
 		NodeIterator end();
 };
+
+} //end of eddic
 
 #endif

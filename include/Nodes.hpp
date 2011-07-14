@@ -14,6 +14,8 @@
 
 #include "ParseNode.hpp"
 
+namespace eddic {
+
 class Program : public ParseNode {
 	//Nothing
 };
@@ -106,5 +108,7 @@ class VariableValue : public Value {
 		void write(ByteCodeFileWriter& writer);	
 		bool isConstant();
 };
+
+} //end of eddic
 
 #endif

@@ -15,6 +15,8 @@
 
 #include "ByteCodeFileWriter.hpp"
 
+namespace eddic {
+
 class Variable {
 	private:
 		std::string m_name;
@@ -40,5 +42,7 @@ class Variables {
 		Variable* find(const std::string& variable);
 		void write(ByteCodeFileWriter& writer);
 };
+
+} //end of eddic
 
 #endif

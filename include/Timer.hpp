@@ -10,6 +10,8 @@
 
 #include <sys/time.h>
 
+namespace eddic {
+
 class Timer {
 	public:
 	Timer();
@@ -18,5 +20,7 @@ class Timer {
 	timeval startTime;
 	timeval endTime;
 };
+
+} //end of eddic
 
 #endif

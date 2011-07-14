@@ -13,6 +13,8 @@
 #include "Lexer.hpp"
 #include "ByteCodeFileWriter.hpp"
 
+namespace eddic {
+
 class Program;
 class Variables;
 class StringPool;
@@ -27,5 +29,7 @@ class Compiler {
 	void check(Program* program, Variables& variables);
 	void checkStrings(Program* program, StringPool& pool);
 };
+
+} //end of eddic
 
 #endif

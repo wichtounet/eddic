@@ -21,6 +21,8 @@ using std::string;
 using std::ios_base;
 using std::list;
 
+using namespace eddic;
+
 //TODO Review this method
 ParseNode* Parser::parseInstruction() throw (CompilerException){
 	if(lexer.isIf()){

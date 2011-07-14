@@ -16,6 +16,8 @@
 using std::string;
 using std::endl;
 
+using namespace eddic;
+
 void Declaration::checkVariables(Variables& variables) throw (CompilerException){
 	if(variables.exists(m_variable)){
 		throw CompilerException("Variable has already been declared");

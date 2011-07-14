@@ -12,6 +12,8 @@
 
 #include "CompilerException.hpp"
 
+namespace eddic {
+
 class Lexer;
 class Program;
 class ParseNode;
@@ -38,5 +40,7 @@ class Parser {
 		Parser(Lexer& l) : lexer(l) {};
 		Program* parse() throw (CompilerException) ;
 };
+
+} //end of eddic
 
 #endif

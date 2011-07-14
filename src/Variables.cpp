@@ -10,6 +10,8 @@
 using std::map;
 using std::string;
 
+using namespace eddic;
+
 Variables::~Variables(){
 	map<string, Variable*>::const_iterator it = variables.begin();
 	map<string, Variable*>::const_iterator end = variables.end();

@@ -10,6 +10,8 @@
 
 #include <string>
 
+namespace eddic {
+
 class CompilerException: public std::exception {
   private:
     std::string message;
@@ -18,5 +20,7 @@ class CompilerException: public std::exception {
     ~CompilerException() throw() {};
     const char* what() throw();
 };
+
+} //end of eddic
 
 #endif

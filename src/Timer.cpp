@@ -9,6 +9,8 @@
 
 #include "Timer.hpp"
 
+using namespace eddic;
+
 Timer::Timer(){
 	gettimeofday(&startTime, NULL);
 }

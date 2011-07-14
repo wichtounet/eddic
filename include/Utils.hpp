@@ -10,6 +10,8 @@
 
 #include <sstream>
 
+namespace eddic {
+
 template <class T>
 T toNumber (std::string text){
 	std::stringstream ss(text);
@@ -17,5 +19,7 @@ T toNumber (std::string text){
 	ss >> result;
 	return result;
 }
+
+} //end of eddic
 
 #endif
