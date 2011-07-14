@@ -13,6 +13,8 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wno-long-long")
 endif()
 
+set(EXECUTABLE_OUTPUT_PATH bin)
+
 include_directories(include)
 
 file(
@@ -21,4 +23,4 @@ file(
 	src/*
 )
 
-add_executable(bin/eddic ${source_files})
+add_executable(eddic ${source_files})
