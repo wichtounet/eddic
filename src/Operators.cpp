@@ -52,7 +52,7 @@ void Addition::write(ByteCodeFileWriter& writer){
 		writer.stream() << "addl $8, %esp" << std::endl;
 		writer.stream() << "pushl %eax" << std::endl;
 	} else {
-		writer.writeSimpleCall(SADD);
+		//TODO writer.writeSimpleCall(SADD);
 	}
 }
 

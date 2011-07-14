@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include <commons/Types.hpp>
+#include "Types.hpp"
 
 #include "ParseNode.hpp"
 

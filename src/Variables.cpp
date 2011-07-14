@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "Variables.hpp"
-#include "commons/Types.hpp"
 
 using std::map;
 using std::string;

@@ -10,8 +10,6 @@
 
 #include <fstream>
 
-#include "commons/ByteCode.hpp"
-
 #include "CompilerException.hpp"
 
 class ByteCodeFileWriter {
@@ -21,13 +19,8 @@ class ByteCodeFileWriter {
 	ByteCodeFileWriter() {};
 	void open(const std::string& path) throw (CompilerException) ;
 	void close();
-	void writeOneOperandCall(ByteCode bytecode, const std::string& litteral);
-	void writeOneOperandCall(ByteCode bytecode, int value);
-	void writeSimpleCall(ByteCode bytecode);
 	void writeHeader();
 	void writeEnd();
-	void writeLitteral(const std::string& value);
-	void writeInt(int value);
 
 	std::ofstream& stream(){return m_stream;}
 

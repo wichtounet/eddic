@@ -122,8 +122,6 @@ void If::write(ByteCodeFileWriter& writer){
 			
 			writeCondition(writer, elseIf->condition(), next);
 	
-			writer.writeOneOperandCall(JUMP_IF_NOT, next);
-
 			elseIf->write(writer);
 
 			writer.stream() << "jmp L" << end << std::endl;

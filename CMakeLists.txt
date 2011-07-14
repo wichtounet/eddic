@@ -17,7 +17,5 @@ include_directories(include)
 
 add_executable(
 	bin/eddic
-	src/Branches.cpp src/eddi.cpp src/Options.cpp src/Variables.cpp src/ByteCodeFileWriter.cpp src/Lexer.cpp src/ParseNode.cpp src/Compiler.cpp src/Nodes.cpp src/Parser.cpp src/CompilerException.cpp src/Operators.cpp src/StringPool.cpp
+	src/Branches.cpp src/eddi.cpp src/Options.cpp src/Variables.cpp src/ByteCodeFileWriter.cpp src/Lexer.cpp src/ParseNode.cpp src/Compiler.cpp src/Nodes.cpp src/Parser.cpp src/CompilerException.cpp src/Operators.cpp src/StringPool.cpp src/Timer.cpp
 )
-
-target_link_libraries(bin/eddic eddi-commons)

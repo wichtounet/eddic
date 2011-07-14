@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 
-#include <commons/Types.hpp>
+#include "Types.hpp"
 
 #include "ByteCodeFileWriter.hpp"
 

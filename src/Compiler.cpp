@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include <commons/Timer.hpp>
+#include "Timer.hpp"
 
 #include "StringPool.hpp"
 #include "Variables.hpp"

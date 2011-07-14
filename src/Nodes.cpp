@@ -81,7 +81,7 @@ void Declaration::write(ByteCodeFileWriter& writer){
 
 			break;
 		case STRING:
-			writer.writeOneOperandCall(SSTORE, m_index);
+			//TODO
 
 			break;
 	}
@@ -98,7 +98,7 @@ void Assignment::write(ByteCodeFileWriter& writer){
 
 			break;
 		case STRING:
-			writer.writeOneOperandCall(SSTORE, m_index);
+			//TODO
 
 			break;
 	}

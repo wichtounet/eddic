@@ -9,8 +9,8 @@
 #include <cctype>
 #include <list>
 
-#include <commons/Types.hpp>
-#include <commons/Utils.hpp>
+#include "Types.hpp"
+#include "Utils.hpp"
 
 #include "Parser.hpp"
 #include "Operators.hpp"
