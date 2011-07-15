@@ -125,25 +125,32 @@ void Print::write(ByteCodeFileWriter& writer) {
             writer.stream() << "call print_integer" << endl;
             writer.stream() << "addl $4, %esp" << endl;
 
-            //TODO Optimize that shit
-            writer.stream() << "pushl $S1" << endl;
-            writer.stream() << "pushl $1" << endl;
+            break;
+        case STRING:
             writer.stream() << "call print_string" << endl;
             writer.stream() << "addl $8, %esp" << endl;
+
+            break;
+    }
+}
+
+void Println::write(ByteCodeFileWriter& writer){
+    value->write(writer);
+
+    switch(value->type()) {
+        case INT:
+            writer.stream() << "call print_integer" << endl;
+            writer.stream() << "addl $4, %esp" << endl;
 
             break;
         case STRING:
             writer.stream() << "call print_string" << endl;
             writer.stream() << "addl $8, %esp" << endl;
 
-            //TODO Optimize that shit
-            writer.stream() << "pushl $S1" << endl;
-            writer.stream() << "pushl $1" << endl;
-            writer.stream() << "call print_string" << endl;
-            writer.stream() << "addl $8, %esp" << endl;
-
             break;
     }
+
+    writer.stream() << "call print_line" << endl;
 }
 
 void Print::checkStrings(StringPool& pool) {

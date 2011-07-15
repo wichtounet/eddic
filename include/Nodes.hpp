@@ -54,18 +54,24 @@ class Declaration : public ParseNode {
 };
 
 class Print : public ParseNode {
-    private:
+    protected:
         Type m_type;
         Value* value;
 
     public:
-        Print(Value* v) : value(v)  {};
-        ~Print() {
+        Print(Value* v) : value(v) {};
+        virtual ~Print() {
             delete value;
         }
 
         void checkStrings(StringPool& pool);
         void checkVariables(Variables& variables) throw (CompilerException);
+        void write(ByteCodeFileWriter& writer);
+};
+
+class Println : public Print {
+    public:
+        Println(Value*v) : Print(v) {}
         void write(ByteCodeFileWriter& writer);
 };
 

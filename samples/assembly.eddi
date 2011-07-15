@@ -1,58 +1,58 @@
 string a = "Variable a";
-Print(a);
+Println(a);
 
 a = "New variable a";
-Print (a);
+Println (a);
 
 string b = "Variable b";
-Print(b);
+Println(b);
 
 b = a;
-Print(b);
+Println(b);
 
 int c = 1111;
-Print(c);
+Println(c);
 
 c = 2222;
-Print(c);
+Println(c);
 
 int d = 3333;
-Print(d);
+Println(d);
 
 d = c;
-Print(d);
+Println(d);
 
-Print("666 + 333");
-Print(666 + 333);
+Print("666 + 333 = ");
+Println(666 + 333);
 
-Print("10 * 33");
-Print(330);
+Print("10 * 33 = ");
+Println(330);
 
-Print("122 / 2");
-Print(122 / 2);
+Print("122 / 2 = ");
+Println(122 / 2);
 
-Print("7 % 5");
-Print(7 % 5);
+Print("7 % 5 = ");
+Println(7 % 5);
 
-Print("444 - 333");
-Print(444 - 333);
+Print("444 - 333 = ");
+Println(444 - 333);
 
 if(4 > 3){
-	Print("Cool");
+	Println("Cool");
 } else {
-	Print("Pas cool");
+	Println("Pas cool");
 }
 
 if(3 == 3){
-	Print("Cool");
+	Println("Cool");
 } else {
-	Print("Pas cool");
+	Println("Pas cool");
 }
 
 if(55 < 33){
-	Print("Pas cool");
+	Println("Pas cool");
 } else if(33 <= 11){
-	Print("Pas cool");
+	Println("Pas cool");
 } else {
-	Print("Cool");
+	Println("Cool");
 }

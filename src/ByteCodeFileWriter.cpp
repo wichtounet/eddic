@@ -49,6 +49,21 @@ void writePrintString(std::ofstream& m_stream) {
     m_stream << "ret" << std::endl;
 }
 
+void writePrintLine(std::ofstream& m_stream){
+    m_stream << std::endl;
+    m_stream << "print_line:" << std::endl;
+    m_stream << "pushl %ebp" << std::endl;
+    m_stream << "movl %esp, %ebp" << std::endl;
+
+    m_stream << "pushl $S1" << endl;
+    m_stream << "pushl $1" << endl;
+    m_stream << "call print_string" << endl;
+    m_stream << "addl $8, %esp" << endl;
+
+    m_stream << "leave" << std::endl;
+    m_stream << "ret" << std::endl;
+}
+
 void writePrintInteger(std::ofstream& m_stream) {
     m_stream << std::endl;
     m_stream << "print_integer:" << std::endl
@@ -90,6 +105,7 @@ void writePrintInteger(std::ofstream& m_stream) {
 }
 
 void ByteCodeFileWriter::writeEnd() {
+    m_stream << endl;
     m_stream << "mov $1, %eax" << endl
              << "mov $0, %ebx" << endl
              << "int $0x80" << endl;
@@ -97,4 +113,5 @@ void ByteCodeFileWriter::writeEnd() {
     //TODO Write only if necessary
     writePrintString(m_stream);
     writePrintInteger(m_stream);
+    writePrintLine(m_stream);
 }

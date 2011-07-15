@@ -91,7 +91,7 @@ inline static void assertNextIsStop(Lexer& lexer, const string& message) throw (
 }
 
 ParseNode* Parser::parseCall(const string& call) throw (CompilerException) {
-    if(call != "Print") {
+    if(call != "Print" && call != "Println") {
         throw CompilerException("The call \"" + call + "\" does not exist");
     }
 
@@ -100,7 +100,11 @@ ParseNode* Parser::parseCall(const string& call) throw (CompilerException) {
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    return new Print(value);
+    if(call == "Print"){
+        return new Print(value);
+    } else {
+        return new Println(value);
+    }
 }
 
 ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerException) {
