@@ -1,6 +1,26 @@
-int a = 2345;
-
+string a = "Variable a";
 Print(a);
+
+a = "New variable a";
+Print (a);
+
+string b = "Variable b";
+Print(b);
+
+b = a;
+Print(b);
+
+int c = 1111;
+Print(c);
+
+c = 2222;
+Print(c);
+
+int d = 3333;
+Print(d);
+
+d = c;
+Print(d);
 
 Print("666 + 333");
 Print(666 + 333);

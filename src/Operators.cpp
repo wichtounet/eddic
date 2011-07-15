@@ -54,7 +54,7 @@ void Addition::write(ByteCodeFileWriter& writer) {
         writer.stream() << "addl $8, %esp" << std::endl;
         writer.stream() << "pushl %eax" << std::endl;
     } else {
-        //TODO writer.writeSimpleCall(SADD);
+        //TODO
     }
 }
 

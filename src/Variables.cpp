@@ -9,6 +9,7 @@
 
 using std::map;
 using std::string;
+using std::endl;
 
 using namespace eddic;
 
@@ -59,13 +60,13 @@ void Variables::write(ByteCodeFileWriter& writer) {
 
     for( ; it != end; ++it) {
         if(it->second->type() == INT) {
-            writer.stream() << "VI" << it->second->index() << ":" << std::endl;
-            writer.stream() << ".long 0" << std::endl;
+            writer.stream() << "VI" << it->second->index() << ":" << endl;
+            writer.stream() << ".long 0" << endl;
         } else if(it->second->type() == STRING) {
-            writer.stream() << "VS" << it->second->index() << ":" << std::endl;
-            writer.stream() << ".long 0" << std::endl;
-            writer.stream() << ".long 0" << std::endl;
+            writer.stream() << "VS" << it->second->index() << ":" << endl;
+            writer.stream() << ".long 0" << endl;
+            writer.stream() << "VS" << it->second->index() << "_l:" << endl;
+            writer.stream() << ".long 0" << endl;
         }
     }
 }
-

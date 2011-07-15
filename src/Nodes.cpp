@@ -78,13 +78,18 @@ void Declaration::write(ByteCodeFileWriter& writer) {
 
     switch(m_type) {
         case INT:
-            writer.stream() << "movl (%esp), %eax" << std::endl;
-            writer.stream() << "movl %eax, VI" << m_index << "" << std::endl;
-            writer.stream() << "addl $4, %esp" << std::endl;
+            writer.stream() << "movl (%esp), %eax" << endl;
+            writer.stream() << "movl %eax, VI" << m_index << endl;
+            writer.stream() << "addl $4, %esp" << endl;
 
             break;
         case STRING:
-            //TODO
+            writer.stream() << "movl (%esp), %eax" << endl;
+            writer.stream() << "movl 4(%esp), %ebx" << endl;
+            writer.stream() << "addl $8, %esp" << endl;
+            
+            writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
+            writer.stream() << "movl %ebx, VS" << m_index << endl;
 
             break;
     }
@@ -101,7 +106,12 @@ void Assignment::write(ByteCodeFileWriter& writer) {
 
             break;
         case STRING:
-            //TODO
+            writer.stream() << "movl (%esp), %eax" << endl;
+            writer.stream() << "movl 4(%esp), %ebx" << endl;
+            writer.stream() << "addl $8, %esp" << endl;
+            
+            writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
+            writer.stream() << "movl %ebx, VS" << m_index << endl;
 
             break;
     }
@@ -155,8 +165,8 @@ void VariableValue::write(ByteCodeFileWriter& writer) {
 
             break;
         case STRING:
-            writer.stream() << "pushl $VS" << m_index << std::endl;
-            writer.stream() << "pushl 4(VS" << m_index << ")" << std::endl;
+            writer.stream() << "pushl VS" << m_index << endl;
+            writer.stream() << "pushl VS" << m_index << "_l" << std::endl;
 
             break;
     }
