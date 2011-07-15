@@ -92,6 +92,21 @@ class Assignment : public ParseNode {
         void write(ByteCodeFileWriter& writer);
 };
 
+class Swap : public ParseNode {
+    private:
+        std::string m_lhs;
+        std::string m_rhs;
+        int m_lhs_index;
+        int m_rhs_index;
+        Type m_type;
+
+    public:
+        Swap(const std::string& lhs, const std::string& rhs) : m_lhs(lhs), m_rhs(rhs) {};
+
+        void checkVariables(Variables& variables) throw (CompilerException);
+        void write(ByteCodeFileWriter& writer);
+};
+
 class Litteral : public Value {
     private:
         std::string m_litteral;

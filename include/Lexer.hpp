@@ -22,6 +22,7 @@ enum TokenType {
     WORD,
     ASSIGN,
     LITTERAL,
+    SWAP,
 
     LEFT_PARENTH,
     RIGHT_PARENTH,
@@ -66,8 +67,10 @@ class Lexer {
         bool next();
         void pushBack();
         std::string getCurrentToken() const;
+
         bool isWord() const;
         bool isAssign() const;
+        bool isSwap() const;
         bool isLitteral() const;
         bool isLeftParenth() const;
         bool isRightParenth() const;

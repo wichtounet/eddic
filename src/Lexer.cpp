@@ -182,7 +182,14 @@ bool Lexer::readNext() {
             stream >> current;
 
             if(current == '=') {
-                currentType = LESS_EQUALS_TOKEN;
+                stream >> current;
+
+                if(current == '>'){
+                    currentType = SWAP;
+                } else {
+                    stream.putback(current);
+                    currentType = LESS_EQUALS_TOKEN;
+                }
             } else {
                 stream.putback(current);
 
@@ -221,6 +228,10 @@ bool Lexer::isLitteral() const {
 
 bool Lexer::isAssign() const {
     return currentType == ASSIGN;
+}
+
+bool Lexer::isSwap() const {
+    return currentType == SWAP;
 }
 
 bool Lexer::isLeftParenth() const {

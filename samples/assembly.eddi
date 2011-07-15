@@ -1,14 +1,28 @@
 string a = "Variable a";
+Print("Should print 'Variable a' : ");
 Println(a);
 
 a = "New variable a";
+Print("Should print 'New variable a' : ");
 Println (a);
 
 string b = "Variable b";
+Print("Should print 'Variable b' : ");
 Println(b);
 
 b = a;
+Print("Should print 'New variable a' : ");
 Println(b);
+
+string e = "Variable e";
+string f = "Variable f";
+
+f <=> e;
+
+Print("Should print 'Variable e' : ");
+Println(f);
+Print("Should print 'Variable f' : ");
+Println(e);
 
 int c = 1111;
 Println(c);

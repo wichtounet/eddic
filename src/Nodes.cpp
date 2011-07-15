@@ -54,6 +54,28 @@ void Assignment::checkVariables(Variables& variables) throw (CompilerException) 
     }
 }
 
+void Swap::checkVariables(Variables& variables) throw (CompilerException) {
+    if(m_lhs == m_rhs){
+        throw CompilerException("Cannot swap a variable with itself");
+    }
+    
+    if(!variables.exists(m_lhs) || !variables.exists(m_rhs)) {
+        throw CompilerException("Variable has not been declared");
+    }
+
+    Variable* lhs_var = variables.find(m_lhs);
+    Variable* rhs_var = variables.find(m_rhs);
+
+    m_lhs_index = lhs_var->index();
+    m_rhs_index = rhs_var->index();
+
+    if(lhs_var->type() != rhs_var->type()) {
+        throw CompilerException("Incompatible type");
+    }
+
+    m_type = lhs_var->type();
+}
+
 void Assignment::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
@@ -113,6 +135,30 @@ void Assignment::write(ByteCodeFileWriter& writer) {
             writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
             writer.stream() << "movl %ebx, VS" << m_index << endl;
 
+            break;
+    }
+}
+
+void Swap::write(ByteCodeFileWriter& writer) {
+    switch(m_type){
+        case INT:
+            writer.stream() << "movl VI" << m_lhs_index << ", %eax" << endl;
+            writer.stream() << "movl VI" << m_rhs_index << ", %ebx" << endl;
+            writer.stream() << "movl %eax, VI" << m_rhs_index << endl;
+            writer.stream() << "movl %ebx, VI" << m_lhs_index << endl;
+
+            break;
+        case STRING:
+            writer.stream() << "movl VS" << m_lhs_index << ", %eax" << endl;
+            writer.stream() << "movl VS" << m_rhs_index << ", %ebx" << endl;
+            writer.stream() << "movl %eax, VS" << m_rhs_index << endl;
+            writer.stream() << "movl %ebx, VS" << m_lhs_index << endl;
+            
+            writer.stream() << "movl VS" << m_lhs_index << "_l, %eax" << endl;
+            writer.stream() << "movl VS" << m_rhs_index << "_l, %ebx" << endl;
+            writer.stream() << "movl %eax, VS" << m_rhs_index << "_l" << endl;
+            writer.stream() << "movl %ebx, VS" << m_lhs_index << "_l" << endl;
+        
             break;
     }
 }

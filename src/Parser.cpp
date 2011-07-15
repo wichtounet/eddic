@@ -45,6 +45,8 @@ ParseNode* Parser::parseInstruction() throw (CompilerException) {
         return parseDeclaration(word);
     } else if(lexer.isAssign()) { //is an assign
         return parseAssignment(word);
+    } else if(lexer.isSwap()){
+        return parseSwap(word);
     } else {
         throw CompilerException("Not an instruction");
     }
@@ -138,6 +140,18 @@ ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerExcept
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
     return new Assignment(variable, value);
+}
+
+ParseNode* Parser::parseSwap(const string& lhs) throw (CompilerException) {
+    if(!lexer.next() || !lexer.isWord()){
+        throw CompilerException("Can only swap two variables");
+    }
+
+    string rhs = lexer.getCurrentToken();
+
+    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
+
+    return new Swap(lhs, rhs);
 }
 
 ParseNode* Parser::parseIf() throw (CompilerException) {
