@@ -15,29 +15,29 @@ using std::string;
 
 using namespace eddic;
 
-StringPool::StringPool(){
-	currentString = 0;
+StringPool::StringPool() {
+    currentString = 0;
 
-	label("\"\\n\"");
+    label("\"\\n\"");
 }
 
-std::string StringPool::label(const std::string& value){
-	if(pool.find(value) == pool.end()){
-		std::stringstream ss;
-		ss << "S";
-		ss << ++currentString;
-		pool[value] = ss.str();
-	}
+std::string StringPool::label(const std::string& value) {
+    if(pool.find(value) == pool.end()) {
+        std::stringstream ss;
+        ss << "S";
+        ss << ++currentString;
+        pool[value] = ss.str();
+    }
 
-	return pool[value];
+    return pool[value];
 }
-		
-void StringPool::write(ByteCodeFileWriter& writer){
-	writer.stream() << ".data" << std::endl;
 
-	std::map<std::string, std::string>::const_iterator it;
-	for(it = pool.begin(); it != pool.end(); ++it){
-		writer.stream() << it->second << ":" << std::endl;
-		writer.stream() << ".string " << it->first << std::endl;		
-	}	
+void StringPool::write(ByteCodeFileWriter& writer) {
+    writer.stream() << ".data" << std::endl;
+
+    std::map<std::string, std::string>::const_iterator it;
+    for(it = pool.begin(); it != pool.end(); ++it) {
+        writer.stream() << it->second << ":" << std::endl;
+        writer.stream() << ".string " << it->first << std::endl;
+    }
 }

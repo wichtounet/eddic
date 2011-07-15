@@ -13,74 +13,74 @@
 namespace eddic {
 
 class BinaryOperator : public Value {
-	protected:
-		Value* lhs;
-		Value* rhs;
+    protected:
+        Value* lhs;
+        Value* rhs;
 
-		BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {}
-		
-		virtual ~BinaryOperator(){
-			delete lhs;
-			delete rhs;
-		}
+        BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {}
 
-		bool isConstant();
-		void checkVariables(Variables& variables) throw (CompilerException);
-		std::string getStringValue();
-		int getIntValue();
-		void optimize();
+        virtual ~BinaryOperator() {
+            delete lhs;
+            delete rhs;
+        }
 
-		virtual Type checkTypes(Type left, Type right) throw (CompilerException);
-		virtual std::string compute(const std::string& left, const std::string& right);
-		virtual int compute(int left, int right);
+        bool isConstant();
+        void checkVariables(Variables& variables) throw (CompilerException);
+        std::string getStringValue();
+        int getIntValue();
+        void optimize();
+
+        virtual Type checkTypes(Type left, Type right) throw (CompilerException);
+        virtual std::string compute(const std::string& left, const std::string& right);
+        virtual int compute(int left, int right);
 };
 
 class Addition : public BinaryOperator {
-	public:
-		Addition(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+    public:
+        Addition(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-		void write(ByteCodeFileWriter& writer); 
-		void optimize();
+        void write(ByteCodeFileWriter& writer);
+        void optimize();
 
-		Type checkTypes(Type left, Type right) throw (CompilerException);
-		std::string compute(const std::string& left, const std::string& right);
-		int compute(int left, int right);
+        Type checkTypes(Type left, Type right) throw (CompilerException);
+        std::string compute(const std::string& left, const std::string& right);
+        int compute(int left, int right);
 };
 
 class Subtraction : public BinaryOperator {
-	public:
-		Subtraction(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
-		
-		void write(ByteCodeFileWriter& writer); 
+    public:
+        Subtraction(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-		int compute(int left, int right);
+        void write(ByteCodeFileWriter& writer);
+
+        int compute(int left, int right);
 };
 
 class Multiplication : public BinaryOperator {
-	public:
-		Multiplication(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
-		
-		void write(ByteCodeFileWriter& writer); 
+    public:
+        Multiplication(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-		int compute(int left, int right);
+        void write(ByteCodeFileWriter& writer);
+
+        int compute(int left, int right);
 };
 
 class Division : public BinaryOperator {
-	public:
-		Division(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
-		
-		void write(ByteCodeFileWriter& writer); 
+    public:
+        Division(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-		int compute(int left, int right);
+        void write(ByteCodeFileWriter& writer);
+
+        int compute(int left, int right);
 };
 
 class Modulo : public BinaryOperator {
-	public:
-		Modulo(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
-		
-		void write(ByteCodeFileWriter& writer); 
+    public:
+        Modulo(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-		int compute(int left, int right);
+        void write(ByteCodeFileWriter& writer);
+
+        int compute(int left, int right);
 };
 
 } //end of eddic

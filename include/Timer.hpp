@@ -13,12 +13,12 @@
 namespace eddic {
 
 class Timer {
-	public:
-	Timer();
-	double elapsed();
-	private:
-	timeval startTime;
-	timeval endTime;
+    public:
+        Timer();
+        double elapsed();
+    private:
+        timeval startTime;
+        timeval endTime;
 };
 
 } //end of eddic

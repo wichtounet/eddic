@@ -20,14 +20,14 @@ class Variables;
 class StringPool;
 
 class Compiler {
-  public:
-    int compile (std::string file);
-  private:
-    Lexer lexer;
-    ByteCodeFileWriter writer;
-    void compile (Program* program, StringPool& pool);
-	void check(Program* program, Variables& variables);
-	void checkStrings(Program* program, StringPool& pool);
+    public:
+        int compile (std::string file);
+    private:
+        Lexer lexer;
+        ByteCodeFileWriter writer;
+        void compile (Program* program, StringPool& pool);
+        void check(Program* program, Variables& variables);
+        void checkStrings(Program* program, StringPool& pool);
 };
 
 } //end of eddic

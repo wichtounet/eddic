@@ -24,24 +24,24 @@ class StringPool;
 class Variables;
 
 class ParseNode {
-	private:
-		std::list<ParseNode*> childs;
-		std::vector<ParseNode*> trash;	
-	protected:
-		ParseNode* parent;
-	public:
-		ParseNode() : parent(NULL){};
-		virtual ~ParseNode();
-		virtual void write(ByteCodeFileWriter& writer);
-		virtual void checkVariables(Variables& variables) throw (CompilerException);
-		virtual void checkStrings(StringPool& pool);
-		virtual void optimize();
-		void addFirst(ParseNode* node);
-		void addLast(ParseNode* node);
-		void replace(ParseNode* old, ParseNode* node);
-		void remove(ParseNode* node);
-		NodeIterator begin();
-		NodeIterator end();
+    private:
+        std::list<ParseNode*> childs;
+        std::vector<ParseNode*> trash;
+    protected:
+        ParseNode* parent;
+    public:
+        ParseNode() : parent(NULL) {};
+        virtual ~ParseNode();
+        virtual void write(ByteCodeFileWriter& writer);
+        virtual void checkVariables(Variables& variables) throw (CompilerException);
+        virtual void checkStrings(StringPool& pool);
+        virtual void optimize();
+        void addFirst(ParseNode* node);
+        void addLast(ParseNode* node);
+        void replace(ParseNode* old, ParseNode* node);
+        void remove(ParseNode* node);
+        NodeIterator begin();
+        NodeIterator end();
 };
 
 } //end of eddic

@@ -11,15 +11,15 @@
 
 using namespace eddic;
 
-Timer::Timer(){
-	gettimeofday(&startTime, NULL);
+Timer::Timer() {
+    gettimeofday(&startTime, NULL);
 }
 
-double Timer::elapsed(){
-	gettimeofday(&endTime, NULL);
-	
-	double elapsedTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0;
-	elapsedTime += (endTime.tv_usec - startTime.tv_usec) / 1000.0;
+double Timer::elapsed() {
+    gettimeofday(&endTime, NULL);
 
-	return elapsedTime;
+    double elapsedTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0;
+    elapsedTime += (endTime.tv_usec - startTime.tv_usec) / 1000.0;
+
+    return elapsedTime;
 }

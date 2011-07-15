@@ -13,11 +13,11 @@
 namespace eddic {
 
 template <class T>
-T toNumber (std::string text){
-	std::stringstream ss(text);
-	T result;
-	ss >> result;
-	return result;
+T toNumber (std::string text) {
+    std::stringstream ss(text);
+    T result;
+    ss >> result;
+    return result;
 }
 
 } //end of eddic

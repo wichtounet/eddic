@@ -18,187 +18,187 @@ using std::endl;
 
 using namespace eddic;
 
-void Declaration::checkVariables(Variables& variables) throw (CompilerException){
-	if(variables.exists(m_variable)){
-		throw CompilerException("Variable has already been declared");
-	}
+void Declaration::checkVariables(Variables& variables) throw (CompilerException) {
+    if(variables.exists(m_variable)) {
+        throw CompilerException("Variable has already been declared");
+    }
 
-	Variable* var = variables.create(m_variable, m_type);
+    Variable* var = variables.create(m_variable, m_type);
 
-	m_index = var->index();
+    m_index = var->index();
 
-	value->checkVariables(variables);
+    value->checkVariables(variables);
 
-	if(value->type() != m_type){
-		throw CompilerException("Incompatible type");
-	}
+    if(value->type() != m_type) {
+        throw CompilerException("Incompatible type");
+    }
 }
 
-void Declaration::checkStrings(StringPool& pool){
-	value->checkStrings(pool);
+void Declaration::checkStrings(StringPool& pool) {
+    value->checkStrings(pool);
 }
 
-void Assignment::checkVariables(Variables& variables) throw (CompilerException){
-	if(!variables.exists(m_variable)){
-		throw CompilerException("Variable has not  been declared");
-	}
+void Assignment::checkVariables(Variables& variables) throw (CompilerException) {
+    if(!variables.exists(m_variable)) {
+        throw CompilerException("Variable has not  been declared");
+    }
 
-	Variable* var = variables.find(m_variable);
+    Variable* var = variables.find(m_variable);
 
-	m_index = var->index();
-	
-	value->checkVariables(variables);
+    m_index = var->index();
 
-	if(value->type() != var->type()){
-		throw CompilerException("Incompatible type");
-	}
+    value->checkVariables(variables);
+
+    if(value->type() != var->type()) {
+        throw CompilerException("Incompatible type");
+    }
 }
 
-void Assignment::checkStrings(StringPool& pool){
-	value->checkStrings(pool);
+void Assignment::checkStrings(StringPool& pool) {
+    value->checkStrings(pool);
 }
 
-void VariableValue::checkVariables(Variables& variables) throw (CompilerException){
-	if(!variables.exists(m_variable)){
-		throw CompilerException("Variable has not been declared");
-	}
+void VariableValue::checkVariables(Variables& variables) throw (CompilerException) {
+    if(!variables.exists(m_variable)) {
+        throw CompilerException("Variable has not been declared");
+    }
 
-	Variable* variable = variables.find(m_variable);
+    Variable* variable = variables.find(m_variable);
 
-	m_type = variable->type();
-	m_index = variable->index();
+    m_type = variable->type();
+    m_index = variable->index();
 }
 
-void Litteral::checkStrings(StringPool& pool){
-	m_label = pool.label(m_litteral);	
+void Litteral::checkStrings(StringPool& pool) {
+    m_label = pool.label(m_litteral);
 }
 
-void Declaration::write(ByteCodeFileWriter& writer){
-	value->write(writer);	
-	
-	switch(m_type){
-		case INT:
-			writer.stream() << "movl (%esp), %eax" << std::endl;
-			writer.stream() << "movl %eax, VI" << m_index << "" << std::endl; 
-			writer.stream() << "addl $4, %esp" << std::endl;
+void Declaration::write(ByteCodeFileWriter& writer) {
+    value->write(writer);
 
-			break;
-		case STRING:
-			//TODO
+    switch(m_type) {
+        case INT:
+            writer.stream() << "movl (%esp), %eax" << std::endl;
+            writer.stream() << "movl %eax, VI" << m_index << "" << std::endl;
+            writer.stream() << "addl $4, %esp" << std::endl;
 
-			break;
-	}
+            break;
+        case STRING:
+            //TODO
+
+            break;
+    }
 }
 
-void Assignment::write(ByteCodeFileWriter& writer){
-	value->write(writer);	
-	
-	switch(value->type()){
-		case INT:
-			writer.stream() << "movl (%esp), %eax" << std::endl;
-			writer.stream() << "movl %eax, VI" << m_index << "" << std::endl; 
-			writer.stream() << "addl $4, %esp" << std::endl;
+void Assignment::write(ByteCodeFileWriter& writer) {
+    value->write(writer);
 
-			break;
-		case STRING:
-			//TODO
+    switch(value->type()) {
+        case INT:
+            writer.stream() << "movl (%esp), %eax" << std::endl;
+            writer.stream() << "movl %eax, VI" << m_index << "" << std::endl;
+            writer.stream() << "addl $4, %esp" << std::endl;
 
-			break;
-	}
+            break;
+        case STRING:
+            //TODO
+
+            break;
+    }
 }
 
-void Print::write(ByteCodeFileWriter& writer){
-	value->write(writer);	
-	
-	switch(value->type()){
-		case INT:
-			writer.stream() << "call print_integer" << endl;
-			writer.stream() << "addl $4, %esp" << endl;
+void Print::write(ByteCodeFileWriter& writer) {
+    value->write(writer);
 
-			//TODO Optimize that shit
-			writer.stream() << "pushl $S1" << endl;
-			writer.stream() << "pushl $1" << endl;
-			writer.stream() << "call print_string" << endl;
-			writer.stream() << "addl $8, %esp" << endl;
+    switch(value->type()) {
+        case INT:
+            writer.stream() << "call print_integer" << endl;
+            writer.stream() << "addl $4, %esp" << endl;
 
-			break;
-		case STRING:
-			writer.stream() << "call print_string" << endl;
-			writer.stream() << "addl $8, %esp" << endl;
+            //TODO Optimize that shit
+            writer.stream() << "pushl $S1" << endl;
+            writer.stream() << "pushl $1" << endl;
+            writer.stream() << "call print_string" << endl;
+            writer.stream() << "addl $8, %esp" << endl;
 
-			//TODO Optimize that shit
-			writer.stream() << "pushl $S1" << endl;
-			writer.stream() << "pushl $1" << endl;
-			writer.stream() << "call print_string" << endl;
-			writer.stream() << "addl $8, %esp" << endl;
-			
-			break;
-	}
+            break;
+        case STRING:
+            writer.stream() << "call print_string" << endl;
+            writer.stream() << "addl $8, %esp" << endl;
+
+            //TODO Optimize that shit
+            writer.stream() << "pushl $S1" << endl;
+            writer.stream() << "pushl $1" << endl;
+            writer.stream() << "call print_string" << endl;
+            writer.stream() << "addl $8, %esp" << endl;
+
+            break;
+    }
 }
 
-void Print::checkStrings(StringPool& pool){
-	value->checkStrings(pool);
+void Print::checkStrings(StringPool& pool) {
+    value->checkStrings(pool);
 }
 
 void Print::checkVariables(Variables& variables) throw (CompilerException) {
-	value->checkVariables(variables);
+    value->checkVariables(variables);
 }
 
-void Integer::write(ByteCodeFileWriter& writer){
-	writer.stream() << "pushl $" << m_value << std::endl;
+void Integer::write(ByteCodeFileWriter& writer) {
+    writer.stream() << "pushl $" << m_value << std::endl;
 }
 
-void VariableValue::write(ByteCodeFileWriter& writer){
-	switch(m_type){
-		case INT:
-			writer.stream() << "pushl VI" << m_index << std::endl;
+void VariableValue::write(ByteCodeFileWriter& writer) {
+    switch(m_type) {
+        case INT:
+            writer.stream() << "pushl VI" << m_index << std::endl;
 
-			break;
-		case STRING:
-			writer.stream() << "pushl $VS" << m_index << std::endl;
-			writer.stream() << "pushl 4(VS" << m_index << ")" << std::endl;
+            break;
+        case STRING:
+            writer.stream() << "pushl $VS" << m_index << std::endl;
+            writer.stream() << "pushl 4(VS" << m_index << ")" << std::endl;
 
-			break;
-	}
+            break;
+    }
 }
 
-void Litteral::write(ByteCodeFileWriter& writer){
-	writer.stream() << "pushl $" << m_label << std::endl;
-	writer.stream() << "pushl $" << (m_litteral.size() - 2) << std::endl;
+void Litteral::write(ByteCodeFileWriter& writer) {
+    writer.stream() << "pushl $" << m_label << std::endl;
+    writer.stream() << "pushl $" << (m_litteral.size() - 2) << std::endl;
 }
 
 //Constantness
 
-bool Value::isConstant(){
-	return false;
+bool Value::isConstant() {
+    return false;
 }
 
-bool Litteral::isConstant(){
-	return true;
+bool Litteral::isConstant() {
+    return true;
 }
 
-bool Integer::isConstant(){
-	return true;
+bool Integer::isConstant() {
+    return true;
 }
 
-bool VariableValue::isConstant(){
-	return false;
+bool VariableValue::isConstant() {
+    return false;
 }
 
 //Values
 
-string Value::getStringValue(){
-	throw "Not constant";
+string Value::getStringValue() {
+    throw "Not constant";
 }
 
-int Value::getIntValue(){
-	throw "Not constant";
+int Value::getIntValue() {
+    throw "Not constant";
 }
 
-int Integer::getIntValue(){
-	return m_value;
+int Integer::getIntValue() {
+    return m_value;
 }
 
-string Litteral::getStringValue(){
-	return m_litteral;
+string Litteral::getStringValue() {
+    return m_litteral;
 }

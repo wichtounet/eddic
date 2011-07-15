@@ -15,16 +15,18 @@
 namespace eddic {
 
 class ByteCodeFileWriter {
-  private:
-	std::ofstream m_stream;
-  public:
-	ByteCodeFileWriter() {};
-	void open(const std::string& path) throw (CompilerException) ;
-	void close();
-	void writeHeader();
-	void writeEnd();
+    private:
+        std::ofstream m_stream;
+    public:
+        ByteCodeFileWriter() {};
+        void open(const std::string& path) throw (CompilerException) ;
+        void close();
+        void writeHeader();
+        void writeEnd();
 
-	std::ofstream& stream(){return m_stream;}
+        std::ofstream& stream() {
+            return m_stream;
+        }
 };
 
 } //end of eddic

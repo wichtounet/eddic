@@ -16,13 +16,13 @@
 namespace eddic {
 
 class StringPool : public ParseNode {
-	private:
-		std::map<std::string, std::string> pool;
-		unsigned int currentString;
-	public:
-		StringPool();
-		std::string label(const std::string& value);
-		void write(ByteCodeFileWriter& writer);	
+    private:
+        std::map<std::string, std::string> pool;
+        unsigned int currentString;
+    public:
+        StringPool();
+        std::string label(const std::string& value);
+        void write(ByteCodeFileWriter& writer);
 };
 
 } //end of eddic

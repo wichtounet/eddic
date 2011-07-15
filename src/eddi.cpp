@@ -19,75 +19,75 @@ using namespace eddic;
 void printUsage();
 
 int main(int argc, const char* argv[]) {
-	if(argc == 1){
-		cout << "eddic: no input files" << endl;
+    if(argc == 1) {
+        cout << "eddic: no input files" << endl;
 
-		return -1;
-	}
+        return -1;
+    }
 
-	Options::setDefaults();
+    Options::setDefaults();
 
-	string sourceFile;
+    string sourceFile;
 
-	for(int i = 1; i < argc; i++){
-		string arg = argv[i];
+    for(int i = 1; i < argc; i++) {
+        string arg = argv[i];
 
-		if(arg[0] != '-'){
-			sourceFile = arg;
-			break;
-		}
+        if(arg[0] != '-') {
+            sourceFile = arg;
+            break;
+        }
 
-		if(arg == "--optimize-all"){
-			Options::set(OPTIMIZE_INTEGERS);
-			Options::set(OPTIMIZE_STRINGS);
-		} else if(arg == "--optimize-integers"){
-			Options::set(OPTIMIZE_INTEGERS);
-		} else if(arg == "--optimize-strings"){
-			Options::set(OPTIMIZE_STRINGS);
-		} else if(arg == "--help" || arg == "-h"){
-			printUsage();
+        if(arg == "--optimize-all") {
+            Options::set(OPTIMIZE_INTEGERS);
+            Options::set(OPTIMIZE_STRINGS);
+        } else if(arg == "--optimize-integers") {
+            Options::set(OPTIMIZE_INTEGERS);
+        } else if(arg == "--optimize-strings") {
+            Options::set(OPTIMIZE_STRINGS);
+        } else if(arg == "--help" || arg == "-h") {
+            printUsage();
 
-			return 0;
-		} else if(arg == "-o"){
-			++i;
+            return 0;
+        } else if(arg == "-o") {
+            ++i;
 
-			if(i >= argc){
-				cout << "eddic: -o is waiting for a value" << endl;
+            if(i >= argc) {
+                cout << "eddic: -o is waiting for a value" << endl;
 
-				printUsage();
+                printUsage();
 
-				return -1;
-			} else {
-				Options::set(OUTPUT, argv[i]);
-			}
-		} else {
-			cout << "eddic: unrecognized option \"" << arg << "\"" << endl;
+                return -1;
+            } else {
+                Options::set(OUTPUT, argv[i]);
+            }
+        } else {
+            cout << "eddic: unrecognized option \"" << arg << "\"" << endl;
 
-			printUsage();
+            printUsage();
 
-			return -1;
-		}
-	}
+            return -1;
+        }
+    }
 
-	if(sourceFile.size() == 0){
-		cout << "eddic: no input files" << endl;
-		
-		printUsage();
+    if(sourceFile.size() == 0) {
+        cout << "eddic: no input files" << endl;
 
-		return -1;
-	}
+        printUsage();
 
-	Compiler compiler;
-	return compiler.compile(sourceFile);
+        return -1;
+    }
+
+    Compiler compiler;
+    return compiler.compile(sourceFile);
 }
 
-void printUsage(){
-	cout << "Usage: eddic [options] file" << endl;
+void printUsage() {
+    cout << "Usage: eddic [options] file" << endl;
 
-	cout << "Options:" << endl;
-	cout << "  -h, --help                 Display this help" << endl;
-	cout << "  -o file [default: a.out]   Set the file name of the executable" << endl;
-	cout << "  --optimize-all             Enable all optimizations" << endl;
-	cout << "  --optimize-strings         Enable the optimizations on strings" << endl;
-	cout << "  --optimize-integers        Enable the optimizations on integers" << endl;
+    cout << "Options:" << endl;
+    cout << "  -h, --help                 Display this help" << endl;
+    cout << "  -o file [default: a.out]   Set the file name of the executable" << endl;
+    cout << "  --optimize-all             Enable all optimizations" << endl;
+    cout << "  --optimize-strings         Enable the optimizations on strings" << endl;
+    cout << "  --optimize-integers        Enable the optimizations on integers" << endl;
 }

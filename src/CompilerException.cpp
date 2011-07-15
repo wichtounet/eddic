@@ -10,5 +10,5 @@
 using namespace eddic;
 
 const char* CompilerException::what() throw() {
-	return message.c_str();
+    return message.c_str();
 }

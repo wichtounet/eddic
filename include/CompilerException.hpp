@@ -13,12 +13,12 @@
 namespace eddic {
 
 class CompilerException: public std::exception {
-  private:
-    std::string message;
-  public:
-    CompilerException(const std::string& m) : message(m) {};
-    ~CompilerException() throw() {};
-    const char* what() throw();
+    private:
+        std::string message;
+    public:
+        CompilerException(const std::string& m) : message(m) {};
+        ~CompilerException() throw() {};
+        const char* what() throw();
 };
 
 } //end of eddic

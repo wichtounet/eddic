@@ -24,109 +24,109 @@ using namespace eddic;
 
 void execCommand(string command);
 
-int Compiler::compile(string file){
-	cout << "Compile " << file << endl;
+int Compiler::compile(string file) {
+    cout << "Compile " << file << endl;
 
-	Timer timer;
+    Timer timer;
 
-	string output = Options::get(OUTPUT);
-	
-	int code = 0;
-	try {
-		lexer.lex(file);
+    string output = Options::get(OUTPUT);
 
-		Parser parser(lexer);
+    int code = 0;
+    try {
+        lexer.lex(file);
 
-		Program* program = parser.parse();
+        Parser parser(lexer);
 
-		Variables variables;
-		StringPool* pool = new StringPool();
+        Program* program = parser.parse();
 
-		//Semantical analysis
-		check(program, variables);
-		checkStrings(program, *pool);
-		
-		//Optimize the parse tree
-		program->optimize();
+        Variables variables;
+        StringPool* pool = new StringPool();
 
-		writer.open("output.asm");
-		compile(program, *pool);
+        //Semantical analysis
+        check(program, variables);
+        checkStrings(program, *pool);
 
-		variables.write(writer);
-		
-		delete program;
-		delete pool;
+        //Optimize the parse tree
+        program->optimize();
 
-		string asCommand = "as --32 -o output.o output.asm";
+        writer.open("output.asm");
+        compile(program, *pool);
 
-		execCommand(asCommand);
+        variables.write(writer);
 
-		string ldCommand = "ld -m elf_i386 -s -o ";
-		ldCommand += output;
-		ldCommand += " output.o";
+        delete program;
+        delete pool;
 
-		execCommand(ldCommand);
+        string asCommand = "as --32 -o output.o output.asm";
 
-		//Remove temporary files
-		remove("output.asm");
-		remove("output.o");
-	} catch (CompilerException e){
-		cout << e.what() << endl;
-		code = 1;
-	}
-	
-	lexer.close();
-	writer.close();
+        execCommand(asCommand);
 
-	if(code != 0){
-		remove(output.c_str());
-	}
-	
-	cout << "Compilation took " << timer.elapsed() << "ms" << endl;
-	
-	return code;
+        string ldCommand = "ld -m elf_i386 -s -o ";
+        ldCommand += output;
+        ldCommand += " output.o";
+
+        execCommand(ldCommand);
+
+        //Remove temporary files
+        remove("output.asm");
+        remove("output.o");
+    } catch (CompilerException e) {
+        cout << e.what() << endl;
+        code = 1;
+    }
+
+    lexer.close();
+    writer.close();
+
+    if(code != 0) {
+        remove(output.c_str());
+    }
+
+    cout << "Compilation took " << timer.elapsed() << "ms" << endl;
+
+    return code;
 }
 
-void execCommand(string command){
-	char buffer[1024];
-	
-	FILE* stream = popen(command.c_str(), "r");
+void execCommand(string command) {
+    char buffer[1024];
 
-	while(fgets(buffer, 1024, stream) != NULL){
-		cout << buffer;
-	}
-	
-	pclose(stream);
+    FILE* stream = popen(command.c_str(), "r");
+
+    while(fgets(buffer, 1024, stream) != NULL) {
+        cout << buffer;
+    }
+
+    pclose(stream);
 }
 
-void Compiler::compile(Program* program, StringPool& pool){
-	writer.writeHeader();
+void Compiler::compile(Program* program, StringPool& pool) {
+    writer.writeHeader();
 
-	program->write(writer);
+    program->write(writer);
 
-	writer.writeEnd();
+    writer.writeEnd();
 
-	pool.write(writer);
+    pool.write(writer);
 }
 
-void Compiler::check(Program* program, Variables& variables){
-	NodeIterator it = program->begin();
-	NodeIterator end = program->end();
+void Compiler::check(Program* program, Variables& variables) {
+    NodeIterator it = program->begin();
+    NodeIterator end = program->end();
 
-	for( ; it != end; ++it){
-		ParseNode* node = *it;
+    for( ; it != end; ++it) {
+        ParseNode* node = *it;
 
-		node->checkVariables(variables);
-	}
+        node->checkVariables(variables);
+    }
 }
 
-void Compiler::checkStrings(Program* program, StringPool& pool){
-	NodeIterator it = program->begin();
-	NodeIterator end = program->end();
+void Compiler::checkStrings(Program* program, StringPool& pool) {
+    NodeIterator it = program->begin();
+    NodeIterator end = program->end();
 
-	for( ; it != end; ++it){
-		ParseNode* node = *it;
+    for( ; it != end; ++it) {
+        ParseNode* node = *it;
 
-		node->checkStrings(pool);
-	}
+        node->checkStrings(pool);
+    }
 }
