@@ -61,9 +61,9 @@ int Compiler::compile(string file) {
 
         execCommand(asCommand);
 
-        string ldCommand = "ld -m elf_i386 -s -o ";
+        string ldCommand = "ld -static -m elf_i386 -o ";
         ldCommand += output;
-        ldCommand += " output.o";
+        ldCommand += " output.o -lc";
 
         execCommand(ldCommand);
 
@@ -88,6 +88,8 @@ int Compiler::compile(string file) {
 }
 
 void execCommand(string command) {
+    cout << "Exec command : " << command << endl;
+
     char buffer[1024];
 
     FILE* stream = popen(command.c_str(), "r");
