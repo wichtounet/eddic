@@ -61,7 +61,7 @@ int Compiler::compile(string file) {
 
         execCommand(asCommand);
 
-        string ldCommand = "ld -static -m elf_i386 -o ";
+        string ldCommand = "gcc -m32 -static -o ";
         ldCommand += output;
         ldCommand += " output.o -lc";
 
