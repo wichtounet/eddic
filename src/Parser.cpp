@@ -24,7 +24,7 @@ using std::list;
 using namespace eddic;
 
 //TODO Review this method
-ParseNode* Parser::parseInstruction() throw (CompilerException) {
+ParseNode* Parser::parseInstruction() {
     if(lexer.isIf()) {
         return parseIf();
     }
@@ -52,7 +52,7 @@ ParseNode* Parser::parseInstruction() throw (CompilerException) {
     }
 }
 
-Program* Parser::parse() throw (CompilerException) {
+Program* Parser::parse() {
     Program* program = new Program();
 
     while(lexer.next()) {
@@ -62,37 +62,37 @@ Program* Parser::parse() throw (CompilerException) {
     return program;
 }
 
-inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) throw (CompilerException) {
+inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {
     if(!lexer.next() || !lexer.isRightParenth()) {
         throw CompilerException(message);
     }
 }
 
-inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) throw (CompilerException) {
+inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) {
     if(!lexer.next() || !lexer.isLeftParenth()) {
         throw CompilerException(message);
     }
 }
 
-inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) throw (CompilerException) {
+inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) {
     if(!lexer.next() || !lexer.isRightBrace()) {
         throw CompilerException(message);
     }
 }
 
-inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) throw (CompilerException) {
+inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
     if(!lexer.next() || !lexer.isLeftBrace()) {
         throw CompilerException(message);
     }
 }
 
-inline static void assertNextIsStop(Lexer& lexer, const string& message) throw (CompilerException) {
+inline static void assertNextIsStop(Lexer& lexer, const string& message) {
     if(!lexer.next() || !lexer.isStop()) {
         throw CompilerException(message);
     }
 }
 
-ParseNode* Parser::parseCall(const string& call) throw (CompilerException) {
+ParseNode* Parser::parseCall(const string& call) {
     if(call != "Print" && call != "Println") {
         throw CompilerException("The call \"" + call + "\" does not exist");
     }
@@ -109,7 +109,7 @@ ParseNode* Parser::parseCall(const string& call) throw (CompilerException) {
     }
 }
 
-ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerException) {
+ParseNode* Parser::parseDeclaration(const string& typeName) {
     if(typeName != "int" && typeName != "string") {
         throw CompilerException("Invalid type");
     }
@@ -134,7 +134,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) throw (CompilerExcep
     return new Declaration(type, variable, value);
 }
 
-ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerException) {
+ParseNode* Parser::parseAssignment(const string& variable) {
     Value* value = parseValue();
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
@@ -142,7 +142,7 @@ ParseNode* Parser::parseAssignment(const string& variable) throw (CompilerExcept
     return new Assignment(variable, value);
 }
 
-ParseNode* Parser::parseSwap(const string& lhs) throw (CompilerException) {
+ParseNode* Parser::parseSwap(const string& lhs) {
     if(!lexer.next() || !lexer.isWord()){
         throw CompilerException("Can only swap two variables");
     }
@@ -154,7 +154,7 @@ ParseNode* Parser::parseSwap(const string& lhs) throw (CompilerException) {
     return new Swap(lhs, rhs);
 }
 
-ParseNode* Parser::parseIf() throw (CompilerException) {
+ParseNode* Parser::parseIf() {
     assertNextIsLeftParenth(lexer, "An if instruction must be followed by a condition surrounded by parenth");
 
     Condition* condition = parseCondition();
@@ -204,7 +204,7 @@ ParseNode* Parser::parseIf() throw (CompilerException) {
     return block;
 }
 
-ElseIf* Parser::parseElseIf() throw (CompilerException) {
+ElseIf* Parser::parseElseIf() {
     assertNextIsLeftParenth(lexer, "An else if instruction must be followed by a condition surrounded by parenth");
 
     Condition* condition = parseCondition();
@@ -230,7 +230,7 @@ ElseIf* Parser::parseElseIf() throw (CompilerException) {
     return block;
 }
 
-Else* Parser::parseElse() throw (CompilerException) {
+Else* Parser::parseElse() {
     Else* block = new Else();
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
@@ -303,7 +303,7 @@ int priority(Operator op) {
     }
 }
 
-Value* Parser::parseValue() throw (CompilerException) {
+Value* Parser::parseValue() {
     list<Part*> parts;
 
     while(true) {
@@ -409,7 +409,7 @@ Value* Parser::parseValue() throw (CompilerException) {
     return value;
 }
 
-Condition* Parser::parseCondition() throw (CompilerException) {
+Condition* Parser::parseCondition() {
     lexer.next();
 
     if(lexer.isTrue()) {

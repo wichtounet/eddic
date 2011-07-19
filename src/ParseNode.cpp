@@ -34,7 +34,7 @@ void ParseNode::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void ParseNode::checkVariables(Variables& variables) throw (CompilerException) {
+void ParseNode::checkVariables(Variables& variables) {
     list<ParseNode*>::const_iterator it = childs.begin();
     list<ParseNode*>::const_iterator end = childs.end();
 

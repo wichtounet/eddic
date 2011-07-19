@@ -139,7 +139,7 @@ void If::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void If::checkVariables(Variables& variables) throw (CompilerException) {
+void If::checkVariables(Variables& variables) {
     if(m_condition->isOperator()) {
         m_condition->lhs()->checkVariables(variables);
         m_condition->rhs()->checkVariables(variables);
@@ -190,7 +190,7 @@ void If::optimize() {
     ParseNode::optimize();
 }
 
-void ElseIf::checkVariables(Variables& variables) throw (CompilerException) {
+void ElseIf::checkVariables(Variables& variables) {
     if(m_condition->isOperator()) {
         m_condition->lhs()->checkVariables(variables);
         m_condition->rhs()->checkVariables(variables);

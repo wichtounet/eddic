@@ -26,20 +26,20 @@ class Parser {
     private:
         Lexer& lexer;
 
-        ParseNode* parseInstruction() throw (CompilerException);
-        ParseNode* parseCall(const std::string& call) throw (CompilerException);
-        ParseNode* parseDeclaration(const std::string& type) throw (CompilerException);
-        ParseNode* parseAssignment(const std::string& variable) throw (CompilerException);
-        ParseNode* parseSwap(const std::string& lhs) throw (CompilerException);
-        ParseNode* parseIf() throw (CompilerException);
-        Condition* parseCondition() throw (CompilerException);
-        ElseIf* parseElseIf() throw (CompilerException);
-        Else* parseElse() throw (CompilerException);
-        Value* parseValue() throw (CompilerException);
+        ParseNode* parseInstruction();
+        ParseNode* parseCall(const std::string& call);
+        ParseNode* parseDeclaration(const std::string& type);
+        ParseNode* parseAssignment(const std::string& variable);
+        ParseNode* parseSwap(const std::string& lhs);
+        ParseNode* parseIf();
+        Condition* parseCondition();
+        ElseIf* parseElseIf();
+        Else* parseElse();
+        Value* parseValue();
 
     public:
         Parser(Lexer& l) : lexer(l) {};
-        Program* parse() throw (CompilerException) ;
+        Program* parse() ;
 };
 
 } //end of eddic

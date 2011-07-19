@@ -18,7 +18,7 @@ using std::endl;
 
 using namespace eddic;
 
-void Declaration::checkVariables(Variables& variables) throw (CompilerException) {
+void Declaration::checkVariables(Variables& variables) {
     if(variables.exists(m_variable)) {
         throw CompilerException("Variable has already been declared");
     }
@@ -38,7 +38,7 @@ void Declaration::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void Assignment::checkVariables(Variables& variables) throw (CompilerException) {
+void Assignment::checkVariables(Variables& variables) {
     if(!variables.exists(m_variable)) {
         throw CompilerException("Variable has not  been declared");
     }
@@ -54,7 +54,7 @@ void Assignment::checkVariables(Variables& variables) throw (CompilerException) 
     }
 }
 
-void Swap::checkVariables(Variables& variables) throw (CompilerException) {
+void Swap::checkVariables(Variables& variables) {
     if(m_lhs == m_rhs){
         throw CompilerException("Cannot swap a variable with itself");
     }
@@ -80,7 +80,7 @@ void Assignment::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void VariableValue::checkVariables(Variables& variables) throw (CompilerException) {
+void VariableValue::checkVariables(Variables& variables) {
     if(!variables.exists(m_variable)) {
         throw CompilerException("Variable has not been declared");
     }
@@ -203,7 +203,7 @@ void Print::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void Print::checkVariables(Variables& variables) throw (CompilerException) {
+void Print::checkVariables(Variables& variables) {
     value->checkVariables(variables);
 }
 

@@ -46,7 +46,7 @@ class Declaration : public ParseNode {
         }
 
         void checkStrings(StringPool& pool);
-        void checkVariables(Variables& variables) throw (CompilerException);
+        void checkVariables(Variables& variables);
         void write(ByteCodeFileWriter& writer);
         int index() {
             return m_index;
@@ -65,7 +65,7 @@ class Print : public ParseNode {
         }
 
         void checkStrings(StringPool& pool);
-        void checkVariables(Variables& variables) throw (CompilerException);
+        void checkVariables(Variables& variables);
         void write(ByteCodeFileWriter& writer);
 };
 
@@ -88,7 +88,7 @@ class Assignment : public ParseNode {
         }
 
         void checkStrings(StringPool& pool);
-        void checkVariables(Variables& variables) throw (CompilerException);
+        void checkVariables(Variables& variables);
         void write(ByteCodeFileWriter& writer);
 };
 
@@ -103,7 +103,7 @@ class Swap : public ParseNode {
     public:
         Swap(const std::string& lhs, const std::string& rhs) : m_lhs(lhs), m_rhs(rhs) {};
 
-        void checkVariables(Variables& variables) throw (CompilerException);
+        void checkVariables(Variables& variables);
         void write(ByteCodeFileWriter& writer);
 };
 
@@ -139,7 +139,7 @@ class VariableValue : public Value {
         int m_index;
     public:
         VariableValue(const std::string& variable) : m_variable(variable) {};
-        void checkVariables(Variables& variables) throw (CompilerException);
+        void checkVariables(Variables& variables);
         void write(ByteCodeFileWriter& writer);
         bool isConstant();
 };

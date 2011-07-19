@@ -62,7 +62,7 @@ class Lexer {
 
         bool readNext();
     public:
-        void lex(std::string file) throw(CompilerException) ;
+        void lex(std::string file);
         void close();
         bool next();
         void pushBack();

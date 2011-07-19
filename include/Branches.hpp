@@ -68,7 +68,7 @@ class ElseIf : public ParseNode {
             delete m_condition;
         }
 
-        virtual void checkVariables(Variables& variables) throw (CompilerException);
+        virtual void checkVariables(Variables& variables);
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
@@ -89,7 +89,7 @@ class If : public ParseNode {
         virtual ~If();
 
         virtual void write(ByteCodeFileWriter& writer);
-        virtual void checkVariables(Variables& variables) throw (CompilerException);
+        virtual void checkVariables(Variables& variables);
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 

@@ -16,7 +16,7 @@ using std::ios_base;
 
 using namespace eddic;
 
-void Lexer::lex(string file) throw(CompilerException) {
+void Lexer::lex(string file) {
     stream.open(file.c_str());
     stream.unsetf(ios_base::skipws);
 

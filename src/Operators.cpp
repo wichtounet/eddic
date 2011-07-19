@@ -18,7 +18,7 @@ using namespace eddic;
 
 //Checks
 
-void BinaryOperator::checkVariables(Variables& variables) throw (CompilerException) {
+void BinaryOperator::checkVariables(Variables& variables) {
     lhs->checkVariables(variables);
     rhs->checkVariables(variables);
 
@@ -30,7 +30,7 @@ void BinaryOperator::checkStrings(StringPool& pool){
     rhs->checkStrings(pool);
 }
 
-Type BinaryOperator::checkTypes(Type left, Type right) throw (CompilerException) {
+Type BinaryOperator::checkTypes(Type left, Type right) {
     if(left != right || left != INT) {
         throw CompilerException("Can only compute two integers");
     }
@@ -38,7 +38,7 @@ Type BinaryOperator::checkTypes(Type left, Type right) throw (CompilerException)
     return left;
 }
 
-Type Addition::checkTypes(Type left, Type right) throw (CompilerException) {
+Type Addition::checkTypes(Type left, Type right) {
     if(left != right) {
         throw CompilerException("Can only add two values of the same type");
     }

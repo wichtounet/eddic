@@ -13,7 +13,7 @@ using std::endl;
 
 using namespace eddic;
 
-void ByteCodeFileWriter::open(const std::string& path) throw (CompilerException) {
+void ByteCodeFileWriter::open(const std::string& path) {
     m_stream.open(path.c_str());
 
     if(!m_stream) {

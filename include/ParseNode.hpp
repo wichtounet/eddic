@@ -33,7 +33,7 @@ class ParseNode {
         ParseNode() : parent(NULL) {};
         virtual ~ParseNode();
         virtual void write(ByteCodeFileWriter& writer);
-        virtual void checkVariables(Variables& variables) throw (CompilerException);
+        virtual void checkVariables(Variables& variables);
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
         void addFirst(ParseNode* node);

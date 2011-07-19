@@ -25,13 +25,13 @@ class BinaryOperator : public Value {
         }
 
         bool isConstant();
-        void checkVariables(Variables& variables) throw (CompilerException);
+        void checkVariables(Variables& variables);
         void checkStrings(StringPool& pool);
         std::string getStringValue();
         int getIntValue();
         void optimize();
 
-        virtual Type checkTypes(Type left, Type right) throw (CompilerException);
+        virtual Type checkTypes(Type left, Type right);
         virtual std::string compute(const std::string& left, const std::string& right);
         virtual int compute(int left, int right);
 };
@@ -43,7 +43,7 @@ class Addition : public BinaryOperator {
         void write(ByteCodeFileWriter& writer);
         void optimize();
 
-        Type checkTypes(Type left, Type right) throw (CompilerException);
+        Type checkTypes(Type left, Type right);
         std::string compute(const std::string& left, const std::string& right);
         int compute(int left, int right);
 };

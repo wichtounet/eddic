@@ -19,7 +19,7 @@ class ByteCodeFileWriter {
         std::ofstream m_stream;
     public:
         ByteCodeFileWriter() {};
-        void open(const std::string& path) throw (CompilerException) ;
+        void open(const std::string& path) ;
         void close();
         void writeHeader();
         void writeEnd();
