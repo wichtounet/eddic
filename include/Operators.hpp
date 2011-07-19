@@ -26,6 +26,7 @@ class BinaryOperator : public Value {
 
         bool isConstant();
         void checkVariables(Variables& variables) throw (CompilerException);
+        void checkStrings(StringPool& pool);
         std::string getStringValue();
         int getIntValue();
         void optimize();

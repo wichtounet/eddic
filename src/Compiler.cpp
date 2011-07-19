@@ -68,8 +68,8 @@ int Compiler::compile(string file) {
         execCommand(ldCommand);
 
         //Remove temporary files
-        remove("output.asm");
-        remove("output.o");
+//        remove("output.asm");
+//        remove("output.o");
     } catch (CompilerException e) {
         cout << e.what() << endl;
         code = 1;

@@ -25,6 +25,11 @@ void BinaryOperator::checkVariables(Variables& variables) throw (CompilerExcepti
     m_type = checkTypes(lhs->type(), rhs->type());
 }
 
+void BinaryOperator::checkStrings(StringPool& pool){
+    lhs->checkStrings(pool);
+    rhs->checkStrings(pool);
+}
+
 Type BinaryOperator::checkTypes(Type left, Type right) throw (CompilerException) {
     if(left != right || left != INT) {
         throw new CompilerException("Can only compute two integers");
@@ -47,6 +52,8 @@ void Addition::write(ByteCodeFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
+    static int labelCopy = 0;
+
     if(m_type == INT) {
         writer.stream() << "movl (%esp), %eax" << std::endl;
         writer.stream() << "movl 4(%esp), %ecx" << std::endl;
@@ -54,7 +61,57 @@ void Addition::write(ByteCodeFileWriter& writer) {
         writer.stream() << "addl $8, %esp" << std::endl;
         writer.stream() << "pushl %eax" << std::endl;
     } else {
-        //TODO
+        writer.stream() << "movl 12(%esp), %edx" << std::endl;
+        writer.stream() << "movl 4(%esp), %ecx" << std::endl;
+        writer.stream() << "addl %ecx, %edx" << std::endl;
+
+        writer.stream() << "pushl %edx" << std::endl;
+        writer.stream() << "call malloc" << std::endl;
+        writer.stream() << "addl $4, %esp" << std::endl;
+
+        writer.stream() << "movl %eax, -4(%esp)" << std::endl;
+
+        writer.stream() << "movl 12(%esp), %ebx" << std::endl;
+        writer.stream() << "movl %eax, %ecx" << std::endl;
+        writer.stream() << "movl 8(%esp), %edx" << std::endl;
+
+        writer.stream() << "copy" << labelCopy << ":" << std::endl;
+        writer.stream() << "cmpl $0, %ebx" << std::endl;
+        writer.stream() << "je end" << labelCopy  << std::endl;
+        writer.stream() << "movl (%edx), %eax" << std::endl;
+        writer.stream() << "movl %eax, (%ecx)" << std::endl;
+        writer.stream() << "addl $4, %edx" << std::endl;
+        writer.stream() << "subl $1, %ebx" << std::endl;
+        writer.stream() << "jmp copy" << labelCopy << std::endl;
+        writer.stream() << "end" << labelCopy << ":" << std::endl;
+        
+        labelCopy++;
+
+        writer.stream() << "movl 4(%esp), %ebx" << std::endl;
+        writer.stream() << "movl (%esp), %edx" << std::endl;
+
+        writer.stream() << "copy" << labelCopy << ":" << std::endl;
+        writer.stream() << "cmpl $0, %ebx" << std::endl;
+        writer.stream() << "je end" << labelCopy  << std::endl;
+        writer.stream() << "movl (%edx), %eax" << std::endl;
+        writer.stream() << "movl %eax, (%ecx)" << std::endl;
+        writer.stream() << "addl $4, %edx" << std::endl;
+        writer.stream() << "subl $1, %ebx" << std::endl;
+        writer.stream() << "jmp copy" << labelCopy << std::endl;
+        writer.stream() << "end" << labelCopy << ":" << std::endl;
+
+        writer.stream() << "movl 12(%esp), %edx" << std::endl;
+        writer.stream() << "movl 4(%esp), %ecx" << std::endl;
+        writer.stream() << "addl %ecx, %edx" << std::endl;
+
+        labelCopy++;
+
+        writer.stream() << "movl -4(%esp), %eax" << std::endl;
+
+        writer.stream() << "addl $16, %esp" << std::endl;
+
+        writer.stream() << "pushl %eax" << std::endl;
+        writer.stream() << "pushl %edx" << std::endl;
     }
 }
 
