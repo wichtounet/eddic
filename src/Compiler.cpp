@@ -70,7 +70,7 @@ int Compiler::compile(string file) {
         //Remove temporary files
 //        remove("output.asm");
 //        remove("output.o");
-    } catch (CompilerException e) {
+    } catch (const CompilerException& e) {
         cout << e.what() << endl;
         code = 1;
     }

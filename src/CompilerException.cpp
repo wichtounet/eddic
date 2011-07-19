@@ -9,6 +9,6 @@
 
 using namespace eddic;
 
-const char* CompilerException::what() throw() {
+const char* CompilerException::what() const throw() {
     return message.c_str();
 }

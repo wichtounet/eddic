@@ -18,7 +18,7 @@ class CompilerException: public std::exception {
     public:
         CompilerException(const std::string& m) : message(m) {};
         ~CompilerException() throw() {};
-        const char* what() throw();
+        const char* what() const throw();
 };
 
 } //end of eddic
