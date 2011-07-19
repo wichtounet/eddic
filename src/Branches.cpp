@@ -145,7 +145,7 @@ void If::checkVariables(Variables& variables) throw (CompilerException) {
         m_condition->rhs()->checkVariables(variables);
 
         if(m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
-            throw new CompilerException("Can only compare integers");
+            throw CompilerException("Can only compare integers");
         }
     }
 
@@ -196,7 +196,7 @@ void ElseIf::checkVariables(Variables& variables) throw (CompilerException) {
         m_condition->rhs()->checkVariables(variables);
 
         if(m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
-            throw new CompilerException("Can only compare integers");
+            throw CompilerException("Can only compare integers");
         }
     }
 

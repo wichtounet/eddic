@@ -174,7 +174,7 @@ ParseNode* Parser::parseIf() throw (CompilerException) {
     }
 
     if(!lexer.isRightBrace()) {
-        throw new CompilerException("If body must be closed with right brace");
+        throw CompilerException("If body must be closed with right brace");
     }
 
     while(true) {
@@ -224,7 +224,7 @@ ElseIf* Parser::parseElseIf() throw (CompilerException) {
     }
 
     if(!lexer.isRightBrace()) {
-        throw new CompilerException("Else ff body must be closed with right brace");
+        throw CompilerException("Else ff body must be closed with right brace");
     }
 
     return block;
@@ -240,7 +240,7 @@ Else* Parser::parseElse() throw (CompilerException) {
     }
 
     if(!lexer.isRightBrace()) {
-        throw new CompilerException("else body must be closed with right brace");
+        throw CompilerException("else body must be closed with right brace");
     }
 
     return block;
@@ -423,7 +423,7 @@ Condition* Parser::parseCondition() throw (CompilerException) {
     Value* lhs = parseValue();
 
     if(!lexer.next()) {
-        throw new CompilerException("waiting for a boolean operator");
+        throw CompilerException("waiting for a boolean operator");
     }
 
     BooleanCondition operation;
@@ -440,7 +440,7 @@ Condition* Parser::parseCondition() throw (CompilerException) {
     } else if(lexer.isLessOrEquals()) {
         operation = LESS_EQUALS_OPERATOR;
     } else {
-        throw new CompilerException("waiting for a boolean operator");
+        throw CompilerException("waiting for a boolean operator");
     }
 
     Value* rhs = parseValue();
