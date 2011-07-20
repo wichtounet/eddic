@@ -19,18 +19,18 @@ namespace eddic {
 
 class Variable {
     private:
-        std::string m_name;
-        Type m_type;
-        int m_index;
+        const std::string m_name;
+        const Type m_type;
+        const int m_index;
     public:
         Variable(const std::string& name, Type type, int index) : m_name(name), m_type(type), m_index(index) {}
-        std::string name() {
+        std::string name() const  {
             return m_name;
         }
-        int index() {
+        int index() const {
             return m_index;
         }
-        Type type() {
+        Type type() const {
             return m_type;
         }
 };
