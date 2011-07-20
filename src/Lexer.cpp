@@ -5,7 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
 #include <cctype>
 
 #include "Lexer.hpp"
@@ -17,18 +16,13 @@ using std::ios_base;
 using namespace eddic;
 
 void Lexer::lex(string file) {
-    stream.open(file.c_str());
-    stream.unsetf(ios_base::skipws);
-
-    if(!stream) {
-        throw CompilerException("Unable to open the input file");
-    }
+	scanner.scan(file);
 
     currentType = NOTHING;
 }
 
 void Lexer::close() {
-    stream.close();
+    scanner.close();
 }
 
 bool Lexer::next() {
@@ -59,43 +53,36 @@ void Lexer::pushBack() {
 }
 
 bool Lexer::readNext() {
-    if(stream.eof()) {
+    if(!scanner.next()) {
         return false;
     }
 
-    char current;
-    stream >> current;
+    while(isspace(scanner.current())) { 
+		if(!scanner.next()){
+			return false;
+		}
+	}
 
-    while(isspace(current) && !stream.eof()) {
-        stream >> current;
-    }
+    if(scanner.current() == '"') {
+        currentToken = string(1, scanner.current());
 
-    if(stream.eof()) {
-        currentType = NOTHING;
-
-        return false;
-    }
-
-    if(current == '"') {
-        currentToken = string(1, current);
-
-        while(stream >> current && current != '"') {
-            currentToken += current;
+        while(scanner.next() && scanner.current() != '"') {
+            currentToken += scanner.current();
         }
 
-        currentToken += current;
+        currentToken += scanner.current();
 
         currentType = LITTERAL;
 
         return true;
-    } else if(isalpha(current)) {
-        currentToken = string(1, current);
+    } else if(isalpha(scanner.current())) {
+        currentToken = string(1, scanner.current());
 
-        while(stream >> current && isalpha(current)) {
-            currentToken += current;
+        while(scanner.next() && isalpha(scanner.current())) {
+            currentToken += scanner.current();
         }
 
-        stream.putback(current);
+        scanner.pushBack();
 
         if(currentToken == "true") {
             currentType = TRUE;
@@ -110,32 +97,32 @@ bool Lexer::readNext() {
         }
 
         return true;
-    } else if(isdigit(current)) {
-        currentToken = string(1, current);
+    } else if(isdigit(scanner.current())) {
+        currentToken = string(1, scanner.current());
 
-        while(stream >> current && isdigit(current)) {
-            currentToken += current;
+        while(scanner.next() && isdigit(scanner.current())) {
+            currentToken += scanner.current();
         }
 
-        stream.putback(current);
+        scanner.pushBack();
 
         currentType = INTEGER;
 
         return true;
     }
 
-    switch (current) {
+    switch (scanner.current()) {
         case ';':
             currentType = STOP;
             currentToken = ";";
             return true;
         case '=':
-            stream >> current;
+            scanner.next();
 
-            if(current == '=') {
+            if(scanner.current() == '=') {
                 currentType = EQUALS_TOKEN;
             } else {
-                stream.putback(current);
+                scanner.pushBack();
 
                 currentType = ASSIGN;
             }
@@ -169,41 +156,39 @@ bool Lexer::readNext() {
             currentType = MODULO;
             return true;
         case '!':
-            stream >> current;
+            scanner.next();
 
-            if(current == '=') {
+            if(scanner.current() == '=') {
                 currentType = NOT_EQUALS_TOKEN;
-            } else {
-                return false;
-            }
+            } 
 
-            return true;
+            return false;
         case '<':
-            stream >> current;
+            scanner.next();
 
-            if(current == '=') {
-                stream >> current;
+            if(scanner.current() == '=') {
+                scanner.next();
 
-                if(current == '>'){
+                if(scanner.current() == '>'){
                     currentType = SWAP;
                 } else {
-                    stream.putback(current);
+                    scanner.pushBack();
                     currentType = LESS_EQUALS_TOKEN;
                 }
             } else {
-                stream.putback(current);
+                scanner.pushBack();
 
                 currentType = LESS_TOKEN;
             }
 
             return true;
         case '>':
-            stream >> current;
+            scanner.next();
 
-            if(current == '=') {
+            if(scanner.current() == '=') {
                 currentType = GREATER_EQUALS_TOKEN;
             } else {
-                stream.putback(current);
+                scanner.pushBack();
 
                 currentType = GREATER_TOKEN;
             }

@@ -13,6 +13,7 @@
 #include <utility>
 #include <stack>
 
+#include "Scanner.hpp"
 #include "CompilerException.hpp"
 
 namespace eddic {
@@ -54,7 +55,7 @@ enum TokenType {
 
 class Lexer {
     private:
-        std::ifstream stream;
+        Scanner scanner;
         std::string currentToken;
         TokenType currentType;
         std::stack < std::pair< std::string, TokenType > > read;
