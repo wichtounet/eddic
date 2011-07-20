@@ -25,13 +25,13 @@ void BinaryOperator::checkVariables(Variables& variables) {
     m_type = checkTypes(lhs->type(), rhs->type());
 }
 
-void BinaryOperator::checkStrings(StringPool& pool){
+void BinaryOperator::checkStrings(StringPool& pool) {
     lhs->checkStrings(pool);
     rhs->checkStrings(pool);
 }
 
 Type BinaryOperator::checkTypes(Type left, Type right) {
-    if(left != right || left != INT) {
+    if (left != right || left != INT) {
         throw CompilerException("Can only compute two integers");
     }
 
@@ -39,7 +39,7 @@ Type BinaryOperator::checkTypes(Type left, Type right) {
 }
 
 Type Addition::checkTypes(Type left, Type right) {
-    if(left != right) {
+    if (left != right) {
         throw CompilerException("Can only add two values of the same type");
     }
 
@@ -54,7 +54,7 @@ void Addition::write(ByteCodeFileWriter& writer) {
 
     static int labelCopy = 0;
 
-    if(m_type == INT) {
+    if (m_type == INT) {
         writer.stream() << "movl (%esp), %eax" << std::endl;
         writer.stream() << "movl 4(%esp), %ecx" << std::endl;
         writer.stream() << "addl %ecx, %eax" << std::endl;
@@ -71,8 +71,8 @@ void Addition::write(ByteCodeFileWriter& writer) {
 
         writer.stream() << "movl %eax, -4(%esp)" << std::endl;
         writer.stream() << "movl %eax, %ecx" << std::endl;
-        writer.stream() << "movl $0, %eax" << std::endl;        
-        
+        writer.stream() << "movl $0, %eax" << std::endl;
+
         writer.stream() << "movl 8(%esp), %ebx" << std::endl;
         writer.stream() << "movl 12(%esp), %edx" << std::endl;
 
@@ -86,7 +86,7 @@ void Addition::write(ByteCodeFileWriter& writer) {
         writer.stream() << "subl $1, %ebx" << std::endl;
         writer.stream() << "jmp copy" << labelCopy << std::endl;
         writer.stream() << "end" << labelCopy << ":" << std::endl;
-        
+
         labelCopy++;
 
         writer.stream() << "movl (%esp), %ebx" << std::endl;
@@ -173,11 +173,11 @@ bool BinaryOperator::isConstant() {
 //Values
 
 int BinaryOperator::getIntValue() {
-    if(type() != INT) {
+    if (type() != INT) {
         throw "Invalid type";
     }
 
-    if(!isConstant()) {
+    if (!isConstant()) {
         throw "Not a constant";
     }
 
@@ -185,11 +185,11 @@ int BinaryOperator::getIntValue() {
 }
 
 string BinaryOperator::getStringValue() {
-    if(type() != STRING) {
+    if (type() != STRING) {
         throw "Invalid type";
     }
 
-    if(!isConstant()) {
+    if (!isConstant()) {
         throw "Not a constant";
     }
 
@@ -231,8 +231,8 @@ int Modulo::compute(int left, int right) {
 //Optimizations
 
 void BinaryOperator::optimize() {
-    if(isConstant()) {
-        if(Options::isSet(OPTIMIZE_INTEGERS)) {
+    if (isConstant()) {
+        if (Options::isSet(OPTIMIZE_INTEGERS)) {
             Value* value = new Integer(getIntValue());
 
             parent->replace(this, value);
@@ -244,15 +244,15 @@ void BinaryOperator::optimize() {
 }
 
 void Addition::optimize() {
-    if(isConstant()) {
-        if(type() == INT) {
-            if(Options::isSet(OPTIMIZE_INTEGERS)) {
+    if (isConstant()) {
+        if (type() == INT) {
+            if (Options::isSet(OPTIMIZE_INTEGERS)) {
                 Value* value = new Integer(getIntValue());
 
                 parent->replace(this, value);
             }
-        } else if(type() == STRING) {
-            if(Options::isSet(OPTIMIZE_STRINGS)) {
+        } else if (type() == STRING) {
+            if (Options::isSet(OPTIMIZE_STRINGS)) {
                 //No optimization at this time
             }
         }

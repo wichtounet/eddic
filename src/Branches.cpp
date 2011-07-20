@@ -15,13 +15,13 @@ If::~If() {
     delete m_condition;
     delete m_elseBlock; //Can be null, problem ?
 
-    for(std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         delete *it;
     }
 }
 
 void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label) {
-    if(condition->isOperator()) {
+    if (condition->isOperator()) {
         condition->lhs()->write(writer);
         condition->rhs()->write(writer);
 
@@ -30,7 +30,7 @@ void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label)
         writer.stream() << "addl $8, %esp" << std::endl;
     }
 
-    switch(condition->condition()) {
+    switch (condition->condition()) {
         case TRUE_VALUE:
             //No need to jump
 
@@ -76,14 +76,14 @@ void If::write(ByteCodeFileWriter& writer) {
     //Make something accessible for others operations
     static int labels = 0;
 
-    if(elseIfs.empty()) {
+    if (elseIfs.empty()) {
         int a = labels++;
 
         writeCondition(writer, m_condition, a);
 
         ParseNode::write(writer);
 
-        if(m_elseBlock) {
+        if (m_elseBlock) {
             int b = labels++;
 
             writer.stream() << "jmp L" << b << std::endl;
@@ -106,14 +106,14 @@ void If::write(ByteCodeFileWriter& writer) {
 
         writer.stream() << "jmp L" << end << std::endl;
 
-        for(std::vector<ElseIf*>::size_type i = 0; i < elseIfs.size(); ++i) {
+        for (std::vector<ElseIf*>::size_type i = 0; i < elseIfs.size(); ++i) {
             ElseIf* elseIf = elseIfs[i];
 
             writer.stream() << "L" << next << ":" << std::endl;
 
             //Last elseif
-            if(i == elseIfs.size() - 1) {
-                if(m_elseBlock) {
+            if (i == elseIfs.size() - 1) {
+                if (m_elseBlock) {
                     next = labels++;
                 } else {
                     next = end;
@@ -129,7 +129,7 @@ void If::write(ByteCodeFileWriter& writer) {
             writer.stream() << "jmp L" << end << std::endl;
         }
 
-        if(m_elseBlock) {
+        if (m_elseBlock) {
             writer.stream() << "L" << next << ":" << std::endl;
 
             m_elseBlock->write(writer);
@@ -140,50 +140,50 @@ void If::write(ByteCodeFileWriter& writer) {
 }
 
 void If::checkVariables(Variables& variables) {
-    if(m_condition->isOperator()) {
+    if (m_condition->isOperator()) {
         m_condition->lhs()->checkVariables(variables);
         m_condition->rhs()->checkVariables(variables);
 
-        if(m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
+        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
             throw CompilerException("Can only compare integers");
         }
     }
 
-    if(m_elseBlock) {
+    if (m_elseBlock) {
         m_elseBlock->checkVariables(variables);
     }
 
     ParseNode::checkVariables(variables);
 
-    for(std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         (*it)->checkVariables(variables);
     }
 }
 
 void If::checkStrings(StringPool& pool) {
-    if(m_condition->isOperator()) {
+    if (m_condition->isOperator()) {
         m_condition->lhs()->checkStrings(pool);
         m_condition->rhs()->checkStrings(pool);
     }
 
-    if(m_elseBlock) {
+    if (m_elseBlock) {
         m_elseBlock->checkStrings(pool);
     }
 
     ParseNode::checkStrings(pool);
 
-    for(std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         (*it)->checkStrings(pool);
     }
 }
 
 void If::optimize() {
-    if(m_condition->isOperator()) {
+    if (m_condition->isOperator()) {
         m_condition->lhs()->optimize();
         m_condition->rhs()->optimize();
     }
 
-    for(std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         (*it)->optimize();
     }
 
@@ -191,11 +191,11 @@ void If::optimize() {
 }
 
 void ElseIf::checkVariables(Variables& variables) {
-    if(m_condition->isOperator()) {
+    if (m_condition->isOperator()) {
         m_condition->lhs()->checkVariables(variables);
         m_condition->rhs()->checkVariables(variables);
 
-        if(m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
+        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
             throw CompilerException("Can only compare integers");
         }
     }
@@ -204,7 +204,7 @@ void ElseIf::checkVariables(Variables& variables) {
 }
 
 void ElseIf::checkStrings(StringPool& pool) {
-    if(m_condition->isOperator()) {
+    if (m_condition->isOperator()) {
         m_condition->lhs()->checkStrings(pool);
         m_condition->rhs()->checkStrings(pool);
     }
@@ -213,7 +213,7 @@ void ElseIf::checkStrings(StringPool& pool) {
 }
 
 void ElseIf::optimize() {
-    if(m_condition->isOperator()) {
+    if (m_condition->isOperator()) {
         m_condition->lhs()->optimize();
         m_condition->rhs()->optimize();
     }

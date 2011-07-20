@@ -17,30 +17,42 @@ namespace eddic {
 class Scanner {
     private:
         std::ifstream stream;
-        
-		char currentChar;
-		int line;
-		int col;
-    public:
-		Scanner() : currentChar(0), line(1), col(1) {}	
 
-		/* File manipulations */
+        char currentChar;
+        int line;
+        int col;
+    public:
+        Scanner() : currentChar(0), line(1), col(1) {}
+
+        /* File manipulations */
         void scan(std::string file);
         void close();
-		
-		/* Manage files */
+
+        /* Manage files */
         bool next();
         void pushBack();
-		
-		/* Getters */
-        inline char current() const { return currentChar; };
-		inline int currentLine() const { return line; };
-		inline int currentCol() const { return col; };
 
-		/* Utility */
-		inline bool isAlpha() const { return isalpha(currentChar); };
-		inline bool isSpace() const { return isspace(currentChar); };
-		inline bool isDigit() const { return isdigit(currentChar); };
+        /* Getters */
+        inline char current() const {
+            return currentChar;
+        };
+        inline int currentLine() const {
+            return line;
+        };
+        inline int currentCol() const {
+            return col;
+        };
+
+        /* Utility */
+        inline bool isAlpha() const {
+            return isalpha(currentChar);
+        };
+        inline bool isSpace() const {
+            return isspace(currentChar);
+        };
+        inline bool isDigit() const {
+            return isdigit(currentChar);
+        };
 };
 
 } //end of eddic

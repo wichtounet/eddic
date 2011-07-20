@@ -17,7 +17,7 @@ Variables::~Variables() {
     map<string, Variable*>::const_iterator it = variables.begin();
     map<string, Variable*>::const_iterator end = variables.end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         delete it->second;
     }
 }
@@ -25,7 +25,7 @@ Variables::~Variables() {
 Variable* Variables::find(const std::string& variable) {
     map<string, Variable*>::const_iterator it = variables.find(variable);
 
-    if(it == variables.end()) {
+    if (it == variables.end()) {
         return NULL;
     }
 
@@ -39,7 +39,7 @@ bool Variables::exists(const std::string& variable) const {
 unsigned int Variables::index(const std::string& variable) const {
     map<string, Variable*>::const_iterator it = variables.find(variable);
 
-    if(it == variables.end()) {
+    if (it == variables.end()) {
         return -1;
     }
 
@@ -58,11 +58,11 @@ void Variables::write(ByteCodeFileWriter& writer) {
     map<string, Variable*>::const_iterator it = variables.begin();
     map<string, Variable*>::const_iterator end = variables.end();
 
-    for( ; it != end; ++it) {
-        if(it->second->type() == INT) {
+    for ( ; it != end; ++it) {
+        if (it->second->type() == INT) {
             writer.stream() << "VI" << it->second->index() << ":" << endl;
             writer.stream() << ".long 0" << endl;
-        } else if(it->second->type() == STRING) {
+        } else if (it->second->type() == STRING) {
             writer.stream() << "VS" << it->second->index() << ":" << endl;
             writer.stream() << ".long 0" << endl;
             writer.stream() << "VS" << it->second->index() << "_l:" << endl;

@@ -20,7 +20,7 @@ void Scanner::scan(string file) {
     stream.open(file.c_str());
     stream.unsetf(ios_base::skipws);
 
-    if(!stream) {
+    if (!stream) {
         throw CompilerException("Unable to open the input file");
     }
 }
@@ -30,24 +30,24 @@ void Scanner::close() {
 }
 
 bool Scanner::next() {
-    if(stream.eof()) {
+    if (stream.eof()) {
         return false;
     }
 
-	stream >> currentChar;
+    stream >> currentChar;
 
-	if(currentChar == '\n'){
-		++line;
-		col = 1;
+    if (currentChar == '\n') {
+        ++line;
+        col = 1;
 
-		return next();
-	} 
+        return next();
+    }
 
-	++col;	
-	
+    ++col;
+
     return true;
 }
 
 void Scanner::pushBack() {
-	stream.putback(currentChar);
+    stream.putback(currentChar);
 }

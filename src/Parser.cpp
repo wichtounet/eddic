@@ -25,27 +25,27 @@ using namespace eddic;
 
 //TODO Review this method
 ParseNode* Parser::parseInstruction() {
-    if(lexer.isIf()) {
+    if (lexer.isIf()) {
         return parseIf();
     }
 
-    if(!lexer.isWord()) {
+    if (!lexer.isWord()) {
         throw CompilerException("An instruction can only start with a call or an assignation");
     }
 
     string word = lexer.getCurrentToken();
 
-    if(!lexer.next()) {
+    if (!lexer.next()) {
         throw CompilerException("Incomplete instruction");
     }
 
-    if(lexer.isLeftParenth()) { //is a call
+    if (lexer.isLeftParenth()) { //is a call
         return parseCall(word);
-    } else if(lexer.isWord()) { //is a declaration
+    } else if (lexer.isWord()) { //is a declaration
         return parseDeclaration(word);
-    } else if(lexer.isAssign()) { //is an assign
+    } else if (lexer.isAssign()) { //is an assign
         return parseAssignment(word);
-    } else if(lexer.isSwap()){
+    } else if (lexer.isSwap()) {
         return parseSwap(word);
     } else {
         throw CompilerException("Not an instruction");
@@ -55,7 +55,7 @@ ParseNode* Parser::parseInstruction() {
 Program* Parser::parse() {
     Program* program = new Program();
 
-    while(lexer.next()) {
+    while (lexer.next()) {
         program->addLast(parseInstruction());
     }
 
@@ -63,37 +63,37 @@ Program* Parser::parse() {
 }
 
 inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {
-    if(!lexer.next() || !lexer.isRightParenth()) {
+    if (!lexer.next() || !lexer.isRightParenth()) {
         throw CompilerException(message);
     }
 }
 
 inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) {
-    if(!lexer.next() || !lexer.isLeftParenth()) {
+    if (!lexer.next() || !lexer.isLeftParenth()) {
         throw CompilerException(message);
     }
 }
 
 inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) {
-    if(!lexer.next() || !lexer.isRightBrace()) {
+    if (!lexer.next() || !lexer.isRightBrace()) {
         throw CompilerException(message);
     }
 }
 
 inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
-    if(!lexer.next() || !lexer.isLeftBrace()) {
+    if (!lexer.next() || !lexer.isLeftBrace()) {
         throw CompilerException(message);
     }
 }
 
 inline static void assertNextIsStop(Lexer& lexer, const string& message) {
-    if(!lexer.next() || !lexer.isStop()) {
+    if (!lexer.next() || !lexer.isStop()) {
         throw CompilerException(message);
     }
 }
 
 ParseNode* Parser::parseCall(const string& call) {
-    if(call != "Print" && call != "Println") {
+    if (call != "Print" && call != "Println") {
         throw CompilerException("The call \"" + call + "\" does not exist");
     }
 
@@ -102,7 +102,7 @@ ParseNode* Parser::parseCall(const string& call) {
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    if(call == "Print"){
+    if (call == "Print") {
         return new Print(value);
     } else {
         return new Println(value);
@@ -110,12 +110,12 @@ ParseNode* Parser::parseCall(const string& call) {
 }
 
 ParseNode* Parser::parseDeclaration(const string& typeName) {
-    if(typeName != "int" && typeName != "string") {
+    if (typeName != "int" && typeName != "string") {
         throw CompilerException("Invalid type");
     }
 
     Type type;
-    if(typeName == "int") {
+    if (typeName == "int") {
         type = INT;
     } else {
         type = STRING;
@@ -123,7 +123,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) {
 
     string variable = lexer.getCurrentToken();
 
-    if(!lexer.next() || !lexer.isAssign()) {
+    if (!lexer.next() || !lexer.isAssign()) {
         throw CompilerException("A variable declaration must followed by '='");
     }
 
@@ -143,7 +143,7 @@ ParseNode* Parser::parseAssignment(const string& variable) {
 }
 
 ParseNode* Parser::parseSwap(const string& lhs) {
-    if(!lexer.next() || !lexer.isWord()){
+    if (!lexer.next() || !lexer.isWord()) {
         throw CompilerException("Can only swap two variables");
     }
 
@@ -167,22 +167,22 @@ ParseNode* Parser::parseIf() {
 
     lexer.next();
 
-    while(!lexer.isRightBrace()) {
+    while (!lexer.isRightBrace()) {
         block->addLast(parseInstruction());
 
         lexer.next();
     }
 
-    if(!lexer.isRightBrace()) {
+    if (!lexer.isRightBrace()) {
         throw CompilerException("If body must be closed with right brace");
     }
 
-    while(true) {
-        if(lexer.next()) {
-            if(lexer.isElse()) {
+    while (true) {
+        if (lexer.next()) {
+            if (lexer.isElse()) {
                 lexer.next();
 
-                if(lexer.isIf()) {
+                if (lexer.isIf()) {
                     block->addElseIf(parseElseIf());
                 } else {
                     lexer.pushBack();
@@ -217,13 +217,13 @@ ElseIf* Parser::parseElseIf() {
 
     lexer.next();
 
-    while(!lexer.isRightBrace()) {
+    while (!lexer.isRightBrace()) {
         block->addLast(parseInstruction());
 
         lexer.next();
     }
 
-    if(!lexer.isRightBrace()) {
+    if (!lexer.isRightBrace()) {
         throw CompilerException("Else ff body must be closed with right brace");
     }
 
@@ -235,11 +235,11 @@ Else* Parser::parseElse() {
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
 
-    while(lexer.next() && !lexer.isRightBrace()) {
+    while (lexer.next() && !lexer.isRightBrace()) {
         block->addLast(parseInstruction());
     }
 
-    if(!lexer.isRightBrace()) {
+    if (!lexer.isRightBrace()) {
         throw CompilerException("else body must be closed with right brace");
     }
 
@@ -290,7 +290,7 @@ class Unresolved : public Part {
 };
 
 int priority(Operator op) {
-    switch(op) {
+    switch (op) {
         case MUL:
         case DIV:
         case MOD:
@@ -306,22 +306,22 @@ int priority(Operator op) {
 Value* Parser::parseValue() {
     list<Part*> parts;
 
-    while(true) {
-        if(!lexer.next()) {
+    while (true) {
+        if (!lexer.next()) {
             throw CompilerException("Waiting for a value");
         }
 
         Value* node = NULL;
 
-        if(lexer.isLitteral()) {
+        if (lexer.isLitteral()) {
             string litteral = lexer.getCurrentToken();
 
             node = new Litteral(litteral);
-        } else if(lexer.isWord()) {
+        } else if (lexer.isWord()) {
             string variableRight = lexer.getCurrentToken();
 
             node = new VariableValue(variableRight);
-        } else if(lexer.isInteger()) {
+        } else if (lexer.isInteger()) {
             string integer = lexer.getCurrentToken();
             int value = toNumber<int>(integer);
 
@@ -332,19 +332,19 @@ Value* Parser::parseValue() {
 
         parts.push_back(new Resolved(node));
 
-        if(!lexer.next()) {
+        if (!lexer.next()) {
             break;
         }
 
-        if(lexer.isAddition()) {
+        if (lexer.isAddition()) {
             parts.push_back(new Unresolved(ADD));
-        } else if(lexer.isSubtraction()) {
+        } else if (lexer.isSubtraction()) {
             parts.push_back(new Unresolved(SUB));
-        } else if(lexer.isMultiplication()) {
+        } else if (lexer.isMultiplication()) {
             parts.push_back(new Unresolved(MUL));
-        } else if(lexer.isDivision()) {
+        } else if (lexer.isDivision()) {
             parts.push_back(new Unresolved(DIV));
-        } else if(lexer.isModulo()) {
+        } else if (lexer.isModulo()) {
             parts.push_back(new Unresolved(MOD));
         } else {
             lexer.pushBack();
@@ -352,14 +352,14 @@ Value* Parser::parseValue() {
         }
     }
 
-    while(parts.size() > 1) {
+    while (parts.size() > 1) {
         int maxPriority = -1;
         list<Part*>::iterator it, end, max;
-        for(it = parts.begin(), end = parts.end(); it != end; ++it) {
+        for (it = parts.begin(), end = parts.end(); it != end; ++it) {
             Part* part = *it;
 
-            if(!part->isResolved()) {
-                if(priority(part->getOperator()) > maxPriority) {
+            if (!part->isResolved()) {
+                if (priority(part->getOperator()) > maxPriority) {
                     maxPriority = priority(part->getOperator());
                     max = it;
                 }
@@ -381,15 +381,15 @@ Value* Parser::parseValue() {
 
         Value* value = NULL;
 
-        if(op == ADD) {
+        if (op == ADD) {
             value = new Addition(lhs, rhs);
-        } else if(op == SUB) {
+        } else if (op == SUB) {
             value = new Subtraction(lhs, rhs);
-        } else if(op == MUL) {
+        } else if (op == MUL) {
             value = new Multiplication(lhs, rhs);
-        } else if(op == DIV) {
+        } else if (op == DIV) {
             value = new Division(lhs, rhs);
-        } else if(op == MOD) {
+        } else if (op == MOD) {
             value = new Modulo(lhs, rhs);
         }
 
@@ -407,9 +407,9 @@ Value* Parser::parseValue() {
 Condition* Parser::parseCondition() {
     lexer.next();
 
-    if(lexer.isTrue()) {
+    if (lexer.isTrue()) {
         return new Condition(TRUE_VALUE);
-    } else if(lexer.isFalse()) {
+    } else if (lexer.isFalse()) {
         return new Condition(FALSE_VALUE);
     } else {
         lexer.pushBack();
@@ -417,22 +417,22 @@ Condition* Parser::parseCondition() {
 
     Value* lhs = parseValue();
 
-    if(!lexer.next()) {
+    if (!lexer.next()) {
         throw CompilerException("waiting for a boolean operator");
     }
 
     BooleanCondition operation;
-    if(lexer.isGreater()) {
+    if (lexer.isGreater()) {
         operation = GREATER_OPERATOR;
-    } else if(lexer.isLess()) {
+    } else if (lexer.isLess()) {
         operation = LESS_OPERATOR;
-    } else if(lexer.isEquals()) {
+    } else if (lexer.isEquals()) {
         operation = EQUALS_OPERATOR;
-    } else if(lexer.isNotEquals()) {
+    } else if (lexer.isNotEquals()) {
         operation = NOT_EQUALS_OPERATOR;
-    } else if(lexer.isGreaterOrEquals()) {
+    } else if (lexer.isGreaterOrEquals()) {
         operation = GREATER_EQUALS_OPERATOR;
-    } else if(lexer.isLessOrEquals()) {
+    } else if (lexer.isLessOrEquals()) {
         operation = LESS_EQUALS_OPERATOR;
     } else {
         throw CompilerException("waiting for a boolean operator");

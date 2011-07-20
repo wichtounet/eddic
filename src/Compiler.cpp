@@ -78,7 +78,7 @@ int Compiler::compile(string file) {
     lexer.close();
     writer.close();
 
-    if(code != 0) {
+    if (code != 0) {
         remove(output.c_str());
     }
 
@@ -94,7 +94,7 @@ void execCommand(string command) {
 
     FILE* stream = popen(command.c_str(), "r");
 
-    while(fgets(buffer, 1024, stream) != NULL) {
+    while (fgets(buffer, 1024, stream) != NULL) {
         cout << buffer;
     }
 
@@ -115,7 +115,7 @@ void Compiler::check(Program* program, Variables& variables) {
     NodeIterator it = program->begin();
     NodeIterator end = program->end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         ParseNode* node = *it;
 
         node->checkVariables(variables);
@@ -126,7 +126,7 @@ void Compiler::checkStrings(Program* program, StringPool& pool) {
     NodeIterator it = program->begin();
     NodeIterator end = program->end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         ParseNode* node = *it;
 
         node->checkStrings(pool);

@@ -19,7 +19,7 @@ using namespace eddic;
 void printUsage();
 
 int main(int argc, const char* argv[]) {
-    if(argc == 1) {
+    if (argc == 1) {
         cout << "eddic: no input files" << endl;
 
         return -1;
@@ -29,29 +29,29 @@ int main(int argc, const char* argv[]) {
 
     string sourceFile;
 
-    for(int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         string arg = argv[i];
 
-        if(arg[0] != '-') {
+        if (arg[0] != '-') {
             sourceFile = arg;
             break;
         }
 
-        if(arg == "--optimize-all") {
+        if (arg == "--optimize-all") {
             Options::set(OPTIMIZE_INTEGERS);
             Options::set(OPTIMIZE_STRINGS);
-        } else if(arg == "--optimize-integers") {
+        } else if (arg == "--optimize-integers") {
             Options::set(OPTIMIZE_INTEGERS);
-        } else if(arg == "--optimize-strings") {
+        } else if (arg == "--optimize-strings") {
             Options::set(OPTIMIZE_STRINGS);
-        } else if(arg == "--help" || arg == "-h") {
+        } else if (arg == "--help" || arg == "-h") {
             printUsage();
 
             return 0;
-        } else if(arg == "-o") {
+        } else if (arg == "-o") {
             ++i;
 
-            if(i >= argc) {
+            if (i >= argc) {
                 cout << "eddic: -o is waiting for a value" << endl;
 
                 printUsage();
@@ -69,7 +69,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    if(sourceFile.size() == 0) {
+    if (sourceFile.size() == 0) {
         cout << "eddic: no input files" << endl;
 
         printUsage();

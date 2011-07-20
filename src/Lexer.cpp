@@ -14,7 +14,7 @@ using std::ios_base;
 using namespace eddic;
 
 void Lexer::lex(string file) {
-	scanner.scan(file);
+    scanner.scan(file);
 
     currentType = NOTHING;
 }
@@ -24,7 +24,7 @@ void Lexer::close() {
 }
 
 bool Lexer::next() {
-    if(!buffer.empty()) {
+    if (!buffer.empty()) {
         pair<string, TokenType> old = buffer.top();
 
         currentToken = old.first;
@@ -33,7 +33,7 @@ bool Lexer::next() {
         buffer.pop();
 
         return true;
-    } else if(readNext()) {
+    } else if (readNext()) {
         read.push(make_pair(currentToken, currentType));
 
         return true;
@@ -51,20 +51,20 @@ void Lexer::pushBack() {
 }
 
 bool Lexer::readNext() {
-    if(!scanner.next()) {
+    if (!scanner.next()) {
         return false;
     }
 
-    while(scanner.isSpace()) { 
-		if(!scanner.next()){
-			return false;
-		}
-	}
+    while (scanner.isSpace()) {
+        if (!scanner.next()) {
+            return false;
+        }
+    }
 
-    if(scanner.current() == '"') {
+    if (scanner.current() == '"') {
         currentToken = string(1, scanner.current());
 
-        while(scanner.next() && scanner.current() != '"') {
+        while (scanner.next() && scanner.current() != '"') {
             currentToken += scanner.current();
         }
 
@@ -73,32 +73,32 @@ bool Lexer::readNext() {
         currentType = LITTERAL;
 
         return true;
-    } else if(scanner.isAlpha()) {
+    } else if (scanner.isAlpha()) {
         currentToken = string(1, scanner.current());
 
-        while(scanner.next() && scanner.isAlpha()) {
+        while (scanner.next() && scanner.isAlpha()) {
             currentToken += scanner.current();
         }
 
         scanner.pushBack();
 
-        if(currentToken == "true") {
+        if (currentToken == "true") {
             currentType = TRUE_TYPE;
-        } else if(currentToken == "false") {
+        } else if (currentToken == "false") {
             currentType = FALSE_TYPE;
-        } else if(currentToken == "if") {
+        } else if (currentToken == "if") {
             currentType = IF;
-        } else if(currentToken == "else") {
+        } else if (currentToken == "else") {
             currentType = ELSE;
         } else {
             currentType = WORD;
         }
 
         return true;
-    } else if(scanner.isDigit()) {
+    } else if (scanner.isDigit()) {
         currentToken = string(1, scanner.current());
 
-        while(scanner.next() && scanner.isDigit()) {
+        while (scanner.next() && scanner.isDigit()) {
             currentToken += scanner.current();
         }
 
@@ -116,7 +116,7 @@ bool Lexer::readNext() {
         case '=':
             scanner.next();
 
-            if(scanner.current() == '=') {
+            if (scanner.current() == '=') {
                 currentType = EQUALS_TOKEN;
             } else {
                 scanner.pushBack();
@@ -155,18 +155,18 @@ bool Lexer::readNext() {
         case '!':
             scanner.next();
 
-            if(scanner.current() == '=') {
+            if (scanner.current() == '=') {
                 currentType = NOT_EQUALS_TOKEN;
-            } 
+            }
 
             return false;
         case '<':
             scanner.next();
 
-            if(scanner.current() == '=') {
+            if (scanner.current() == '=') {
                 scanner.next();
 
-                if(scanner.current() == '>'){
+                if (scanner.current() == '>') {
                     currentType = SWAP;
                 } else {
                     scanner.pushBack();
@@ -182,7 +182,7 @@ bool Lexer::readNext() {
         case '>':
             scanner.next();
 
-            if(scanner.current() == '=') {
+            if (scanner.current() == '=') {
                 currentType = GREATER_EQUALS_TOKEN;
             } else {
                 scanner.pushBack();

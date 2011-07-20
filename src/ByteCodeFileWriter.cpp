@@ -16,7 +16,7 @@ using namespace eddic;
 void ByteCodeFileWriter::open(const std::string& path) {
     m_stream.open(path.c_str());
 
-    if(!m_stream) {
+    if (!m_stream) {
         throw CompilerException("Unable to open the output file");
     }
 }
@@ -49,7 +49,7 @@ void writePrintString(std::ofstream& m_stream) {
     m_stream << "ret" << std::endl;
 }
 
-void writePrintLine(std::ofstream& m_stream){
+void writePrintLine(std::ofstream& m_stream) {
     m_stream << std::endl;
     m_stream << "print_line:" << std::endl;
     m_stream << "pushl %ebp" << std::endl;

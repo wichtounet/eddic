@@ -19,7 +19,7 @@ using std::endl;
 using namespace eddic;
 
 void Declaration::checkVariables(Variables& variables) {
-    if(variables.exists(m_variable)) {
+    if (variables.exists(m_variable)) {
         throw CompilerException("Variable has already been declared");
     }
 
@@ -29,7 +29,7 @@ void Declaration::checkVariables(Variables& variables) {
 
     value->checkVariables(variables);
 
-    if(value->type() != m_type) {
+    if (value->type() != m_type) {
         throw CompilerException("Incompatible type");
     }
 }
@@ -39,7 +39,7 @@ void Declaration::checkStrings(StringPool& pool) {
 }
 
 void Assignment::checkVariables(Variables& variables) {
-    if(!variables.exists(m_variable)) {
+    if (!variables.exists(m_variable)) {
         throw CompilerException("Variable has not  been declared");
     }
 
@@ -49,17 +49,17 @@ void Assignment::checkVariables(Variables& variables) {
 
     value->checkVariables(variables);
 
-    if(value->type() != var->type()) {
+    if (value->type() != var->type()) {
         throw CompilerException("Incompatible type");
     }
 }
 
 void Swap::checkVariables(Variables& variables) {
-    if(m_lhs == m_rhs){
+    if (m_lhs == m_rhs) {
         throw CompilerException("Cannot swap a variable with itself");
     }
-    
-    if(!variables.exists(m_lhs) || !variables.exists(m_rhs)) {
+
+    if (!variables.exists(m_lhs) || !variables.exists(m_rhs)) {
         throw CompilerException("Variable has not been declared");
     }
 
@@ -69,7 +69,7 @@ void Swap::checkVariables(Variables& variables) {
     m_lhs_index = lhs_var->index();
     m_rhs_index = rhs_var->index();
 
-    if(lhs_var->type() != rhs_var->type()) {
+    if (lhs_var->type() != rhs_var->type()) {
         throw CompilerException("Incompatible type");
     }
 
@@ -81,7 +81,7 @@ void Assignment::checkStrings(StringPool& pool) {
 }
 
 void VariableValue::checkVariables(Variables& variables) {
-    if(!variables.exists(m_variable)) {
+    if (!variables.exists(m_variable)) {
         throw CompilerException("Variable has not been declared");
     }
 
@@ -98,7 +98,7 @@ void Litteral::checkStrings(StringPool& pool) {
 void Declaration::write(ByteCodeFileWriter& writer) {
     value->write(writer);
 
-    switch(m_type) {
+    switch (m_type) {
         case INT:
             writer.stream() << "movl (%esp), %eax" << endl;
             writer.stream() << "movl %eax, VI" << m_index << endl;
@@ -109,7 +109,7 @@ void Declaration::write(ByteCodeFileWriter& writer) {
             writer.stream() << "movl (%esp), %eax" << endl;
             writer.stream() << "movl 4(%esp), %ebx" << endl;
             writer.stream() << "addl $8, %esp" << endl;
-            
+
             writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
             writer.stream() << "movl %ebx, VS" << m_index << endl;
 
@@ -120,7 +120,7 @@ void Declaration::write(ByteCodeFileWriter& writer) {
 void Assignment::write(ByteCodeFileWriter& writer) {
     value->write(writer);
 
-    switch(value->type()) {
+    switch (value->type()) {
         case INT:
             writer.stream() << "movl (%esp), %eax" << std::endl;
             writer.stream() << "movl %eax, VI" << m_index << "" << std::endl;
@@ -131,7 +131,7 @@ void Assignment::write(ByteCodeFileWriter& writer) {
             writer.stream() << "movl (%esp), %eax" << endl;
             writer.stream() << "movl 4(%esp), %ebx" << endl;
             writer.stream() << "addl $8, %esp" << endl;
-            
+
             writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
             writer.stream() << "movl %ebx, VS" << m_index << endl;
 
@@ -140,7 +140,7 @@ void Assignment::write(ByteCodeFileWriter& writer) {
 }
 
 void Swap::write(ByteCodeFileWriter& writer) {
-    switch(m_type){
+    switch (m_type) {
         case INT:
             writer.stream() << "movl VI" << m_lhs_index << ", %eax" << endl;
             writer.stream() << "movl VI" << m_rhs_index << ", %ebx" << endl;
@@ -153,12 +153,12 @@ void Swap::write(ByteCodeFileWriter& writer) {
             writer.stream() << "movl VS" << m_rhs_index << ", %ebx" << endl;
             writer.stream() << "movl %eax, VS" << m_rhs_index << endl;
             writer.stream() << "movl %ebx, VS" << m_lhs_index << endl;
-            
+
             writer.stream() << "movl VS" << m_lhs_index << "_l, %eax" << endl;
             writer.stream() << "movl VS" << m_rhs_index << "_l, %ebx" << endl;
             writer.stream() << "movl %eax, VS" << m_rhs_index << "_l" << endl;
             writer.stream() << "movl %ebx, VS" << m_lhs_index << "_l" << endl;
-        
+
             break;
     }
 }
@@ -166,7 +166,7 @@ void Swap::write(ByteCodeFileWriter& writer) {
 void Print::write(ByteCodeFileWriter& writer) {
     value->write(writer);
 
-    switch(value->type()) {
+    switch (value->type()) {
         case INT:
             writer.stream() << "call print_integer" << endl;
             writer.stream() << "addl $4, %esp" << endl;
@@ -180,10 +180,10 @@ void Print::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Println::write(ByteCodeFileWriter& writer){
+void Println::write(ByteCodeFileWriter& writer) {
     value->write(writer);
 
-    switch(value->type()) {
+    switch (value->type()) {
         case INT:
             writer.stream() << "call print_integer" << endl;
             writer.stream() << "addl $4, %esp" << endl;
@@ -212,7 +212,7 @@ void Integer::write(ByteCodeFileWriter& writer) {
 }
 
 void VariableValue::write(ByteCodeFileWriter& writer) {
-    switch(m_type) {
+    switch (m_type) {
         case INT:
             writer.stream() << "pushl VI" << m_index << std::endl;
 

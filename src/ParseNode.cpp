@@ -16,11 +16,11 @@ using std::vector;
 using namespace eddic;
 
 ParseNode::~ParseNode() {
-    for(NodeIterator it = childs.begin(); it != childs.end(); ++it) {
+    for (NodeIterator it = childs.begin(); it != childs.end(); ++it) {
         delete *it;
     }
 
-    for(TrashIterator it = trash.begin(); it != trash.end(); ++it) {
+    for (TrashIterator it = trash.begin(); it != trash.end(); ++it) {
         delete *it;
     }
 }
@@ -29,7 +29,7 @@ void ParseNode::write(ByteCodeFileWriter& writer) {
     NodeIterator it = childs.begin();
     NodeIterator end = childs.end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         (*it)->write(writer);
     }
 }
@@ -38,7 +38,7 @@ void ParseNode::checkVariables(Variables& variables) {
     NodeIterator it = childs.begin();
     NodeIterator end = childs.end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         (*it)->checkVariables(variables);
     }
 }
@@ -47,7 +47,7 @@ void ParseNode::checkStrings(StringPool& pool) {
     NodeIterator it = childs.begin();
     NodeIterator end = childs.end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         (*it)->checkStrings(pool);
     }
 }
@@ -56,7 +56,7 @@ void ParseNode::optimize() {
     NodeIterator it = childs.begin();
     NodeIterator end = childs.end();
 
-    for( ; it != end; ++it) {
+    for ( ; it != end; ++it) {
         (*it)->optimize();
     }
 }
@@ -82,8 +82,8 @@ void ParseNode::replace(ParseNode* old, ParseNode* node) {
 
     node->parent = this;
 
-    for( ; it != end; ++it) {
-        if(*it == old) {
+    for ( ; it != end; ++it) {
+        if (*it == old) {
             *it = node;
 
             return;
