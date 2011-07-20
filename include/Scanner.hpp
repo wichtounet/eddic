@@ -25,7 +25,7 @@ class Scanner {
         Scanner() : currentChar(0), line(1), col(1) {}
 
         /* File manipulations */
-        void scan(std::string file);
+        void scan(const std::string& file);
         void close();
 
         /* Manage files */

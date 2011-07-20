@@ -16,7 +16,7 @@ using std::ios_base;
 
 using namespace eddic;
 
-void Scanner::scan(string file) {
+void Scanner::scan(const string& file) {
     stream.open(file.c_str());
     stream.unsetf(ios_base::skipws);
 
