@@ -263,7 +263,7 @@ class Part {
 
 class Resolved : public Part {
     public:
-        Resolved(Value* v) : value(v) {}
+        explicit Resolved(Value* v) : value(v) {}
         bool isResolved() {
             return true;
         }
@@ -277,7 +277,7 @@ class Resolved : public Part {
 
 class Unresolved : public Part {
     public:
-        Unresolved(Operator o) : op(o) {}
+        explicit Unresolved(Operator o) : op(o) {}
         bool isResolved() {
             return false;
         }
