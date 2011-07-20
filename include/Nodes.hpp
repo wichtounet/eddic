@@ -24,7 +24,7 @@ class Value : public ParseNode {
     protected:
         Type m_type;
     public:
-        Type type() {
+        Type type() const {
             return m_type;
         };
         virtual bool isConstant();
@@ -48,7 +48,7 @@ class Declaration : public ParseNode {
         void checkStrings(StringPool& pool);
         void checkVariables(Variables& variables);
         void write(ByteCodeFileWriter& writer);
-        int index() {
+        int index() const {
             return m_index;
         }
 };

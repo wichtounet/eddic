@@ -45,10 +45,10 @@ class Condition {
         Value* rhs() {
             return m_rhs;
         }
-        BooleanCondition condition() {
+        BooleanCondition condition() const {
             return m_condition;
         }
-        bool isOperator() {
+        bool isOperator() const {
             return m_lhs != NULL || m_rhs != NULL;
         }
 };
