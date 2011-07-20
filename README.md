@@ -18,7 +18,7 @@ You can compile an EDDI source file using the compiler easily. For example, with
     $ cd eddic
     $ ./bin/eddic samples/simple.eddi
 
-That will create a a.outfile in the current folder. You can then run this file as any other executable on your computer. 
+That will create a a.out file in the current folder. You can then run this file as any other executable on your computer. 
 
 ## Troubleshooting ##
 
