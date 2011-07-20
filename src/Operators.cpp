@@ -61,8 +61,8 @@ void Addition::write(ByteCodeFileWriter& writer) {
         writer.stream() << "addl $8, %esp" << std::endl;
         writer.stream() << "pushl %eax" << std::endl;
     } else {
-        writer.stream() << "movl 12(%esp), %edx" << std::endl;
-        writer.stream() << "movl 4(%esp), %ecx" << std::endl;
+        writer.stream() << "movl 8(%esp), %edx" << std::endl;
+        writer.stream() << "movl (%esp), %ecx" << std::endl;
         writer.stream() << "addl %ecx, %edx" << std::endl;
 
         writer.stream() << "pushl %edx" << std::endl;
@@ -70,38 +70,41 @@ void Addition::write(ByteCodeFileWriter& writer) {
         writer.stream() << "addl $4, %esp" << std::endl;
 
         writer.stream() << "movl %eax, -4(%esp)" << std::endl;
-
-        writer.stream() << "movl 12(%esp), %ebx" << std::endl;
         writer.stream() << "movl %eax, %ecx" << std::endl;
-        writer.stream() << "movl 8(%esp), %edx" << std::endl;
+        writer.stream() << "movl $0, %eax" << std::endl;        
+        
+        writer.stream() << "movl 8(%esp), %ebx" << std::endl;
+        writer.stream() << "movl 12(%esp), %edx" << std::endl;
 
         writer.stream() << "copy" << labelCopy << ":" << std::endl;
         writer.stream() << "cmpl $0, %ebx" << std::endl;
         writer.stream() << "je end" << labelCopy  << std::endl;
-        writer.stream() << "movl (%edx), %eax" << std::endl;
-        writer.stream() << "movl %eax, (%ecx)" << std::endl;
-        writer.stream() << "addl $4, %edx" << std::endl;
+        writer.stream() << "movb (%edx), %al" << std::endl;
+        writer.stream() << "movb %al, (%ecx)" << std::endl;
+        writer.stream() << "addl $1, %ecx" << std::endl;
+        writer.stream() << "addl $1, %edx" << std::endl;
         writer.stream() << "subl $1, %ebx" << std::endl;
         writer.stream() << "jmp copy" << labelCopy << std::endl;
         writer.stream() << "end" << labelCopy << ":" << std::endl;
         
         labelCopy++;
 
-        writer.stream() << "movl 4(%esp), %ebx" << std::endl;
-        writer.stream() << "movl (%esp), %edx" << std::endl;
+        writer.stream() << "movl (%esp), %ebx" << std::endl;
+        writer.stream() << "movl 4(%esp), %edx" << std::endl;
 
         writer.stream() << "copy" << labelCopy << ":" << std::endl;
         writer.stream() << "cmpl $0, %ebx" << std::endl;
         writer.stream() << "je end" << labelCopy  << std::endl;
-        writer.stream() << "movl (%edx), %eax" << std::endl;
-        writer.stream() << "movl %eax, (%ecx)" << std::endl;
-        writer.stream() << "addl $4, %edx" << std::endl;
+        writer.stream() << "movb (%edx), %al" << std::endl;
+        writer.stream() << "movb %al, (%ecx)" << std::endl;
+        writer.stream() << "addl $1, %ecx" << std::endl;
+        writer.stream() << "addl $1, %edx" << std::endl;
         writer.stream() << "subl $1, %ebx" << std::endl;
         writer.stream() << "jmp copy" << labelCopy << std::endl;
         writer.stream() << "end" << labelCopy << ":" << std::endl;
 
-        writer.stream() << "movl 12(%esp), %edx" << std::endl;
-        writer.stream() << "movl 4(%esp), %ecx" << std::endl;
+        writer.stream() << "movl 8(%esp), %edx" << std::endl;
+        writer.stream() << "movl (%esp), %ecx" << std::endl;
         writer.stream() << "addl %ecx, %edx" << std::endl;
 
         labelCopy++;
