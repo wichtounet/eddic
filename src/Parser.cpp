@@ -353,8 +353,6 @@ Value* Parser::parseValue() {
     }
 
     while(parts.size() > 1) {
-        int i = 0;
-        int debug = 0;
         int maxPriority = -1;
         list<Part*>::iterator it, end, max;
         for(it = parts.begin(), end = parts.end(); it != end; ++it) {
@@ -364,11 +362,8 @@ Value* Parser::parseValue() {
                 if(priority(part->getOperator()) > maxPriority) {
                     maxPriority = priority(part->getOperator());
                     max = it;
-                    i = debug;
                 }
             }
-
-            debug++;
         }
 
         list<Part*>::iterator first = max;
