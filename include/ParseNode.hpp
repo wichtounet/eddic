@@ -18,6 +18,7 @@ namespace eddic {
 class ParseNode;
 
 typedef std::list<ParseNode*>::const_iterator NodeIterator;
+typedef std::vector<ParseNode*>::const_iterator TrashIterator;
 
 class ByteCodeFileWriter;
 class StringPool;

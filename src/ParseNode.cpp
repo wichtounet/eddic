@@ -16,18 +16,18 @@ using std::vector;
 using namespace eddic;
 
 ParseNode::~ParseNode() {
-    for(list<ParseNode*>::const_iterator it = childs.begin(); it != childs.end(); ++it) {
+    for(NodeIterator it = childs.begin(); it != childs.end(); ++it) {
         delete *it;
     }
 
-    for(vector<ParseNode*>::const_iterator tit = trash.begin(); tit != trash.end(); ++tit) {
-        delete *tit;
+    for(TrashIterator it = trash.begin(); it != trash.end(); ++it) {
+        delete *it;
     }
 }
 
 void ParseNode::write(ByteCodeFileWriter& writer) {
-    list<ParseNode*>::const_iterator it = childs.begin();
-    list<ParseNode*>::const_iterator end = childs.end();
+    NodeIterator it = childs.begin();
+    NodeIterator end = childs.end();
 
     for( ; it != end; ++it) {
         (*it)->write(writer);
@@ -35,8 +35,8 @@ void ParseNode::write(ByteCodeFileWriter& writer) {
 }
 
 void ParseNode::checkVariables(Variables& variables) {
-    list<ParseNode*>::const_iterator it = childs.begin();
-    list<ParseNode*>::const_iterator end = childs.end();
+    NodeIterator it = childs.begin();
+    NodeIterator end = childs.end();
 
     for( ; it != end; ++it) {
         (*it)->checkVariables(variables);
@@ -44,8 +44,8 @@ void ParseNode::checkVariables(Variables& variables) {
 }
 
 void ParseNode::checkStrings(StringPool& pool) {
-    list<ParseNode*>::const_iterator it = childs.begin();
-    list<ParseNode*>::const_iterator end = childs.end();
+    NodeIterator it = childs.begin();
+    NodeIterator end = childs.end();
 
     for( ; it != end; ++it) {
         (*it)->checkStrings(pool);
@@ -53,8 +53,8 @@ void ParseNode::checkStrings(StringPool& pool) {
 }
 
 void ParseNode::optimize() {
-    list<ParseNode*>::const_iterator it = childs.begin();
-    list<ParseNode*>::const_iterator end = childs.end();
+    NodeIterator it = childs.begin();
+    NodeIterator end = childs.end();
 
     for( ; it != end; ++it) {
         (*it)->optimize();
@@ -75,7 +75,7 @@ void ParseNode::addFirst(ParseNode* node) {
 
 void ParseNode::replace(ParseNode* old, ParseNode* node) {
     list<ParseNode*>::iterator it = childs.begin();
-    list<ParseNode*>::const_iterator end = childs.end();
+    NodeIterator end = childs.end();
 
     trash.push_back(old);
     old->parent = NULL;
