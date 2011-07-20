@@ -112,7 +112,6 @@ bool Lexer::readNext() {
     switch (scanner.current()) {
         case ';':
             currentType = STOP;
-            currentToken = ";";
             return true;
         case '=':
             scanner.next();
