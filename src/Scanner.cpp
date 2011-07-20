@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include <iostream>
-#include <cctype>
 
 #include "Scanner.hpp"
 #include "CompilerException.hpp"

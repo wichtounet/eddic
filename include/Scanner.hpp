@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <string>
+#include <cctype>
 
 namespace eddic {
 
@@ -32,9 +33,14 @@ class Scanner {
         void pushBack();
 		
 		/* Getters */
-        char current() const { return currentChar; };
-		int currentLine() const { return line; };
-		int currentCol() const { return col; };
+        inline char current() const { return currentChar; };
+		inline int currentLine() const { return line; };
+		inline int currentCol() const { return col; };
+
+		/* Utility */
+		inline bool isAlpha() const { return isalpha(currentChar); };
+		inline bool isSpace() const { return isspace(currentChar); };
+		inline bool isDigit() const { return isdigit(currentChar); };
 };
 
 } //end of eddic

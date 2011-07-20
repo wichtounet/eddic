@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cctype>
-
 #include "Lexer.hpp"
 
 using std::pair;
@@ -57,7 +55,7 @@ bool Lexer::readNext() {
         return false;
     }
 
-    while(isspace(scanner.current())) { 
+    while(scanner.isSpace()) { 
 		if(!scanner.next()){
 			return false;
 		}
@@ -75,10 +73,10 @@ bool Lexer::readNext() {
         currentType = LITTERAL;
 
         return true;
-    } else if(isalpha(scanner.current())) {
+    } else if(scanner.isAlpha()) {
         currentToken = string(1, scanner.current());
 
-        while(scanner.next() && isalpha(scanner.current())) {
+        while(scanner.next() && scanner.isAlpha()) {
             currentToken += scanner.current();
         }
 
@@ -97,10 +95,10 @@ bool Lexer::readNext() {
         }
 
         return true;
-    } else if(isdigit(scanner.current())) {
+    } else if(scanner.isDigit()) {
         currentToken = string(1, scanner.current());
 
-        while(scanner.next() && isdigit(scanner.current())) {
+        while(scanner.next() && scanner.isDigit()) {
             currentToken += scanner.current();
         }
 
