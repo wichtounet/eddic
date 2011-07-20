@@ -37,8 +37,8 @@ enum TokenType {
     MULTIPLICATION,
     DIVISION,
     MODULO,
-    TRUE,
-    FALSE,
+    TRUE_TYPE,
+    FALSE_TYPE,
 
     //Boolean operators
     EQUALS_TOKEN,

@@ -83,9 +83,9 @@ bool Lexer::readNext() {
         scanner.pushBack();
 
         if(currentToken == "true") {
-            currentType = TRUE;
+            currentType = TRUE_TYPE;
         } else if(currentToken == "false") {
-            currentType = FALSE;
+            currentType = FALSE_TYPE;
         } else if(currentToken == "if") {
             currentType = IF;
         } else if(currentToken == "else") {
@@ -297,13 +297,13 @@ bool Lexer::isBooleanOperator() const {
 }
 
 bool Lexer::isBoolean() const {
-    return currentType == TRUE || currentType == FALSE;
+    return currentType == TRUE_TYPE || currentType == FALSE_TYPE;
 }
 
 bool Lexer::isTrue() const {
-    return currentType == TRUE;
+    return currentType == TRUE_TYPE;
 }
 
 bool Lexer::isFalse() const {
-    return currentType == FALSE;
+    return currentType == FALSE_TYPE;
 }
