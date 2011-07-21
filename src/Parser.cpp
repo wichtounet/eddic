@@ -23,33 +23,21 @@ using std::list;
 
 using namespace eddic;
 
-//TODO Review this method
-ParseNode* Parser::parseInstruction() {
-    if (lexer.isIf()) {
-        return parseIf();
+inline static void assertNextIsRightParenth(Lexer& lexer, const string& message);
+inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message);
+inline static void assertNextIsRightBrace(Lexer& lexer, const string& message);
+inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
+inline static void assertNextIsStop(Lexer& lexer, const string& message);
+
+//Declare in header
+bool isType(const Lexer& lexer){
+    if(!lexer.isWord()){
+        return false;
     }
 
-    if (!lexer.isWord()) {
-        throw TokenException("An instruction can only start with a call or an assignation", lexer.getCurrentToken());
-    }
+    string value = lexer.getCurrentToken().value();
 
-    string word = lexer.getCurrentToken().value();
-
-    if (!lexer.next()) {
-        throw TokenException("Incomplete instruction", lexer.getCurrentToken());
-    }
-
-    if (lexer.isLeftParenth()) { //is a call
-        return parseCall(word);
-    } else if (lexer.isWord()) { //is a declaration
-        return parseDeclaration(word);
-    } else if (lexer.isAssign()) { //is an assign
-        return parseAssignment(word);
-    } else if (lexer.isSwap()) {
-        return parseSwap(word);
-    } else {
-        throw TokenException("Not an instruction", lexer.getCurrentToken());
-    }
+    return value == "int" || value == "string";
 }
 
 Program* Parser::parse() {
@@ -62,34 +50,34 @@ Program* Parser::parse() {
     return program;
 }
 
-inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {
-    if (!lexer.next() || !lexer.isRightParenth()) {
-        throw TokenException(message, lexer.getCurrentToken());
+ParseNode* Parser::parseInstruction() {
+    if (lexer.isIf()) {
+        return parseIf();
+    } else if(isType(lexer)){
+        return parseDeclaration();
+    } else if(lexer.isWord()){
+        return parseCallOrAssignment();
     }
+
+    throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) {
-    if (!lexer.next() || !lexer.isLeftParenth()) {
-        throw TokenException(message, lexer.getCurrentToken());
+ParseNode* Parser::parseCallOrAssignment(){
+    string word = lexer.getCurrentToken().value();
+    
+    if (!lexer.next()) {
+        throw TokenException("Incomplete instruction", lexer.getCurrentToken());
     }
-}
-
-inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) {
-    if (!lexer.next() || !lexer.isRightBrace()) {
-        throw TokenException(message, lexer.getCurrentToken());
-    }
-}
-
-inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
-    if (!lexer.next() || !lexer.isLeftBrace()) {
-        throw TokenException(message, lexer.getCurrentToken());
-    }
-}
-
-inline static void assertNextIsStop(Lexer& lexer, const string& message) {
-    if (!lexer.next() || !lexer.isStop()) {
-        throw TokenException(message, lexer.getCurrentToken());
-    }
+    
+    if (lexer.isLeftParenth()) {
+        return parseCall(word);
+    } else if (lexer.isAssign()) { 
+        return parseAssignment(word);
+    } else if (lexer.isSwap()) {
+        return parseSwap(word);
+    } 
+    
+    throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
 ParseNode* Parser::parseCall(const string& call) {
@@ -109,16 +97,18 @@ ParseNode* Parser::parseCall(const string& call) {
     }
 }
 
-ParseNode* Parser::parseDeclaration(const string& typeName) {
-    if (typeName != "int" && typeName != "string") {
-        throw TokenException("Invalid type", lexer.getCurrentToken());
-    }
-
+ParseNode* Parser::parseDeclaration() {
+    string typeName = lexer.getCurrentToken().value();
+    
     Type type;
     if (typeName == "int") {
         type = INT;
     } else {
         type = STRING;
+    }
+
+    if(!lexer.next() || !lexer.isWord()){
+        throw TokenException("A type must be followed by variable name", lexer.getCurrentToken());
     }
 
     string variable = lexer.getCurrentToken().value();
@@ -443,3 +433,32 @@ Condition* Parser::parseCondition() {
     return new Condition(operation, lhs, rhs);
 }
 
+inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isRightParenth()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}
+
+inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isLeftParenth()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}
+
+inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isRightBrace()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}
+
+inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isLeftBrace()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}
+
+inline static void assertNextIsStop(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isStop()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}

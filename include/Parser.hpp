@@ -27,8 +27,9 @@ class Parser {
         Lexer& lexer;
 
         ParseNode* parseInstruction();
+        ParseNode* parseDeclaration();
+        ParseNode* parseCallOrAssignment();
         ParseNode* parseCall(const std::string& call);
-        ParseNode* parseDeclaration(const std::string& type);
         ParseNode* parseAssignment(const std::string& variable);
         ParseNode* parseSwap(const std::string& lhs);
         ParseNode* parseIf();
