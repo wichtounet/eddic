@@ -34,18 +34,18 @@ bool Scanner::next() {
         return false;
     }
     
-    if (currentChar == '\n') {
-        ++line;
-        col = 1;
+    if (m_current == '\n') {
+        ++m_line;
+        m_col = 1;
     } else {
-        ++col;
+        ++m_col;
     }
     
-    stream >> currentChar;
+    stream >> m_current;
 
     return true;
 }
 
 void Scanner::pushBack() {
-    stream.putback(currentChar);
+    stream.putback(m_current);
 }

@@ -15,8 +15,6 @@ using namespace eddic;
 
 void Lexer::lex(string file) {
     scanner.scan(file);
-
-    currentType = NOTHING;
 }
 
 void Lexer::close() {
@@ -25,16 +23,13 @@ void Lexer::close() {
 
 bool Lexer::next() {
     if (!buffer.empty()) {
-        pair<string, TokenType> old = buffer.top();
-
-        currentToken = old.first;
-        currentType = old.second;
+        current = buffer.top();
 
         buffer.pop();
 
         return true;
     } else if (readNext()) {
-        read.push(make_pair(currentToken, currentType));
+        read.push(current);
 
         return true;
     }
@@ -43,7 +38,7 @@ bool Lexer::next() {
 }
 
 void Lexer::pushBack() {
-    pair<string, TokenType> old = read.top();
+    Token old = read.top();
 
     buffer.push(old);
 
@@ -61,102 +56,105 @@ bool Lexer::readNext() {
         }
     }
 
+    int line = scanner.line();
+    int col = scanner.col();
+
     if (scanner.current() == '"') {
-        currentToken = string(1, scanner.current());
+        string value = string(1, scanner.current());
 
         while (scanner.next() && scanner.current() != '"') {
-            currentToken += scanner.current();
+            value += scanner.current();
         }
 
-        currentToken += scanner.current();
+        value += scanner.current();
 
-        currentType = LITTERAL;
+        current = Token(value, LITTERAL, line, col);
 
         return true;
     } else if (scanner.isAlpha()) {
-        currentToken = string(1, scanner.current());
+        string value = string(1, scanner.current());
 
         while (scanner.next() && scanner.isAlpha()) {
-            currentToken += scanner.current();
+            value += scanner.current();
         }
 
         scanner.pushBack();
 
-        if (currentToken == "true") {
-            currentType = TRUE_TYPE;
-        } else if (currentToken == "false") {
-            currentType = FALSE_TYPE;
-        } else if (currentToken == "if") {
-            currentType = IF;
-        } else if (currentToken == "else") {
-            currentType = ELSE;
+        if (value == "true") {
+            current = Token(TRUE_TYPE, line, col);
+        } else if (value == "false") {
+            current = Token(FALSE_TYPE, line, col);
+        } else if (value == "if") {
+            current = Token(IF, line, col);
+        } else if (value == "else") {
+            current = Token(ELSE, line, col);
         } else {
-            currentType = WORD;
+            current = Token(value, WORD, line, col);
         }
 
         return true;
     } else if (scanner.isDigit()) {
-        currentToken = string(1, scanner.current());
+        string value = string(1, scanner.current());
 
         while (scanner.next() && scanner.isDigit()) {
-            currentToken += scanner.current();
+            value += scanner.current();
         }
 
         scanner.pushBack();
 
-        currentType = INTEGER;
+        current = Token(value, INTEGER, line, col);
 
         return true;
     }
 
     switch (scanner.current()) {
         case ';':
-            currentType = STOP;
+            current = Token(STOP, line, col);
             return true;
         case '=':
             scanner.next();
 
             if (scanner.current() == '=') {
-                currentType = EQUALS_TOKEN;
+                current = Token(EQUALS_TOKEN, line, col);
             } else {
                 scanner.pushBack();
 
-                currentType = ASSIGN;
+                current = Token(ASSIGN, line, col);
             }
 
             return true;
         case '(':
-            currentType = LEFT_PARENTH;
+            current = Token(LEFT_PARENTH, line, col);
             return true;
         case ')':
-            currentType = RIGHT_PARENTH;
+            current = Token(RIGHT_PARENTH, line, col);
             return true;
         case '{':
-            currentType = LEFT_BRACE;
+            current = Token(LEFT_BRACE, line, col);
             return true;
         case '}':
-            currentType = RIGHT_BRACE;
+            current = Token(RIGHT_BRACE, line, col);
             return true;
         case '+':
-            currentType = ADDITION;
+            current = Token(ADDITION, line, col);
             return true;
         case '-':
-            currentType = SUBTRACTION;
+            current = Token(SUBTRACTION, line, col);
             return true;
         case '*':
-            currentType = MULTIPLICATION;
+            current = Token(MULTIPLICATION, line, col);
             return true;
         case '/':
-            currentType = DIVISION;
+            current = Token(DIVISION, line, col);
             return true;
         case '%':
-            currentType = MODULO;
+            current = Token(MODULO, line, col);
             return true;
         case '!':
             scanner.next();
 
             if (scanner.current() == '=') {
-                currentType = NOT_EQUALS_TOKEN;
+                current = Token(NOT_EQUALS_TOKEN, line, col);
             }
 
             return false;
@@ -167,15 +165,15 @@ bool Lexer::readNext() {
                 scanner.next();
 
                 if (scanner.current() == '>') {
-                    currentType = SWAP;
+                    current = Token(SWAP, line, col);
                 } else {
                     scanner.pushBack();
-                    currentType = LESS_EQUALS_TOKEN;
+                    current = Token(LESS_EQUALS_TOKEN, line, col);
                 }
             } else {
                 scanner.pushBack();
 
-                currentType = LESS_TOKEN;
+                current = Token(LESS_TOKEN, line, col);
             }
 
             return true;
@@ -183,11 +181,11 @@ bool Lexer::readNext() {
             scanner.next();
 
             if (scanner.current() == '=') {
-                currentType = GREATER_EQUALS_TOKEN;
+                current = Token(GREATER_EQUALS_TOKEN, line, col);
             } else {
                 scanner.pushBack();
 
-                currentType = GREATER_TOKEN;
+                current = Token(GREATER_TOKEN, line, col);
             }
 
             return true;
@@ -196,114 +194,114 @@ bool Lexer::readNext() {
     return false;
 }
 
-string Lexer::getCurrentToken() const {
-    return currentToken;
+Token Lexer::getCurrentToken() const {
+    return current;
 }
 
 bool Lexer::isWord() const {
-    return currentType == WORD;
+    return current.type() == WORD;
 }
 
 bool Lexer::isLitteral() const {
-    return currentType == LITTERAL;
+    return current.type() == LITTERAL;
 }
 
 bool Lexer::isAssign() const {
-    return currentType == ASSIGN;
+    return current.type() == ASSIGN;
 }
 
 bool Lexer::isSwap() const {
-    return currentType == SWAP;
+    return current.type() == SWAP;
 }
 
 bool Lexer::isLeftParenth() const {
-    return currentType == LEFT_PARENTH;
+    return current.type() == LEFT_PARENTH;
 }
 
 bool Lexer::isRightParenth() const {
-    return currentType == RIGHT_PARENTH;
+    return current.type() == RIGHT_PARENTH;
 }
 
 bool Lexer::isLeftBrace() const {
-    return currentType == LEFT_BRACE;
+    return current.type() == LEFT_BRACE;
 }
 
 bool Lexer::isRightBrace() const {
-    return currentType == RIGHT_BRACE;
+    return current.type() == RIGHT_BRACE;
 }
 
 bool Lexer::isStop() const {
-    return currentType == STOP;
+    return current.type() == STOP;
 }
 
 bool Lexer::isInteger() const {
-    return currentType == INTEGER;
+    return current.type() == INTEGER;
 }
 
 bool Lexer::isAddition() const {
-    return currentType == ADDITION;
+    return current.type() == ADDITION;
 }
 
 bool Lexer::isSubtraction() const {
-    return currentType == SUBTRACTION;
+    return current.type() == SUBTRACTION;
 }
 
 bool Lexer::isMultiplication() const {
-    return currentType == MULTIPLICATION;
+    return current.type() == MULTIPLICATION;
 }
 
 bool Lexer::isModulo() const {
-    return currentType == MODULO;
+    return current.type() == MODULO;
 }
 
 bool Lexer::isDivision() const {
-    return currentType == DIVISION;
+    return current.type() == DIVISION;
 }
 
 bool Lexer::isEquals() const {
-    return currentType == EQUALS_TOKEN;
+    return current.type() == EQUALS_TOKEN;
 }
 
 bool Lexer::isNotEquals() const {
-    return currentType == NOT_EQUALS_TOKEN;
+    return current.type() == NOT_EQUALS_TOKEN;
 }
 
 bool Lexer::isGreater() const {
-    return currentType == GREATER_TOKEN;
+    return current.type() == GREATER_TOKEN;
 }
 
 bool Lexer::isLess() const {
-    return currentType == LESS_TOKEN;
+    return current.type() == LESS_TOKEN;
 }
 
 bool Lexer::isGreaterOrEquals() const {
-    return currentType == GREATER_EQUALS_TOKEN;
+    return current.type() == GREATER_EQUALS_TOKEN;
 }
 
 bool Lexer::isLessOrEquals() const {
-    return currentType == LESS_EQUALS_TOKEN;
+    return current.type() == LESS_EQUALS_TOKEN;
 }
 
 bool Lexer::isIf() const {
-    return currentType == IF;
+    return current.type() == IF;
 }
 
 bool Lexer::isElse() const {
-    return currentType == ELSE;
+    return current.type() == ELSE;
 }
 
 bool Lexer::isBooleanOperator() const {
-    return currentType >= EQUALS_TOKEN && currentType <= LESS_EQUALS_TOKEN;
+    return current.type() >= EQUALS_TOKEN && current.type() <= LESS_EQUALS_TOKEN;
 }
 
 bool Lexer::isBoolean() const {
-    return currentType == TRUE_TYPE || currentType == FALSE_TYPE;
+    return current.type() == TRUE_TYPE || current.type() == FALSE_TYPE;
 }
 
 bool Lexer::isTrue() const {
-    return currentType == TRUE_TYPE;
+    return current.type() == TRUE_TYPE;
 }
 
 bool Lexer::isFalse() const {
-    return currentType == FALSE_TYPE;
+    return current.type() == FALSE_TYPE;
 }

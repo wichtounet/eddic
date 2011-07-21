@@ -18,11 +18,11 @@ class Scanner {
     private:
         std::ifstream stream;
 
-        char currentChar;
-        int line;
-        int col;
+        char m_current;
+        int m_line;
+        int m_col;
     public:
-        Scanner() : currentChar(0), line(1), col(1) {}
+        Scanner() : m_current(0), m_line(1), m_col(1) {}
 
         /* File manipulations */
         void scan(const std::string& file);
@@ -34,24 +34,24 @@ class Scanner {
 
         /* Getters */
         inline char current() const {
-            return currentChar;
+            return m_current;
         };
-        inline int currentLine() const {
-            return line;
+        inline int line() const {
+            return m_line;
         };
-        inline int currentCol() const {
-            return col;
+        inline int col() const {
+            return m_col;
         };
 
         /* Utility */
         inline bool isAlpha() const {
-            return isalpha(currentChar);
+            return isalpha(m_current);
         };
         inline bool isSpace() const {
-            return isspace(currentChar);
+            return isspace(m_current);
         };
         inline bool isDigit() const {
-            return isdigit(currentChar);
+            return isdigit(m_current);
         };
 };
 

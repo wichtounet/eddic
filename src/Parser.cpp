@@ -33,7 +33,7 @@ ParseNode* Parser::parseInstruction() {
         throw CompilerException("An instruction can only start with a call or an assignation");
     }
 
-    string word = lexer.getCurrentToken();
+    string word = lexer.getCurrentToken().value();
 
     if (!lexer.next()) {
         throw CompilerException("Incomplete instruction");
@@ -121,7 +121,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) {
         type = STRING;
     }
 
-    string variable = lexer.getCurrentToken();
+    string variable = lexer.getCurrentToken().value();
 
     if (!lexer.next() || !lexer.isAssign()) {
         throw CompilerException("A variable declaration must followed by '='");
@@ -147,7 +147,7 @@ ParseNode* Parser::parseSwap(const string& lhs) {
         throw CompilerException("Can only swap two variables");
     }
 
-    string rhs = lexer.getCurrentToken();
+    string rhs = lexer.getCurrentToken().value();
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
@@ -314,15 +314,15 @@ Value* Parser::parseValue() {
         Value* node = NULL;
 
         if (lexer.isLitteral()) {
-            string litteral = lexer.getCurrentToken();
+            string litteral = lexer.getCurrentToken().value();
 
             node = new Litteral(litteral);
         } else if (lexer.isWord()) {
-            string variableRight = lexer.getCurrentToken();
+            string variableRight = lexer.getCurrentToken().value();
 
             node = new VariableValue(variableRight);
         } else if (lexer.isInteger()) {
-            string integer = lexer.getCurrentToken();
+            string integer = lexer.getCurrentToken().value();
             int value = toNumber<int>(integer);
 
             node = new Integer(value);

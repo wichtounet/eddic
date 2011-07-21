@@ -15,59 +15,29 @@
 
 #include "Scanner.hpp"
 #include "CompilerException.hpp"
+#include "Token.hpp"
 
 namespace eddic {
-
-enum TokenType {
-    NOTHING,
-    WORD,
-    ASSIGN,
-    LITTERAL,
-    SWAP,
-
-    LEFT_PARENTH,
-    RIGHT_PARENTH,
-    LEFT_BRACE,
-    RIGHT_BRACE,
-
-    STOP,
-    INTEGER,
-    ADDITION,
-    SUBTRACTION,
-    MULTIPLICATION,
-    DIVISION,
-    MODULO,
-    TRUE_TYPE,
-    FALSE_TYPE,
-
-    //Boolean operators
-    EQUALS_TOKEN,
-    NOT_EQUALS_TOKEN,
-    GREATER_TOKEN,
-    LESS_TOKEN,
-    GREATER_EQUALS_TOKEN,
-    LESS_EQUALS_TOKEN,
-
-    //Branches
-    IF,
-    ELSE
-};
 
 class Lexer {
     private:
         Scanner scanner;
-        std::string currentToken;
-        TokenType currentType;
-        std::stack < std::pair< std::string, TokenType > > read;
-        std::stack < std::pair< std::string, TokenType > > buffer;
+
+        Token current;
+        
+        std::stack<Token> read;
+        std::stack<Token> buffer;
 
         bool readNext();
     public:
+        Lexer() : current(Token(NOTHING, -1, -1)) {};
+ 
         void lex(std::string file);
         void close();
         bool next();
         void pushBack();
-        std::string getCurrentToken() const;
+        
+        Token getCurrentToken() const;
 
         bool isWord() const;
         bool isAssign() const;
