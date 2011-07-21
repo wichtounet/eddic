@@ -105,11 +105,6 @@ void writePrintInteger(std::ofstream& m_stream) {
 }
 
 void ByteCodeFileWriter::writeEnd() {
-    m_stream << endl;
-    m_stream << "mov $1, %eax" << endl
-             << "mov $0, %ebx" << endl
-             << "int $0x80" << endl;
-
     //TODO Write only if necessary
     writePrintString(m_stream);
     writePrintInteger(m_stream);

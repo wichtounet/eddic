@@ -18,6 +18,13 @@ using std::endl;
 
 using namespace eddic;
 
+void Exit::write(ByteCodeFileWriter& writer){ 
+    writer.stream() << endl;
+    writer.stream() << "mov $1, %eax" << endl
+             << "mov $0, %ebx" << endl
+             << "int $0x80" << endl;
+}
+
 void Declaration::checkVariables(Variables& variables) {
     if (variables.exists(m_variable)) {
         throw CompilerException("Variable has already been declared");

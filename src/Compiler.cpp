@@ -38,6 +38,7 @@ int Compiler::compile(string file) {
         Parser parser(lexer);
 
         Program* program = parser.parse();
+        program->addLast(new Exit());
 
         Variables variables;
         StringPool* pool = new StringPool();
@@ -101,16 +102,6 @@ void execCommand(string command) {
     pclose(stream);
 }
 
-void Compiler::compile(Program* program, StringPool& pool) {
-    writer.writeHeader();
-
-    program->write(writer);
-
-    writer.writeEnd();
-
-    pool.write(writer);
-}
-
 void Compiler::check(Program* program, Variables& variables) {
     NodeIterator it = program->begin();
     NodeIterator end = program->end();
@@ -131,4 +122,14 @@ void Compiler::checkStrings(Program* program, StringPool& pool) {
 
         node->checkStrings(pool);
     }
+}
+
+void Compiler::compile(Program* program, StringPool& pool) {
+    writer.writeHeader();
+
+    program->write(writer);
+
+    writer.writeEnd();
+
+    pool.write(writer);
 }
