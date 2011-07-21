@@ -32,7 +32,18 @@ class Value : public ParseNode {
         virtual int getIntValue();
 };
 
+class Header : public ParseNode {
+    public:
+        void write(ByteCodeFileWriter& writer);
+
+};
+
 class Exit : public ParseNode {
+    public:
+        void write(ByteCodeFileWriter& writer);
+};
+
+class Methods : public ParseNode {
     public:
         void write(ByteCodeFileWriter& writer);
 };

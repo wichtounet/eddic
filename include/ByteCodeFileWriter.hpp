@@ -21,8 +21,6 @@ class ByteCodeFileWriter {
         ByteCodeFileWriter() {};
         void open(const std::string& path) ;
         void close();
-        void writeHeader();
-        void writeEnd();
 
         std::ofstream& stream() {
             return m_stream;

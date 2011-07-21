@@ -39,6 +39,8 @@ int Compiler::compile(string file) {
 
         Program* program = parser.parse();
         program->addLast(new Exit());
+        program->addLast(new Methods());
+        program->addFirst(new Header());
 
         Variables variables;
         StringPool* pool = new StringPool();
@@ -125,11 +127,7 @@ void Compiler::checkStrings(Program* program, StringPool& pool) {
 }
 
 void Compiler::compile(Program* program, StringPool& pool) {
-    writer.writeHeader();
-
     program->write(writer);
-
-    writer.writeEnd();
 
     pool.write(writer);
 }
