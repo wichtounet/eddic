@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cctype>
 #include <list>
+#include <string>
 
 #include "Types.hpp"
 #include "Utils.hpp"
@@ -63,26 +64,28 @@ ParseNode* Parser::parseInstruction() {
 }
 
 ParseNode* Parser::parseCallOrAssignment(){
-    string word = lexer.getCurrentToken().value();
+    Token token = lexer.getCurrentToken();
     
     if (!lexer.next()) {
         throw TokenException("Incomplete instruction", lexer.getCurrentToken());
     }
     
     if (lexer.isLeftParenth()) {
-        return parseCall(word);
+        return parseCall(token);
     } else if (lexer.isAssign()) { 
-        return parseAssignment(word);
+        return parseAssignment(token);
     } else if (lexer.isSwap()) {
-        return parseSwap(word);
+        return parseSwap(token);
     } 
     
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-ParseNode* Parser::parseCall(const string& call) {
+ParseNode* Parser::parseCall(const Token& callToken) {
+    string call = callToken.value();
+
     if (call != "Print" && call != "Println") {
-        throw TokenException("The call \"" + call + "\" does not exist", lexer.getCurrentToken());
+        throw TokenException("The call \"" + call + "\" does not exist", callToken);
     }
 
     Value* value = parseValue();
@@ -124,15 +127,15 @@ ParseNode* Parser::parseDeclaration() {
     return new Declaration(type, variable, value);
 }
 
-ParseNode* Parser::parseAssignment(const string& variable) {
+ParseNode* Parser::parseAssignment(const Token& variableToken) {
     Value* value = parseValue();
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    return new Assignment(variable, value);
+    return new Assignment(variableToken.value(), value);
 }
 
-ParseNode* Parser::parseSwap(const string& lhs) {
+ParseNode* Parser::parseSwap(const Token& lhs) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
@@ -141,7 +144,7 @@ ParseNode* Parser::parseSwap(const string& lhs) {
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    return new Swap(lhs, rhs);
+    return new Swap(lhs.value(), rhs);
 }
 
 ParseNode* Parser::parseIf() {

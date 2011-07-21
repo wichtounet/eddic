@@ -8,8 +8,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <string>
-
 #include "CompilerException.hpp"
 
 namespace eddic {
@@ -29,9 +27,9 @@ class Parser {
         ParseNode* parseInstruction();
         ParseNode* parseDeclaration();
         ParseNode* parseCallOrAssignment();
-        ParseNode* parseCall(const std::string& call);
-        ParseNode* parseAssignment(const std::string& variable);
-        ParseNode* parseSwap(const std::string& lhs);
+        ParseNode* parseCall(const Token& call);
+        ParseNode* parseAssignment(const Token& variable);
+        ParseNode* parseSwap(const Token& lhs);
         ParseNode* parseIf();
         Condition* parseCondition();
         ElseIf* parseElseIf();
