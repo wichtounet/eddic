@@ -51,6 +51,9 @@ Println(7 % 5);
 Print("444 - 333 = ");
 Println(444 - 333);
 
+Print("((444 - 333) * (2)) = ");
+Println(((444 - 333) * (2)));
+
 if(4 > 3){
 	Println("Cool");
 } else {

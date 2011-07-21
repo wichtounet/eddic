@@ -306,7 +306,11 @@ Value* Parser::parseValue() {
 
         Value* node = NULL;
 
-        if (lexer.isLitteral()) {
+        if (lexer.isLeftParenth()){
+            node = parseValue();
+            
+            assertNextIsRightParenth(lexer, "parenth is not closed");
+        } else if (lexer.isLitteral()) {
             string litteral = lexer.getCurrentToken().value();
 
             node = new Litteral(litteral);
