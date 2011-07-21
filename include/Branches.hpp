@@ -88,7 +88,7 @@ class If : public ParseNode {
 
         virtual ~If();
 
-        virtual void write(ByteCodeFileWriter& writer);
+        virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables(Variables& variables);
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();

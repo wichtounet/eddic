@@ -54,7 +54,7 @@ Variable* Variables::create(const std::string& variable, Type type) {
     return v;
 }
 
-void Variables::write(ByteCodeFileWriter& writer) {
+void Variables::write(AssemblyFileWriter& writer) {
     map<string, Variable*>::const_iterator it = variables.begin();
     map<string, Variable*>::const_iterator end = variables.end();
 

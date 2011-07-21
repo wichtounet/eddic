@@ -22,7 +22,7 @@ class StringPool : public ParseNode {
     public:
         StringPool();
         std::string label(const std::string& value);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

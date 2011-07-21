@@ -11,7 +11,7 @@
 #include <string>
 
 #include "Lexer.hpp"
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 
 namespace eddic {
 
@@ -24,7 +24,7 @@ class Compiler {
         int compile (std::string file);
     private:
         Lexer lexer;
-        ByteCodeFileWriter writer;
+        AssemblyFileWriter writer;
         
         void check(Program* program, Variables& variables);
         void checkStrings(Program* program, StringPool& pool);

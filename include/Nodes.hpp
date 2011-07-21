@@ -34,18 +34,18 @@ class Value : public ParseNode {
 
 class Header : public ParseNode {
     public:
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 
 };
 
 class Exit : public ParseNode {
     public:
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 class Methods : public ParseNode {
     public:
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 class Declaration : public ParseNode {
@@ -54,7 +54,7 @@ class Declaration : public ParseNode {
         std::string m_variable;
         int m_index;
         Value* value;
-
+		
     public:
         Declaration(Type type, const std::string& variable, Value* v) : m_type(type), m_variable(variable), value(v) {};
         ~Declaration() {
@@ -63,7 +63,7 @@ class Declaration : public ParseNode {
 
         void checkStrings(StringPool& pool);
         void checkVariables(Variables& variables);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
         int index() const {
             return m_index;
         }
@@ -82,13 +82,13 @@ class Print : public ParseNode {
 
         void checkStrings(StringPool& pool);
         void checkVariables(Variables& variables);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 class Println : public Print {
     public:
         Println(Value*v) : Print(v) {}
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 class Assignment : public ParseNode {
@@ -105,7 +105,7 @@ class Assignment : public ParseNode {
 
         void checkStrings(StringPool& pool);
         void checkVariables(Variables& variables);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 class Swap : public ParseNode {
@@ -120,7 +120,7 @@ class Swap : public ParseNode {
         Swap(const std::string& lhs, const std::string& rhs) : m_lhs(lhs), m_rhs(rhs) {};
 
         void checkVariables(Variables& variables);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 class Litteral : public Value {
@@ -132,7 +132,7 @@ class Litteral : public Value {
             m_type = STRING;
         };
         void checkStrings(StringPool& pool);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
         bool isConstant();
         std::string getStringValue();
 };
@@ -144,7 +144,7 @@ class Integer : public Value {
         Integer(int value) : m_value(value) {
             m_type = INT;
         };
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
         bool isConstant();
         int getIntValue();
 };
@@ -156,7 +156,7 @@ class VariableValue : public Value {
     public:
         VariableValue(const std::string& variable) : m_variable(variable) {};
         void checkVariables(Variables& variables);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
         bool isConstant();
 };
 

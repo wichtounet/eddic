@@ -7,7 +7,7 @@
 
 #include "Operators.hpp"
 #include "Options.hpp"
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 #include "Variables.hpp"
 
 #include <cassert>
@@ -48,7 +48,7 @@ Type Addition::checkTypes(Type left, Type right) {
 
 //Writes
 
-void Addition::write(ByteCodeFileWriter& writer) {
+void Addition::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
@@ -118,7 +118,7 @@ void Addition::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Subtraction::write(ByteCodeFileWriter& writer) {
+void Subtraction::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
@@ -129,7 +129,7 @@ void Subtraction::write(ByteCodeFileWriter& writer) {
     writer.stream() << "pushl %eax" << std::endl;
 }
 
-void Multiplication::write(ByteCodeFileWriter& writer) {
+void Multiplication::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
@@ -140,7 +140,7 @@ void Multiplication::write(ByteCodeFileWriter& writer) {
     writer.stream() << "pushl %eax" << std::endl;
 }
 
-void Division::write(ByteCodeFileWriter& writer) {
+void Division::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
@@ -152,7 +152,7 @@ void Division::write(ByteCodeFileWriter& writer) {
     writer.stream() << "pushl %eax" << std::endl;
 }
 
-void Modulo::write(ByteCodeFileWriter& writer) {
+void Modulo::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 

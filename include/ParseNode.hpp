@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "CompilerException.hpp"
+#include "AssemblyFileWriter.hpp"
 
 namespace eddic {
 
@@ -33,7 +34,7 @@ class ParseNode {
     public:
         ParseNode() : parent(NULL) {};
         virtual ~ParseNode();
-        virtual void write(ByteCodeFileWriter& writer);
+        virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables(Variables& variables);
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();

@@ -13,7 +13,7 @@
 
 #include "Types.hpp"
 
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 
 namespace eddic {
 
@@ -48,7 +48,7 @@ class Variables {
         unsigned int index(const std::string& variable) const;
         Variable* create(const std::string& variable, Type type);
         Variable* find(const std::string& variable);
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

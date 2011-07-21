@@ -8,7 +8,7 @@
 #include "Nodes.hpp"
 #include "StringPool.hpp"
 #include "Options.hpp"
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 #include "Variables.hpp"
 
 #include <cassert>
@@ -18,7 +18,7 @@ using std::endl;
 
 using namespace eddic;
 
-void Exit::write(ByteCodeFileWriter& writer){ 
+void Exit::write(AssemblyFileWriter& writer){ 
     writer.stream() << endl;
     writer.stream() << "mov $1, %eax" << endl
              << "mov $0, %ebx" << endl
@@ -97,13 +97,13 @@ static void writePrintInteger(std::ofstream& m_stream) {
              << "ret" << std::endl;
 }
 
-void Methods::write(ByteCodeFileWriter& writer){
+void Methods::write(AssemblyFileWriter& writer){
     writePrintString(writer.stream());
     writePrintInteger(writer.stream());
     writePrintLine(writer.stream());
 }
 
-void Header::write(ByteCodeFileWriter& writer){
+void Header::write(AssemblyFileWriter& writer){
     writer.stream() << ".text" << endl
              << ".globl main" << endl
              << endl
@@ -187,7 +187,7 @@ void Litteral::checkStrings(StringPool& pool) {
     m_label = pool.label(m_litteral);
 }
 
-void Declaration::write(ByteCodeFileWriter& writer) {
+void Declaration::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (m_type) {
@@ -209,7 +209,7 @@ void Declaration::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Assignment::write(ByteCodeFileWriter& writer) {
+void Assignment::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (value->type()) {
@@ -231,7 +231,7 @@ void Assignment::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Swap::write(ByteCodeFileWriter& writer) {
+void Swap::write(AssemblyFileWriter& writer) {
     switch (m_type) {
         case INT:
             writer.stream() << "movl VI" << m_lhs_index << ", %eax" << endl;
@@ -255,7 +255,7 @@ void Swap::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Print::write(ByteCodeFileWriter& writer) {
+void Print::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (value->type()) {
@@ -272,7 +272,7 @@ void Print::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Println::write(ByteCodeFileWriter& writer) {
+void Println::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (value->type()) {
@@ -299,11 +299,11 @@ void Print::checkVariables(Variables& variables) {
     value->checkVariables(variables);
 }
 
-void Integer::write(ByteCodeFileWriter& writer) {
+void Integer::write(AssemblyFileWriter& writer) {
     writer.stream() << "pushl $" << m_value << std::endl;
 }
 
-void VariableValue::write(ByteCodeFileWriter& writer) {
+void VariableValue::write(AssemblyFileWriter& writer) {
     switch (m_type) {
         case INT:
             writer.stream() << "pushl VI" << m_index << std::endl;
@@ -317,7 +317,7 @@ void VariableValue::write(ByteCodeFileWriter& writer) {
     }
 }
 
-void Litteral::write(ByteCodeFileWriter& writer) {
+void Litteral::write(AssemblyFileWriter& writer) {
     writer.stream() << "pushl $" << m_label << std::endl;
     writer.stream() << "pushl $" << (m_litteral.size() - 2) << std::endl;
 }

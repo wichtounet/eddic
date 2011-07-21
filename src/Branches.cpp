@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "Branches.hpp"
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 #include "Variables.hpp"
 
 using namespace eddic;
@@ -20,7 +20,7 @@ If::~If() {
     }
 }
 
-void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label) {
+void writeCondition(AssemblyFileWriter& writer, Condition* condition, int label) {
     if (condition->isOperator()) {
         condition->lhs()->write(writer);
         condition->rhs()->write(writer);
@@ -72,7 +72,7 @@ void writeCondition(ByteCodeFileWriter& writer, Condition* condition, int label)
     }
 }
 
-void If::write(ByteCodeFileWriter& writer) {
+void If::write(AssemblyFileWriter& writer) {
     //Make something accessible for others operations
     static int labels = 0;
 

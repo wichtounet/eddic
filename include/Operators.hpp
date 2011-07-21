@@ -40,7 +40,7 @@ class Addition : public BinaryOperator {
     public:
         Addition(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
         void optimize();
 
         Type checkTypes(Type left, Type right);
@@ -52,7 +52,7 @@ class Subtraction : public BinaryOperator {
     public:
         Subtraction(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 
         int compute(int left, int right);
 };
@@ -61,7 +61,7 @@ class Multiplication : public BinaryOperator {
     public:
         Multiplication(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 
         int compute(int left, int right);
 };
@@ -70,7 +70,7 @@ class Division : public BinaryOperator {
     public:
         Division(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 
         int compute(int left, int right);
 };
@@ -79,7 +79,7 @@ class Modulo : public BinaryOperator {
     public:
         Modulo(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
 
-        void write(ByteCodeFileWriter& writer);
+        void write(AssemblyFileWriter& writer);
 
         int compute(int left, int right);
 };

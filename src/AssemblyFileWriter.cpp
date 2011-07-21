@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 
 using std::string;
 using std::ios;
@@ -13,7 +13,7 @@ using std::endl;
 
 using namespace eddic;
 
-void ByteCodeFileWriter::open(const std::string& path) {
+void AssemblyFileWriter::open(const std::string& path) {
     m_stream.open(path.c_str());
 
     if (!m_stream) {
@@ -21,6 +21,6 @@ void ByteCodeFileWriter::open(const std::string& path) {
     }
 }
 
-void ByteCodeFileWriter::close() {
+void AssemblyFileWriter::close() {
     m_stream.close();
 }

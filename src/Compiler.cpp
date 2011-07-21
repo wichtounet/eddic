@@ -61,7 +61,6 @@ int Compiler::compile(string file) {
         variables.write(writer);
 
         delete program;
-        delete pool;
 
         string asCommand = "as --32 -o output.o output.asm";
 

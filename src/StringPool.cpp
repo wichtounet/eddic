@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "StringPool.hpp"
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 #include "ParseNode.hpp"
 
 #include <sstream>
@@ -32,7 +32,7 @@ std::string StringPool::label(const std::string& value) {
     return pool[value];
 }
 
-void StringPool::write(ByteCodeFileWriter& writer) {
+void StringPool::write(AssemblyFileWriter& writer) {
     writer.stream() << ".data" << std::endl;
 
     std::map<std::string, std::string>::const_iterator it;

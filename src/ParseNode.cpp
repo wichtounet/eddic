@@ -8,7 +8,7 @@
 #include "ParseNode.hpp"
 #include "Variables.hpp"
 #include "StringPool.hpp"
-#include "ByteCodeFileWriter.hpp"
+#include "AssemblyFileWriter.hpp"
 
 using std::list;
 using std::vector;
@@ -25,7 +25,7 @@ ParseNode::~ParseNode() {
     }
 }
 
-void ParseNode::write(ByteCodeFileWriter& writer) {
+void ParseNode::write(AssemblyFileWriter& writer) {
     NodeIterator it = childs.begin();
     NodeIterator end = childs.end();
 

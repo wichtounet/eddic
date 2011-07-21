@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef BYTECODE_FILE_READER_H
-#define BYTECODE_FILE_READER_H
+#ifndef ASSEMBLY_FILE_READER_H
+#define ASSEMBLY_FILE_READER_H
 
 #include <fstream>
 
@@ -14,11 +14,11 @@
 
 namespace eddic {
 
-class ByteCodeFileWriter {
+class AssemblyFileWriter {
     private:
         std::ofstream m_stream;
     public:
-        ByteCodeFileWriter() {};
+        AssemblyFileWriter() {};
         void open(const std::string& path) ;
         void close();
 
