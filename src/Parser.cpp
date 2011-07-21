@@ -30,13 +30,13 @@ ParseNode* Parser::parseInstruction() {
     }
 
     if (!lexer.isWord()) {
-        throw CompilerException("An instruction can only start with a call or an assignation");
+        throw TokenException("An instruction can only start with a call or an assignation", lexer.getCurrentToken());
     }
 
     string word = lexer.getCurrentToken().value();
 
     if (!lexer.next()) {
-        throw CompilerException("Incomplete instruction");
+        throw TokenException("Incomplete instruction", lexer.getCurrentToken());
     }
 
     if (lexer.isLeftParenth()) { //is a call
@@ -48,7 +48,7 @@ ParseNode* Parser::parseInstruction() {
     } else if (lexer.isSwap()) {
         return parseSwap(word);
     } else {
-        throw CompilerException("Not an instruction");
+        throw TokenException("Not an instruction", lexer.getCurrentToken());
     }
 }
 
@@ -64,37 +64,37 @@ Program* Parser::parse() {
 
 inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isRightParenth()) {
-        throw CompilerException(message);
+        throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
 inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isLeftParenth()) {
-        throw CompilerException(message);
+        throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
 inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isRightBrace()) {
-        throw CompilerException(message);
+        throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
 inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isLeftBrace()) {
-        throw CompilerException(message);
+        throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
 inline static void assertNextIsStop(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isStop()) {
-        throw CompilerException(message);
+        throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
 ParseNode* Parser::parseCall(const string& call) {
     if (call != "Print" && call != "Println") {
-        throw CompilerException("The call \"" + call + "\" does not exist");
+        throw TokenException("The call \"" + call + "\" does not exist", lexer.getCurrentToken());
     }
 
     Value* value = parseValue();
@@ -111,7 +111,7 @@ ParseNode* Parser::parseCall(const string& call) {
 
 ParseNode* Parser::parseDeclaration(const string& typeName) {
     if (typeName != "int" && typeName != "string") {
-        throw CompilerException("Invalid type");
+        throw TokenException("Invalid type", lexer.getCurrentToken());
     }
 
     Type type;
@@ -124,7 +124,7 @@ ParseNode* Parser::parseDeclaration(const string& typeName) {
     string variable = lexer.getCurrentToken().value();
 
     if (!lexer.next() || !lexer.isAssign()) {
-        throw CompilerException("A variable declaration must followed by '='");
+        throw TokenException("A variable declaration must followed by '='", lexer.getCurrentToken());
     }
 
     Value* value = parseValue();
@@ -144,7 +144,7 @@ ParseNode* Parser::parseAssignment(const string& variable) {
 
 ParseNode* Parser::parseSwap(const string& lhs) {
     if (!lexer.next() || !lexer.isWord()) {
-        throw CompilerException("Can only swap two variables");
+        throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
 
     string rhs = lexer.getCurrentToken().value();
@@ -174,7 +174,7 @@ ParseNode* Parser::parseIf() {
     }
 
     if (!lexer.isRightBrace()) {
-        throw CompilerException("If body must be closed with right brace");
+        throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
     }
 
     while (true) {
@@ -224,7 +224,7 @@ ElseIf* Parser::parseElseIf() {
     }
 
     if (!lexer.isRightBrace()) {
-        throw CompilerException("Else ff body must be closed with right brace");
+        throw TokenException("Else ff body must be closed with right brace", lexer.getCurrentToken());
     }
 
     return block;
@@ -240,7 +240,7 @@ Else* Parser::parseElse() {
     }
 
     if (!lexer.isRightBrace()) {
-        throw CompilerException("else body must be closed with right brace");
+        throw TokenException("else body must be closed with right brace", lexer.getCurrentToken());
     }
 
     return block;
@@ -308,7 +308,7 @@ Value* Parser::parseValue() {
 
     while (true) {
         if (!lexer.next()) {
-            throw CompilerException("Waiting for a value");
+            throw TokenException("Waiting for a value", lexer.getCurrentToken());
         }
 
         Value* node = NULL;
@@ -327,7 +327,7 @@ Value* Parser::parseValue() {
 
             node = new Integer(value);
         } else {
-            throw CompilerException("Invalid value");
+            throw TokenException("Invalid value", lexer.getCurrentToken());
         }
 
         parts.push_back(new Resolved(node));
@@ -418,7 +418,7 @@ Condition* Parser::parseCondition() {
     Value* lhs = parseValue();
 
     if (!lexer.next()) {
-        throw CompilerException("waiting for a boolean operator");
+        throw TokenException("waiting for a boolean operator", lexer.getCurrentToken());
     }
 
     BooleanCondition operation;
@@ -435,7 +435,7 @@ Condition* Parser::parseCondition() {
     } else if (lexer.isLessOrEquals()) {
         operation = LESS_EQUALS_OPERATOR;
     } else {
-        throw CompilerException("waiting for a boolean operator");
+        throw TokenException("waiting for a boolean operator", lexer.getCurrentToken());
     }
 
     Value* rhs = parseValue();

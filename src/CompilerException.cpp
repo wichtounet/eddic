@@ -7,8 +7,23 @@
 
 #include "CompilerException.hpp"
 
+#include <sstream>
+
 using namespace eddic;
 
+using std::stringstream;
+
 const char* CompilerException::what() const throw() {
-    return message.c_str();
+    return m_message.c_str();
+}
+
+const char* TokenException::what() const throw() {
+    stringstream value;
+
+    value << m_message;
+    value << std::endl;
+    value << "\tline:" << m_token.line();
+    value << " col:" << m_token.col();
+
+    return value.str().c_str();
 }
