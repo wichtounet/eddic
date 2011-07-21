@@ -37,13 +37,16 @@ int Compiler::compile(string file) {
 
         Parser parser(lexer);
 
+        StringPool* pool = new StringPool();
+        
         Program* program = parser.parse();
+        
+        program->addFirst(new Header());
         program->addLast(new Exit());
         program->addLast(new Methods());
-        program->addFirst(new Header());
+        program->addLast(pool);
 
         Variables variables;
-        StringPool* pool = new StringPool();
 
         //Semantical analysis
         check(program, variables);
@@ -53,7 +56,7 @@ int Compiler::compile(string file) {
         program->optimize();
 
         writer.open("output.asm");
-        compile(program, *pool);
+        program->write(writer);
 
         variables.write(writer);
 
@@ -80,10 +83,6 @@ int Compiler::compile(string file) {
 
     lexer.close();
     writer.close();
-
-    if (code != 0) {
-        remove(output.c_str());
-    }
 
     cout << "Compilation took " << timer.elapsed() << "ms" << endl;
 
@@ -124,10 +123,4 @@ void Compiler::checkStrings(Program* program, StringPool& pool) {
 
         node->checkStrings(pool);
     }
-}
-
-void Compiler::compile(Program* program, StringPool& pool) {
-    program->write(writer);
-
-    pool.write(writer);
 }
