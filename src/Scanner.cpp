@@ -33,17 +33,15 @@ bool Scanner::next() {
     if (stream.eof()) {
         return false;
     }
-
-    stream >> currentChar;
-
+    
     if (currentChar == '\n') {
         ++line;
         col = 1;
-
-        return next();
+    } else {
+        ++col;
     }
-
-    ++col;
+    
+    stream >> currentChar;
 
     return true;
 }
