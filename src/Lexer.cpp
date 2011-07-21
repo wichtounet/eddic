@@ -155,6 +155,8 @@ bool Lexer::readNext() {
 
             if (scanner.current() == '=') {
                 current = Token(NOT_EQUALS_TOKEN, line, col);
+                
+                return true;
             }
 
             return false;
