@@ -22,7 +22,7 @@ class Scanner {
         int m_line;
         int m_col;
     public:
-        Scanner() : m_current(0), m_line(1), m_col(1) {}
+        Scanner() : m_current(0), m_line(1), m_col(0) {}
 
         /* File manipulations */
         void scan(const std::string& file);
