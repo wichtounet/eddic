@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project("EDDI Compiler")
 
+#Set the version number
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 4)
+set(VERSION_PATCH 1)
+
 #Activate warnings
 if(MSVC)
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
