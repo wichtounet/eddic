@@ -20,7 +20,10 @@ class StringPool : public ParseNode {
         std::map<std::string, std::string> pool;
         unsigned int currentString;
     public:
-        StringPool();
+        StringPool(Context* context) : ParseNode(context), currentString(0) {
+            label("\"\n\"");    
+        };
+
         std::string label(const std::string& value);
         void write(AssemblyFileWriter& writer);
 };

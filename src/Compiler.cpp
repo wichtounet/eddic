@@ -11,7 +11,6 @@
 #include "Timer.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "Variables.hpp"
 #include "Compiler.hpp"
 #include "Nodes.hpp"
 #include "Parser.hpp"
@@ -36,35 +35,32 @@ int Compiler::compile(string file) {
         lexer.lex(file);
 
         Parser parser(lexer);
-
-        StringPool* pool = new StringPool();
         
         Program* program = parser.parse();
+
+        StringPool* pool = new StringPool(program->context());
         
-        program->addFirst(new Header());
-        program->addLast(new Exit());
-        program->addLast(new Methods());
+        program->addFirst(new Header(program->context()));
+        program->addLast(new Exit(program->context()));
+        program->addLast(new Methods(program->context()));
         program->addLast(pool);
 
-        Variables variables;
-
         //Semantical analysis
-        check(program, variables);
-        checkStrings(program, *pool);
+    	program->checkVariables();
+        program->checkStrings(*pool);
 
         //Optimize the parse tree
         program->optimize();
 
+		//Compilation
         writer.open("output.asm");
         program->write(writer);
 
-        variables.write(writer);
+        Context::writeAll(writer);
 
         delete program;
-
-        string asCommand = "as --32 -o output.o output.asm";
-
-        execCommand(asCommand);
+		
+        execCommand("as --32 -o output.o output.asm");
 
         string ldCommand = "gcc -m32 -static -o ";
         ldCommand += output;
@@ -80,6 +76,7 @@ int Compiler::compile(string file) {
         code = 1;
     }
 
+	//Close input and output
     lexer.close();
     writer.close();
 
@@ -89,7 +86,7 @@ int Compiler::compile(string file) {
 }
 
 void execCommand(string command) {
-    cout << "Exec command : " << command << endl;
+    cout << "eddic : exec command : " << command << endl;
 
     char buffer[1024];
 
@@ -100,26 +97,4 @@ void execCommand(string command) {
     }
 
     pclose(stream);
-}
-
-void Compiler::check(Program* program, Variables& variables) {
-    NodeIterator it = program->begin();
-    NodeIterator end = program->end();
-
-    for ( ; it != end; ++it) {
-        ParseNode* node = *it;
-
-        node->checkVariables(variables);
-    }
-}
-
-void Compiler::checkStrings(Program* program, StringPool& pool) {
-    NodeIterator it = program->begin();
-    NodeIterator end = program->end();
-
-    for ( ; it != end; ++it) {
-        ParseNode* node = *it;
-
-        node->checkStrings(pool);
-    }
 }

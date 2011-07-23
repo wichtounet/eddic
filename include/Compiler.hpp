@@ -15,19 +15,13 @@
 
 namespace eddic {
 
-class Program;
-class Variables;
-class StringPool;
-
 class Compiler {
-    public:
-        int compile (std::string file);
     private:
         Lexer lexer;
         AssemblyFileWriter writer;
-        
-        void check(Program* program, Variables& variables);
-        void checkStrings(Program* program, StringPool& pool);
+	
+    public:
+        int compile (std::string file);
 };
 
 } //end of eddic

@@ -55,13 +55,16 @@ Print("((444 - 333) * (2)) = ");
 Println(((444 - 333) * (2)));
 
 if(4 > 3){
-	Println("Cool");
+    string xa = "Cool";
+	Println(xa);
 } else {
-	Println("Pas cool");
+    string xa = "Super pas cool";
+	Println(xa);
 }
 
 if(3 == 3){
-	Println("Cool");
+    string xa = "Cool";
+	Println(xa);
 } else {
 	Println("Pas cool");
 }

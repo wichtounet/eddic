@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "ParseNode.hpp"
-#include "Variables.hpp"
+#include "Context.hpp"
 #include "StringPool.hpp"
 #include "AssemblyFileWriter.hpp"
 
@@ -34,12 +34,12 @@ void ParseNode::write(AssemblyFileWriter& writer) {
     }
 }
 
-void ParseNode::checkVariables(Variables& variables) {
+void ParseNode::checkVariables() {
     NodeIterator it = childs.begin();
     NodeIterator end = childs.end();
 
     for ( ; it != end; ++it) {
-        (*it)->checkVariables(variables);
+        (*it)->checkVariables();
     }
 }
 

@@ -8,6 +8,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "Context.hpp"
 #include "CompilerException.hpp"
 
 namespace eddic {
@@ -23,6 +24,7 @@ class Condition;
 class Parser {
     private:
         Lexer& lexer;
+		Context* currentContext;
 
         ParseNode* parseInstruction();
         ParseNode* parseDeclaration();
@@ -37,7 +39,7 @@ class Parser {
         Value* parseValue();
 
     public:
-        Parser(Lexer& l) : lexer(l) {};
+        Parser(Lexer& l) : lexer(l), currentContext(new Context()) {};
         Program* parse() ;
 };
 

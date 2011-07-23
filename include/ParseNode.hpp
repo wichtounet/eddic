@@ -11,9 +11,6 @@
 #include <list>
 #include <vector>
 
-#include "CompilerException.hpp"
-#include "AssemblyFileWriter.hpp"
-
 namespace eddic {
 
 class ParseNode;
@@ -21,29 +18,37 @@ class ParseNode;
 typedef std::list<ParseNode*>::const_iterator NodeIterator;
 typedef std::vector<ParseNode*>::const_iterator TrashIterator;
 
-class ByteCodeFileWriter;
+class Context;
+class AssemblyFileWriter;
 class StringPool;
-class Variables;
 
 class ParseNode {
     private:
         std::list<ParseNode*> childs;
         std::vector<ParseNode*> trash;
+		
+		Context* m_context;
+
     protected:
         ParseNode* parent;
+	
     public:
-        ParseNode() : parent(NULL) {};
+        ParseNode(Context* context) : m_context(context), parent(NULL){};		
         virtual ~ParseNode();
+
         virtual void write(AssemblyFileWriter& writer);
-        virtual void checkVariables(Variables& variables);
+        virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
+		
         void addFirst(ParseNode* node);
         void addLast(ParseNode* node);
         void replace(ParseNode* old, ParseNode* node);
         void remove(ParseNode* node);
         NodeIterator begin();
         NodeIterator end();
+
+		Context* context(){ return m_context; }
 };
 
 } //end of eddic

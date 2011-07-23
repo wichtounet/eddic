@@ -17,16 +17,21 @@
 namespace eddic {
 
 class Program : public ParseNode {
-        //Nothing
+	public:
+		Program(Context* context) : ParseNode(context) {}
 };
 
 class Value : public ParseNode {
     protected:
         Type m_type;
-    public:
+
+	public:
+		Value(Context* context) : ParseNode(context) {}
+		
         Type type() const {
             return m_type;
         };
+		
         virtual bool isConstant();
         virtual std::string getStringValue();
         virtual int getIntValue();
@@ -34,17 +39,23 @@ class Value : public ParseNode {
 
 class Header : public ParseNode {
     public:
+		Header(Context* context) : ParseNode(context) {}
+
         void write(AssemblyFileWriter& writer);
 
 };
 
 class Exit : public ParseNode {
     public:
+		Exit(Context* context) : ParseNode(context) {}
+
         void write(AssemblyFileWriter& writer);
 };
 
 class Methods : public ParseNode {
     public:
+		Methods(Context* context) : ParseNode(context) {}
+
         void write(AssemblyFileWriter& writer);
 };
 
@@ -56,13 +67,13 @@ class Declaration : public ParseNode {
         Value* value;
 		
     public:
-        Declaration(Type type, const std::string& variable, Value* v) : m_type(type), m_variable(variable), value(v) {};
+        Declaration(Context* context, Type type, const std::string& variable, Value* v) : ParseNode(context), m_type(type), m_variable(variable), value(v) {};
         ~Declaration() {
             delete value;
         }
 
         void checkStrings(StringPool& pool);
-        void checkVariables(Variables& variables);
+        void checkVariables();
         void write(AssemblyFileWriter& writer);
         int index() const {
             return m_index;
@@ -75,19 +86,19 @@ class Print : public ParseNode {
         Value* value;
 
     public:
-        Print(Value* v) : value(v) {};
+        Print(Context* context, Value* v) : ParseNode(context), value(v) {};
         virtual ~Print() {
             delete value;
         }
 
         void checkStrings(StringPool& pool);
-        void checkVariables(Variables& variables);
+        void checkVariables();
         void write(AssemblyFileWriter& writer);
 };
 
 class Println : public Print {
     public:
-        Println(Value*v) : Print(v) {}
+        Println(Context* context, Value*v) : Print(context, v) {}
         void write(AssemblyFileWriter& writer);
 };
 
@@ -98,13 +109,13 @@ class Assignment : public ParseNode {
         Value* value;
 
     public:
-        Assignment(const std::string& variable, Value* v) : m_variable(variable), value(v) {};
+        Assignment(Context* context, const std::string& variable, Value* v) : ParseNode(context), m_variable(variable), value(v) {};
         ~Assignment() {
             delete value;
         }
 
         void checkStrings(StringPool& pool);
-        void checkVariables(Variables& variables);
+        void checkVariables();
         void write(AssemblyFileWriter& writer);
 };
 
@@ -117,9 +128,9 @@ class Swap : public ParseNode {
         Type m_type;
 
     public:
-        Swap(const std::string& lhs, const std::string& rhs) : m_lhs(lhs), m_rhs(rhs) {};
+        Swap(Context* context, const std::string& lhs, const std::string& rhs) : ParseNode(context), m_lhs(lhs), m_rhs(rhs) {};
 
-        void checkVariables(Variables& variables);
+        void checkVariables();
         void write(AssemblyFileWriter& writer);
 };
 
@@ -128,7 +139,7 @@ class Litteral : public Value {
         std::string m_litteral;
         std::string m_label;
     public:
-        Litteral(const std::string& litteral) : m_litteral(litteral) {
+        Litteral(Context* context, const std::string& litteral) : Value(context), m_litteral(litteral) {
             m_type = STRING;
         };
         void checkStrings(StringPool& pool);
@@ -141,7 +152,7 @@ class Integer : public Value {
     private:
         int m_value;
     public:
-        Integer(int value) : m_value(value) {
+        Integer(Context* context, int value) : Value(context), m_value(value) {
             m_type = INT;
         };
         void write(AssemblyFileWriter& writer);
@@ -154,8 +165,8 @@ class VariableValue : public Value {
         std::string m_variable;
         int m_index;
     public:
-        VariableValue(const std::string& variable) : m_variable(variable) {};
-        void checkVariables(Variables& variables);
+        VariableValue(Context* context, const std::string& variable) : Value(context), m_variable(variable) {};
+        void checkVariables();
         void write(AssemblyFileWriter& writer);
         bool isConstant();
 };

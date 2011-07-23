@@ -5,11 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VARIABLES_H
-#define VARIABLES_H
+#ifndef CONTEXT_H
+#define CONTEXT_H
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "Types.hpp"
 
@@ -35,20 +36,28 @@ class Variable {
         }
 };
 
-class Variables {
+class Context {
     private:
+        static std::vector<Context*> contexts;
+        static unsigned int currentVariable;
+        
         std::map<std::string, Variable*> variables;
-        unsigned int currentVariable;
+		Context* m_parent;				
+
     public:
-        Variables() {
-            currentVariable = 0;
-        };
-        ~Variables();
+        Context() : m_parent(NULL) { contexts.push_back(this); }
+		Context(Context* parent) : m_parent(parent) { contexts.push_back(this); }
+        ~Context();
+
         bool exists(const std::string& variable) const;
         unsigned int index(const std::string& variable) const;
         Variable* create(const std::string& variable, Type type);
         Variable* find(const std::string& variable);
         void write(AssemblyFileWriter& writer);
+
+		Context* parent(){ return m_parent; }
+
+        static void writeAll(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

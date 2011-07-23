@@ -17,7 +17,7 @@ class BinaryOperator : public Value {
         Value* lhs;
         Value* rhs;
 
-        BinaryOperator(Value* l, Value* r) : lhs(l), rhs(r) {}
+        BinaryOperator(Context* context, Value* l, Value* r) : Value(context), lhs(l), rhs(r) {}
 
         virtual ~BinaryOperator() {
             delete lhs;
@@ -25,7 +25,7 @@ class BinaryOperator : public Value {
         }
 
         bool isConstant();
-        void checkVariables(Variables& variables);
+        void checkVariables();
         void checkStrings(StringPool& pool);
         std::string getStringValue();
         int getIntValue();
@@ -38,7 +38,7 @@ class BinaryOperator : public Value {
 
 class Addition : public BinaryOperator {
     public:
-        Addition(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+        Addition(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
         void optimize();
@@ -50,7 +50,7 @@ class Addition : public BinaryOperator {
 
 class Subtraction : public BinaryOperator {
     public:
-        Subtraction(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+        Subtraction(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -59,7 +59,7 @@ class Subtraction : public BinaryOperator {
 
 class Multiplication : public BinaryOperator {
     public:
-        Multiplication(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+        Multiplication(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -68,7 +68,7 @@ class Multiplication : public BinaryOperator {
 
 class Division : public BinaryOperator {
     public:
-        Division(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+        Division(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -77,7 +77,7 @@ class Division : public BinaryOperator {
 
 class Modulo : public BinaryOperator {
     public:
-        Modulo(Value* lhs, Value* rhs) : BinaryOperator(lhs, rhs) {}
+        Modulo(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 

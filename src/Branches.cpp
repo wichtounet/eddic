@@ -7,7 +7,7 @@
 
 #include "Branches.hpp"
 #include "AssemblyFileWriter.hpp"
-#include "Variables.hpp"
+#include "Context.hpp"
 
 using namespace eddic;
 
@@ -139,10 +139,10 @@ void If::write(AssemblyFileWriter& writer) {
     }
 }
 
-void If::checkVariables(Variables& variables) {
+void If::checkVariables() {
     if (m_condition->isOperator()) {
-        m_condition->lhs()->checkVariables(variables);
-        m_condition->rhs()->checkVariables(variables);
+        m_condition->lhs()->checkVariables();
+        m_condition->rhs()->checkVariables();
 
         if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
             throw CompilerException("Can only compare integers");
@@ -150,13 +150,13 @@ void If::checkVariables(Variables& variables) {
     }
 
     if (m_elseBlock) {
-        m_elseBlock->checkVariables(variables);
+        m_elseBlock->checkVariables();
     }
 
-    ParseNode::checkVariables(variables);
+    ParseNode::checkVariables();
 
     for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->checkVariables(variables);
+        (*it)->checkVariables();
     }
 }
 
@@ -190,17 +190,17 @@ void If::optimize() {
     ParseNode::optimize();
 }
 
-void ElseIf::checkVariables(Variables& variables) {
+void ElseIf::checkVariables() {
     if (m_condition->isOperator()) {
-        m_condition->lhs()->checkVariables(variables);
-        m_condition->rhs()->checkVariables(variables);
+        m_condition->lhs()->checkVariables();
+        m_condition->rhs()->checkVariables();
 
         if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
             throw CompilerException("Can only compare integers");
         }
     }
 
-    ParseNode::checkVariables(variables);
+    ParseNode::checkVariables();
 }
 
 void ElseIf::checkStrings(StringPool& pool) {

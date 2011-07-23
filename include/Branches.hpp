@@ -54,7 +54,8 @@ class Condition {
 };
 
 class Else : public ParseNode {
-        //Nothing special to do now
+	public:
+		Else(Context* context) : ParseNode(context) {}
 };
 
 class ElseIf : public ParseNode {
@@ -62,13 +63,13 @@ class ElseIf : public ParseNode {
         Condition* m_condition;
 
     public:
-        ElseIf(Condition* condition) : m_condition(condition) {}
+        ElseIf(Context* context, Condition* condition) : ParseNode(context), m_condition(condition) {}
 
         virtual ~ElseIf() {
             delete m_condition;
         }
 
-        virtual void checkVariables(Variables& variables);
+        virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
@@ -84,12 +85,12 @@ class If : public ParseNode {
         std::vector<ElseIf*> elseIfs;
 
     public:
-        If(Condition* condition) : m_condition(condition), m_elseBlock(NULL) {}
+        If(Context* context, Condition* condition) : ParseNode(context), m_condition(condition), m_elseBlock(NULL) {}
 
         virtual ~If();
 
         virtual void write(AssemblyFileWriter& writer);
-        virtual void checkVariables(Variables& variables);
+        virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 

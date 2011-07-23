@@ -8,7 +8,7 @@
 #include "Operators.hpp"
 #include "Options.hpp"
 #include "AssemblyFileWriter.hpp"
-#include "Variables.hpp"
+#include "Context.hpp"
 
 #include <cassert>
 
@@ -18,9 +18,9 @@ using namespace eddic;
 
 //Checks
 
-void BinaryOperator::checkVariables(Variables& variables) {
-    lhs->checkVariables(variables);
-    rhs->checkVariables(variables);
+void BinaryOperator::checkVariables() {
+    lhs->checkVariables();
+    rhs->checkVariables();
 
     m_type = checkTypes(lhs->type(), rhs->type());
 }
@@ -233,7 +233,7 @@ int Modulo::compute(int left, int right) {
 void BinaryOperator::optimize() {
     if (isConstant()) {
         if (Options::isSet(OPTIMIZE_INTEGERS)) {
-            Value* value = new Integer(getIntValue());
+            Value* value = new Integer(context(), getIntValue());
 
             parent->replace(this, value);
         }
@@ -247,7 +247,7 @@ void Addition::optimize() {
     if (isConstant()) {
         if (type() == INT) {
             if (Options::isSet(OPTIMIZE_INTEGERS)) {
-                Value* value = new Integer(getIntValue());
+                Value* value = new Integer(context(), getIntValue());
 
                 parent->replace(this, value);
             }

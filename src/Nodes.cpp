@@ -9,7 +9,7 @@
 #include "StringPool.hpp"
 #include "Options.hpp"
 #include "AssemblyFileWriter.hpp"
-#include "Variables.hpp"
+#include "Context.hpp"
 
 #include <cassert>
 
@@ -110,16 +110,16 @@ void Header::write(AssemblyFileWriter& writer){
              << "main:" << endl;
 }
 
-void Declaration::checkVariables(Variables& variables) {
-    if (variables.exists(m_variable)) {
+void Declaration::checkVariables() {
+    if (context()->exists(m_variable)) {
         throw CompilerException("Variable has already been declared");
     }
 
-    Variable* var = variables.create(m_variable, m_type);
+    Variable* var = context()->create(m_variable, m_type);
 
     m_index = var->index();
 
-    value->checkVariables(variables);
+    value->checkVariables();
 
     if (value->type() != m_type) {
         throw CompilerException("Incompatible type");
@@ -130,33 +130,33 @@ void Declaration::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void Assignment::checkVariables(Variables& variables) {
-    if (!variables.exists(m_variable)) {
+void Assignment::checkVariables() {
+    if (!context()->exists(m_variable)) {
         throw CompilerException("Variable has not  been declared");
     }
 
-    Variable* var = variables.find(m_variable);
+    Variable* var = context()->find(m_variable);
 
     m_index = var->index();
 
-    value->checkVariables(variables);
+    value->checkVariables();
 
     if (value->type() != var->type()) {
         throw CompilerException("Incompatible type");
     }
 }
 
-void Swap::checkVariables(Variables& variables) {
+void Swap::checkVariables() {
     if (m_lhs == m_rhs) {
         throw CompilerException("Cannot swap a variable with itself");
     }
 
-    if (!variables.exists(m_lhs) || !variables.exists(m_rhs)) {
+    if (!context()->exists(m_lhs) || !context()->exists(m_rhs)) {
         throw CompilerException("Variable has not been declared");
     }
 
-    Variable* lhs_var = variables.find(m_lhs);
-    Variable* rhs_var = variables.find(m_rhs);
+    Variable* lhs_var = context()->find(m_lhs);
+    Variable* rhs_var = context()->find(m_rhs);
 
     m_lhs_index = lhs_var->index();
     m_rhs_index = rhs_var->index();
@@ -172,12 +172,12 @@ void Assignment::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void VariableValue::checkVariables(Variables& variables) {
-    if (!variables.exists(m_variable)) {
+void VariableValue::checkVariables() {
+    if (!context()->exists(m_variable)) {
         throw CompilerException("Variable has not been declared");
     }
 
-    Variable* variable = variables.find(m_variable);
+    Variable* variable = context()->find(m_variable);
 
     m_type = variable->type();
     m_index = variable->index();
@@ -295,8 +295,8 @@ void Print::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void Print::checkVariables(Variables& variables) {
-    value->checkVariables(variables);
+void Print::checkVariables() {
+    value->checkVariables();
 }
 
 void Integer::write(AssemblyFileWriter& writer) {

@@ -30,7 +30,7 @@ inline static void assertNextIsRightBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsStop(Lexer& lexer, const string& message);
 
-//Declare in header
+//Move to some utility class
 bool isType(const Lexer& lexer){
     if(!lexer.isWord()){
         return false;
@@ -42,7 +42,10 @@ bool isType(const Lexer& lexer){
 }
 
 Program* Parser::parse() {
-    Program* program = new Program();
+	//Create the global context
+	currentContext = new Context();
+
+    Program* program = new Program(currentContext);
 
     while (lexer.next()) {
         program->addLast(parseInstruction());
@@ -94,9 +97,9 @@ ParseNode* Parser::parseCall(const Token& callToken) {
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
     if (call == "Print") {
-        return new Print(value);
+        return new Print(currentContext, value);
     } else {
-        return new Println(value);
+        return new Println(currentContext, value);
     }
 }
 
@@ -124,7 +127,7 @@ ParseNode* Parser::parseDeclaration() {
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    return new Declaration(type, variable, value);
+    return new Declaration(currentContext, type, variable, value);
 }
 
 ParseNode* Parser::parseAssignment(const Token& variableToken) {
@@ -132,7 +135,7 @@ ParseNode* Parser::parseAssignment(const Token& variableToken) {
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    return new Assignment(variableToken.value(), value);
+    return new Assignment(currentContext, variableToken.value(), value);
 }
 
 ParseNode* Parser::parseSwap(const Token& lhs) {
@@ -144,7 +147,7 @@ ParseNode* Parser::parseSwap(const Token& lhs) {
 
     assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
-    return new Swap(lhs.value(), rhs);
+    return new Swap(currentContext, lhs.value(), rhs);
 }
 
 ParseNode* Parser::parseIf() {
@@ -156,7 +159,9 @@ ParseNode* Parser::parseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    If* block = new If(condition);
+	currentContext = new Context(currentContext);
+
+    If* block = new If(currentContext, condition);
 
     lexer.next();
 
@@ -165,6 +170,8 @@ ParseNode* Parser::parseIf() {
 
         lexer.next();
     }
+
+	currentContext = currentContext->parent();
 
     if (!lexer.isRightBrace()) {
         throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
@@ -206,7 +213,9 @@ ElseIf* Parser::parseElseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    ElseIf* block = new ElseIf(condition);
+	currentContext = new Context(currentContext);
+	
+    ElseIf* block = new ElseIf(currentContext, condition);
 
     lexer.next();
 
@@ -215,6 +224,8 @@ ElseIf* Parser::parseElseIf() {
 
         lexer.next();
     }
+	
+	currentContext = currentContext->parent();
 
     if (!lexer.isRightBrace()) {
         throw TokenException("Else ff body must be closed with right brace", lexer.getCurrentToken());
@@ -224,7 +235,9 @@ ElseIf* Parser::parseElseIf() {
 }
 
 Else* Parser::parseElse() {
-    Else* block = new Else();
+	currentContext = new Context(currentContext);
+	
+    Else* block = new Else(currentContext);
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
 
@@ -235,6 +248,8 @@ Else* Parser::parseElse() {
     if (!lexer.isRightBrace()) {
         throw TokenException("else body must be closed with right brace", lexer.getCurrentToken());
     }
+	
+	currentContext = currentContext->parent();
 
     return block;
 }
@@ -313,16 +328,16 @@ Value* Parser::parseValue() {
         } else if (lexer.isLitteral()) {
             string litteral = lexer.getCurrentToken().value();
 
-            node = new Litteral(litteral);
+            node = new Litteral(currentContext, litteral);
         } else if (lexer.isWord()) {
             string variableRight = lexer.getCurrentToken().value();
 
-            node = new VariableValue(variableRight);
+            node = new VariableValue(currentContext, variableRight);
         } else if (lexer.isInteger()) {
             string integer = lexer.getCurrentToken().value();
             int value = toNumber<int>(integer);
 
-            node = new Integer(value);
+            node = new Integer(currentContext, value);
         } else {
             throw TokenException("Invalid value", lexer.getCurrentToken());
         }
@@ -379,15 +394,15 @@ Value* Parser::parseValue() {
         Value* value = NULL;
 
         if (op == ADD) {
-            value = new Addition(lhs, rhs);
+            value = new Addition(currentContext, lhs, rhs);
         } else if (op == SUB) {
-            value = new Subtraction(lhs, rhs);
+            value = new Subtraction(currentContext, lhs, rhs);
         } else if (op == MUL) {
-            value = new Multiplication(lhs, rhs);
+            value = new Multiplication(currentContext, lhs, rhs);
         } else if (op == DIV) {
-            value = new Division(lhs, rhs);
+            value = new Division(currentContext, lhs, rhs);
         } else if (op == MOD) {
-            value = new Modulo(lhs, rhs);
+            value = new Modulo(currentContext, lhs, rhs);
         }
 
         parts.erase(first, ++max);
