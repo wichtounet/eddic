@@ -9,6 +9,7 @@
 #define BRANCHES_H
 
 #include <vector>
+#include <string>
 
 #include "Nodes.hpp"
 
@@ -52,6 +53,8 @@ class Condition {
             return m_lhs != NULL || m_rhs != NULL;
         }
 };
+
+void writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, std::string label, int labelIndex);
 
 class Else : public ParseNode {
 	public:

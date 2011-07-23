@@ -76,3 +76,10 @@ if(55 < 33){
 } else {
 	Println("Cool");
 }
+
+int i = 0;
+while(i < 5){
+    i = i + 1;
+    Print("Loop");
+    Println(i);
+}

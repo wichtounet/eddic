@@ -11,6 +11,8 @@
 
 using namespace eddic;
 
+using std::string;
+
 If::~If() {
     delete m_condition;
     delete m_elseBlock; //Can be null, problem ?
@@ -20,56 +22,57 @@ If::~If() {
     }
 }
 
-void writeCondition(AssemblyFileWriter& writer, Condition* condition, int label) {
-    if (condition->isOperator()) {
+void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition){
         condition->lhs()->write(writer);
         condition->rhs()->write(writer);
 
         writer.stream() << "movl 4(%esp), %eax" << std::endl;
         writer.stream() << "movl (%esp), %ebx" << std::endl;
         writer.stream() << "addl $8, %esp" << std::endl;
-    }
+}
 
-    switch (condition->condition()) {
-        case TRUE_VALUE:
-            //No need to jump
+void eddic::writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, string label, int labelIndex) {
+	if (!condition->isOperator()) {
+		
+		if(condition->condition() == TRUE_VALUE){
+			//No need to jump
+		} else if(condition->condition() == FALSE_VALUE){
+			writer.stream() << "jmp " << label << labelIndex << std::endl;
+		}
+    } else {
+    	writeConditionOperands(writer, condition);
+		
+		writer.stream() << "cmpl %ebx, %eax" << std::endl;
 
-            break;
-        case FALSE_VALUE:
-            writer.stream() << "jmp L" << label << std::endl;
+		switch (condition->condition()) {
+		    case GREATER_OPERATOR:
+		        writer.stream() << "jle " << label << labelIndex << std::endl;
 
-            break;
-        case GREATER_OPERATOR:
-            writer.stream() << "cmpl %ebx, %eax" << std::endl;
-            writer.stream() << "jle L" << label << std::endl;
+		        break;
+		    case GREATER_EQUALS_OPERATOR:
+		        writer.stream() << "jl " << label << labelIndex << std::endl;
 
-            break;
-        case GREATER_EQUALS_OPERATOR:
-            writer.stream() << "cmpl %ebx, %eax" << std::endl;
-            writer.stream() << "jl L" << label << std::endl;
+		        break;
+		    case LESS_OPERATOR:
+		        writer.stream() << "jge " << label << labelIndex << std::endl;
 
-            break;
-        case LESS_OPERATOR:
-            writer.stream() << "cmpl %ebx, %eax" << std::endl;
-            writer.stream() << "jge L" << label << std::endl;
+		        break;
+		    case LESS_EQUALS_OPERATOR:
+		        writer.stream() << "jg " << label << labelIndex << std::endl;
 
-            break;
-        case LESS_EQUALS_OPERATOR:
-            writer.stream() << "cmpl %ebx, %eax" << std::endl;
-            writer.stream() << "jg L" << label << std::endl;
+		        break;
+		    case EQUALS_OPERATOR:
+		        writer.stream() << "jne " << label << labelIndex << std::endl;
 
-            break;
-        case EQUALS_OPERATOR:
-            writer.stream() << "cmpl %ebx, %eax" << std::endl;
-            writer.stream() << "jne L" << label << std::endl;
+		        break;
+		    case NOT_EQUALS_OPERATOR:
+		        writer.stream() << "je " << label << labelIndex << std::endl;
 
-            break;
-        case NOT_EQUALS_OPERATOR:
-            writer.stream() << "cmpl %ebx, %eax" << std::endl;
-            writer.stream() << "je L" << label << std::endl;
-
-            break;
-    }
+		        break;
+			default: 
+				throw CompilerException("The condition must be managed using not-operator");
+		}
+	}
 }
 
 void If::write(AssemblyFileWriter& writer) {
@@ -79,7 +82,7 @@ void If::write(AssemblyFileWriter& writer) {
     if (elseIfs.empty()) {
         int a = labels++;
 
-        writeCondition(writer, m_condition, a);
+        writeJumpIfNot(writer, m_condition, "L", a);
 
         ParseNode::write(writer);
 
@@ -100,7 +103,7 @@ void If::write(AssemblyFileWriter& writer) {
         int end = labels++;
         int next = labels++;
 
-        writeCondition(writer, m_condition, next);
+        writeJumpIfNot(writer, m_condition, "L", next);
 
         ParseNode::write(writer);
 
@@ -122,7 +125,7 @@ void If::write(AssemblyFileWriter& writer) {
                 next = labels++;
             }
 
-            writeCondition(writer, elseIf->condition(), next);
+            writeJumpIfNot(writer, elseIf->condition(), "L", next);
 
             elseIf->write(writer);
 
