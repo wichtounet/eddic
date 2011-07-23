@@ -33,6 +33,7 @@ class Parser {
         ParseNode* parseAssignment(const Token& variable);
         ParseNode* parseSwap(const Token& lhs);
         ParseNode* parseIf();
+        ParseNode* parseWhile();
         Condition* parseCondition();
         ElseIf* parseElseIf();
         Else* parseElse();

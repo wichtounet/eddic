@@ -17,6 +17,7 @@
 #include "Operators.hpp"
 #include "Lexer.hpp"
 #include "Branches.hpp"
+#include "Loops.hpp"
 
 using std::string;
 using std::ios_base;
@@ -57,6 +58,8 @@ Program* Parser::parse() {
 ParseNode* Parser::parseInstruction() {
     if (lexer.isIf()) {
         return parseIf();
+    } else if(lexer.isWhile()){
+        return parseWhile();
     } else if(isType(lexer)){
         return parseDeclaration();
     } else if(lexer.isWord()){
@@ -250,6 +253,36 @@ Else* Parser::parseElse() {
     }
 	
 	currentContext = currentContext->parent();
+
+    return block;
+}
+
+ParseNode* Parser::parseWhile() {
+    assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
+
+    Condition* condition = parseCondition();
+
+    assertNextIsRightParenth(lexer, "The condition of the while must be closed by a right parenth");
+
+    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+
+	currentContext = new Context(currentContext);
+
+    While* block = new While(currentContext, condition);
+
+    lexer.next();
+
+    while (!lexer.isRightBrace()) {
+        block->addLast(parseInstruction());
+
+        lexer.next();
+    }
+
+	currentContext = currentContext->parent();
+
+    if (!lexer.isRightBrace()) {
+        throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
+    }
 
     return block;
 }
