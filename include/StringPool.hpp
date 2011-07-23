@@ -21,7 +21,7 @@ class StringPool : public ParseNode {
         unsigned int currentString;
     public:
         StringPool(Context* context) : ParseNode(context), currentString(0) {
-            label("\"\n\"");    
+            label("\"\n\"");
         };
 
         std::string label(const std::string& value);

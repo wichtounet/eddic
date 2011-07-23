@@ -32,8 +32,8 @@ inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsStop(Lexer& lexer, const string& message);
 
 //Move to some utility class
-bool isType(const Lexer& lexer){
-    if(!lexer.isWord()){
+bool isType(const Lexer& lexer) {
+    if (!lexer.isWord()) {
         return false;
     }
 
@@ -43,8 +43,8 @@ bool isType(const Lexer& lexer){
 }
 
 Program* Parser::parse() {
-	//Create the global context
-	currentContext = new Context();
+    //Create the global context
+    currentContext = new Context();
 
     Program* program = new Program(currentContext);
 
@@ -58,32 +58,32 @@ Program* Parser::parse() {
 ParseNode* Parser::parseInstruction() {
     if (lexer.isIf()) {
         return parseIf();
-    } else if(lexer.isWhile()){
+    } else if (lexer.isWhile()) {
         return parseWhile();
-    } else if(isType(lexer)){
+    } else if (isType(lexer)) {
         return parseDeclaration();
-    } else if(lexer.isWord()){
+    } else if (lexer.isWord()) {
         return parseCallOrAssignment();
     }
 
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-ParseNode* Parser::parseCallOrAssignment(){
+ParseNode* Parser::parseCallOrAssignment() {
     Token token = lexer.getCurrentToken();
-    
+
     if (!lexer.next()) {
         throw TokenException("Incomplete instruction", lexer.getCurrentToken());
     }
-    
+
     if (lexer.isLeftParenth()) {
         return parseCall(token);
-    } else if (lexer.isAssign()) { 
+    } else if (lexer.isAssign()) {
         return parseAssignment(token);
     } else if (lexer.isSwap()) {
         return parseSwap(token);
-    } 
-    
+    }
+
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
@@ -108,7 +108,7 @@ ParseNode* Parser::parseCall(const Token& callToken) {
 
 ParseNode* Parser::parseDeclaration() {
     string typeName = lexer.getCurrentToken().value();
-    
+
     Type type;
     if (typeName == "int") {
         type = INT;
@@ -116,7 +116,7 @@ ParseNode* Parser::parseDeclaration() {
         type = STRING;
     }
 
-    if(!lexer.next() || !lexer.isWord()){
+    if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("A type must be followed by variable name", lexer.getCurrentToken());
     }
 
@@ -162,7 +162,7 @@ ParseNode* Parser::parseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-	currentContext = new Context(currentContext);
+    currentContext = new Context(currentContext);
 
     If* block = new If(currentContext, condition);
 
@@ -174,7 +174,7 @@ ParseNode* Parser::parseIf() {
         lexer.next();
     }
 
-	currentContext = currentContext->parent();
+    currentContext = currentContext->parent();
 
     if (!lexer.isRightBrace()) {
         throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
@@ -216,8 +216,8 @@ ElseIf* Parser::parseElseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-	currentContext = new Context(currentContext);
-	
+    currentContext = new Context(currentContext);
+
     ElseIf* block = new ElseIf(currentContext, condition);
 
     lexer.next();
@@ -227,8 +227,8 @@ ElseIf* Parser::parseElseIf() {
 
         lexer.next();
     }
-	
-	currentContext = currentContext->parent();
+
+    currentContext = currentContext->parent();
 
     if (!lexer.isRightBrace()) {
         throw TokenException("Else ff body must be closed with right brace", lexer.getCurrentToken());
@@ -238,8 +238,8 @@ ElseIf* Parser::parseElseIf() {
 }
 
 Else* Parser::parseElse() {
-	currentContext = new Context(currentContext);
-	
+    currentContext = new Context(currentContext);
+
     Else* block = new Else(currentContext);
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
@@ -251,8 +251,8 @@ Else* Parser::parseElse() {
     if (!lexer.isRightBrace()) {
         throw TokenException("else body must be closed with right brace", lexer.getCurrentToken());
     }
-	
-	currentContext = currentContext->parent();
+
+    currentContext = currentContext->parent();
 
     return block;
 }
@@ -266,7 +266,7 @@ ParseNode* Parser::parseWhile() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-	currentContext = new Context(currentContext);
+    currentContext = new Context(currentContext);
 
     While* block = new While(currentContext, condition);
 
@@ -278,7 +278,7 @@ ParseNode* Parser::parseWhile() {
         lexer.next();
     }
 
-	currentContext = currentContext->parent();
+    currentContext = currentContext->parent();
 
     if (!lexer.isRightBrace()) {
         throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
@@ -354,9 +354,9 @@ Value* Parser::parseValue() {
 
         Value* node = NULL;
 
-        if (lexer.isLeftParenth()){
+        if (lexer.isLeftParenth()) {
             node = parseValue();
-            
+
             assertNextIsRightParenth(lexer, "parenth is not closed");
         } else if (lexer.isLitteral()) {
             string litteral = lexer.getCurrentToken().value();

@@ -22,57 +22,57 @@ If::~If() {
     }
 }
 
-void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition){
-        condition->lhs()->write(writer);
-        condition->rhs()->write(writer);
+void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition) {
+    condition->lhs()->write(writer);
+    condition->rhs()->write(writer);
 
-        writer.stream() << "movl 4(%esp), %eax" << std::endl;
-        writer.stream() << "movl (%esp), %ebx" << std::endl;
-        writer.stream() << "addl $8, %esp" << std::endl;
+    writer.stream() << "movl 4(%esp), %eax" << std::endl;
+    writer.stream() << "movl (%esp), %ebx" << std::endl;
+    writer.stream() << "addl $8, %esp" << std::endl;
 }
 
 void eddic::writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, string label, int labelIndex) {
-	if (!condition->isOperator()) {
-		
-		if(condition->condition() == TRUE_VALUE){
-			//No need to jump
-		} else if(condition->condition() == FALSE_VALUE){
-			writer.stream() << "jmp " << label << labelIndex << std::endl;
-		}
+    if (!condition->isOperator()) {
+
+        if (condition->condition() == TRUE_VALUE) {
+            //No need to jump
+        } else if (condition->condition() == FALSE_VALUE) {
+            writer.stream() << "jmp " << label << labelIndex << std::endl;
+        }
     } else {
-    	writeConditionOperands(writer, condition);
-		
-		writer.stream() << "cmpl %ebx, %eax" << std::endl;
+        writeConditionOperands(writer, condition);
 
-		switch (condition->condition()) {
-		    case GREATER_OPERATOR:
-		        writer.stream() << "jle " << label << labelIndex << std::endl;
+        writer.stream() << "cmpl %ebx, %eax" << std::endl;
 
-		        break;
-		    case GREATER_EQUALS_OPERATOR:
-		        writer.stream() << "jl " << label << labelIndex << std::endl;
+        switch (condition->condition()) {
+            case GREATER_OPERATOR:
+                writer.stream() << "jle " << label << labelIndex << std::endl;
 
-		        break;
-		    case LESS_OPERATOR:
-		        writer.stream() << "jge " << label << labelIndex << std::endl;
+                break;
+            case GREATER_EQUALS_OPERATOR:
+                writer.stream() << "jl " << label << labelIndex << std::endl;
 
-		        break;
-		    case LESS_EQUALS_OPERATOR:
-		        writer.stream() << "jg " << label << labelIndex << std::endl;
+                break;
+            case LESS_OPERATOR:
+                writer.stream() << "jge " << label << labelIndex << std::endl;
 
-		        break;
-		    case EQUALS_OPERATOR:
-		        writer.stream() << "jne " << label << labelIndex << std::endl;
+                break;
+            case LESS_EQUALS_OPERATOR:
+                writer.stream() << "jg " << label << labelIndex << std::endl;
 
-		        break;
-		    case NOT_EQUALS_OPERATOR:
-		        writer.stream() << "je " << label << labelIndex << std::endl;
+                break;
+            case EQUALS_OPERATOR:
+                writer.stream() << "jne " << label << labelIndex << std::endl;
 
-		        break;
-			default: 
-				throw CompilerException("The condition must be managed using not-operator");
-		}
-	}
+                break;
+            case NOT_EQUALS_OPERATOR:
+                writer.stream() << "je " << label << labelIndex << std::endl;
+
+                break;
+            default:
+                throw CompilerException("The condition must be managed using not-operator");
+        }
+    }
 }
 
 void If::write(AssemblyFileWriter& writer) {

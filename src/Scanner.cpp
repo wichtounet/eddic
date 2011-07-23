@@ -33,14 +33,14 @@ bool Scanner::next() {
     if (stream.eof()) {
         return false;
     }
-    
+
     if (m_current == '\n') {
         ++m_line;
         m_col = 1;
     } else {
         ++m_col;
     }
-    
+
     stream >> m_current;
 
     return true;

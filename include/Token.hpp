@@ -62,11 +62,11 @@ class Token {
         std::string value() const {
             return m_value;
         }
-        
+
         TokenType type() const {
             return m_type;
         }
-        
+
         int line() const {
             return m_line;
         }

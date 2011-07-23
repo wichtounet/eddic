@@ -35,31 +35,31 @@ int Compiler::compile(string file) {
         lexer.lex(file);
 
         Parser parser(lexer);
-        
+
         Program* program = parser.parse();
 
         StringPool* pool = new StringPool(program->context());
-        
+
         program->addFirst(new Header(program->context()));
         program->addLast(new Exit(program->context()));
         program->addLast(new Methods(program->context()));
         program->addLast(pool);
 
         //Semantical analysis
-    	program->checkVariables();
+        program->checkVariables();
         program->checkStrings(*pool);
 
         //Optimize the parse tree
         program->optimize();
 
-		//Compilation
+        //Compilation
         writer.open("output.asm");
         program->write(writer);
 
         Context::writeAll(writer);
 
         delete program;
-		
+
         execCommand("as --32 -o output.o output.asm");
 
         string ldCommand = "gcc -m32 -static -o ";
@@ -76,7 +76,7 @@ int Compiler::compile(string file) {
         code = 1;
     }
 
-	//Close input and output
+    //Close input and output
     lexer.close();
     writer.close();
 

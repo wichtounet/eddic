@@ -30,10 +30,10 @@ Variable* Context::find(const std::string& variable) {
     map<string, Variable*>::const_iterator it = variables.find(variable);
 
     if (it == variables.end()) {
-		if(m_parent != NULL){
-			return m_parent->find(variable);
-		} 
-		
+        if (m_parent != NULL) {
+            return m_parent->find(variable);
+        }
+
         return NULL;
     }
 
@@ -41,25 +41,25 @@ Variable* Context::find(const std::string& variable) {
 }
 
 bool Context::exists(const std::string& variable) const {
-    if(variables.find(variable) != variables.end()){
-		return true;
-	}
+    if (variables.find(variable) != variables.end()) {
+        return true;
+    }
 
-	if(m_parent != NULL){
-		return m_parent->exists(variable);
-	}
+    if (m_parent != NULL) {
+        return m_parent->exists(variable);
+    }
 
-	return false;
+    return false;
 }
 
 unsigned int Context::index(const std::string& variable) const {
     map<string, Variable*>::const_iterator it = variables.find(variable);
 
     if (it == variables.end()) {
-		if(m_parent != NULL){
-			return m_parent->index(variable);
-		} 
-		
+        if (m_parent != NULL) {
+            return m_parent->index(variable);
+        }
+
         return -1;
     }
 
@@ -91,8 +91,8 @@ void Context::write(AssemblyFileWriter& writer) {
     }
 }
 
-void Context::writeAll(AssemblyFileWriter& writer){
-    for(vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it){
+void Context::writeAll(AssemblyFileWriter& writer) {
+    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
         (*it)->write(writer);
     }
 }

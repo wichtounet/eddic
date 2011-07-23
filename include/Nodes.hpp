@@ -17,21 +17,21 @@
 namespace eddic {
 
 class Program : public ParseNode {
-	public:
-		Program(Context* context) : ParseNode(context) {}
+    public:
+        Program(Context* context) : ParseNode(context) {}
 };
 
 class Value : public ParseNode {
     protected:
         Type m_type;
 
-	public:
-		Value(Context* context) : ParseNode(context) {}
-		
+    public:
+        Value(Context* context) : ParseNode(context) {}
+
         Type type() const {
             return m_type;
         };
-		
+
         virtual bool isConstant();
         virtual std::string getStringValue();
         virtual int getIntValue();
@@ -39,7 +39,7 @@ class Value : public ParseNode {
 
 class Header : public ParseNode {
     public:
-		Header(Context* context) : ParseNode(context) {}
+        Header(Context* context) : ParseNode(context) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -47,14 +47,14 @@ class Header : public ParseNode {
 
 class Exit : public ParseNode {
     public:
-		Exit(Context* context) : ParseNode(context) {}
+        Exit(Context* context) : ParseNode(context) {}
 
         void write(AssemblyFileWriter& writer);
 };
 
 class Methods : public ParseNode {
     public:
-		Methods(Context* context) : ParseNode(context) {}
+        Methods(Context* context) : ParseNode(context) {}
 
         void write(AssemblyFileWriter& writer);
 };
@@ -65,7 +65,7 @@ class Declaration : public ParseNode {
         std::string m_variable;
         int m_index;
         Value* value;
-		
+
     public:
         Declaration(Context* context, Type type, const std::string& variable, Value* v) : ParseNode(context), m_type(type), m_variable(variable), value(v) {};
         ~Declaration() {

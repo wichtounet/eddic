@@ -18,11 +18,11 @@ using std::endl;
 
 using namespace eddic;
 
-void Exit::write(AssemblyFileWriter& writer){ 
+void Exit::write(AssemblyFileWriter& writer) {
     writer.stream() << endl;
     writer.stream() << "mov $1, %eax" << endl
-             << "mov $0, %ebx" << endl
-             << "int $0x80" << endl;
+                    << "mov $0, %ebx" << endl
+                    << "int $0x80" << endl;
 }
 
 static void writePrintString(std::ofstream& m_stream) {
@@ -97,17 +97,17 @@ static void writePrintInteger(std::ofstream& m_stream) {
              << "ret" << std::endl;
 }
 
-void Methods::write(AssemblyFileWriter& writer){
+void Methods::write(AssemblyFileWriter& writer) {
     writePrintString(writer.stream());
     writePrintInteger(writer.stream());
     writePrintLine(writer.stream());
 }
 
-void Header::write(AssemblyFileWriter& writer){
+void Header::write(AssemblyFileWriter& writer) {
     writer.stream() << ".text" << endl
-             << ".globl main" << endl
-             << endl
-             << "main:" << endl;
+                    << ".globl main" << endl
+                    << endl
+                    << "main:" << endl;
 }
 
 void Declaration::checkVariables() {

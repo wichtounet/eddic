@@ -24,19 +24,19 @@ class Lexer {
         Scanner scanner;
 
         Token current;
-        
+
         std::stack<Token> read;
         std::stack<Token> buffer;
 
         bool readNext();
     public:
         Lexer() : current(Token(NOTHING, -1, -1)) {};
- 
+
         void lex(std::string file);
         void close();
         bool next();
         void pushBack();
-        
+
         Token getCurrentToken() const;
 
         bool isWord() const;

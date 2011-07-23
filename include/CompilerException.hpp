@@ -21,7 +21,7 @@ class CompilerException: public std::exception {
     public:
         CompilerException(const std::string& message) : m_message(message) {};
         ~CompilerException() throw() {};
-        
+
         virtual const char* what() const throw();
 };
 

@@ -26,21 +26,21 @@ class ParseNode {
     private:
         std::list<ParseNode*> childs;
         std::vector<ParseNode*> trash;
-		
-		Context* m_context;
+
+        Context* m_context;
 
     protected:
         ParseNode* parent;
-	
+
     public:
-        ParseNode(Context* context) : m_context(context), parent(NULL){};		
+        ParseNode(Context* context) : m_context(context), parent(NULL) {};
         virtual ~ParseNode();
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
-		
+
         void addFirst(ParseNode* node);
         void addLast(ParseNode* node);
         void replace(ParseNode* old, ParseNode* node);
@@ -48,7 +48,9 @@ class ParseNode {
         NodeIterator begin();
         NodeIterator end();
 
-		Context* context(){ return m_context; }
+        Context* context() {
+            return m_context;
+        }
 };
 
 } //end of eddic

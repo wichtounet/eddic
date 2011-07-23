@@ -24,7 +24,7 @@ class Condition;
 class Parser {
     private:
         Lexer& lexer;
-		Context* currentContext;
+        Context* currentContext;
 
         ParseNode* parseInstruction();
         ParseNode* parseDeclaration();

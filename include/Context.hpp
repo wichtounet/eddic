@@ -40,13 +40,17 @@ class Context {
     private:
         static std::vector<Context*> contexts;
         static unsigned int currentVariable;
-        
+
         std::map<std::string, Variable*> variables;
-		Context* m_parent;				
+        Context* m_parent;
 
     public:
-        Context() : m_parent(NULL) { contexts.push_back(this); }
-		Context(Context* parent) : m_parent(parent) { contexts.push_back(this); }
+        Context() : m_parent(NULL) {
+            contexts.push_back(this);
+        }
+        Context(Context* parent) : m_parent(parent) {
+            contexts.push_back(this);
+        }
         ~Context();
 
         bool exists(const std::string& variable) const;
@@ -55,7 +59,9 @@ class Context {
         Variable* find(const std::string& variable);
         void write(AssemblyFileWriter& writer);
 
-		Context* parent(){ return m_parent; }
+        Context* parent() {
+            return m_parent;
+        }
 
         static void writeAll(AssemblyFileWriter& writer);
 };

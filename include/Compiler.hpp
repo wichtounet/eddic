@@ -19,7 +19,7 @@ class Compiler {
     private:
         Lexer lexer;
         AssemblyFileWriter writer;
-	
+
     public:
         int compile (std::string file);
 };

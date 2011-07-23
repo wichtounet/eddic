@@ -57,8 +57,8 @@ class Condition {
 void writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, std::string label, int labelIndex);
 
 class Else : public ParseNode {
-	public:
-		Else(Context* context) : ParseNode(context) {}
+    public:
+        Else(Context* context) : ParseNode(context) {}
 };
 
 class ElseIf : public ParseNode {
