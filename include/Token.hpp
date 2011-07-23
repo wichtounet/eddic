@@ -44,7 +44,8 @@ enum TokenType {
 
     //Branches
     IF,
-    ELSE
+    ELSE,
+    WHILE
 };
 
 class Token {

@@ -62,6 +62,7 @@ class Lexer {
         bool isLessOrEquals() const;
         bool isIf() const;
         bool isElse() const;
+        bool isWhile() const;
         bool isBooleanOperator() const;
         bool isBoolean() const;
         bool isTrue() const;
