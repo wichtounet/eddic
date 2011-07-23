@@ -16,7 +16,7 @@ using std::vector;
 using namespace eddic;
 
 ParseNode::~ParseNode() {
-    for (NodeIterator it = childs.begin(); it != childs.end(); ++it) {
+    for (NodeIterator it = begin(); it != end(); ++it) {
         delete *it;
     }
 
@@ -26,37 +26,25 @@ ParseNode::~ParseNode() {
 }
 
 void ParseNode::write(AssemblyFileWriter& writer) {
-    NodeIterator it = childs.begin();
-    NodeIterator end = childs.end();
-
-    for ( ; it != end; ++it) {
+    for (NodeIterator it = begin(); it != end(); ++it) {
         (*it)->write(writer);
     }
 }
 
 void ParseNode::checkVariables() {
-    NodeIterator it = childs.begin();
-    NodeIterator end = childs.end();
-
-    for ( ; it != end; ++it) {
+    for (NodeIterator it = begin(); it != end(); ++it) {
         (*it)->checkVariables();
     }
 }
 
 void ParseNode::checkStrings(StringPool& pool) {
-    NodeIterator it = childs.begin();
-    NodeIterator end = childs.end();
-
-    for ( ; it != end; ++it) {
+    for (NodeIterator it = begin(); it != end(); ++it) {
         (*it)->checkStrings(pool);
     }
 }
 
 void ParseNode::optimize() {
-    NodeIterator it = childs.begin();
-    NodeIterator end = childs.end();
-
-    for ( ; it != end; ++it) {
+    for (NodeIterator it = begin(); it != end(); ++it) {
         (*it)->optimize();
     }
 }
@@ -75,14 +63,13 @@ void ParseNode::addFirst(ParseNode* node) {
 
 void ParseNode::replace(ParseNode* old, ParseNode* node) {
     list<ParseNode*>::iterator it = childs.begin();
-    NodeIterator end = childs.end();
 
     trash.push_back(old);
     old->parent = NULL;
 
     node->parent = this;
 
-    for ( ; it != end; ++it) {
+    for ( ; it != end(); ++it) {
         if (*it == old) {
             *it = node;
 
