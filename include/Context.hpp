@@ -64,6 +64,7 @@ class Context {
         }
 
         static void writeAll(AssemblyFileWriter& writer);
+        static void cleanup();
 };
 
 } //end of eddic

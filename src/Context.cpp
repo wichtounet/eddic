@@ -96,3 +96,9 @@ void Context::writeAll(AssemblyFileWriter& writer) {
         (*it)->write(writer);
     }
 }
+
+void Context::cleanup(){
+    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
+        delete *it;
+    }
+}
