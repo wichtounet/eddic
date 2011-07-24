@@ -439,10 +439,17 @@ Value* Parser::parseValue() {
         }
 
         parts.erase(first, ++max);
+
+        delete left;
+        delete center;
+        delete right;
+
         parts.insert(max, new Resolved(value));
     }
 
     Value* value = (*parts.begin())->getValue();
+
+    delete *parts.begin();
 
     parts.clear();
 
