@@ -83,10 +83,7 @@ void Context::write(AssemblyFileWriter& writer) {
             writer.stream() << "VI" << it->second->index() << ":" << endl;
             writer.stream() << ".long 0" << endl;
         } else if (it->second->type() == STRING) {
-            writer.stream() << "VS" << it->second->index() << ":" << endl;
-            writer.stream() << ".long 0" << endl;
-            writer.stream() << "VS" << it->second->index() << "_l:" << endl;
-            writer.stream() << ".long 0" << endl;
+            writer.stream() << ".comm VS" << it->second->index() << ",8,4" << endl;
         }
     }
 }

@@ -202,7 +202,7 @@ void Declaration::write(AssemblyFileWriter& writer) {
             writer.stream() << "movl 4(%esp), %ebx" << endl;
             writer.stream() << "addl $8, %esp" << endl;
 
-            writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
+            writer.stream() << "movl %eax, VS" << m_index << "+4" << endl;
             writer.stream() << "movl %ebx, VS" << m_index << endl;
 
             break;
@@ -224,7 +224,7 @@ void Assignment::write(AssemblyFileWriter& writer) {
             writer.stream() << "movl 4(%esp), %ebx" << endl;
             writer.stream() << "addl $8, %esp" << endl;
 
-            writer.stream() << "movl %eax, VS" << m_index << "_l" << endl;
+            writer.stream() << "movl %eax, VS" << m_index << "+4" << endl;
             writer.stream() << "movl %ebx, VS" << m_index << endl;
 
             break;
@@ -246,10 +246,10 @@ void Swap::write(AssemblyFileWriter& writer) {
             writer.stream() << "movl %eax, VS" << m_rhs_index << endl;
             writer.stream() << "movl %ebx, VS" << m_lhs_index << endl;
 
-            writer.stream() << "movl VS" << m_lhs_index << "_l, %eax" << endl;
-            writer.stream() << "movl VS" << m_rhs_index << "_l, %ebx" << endl;
-            writer.stream() << "movl %eax, VS" << m_rhs_index << "_l" << endl;
-            writer.stream() << "movl %ebx, VS" << m_lhs_index << "_l" << endl;
+            writer.stream() << "movl VS" << m_lhs_index << "+4, %eax" << endl;
+            writer.stream() << "movl VS" << m_rhs_index << "+4, %ebx" << endl;
+            writer.stream() << "movl %eax, VS" << m_rhs_index << "+4" << endl;
+            writer.stream() << "movl %ebx, VS" << m_lhs_index << "+4" << endl;
 
             break;
     }
@@ -311,7 +311,7 @@ void VariableValue::write(AssemblyFileWriter& writer) {
             break;
         case STRING:
             writer.stream() << "pushl VS" << m_index << endl;
-            writer.stream() << "pushl VS" << m_index << "_l" << std::endl;
+            writer.stream() << "pushl VS" << m_index << "+4" << std::endl;
 
             break;
     }
