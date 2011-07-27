@@ -1,3 +1,6 @@
+string x = "ED" + "DI";
+Println(x);
+
 string a = "Variable a";
 Print("Should print 'Variable a' : ");
 Println(a);
