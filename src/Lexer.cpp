@@ -90,6 +90,8 @@ bool Lexer::readNext() {
             current = Token(ELSE, line, col);
         } else if (value == "while") {
             current = Token(WHILE, line, col);
+        } else if (value == "for") {
+            current = Token(FOR, line, col);
         } else {
             current = Token(value, WORD, line, col);
         }
@@ -296,6 +298,10 @@ bool Lexer::isElse() const {
 
 bool Lexer::isWhile() const {
     return current.type() == WHILE;
+}
+
+bool Lexer::isFor() const {
+    return current.type() == FOR;
 }
 
 bool Lexer::isBooleanOperator() const {
