@@ -256,15 +256,15 @@ void For::write(AssemblyFileWriter& writer){
 }
 
 void For::checkVariables(){
+    if(m_start){
+        m_start->checkVariables();
+    }
+    
     if(m_condition){
         m_condition->lhs()->checkVariables();
         m_condition->rhs()->checkVariables();
     }
 
-    if(m_start){
-        m_start->checkVariables();
-    }
-    
     if(m_iter){
         m_iter->checkVariables();
     }
@@ -273,15 +273,15 @@ void For::checkVariables(){
 }
 
 void For::checkStrings(StringPool& pool){
+    if(m_start){
+        m_start->checkStrings(pool);
+    }
+    
     if(m_condition){
         m_condition->lhs()->checkStrings(pool);
         m_condition->rhs()->checkStrings(pool);
     }
 
-    if(m_start){
-        m_start->checkStrings(pool);
-    }
-    
     if(m_iter){
         m_iter->checkStrings(pool);
     }

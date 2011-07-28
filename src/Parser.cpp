@@ -60,6 +60,8 @@ ParseNode* Parser::parseInstruction() {
         return parseIf();
     } else if (lexer.isWhile()) {
         return parseWhile();
+    } else if (lexer.isFor()) {
+        return parseFor();
     } else if (isType(lexer)) {
         return parseDeclaration();
     } else if (lexer.isWord()) {
@@ -67,6 +69,14 @@ ParseNode* Parser::parseInstruction() {
     }
 
     throw TokenException("Not an instruction", lexer.getCurrentToken());
+}
+
+ParseNode* Parser::parseRepeatableInstruction() {
+    if (lexer.isWord()) {
+        return parseCallOrAssignment();
+    }
+
+    throw TokenException("Waiting for a repeatable instruction", lexer.getCurrentToken());
 }
 
 ParseNode* Parser::parseCallOrAssignment() {
@@ -269,6 +279,51 @@ ParseNode* Parser::parseWhile() {
     currentContext = new Context(currentContext);
 
     While* block = new While(currentContext, condition);
+
+    lexer.next();
+
+    while (!lexer.isRightBrace()) {
+        block->addLast(parseInstruction());
+
+        lexer.next();
+    }
+
+    currentContext = currentContext->parent();
+
+    if (!lexer.isRightBrace()) {
+        throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
+    }
+
+    return block;
+}
+
+ParseNode* Parser::parseFor() {
+    assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
+
+    currentContext = new Context(currentContext);
+
+    lexer.next();
+
+    //TODO Test for type
+
+    ParseNode* start = parseDeclaration();
+
+    //TODO Improve the semicolon management
+    //assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
+
+    Condition* condition = parseCondition();
+
+    assertNextIsStop(lexer, "The condition of the for loop must be closed by a semicolon");
+
+    lexer.next();
+
+    ParseNode* iter = parseRepeatableInstruction();
+    
+    assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
+    
+    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+
+    For* block = new For(currentContext, start, condition, iter);
 
     lexer.next();
 

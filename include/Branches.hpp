@@ -116,7 +116,7 @@ class For : public ParseNode {
         Condition* m_condition;
 
     public:
-        For(Context* context, ParseNode* start, ParseNode* iter, Condition* condition) : ParseNode(context), m_start(start), m_iter(iter), m_condition(condition) {}
+        For(Context* context, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context), m_start(start), m_iter(iter), m_condition(condition) {}
 
         virtual ~For();
 

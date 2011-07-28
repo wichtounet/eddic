@@ -27,6 +27,7 @@ class Parser {
         Context* currentContext;
 
         ParseNode* parseInstruction();
+        ParseNode* parseRepeatableInstruction();
         ParseNode* parseDeclaration();
         ParseNode* parseCallOrAssignment();
         ParseNode* parseCall(const Token& call);
@@ -34,6 +35,7 @@ class Parser {
         ParseNode* parseSwap(const Token& lhs);
         ParseNode* parseIf();
         ParseNode* parseWhile();
+        ParseNode* parseFor();
         Condition* parseCondition();
         ElseIf* parseElseIf();
         Else* parseElse();

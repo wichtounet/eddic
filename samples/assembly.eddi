@@ -83,6 +83,11 @@ if(55 < 33){
 int i = 0;
 while(i < 5){
     i = i + 1;
-    Print("Loop");
+    Print("While");
     Println(i);
+}
+
+for(int zzz = 0; zzz < 5; zzz = zzz + 1;){
+    Print("For");
+    Println(zzz);
 }
