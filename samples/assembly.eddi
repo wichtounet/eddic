@@ -87,7 +87,7 @@ while(i < 5){
     Println(i);
 }
 
-for(int zzz = 0; zzz < 5; zzz = zzz + 1;){
+for(int zzz = 0; zzz < 5; zzz = zzz + 1){
     Print("For");
     Println(zzz);
 }

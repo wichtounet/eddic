@@ -56,6 +56,8 @@ Program* Parser::parse() {
 }
 
 ParseNode* Parser::parseInstruction() {
+    ParseNode* instruction = NULL;
+    
     if (lexer.isIf()) {
         return parseIf();
     } else if (lexer.isWhile()) {
@@ -63,12 +65,18 @@ ParseNode* Parser::parseInstruction() {
     } else if (lexer.isFor()) {
         return parseFor();
     } else if (isType(lexer)) {
-        return parseDeclaration();
+        instruction = parseDeclaration();
     } else if (lexer.isWord()) {
-        return parseCallOrAssignment();
+        instruction = parseCallOrAssignment();
     }
 
-    throw TokenException("Not an instruction", lexer.getCurrentToken());
+    if(instruction == NULL){
+        throw TokenException("Not an instruction", lexer.getCurrentToken());
+    }
+    
+    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
+    
+    return instruction;
 }
 
 ParseNode* Parser::parseRepeatableInstruction() {
@@ -107,7 +115,6 @@ ParseNode* Parser::parseCall(const Token& callToken) {
     Value* value = parseValue();
 
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
-    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
     if (call == "Print") {
         return new Print(currentContext, value);
@@ -138,15 +145,11 @@ ParseNode* Parser::parseDeclaration() {
 
     Value* value = parseValue();
 
-    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
-
     return new Declaration(currentContext, type, variable, value);
 }
 
 ParseNode* Parser::parseAssignment(const Token& variableToken) {
     Value* value = parseValue();
-
-    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
     return new Assignment(currentContext, variableToken.value(), value);
 }
@@ -157,8 +160,6 @@ ParseNode* Parser::parseSwap(const Token& lhs) {
     }
 
     string rhs = lexer.getCurrentToken().value();
-
-    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
 
     return new Swap(currentContext, lhs.value(), rhs);
 }
@@ -308,8 +309,7 @@ ParseNode* Parser::parseFor() {
 
     ParseNode* start = parseDeclaration();
 
-    //TODO Improve the semicolon management
-    //assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
+    assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
 
     Condition* condition = parseCondition();
 
