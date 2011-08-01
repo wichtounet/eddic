@@ -59,25 +59,35 @@ class Methods : public ParseNode {
         void write(AssemblyFileWriter& writer);
 };
 
-class Declaration : public ParseNode {
-    private:
-        Type m_type;
+class VariableOperation : public ParseNode {
+    protected:
         std::string m_variable;
         int m_index;
         Value* value;
-
+        Type m_type;
+   
     public:
-        Declaration(Context* context, Type type, const std::string& variable, Value* v) : ParseNode(context), m_type(type), m_variable(variable), value(v) {};
-        ~Declaration() {
+        VariableOperation(Context* context, const std::string& variable, Value* v) : ParseNode(context), m_variable(variable), value(v) {};
+        ~VariableOperation() {
             delete value;
         }
-
+        
         void checkStrings(StringPool& pool);
-        void checkVariables();
         void write(AssemblyFileWriter& writer);
-        int index() const {
-            return m_index;
-        }
+};
+
+class Declaration : public VariableOperation {
+    public:
+        Declaration(Context* context, Type type, const std::string& variable, Value* v) : VariableOperation(context, variable, v) { m_type = type;  };
+
+        void checkVariables();
+};
+
+class Assignment : public VariableOperation {
+    public:
+        Assignment(Context* context, const std::string& variable, Value* v) : VariableOperation(context, variable, v) {};
+
+        void checkVariables();
 };
 
 class Print : public ParseNode {
@@ -99,23 +109,6 @@ class Print : public ParseNode {
 class Println : public Print {
     public:
         Println(Context* context, Value*v) : Print(context, v) {}
-        void write(AssemblyFileWriter& writer);
-};
-
-class Assignment : public ParseNode {
-    private:
-        std::string m_variable;
-        int m_index;
-        Value* value;
-
-    public:
-        Assignment(Context* context, const std::string& variable, Value* v) : ParseNode(context), m_variable(variable), value(v) {};
-        ~Assignment() {
-            delete value;
-        }
-
-        void checkStrings(StringPool& pool);
-        void checkVariables();
         void write(AssemblyFileWriter& writer);
 };
 

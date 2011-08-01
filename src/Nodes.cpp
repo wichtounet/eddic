@@ -182,7 +182,7 @@ void Declaration::checkVariables() {
     }
 }
 
-void Declaration::checkStrings(StringPool& pool) {
+void VariableOperation::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
@@ -194,6 +194,7 @@ void Assignment::checkVariables() {
     Variable* var = context()->find(m_variable);
 
     m_index = var->index();
+    m_type = var->type();
 
     value->checkVariables();
 
@@ -224,10 +225,6 @@ void Swap::checkVariables() {
     m_type = lhs_var->type();
 }
 
-void Assignment::checkStrings(StringPool& pool) {
-    value->checkStrings(pool);
-}
-
 void VariableValue::checkVariables() {
     if (!context()->exists(m_variable)) {
         throw CompilerException("Variable has not been declared");
@@ -243,7 +240,7 @@ void Litteral::checkStrings(StringPool& pool) {
     m_label = pool.label(m_litteral);
 }
 
-void Declaration::write(AssemblyFileWriter& writer) {
+void VariableOperation::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (m_type) {
@@ -251,28 +248,6 @@ void Declaration::write(AssemblyFileWriter& writer) {
             writer.stream() << "movl (%esp), %eax" << endl;
             writer.stream() << "movl %eax, VI" << m_index << endl;
             writer.stream() << "addl $4, %esp" << endl;
-
-            break;
-        case STRING:
-            writer.stream() << "movl (%esp), %eax" << endl;
-            writer.stream() << "movl 4(%esp), %ebx" << endl;
-            writer.stream() << "addl $8, %esp" << endl;
-
-            writer.stream() << "movl %eax, VS" << m_index << "+4" << endl;
-            writer.stream() << "movl %ebx, VS" << m_index << endl;
-
-            break;
-    }
-}
-
-void Assignment::write(AssemblyFileWriter& writer) {
-    value->write(writer);
-
-    switch (value->type()) {
-        case INT:
-            writer.stream() << "movl (%esp), %eax" << std::endl;
-            writer.stream() << "movl %eax, VI" << m_index << "" << std::endl;
-            writer.stream() << "addl $4, %esp" << std::endl;
 
             break;
         case STRING:
@@ -329,20 +304,7 @@ void Print::write(AssemblyFileWriter& writer) {
 }
 
 void Println::write(AssemblyFileWriter& writer) {
-    value->write(writer);
-
-    switch (value->type()) {
-        case INT:
-            writer.stream() << "call print_integer" << endl;
-            writer.stream() << "addl $4, %esp" << endl;
-
-            break;
-        case STRING:
-            writer.stream() << "call print_string" << endl;
-            writer.stream() << "addl $8, %esp" << endl;
-
-            break;
-    }
+    Print::write(writer);
 
     writer.stream() << "call print_line" << endl;
 }
