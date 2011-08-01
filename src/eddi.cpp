@@ -44,6 +44,8 @@ int main(int argc, const char* argv[]) {
             Options::set(OPTIMIZE_INTEGERS);
         } else if (arg == "--optimize-strings") {
             Options::set(OPTIMIZE_STRINGS);
+        } else if (arg == "-S") {
+            Options::set(ASSEMBLY_ONLY);
         } else if (arg == "--help" || arg == "-h") {
             printUsage();
 
@@ -86,7 +88,8 @@ void printUsage() {
 
     cout << "Options:" << endl;
     cout << "  -h, --help                 Display this help" << endl;
-    cout << "  -o file [default: a.out]   Set the file name of the executable" << endl;
+    cout << "  -o file                    Set the file name of the executable" << endl;
+    cout << "  -S                         Generate only the assembly file" << endl;
     cout << "  --optimize-all             Enable all optimizations" << endl;
     cout << "  --optimize-strings         Enable the optimizations on strings" << endl;
     cout << "  --optimize-integers        Enable the optimizations on integers" << endl;

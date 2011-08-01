@@ -62,17 +62,19 @@ int Compiler::compile(string file) {
 
         delete program;
 
-        execCommand("as --32 -o output.o output.asm");
+        if(!Options::isSet(ASSEMBLY_ONLY)){
+            execCommand("as --32 -o output.o output.asm");
 
-        string ldCommand = "gcc -m32 -static -o ";
-        ldCommand += output;
-        ldCommand += " output.o -lc";
+            string ldCommand = "gcc -m32 -static -o ";
+            ldCommand += output;
+            ldCommand += " output.o -lc";
 
-        execCommand(ldCommand);
+            execCommand(ldCommand);
 
-        //Remove temporary files
-        remove("output.asm");
-        remove("output.o");
+            //Remove temporary files
+            remove("output.asm");
+            remove("output.o");
+        }
     } catch (const CompilerException& e) {
         cout << e.what() << endl;
         code = 1;

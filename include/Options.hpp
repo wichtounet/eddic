@@ -15,7 +15,8 @@ namespace eddic {
 
 enum BooleanOption {
     OPTIMIZE_INTEGERS,
-    OPTIMIZE_STRINGS
+    OPTIMIZE_STRINGS,
+    ASSEMBLY_ONLY
 };
 
 enum ValueOption {
