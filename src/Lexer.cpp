@@ -149,7 +149,19 @@ bool Lexer::readNext() {
             current = Token(MULTIPLICATION, line, col);
             return true;
         case '/':
-            current = Token(DIVISION, line, col);
+            scanner.next();
+
+            //TODO Find a better way to handle comments
+            if(scanner.current() == '/'){
+                while(scanner.next() && scanner.current() != '\n'){}
+
+                return next();
+            } else {
+                scanner.pushBack();
+                
+                current = Token(DIVISION, line, col);
+            }
+            
             return true;
         case '%':
             current = Token(MODULO, line, col);
