@@ -21,7 +21,7 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
 }
 
 void Function::write(AssemblyFileWriter& writer){
-    writer.stream() << m_name << ":" << endl;
+    writer.stream() << endl << m_name << ":" << endl;
     
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
