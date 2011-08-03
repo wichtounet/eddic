@@ -36,6 +36,16 @@ class Function : public ParseNode {
         }
 };
 
+class FunctionCall : public ParseNode {
+    private:
+        std::string m_function;
+
+    public:
+        FunctionCall(Context* context, const std::string& function) : ParseNode(context), m_function(function) {}
+
+        void write(AssemblyFileWriter& writer);
+};
+
 } //end of eddic
 
 #endif

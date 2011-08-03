@@ -31,3 +31,7 @@ void Function::write(AssemblyFileWriter& writer){
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;
 }
+
+void FunctionCall::write(AssemblyFileWriter& writer){
+    writer.stream() << "call " << m_function << endl;
+}

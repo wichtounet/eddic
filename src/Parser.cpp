@@ -155,7 +155,11 @@ ParseNode* Parser::parseCall(const Token& callToken) {
     string call = callToken.value();
 
     if (call != "Print" && call != "Println") {
-        throw TokenException("The call \"" + call + "\" does not exist", callToken);
+        FunctionCall* functionCall = new FunctionCall(currentContext, call);
+
+        assertNextIsRightParenth(lexer, "The function call must be closed with a right parenth");
+        
+        return functionCall;
     }
 
     Value* value = parseValue();

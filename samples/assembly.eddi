@@ -93,5 +93,13 @@ void main(){
         Print("For");
         Println(zzz);
     }
+    
+    for(int zzz = 0; zzz < 5; zzz = zzz + 1){
+        test();
+        test();
+    }
 }
 
+void test(){
+    Println("Hello from test");
+}
