@@ -68,7 +68,6 @@ class Lexer {
         bool isBoolean() const;
         bool isTrue() const;
         bool isFalse() const;
-        bool isVoid() const;
 };
 
 } //end of eddic

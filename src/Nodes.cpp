@@ -10,19 +10,20 @@
 #include "Options.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+#include "Functions.hpp"
 
 #include <cassert>
 
 using std::string;
 using std::endl;
+using std::map;
 
 using namespace eddic;
 
-void Exit::write(AssemblyFileWriter& writer) {
-    writer.stream() << endl;
-    writer.stream() << "mov $1, %eax" << endl
-                    << "mov $0, %ebx" << endl
-                    << "int $0x80" << endl;
+void Program::addFunction(Function* function){
+    functions[function->name()] = function;
+
+    addLast(function);
 }
 
 static void writePrintString(std::ofstream& m_stream) {
@@ -157,13 +158,6 @@ void Methods::write(AssemblyFileWriter& writer) {
     writePrintInteger(writer.stream());
     writePrintLine(writer.stream());
 	writeConcat(writer.stream());
-}
-
-void Header::write(AssemblyFileWriter& writer) {
-    writer.stream() << ".text" << endl
-                    << ".globl main" << endl
-                    << endl
-                    << "main:" << endl;
 }
 
 void Declaration::checkVariables() {

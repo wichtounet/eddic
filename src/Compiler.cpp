@@ -14,6 +14,7 @@
 #include "Compiler.hpp"
 #include "Nodes.hpp"
 #include "Parser.hpp"
+#include "Functions.hpp"
 
 using std::string;
 using std::cout;
@@ -40,8 +41,7 @@ int Compiler::compile(string file) {
 
         StringPool* pool = new StringPool(program->context());
 
-        program->addFirst(new Header(program->context()));
-        program->addLast(new Exit(program->context()));
+        program->addFirst(new MainDeclaration(program->context()));
         program->addLast(new Methods(program->context()));
         program->addLast(pool);
 

@@ -15,6 +15,7 @@ namespace eddic {
 
 class Lexer;
 class Program;
+class Function;
 class ParseNode;
 class ElseIf;
 class Else;
@@ -26,6 +27,7 @@ class Parser {
         Lexer& lexer;
         Context* currentContext;
 
+        Function* parseFunction();
         ParseNode* parseInstruction();
         ParseNode* parseRepeatableInstruction();
         ParseNode* parseDeclaration();

@@ -92,8 +92,6 @@ bool Lexer::readNext() {
             current = Token(WHILE, line, col);
         } else if (value == "for") {
             current = Token(FOR, line, col);
-        } else if (value == "void") {
-            current = Token(VOID, line, col);
         } else {
             current = Token(value, WORD, line, col);
         }
@@ -320,8 +318,4 @@ bool Lexer::isTrue() const {
 
 bool Lexer::isFalse() const {
     return current.type() == FALSE_TYPE;
-}
-
-bool Lexer::isVoid() const {
-    return current.type() == VOID;
 }

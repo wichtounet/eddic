@@ -1,93 +1,97 @@
-string x = "ED" + "DI";
-Println(x);
 
-string a = "Variable a";
-Print("Should print 'Variable a' : ");
-Println(a);
+void main(){
+    string x = "ED" + "DI";
+    Println(x);
 
-a = "New variable a";
-Print("Should print 'New variable a' : ");
-Println (a);
+    string a = "Variable a";
+    Print("Should print 'Variable a' : ");
+    Println(a);
 
-string b = "Variable b";
-Print("Should print 'Variable b' : ");
-Println(b);
+    a = "New variable a";
+    Print("Should print 'New variable a' : ");
+    Println (a);
 
-b = a;
-Print("Should print 'New variable a' : ");
-Println(b);
+    string b = "Variable b";
+    Print("Should print 'Variable b' : ");
+    Println(b);
 
-string e = "Variable e";
-string f = "Variable f";
+    b = a;
+    Print("Should print 'New variable a' : ");
+    Println(b);
 
-f <=> e;
+    string e = "Variable e";
+    string f = "Variable f";
 
-Print("Should print 'Variable e' : ");
-Println(f);
-Print("Should print 'Variable f' : ");
-Println(e);
+    f <=> e;
 
-int c = 1111;
-Println(c);
+    Print("Should print 'Variable e' : ");
+    Println(f);
+    Print("Should print 'Variable f' : ");
+    Println(e);
 
-c = 2222;
-Println(c);
+    int c = 1111;
+    Println(c);
 
-int d = 3333;
-Println(d);
+    c = 2222;
+    Println(c);
 
-d = c;
-Println(d);
+    int d = 3333;
+    Println(d);
 
-Print("666 + 333 = ");
-Println(666 + 333);
+    d = c;
+    Println(d);
 
-Print("10 * 33 = ");
-Println(330);
+    Print("666 + 333 = ");
+    Println(666 + 333);
 
-Print("122 / 2 = ");
-Println(122 / 2);
+    Print("10 * 33 = ");
+    Println(330);
 
-Print("7 % 5 = ");
-Println(7 % 5);
+    Print("122 / 2 = ");
+    Println(122 / 2);
 
-Print("444 - 333 = ");
-Println(444 - 333);
+    Print("7 % 5 = ");
+    Println(7 % 5);
 
-Print("((444 - 333) * (2)) = ");
-Println(((444 - 333) * (2)));
+    Print("444 - 333 = ");
+    Println(444 - 333);
 
-if(4 > 3){
-    string xa = "Cool";
-	Println(xa);
-} else {
-    string xa = "Super pas cool";
-	Println(xa);
+    Print("((444 - 333) * (2)) = ");
+    Println(((444 - 333) * (2)));
+
+    if(4 > 3){
+        string xa = "Cool";
+        Println(xa);
+    } else {
+        string xa = "Super pas cool";
+        Println(xa);
+    }
+
+    if(3 == 3){
+        string xa = "Cool";
+        Println(xa);
+    } else {
+        Println("Pas cool");
+    }
+
+    if(55 < 33){
+        Println("Pas cool");
+    } else if(33 <= 11){
+        Println("Pas cool");
+    } else {
+        Println("Cool");
+    }
+
+    int i = 0;
+    while(i < 5){
+        i = i + 1;
+        Print("While");
+        Println(i);
+    }
+
+    for(int zzz = 0; zzz < 5; zzz = zzz + 1){
+        Print("For");
+        Println(zzz);
+    }
 }
 
-if(3 == 3){
-    string xa = "Cool";
-	Println(xa);
-} else {
-	Println("Pas cool");
-}
-
-if(55 < 33){
-	Println("Pas cool");
-} else if(33 <= 11){
-	Println("Pas cool");
-} else {
-	Println("Cool");
-}
-
-int i = 0;
-while(i < 5){
-    i = i + 1;
-    Print("While");
-    Println(i);
-}
-
-for(int zzz = 0; zzz < 5; zzz = zzz + 1){
-    Print("For");
-    Println(zzz);
-}

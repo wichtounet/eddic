@@ -46,10 +46,7 @@ enum TokenType {
     IF,
     ELSE,
     WHILE,
-    FOR,
-    
-    //Functions
-    VOID
+    FOR
 };
 
 class Token {

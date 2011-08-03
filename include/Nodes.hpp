@@ -9,6 +9,7 @@
 #define NODES_H
 
 #include <string>
+#include <map>
 
 #include "Types.hpp"
 
@@ -16,9 +17,16 @@
 
 namespace eddic {
 
+class Function;
+
 class Program : public ParseNode {
+    private:
+        std::map<std::string, Function*> functions;
+
     public:
         Program(Context* context) : ParseNode(context) {}
+
+        void addFunction(Function* function);
 };
 
 class Value : public ParseNode {
@@ -35,21 +43,6 @@ class Value : public ParseNode {
         virtual bool isConstant();
         virtual std::string getStringValue();
         virtual int getIntValue();
-};
-
-class Header : public ParseNode {
-    public:
-        Header(Context* context) : ParseNode(context) {}
-
-        void write(AssemblyFileWriter& writer);
-
-};
-
-class Exit : public ParseNode {
-    public:
-        Exit(Context* context) : ParseNode(context) {}
-
-        void write(AssemblyFileWriter& writer);
 };
 
 class Methods : public ParseNode {

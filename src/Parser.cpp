@@ -18,6 +18,7 @@
 #include "Lexer.hpp"
 #include "Branches.hpp"
 #include "Loops.hpp"
+#include "Functions.hpp"
 
 using std::string;
 using std::ios_base;
@@ -49,10 +50,55 @@ Program* Parser::parse() {
     Program* program = new Program(currentContext);
 
     while (lexer.next()) {
-        program->addLast(parseInstruction());
+        program->addFunction(parseFunction());
     }
 
     return program;
+}
+
+Function* Parser::parseFunction() {
+    if(!lexer.isWord()){
+        throw TokenException("Not a function", lexer.getCurrentToken());
+    }
+
+    string returnType = lexer.getCurrentToken().value();
+
+    if(returnType != "void"){
+        throw TokenException("Invalid return type", lexer.getCurrentToken());
+    }
+
+    lexer.next();
+
+    if(!lexer.isWord()){
+        throw TokenException("Expecting a function name", lexer.getCurrentToken());
+    }
+
+    string functionName = lexer.getCurrentToken().value();
+
+    currentContext = new Context(currentContext);
+
+    Function* function = new Function(currentContext, functionName);
+
+    assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
+    assertNextIsRightParenth(lexer, "Waiting for a right parenth");
+
+    assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
+
+    lexer.next();
+
+    while (!lexer.isRightBrace()) {
+        function->addLast(parseInstruction());
+
+        lexer.next();
+    }
+
+    currentContext = currentContext->parent();
+
+    if (!lexer.isRightBrace()) {
+        throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
+    }
+
+    return function;
 }
 
 ParseNode* Parser::parseInstruction() {
