@@ -5,48 +5,41 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+#include <functional>
+
 #include "ParseNode.hpp"
 #include "Context.hpp"
 #include "StringPool.hpp"
 #include "AssemblyFileWriter.hpp"
+#include "Utils.hpp"
 
 using std::list;
 using std::vector;
+using std::mem_fun;
+using std::bind2nd;
 
 using namespace eddic;
 
 ParseNode::~ParseNode() {
-    for (NodeIterator it = begin(); it != end(); ++it) {
-        delete *it;
-    }
-
-    for (TrashIterator it = trash.begin(); it != trash.end(); ++it) {
-        delete *it;
-    }
+    for_each(begin(), end(), deleter());
+    for_each(trash.begin(), trash.end(), deleter());
 }
 
 void ParseNode::write(AssemblyFileWriter& writer) {
-    for (NodeIterator it = begin(); it != end(); ++it) {
-        (*it)->write(writer);
-    }
+    for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::write), writer));
 }
 
 void ParseNode::checkVariables() {
-    for (NodeIterator it = begin(); it != end(); ++it) {
-        (*it)->checkVariables();
-    }
+    for_each(begin(), end(), mem_fun(&ParseNode::checkVariables));
 }
 
 void ParseNode::checkStrings(StringPool& pool) {
-    for (NodeIterator it = begin(); it != end(); ++it) {
-        (*it)->checkStrings(pool);
-    }
+    for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::checkStrings), pool));
 }
 
 void ParseNode::optimize() {
-    for (NodeIterator it = begin(); it != end(); ++it) {
-        (*it)->optimize();
-    }
+    for_each(begin(), end(), mem_fun(&ParseNode::optimize));
 }
 
 void ParseNode::addLast(ParseNode* node) {
@@ -62,19 +55,14 @@ void ParseNode::addFirst(ParseNode* node) {
 }
 
 void ParseNode::replace(ParseNode* old, ParseNode* node) {
-    list<ParseNode*>::iterator it = childs.begin();
-
     trash.push_back(old);
     old->parent = NULL;
 
     node->parent = this;
 
-    for ( ; it != end(); ++it) {
-        if (*it == old) {
-            *it = node;
-
-            return;
-        }
+    list<ParseNode*>::iterator it = find(childs.begin(), childs.end(), old);
+    if(it != childs.end()){
+        *it = node;
     }
 }
 
