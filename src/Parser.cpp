@@ -397,42 +397,25 @@ enum Operator {
 };
 
 class Part {
-    public:
-        virtual bool isResolved() = 0;
-        virtual Operator getOperator() {
-            return ERROR;
-        }
-        virtual Value* getValue() {
-            return NULL;
-        }
-};
-
-class Resolved : public Part {
-    public:
-        explicit Resolved(Value* v) : value(v) {}
-        bool isResolved() {
-            return true;
-        }
-        Value* getValue() {
-            return value;
-        }
-
     private:
         Value* value;
-};
+        Operator op;
 
-class Unresolved : public Part {
     public:
-        explicit Unresolved(Operator o) : op(o) {}
-        bool isResolved() {
-            return false;
+        explicit Part(Value* v) : value(v), op(ERROR) {}
+        explicit Part(Operator o) : value(NULL), op(o) {}
+        
+        bool isResolved(){
+            return value != NULL;
         }
+
         Operator getOperator() {
             return op;
         }
-
-    private:
-        Operator op;
+        
+        Value* getValue() {
+            return value;
+        }
 };
 
 int priority(Operator op) {
@@ -480,22 +463,22 @@ Value* Parser::parseValue() {
             throw TokenException("Invalid value", lexer.getCurrentToken());
         }
 
-        parts.push_back(new Resolved(node));
+        parts.push_back(new Part(node));
 
         if (!lexer.next()) {
             break;
         }
 
         if (lexer.isAddition()) {
-            parts.push_back(new Unresolved(ADD));
+            parts.push_back(new Part(ADD));
         } else if (lexer.isSubtraction()) {
-            parts.push_back(new Unresolved(SUB));
+            parts.push_back(new Part(SUB));
         } else if (lexer.isMultiplication()) {
-            parts.push_back(new Unresolved(MUL));
+            parts.push_back(new Part(MUL));
         } else if (lexer.isDivision()) {
-            parts.push_back(new Unresolved(DIV));
+            parts.push_back(new Part(DIV));
         } else if (lexer.isModulo()) {
-            parts.push_back(new Unresolved(MOD));
+            parts.push_back(new Part(MOD));
         } else {
             lexer.pushBack();
             break;
@@ -549,7 +532,7 @@ Value* Parser::parseValue() {
         delete center;
         delete right;
 
-        parts.insert(max, new Resolved(value));
+        parts.insert(max, new Part(value));
     }
 
     Value* value = (*parts.begin())->getValue();
