@@ -22,7 +22,7 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
 
 void FunctionCall::checkFunctions(Program& program){
     if(!program.exists(m_function)){
-        throw CompilerException("The function does not exists");
+        throw CompilerException("The function \"" + m_function + "\"does not exists");
     }
 }
 
