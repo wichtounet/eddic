@@ -102,6 +102,19 @@ class Context {
         static void cleanup();
 };
 
+class FunctionContext : public Context {
+
+};
+
+
+class GlobalContext : public Context {
+    
+};
+
+class BlockContext : public Context {
+    
+};
+
 } //end of eddic
 
 #endif
