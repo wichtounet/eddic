@@ -104,6 +104,10 @@ void main(){
 
 //Test function
 void test(){
+    string x = "test depuis method";
+
+    Println(x);
+
     Println("Hello from test");
 }
 
