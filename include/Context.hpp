@@ -18,11 +18,46 @@
 
 namespace eddic {
 
+enum PositionType {
+    STACK, 
+    GLOBAL
+};
+
+class Position {
+    private:
+        const PositionType m_type;
+        const int m_offset;
+        const std::string m_name;
+
+    public:
+        Position() : m_type(STACK), m_offset(0), m_name("") {} //TODO Delete that later, just here for compilation
+        Position(PositionType type, int offset) : m_type(type), m_offset(offset), m_name("") {}
+        Position(PositionType type, std::string name) : m_type(type), m_offset(0), m_name(name) {}
+
+        bool isStack(){
+            return m_type == STACK;
+        }
+
+        bool isGlobal(){
+            return m_type == GLOBAL;
+        }
+
+        int offset(){
+            return m_offset;
+        }
+
+        std::string name(){
+            return m_name;
+        }
+};
+
 class Variable {
     private:
         const std::string m_name;
         const Type m_type;
         const int m_index;
+        Position position;
+
     public:
         Variable(const std::string& name, Type type, int index) : m_name(name), m_type(type), m_index(index) {}
         std::string name() const  {
