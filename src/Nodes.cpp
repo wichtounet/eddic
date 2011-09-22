@@ -26,6 +26,10 @@ void Program::addFunction(Function* function){
     addLast(function);
 }
 
+bool Program::exists(string function){
+    return functions.find(function) != functions.end();
+}
+
 static void writePrintString(std::ofstream& m_stream) {
     m_stream << std::endl;
     m_stream << "print_string:" << std::endl;

@@ -48,6 +48,7 @@ int Compiler::compile(string file) {
         //Semantical analysis
         program->checkVariables();
         program->checkStrings(*pool);
+        program->checkFunctions(*program);
 
         //Optimize the parse tree
         program->optimize();

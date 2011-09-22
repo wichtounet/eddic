@@ -30,6 +30,10 @@ void ParseNode::write(AssemblyFileWriter& writer) {
     for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::write), writer));
 }
 
+void ParseNode::checkFunctions(Program& program){
+    for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::checkFunctions), program));
+}
+
 void ParseNode::checkVariables() {
     for_each(begin(), end(), mem_fun(&ParseNode::checkVariables));
 }

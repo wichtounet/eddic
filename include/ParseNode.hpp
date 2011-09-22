@@ -14,6 +14,7 @@
 namespace eddic {
 
 class ParseNode;
+class Program;
 
 typedef std::list<ParseNode*>::const_iterator NodeIterator;
 typedef std::vector<ParseNode*>::const_iterator TrashIterator;
@@ -37,6 +38,7 @@ class ParseNode {
         virtual ~ParseNode();
 
         virtual void write(AssemblyFileWriter& writer);
+        virtual void checkFunctions(Program& program);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();

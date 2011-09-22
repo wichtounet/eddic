@@ -11,6 +11,8 @@
 #include <string>
 #include <map>
 
+#include <unordered_map>
+
 #include "Types.hpp"
 
 #include "ParseNode.hpp"
@@ -21,12 +23,13 @@ class Function;
 
 class Program : public ParseNode {
     private:
-        std::map<std::string, Function*> functions;
+        std::unordered_map<std::string, Function*> functions;
 
     public:
         Program(Context* context) : ParseNode(context) {}
 
         void addFunction(Function* function);
+        bool exists(std::string function);
 };
 
 class Value : public ParseNode {

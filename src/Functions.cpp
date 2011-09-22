@@ -20,6 +20,12 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
                     << "\t.type main, @function" << endl;
 }
 
+void FunctionCall::checkFunctions(Program& program){
+    if(!program.exists(m_function)){
+        throw CompilerException("The function does not exists");
+    }
+}
+
 void Function::write(AssemblyFileWriter& writer){
     writer.stream() << endl << m_name << ":" << endl;
     
