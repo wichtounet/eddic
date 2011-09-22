@@ -156,6 +156,16 @@ bool Lexer::readNext() {
                 while(scanner.next() && scanner.current() != '\n'){}
 
                 return next();
+            } else if (scanner.current() == '*'){
+                while(scanner.next()){
+                    if(scanner.current() == '*'){
+                        if(scanner.next() && scanner.current() == '/'){
+                            break;
+                        }
+                    }
+                }
+              
+                return next();
             } else {
                 scanner.pushBack();
                 

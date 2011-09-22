@@ -98,11 +98,22 @@ void main(){
         test();
         test();
     }
-
-    singy();
 }
+
+/* Multiline comment 1  */
 
 //Test function
 void test(){
     Println("Hello from test");
 }
+
+/* Multiline comment 2  */
+
+/* 
+  Multiline comment 3 
+*/
+
+/* 
+ * Pseudo doc
+ * Suite / * 
+*/
