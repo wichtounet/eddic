@@ -98,6 +98,8 @@ void main(){
         test();
         test();
     }
+
+    singy();
 }
 
 /* Multiline comment 1  */
