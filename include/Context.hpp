@@ -102,16 +102,33 @@ class Context {
         static void cleanup();
 };
 
-class FunctionContext : public Context {
+//TODO Rename to Context when finished the implementation
+class TempContext {
+    private:
+        static std::vector<TempContext*> contexts;
+
+        std::map<std::string, Variable*> variables;
+        TempContext* m_parent;
+
+    public:
+       virtual void addVariable(const std::string a, Type type);
+       virtual bool exists(const std::string& a) const;
+       virtual Variable* getVariable(std::string& variable) const;
+
+        TempContext* parent() const  {
+            return m_parent;
+        }
+};
+
+class FunctionContext : public TempContext {
 
 };
 
-
-class GlobalContext : public Context {
+class GlobalContext : public TempContext {
     
 };
 
-class BlockContext : public Context {
+class BlockContext : public TempContext {
     
 };
 
