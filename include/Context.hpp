@@ -12,6 +12,9 @@
 #include <map>
 #include <vector>
 
+#include <unordered_map>
+#include <unordered_set>
+
 #include "Types.hpp"
 
 #include "AssemblyFileWriter.hpp"
@@ -105,27 +108,38 @@ class Context {
 //TODO Rename to Context when finished the implementation
 class TempContext {
     private:
+        TempContext* m_parent;
+        
         static std::vector<TempContext*> contexts;
 
-        std::map<std::string, Variable*> variables;
-        TempContext* m_parent;
+    protected:
+        std::unordered_map<std::string, Variable*> m_stored;
+        std::unordered_set<std::string> m_visibles;
 
     public:
-       virtual void addVariable(const std::string a, Type type);
-       virtual bool exists(const std::string& a) const;
-       virtual Variable* getVariable(std::string& variable) const;
+        TempContext(TempContext* parent) : m_parent(parent) {
+            contexts.push_back(this);
+        }
+        virtual ~TempContext();
+        
+        virtual void addVariable(const std::string a, Type type);
+        virtual bool exists(const std::string& a) const;
+        virtual Variable* getVariable(std::string& variable) const;
 
         TempContext* parent() const  {
             return m_parent;
         }
 };
 
-class FunctionContext : public TempContext {
-    
+class GlobalContext : public TempContext {
+    public:
+        GlobalContext() : TempContext(NULL) {}
 };
 
-class GlobalContext : public TempContext {
-    
+
+class FunctionContext : public TempContext {
+    public:
+        FunctionContext(TempContext* parent) : TempContext(parent) {}
 };
 
 class BlockContext : public TempContext {
@@ -133,7 +147,9 @@ class BlockContext : public TempContext {
         FunctionContext* m_functionContext;
 
     public:
-        BlockContext(FunctionContext* functionContext) : m_functionContext(functionContext) {} 
+        BlockContext(TempContext* parent, FunctionContext* functionContext) : TempContext(parent), m_functionContext(functionContext) {} 
+        
+        void addVariable(const std::string a, Type type);
 };
 
 } //end of eddic
