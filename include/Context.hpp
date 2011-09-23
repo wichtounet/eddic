@@ -105,6 +105,7 @@ class Context {
         static void cleanup();
 };
 
+//TODO Improve the way to manage memory of context
 //TODO Rename to Context when finished the implementation
 class TempContext {
     private:
