@@ -20,6 +20,13 @@ T toNumber (std::string text) {
     return result;
 }
 
+template <class T>
+std::string toString (T number) {
+    std::stringstream ss("");
+    ss << number;
+    return ss.str();
+}
+
 class deleter {
     public:
         template <typename T>

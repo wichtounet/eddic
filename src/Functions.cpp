@@ -9,6 +9,7 @@
 
 #include "AssemblyFileWriter.hpp"
 #include "Functions.hpp"
+#include "Utils.hpp"
 
 using namespace eddic;
 
@@ -22,7 +23,7 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
 
 void FunctionCall::checkFunctions(Program& program){
     if(!program.exists(m_function)){
-        throw CompilerException("The function \"" + m_function + "\"does not exists");
+        throw CompilerException("The function \"" + m_function + "\"does not exists at " + toString<int>(token()->line()) + ":" + toString<int>(token()->col()));
     }
 }
 
