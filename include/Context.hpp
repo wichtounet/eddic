@@ -121,7 +121,7 @@ class TempContext {
 };
 
 class FunctionContext : public TempContext {
-
+    
 };
 
 class GlobalContext : public TempContext {
@@ -129,7 +129,11 @@ class GlobalContext : public TempContext {
 };
 
 class BlockContext : public TempContext {
-    
+    private:
+        FunctionContext* m_functionContext;
+
+    public:
+        BlockContext(FunctionContext* functionContext) : m_functionContext(functionContext) {} 
 };
 
 } //end of eddic
