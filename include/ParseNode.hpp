@@ -22,6 +22,7 @@ typedef std::vector<ParseNode*>::const_iterator TrashIterator;
 class Context;
 class AssemblyFileWriter;
 class StringPool;
+class Token;
 
 class ParseNode {
     private:
@@ -29,12 +30,14 @@ class ParseNode {
         std::vector<ParseNode*> trash;
 
         Context* m_context;
+        const Token* m_token;
 
     protected:
         ParseNode* parent;
 
     public:
-        ParseNode(Context* context) : m_context(context), parent(NULL) {};
+        ParseNode(Context* context) : m_context(context), m_token(NULL), parent(NULL) {};
+        ParseNode(Context* context, const Token* token) : m_context(context), m_token(token), parent(NULL) {} 
         virtual ~ParseNode();
 
         virtual void write(AssemblyFileWriter& writer);
@@ -52,6 +55,10 @@ class ParseNode {
 
         Context* context() {
             return m_context;
+        }
+
+        const Token* token(){
+            return m_token;
         }
 };
 
