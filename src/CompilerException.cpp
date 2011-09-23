@@ -22,8 +22,8 @@ const char* TokenException::what() const throw() {
 
     value << m_message;
     value << std::endl;
-    value << "\tline:" << m_token.line();
-    value << " col:" << m_token.col();
+    value << "\tline:" << m_token->line();
+    value << " col:" << m_token->col();
 
     return value.str().c_str();
 }

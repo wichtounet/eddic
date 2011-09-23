@@ -41,7 +41,7 @@ class FunctionCall : public ParseNode {
         std::string m_function;
 
     public:
-        FunctionCall(Context* context, const std::string& function) : ParseNode(context), m_function(function) {}
+        FunctionCall(Context* context, const Token* token, const std::string& function) : ParseNode(context, token), m_function(function) {}
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);

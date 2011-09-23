@@ -27,10 +27,10 @@ class CompilerException: public std::exception {
 
 class TokenException: public CompilerException {
     private:
-        Token m_token;
+        Token* m_token;
 
     public:
-        TokenException(const std::string& message, Token token) : CompilerException(message), m_token(token) {}
+        TokenException(const std::string& message, Token* token) : CompilerException(message), m_token(token) {}
         ~TokenException() throw() {};
 
         const char* what() const throw();

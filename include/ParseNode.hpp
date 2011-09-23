@@ -36,7 +36,7 @@ class ParseNode {
         ParseNode* parent;
 
     public:
-        ParseNode(Context* context) : m_context(context), m_token(NULL), parent(NULL) {};
+        ParseNode(Context* context) : m_context(context), m_token(NULL), parent(NULL) {}
         ParseNode(Context* context, const Token* token) : m_context(context), m_token(token), parent(NULL) {} 
         virtual ~ParseNode();
 
