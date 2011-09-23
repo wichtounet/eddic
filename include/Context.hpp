@@ -129,13 +129,14 @@ class TempContext {
         TempContext* parent() const  {
             return m_parent;
         }
+        
+        static void cleanup();
 };
 
 class GlobalContext : public TempContext {
     public:
         GlobalContext() : TempContext(NULL) {}
 };
-
 
 class FunctionContext : public TempContext {
     public:
