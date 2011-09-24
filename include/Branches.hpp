@@ -109,23 +109,6 @@ class If : public ParseNode {
         }
 };
 
-class For : public ParseNode {
-    private: 
-        ParseNode* m_start;
-        ParseNode* m_iter;
-        Condition* m_condition;
-
-    public:
-        For(Context* context, const Token* token, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
-
-        virtual ~For();
-
-        virtual void write(AssemblyFileWriter& writer);
-        virtual void checkVariables();
-        virtual void checkStrings(StringPool& pool);
-        virtual void optimize();
-};
-
 } //end of eddic
 
 #endif
