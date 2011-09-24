@@ -449,16 +449,16 @@ Value* Parser::parseValue() {
         } else if (lexer.isLitteral()) {
             string litteral = lexer.getCurrentToken()->value();
 
-            node = new Litteral(currentContext, litteral);
+            node = new Litteral(currentContext, lexer.getCurrentToken(), litteral);
         } else if (lexer.isWord()) {
             string variableRight = lexer.getCurrentToken()->value();
 
-            node = new VariableValue(currentContext, variableRight);
+            node = new VariableValue(currentContext, lexer.getCurrentToken(), variableRight);
         } else if (lexer.isInteger()) {
             string integer = lexer.getCurrentToken()->value();
             int value = toNumber<int>(integer);
 
-            node = new Integer(currentContext, value);
+            node = new Integer(currentContext, lexer.getCurrentToken(), value);
         } else {
             throw TokenException("Invalid value", lexer.getCurrentToken());
         }

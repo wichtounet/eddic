@@ -182,7 +182,7 @@ int Modulo::compute(int left, int right) {
 void BinaryOperator::optimize() {
     if (isConstant()) {
         if (Options::isSet(OPTIMIZE_INTEGERS)) {
-            Value* value = new Integer(context(), getIntValue());
+            Value* value = new Integer(context(), lhs->token(), getIntValue());
 
             parent->replace(this, value);
         }
@@ -196,7 +196,7 @@ void Addition::optimize() {
     if (isConstant()) {
         if (type() == INT) {
             if (Options::isSet(OPTIMIZE_INTEGERS)) {
-                Value* value = new Integer(context(), getIntValue());
+                Value* value = new Integer(context(), lhs->token(), getIntValue());
 
                 parent->replace(this, value);
             }

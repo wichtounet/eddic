@@ -38,6 +38,7 @@ class Value : public ParseNode {
 
     public:
         Value(Context* context) : ParseNode(context) {}
+        Value(Context* context, const Token* token) : ParseNode(context, token) {}
 
         Type type() const {
             return m_type;
@@ -128,7 +129,7 @@ class Litteral : public Value {
         std::string m_litteral;
         std::string m_label;
     public:
-        Litteral(Context* context, const std::string& litteral) : Value(context), m_litteral(litteral) {
+        Litteral(Context* context, const Token* token, const std::string& litteral) : Value(context, token), m_litteral(litteral) {
             m_type = STRING;
         };
         void checkStrings(StringPool& pool);
@@ -141,7 +142,7 @@ class Integer : public Value {
     private:
         int m_value;
     public:
-        Integer(Context* context, int value) : Value(context), m_value(value) {
+        Integer(Context* context, const Token* token, int value) : Value(context, token), m_value(value) {
             m_type = INT;
         };
         void write(AssemblyFileWriter& writer);
@@ -154,7 +155,7 @@ class VariableValue : public Value {
         std::string m_variable;
         int m_index;
     public:
-        VariableValue(Context* context, const std::string& variable) : Value(context), m_variable(variable) {};
+        VariableValue(Context* context, const Token* token, const std::string& variable) : Value(context, token), m_variable(variable) {};
         void checkVariables();
         void write(AssemblyFileWriter& writer);
         bool isConstant();
