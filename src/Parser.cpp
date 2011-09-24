@@ -167,9 +167,9 @@ ParseNode* Parser::parseCall(const Token* callToken) {
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 
     if (call == "Print") {
-        return new Print(currentContext, token, value);
+        return new Print(currentContext, callToken, value);
     } else {
-        return new Println(currentContext, token, value);
+        return new Println(currentContext, callToken, value);
     }
 }
 
@@ -195,13 +195,13 @@ ParseNode* Parser::parseDeclaration() {
 
     Value* value = parseValue();
 
-    return new Declaration(currentContext, type, variable, value);
+    return new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value);
 }
 
 ParseNode* Parser::parseAssignment(const Token* variableToken) {
     Value* value = parseValue();
 
-    return new Assignment(currentContext, variableToken->value(), value);
+    return new Assignment(currentContext, variableToken, variableToken->value(), value);
 }
 
 ParseNode* Parser::parseSwap(const Token* lhs) {
@@ -211,7 +211,7 @@ ParseNode* Parser::parseSwap(const Token* lhs) {
 
     string rhs = lexer.getCurrentToken()->value();
 
-    return new Swap(currentContext, lhs->value(), rhs);
+    return new Swap(currentContext, lexer.getCurrenToken(), lhs->value(), rhs);
 }
 
 ParseNode* Parser::parseIf() {

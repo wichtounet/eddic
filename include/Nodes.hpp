@@ -63,7 +63,7 @@ class VariableOperation : public ParseNode {
         Type m_type;
    
     public:
-        VariableOperation(Context* context, const std::string& variable, Value* v) : ParseNode(context), m_variable(variable), value(v) {};
+        VariableOperation(Context* context, const Token* token, const std::string& variable, Value* v) : ParseNode(context, token), m_variable(variable), value(v) {};
         ~VariableOperation() {
             delete value;
         }
@@ -74,14 +74,14 @@ class VariableOperation : public ParseNode {
 
 class Declaration : public VariableOperation {
     public:
-        Declaration(Context* context, Type type, const std::string& variable, Value* v) : VariableOperation(context, variable, v) { m_type = type;  };
+        Declaration(Context* context, const Token* token, Type type, const std::string& variable, Value* v) : VariableOperation(context, token, variable, v) { m_type = type;  };
 
         void checkVariables();
 };
 
 class Assignment : public VariableOperation {
     public:
-        Assignment(Context* context, const std::string& variable, Value* v) : VariableOperation(context, variable, v) {};
+        Assignment(Context* context, const Token* token, const std::string& variable, Value* v) : VariableOperation(context, token, variable, v) {};
 
         void checkVariables();
 };
@@ -117,7 +117,7 @@ class Swap : public ParseNode {
         Type m_type;
 
     public:
-        Swap(Context* context, const std::string& lhs, const std::string& rhs) : ParseNode(context), m_lhs(lhs), m_rhs(rhs) {};
+        Swap(Context* context, const Token* token, const std::string& lhs, const std::string& rhs) : ParseNode(context, token), m_lhs(lhs), m_rhs(rhs) {};
 
         void checkVariables();
         void write(AssemblyFileWriter& writer);
