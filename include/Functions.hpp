@@ -27,7 +27,7 @@ class Function : public ParseNode {
 		std::string m_name;
 
 	public:
-		Function(Context* context, const std::string& name) : ParseNode(context), m_name(name) {}
+		Function(Context* context, const Token* token, const std::string& name) : ParseNode(context, token), m_name(name) {}
 		
         void write(AssemblyFileWriter& writer);
 

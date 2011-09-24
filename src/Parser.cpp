@@ -77,7 +77,7 @@ Function* Parser::parseFunction() {
 
     currentContext = new Context(currentContext);
 
-    Function* function = new Function(currentContext, functionName);
+    Function* function = new Function(currentContext, token, functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
     assertNextIsRightParenth(lexer, "Waiting for a right parenth");
