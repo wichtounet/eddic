@@ -88,7 +88,7 @@ class If : public ParseNode {
         std::vector<ElseIf*> elseIfs;
 
     public:
-        If(Context* context, Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition), m_elseBlock(NULL) {}
+        If(Context* context, const Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition), m_elseBlock(NULL) {}
 
         virtual ~If();
 
@@ -116,7 +116,7 @@ class For : public ParseNode {
         Condition* m_condition;
 
     public:
-        For(Context* context, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context), m_start(start), m_iter(iter), m_condition(condition) {}
+        For(Context* context, const Token* token, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
 
         virtual ~For();
 

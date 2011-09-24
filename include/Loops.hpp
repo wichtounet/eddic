@@ -17,7 +17,7 @@ class While : public ParseNode {
         Condition* m_condition;
 
     public:
-        While(Context* context, Condition* condition) : ParseNode(context), m_condition(condition) {}
+        While(Context* context, const Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual ~While();
 

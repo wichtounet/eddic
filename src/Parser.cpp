@@ -321,6 +321,8 @@ Else* Parser::parseElse() {
 ParseNode* Parser::parseWhile() {
     assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
 
+    const Token* token = lexer.getCurrentToken();
+
     Condition* condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the while must be closed by a right parenth");
@@ -329,7 +331,7 @@ ParseNode* Parser::parseWhile() {
 
     currentContext = new Context(currentContext);
 
-    While* block = new While(currentContext, condition);
+    While* block = new While(currentContext, token, condition);
 
     lexer.next();
 
@@ -350,6 +352,8 @@ ParseNode* Parser::parseWhile() {
 
 ParseNode* Parser::parseFor() {
     assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
+
+    const Token* token = lexer.getCurrentToken();
 
     currentContext = new Context(currentContext);
 
@@ -373,7 +377,7 @@ ParseNode* Parser::parseFor() {
     
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    For* block = new For(currentContext, start, condition, iter);
+    For* block = new For(currentContext, token, start, condition, iter);
 
     lexer.next();
 
