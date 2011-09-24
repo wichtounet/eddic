@@ -92,7 +92,7 @@ class Print : public ParseNode {
         Value* value;
 
     public:
-        Print(Context* context, Value* v) : ParseNode(context), value(v) {};
+        Print(Context* context, const Token* token, Value* v) : ParseNode(context, token), value(v) {};
         virtual ~Print() {
             delete value;
         }
@@ -104,7 +104,7 @@ class Print : public ParseNode {
 
 class Println : public Print {
     public:
-        Println(Context* context, Value*v) : Print(context, v) {}
+        Println(Context* context, const Token* token, Value*v) : Print(context, token, v) {}
         void write(AssemblyFileWriter& writer);
 };
 

@@ -167,9 +167,9 @@ ParseNode* Parser::parseCall(const Token* callToken) {
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 
     if (call == "Print") {
-        return new Print(currentContext, value);
+        return new Print(currentContext, token, value);
     } else {
-        return new Println(currentContext, value);
+        return new Println(currentContext, token, value);
     }
 }
 
