@@ -17,7 +17,7 @@ class BinaryOperator : public Value {
         Value* lhs;
         Value* rhs;
 
-        BinaryOperator(Context* context, Value* l, Value* r) : Value(context), lhs(l), rhs(r) {}
+        BinaryOperator(Context* context, const Token* token, Value* l, Value* r) : Value(context, token), lhs(l), rhs(r) {}
 
         virtual ~BinaryOperator() {
             delete lhs;
@@ -38,7 +38,7 @@ class BinaryOperator : public Value {
 
 class Addition : public BinaryOperator {
     public:
-        Addition(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
+        Addition(Context* context, const Token* token, Value* lhs, Value* rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
         void optimize();
@@ -50,7 +50,7 @@ class Addition : public BinaryOperator {
 
 class Subtraction : public BinaryOperator {
     public:
-        Subtraction(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
+        Subtraction(Context* context, const Token* token, Value* lhs, Value* rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -59,7 +59,7 @@ class Subtraction : public BinaryOperator {
 
 class Multiplication : public BinaryOperator {
     public:
-        Multiplication(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
+        Multiplication(Context* context, const Token* token, Value* lhs, Value* rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -68,7 +68,7 @@ class Multiplication : public BinaryOperator {
 
 class Division : public BinaryOperator {
     public:
-        Division(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
+        Division(Context* context, const Token* token, Value* lhs, Value* rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -77,7 +77,7 @@ class Division : public BinaryOperator {
 
 class Modulo : public BinaryOperator {
     public:
-        Modulo(Context* context, Value* lhs, Value* rhs) : BinaryOperator(context, lhs, rhs) {}
+        Modulo(Context* context, const Token* token, Value* lhs, Value* rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 

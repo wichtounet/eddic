@@ -515,15 +515,15 @@ Value* Parser::parseValue() {
         Value* value = NULL;
 
         if (op == ADD) {
-            value = new Addition(currentContext, lhs, rhs);
+            value = new Addition(currentContext, lhs->token(), lhs, rhs);
         } else if (op == SUB) {
-            value = new Subtraction(currentContext, lhs, rhs);
+            value = new Subtraction(currentContext, lhs->token(), lhs, rhs);
         } else if (op == MUL) {
-            value = new Multiplication(currentContext, lhs, rhs);
+            value = new Multiplication(currentContext, lhs->token(), lhs, rhs);
         } else if (op == DIV) {
-            value = new Division(currentContext, lhs, rhs);
+            value = new Division(currentContext, lhs->token(), lhs, rhs);
         } else if (op == MOD) {
-            value = new Modulo(currentContext, lhs, rhs);
+            value = new Modulo(currentContext, lhs->token(), lhs, rhs);
         }
 
         parts.erase(first, ++max);
