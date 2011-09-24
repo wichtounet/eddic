@@ -77,7 +77,7 @@ Function* Parser::parseFunction() {
 
     currentContext = new Context(currentContext);
 
-    Function* function = new Function(currentContext, token, functionName);
+    Function* function = new Function(currentContext, lexer.getCurrentToken(), functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
     assertNextIsRightParenth(lexer, "Waiting for a right parenth");
@@ -211,7 +211,7 @@ ParseNode* Parser::parseSwap(const Token* lhs) {
 
     string rhs = lexer.getCurrentToken()->value();
 
-    return new Swap(currentContext, lexer.getCurrenToken(), lhs->value(), rhs);
+    return new Swap(currentContext, lexer.getCurrentToken(), lhs->value(), rhs);
 }
 
 ParseNode* Parser::parseIf() {
@@ -225,7 +225,7 @@ ParseNode* Parser::parseIf() {
 
     currentContext = new Context(currentContext);
 
-    If* block = new If(currentContext, condition);
+    If* block = new If(currentContext, lexer.getCurrentToken(), condition);
 
     lexer.next();
 
@@ -279,7 +279,7 @@ ElseIf* Parser::parseElseIf() {
 
     currentContext = new Context(currentContext);
 
-    ElseIf* block = new ElseIf(currentContext, condition);
+    ElseIf* block = new ElseIf(currentContext, lexer.getCurrentToken(), condition);
 
     lexer.next();
 
@@ -301,7 +301,7 @@ ElseIf* Parser::parseElseIf() {
 Else* Parser::parseElse() {
     currentContext = new Context(currentContext);
 
-    Else* block = new Else(currentContext);
+    Else* block = new Else(currentContext, lexer.getCurrentToken());
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
 
