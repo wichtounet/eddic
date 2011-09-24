@@ -11,6 +11,8 @@ using std::map;
 using std::string;
 using std::endl;
 using std::vector;
+using std::unordered_set;
+using std::unordered_map;
 
 using namespace eddic;
 
@@ -97,4 +99,29 @@ void Context::cleanup(){
     for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
         delete *it;
     }
+}
+
+TempContext::~TempContext() {
+    unordered_map<string, Variable*>::const_iterator it = m_stored.begin();
+    unordered_map<string, Variable*>::const_iterator end = m_stored.end();
+
+    for ( ; it != end; ++it) {
+        delete it->second;
+    }
+}
+
+void TempContext::addVariable(const std::string variable, Type type){
+    Variable* v = new Variable(variable, type);
+
+    m_visibles.insert(variable);
+
+    m_stored[variable] = v;
+}
+
+bool TempContext::exists(const std::string& variable) const {
+    return m_visibles.find(variable) != m_visibles.end();
+}
+
+Variable* TempContext::getVariable(std::string& variable) const {
+    return (*m_stored.find(variable)).second;
 }

@@ -58,11 +58,12 @@ class Variable {
     private:
         const std::string m_name;
         const Type m_type;
-        const int m_index;
+        int m_index;
         Position position;
 
     public:
-        Variable(const std::string& name, Type type, int index) : m_name(name), m_type(type), m_index(index) {}
+        Variable(const std::string& name, Type type, int index) : m_name(name), m_type(type), m_index(index) {} //TODO Remove
+        Variable(const std::string& name, Type type) : m_name(name), m_type(type) {} //TODO Add position
         std::string name() const  {
             return m_name;
         }
