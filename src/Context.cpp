@@ -132,11 +132,11 @@ bool Context::exists(const std::string& variable) const {
 }
 
 Variable* Context::getVariable(const std::string& variable) const {
-    bool found = m_visibles.find(variable) != m_visibles.end();
+    bool found = m_stored.find(variable) != m_stored.end();
 
     if(!found){
         if(m_parent){
-            return getVariable(variable);
+            return m_parent->getVariable(variable);
         }
     }
 
