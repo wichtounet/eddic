@@ -128,7 +128,7 @@ bool Context::exists(const std::string& variable) const {
         }
     }
 
-    return true;
+    return found;
 }
 
 Variable* Context::getVariable(const std::string& variable) const {
