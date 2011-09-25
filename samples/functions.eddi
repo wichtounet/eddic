@@ -4,17 +4,16 @@ void main(){
     Println(x);
     
     test();
-
-    Println(x);
 }
 
 void test(){
     Println("test()");
-    string x = "youpla";
-
-    Println(x);
-
-    x = "test";
-
-    Println(x);
+    
+    if(4 > 3){
+        string x = "0";
+        Print(x);
+    } else {
+        string x = "1";
+        Print(x);
+    }
 }
