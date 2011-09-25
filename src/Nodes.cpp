@@ -20,6 +20,10 @@ using std::map;
 
 using namespace eddic;
 
+Program::~Program(){
+    Context::cleanup();
+}
+
 void Program::addFunction(Function* function){
     functions[function->name()] = function;
 
@@ -28,6 +32,13 @@ void Program::addFunction(Function* function){
 
 bool Program::exists(string function){
     return functions.find(function) != functions.end();
+}
+
+void Program::write(AssemblyFileWriter& writer){
+    ParseNode::write(writer);
+
+    //Write the global variables
+    context()->write(writer);
 }
 
 static void writePrintString(std::ofstream& m_stream) {
@@ -169,7 +180,7 @@ void Declaration::checkVariables() {
         throw CompilerException("Variable has already been declared");
     }
 
-    Variable* var = context()->create(m_variable, m_type);
+    Variable* var = context()->addVariable(m_variable, m_type);
 
     m_index = var->index();
 
@@ -189,7 +200,7 @@ void Assignment::checkVariables() {
         throw CompilerException("Variable has not  been declared");
     }
 
-    Variable* var = context()->find(m_variable);
+    Variable* var = context()->getVariable(m_variable);
 
     m_index = var->index();
     m_type = var->type();
@@ -210,8 +221,8 @@ void Swap::checkVariables() {
         throw CompilerException("Variable has not been declared");
     }
 
-    Variable* lhs_var = context()->find(m_lhs);
-    Variable* rhs_var = context()->find(m_rhs);
+    Variable* lhs_var = context()->getVariable(m_lhs);
+    Variable* rhs_var = context()->getVariable(m_rhs);
 
     m_lhs_index = lhs_var->index();
     m_rhs_index = rhs_var->index();
@@ -228,7 +239,7 @@ void VariableValue::checkVariables() {
         throw CompilerException("Variable has not been declared");
     }
 
-    Variable* variable = context()->find(m_variable);
+    Variable* variable = context()->getVariable(m_variable);
 
     m_type = variable->type();
     m_index = variable->index();

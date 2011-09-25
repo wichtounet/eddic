@@ -75,22 +75,22 @@ class Variable {
         }
 };
 
-class Context {
+class OldContext {
     private:
-        static std::vector<Context*> contexts;
+        static std::vector<OldContext*> contexts;
         static unsigned int currentVariable;
 
         std::map<std::string, Variable*> variables;
-        Context* m_parent;
+        OldContext* m_parent;
 
     public:
-        Context() : m_parent(NULL) {
+        OldContext() : m_parent(NULL) {
             contexts.push_back(this);
         }
-        Context(Context* parent) : m_parent(parent) {
+        OldContext(OldContext* parent) : m_parent(parent) {
             contexts.push_back(this);
         }
-        ~Context();
+        ~OldContext();
 
         bool exists(const std::string& variable) const;
         unsigned int index(const std::string& variable) const;
@@ -98,7 +98,7 @@ class Context {
         Variable* find(const std::string& variable);
         void write(AssemblyFileWriter& writer);
 
-        Context* parent() {
+        OldContext* parent() {
             return m_parent;
         }
 
@@ -111,23 +111,23 @@ typedef std::unordered_set<std::string> VisibleVariables;
 
 //TODO Improve the way to manage memory of context
 //TODO Rename to Context when finished the implementation
-class TempContext {
+class Context {
     private:
-        TempContext* m_parent;
+        Context* m_parent;
         
-        static std::vector<TempContext*> contexts;
+        static std::vector<Context*> contexts;
 
     protected:
         StoredVariables m_stored;
         VisibleVariables m_visibles;
 
     public:
-        TempContext(TempContext* parent) : m_parent(parent) {
+        Context(Context* parent) : m_parent(parent) {
             contexts.push_back(this);
         }
-        virtual ~TempContext();
+        virtual ~Context();
         
-        virtual void addVariable(const std::string& a, Type type);
+        virtual Variable* addVariable(const std::string& a, Type type);
         virtual bool exists(const std::string& a) const;
         virtual Variable* getVariable(const std::string& variable) const;
         
@@ -135,33 +135,33 @@ class TempContext {
         
         void storeVariable(const std::string& name, Variable* variable);
 
-        TempContext* parent() const  {
+        Context* parent() const  {
             return m_parent;
         }
         
         static void cleanup();
 };
 
-class GlobalContext : public TempContext {
+class GlobalContext : public Context {
     public:
-        GlobalContext() : TempContext(NULL) {}
+        GlobalContext() : Context(NULL) {}
         
         void write(AssemblyFileWriter& writer);
 };
 
-class FunctionContext : public TempContext {
+class FunctionContext : public Context {
     public:
-        FunctionContext(TempContext* parent) : TempContext(parent) {}
+        FunctionContext(Context* parent) : Context(parent) {}
         
         void write(AssemblyFileWriter& writer);
 };
 
-class BlockContext : public TempContext {
+class BlockContext : public Context {
     private:
         FunctionContext* m_functionContext;
 
     public:
-        BlockContext(TempContext* parent, FunctionContext* functionContext) : TempContext(parent), m_functionContext(functionContext) {} 
+        BlockContext(Context* parent, FunctionContext* functionContext) : Context(parent), m_functionContext(functionContext) {} 
         
         void write(AssemblyFileWriter& writer);
         void addVariable(const std::string a, Type type);

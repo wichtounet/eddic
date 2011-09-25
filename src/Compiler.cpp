@@ -57,10 +57,6 @@ int Compiler::compile(string file) {
         writer.open("output.asm");
         program->write(writer);
 
-        //TODO Find a better way to write and delete the Contexts
-        Context::writeAll(writer);
-        Context::cleanup();
-
         delete program;
 
         if(!Options::isSet(ASSEMBLY_ONLY)){

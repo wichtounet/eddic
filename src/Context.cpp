@@ -17,9 +17,13 @@ using std::unordered_map;
 using namespace eddic;
 
 vector<Context*> Context::contexts;
-unsigned int Context::currentVariable = 0;
 
-Context::~Context() {
+
+
+vector<OldContext*> OldContext::contexts;
+unsigned int OldContext::currentVariable = 0;
+
+OldContext::~OldContext() {
     map<string, Variable*>::const_iterator it = variables.begin();
     map<string, Variable*>::const_iterator end = variables.end();
 
@@ -28,7 +32,7 @@ Context::~Context() {
     }
 }
 
-Variable* Context::find(const std::string& variable) {
+Variable* OldContext::find(const std::string& variable) {
     map<string, Variable*>::const_iterator it = variables.find(variable);
 
     if (it == variables.end()) {
@@ -42,7 +46,7 @@ Variable* Context::find(const std::string& variable) {
     return it->second;
 }
 
-bool Context::exists(const std::string& variable) const {
+bool OldContext::exists(const std::string& variable) const {
     if (variables.find(variable) != variables.end()) {
         return true;
     }
@@ -54,7 +58,7 @@ bool Context::exists(const std::string& variable) const {
     return false;
 }
 
-unsigned int Context::index(const std::string& variable) const {
+unsigned int OldContext::index(const std::string& variable) const {
     map<string, Variable*>::const_iterator it = variables.find(variable);
 
     if (it == variables.end()) {
@@ -68,7 +72,7 @@ unsigned int Context::index(const std::string& variable) const {
     return it->second->index();
 }
 
-Variable* Context::create(const std::string& variable, Type type) {
+Variable* OldContext::create(const std::string& variable, Type type) {
     Variable* v = new Variable(variable, type, currentVariable++);
 
     variables[variable] = v;
@@ -76,7 +80,7 @@ Variable* Context::create(const std::string& variable, Type type) {
     return v;
 }
 
-void Context::write(AssemblyFileWriter& writer) {
+void OldContext::write(AssemblyFileWriter& writer) {
     map<string, Variable*>::const_iterator it = variables.begin();
     map<string, Variable*>::const_iterator end = variables.end();
 
@@ -89,19 +93,19 @@ void Context::write(AssemblyFileWriter& writer) {
     }
 }
 
-void Context::writeAll(AssemblyFileWriter& writer) {
-    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
+void OldContext::writeAll(AssemblyFileWriter& writer) {
+    for (vector<OldContext*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
         (*it)->write(writer);
     }
 }
 
-void Context::cleanup(){
-    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
+void OldContext::cleanup(){
+    for (vector<OldContext*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
         delete *it;
     }
 }
 
-TempContext::~TempContext() {
+Context::~Context() {
     StoredVariables::const_iterator it = m_stored.begin();
     StoredVariables::const_iterator end = m_stored.end();
 
@@ -110,19 +114,21 @@ TempContext::~TempContext() {
     }
 }
 
-void TempContext::addVariable(const std::string& variable, Type type){
+Variable* Context::addVariable(const std::string& variable, Type type){
     Variable* v = new Variable(variable, type);
 
     m_visibles.insert(variable);
 
     storeVariable(variable, v);
+
+    return v;
 }
 
-void TempContext::storeVariable(const std::string& name, Variable* variable){
+void Context::storeVariable(const std::string& name, Variable* variable){
     m_stored[name] = variable;
 }
 
-bool TempContext::exists(const std::string& variable) const {
+bool Context::exists(const std::string& variable) const {
     bool found = m_visibles.find(variable) != m_visibles.end();
 
     if(!found){
@@ -134,7 +140,7 @@ bool TempContext::exists(const std::string& variable) const {
     return true;
 }
 
-Variable* TempContext::getVariable(const std::string& variable) const {
+Variable* Context::getVariable(const std::string& variable) const {
     bool found = m_visibles.find(variable) != m_visibles.end();
 
     if(!found){
@@ -144,6 +150,12 @@ Variable* TempContext::getVariable(const std::string& variable) const {
     }
 
     return (*m_stored.find(variable)).second;
+}
+
+void Context::cleanup(){
+    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
+        delete *it;
+    }
 }
 
 void BlockContext::write(AssemblyFileWriter& writer){

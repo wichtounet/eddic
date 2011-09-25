@@ -25,6 +25,9 @@ class Condition;
 class Parser {
     private:
         Lexer& lexer;
+
+        GlobalContext* globalContext;
+        FunctionContext* functionContext;
         Context* currentContext;
 
         Function* parseFunction();
@@ -44,7 +47,7 @@ class Parser {
         Value* parseValue();
 
     public:
-        Parser(Lexer& l) : lexer(l), currentContext(new Context()) {};
+        Parser(Lexer& l) : lexer(l) {};
         Program* parse() ;
 };
 

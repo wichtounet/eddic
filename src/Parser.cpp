@@ -45,7 +45,8 @@ bool isType(const Lexer& lexer) {
 
 Program* Parser::parse() {
     //Create the global context
-    currentContext = new Context();
+    globalContext = new GlobalContext();
+    currentContext = globalContext;
 
     Program* program = new Program(currentContext);
 
@@ -75,7 +76,8 @@ Function* Parser::parseFunction() {
 
     string functionName = lexer.getCurrentToken().value();
 
-    currentContext = new Context(currentContext);
+    functionContext = new FunctionContext(currentContext);
+    currentContext = functionContext;
 
     Function* function = new Function(currentContext, functionName);
 
@@ -223,7 +225,7 @@ ParseNode* Parser::parseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     If* block = new If(currentContext, condition);
 
@@ -277,7 +279,7 @@ ElseIf* Parser::parseElseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     ElseIf* block = new ElseIf(currentContext, condition);
 
@@ -299,7 +301,7 @@ ElseIf* Parser::parseElseIf() {
 }
 
 Else* Parser::parseElse() {
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     Else* block = new Else(currentContext);
 
@@ -327,7 +329,7 @@ ParseNode* Parser::parseWhile() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     While* block = new While(currentContext, condition);
 
@@ -351,7 +353,7 @@ ParseNode* Parser::parseWhile() {
 ParseNode* Parser::parseFor() {
     assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     lexer.next();
 

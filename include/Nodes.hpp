@@ -27,7 +27,9 @@ class Program : public ParseNode {
 
     public:
         Program(Context* context) : ParseNode(context) {}
-
+        ~Program();
+        
+        void write(AssemblyFileWriter& writer);
         void addFunction(Function* function);
         bool exists(std::string function);
 };
