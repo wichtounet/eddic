@@ -113,11 +113,11 @@ class Context {
         virtual Variable* getVariable(const std::string& variable) const;
         virtual Variable* getVariable(int index) const;
         
-        virtual void write(AssemblyFileWriter& writer){
+        virtual void write(AssemblyFileWriter&){
             //Nothing by default    
         }
 
-        virtual void release(AssemblyFileWriter& writer){
+        virtual void release(AssemblyFileWriter&){
             //Nothing by default
         }
         
