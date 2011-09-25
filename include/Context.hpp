@@ -116,8 +116,8 @@ class Variable {
         static void cleanup();
 };*/
 
-typedef std::unordered_map<std::string, Variable*> StoredVariables;
-typedef std::unordered_set<std::string> VisibleVariables;
+typedef std::unordered_map<int, Variable*> StoredVariables;
+typedef std::unordered_map<std::string, int> VisibleVariables;
 
 //TODO Improve the way to manage memory of context
 //TODO Rename to Context when finished the implementation
@@ -130,6 +130,8 @@ class Context {
     protected:
         StoredVariables m_stored;
         VisibleVariables m_visibles;
+        
+        static int currentVariable;
 
     public:
         Context(Context* parent) : m_parent(parent) {
@@ -140,6 +142,7 @@ class Context {
         virtual Variable* addVariable(const std::string& a, Type type) = 0;
         virtual bool exists(const std::string& a) const;
         virtual Variable* getVariable(const std::string& variable) const;
+        virtual Variable* getVariable(int index) const;
         
         virtual void write(AssemblyFileWriter& writer){
             //Nothing by default    
@@ -149,7 +152,7 @@ class Context {
             //Nothing by default
         }
         
-        void storeVariable(const std::string& name, Variable* variable);
+        void storeVariable(int index, Variable* variable);
 
         Context* parent() const  {
             return m_parent;

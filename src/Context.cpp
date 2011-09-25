@@ -17,7 +17,7 @@ using std::unordered_map;
 using namespace eddic;
 
 vector<Context*> Context::contexts;
-
+int Context::currentVariable = 0;
 
 
 /*vector<OldContext*> OldContext::contexts;
@@ -114,9 +114,8 @@ Context::~Context() {
     }
 }
 
-
-void Context::storeVariable(const std::string& name, Variable* variable){
-    m_stored[name] = variable;
+void Context::storeVariable(int index, Variable* variable){
+    m_stored[index] = variable;
 }
 
 bool Context::exists(const std::string& variable) const {
@@ -132,15 +131,23 @@ bool Context::exists(const std::string& variable) const {
 }
 
 Variable* Context::getVariable(const std::string& variable) const {
-    bool found = m_stored.find(variable) != m_stored.end();
+    VisibleVariables::const_iterator iter = m_visibles.find(variable);
 
-    if(!found){
-        if(m_parent){
-            return m_parent->getVariable(variable);
-        }
+    if(iter == m_visibles.end()){
+        return m_parent->getVariable(variable);
+    }
+    
+    return getVariable(iter->second);
+}
+
+Variable* Context::getVariable(int index) const {
+    StoredVariables::const_iterator iter = m_stored.find(index);
+
+    if(iter == m_stored.end()){
+        return m_parent->getVariable(index);
     }
 
-    return (*m_stored.find(variable)).second;
+    return iter->second;
 }
 
 void Context::cleanup(){
@@ -205,9 +212,11 @@ Variable* GlobalContext::addVariable(const std::string& variable, Type type){
 
     Variable* v = new Variable(variable, type, position);
 
-    m_visibles.insert(variable);
+    m_visibles[variable] = currentVariable;
 
-    storeVariable(variable, v);
+    storeVariable(currentVariable, v);
+    
+    currentVariable++;
 
     return v;
 }
@@ -223,9 +232,11 @@ Variable* FunctionContext::newVariable(const std::string& variable, Type type){
 Variable* FunctionContext::addVariable(const std::string& variable, Type type){
     Variable* v = newVariable(variable, type);
 
-    m_visibles.insert(variable);
+    m_visibles[variable] = currentVariable;
 
-    storeVariable(variable, v);
+    storeVariable(currentVariable, v);
+    
+    currentVariable++;
 
     return v;
 }
@@ -233,9 +244,11 @@ Variable* FunctionContext::addVariable(const std::string& variable, Type type){
 Variable* BlockContext::addVariable(const std::string& variable, Type type){
     Variable* v = m_functionContext->newVariable(variable, type);
 
-    m_visibles.insert(variable);
+    m_visibles[variable] = currentVariable;
 
-    m_functionContext->storeVariable(variable, v);
+    m_functionContext->storeVariable(currentVariable, v);
+    
+    currentVariable++;
 
     return v;
 }

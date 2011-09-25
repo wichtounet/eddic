@@ -16,4 +16,12 @@ void test(){
         string x = "1";
         Print(x);
     }
+    
+    if(4 > 3){
+        string x = "0";
+        Print(x);
+    } else {
+        string x = "1";
+        Print(x);
+    }
 }
