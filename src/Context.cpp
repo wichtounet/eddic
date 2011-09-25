@@ -110,18 +110,30 @@ TempContext::~TempContext() {
     }
 }
 
-void TempContext::addVariable(const std::string variable, Type type){
+void TempContext::addVariable(const std::string& variable, Type type){
     Variable* v = new Variable(variable, type);
 
     m_visibles.insert(variable);
 
-    m_stored[variable] = v;
+    storeVariable(variable, v);
+}
+
+void TempContext::storeVariable(const std::string& name, Variable* variable){
+    m_stored[name] = variable;
 }
 
 bool TempContext::exists(const std::string& variable) const {
     return m_visibles.find(variable) != m_visibles.end();
 }
 
-Variable* TempContext::getVariable(std::string& variable) const {
+Variable* TempContext::getVariable(const std::string& variable) const {
     return (*m_stored.find(variable)).second;
+}
+
+void BlockContext::addVariable(const std::string variable, Type type){
+    Variable* v = new Variable(variable, type);
+
+    m_visibles.insert(variable);
+
+    m_functionContext->storeVariable(variable, v);
 }

@@ -124,9 +124,11 @@ class TempContext {
         }
         virtual ~TempContext();
         
-        virtual void addVariable(const std::string a, Type type);
+        virtual void addVariable(const std::string& a, Type type);
         virtual bool exists(const std::string& a) const;
-        virtual Variable* getVariable(std::string& variable) const;
+        virtual Variable* getVariable(const std::string& variable) const;
+        
+        void storeVariable(const std::string& name, Variable* variable);
 
         TempContext* parent() const  {
             return m_parent;
