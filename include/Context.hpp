@@ -106,6 +106,9 @@ class Context {
         static void cleanup();
 };
 
+typedef std::unordered_map<std::string, Variable*> StoredVariables;
+typedef std::unordered_set<std::string> VisibleVariables;
+
 //TODO Improve the way to manage memory of context
 //TODO Rename to Context when finished the implementation
 class TempContext {
@@ -115,8 +118,8 @@ class TempContext {
         static std::vector<TempContext*> contexts;
 
     protected:
-        std::unordered_map<std::string, Variable*> m_stored;
-        std::unordered_set<std::string> m_visibles;
+        StoredVariables m_stored;
+        VisibleVariables m_visibles;
 
     public:
         TempContext(TempContext* parent) : m_parent(parent) {
@@ -127,6 +130,8 @@ class TempContext {
         virtual void addVariable(const std::string& a, Type type);
         virtual bool exists(const std::string& a) const;
         virtual Variable* getVariable(const std::string& variable) const;
+        
+        virtual void write(AssemblyFileWriter& writer) = 0;
         
         void storeVariable(const std::string& name, Variable* variable);
 
@@ -140,11 +145,15 @@ class TempContext {
 class GlobalContext : public TempContext {
     public:
         GlobalContext() : TempContext(NULL) {}
+        
+        void write(AssemblyFileWriter& writer);
 };
 
 class FunctionContext : public TempContext {
     public:
         FunctionContext(TempContext* parent) : TempContext(parent) {}
+        
+        void write(AssemblyFileWriter& writer);
 };
 
 class BlockContext : public TempContext {
@@ -154,6 +163,7 @@ class BlockContext : public TempContext {
     public:
         BlockContext(TempContext* parent, FunctionContext* functionContext) : TempContext(parent), m_functionContext(functionContext) {} 
         
+        void write(AssemblyFileWriter& writer);
         void addVariable(const std::string a, Type type);
 };
 

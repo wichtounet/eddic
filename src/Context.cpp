@@ -102,8 +102,8 @@ void Context::cleanup(){
 }
 
 TempContext::~TempContext() {
-    unordered_map<string, Variable*>::const_iterator it = m_stored.begin();
-    unordered_map<string, Variable*>::const_iterator end = m_stored.end();
+    StoredVariables::const_iterator it = m_stored.begin();
+    StoredVariables::const_iterator end = m_stored.end();
 
     for ( ; it != end; ++it) {
         delete it->second;
@@ -128,6 +128,27 @@ bool TempContext::exists(const std::string& variable) const {
 
 Variable* TempContext::getVariable(const std::string& variable) const {
     return (*m_stored.find(variable)).second;
+}
+
+void BlockContext::write(AssemblyFileWriter& writer){
+    //Nothing to be done    
+}
+
+void FunctionContext::write(AssemblyFileWriter& writer){
+    //TODO    
+}
+
+void GlobalContext::write(AssemblyFileWriter& writer){
+    StoredVariables::const_iterator it = m_stored.begin();
+    StoredVariables::const_iterator end = m_stored.end();
+
+    for ( ; it != end; ++it) {
+        if (it->second->type() == INT) {
+            writer.stream() << ".comm VI" << it->second->index() << ",4,4" << endl;
+        } else if (it->second->type() == STRING) {
+            writer.stream() << ".comm VS" << it->second->index() << ",8,4" << endl;
+        }
+    }
 }
 
 void BlockContext::addVariable(const std::string variable, Type type){
