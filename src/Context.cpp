@@ -304,8 +304,8 @@ void Variable::pushToStack(AssemblyFileWriter& writer){
             break;
         case STRING:
             if(m_position.isStack()){
-                writer.stream() << "pushl -" << m_position.offset() << "(%ebp)" << std::endl;
                 writer.stream() << "pushl -" << (m_position.offset() + 4) << "(%ebp)" << std::endl;
+                writer.stream() << "pushl -" << m_position.offset() << "(%ebp)" << std::endl;
             } else if(m_position.isGlobal()){
                 writer.stream() << "pushl VS" << m_index << endl;
                 writer.stream() << "pushl VS" << m_index << "+4" << std::endl;
