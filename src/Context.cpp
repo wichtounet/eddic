@@ -5,7 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+#include <functional>
+
 #include "Context.hpp"
+#include "Utils.hpp"
 
 using std::map;
 using std::string;
@@ -151,9 +155,7 @@ Variable* Context::getVariable(int index) const {
 }
 
 void Context::cleanup(){
-    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
-        delete *it;
-    }
+    for_each(contexts.begin(), contexts.end(), deleter());
 }
 
 void FunctionContext::write(AssemblyFileWriter& writer){
