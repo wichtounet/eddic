@@ -1,5 +1,5 @@
 void main(){
-    string x = "youpi";
+    int x = 22;
 
     Println(x);
     
@@ -9,7 +9,7 @@ void main(){
 }
 
 void test(){
-    string x = "youpla";
+    int x = 33;
 
     Println(x);
 }

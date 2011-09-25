@@ -232,6 +232,7 @@ void VariableValue::checkVariables() {
     }
 
     m_var = context()->getVariable(m_variable);
+    m_type = m_var->type();
 }
 
 void Litteral::checkStrings(StringPool& pool) {
