@@ -123,10 +123,26 @@ void TempContext::storeVariable(const std::string& name, Variable* variable){
 }
 
 bool TempContext::exists(const std::string& variable) const {
-    return m_visibles.find(variable) != m_visibles.end();
+    bool found = m_visibles.find(variable) != m_visibles.end();
+
+    if(!found){
+        if(m_parent){
+            return m_parent->exists(variable);
+        }
+    }
+
+    return true;
 }
 
 Variable* TempContext::getVariable(const std::string& variable) const {
+    bool found = m_visibles.find(variable) != m_visibles.end();
+
+    if(!found){
+        if(m_parent){
+            return getVariable(variable);
+        }
+    }
+
     return (*m_stored.find(variable)).second;
 }
 
