@@ -33,7 +33,6 @@ class Position {
         const std::string m_name;
 
     public:
-        Position() : m_type(STACK), m_offset(0), m_name("") {} //TODO Delete that later, just here for compilation
         Position(PositionType type, int offset) : m_type(type), m_offset(offset), m_name("") {}
         Position(PositionType type, std::string name) : m_type(type), m_offset(0), m_name(name) {}
 
@@ -59,23 +58,34 @@ class Variable {
         const std::string m_name;
         const Type m_type;
         int m_index;
-        Position position;
+        Position m_position;
 
     public:
-        Variable(const std::string& name, Type type, int index) : m_name(name), m_type(type), m_index(index) {} //TODO Remove
-        Variable(const std::string& name, Type type) : m_name(name), m_type(type) {} //TODO Add position
+        Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
+
+        void moveToRegister(AssemblyFileWriter& writer, std::string reg);
+        void moveToRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2);
+
+        void moveFromRegister(AssemblyFileWriter& writer, std::string reg);
+        void moveFromRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2);
+
+        void pushToStack(AssemblyFileWriter& writer);
+        void popFromStack(AssemblyFileWriter& writer);
+
         std::string name() const  {
             return m_name;
         }
-        int index() const {
-            return m_index;
-        }
+        
         Type type() const {
             return m_type;
         }
+        
+        Position position() const {
+            return m_position;
+        }
 };
 
-class OldContext {
+/*class OldContext {
     private:
         static std::vector<OldContext*> contexts;
         static unsigned int currentVariable;
@@ -104,7 +114,7 @@ class OldContext {
 
         static void writeAll(AssemblyFileWriter& writer);
         static void cleanup();
-};
+};*/
 
 typedef std::unordered_map<std::string, Variable*> StoredVariables;
 typedef std::unordered_set<std::string> VisibleVariables;
@@ -127,11 +137,17 @@ class Context {
         }
         virtual ~Context();
         
-        virtual Variable* addVariable(const std::string& a, Type type);
+        virtual Variable* addVariable(const std::string& a, Type type) = 0;
         virtual bool exists(const std::string& a) const;
         virtual Variable* getVariable(const std::string& variable) const;
         
-        virtual void write(AssemblyFileWriter& writer) = 0;
+        virtual void write(AssemblyFileWriter& writer){
+            //Nothing by default    
+        }
+
+        virtual void release(AssemblyFileWriter& writer){
+            //Nothing by default
+        }
         
         void storeVariable(const std::string& name, Variable* variable);
 
@@ -147,13 +163,22 @@ class GlobalContext : public Context {
         GlobalContext() : Context(NULL) {}
         
         void write(AssemblyFileWriter& writer);
+        
+        Variable* addVariable(const std::string& a, Type type);
 };
 
 class FunctionContext : public Context {
+    private:
+        int currentPosition;
+
     public:
-        FunctionContext(Context* parent) : Context(parent) {}
+        FunctionContext(Context* parent) : Context(parent), currentPosition(0) {}
         
         void write(AssemblyFileWriter& writer);
+        void release(AssemblyFileWriter& writer);
+        
+        Variable* addVariable(const std::string& a, Type type);
+        Variable* newVariable(const std::string& a, Type type);
 };
 
 class BlockContext : public Context {
@@ -161,10 +186,9 @@ class BlockContext : public Context {
         FunctionContext* m_functionContext;
 
     public:
-        BlockContext(Context* parent, FunctionContext* functionContext) : Context(parent), m_functionContext(functionContext) {} 
+        BlockContext(Context* parent, FunctionContext* functionContext) : Context(parent), m_functionContext(functionContext){} 
         
-        void write(AssemblyFileWriter& writer);
-        void addVariable(const std::string a, Type type);
+        Variable* addVariable(const std::string& a, Type type);
 };
 
 } //end of eddic

@@ -20,6 +20,7 @@
 namespace eddic {
 
 class Function;
+class Variable;
 
 class Program : public ParseNode {
     private:
@@ -60,9 +61,8 @@ class Methods : public ParseNode {
 class VariableOperation : public ParseNode {
     protected:
         std::string m_variable;
-        int m_index;
+        Variable* m_var;
         Value* value;
-        Type m_type;
    
     public:
         VariableOperation(Context* context, const std::string& variable, Value* v) : ParseNode(context), m_variable(variable), value(v) {};
@@ -75,8 +75,11 @@ class VariableOperation : public ParseNode {
 };
 
 class Declaration : public VariableOperation {
+    private:
+        Type m_type;
+
     public:
-        Declaration(Context* context, Type type, const std::string& variable, Value* v) : VariableOperation(context, variable, v) { m_type = type;  };
+        Declaration(Context* context, Type type, const std::string& variable, Value* v) : VariableOperation(context, variable, v) { m_type = type; };
 
         void checkVariables();
 };
@@ -114,8 +117,8 @@ class Swap : public ParseNode {
     private:
         std::string m_lhs;
         std::string m_rhs;
-        int m_lhs_index;
-        int m_rhs_index;
+        Variable* m_lhs_var;
+        Variable* m_rhs_var;
         Type m_type;
 
     public:
@@ -154,7 +157,8 @@ class Integer : public Value {
 class VariableValue : public Value {
     private:
         std::string m_variable;
-        int m_index;
+        Variable* m_var;
+    
     public:
         VariableValue(Context* context, const std::string& variable) : Value(context), m_variable(variable) {};
         void checkVariables();

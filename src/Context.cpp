@@ -20,7 +20,7 @@ vector<Context*> Context::contexts;
 
 
 
-vector<OldContext*> OldContext::contexts;
+/*vector<OldContext*> OldContext::contexts;
 unsigned int OldContext::currentVariable = 0;
 
 OldContext::~OldContext() {
@@ -103,7 +103,7 @@ void OldContext::cleanup(){
     for (vector<OldContext*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
         delete *it;
     }
-}
+}*/
 
 Context::~Context() {
     StoredVariables::const_iterator it = m_stored.begin();
@@ -114,15 +114,6 @@ Context::~Context() {
     }
 }
 
-Variable* Context::addVariable(const std::string& variable, Type type){
-    Variable* v = new Variable(variable, type);
-
-    m_visibles.insert(variable);
-
-    storeVariable(variable, v);
-
-    return v;
-}
 
 void Context::storeVariable(const std::string& name, Variable* variable){
     m_stored[name] = variable;
@@ -158,12 +149,42 @@ void Context::cleanup(){
     }
 }
 
-void BlockContext::write(AssemblyFileWriter& writer){
-    //Nothing to be done    
+void FunctionContext::write(AssemblyFileWriter& writer){
+    StoredVariables::const_iterator it = m_stored.begin();
+    StoredVariables::const_iterator end = m_stored.end();
+
+    int size = 0;
+    
+    for ( ; it != end; ++it) {
+        if (it->second->type() == INT) {
+            size += 4;
+        } else if (it->second->type() == STRING) {
+            size += 8;
+        }
+    }
+
+    if(size > 0){
+        writer.stream() << "subl $" << size << " , %edx" << std::endl;
+    }
 }
 
-void FunctionContext::write(AssemblyFileWriter& writer){
-    //TODO    
+void FunctionContext::release(AssemblyFileWriter& writer){
+    StoredVariables::const_iterator it = m_stored.begin();
+    StoredVariables::const_iterator end = m_stored.end();
+
+    int size = 0;
+    
+    for ( ; it != end; ++it) {
+        if (it->second->type() == INT) {
+            size += 4;
+        } else if (it->second->type() == STRING) {
+            size += 8;
+        }
+    }
+
+    if(size > 0){
+        writer.stream() << "addl $" << size << " , %edx" << std::endl;
+    }
 }
 
 void GlobalContext::write(AssemblyFileWriter& writer){
@@ -172,17 +193,144 @@ void GlobalContext::write(AssemblyFileWriter& writer){
 
     for ( ; it != end; ++it) {
         if (it->second->type() == INT) {
-            writer.stream() << ".comm VI" << it->second->index() << ",4,4" << endl;
+            writer.stream() << ".comm VI" << it->second->position().name() << ",4,4" << endl;
         } else if (it->second->type() == STRING) {
-            writer.stream() << ".comm VS" << it->second->index() << ",8,4" << endl;
+            writer.stream() << ".comm VS" << it->second->position().name() << ",8,4" << endl;
         }
     }
 }
 
-void BlockContext::addVariable(const std::string variable, Type type){
-    Variable* v = new Variable(variable, type);
+Variable* GlobalContext::addVariable(const std::string& variable, Type type){
+    Position position(GLOBAL, variable);
+
+    Variable* v = new Variable(variable, type, position);
+
+    m_visibles.insert(variable);
+
+    storeVariable(variable, v);
+
+    return v;
+}
+
+Variable* FunctionContext::newVariable(const std::string& variable, Type type){
+    Position position(STACK, currentPosition);
+    
+    currentPosition += type == INT ? 4 : 8;
+
+    return new Variable(variable, type, position);
+}
+
+Variable* FunctionContext::addVariable(const std::string& variable, Type type){
+    Variable* v = newVariable(variable, type);
+
+    m_visibles.insert(variable);
+
+    storeVariable(variable, v);
+
+    return v;
+}
+
+Variable* BlockContext::addVariable(const std::string& variable, Type type){
+    Variable* v = m_functionContext->newVariable(variable, type);
 
     m_visibles.insert(variable);
 
     m_functionContext->storeVariable(variable, v);
+
+    return v;
+}
+
+void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg){
+    if(m_type == INT){ 
+        if(m_position.isStack()){
+            writer.stream() << "movl -" << m_position.offset() << "(ebp), " << reg << endl;
+        } else if(m_position.isGlobal()){
+            writer.stream() << "movl VI" << m_position.name() << ", " << reg << endl;
+        }
+   } else if (m_type == STRING){
+       //TODO Should never be called 
+   }
+}
+
+void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2){
+    if(m_type == INT){ 
+       //TODO Should never be called 
+   } else if (m_type == STRING){
+       if(m_position.isStack()){
+           writer.stream() << "movl -" << m_position.name() << "(ebp), " << reg1 << endl;
+           writer.stream() << "movl -" << (m_position.offset() + 4) << "(ebp), " << reg2 << endl;
+       } else {
+           writer.stream() << "movl VS" << m_position.name() << ", " << reg1 << endl;
+           writer.stream() << "movl VS" << m_position.name() << "+4, " << reg2 << endl;
+       }
+   }
+}
+
+void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg){
+    if(m_type == INT){ 
+        if(m_position.isStack()){
+            writer.stream() << "movl " << reg << ", -" << m_position.offset() << "(ebp)" << endl;
+        } else if(m_position.isGlobal()){
+            writer.stream() << "movl " << reg << ", VI" << m_position.name()  << endl;
+        }
+   } else if (m_type == STRING){
+       //TODO Should never be called 
+   }
+}
+
+void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2){
+    if(m_type == INT){ 
+       //TODO Should never be called 
+   } else if (m_type == STRING){
+       if(m_position.isStack()){
+           writer.stream() << "movl " << reg1 << ", -" << m_position.name() << "(ebp)" << endl;
+           writer.stream() << "movl " << reg2 << ", -" << (m_position.offset() + 4) << "(ebp)" << endl;
+       } else {
+           writer.stream() << "movl " << reg1 << ", VS" << m_position.name() << endl;
+           writer.stream() << "movl " << reg2 << ", VS" << m_position.name() << "+4" << endl;
+       }
+   }
+}
+
+void Variable::pushToStack(AssemblyFileWriter& writer){
+    switch (m_type) {
+        case INT:
+            if(m_position.isStack()){
+                writer.stream() << "pushl -" << m_position.offset() << "(ebp)" << std::endl;
+            } else if(m_position.isGlobal()){
+                writer.stream() << "pushl VI" << m_position.name() << std::endl;
+            }
+
+            break;
+        case STRING:
+            if(m_position.isStack()){
+                writer.stream() << "pushl -" << m_position.offset() << "(ebp)" << std::endl;
+                writer.stream() << "pushl -" << (m_position.offset() + 4) << "(ebp)" << std::endl;
+            } else if(m_position.isGlobal()){
+                writer.stream() << "pushl VS" << m_index << endl;
+                writer.stream() << "pushl VS" << m_index << "+4" << std::endl;
+            }
+
+            break;
+    }
+}
+
+void Variable::popFromStack(AssemblyFileWriter& writer){
+    switch (m_type) {
+        case INT:
+            writer.stream() << "movl (%esp), %eax" << endl;
+            writer.stream() << "addl $4, %esp" << endl;
+
+            moveFromRegister(writer, "%eax");
+
+            break;
+        case STRING:
+            writer.stream() << "movl (%esp), %eax" << endl;
+            writer.stream() << "movl 4(%esp), %ebx" << endl;
+            writer.stream() << "addl $8, %esp" << endl;
+
+            moveFromRegister(writer, "%eax", "%ebx");
+            
+            break;
+    }
 }

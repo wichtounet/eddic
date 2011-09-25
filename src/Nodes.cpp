@@ -180,9 +180,7 @@ void Declaration::checkVariables() {
         throw CompilerException("Variable has already been declared");
     }
 
-    Variable* var = context()->addVariable(m_variable, m_type);
-
-    m_index = var->index();
+    m_var = context()->addVariable(m_variable, m_type);
 
     value->checkVariables();
 
@@ -200,14 +198,11 @@ void Assignment::checkVariables() {
         throw CompilerException("Variable has not  been declared");
     }
 
-    Variable* var = context()->getVariable(m_variable);
-
-    m_index = var->index();
-    m_type = var->type();
+    m_var = context()->getVariable(m_variable);
 
     value->checkVariables();
 
-    if (value->type() != var->type()) {
+    if (value->type() != m_var->type()) {
         throw CompilerException("Incompatible type");
     }
 }
@@ -221,17 +216,14 @@ void Swap::checkVariables() {
         throw CompilerException("Variable has not been declared");
     }
 
-    Variable* lhs_var = context()->getVariable(m_lhs);
-    Variable* rhs_var = context()->getVariable(m_rhs);
+    m_lhs_var = context()->getVariable(m_lhs);
+    m_rhs_var = context()->getVariable(m_rhs);
 
-    m_lhs_index = lhs_var->index();
-    m_rhs_index = rhs_var->index();
-
-    if (lhs_var->type() != rhs_var->type()) {
+    if (m_lhs_var->type() != m_rhs_var->type()) {
         throw CompilerException("Incompatible type");
     }
 
-    m_type = lhs_var->type();
+    m_type = m_lhs_var->type();
 }
 
 void VariableValue::checkVariables() {
@@ -239,10 +231,7 @@ void VariableValue::checkVariables() {
         throw CompilerException("Variable has not been declared");
     }
 
-    Variable* variable = context()->getVariable(m_variable);
-
-    m_type = variable->type();
-    m_index = variable->index();
+    m_var = context()->getVariable(m_variable);
 }
 
 void Litteral::checkStrings(StringPool& pool) {
@@ -252,44 +241,25 @@ void Litteral::checkStrings(StringPool& pool) {
 void VariableOperation::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
-    switch (m_type) {
-        case INT:
-            writer.stream() << "movl (%esp), %eax" << endl;
-            writer.stream() << "movl %eax, VI" << m_index << endl;
-            writer.stream() << "addl $4, %esp" << endl;
-
-            break;
-        case STRING:
-            writer.stream() << "movl (%esp), %eax" << endl;
-            writer.stream() << "movl 4(%esp), %ebx" << endl;
-            writer.stream() << "addl $8, %esp" << endl;
-
-            writer.stream() << "movl %eax, VS" << m_index << "+4" << endl;
-            writer.stream() << "movl %ebx, VS" << m_index << endl;
-
-            break;
-    }
+    m_var->popFromStack(writer);
 }
 
 void Swap::write(AssemblyFileWriter& writer) {
     switch (m_type) {
         case INT:
-            writer.stream() << "movl VI" << m_lhs_index << ", %eax" << endl;
-            writer.stream() << "movl VI" << m_rhs_index << ", %ebx" << endl;
-            writer.stream() << "movl %eax, VI" << m_rhs_index << endl;
-            writer.stream() << "movl %ebx, VI" << m_lhs_index << endl;
+            m_lhs_var->moveToRegister(writer, "%eax"); 
+            m_rhs_var->moveToRegister(writer, "%ebx"); 
+            
+            m_lhs_var->moveFromRegister(writer, "%ebx"); 
+            m_rhs_var->moveFromRegister(writer, "%eax"); 
 
             break;
         case STRING:
-            writer.stream() << "movl VS" << m_lhs_index << ", %eax" << endl;
-            writer.stream() << "movl VS" << m_rhs_index << ", %ebx" << endl;
-            writer.stream() << "movl %eax, VS" << m_rhs_index << endl;
-            writer.stream() << "movl %ebx, VS" << m_lhs_index << endl;
-
-            writer.stream() << "movl VS" << m_lhs_index << "+4, %eax" << endl;
-            writer.stream() << "movl VS" << m_rhs_index << "+4, %ebx" << endl;
-            writer.stream() << "movl %eax, VS" << m_rhs_index << "+4" << endl;
-            writer.stream() << "movl %ebx, VS" << m_lhs_index << "+4" << endl;
+            m_lhs_var->moveToRegister(writer, "%eax", "%ebx"); 
+            m_rhs_var->moveToRegister(writer, "%ecx", "%edx"); 
+            
+            m_lhs_var->moveFromRegister(writer, "%ecx", "%edx"); 
+            m_rhs_var->moveFromRegister(writer, "%eax", "%ebx"); 
 
             break;
     }
@@ -331,17 +301,7 @@ void Integer::write(AssemblyFileWriter& writer) {
 }
 
 void VariableValue::write(AssemblyFileWriter& writer) {
-    switch (m_type) {
-        case INT:
-            writer.stream() << "pushl VI" << m_index << std::endl;
-
-            break;
-        case STRING:
-            writer.stream() << "pushl VS" << m_index << endl;
-            writer.stream() << "pushl VS" << m_index << "+4" << std::endl;
-
-            break;
-    }
+    m_var->pushToStack(writer);
 }
 
 void Litteral::write(AssemblyFileWriter& writer) {

@@ -9,6 +9,7 @@
 
 #include "AssemblyFileWriter.hpp"
 #include "Functions.hpp"
+#include "Context.hpp"
 
 using namespace eddic;
 
@@ -31,8 +32,12 @@ void Function::write(AssemblyFileWriter& writer){
     
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
-    
+
+    context()->write(writer);
+
     ParseNode::write(writer);
+
+    context()->release(writer);
 
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;
