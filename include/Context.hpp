@@ -172,7 +172,7 @@ class FunctionContext : public Context {
         int currentPosition;
 
     public:
-        FunctionContext(Context* parent) : Context(parent), currentPosition(0) {}
+        FunctionContext(Context* parent) : Context(parent), currentPosition(4) {}
         
         void write(AssemblyFileWriter& writer);
         void release(AssemblyFileWriter& writer);
