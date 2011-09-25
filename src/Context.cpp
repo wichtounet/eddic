@@ -164,7 +164,7 @@ void FunctionContext::write(AssemblyFileWriter& writer){
     }
 
     if(size > 0){
-        writer.stream() << "subl $" << size << " , %edx" << std::endl;
+        writer.stream() << "subl $" << size << " , %esp" << std::endl;
     }
 }
 
@@ -183,7 +183,7 @@ void FunctionContext::release(AssemblyFileWriter& writer){
     }
 
     if(size > 0){
-        writer.stream() << "addl $" << size << " , %edx" << std::endl;
+        writer.stream() << "addl $" << size << " , %esp" << std::endl;
     }
 }
 
