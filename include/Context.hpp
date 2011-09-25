@@ -85,37 +85,6 @@ class Variable {
         }
 };
 
-/*class OldContext {
-    private:
-        static std::vector<OldContext*> contexts;
-        static unsigned int currentVariable;
-
-        std::map<std::string, Variable*> variables;
-        OldContext* m_parent;
-
-    public:
-        OldContext() : m_parent(NULL) {
-            contexts.push_back(this);
-        }
-        OldContext(OldContext* parent) : m_parent(parent) {
-            contexts.push_back(this);
-        }
-        ~OldContext();
-
-        bool exists(const std::string& variable) const;
-        unsigned int index(const std::string& variable) const;
-        Variable* create(const std::string& variable, Type type);
-        Variable* find(const std::string& variable);
-        void write(AssemblyFileWriter& writer);
-
-        OldContext* parent() {
-            return m_parent;
-        }
-
-        static void writeAll(AssemblyFileWriter& writer);
-        static void cleanup();
-};*/
-
 typedef std::unordered_map<int, Variable*> StoredVariables;
 typedef std::unordered_map<std::string, int> VisibleVariables;
 
