@@ -257,7 +257,7 @@ void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg1, std:
        //TODO Should never be called 
    } else if (m_type == STRING){
        if(m_position.isStack()){
-           writer.stream() << "movl -" << m_position.name() << "(ebp), " << reg1 << endl;
+           writer.stream() << "movl -" << m_position.offset() << "(ebp), " << reg1 << endl;
            writer.stream() << "movl -" << (m_position.offset() + 4) << "(ebp), " << reg2 << endl;
        } else {
            writer.stream() << "movl VS" << m_position.name() << ", " << reg1 << endl;
@@ -283,7 +283,7 @@ void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg1, st
        //TODO Should never be called 
    } else if (m_type == STRING){
        if(m_position.isStack()){
-           writer.stream() << "movl " << reg1 << ", -" << m_position.name() << "(ebp)" << endl;
+           writer.stream() << "movl " << reg1 << ", -" << m_position.offset() << "(ebp)" << endl;
            writer.stream() << "movl " << reg2 << ", -" << (m_position.offset() + 4) << "(ebp)" << endl;
        } else {
            writer.stream() << "movl " << reg1 << ", VS" << m_position.name() << endl;
