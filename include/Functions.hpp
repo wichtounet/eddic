@@ -53,12 +53,17 @@ class Function : public ParseNode {
 class FunctionCall : public ParseNode {
     private:
         std::string m_function;
+        std::vector<Value*> m_values;
 
     public:
         FunctionCall(Context* context, const std::string& function) : ParseNode(context), m_function(function) {}
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);
+
+        void addValue(Value* value){
+            m_values.push_back(value);
+        }
 };
 
 } //end of eddic

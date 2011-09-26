@@ -198,7 +198,7 @@ ParseNode* Parser::parseCall(const Token& callToken) {
 
                 Value* value = parseValue();
 
-                //TODO add the value to the function call
+                functionCall.addValue(value);
             }
             
             lexer.next();
