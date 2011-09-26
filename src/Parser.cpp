@@ -79,32 +79,41 @@ Function* Parser::parseFunction() {
     Function* function = new Function(currentContext, functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
-   
-    lexer.next();
 
-    if(!lexer.isRightParenth()){
+    while(true){
         lexer.next();
 
-        if(!isType(lexer)){
-            throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
-        }
-
-        string typeName = lexer.getCurrentToken().value();
-        
-        Type type;
-        if (typeName == "int") {
-            type = INT;
+        if(lexer.isRightParenth()){
+            break;
         } else {
-            type = STRING;
+            if(lexer.isComma()){
+                lexer.next();
+            }
+
+            if(!isType(lexer)){
+                throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
+            }
+
+            string typeName = lexer.getCurrentToken().value();
+
+            Type type;
+            if (typeName == "int") {
+                type = INT;
+            } else {
+                type = STRING;
+            }
+
+            assertNextIsWord(lexer, "Expecting a parameter name");
+
+            string parameterName = lexer.getCurrentToken().value();
+
+            Parameter parameter(parameterName, type);
+
+            function->addParameter(parameter);
         }
+    }
 
-        assertNextIsWord(lexer, "Expecting a parameter name");
-
-        string parameterName = lexer.getCurrentToken().value();
-
-        Parameter parameter(parameterName, type);
-
-        function->addParameter(parameter);
+    if(!lexer.isRightParenth()){
     }
 
     assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
