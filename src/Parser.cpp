@@ -31,6 +31,7 @@ inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message);
 inline static void assertNextIsRightBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsStop(Lexer& lexer, const string& message);
+inline static void assertNextIsWord(Lexer& lexer, const string& message);
 
 //Move to some utility class
 bool isType(const Lexer& lexer) {
@@ -68,11 +69,7 @@ Function* Parser::parseFunction() {
         throw TokenException("Invalid return type", lexer.getCurrentToken());
     }
 
-    lexer.next();
-
-    if(!lexer.isWord()){
-        throw TokenException("Expecting a function name", lexer.getCurrentToken());
-    }
+    assertNextIsWord(lexer, "Expecting a function name");
 
     string functionName = lexer.getCurrentToken().value();
 
@@ -82,7 +79,22 @@ Function* Parser::parseFunction() {
     Function* function = new Function(currentContext, functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
-    assertNextIsRightParenth(lexer, "Waiting for a right parenth");
+   
+    lexer.next();
+
+    if(!lexer.isRightParenth()){
+        lexer.next();
+
+        if(!isType(lexer)){
+            throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
+        }
+
+        string parameterType = lexer.getCurrentToken().value();
+
+        assertNextIsWord(lexer, "Expecting a parameter name");
+
+        string parameterName = lexer.getCurrentToken().value();
+    }
 
     assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
 
@@ -611,6 +623,12 @@ inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
 
 inline static void assertNextIsStop(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isStop()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}
+
+inline static void assertNextIsWord(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isWord()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
