@@ -89,11 +89,22 @@ Function* Parser::parseFunction() {
             throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
         }
 
-        string parameterType = lexer.getCurrentToken().value();
+        string typeName = lexer.getCurrentToken().value();
+        
+        Type type;
+        if (typeName == "int") {
+            type = INT;
+        } else {
+            type = STRING;
+        }
 
         assertNextIsWord(lexer, "Expecting a parameter name");
 
         string parameterName = lexer.getCurrentToken().value();
+
+        Parameter parameter(parameterName, type);
+
+        function->addParameter(parameter);
     }
 
     assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
