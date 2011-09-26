@@ -27,6 +27,17 @@ void FunctionCall::checkFunctions(Program& program){
     }
 }
 
+void Function::addParameter(std::string name, Type type){
+    Parameter param(name, type, m_currentPosition);
+    m_parameters.push_back(param);
+
+    if(type == INT){
+        m_currentPosition += 4;
+    } else {
+        m_currentPosition += 8;
+    }
+}
+
 void Function::write(AssemblyFileWriter& writer){
     writer.stream() << endl << m_name << ":" << endl;
     

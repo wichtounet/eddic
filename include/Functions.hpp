@@ -26,18 +26,28 @@ class Parameter {
     private:
         std::string m_name;
         Type m_type;
+        int m_offset;
 
     public:
-        Parameter(const std::string& name, Type type) : m_name(name), m_type(type) {}
+        Parameter(const std::string& name, Type type, int offset) : m_name(name), m_type(type), m_offset(offset) {}
+
+        Type type(){
+            return m_type;
+        }
+
+        int offset(){
+            return m_offset;
+        }
 };
 
 class Function : public ParseNode {
 	private:
 		std::string m_name;
         std::vector<Parameter> m_parameters;
+        int m_currentPosition;
 
 	public:
-		Function(Context* context, const std::string& name) : ParseNode(context), m_name(name) {}
+		Function(Context* context, const std::string& name) : ParseNode(context), m_name(name), m_currentPosition(0) {}
 		
         void write(AssemblyFileWriter& writer);
 
@@ -45,9 +55,7 @@ class Function : public ParseNode {
             return m_name;
         }
 
-        void addParameter(Parameter parameter){
-            m_parameters.push_back(parameter);
-        }
+        void addParameter(std::string name, Type type);
 };
 
 class FunctionCall : public ParseNode {

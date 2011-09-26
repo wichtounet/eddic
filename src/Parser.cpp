@@ -107,9 +107,7 @@ Function* Parser::parseFunction() {
 
             string parameterName = lexer.getCurrentToken().value();
 
-            Parameter parameter(parameterName, type);
-
-            function->addParameter(parameter);
+            function->addParameter(parameterName, type);
         }
     }
 
@@ -198,7 +196,7 @@ ParseNode* Parser::parseCall(const Token& callToken) {
 
                 Value* value = parseValue();
 
-                functionCall.addValue(value);
+                functionCall->addValue(value);
             }
             
             lexer.next();
