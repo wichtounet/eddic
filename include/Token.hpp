@@ -24,6 +24,8 @@ enum TokenType {
     LEFT_BRACE,
     RIGHT_BRACE,
 
+    COMMA,
+
     STOP,
     INTEGER,
     ADDITION,

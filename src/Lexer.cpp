@@ -115,6 +115,9 @@ bool Lexer::readNext() {
         case ';':
             current = Token(STOP, line, col);
             return true;
+        case ',':
+            current = Token(COMMA, line, col);
+            return true;
         case '=':
             scanner.next();
 
@@ -340,4 +343,8 @@ bool Lexer::isTrue() const {
 
 bool Lexer::isFalse() const {
     return current.type() == FALSE_TYPE;
+}
+
+bool Lexer::isComma() const {
+    return current.type() == COMMA;
 }
