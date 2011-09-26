@@ -3,9 +3,9 @@ void main(){
 
     Println(x);
     
-    int x = 4;
+    int y = 4;
 
-    test(x);
+    test(y);
 }
 
 void test(int x){
