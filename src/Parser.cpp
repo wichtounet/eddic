@@ -197,9 +197,7 @@ ParseNode* Parser::parseDeclaration() {
         type = STRING;
     }
 
-    if (!lexer.next() || !lexer.isWord()) {
-        throw TokenException("A type must be followed by variable name", lexer.getCurrentToken());
-    }
+    assertNextIsWord(lexer, "A type must be followed by variable name"); 
 
     string variable = lexer.getCurrentToken().value();
 
@@ -219,9 +217,7 @@ ParseNode* Parser::parseAssignment(const Token& variableToken) {
 }
 
 ParseNode* Parser::parseSwap(const Token& lhs) {
-    if (!lexer.next() || !lexer.isWord()) {
-        throw TokenException("Can only swap two variables", lexer.getCurrentToken());
-    }
+    assertNextIsWord(lexer, "Can only swap two variables"); 
 
     string rhs = lexer.getCurrentToken().value();
 
