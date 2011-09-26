@@ -3,10 +3,12 @@ void main(){
 
     Println(x);
     
-    test();
+    int x = 4;
+
+    test(x);
 }
 
-void test(){
+void test(int x){
     Println("test()");
     
     if(4 > 3){
