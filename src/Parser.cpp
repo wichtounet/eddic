@@ -113,9 +113,6 @@ Function* Parser::parseFunction() {
         }
     }
 
-    if(!lexer.isRightParenth()){
-    }
-
     assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
 
     lexer.next();
@@ -191,7 +188,19 @@ ParseNode* Parser::parseCall(const Token& callToken) {
     if (call != "Print" && call != "Println") {
         FunctionCall* functionCall = new FunctionCall(currentContext, call);
 
-        assertNextIsRightParenth(lexer, "The function call must be closed with a right parenth");
+        while(true){
+            if(lexer.isRightParenth()){
+                break;
+            } else {
+                if(lexer.isComma()){
+                    lexer.next();
+                } 
+
+                Value* value = parseValue();
+
+                //TODO add the value to the function call
+            }
+        }
         
         return functionCall;
     }
