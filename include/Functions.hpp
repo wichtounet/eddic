@@ -22,9 +22,19 @@ class MainDeclaration : public ParseNode {
         void write(AssemblyFileWriter& writer);
 };
 
+class Parameter {
+    private:
+        std::string m_name;
+        Type m_type;
+
+    public:
+        Parameter(const std::string& name, Type type) : m_name(name), m_type(type) {}
+};
+
 class Function : public ParseNode {
 	private:
 		std::string m_name;
+        std::vector<Parameter> m_parameters;
 
 	public:
 		Function(Context* context, const std::string& name) : ParseNode(context), m_name(name) {}
@@ -33,6 +43,10 @@ class Function : public ParseNode {
 
         std::string name(){
             return m_name;
+        }
+
+        void addParameter(Parameter parameter){
+            m_parameters.push_back(parameter);
         }
 };
 
