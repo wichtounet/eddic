@@ -10,20 +10,7 @@ void main(){
 
 void test(int x){
     Println("test()");
-    
-    if(4 > 3){
-        string x = "0";
-        Print(x);
-    } else {
-        string x = "1";
-        Print(x);
-    }
-    
-    if(4 > 3){
-        string x = "0";
-        Print(x);
-    } else {
-        string x = "1";
-        Print(x);
-    }
+
+    Print("x=");
+    Println(x);
 }
