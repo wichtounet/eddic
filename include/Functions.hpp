@@ -20,6 +20,7 @@ std::string mangle(std::string functionName, std::vector<T*> typed){
     std::string ss;
 
     ss += "_F";
+    ss += functionName.length();
     ss += functionName;
 
     typename std::vector<T*>::const_iterator it = typed.begin();
