@@ -55,5 +55,12 @@ void Function::write(AssemblyFileWriter& writer){
 }
 
 void FunctionCall::write(AssemblyFileWriter& writer){
+    std::vector<Value*>::const_iterator it = m_values.begin();
+    std::vector<Value*>::const_iterator end = m_values.end();
+
+    for( ; it != end; ++it){
+        (*it)->write(writer);
+    }
+
     writer.stream() << "call " << m_function << endl;
 }
