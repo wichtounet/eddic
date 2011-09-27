@@ -30,7 +30,9 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
 }
 
 void FunctionCall::checkFunctions(Program& program){
-    if(!program.exists(m_function)){
+    m_function_mangled = mangle(m_function, m_values);
+
+    if(!program.exists(m_function_mangled)){
         throw CompilerException("The function \"" + m_function + "\"does not exists");
     }
 }
@@ -43,7 +45,7 @@ void Function::addParameter(std::string name, Type type){
 }
 
 void Function::write(AssemblyFileWriter& writer){
-    writer.stream() << endl << m_name << ":" << endl;
+    writer.stream() << endl << mangledName() << ":" << endl;
     
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
@@ -66,5 +68,5 @@ void FunctionCall::write(AssemblyFileWriter& writer){
         (*it)->write(writer);
     }
 
-    writer.stream() << "call " << m_function << endl;
+    writer.stream() << "call " << m_function_mangled << endl;
 }

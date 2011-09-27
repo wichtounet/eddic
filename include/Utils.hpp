@@ -12,12 +12,19 @@
 
 namespace eddic {
 
-template <class T>
+template <typename T>
 T toNumber (std::string text) {
     std::stringstream ss(text);
     T result;
     ss >> result;
     return result;
+}
+
+template <typename T>
+std::string toString(T number) {
+    std::stringstream out;
+    out << number;
+    return out.str();
 }
 
 class deleter {

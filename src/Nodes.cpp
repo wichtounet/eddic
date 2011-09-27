@@ -25,7 +25,7 @@ Program::~Program(){
 }
 
 void Program::addFunction(Function* function){
-    functions[function->name()] = function;
+    functions[function->mangledName()] = function;
 
     addLast(function);
 }

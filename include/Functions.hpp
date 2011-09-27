@@ -12,15 +12,20 @@
 #include <string>
 
 #include "Nodes.hpp"
+#include "Utils.hpp"
 
 namespace eddic {
 
 template<typename T>
 std::string mangle(std::string functionName, std::vector<T*> typed){
+    if(functionName == "main"){
+        return functionName;
+    }
+
     std::string ss;
 
     ss += "_F";
-    ss += functionName.length();
+    ss += toString(functionName.length());
     ss += functionName;
 
     typename std::vector<T*>::const_iterator it = typed.begin();
@@ -72,6 +77,10 @@ class Function : public ParseNode {
 
         std::string name(){
             return m_name;
+        }
+
+        std::string mangledName(){
+            return mangle(m_name, m_parameters);
         }
 
         void addParameter(std::string name, Type type);
