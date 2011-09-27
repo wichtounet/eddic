@@ -58,7 +58,7 @@ void writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, std::strin
 
 class Else : public ParseNode {
     public:
-        Else(Context* context) : ParseNode(context) {}
+        Else(Context* context, Token* token) : ParseNode(context, token) {}
 };
 
 class ElseIf : public ParseNode {
@@ -66,7 +66,7 @@ class ElseIf : public ParseNode {
         Condition* m_condition;
 
     public:
-        ElseIf(Context* context, Condition* condition) : ParseNode(context), m_condition(condition) {}
+        ElseIf(Context* context, Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual ~ElseIf() {
             delete m_condition;
@@ -88,7 +88,7 @@ class If : public ParseNode {
         std::vector<ElseIf*> elseIfs;
 
     public:
-        If(Context* context, Condition* condition) : ParseNode(context), m_condition(condition), m_elseBlock(NULL) {}
+        If(Context* context, const Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition), m_elseBlock(NULL) {}
 
         virtual ~If();
 
@@ -107,23 +107,6 @@ class If : public ParseNode {
         Condition* condition() {
             return m_condition;
         }
-};
-
-class For : public ParseNode {
-    private: 
-        ParseNode* m_start;
-        ParseNode* m_iter;
-        Condition* m_condition;
-
-    public:
-        For(Context* context, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context), m_start(start), m_iter(iter), m_condition(condition) {}
-
-        virtual ~For();
-
-        virtual void write(AssemblyFileWriter& writer);
-        virtual void checkVariables();
-        virtual void checkStrings(StringPool& pool);
-        virtual void optimize();
 };
 
 } //end of eddic

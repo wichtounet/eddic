@@ -177,7 +177,7 @@ void Methods::write(AssemblyFileWriter& writer) {
 
 void Declaration::checkVariables() {
     if (context()->exists(m_variable)) {
-        throw CompilerException("Variable has already been declared");
+        throw CompilerException("Variable has already been declared", token());
     }
 
     m_var = context()->addVariable(m_variable, m_type);
@@ -185,7 +185,7 @@ void Declaration::checkVariables() {
     value->checkVariables();
 
     if (value->type() != m_type) {
-        throw CompilerException("Incompatible type");
+        throw CompilerException("Incompatible type", token());
     }
 }
 
@@ -195,7 +195,7 @@ void VariableOperation::checkStrings(StringPool& pool) {
 
 void Assignment::checkVariables() {
     if (!context()->exists(m_variable)) {
-        throw CompilerException("Variable has not  been declared");
+        throw CompilerException("Variable has not  been declared", token());
     }
 
     m_var = context()->getVariable(m_variable);
@@ -203,24 +203,24 @@ void Assignment::checkVariables() {
     value->checkVariables();
 
     if (value->type() != m_var->type()) {
-        throw CompilerException("Incompatible type");
+        throw CompilerException("Incompatible type", token());
     }
 }
 
 void Swap::checkVariables() {
     if (m_lhs == m_rhs) {
-        throw CompilerException("Cannot swap a variable with itself");
+        throw CompilerException("Cannot swap a variable with itself", token());
     }
 
     if (!context()->exists(m_lhs) || !context()->exists(m_rhs)) {
-        throw CompilerException("Variable has not been declared");
+        throw CompilerException("Variable has not been declared", token());
     }
 
     m_lhs_var = context()->getVariable(m_lhs);
     m_rhs_var = context()->getVariable(m_rhs);
 
     if (m_lhs_var->type() != m_rhs_var->type()) {
-        throw CompilerException("Incompatible type");
+        throw CompilerException("Incompatible type", token());
     }
 
     m_type = m_lhs_var->type();
@@ -228,7 +228,7 @@ void Swap::checkVariables() {
 
 void VariableValue::checkVariables() {
     if (!context()->exists(m_variable)) {
-        throw CompilerException("Variable has not been declared");
+        throw CompilerException("Variable has not been declared", token());
     }
 
     m_var = context()->getVariable(m_variable);

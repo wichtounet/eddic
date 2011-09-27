@@ -41,6 +41,7 @@ class Value : public ParseNode {
 
     public:
         Value(Context* context) : ParseNode(context) {}
+        Value(Context* context, const Token* token) : ParseNode(context, token) {}
 
         Type type() const {
             return m_type;
@@ -65,7 +66,7 @@ class VariableOperation : public ParseNode {
         Value* value;
    
     public:
-        VariableOperation(Context* context, const std::string& variable, Value* v) : ParseNode(context), m_variable(variable), value(v) {};
+        VariableOperation(Context* context, const Token* token, const std::string& variable, Value* v) : ParseNode(context, token), m_variable(variable), value(v) {};
         ~VariableOperation() {
             delete value;
         }
@@ -79,14 +80,14 @@ class Declaration : public VariableOperation {
         Type m_type;
 
     public:
-        Declaration(Context* context, Type type, const std::string& variable, Value* v) : VariableOperation(context, variable, v) { m_type = type; };
+        Declaration(Context* context, const Token* token, Type type, const std::string& variable, Value* v) : VariableOperation(context, token, variable, v) { m_type = type;  };
 
         void checkVariables();
 };
 
 class Assignment : public VariableOperation {
     public:
-        Assignment(Context* context, const std::string& variable, Value* v) : VariableOperation(context, variable, v) {};
+        Assignment(Context* context, const Token* token, const std::string& variable, Value* v) : VariableOperation(context, token, variable, v) {};
 
         void checkVariables();
 };
@@ -97,7 +98,7 @@ class Print : public ParseNode {
         Value* value;
 
     public:
-        Print(Context* context, Value* v) : ParseNode(context), value(v) {};
+        Print(Context* context, const Token* token, Value* v) : ParseNode(context, token), value(v) {};
         virtual ~Print() {
             delete value;
         }
@@ -109,7 +110,7 @@ class Print : public ParseNode {
 
 class Println : public Print {
     public:
-        Println(Context* context, Value*v) : Print(context, v) {}
+        Println(Context* context, const Token* token, Value*v) : Print(context, token, v) {}
         void write(AssemblyFileWriter& writer);
 };
 
@@ -122,7 +123,7 @@ class Swap : public ParseNode {
         Type m_type;
 
     public:
-        Swap(Context* context, const std::string& lhs, const std::string& rhs) : ParseNode(context), m_lhs(lhs), m_rhs(rhs) {};
+        Swap(Context* context, const Token* token, const std::string& lhs, const std::string& rhs) : ParseNode(context, token), m_lhs(lhs), m_rhs(rhs) {};
 
         void checkVariables();
         void write(AssemblyFileWriter& writer);
@@ -133,7 +134,7 @@ class Litteral : public Value {
         std::string m_litteral;
         std::string m_label;
     public:
-        Litteral(Context* context, const std::string& litteral) : Value(context), m_litteral(litteral) {
+        Litteral(Context* context, const Token* token, const std::string& litteral) : Value(context, token), m_litteral(litteral) {
             m_type = STRING;
         };
         void checkStrings(StringPool& pool);
@@ -146,7 +147,7 @@ class Integer : public Value {
     private:
         int m_value;
     public:
-        Integer(Context* context, int value) : Value(context), m_value(value) {
+        Integer(Context* context, const Token* token, int value) : Value(context, token), m_value(value) {
             m_type = INT;
         };
         void write(AssemblyFileWriter& writer);
@@ -160,7 +161,7 @@ class VariableValue : public Value {
         Variable* m_var;
     
     public:
-        VariableValue(Context* context, const std::string& variable) : Value(context), m_variable(variable) {};
+        VariableValue(Context* context, const Token* token, const std::string& variable) : Value(context, token), m_variable(variable) {};
         void checkVariables();
         void write(AssemblyFileWriter& writer);
         bool isConstant();

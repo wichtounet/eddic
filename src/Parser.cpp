@@ -39,7 +39,7 @@ bool isType(const Lexer& lexer) {
         return false;
     }
 
-    string value = lexer.getCurrentToken().value();
+    string value = lexer.getCurrentToken()->value();
 
     return value == "int" || value == "string";
 }
@@ -63,7 +63,7 @@ Function* Parser::parseFunction() {
         throw TokenException("Not a function", lexer.getCurrentToken());
     }
 
-    string returnType = lexer.getCurrentToken().value();
+    string returnType = lexer.getCurrentToken()->value();
 
     if(returnType != "void"){
         throw TokenException("Invalid return type", lexer.getCurrentToken());
@@ -71,12 +71,12 @@ Function* Parser::parseFunction() {
 
     assertNextIsWord(lexer, "Expecting a function name");
 
-    string functionName = lexer.getCurrentToken().value();
+    string functionName = lexer.getCurrentToken()->value();
 
     functionContext = new FunctionContext(currentContext);
     currentContext = functionContext;
 
-    Function* function = new Function(currentContext, functionName);
+    Function* function = new Function(currentContext, lexer.getCurrentToken(), functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
  
@@ -96,13 +96,13 @@ Function* Parser::parseFunction() {
                 throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
             }
 
-            string typeName = lexer.getCurrentToken().value();
+            string typeName = lexer.getCurrentToken()->value();
 
             Type type = stringToType(typeName);
 
             assertNextIsWord(lexer, "Expecting a parameter name");
 
-            string parameterName = lexer.getCurrentToken().value();
+            string parameterName = lexer.getCurrentToken()->value();
 
             if(params.find(parameterName) != params.end()){
                 throw TokenException("The parameter's name must be unique", lexer.getCurrentToken());
@@ -167,7 +167,7 @@ ParseNode* Parser::parseRepeatableInstruction() {
 }
 
 ParseNode* Parser::parseCallOrAssignment() {
-    Token token = lexer.getCurrentToken();
+    Token* token = lexer.getCurrentToken();
 
     if (!lexer.next()) {
         throw TokenException("Incomplete instruction", lexer.getCurrentToken());
@@ -184,22 +184,28 @@ ParseNode* Parser::parseCallOrAssignment() {
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-ParseNode* Parser::parseCall(const Token& callToken) {
-    string call = callToken.value();
+ParseNode* Parser::parseCall(const Token* callToken) {
+    string call = callToken->value();
 
     if (call != "Print" && call != "Println") {
-        FunctionCall* functionCall = new FunctionCall(currentContext, call);
+        FunctionCall* functionCall = new FunctionCall(currentContext, lexer.getCurrentToken(), call);
 
-        while(true){
-            if(lexer.isRightParenth()){
-                break;
-            } else {
-                Value* value = parseValue();
+        lexer.next();
 
-                functionCall->addValue(value);
+        if(!lexer.isRightParenth()){
+            lexer.pushBack();
+
+            while(true){
+                if(lexer.isRightParenth()){
+                    break;
+                } else {
+                    Value* value = parseValue();
+
+                    functionCall->addValue(value);
+                }
+
+                lexer.next();
             }
-            
-            lexer.next();
         }
         
         return functionCall;
@@ -210,20 +216,20 @@ ParseNode* Parser::parseCall(const Token& callToken) {
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 
     if (call == "Print") {
-        return new Print(currentContext, value);
+        return new Print(currentContext, callToken, value);
     } else {
-        return new Println(currentContext, value);
+        return new Println(currentContext, callToken, value);
     }
 }
 
 ParseNode* Parser::parseDeclaration() {
-    string typeName = lexer.getCurrentToken().value();
+    string typeName = lexer.getCurrentToken()->value();
 
     Type type = stringToType(typeName);
 
     assertNextIsWord(lexer, "A type must be followed by variable name"); 
 
-    string variable = lexer.getCurrentToken().value();
+    string variable = lexer.getCurrentToken()->value();
 
     if (!lexer.next() || !lexer.isAssign()) {
         throw TokenException("A variable declaration must followed by '='", lexer.getCurrentToken());
@@ -231,21 +237,23 @@ ParseNode* Parser::parseDeclaration() {
 
     Value* value = parseValue();
 
-    return new Declaration(currentContext, type, variable, value);
+    return new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value);
 }
 
-ParseNode* Parser::parseAssignment(const Token& variableToken) {
+ParseNode* Parser::parseAssignment(const Token* variableToken) {
     Value* value = parseValue();
 
-    return new Assignment(currentContext, variableToken.value(), value);
+    return new Assignment(currentContext, variableToken, variableToken->value(), value);
 }
 
-ParseNode* Parser::parseSwap(const Token& lhs) {
-    assertNextIsWord(lexer, "Can only swap two variables"); 
+ParseNode* Parser::parseSwap(const Token* lhs) {
+    if (!lexer.next() || !lexer.isWord()) {
+        throw TokenException("Can only swap two variables", lexer.getCurrentToken());
+    }
 
-    string rhs = lexer.getCurrentToken().value();
+    string rhs = lexer.getCurrentToken()->value();
 
-    return new Swap(currentContext, lhs.value(), rhs);
+    return new Swap(currentContext, lexer.getCurrentToken(), lhs->value(), rhs);
 }
 
 ParseNode* Parser::parseIf() {
@@ -259,7 +267,7 @@ ParseNode* Parser::parseIf() {
 
     currentContext = new BlockContext(currentContext, functionContext);
 
-    If* block = new If(currentContext, condition);
+    If* block = new If(currentContext, lexer.getCurrentToken(), condition);
 
     lexer.next();
 
@@ -313,7 +321,7 @@ ElseIf* Parser::parseElseIf() {
 
     currentContext = new BlockContext(currentContext, functionContext);
 
-    ElseIf* block = new ElseIf(currentContext, condition);
+    ElseIf* block = new ElseIf(currentContext, lexer.getCurrentToken(), condition);
 
     lexer.next();
 
@@ -335,7 +343,7 @@ ElseIf* Parser::parseElseIf() {
 Else* Parser::parseElse() {
     currentContext = new BlockContext(currentContext, functionContext);
 
-    Else* block = new Else(currentContext);
+    Else* block = new Else(currentContext, lexer.getCurrentToken());
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
 
@@ -355,6 +363,8 @@ Else* Parser::parseElse() {
 ParseNode* Parser::parseWhile() {
     assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
 
+    const Token* token = lexer.getCurrentToken();
+
     Condition* condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the while must be closed by a right parenth");
@@ -363,7 +373,7 @@ ParseNode* Parser::parseWhile() {
 
     currentContext = new BlockContext(currentContext, functionContext);
 
-    While* block = new While(currentContext, condition);
+    While* block = new While(currentContext, token, condition);
 
     lexer.next();
 
@@ -386,6 +396,8 @@ ParseNode* Parser::parseFor() {
     assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
 
     currentContext = new BlockContext(currentContext, functionContext);
+    
+    const Token* token = lexer.getCurrentToken();
 
     lexer.next();
 
@@ -407,7 +419,7 @@ ParseNode* Parser::parseFor() {
     
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    For* block = new For(currentContext, start, condition, iter);
+    For* block = new For(currentContext, token, start, condition, iter);
 
     lexer.next();
 
@@ -481,18 +493,18 @@ Value* Parser::parseValue() {
 
             assertNextIsRightParenth(lexer, "parenth is not closed");
         } else if (lexer.isLitteral()) {
-            string litteral = lexer.getCurrentToken().value();
+            string litteral = lexer.getCurrentToken()->value();
 
-            node = new Litteral(currentContext, litteral);
+            node = new Litteral(currentContext, lexer.getCurrentToken(), litteral);
         } else if (lexer.isWord()) {
-            string variableRight = lexer.getCurrentToken().value();
+            string variableRight = lexer.getCurrentToken()->value();
 
-            node = new VariableValue(currentContext, variableRight);
+            node = new VariableValue(currentContext, lexer.getCurrentToken(), variableRight);
         } else if (lexer.isInteger()) {
-            string integer = lexer.getCurrentToken().value();
+            string integer = lexer.getCurrentToken()->value();
             int value = toNumber<int>(integer);
 
-            node = new Integer(currentContext, value);
+            node = new Integer(currentContext, lexer.getCurrentToken(), value);
         } else {
             throw TokenException("Invalid value", lexer.getCurrentToken());
         }
@@ -549,15 +561,15 @@ Value* Parser::parseValue() {
         Value* value = NULL;
 
         if (op == ADD) {
-            value = new Addition(currentContext, lhs, rhs);
+            value = new Addition(currentContext, lhs->token(), lhs, rhs);
         } else if (op == SUB) {
-            value = new Subtraction(currentContext, lhs, rhs);
+            value = new Subtraction(currentContext, lhs->token(), lhs, rhs);
         } else if (op == MUL) {
-            value = new Multiplication(currentContext, lhs, rhs);
+            value = new Multiplication(currentContext, lhs->token(), lhs, rhs);
         } else if (op == DIV) {
-            value = new Division(currentContext, lhs, rhs);
+            value = new Division(currentContext, lhs->token(), lhs, rhs);
         } else if (op == MOD) {
-            value = new Modulo(currentContext, lhs, rhs);
+            value = new Modulo(currentContext, lhs->token(), lhs, rhs);
         }
 
         parts.erase(first, ++max);

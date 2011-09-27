@@ -23,21 +23,21 @@ class Lexer {
     private:
         Scanner scanner;
 
-        Token current;
+        Token* current;
 
-        std::stack<Token> read;
-        std::stack<Token> buffer;
+        std::stack<Token*> read;
+        std::stack<Token*> buffer;
 
         bool readNext();
     public:
-        Lexer() : current(Token(NOTHING, -1, -1)) {};
+        Lexer() : current(new Token(NOTHING, -1, -1)) {};
 
         void lex(std::string file);
         void close();
         bool next();
         void pushBack();
 
-        Token getCurrentToken() const;
+        Token* getCurrentToken() const;
 
         bool isWord() const;
         bool isAssign() const;

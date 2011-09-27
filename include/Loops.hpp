@@ -17,7 +17,7 @@ class While : public ParseNode {
         Condition* m_condition;
 
     public:
-        While(Context* context, Condition* condition) : ParseNode(context), m_condition(condition) {}
+        While(Context* context, const Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual ~While();
 
@@ -29,6 +29,23 @@ class While : public ParseNode {
         Condition* condition() {
             return m_condition;
         }
+};
+
+class For : public ParseNode {
+    private: 
+        ParseNode* m_start;
+        ParseNode* m_iter;
+        Condition* m_condition;
+
+    public:
+        For(Context* context, const Token* token, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
+
+        virtual ~For();
+
+        virtual void write(AssemblyFileWriter& writer);
+        virtual void checkVariables();
+        virtual void checkStrings(StringPool& pool);
+        virtual void optimize();
 };
 
 } //end of eddic

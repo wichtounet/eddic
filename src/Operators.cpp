@@ -32,7 +32,7 @@ void BinaryOperator::checkStrings(StringPool& pool) {
 
 Type BinaryOperator::checkTypes(Type left, Type right) {
     if (left != right || left != INT) {
-        throw CompilerException("Can only compute two integers");
+        throw CompilerException("Can only compute two integers", token());
     }
 
     return left;
@@ -40,7 +40,7 @@ Type BinaryOperator::checkTypes(Type left, Type right) {
 
 Type Addition::checkTypes(Type left, Type right) {
     if (left != right) {
-        throw CompilerException("Can only add two values of the same type");
+        throw CompilerException("Can only add two values of the same type", token());
     }
 
     return left;
@@ -182,7 +182,7 @@ int Modulo::compute(int left, int right) {
 void BinaryOperator::optimize() {
     if (isConstant()) {
         if (Options::isSet(OPTIMIZE_INTEGERS)) {
-            Value* value = new Integer(context(), getIntValue());
+            Value* value = new Integer(context(), lhs->token(), getIntValue());
 
             parent->replace(this, value);
         }
@@ -196,7 +196,7 @@ void Addition::optimize() {
     if (isConstant()) {
         if (type() == INT) {
             if (Options::isSet(OPTIMIZE_INTEGERS)) {
-                Value* value = new Integer(context(), getIntValue());
+                Value* value = new Integer(context(), lhs->token(), getIntValue());
 
                 parent->replace(this, value);
             }

@@ -10,6 +10,7 @@
 #include "AssemblyFileWriter.hpp"
 #include "Functions.hpp"
 #include "Context.hpp"
+#include "Utils.hpp"
 
 using namespace eddic;
 
@@ -33,7 +34,7 @@ void FunctionCall::checkFunctions(Program& program){
     m_function_mangled = mangle(m_function, m_values);
 
     if(!program.exists(m_function_mangled)){
-        throw CompilerException("The function \"" + m_function + "\"does not exists");
+        throw CompilerException("The function \"" + m_function + "()\" does not exists", token());
     }
 }
 

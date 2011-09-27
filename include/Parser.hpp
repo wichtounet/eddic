@@ -35,9 +35,9 @@ class Parser {
         ParseNode* parseRepeatableInstruction();
         ParseNode* parseDeclaration();
         ParseNode* parseCallOrAssignment();
-        ParseNode* parseCall(const Token& call);
-        ParseNode* parseAssignment(const Token& variable);
-        ParseNode* parseSwap(const Token& lhs);
+        ParseNode* parseCall(const Token* call);
+        ParseNode* parseAssignment(const Token* variable);
+        ParseNode* parseSwap(const Token* lhs);
         ParseNode* parseIf();
         ParseNode* parseWhile();
         ParseNode* parseFor();

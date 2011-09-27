@@ -71,7 +71,7 @@ class Function : public ParseNode {
         int m_currentPosition;
 
 	public:
-		Function(Context* context, const std::string& name) : ParseNode(context), m_name(name), m_currentPosition(0) {}
+		Function(Context* context, const Token* token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
 		
         void write(AssemblyFileWriter& writer);
 
@@ -93,7 +93,7 @@ class FunctionCall : public ParseNode {
         std::vector<Value*> m_values;
 
     public:
-        FunctionCall(Context* context, const std::string& function) : ParseNode(context), m_function(function) {}
+        FunctionCall(Context* context, const Token* token, const std::string& function) : ParseNode(context, token), m_function(function) {}
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);
