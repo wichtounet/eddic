@@ -1,7 +1,7 @@
 void main(){
-    //test(4, 8, 16);
+    test(4, 8, 16);
 
-    tester("hello");
+    tester("hello", "adios", "hi");
 }
 
 void test(int x, int y, int z){
@@ -22,6 +22,8 @@ void test(int x, int y, int z){
     Println(x);
 }
 
-void tester(string a){
+void tester(string a, string b, string c){
     Println(a);
+    Println(b);
+    Println(c);
 }
