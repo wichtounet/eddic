@@ -137,6 +137,14 @@ Variable* GlobalContext::addVariable(const std::string& variable, Type type){
     return v;
 }
 
+Variable* FunctionContext::newParameter(const std::string& variable, Type type){
+    Position position(PARAMETER, currentParameter);
+    
+    currentParameter += type == INT ? 4 : 8;
+
+    return new Variable(variable, type, position);
+}
+
 Variable* FunctionContext::newVariable(const std::string& variable, Type type){
     Position position(STACK, currentPosition);
     
@@ -157,6 +165,18 @@ Variable* FunctionContext::addVariable(const std::string& variable, Type type){
     return v;
 }
 
+Variable* FunctionContext::addParameter(const std::string& parameter, Type type){
+   Variable* v = newParameter(parameter, type);
+
+   m_visibles[parameter] = currentVariable;
+
+   storeVariable(currentVariable, v);
+
+   currentVariable++;
+
+   return v;
+}
+
 Variable* BlockContext::addVariable(const std::string& variable, Type type){
     Variable* v = m_functionContext->newVariable(variable, type);
 
@@ -173,6 +193,8 @@ void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg){
     if(m_type == INT){ 
         if(m_position.isStack()){
             writer.stream() << "movl -" << m_position.offset() << "(%ebp), " << reg << endl;
+        } else if(m_position.isParameter()){
+            writer.stream() << "movl " << m_position.offset() << "(%ebp), " << reg << endl;
         } else if(m_position.isGlobal()){
             writer.stream() << "movl VI" << m_position.name() << ", " << reg << endl;
         }
@@ -188,6 +210,9 @@ void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg1, std:
        if(m_position.isStack()){
            writer.stream() << "movl -" << m_position.offset() << "(%ebp), " << reg1 << endl;
            writer.stream() << "movl -" << (m_position.offset() + 4) << "(%ebp), " << reg2 << endl;
+       } else if(m_position.isParameter()){
+           writer.stream() << "movl " << m_position.offset() << "(%ebp), " << reg1 << endl;
+           writer.stream() << "movl " << (m_position.offset() + 4) << "(%ebp), " << reg2 << endl;
        } else {
            writer.stream() << "movl VS" << m_position.name() << ", " << reg1 << endl;
            writer.stream() << "movl VS" << m_position.name() << "+4, " << reg2 << endl;
@@ -199,6 +224,8 @@ void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg){
     if(m_type == INT){ 
         if(m_position.isStack()){
             writer.stream() << "movl " << reg << ", -" << m_position.offset() << "(%ebp)" << endl;
+        } else if(m_position.isParameter()){
+            writer.stream() << "movl " << reg << ", " << m_position.offset() << "(%ebp)" << endl;
         } else if(m_position.isGlobal()){
             writer.stream() << "movl " << reg << ", VI" << m_position.name()  << endl;
         }
@@ -214,6 +241,9 @@ void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg1, st
        if(m_position.isStack()){
            writer.stream() << "movl " << reg1 << ", -" << m_position.offset() << "(%ebp)" << endl;
            writer.stream() << "movl " << reg2 << ", -" << (m_position.offset() + 4) << "(%ebp)" << endl;
+       } else if(m_position.isParameter()){
+           writer.stream() << "movl " << reg1 << ", " << m_position.offset() << "(%ebp)" << endl;
+           writer.stream() << "movl " << reg2 << ", " << (m_position.offset() + 4) << "(%ebp)" << endl;
        } else {
            writer.stream() << "movl " << reg1 << ", VS" << m_position.name() << endl;
            writer.stream() << "movl " << reg2 << ", VS" << m_position.name() << "+4" << endl;
@@ -226,6 +256,8 @@ void Variable::pushToStack(AssemblyFileWriter& writer){
         case INT:
             if(m_position.isStack()){
                 writer.stream() << "pushl -" << m_position.offset() << "(%ebp)" << std::endl;
+            } else if(m_position.isParameter()){
+                writer.stream() << "pushl " << m_position.offset() << "(%ebp)" << std::endl;
             } else if(m_position.isGlobal()){
                 writer.stream() << "pushl VI" << m_position.name() << std::endl;
             }
@@ -235,6 +267,9 @@ void Variable::pushToStack(AssemblyFileWriter& writer){
             if(m_position.isStack()){
                 writer.stream() << "pushl -" << (m_position.offset() + 4) << "(%ebp)" << std::endl;
                 writer.stream() << "pushl -" << m_position.offset() << "(%ebp)" << std::endl;
+            } else if(m_position.isParameter()){
+                writer.stream() << "pushl " << (m_position.offset() + 4) << "(%ebp)" << std::endl;
+                writer.stream() << "pushl " << m_position.offset() << "(%ebp)" << std::endl;
             } else if(m_position.isGlobal()){
                 writer.stream() << "pushl VS" << m_index << endl;
                 writer.stream() << "pushl VS" << m_index << "+4" << std::endl;

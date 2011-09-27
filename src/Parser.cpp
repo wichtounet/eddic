@@ -108,6 +108,7 @@ Function* Parser::parseFunction() {
             string parameterName = lexer.getCurrentToken().value();
 
             function->addParameter(parameterName, type);
+            functionContext->addParameter(parameterName, type);
         }
     }
 

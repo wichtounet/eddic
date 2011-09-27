@@ -1,8 +1,4 @@
 void main(){
-    string x = "youpi";
-
-    Println(x);
-    
     int y = 4;
 
     test(y);

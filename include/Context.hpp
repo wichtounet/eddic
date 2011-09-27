@@ -23,6 +23,7 @@ namespace eddic {
 
 enum PositionType {
     STACK, 
+    PARAMETER,
     GLOBAL
 };
 
@@ -38,6 +39,10 @@ class Position {
 
         bool isStack(){
             return m_type == STACK;
+        }
+
+        bool isParameter(){
+            return m_type == PARAMETER;
         }
 
         bool isGlobal(){
@@ -142,15 +147,18 @@ class GlobalContext : public Context {
 class FunctionContext : public Context {
     private:
         int currentPosition;
+        int currentParameter;
 
     public:
-        FunctionContext(Context* parent) : Context(parent), currentPosition(4) {}
+        FunctionContext(Context* parent) : Context(parent), currentPosition(4), currentParameter(8) {}
         
         void write(AssemblyFileWriter& writer);
         void release(AssemblyFileWriter& writer);
         
         Variable* addVariable(const std::string& a, Type type);
+        Variable* addParameter(const std::string& a, Type type);
         Variable* newVariable(const std::string& a, Type type);
+        Variable* newParameter(const std::string& a, Type type);
 };
 
 class BlockContext : public Context {
