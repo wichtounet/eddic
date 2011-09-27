@@ -17,11 +17,11 @@ namespace eddic {
 class CompilerException: public std::exception {
     protected:
         std::string m_message;
-        Token* m_token;
+        const Token* m_token;
 
     public:
         CompilerException(const std::string& message) : m_message(message) {};
-        CompilerException(const std::string& message, Token* token) : m_message(message), m_token(token) {};
+        CompilerException(const std::string& message, const Token* token) : m_message(message), m_token(token) {};
         ~CompilerException() throw() {};
 
         virtual const char* what() const throw();
