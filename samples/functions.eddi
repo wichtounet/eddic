@@ -1,0 +1,33 @@
+void main(){
+    test(4, 8, 9);
+
+    tester("hello", "adios", "hi");
+}
+
+void test(int a, int b){
+    //Nothing
+}
+
+void test(int x, int y, int z){
+    Println("test()");
+
+    Print("x=");
+    Println(x);
+    
+    Print("y=");
+    Println(y);
+    
+    Print("z=");
+    Println(z);
+
+    x = 55;
+    
+    Print("x=");
+    Println(x);
+}
+
+void tester(string a, string b, string c){
+    Println(a);
+    Println(b);
+    Println(c);
+}

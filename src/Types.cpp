@@ -5,20 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TYPES_H
-#define TYPES_H
+#include <string>
 
-namespace eddic {
+#include "Types.hpp"
 
-enum Type {
-    STRING = 0,
-    INT = 1
-};
+using namespace eddic;
 
-int size(Type type);
+int eddic::size(Type type){
+    return type == INT ? 4 : 8;
+}
 
-Type stringToType(std::string type);
-
-} //end of eddic
-
-#endif
+Type eddic::stringToType(std::string type){
+    if (type == "int") {
+        return  INT;
+    } else {
+        return STRING;
+    }
+}

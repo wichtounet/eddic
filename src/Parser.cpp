@@ -31,6 +31,7 @@ inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message);
 inline static void assertNextIsRightBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsStop(Lexer& lexer, const string& message);
+inline static void assertNextIsWord(Lexer& lexer, const string& message);
 
 //Move to some utility class
 bool isType(const Lexer& lexer) {
@@ -45,7 +46,8 @@ bool isType(const Lexer& lexer) {
 
 Program* Parser::parse() {
     //Create the global context
-    currentContext = new Context();
+    globalContext = new GlobalContext();
+    currentContext = globalContext;
 
     Program* program = new Program(currentContext);
 
@@ -67,20 +69,51 @@ Function* Parser::parseFunction() {
         throw TokenException("Invalid return type", lexer.getCurrentToken());
     }
 
-    lexer.next();
-
-    if(!lexer.isWord()){
-        throw TokenException("Expecting a function name", lexer.getCurrentToken());
-    }
+    assertNextIsWord(lexer, "Expecting a function name");
 
     string functionName = lexer.getCurrentToken().value();
 
-    currentContext = new Context(currentContext);
+    functionContext = new FunctionContext(currentContext);
+    currentContext = functionContext;
 
     Function* function = new Function(currentContext, functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
-    assertNextIsRightParenth(lexer, "Waiting for a right parenth");
+ 
+    std::unordered_set<std::string> params;
+
+    while(true){
+        lexer.next();
+
+        if(lexer.isRightParenth()){
+            break;
+        } else {
+            if(lexer.isComma()){
+                lexer.next();
+            }
+
+            if(!isType(lexer)){
+                throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
+            }
+
+            string typeName = lexer.getCurrentToken().value();
+
+            Type type = stringToType(typeName);
+
+            assertNextIsWord(lexer, "Expecting a parameter name");
+
+            string parameterName = lexer.getCurrentToken().value();
+
+            if(params.find(parameterName) != params.end()){
+                throw TokenException("The parameter's name must be unique", lexer.getCurrentToken());
+            }
+
+            params.insert(parameterName);
+
+            function->addParameter(parameterName, type);
+            functionContext->addParameter(parameterName, type);
+        }
+    }
 
     assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
 
@@ -157,7 +190,17 @@ ParseNode* Parser::parseCall(const Token& callToken) {
     if (call != "Print" && call != "Println") {
         FunctionCall* functionCall = new FunctionCall(currentContext, call);
 
-        assertNextIsRightParenth(lexer, "The function call must be closed with a right parenth");
+        while(true){
+            if(lexer.isRightParenth()){
+                break;
+            } else {
+                Value* value = parseValue();
+
+                functionCall->addValue(value);
+            }
+            
+            lexer.next();
+        }
         
         return functionCall;
     }
@@ -176,16 +219,9 @@ ParseNode* Parser::parseCall(const Token& callToken) {
 ParseNode* Parser::parseDeclaration() {
     string typeName = lexer.getCurrentToken().value();
 
-    Type type;
-    if (typeName == "int") {
-        type = INT;
-    } else {
-        type = STRING;
-    }
+    Type type = stringToType(typeName);
 
-    if (!lexer.next() || !lexer.isWord()) {
-        throw TokenException("A type must be followed by variable name", lexer.getCurrentToken());
-    }
+    assertNextIsWord(lexer, "A type must be followed by variable name"); 
 
     string variable = lexer.getCurrentToken().value();
 
@@ -205,9 +241,7 @@ ParseNode* Parser::parseAssignment(const Token& variableToken) {
 }
 
 ParseNode* Parser::parseSwap(const Token& lhs) {
-    if (!lexer.next() || !lexer.isWord()) {
-        throw TokenException("Can only swap two variables", lexer.getCurrentToken());
-    }
+    assertNextIsWord(lexer, "Can only swap two variables"); 
 
     string rhs = lexer.getCurrentToken().value();
 
@@ -223,7 +257,7 @@ ParseNode* Parser::parseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     If* block = new If(currentContext, condition);
 
@@ -277,7 +311,7 @@ ElseIf* Parser::parseElseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     ElseIf* block = new ElseIf(currentContext, condition);
 
@@ -299,7 +333,7 @@ ElseIf* Parser::parseElseIf() {
 }
 
 Else* Parser::parseElse() {
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     Else* block = new Else(currentContext);
 
@@ -327,7 +361,7 @@ ParseNode* Parser::parseWhile() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     While* block = new While(currentContext, condition);
 
@@ -351,7 +385,7 @@ ParseNode* Parser::parseWhile() {
 ParseNode* Parser::parseFor() {
     assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
 
-    currentContext = new Context(currentContext);
+    currentContext = new BlockContext(currentContext, functionContext);
 
     lexer.next();
 
@@ -609,6 +643,12 @@ inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
 
 inline static void assertNextIsStop(Lexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isStop()) {
+        throw TokenException(message, lexer.getCurrentToken());
+    }
+}
+
+inline static void assertNextIsWord(Lexer& lexer, const string& message) {
+    if (!lexer.next() || !lexer.isWord()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }

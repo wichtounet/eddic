@@ -145,11 +145,11 @@ string BinaryOperator::getStringValue() {
     return compute(lhs->getStringValue(), rhs->getStringValue());
 }
 
-int BinaryOperator::compute(int left, int right) {
+int BinaryOperator::compute(int, int) {
     throw "Invalid type";
 }
 
-string BinaryOperator::compute(const std::string& left, const std::string& right) {
+string BinaryOperator::compute(const std::string&, const std::string&) {
     throw "Invalid type";
 }
 
