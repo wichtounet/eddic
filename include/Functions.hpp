@@ -68,7 +68,6 @@ class FunctionCall : public ParseNode {
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);
-        //void checkVariables();
 
         void addValue(Value* value){
             m_values.push_back(value);
