@@ -79,6 +79,8 @@ Function* Parser::parseFunction() {
     Function* function = new Function(currentContext, functionName);
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
+ 
+    std::unordered_set<std::string> params;
 
     while(true){
         lexer.next();
@@ -101,6 +103,12 @@ Function* Parser::parseFunction() {
             assertNextIsWord(lexer, "Expecting a parameter name");
 
             string parameterName = lexer.getCurrentToken().value();
+
+            if(params.find(parameterName) != params.end()){
+                throw TokenException("The parameter's name must be unique", lexer.getCurrentToken());
+            }
+
+            params.insert(parameterName);
 
             function->addParameter(parameterName, type);
             functionContext->addParameter(parameterName, type);
