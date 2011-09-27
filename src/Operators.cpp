@@ -32,7 +32,7 @@ void BinaryOperator::checkStrings(StringPool& pool) {
 
 Type BinaryOperator::checkTypes(Type left, Type right) {
     if (left != right || left != INT) {
-        throw CompilerException("Can only compute two integers");
+        throw CompilerException("Can only compute two integers", token());
     }
 
     return left;
@@ -40,7 +40,7 @@ Type BinaryOperator::checkTypes(Type left, Type right) {
 
 Type Addition::checkTypes(Type left, Type right) {
     if (left != right) {
-        throw CompilerException("Can only add two values of the same type");
+        throw CompilerException("Can only add two values of the same type", token());
     }
 
     return left;

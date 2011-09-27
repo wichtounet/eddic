@@ -166,7 +166,7 @@ void Methods::write(AssemblyFileWriter& writer) {
 
 void Declaration::checkVariables() {
     if (context()->exists(m_variable)) {
-        throw CompilerException("Variable has already been declared");
+        throw CompilerException("Variable has already been declared", token());
     }
 
     Variable* var = context()->create(m_variable, m_type);
@@ -176,7 +176,7 @@ void Declaration::checkVariables() {
     value->checkVariables();
 
     if (value->type() != m_type) {
-        throw CompilerException("Incompatible type");
+        throw CompilerException("Incompatible type", token());
     }
 }
 
@@ -186,7 +186,7 @@ void VariableOperation::checkStrings(StringPool& pool) {
 
 void Assignment::checkVariables() {
     if (!context()->exists(m_variable)) {
-        throw CompilerException("Variable has not  been declared");
+        throw CompilerException("Variable has not  been declared", token());
     }
 
     Variable* var = context()->find(m_variable);
@@ -197,17 +197,17 @@ void Assignment::checkVariables() {
     value->checkVariables();
 
     if (value->type() != var->type()) {
-        throw CompilerException("Incompatible type");
+        throw CompilerException("Incompatible type", token());
     }
 }
 
 void Swap::checkVariables() {
     if (m_lhs == m_rhs) {
-        throw CompilerException("Cannot swap a variable with itself");
+        throw CompilerException("Cannot swap a variable with itself", token());
     }
 
     if (!context()->exists(m_lhs) || !context()->exists(m_rhs)) {
-        throw CompilerException("Variable has not been declared");
+        throw CompilerException("Variable has not been declared", token());
     }
 
     Variable* lhs_var = context()->find(m_lhs);
@@ -217,7 +217,7 @@ void Swap::checkVariables() {
     m_rhs_index = rhs_var->index();
 
     if (lhs_var->type() != rhs_var->type()) {
-        throw CompilerException("Incompatible type");
+        throw CompilerException("Incompatible type", token());
     }
 
     m_type = lhs_var->type();
@@ -225,7 +225,7 @@ void Swap::checkVariables() {
 
 void VariableValue::checkVariables() {
     if (!context()->exists(m_variable)) {
-        throw CompilerException("Variable has not been declared");
+        throw CompilerException("Variable has not been declared", token());
     }
 
     Variable* variable = context()->find(m_variable);
