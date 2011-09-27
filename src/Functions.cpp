@@ -21,14 +21,14 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
                     << "\t.type main, @function" << endl;
 }
 
-void FunctionCall::checkVariables(){
+/*void FunctionCall::checkVariables(){
     std::vector<Value*>::const_iterator it = m_values.begin();
     std::vector<Value*>::const_iterator end = m_values.end();
 
     for( ; it != end; ++it){
         (*it)->checkVariables();
     }
-}
+}*/
 
 void FunctionCall::checkFunctions(Program& program){
     if(!program.exists(m_function)){
