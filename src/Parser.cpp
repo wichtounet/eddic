@@ -96,12 +96,7 @@ Function* Parser::parseFunction() {
 
             string typeName = lexer.getCurrentToken().value();
 
-            Type type;
-            if (typeName == "int") {
-                type = INT;
-            } else {
-                type = STRING;
-            }
+            Type type = stringToType(typeName);
 
             assertNextIsWord(lexer, "Expecting a parameter name");
 
@@ -216,12 +211,7 @@ ParseNode* Parser::parseCall(const Token& callToken) {
 ParseNode* Parser::parseDeclaration() {
     string typeName = lexer.getCurrentToken().value();
 
-    Type type;
-    if (typeName == "int") {
-        type = INT;
-    } else {
-        type = STRING;
-    }
+    Type type = stringToType(typeName);
 
     assertNextIsWord(lexer, "A type must be followed by variable name"); 
 

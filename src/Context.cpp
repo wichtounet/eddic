@@ -76,18 +76,14 @@ void FunctionContext::write(AssemblyFileWriter& writer){
     StoredVariables::const_iterator it = m_stored.begin();
     StoredVariables::const_iterator end = m_stored.end();
 
-    int size = 0;
+    int s = 0;
     
     for ( ; it != end; ++it) {
-        if (it->second->type() == INT) {
-            size += 4;
-        } else if (it->second->type() == STRING) {
-            size += 8;
-        }
+        s += size(it->second->type());
     }
 
-    if(size > 0){
-        writer.stream() << "subl $" << size << " , %esp" << std::endl;
+    if(s > 0){
+        writer.stream() << "subl $" << s << " , %esp" << std::endl;
     }
 }
 
@@ -95,18 +91,14 @@ void FunctionContext::release(AssemblyFileWriter& writer){
     StoredVariables::const_iterator it = m_stored.begin();
     StoredVariables::const_iterator end = m_stored.end();
 
-    int size = 0;
+    int s = 0;
     
     for ( ; it != end; ++it) {
-        if (it->second->type() == INT) {
-            size += 4;
-        } else if (it->second->type() == STRING) {
-            size += 8;
-        }
+        s += size(it->second->type());
     }
 
-    if(size > 0){
-        writer.stream() << "addl $" << size << " , %esp" << std::endl;
+    if(s > 0){
+        writer.stream() << "addl $" << s << " , %esp" << std::endl;
     }
 }
 
@@ -140,7 +132,7 @@ Variable* GlobalContext::addVariable(const std::string& variable, Type type){
 Variable* FunctionContext::newParameter(const std::string& variable, Type type){
     Position position(PARAMETER, currentParameter);
     
-    currentParameter += type == INT ? 4 : 8;
+    currentParameter += size(type);
 
     return new Variable(variable, type, position);
 }
@@ -148,7 +140,7 @@ Variable* FunctionContext::newParameter(const std::string& variable, Type type){
 Variable* FunctionContext::newVariable(const std::string& variable, Type type){
     Position position(STACK, currentPosition);
     
-    currentPosition += type == INT ? 4 : 8;
+    currentPosition += size(type);
 
     return new Variable(variable, type, position);
 }
