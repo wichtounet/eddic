@@ -191,10 +191,6 @@ ParseNode* Parser::parseCall(const Token& callToken) {
             if(lexer.isRightParenth()){
                 break;
             } else {
-                if(lexer.isComma()){
-                    lexer.next();
-                } 
-
                 Value* value = parseValue();
 
                 functionCall->addValue(value);
