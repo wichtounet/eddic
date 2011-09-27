@@ -15,6 +15,24 @@
 
 namespace eddic {
 
+template<typename T>
+std::string mangle(std::string functionName, std::vector<T*> typed){
+    std::string ss;
+
+    ss += "_F";
+    ss += functionName;
+
+    typename std::vector<T*>::const_iterator it = typed.begin();
+
+    for( ; it != typed.end(); ++it){
+        ss += mangle((*it)->type());
+    }
+
+    return ss;
+}
+
+std::string mangle(Type type);
+
 class MainDeclaration : public ParseNode {
    public:
         MainDeclaration(Context* context) : ParseNode(context) {};
@@ -61,6 +79,7 @@ class Function : public ParseNode {
 class FunctionCall : public ParseNode {
     private:
         std::string m_function;
+        std::string m_function_mangled;
         std::vector<Value*> m_values;
 
     public:

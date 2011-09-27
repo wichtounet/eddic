@@ -15,6 +15,14 @@ using namespace eddic;
 
 using std::endl;
 
+std::string eddic::mangle(Type type){
+    if(type == INT){
+        return "I";
+    } else {
+        return "S";
+    }
+}
+
 void MainDeclaration::write(AssemblyFileWriter& writer){
     writer.stream() << ".text" << endl
                     << ".globl main" << endl
