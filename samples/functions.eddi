@@ -1,7 +1,11 @@
 void main(){
-    test(4, 8, 16);
+    test(4, 8, 9);
 
     tester("hello", "adios", "hi");
+}
+
+void test(int a, int b){
+    //Nothing
 }
 
 void test(int x, int y, int z){
