@@ -62,7 +62,7 @@ class Parameter {
 class Function : public ParseNode {
 	private:
 		std::string m_name;
-        std::vector<Parameter> m_parameters;
+        std::vector<Parameter*> m_parameters;
         int m_currentPosition;
 
 	public:

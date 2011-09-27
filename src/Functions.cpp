@@ -36,14 +36,10 @@ void FunctionCall::checkFunctions(Program& program){
 }
 
 void Function::addParameter(std::string name, Type type){
-    Parameter param(name, type, m_currentPosition);
+    Parameter* param = new Parameter(name, type, m_currentPosition);
     m_parameters.push_back(param);
 
-    if(type == INT){
-        m_currentPosition += 4;
-    } else {
-        m_currentPosition += 8;
-    }
+    m_currentPosition += size(type);
 }
 
 void Function::write(AssemblyFileWriter& writer){
