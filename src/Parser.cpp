@@ -195,14 +195,10 @@ ParseNode* Parser::parseCall(const Token* callToken) {
         if(!lexer.isRightParenth()){
             lexer.pushBack();
 
-            while(true){
-                if(lexer.isRightParenth()){
-                    break;
-                } else {
-                    Value* value = parseValue();
+            while(!lexer.isRightParenth()){
+                Value* value = parseValue();
 
-                    functionCall->addValue(value);
-                }
+                functionCall->addValue(value);
 
                 lexer.next();
             }
