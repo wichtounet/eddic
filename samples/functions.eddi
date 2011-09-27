@@ -1,12 +1,24 @@
 void main(){
     int y = 4;
+    int z = 8;
 
-    test(y);
+    test(y, z);
+    
+    Print("y=");
+    Println(y);
 }
 
-void test(int x){
+void test(int x, int y){
     Println("test()");
 
+    Print("x=");
+    Println(x);
+    
+    Print("y=");
+    Println(y);
+
+    x = 55;
+    
     Print("x=");
     Println(x);
 }
