@@ -1,11 +1,5 @@
 void main(){
-    int y = 4;
-    int z = 8;
-
-    test(y, z);
-    
-    Print("y=");
-    Println(y);
+    test(4, 8);
 }
 
 void test(int x, int y){
