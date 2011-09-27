@@ -14,7 +14,17 @@ using namespace eddic;
 using std::stringstream;
 
 const char* CompilerException::what() const throw() {
-    return m_message.c_str();
+    stringstream value;
+
+    value << m_message;
+
+    if(m_token){
+        value << std::endl;
+        value << "\tline:" << m_token->line();
+        value << " col:" << m_token->col();
+    }
+
+    return value.str().c_str();
 }
 
 const char* TokenException::what() const throw() {
