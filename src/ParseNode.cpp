@@ -43,7 +43,7 @@ void ParseNode::checkStrings(StringPool& pool) {
 }
 
 void ParseNode::optimize() {
-    for_each(begin(), end(), mem_fun(&ParseNode::optimize));
+    for_each(begin(), end(), [=](ParseNode* p){ p->optimize(); });
 }
 
 void ParseNode::addLast(ParseNode* node) {
