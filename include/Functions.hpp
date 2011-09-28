@@ -19,7 +19,7 @@
 namespace eddic {
 
 template<typename T>
-std::string mangle(std::string functionName, std::vector<std::shared_ptr<T>> typed){
+std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<T>>& typed){
     if(functionName == "main"){
         return functionName;
     }
@@ -30,7 +30,7 @@ std::string mangle(std::string functionName, std::vector<std::shared_ptr<T>> typ
     ss << functionName.length();
     ss << functionName;
 
-    for(std::shared_ptr<T>& t : typed){
+    for(const std::shared_ptr<T>& t : typed){
         ss << mangle(t->type());
     }
 
