@@ -15,6 +15,7 @@
 using namespace eddic;
 
 using std::endl;
+using std::shared_ptr;
 
 std::string eddic::mangle(Type type){
     if(type == INT){
@@ -39,7 +40,7 @@ void FunctionCall::checkFunctions(Program& program){
 }
 
 void Function::addParameter(std::string name, Type type){
-    Parameter* param = new Parameter(name, type, m_currentPosition);
+    shared_ptr<Parameter> param(new Parameter(name, type, m_currentPosition));
     m_parameters.push_back(param);
 
     m_currentPosition += size(type);

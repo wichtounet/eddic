@@ -11,11 +11,35 @@
 #include <vector>
 #include <string>
 
+#include <memory>
+
 #include "Nodes.hpp"
 #include "Utils.hpp"
 
 namespace eddic {
 
+template<typename T>
+std::string mangle(std::string functionName, std::vector<std::shared_ptr<T>> typed){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::string ss;
+
+    ss += "_F";
+    ss += toString(functionName.length());
+    ss += functionName;
+
+    typename std::vector<std::shared_ptr<T>>::const_iterator it = typed.begin();
+
+    for( ; it != typed.end(); ++it){
+        ss += mangle((*it)->type());
+    }
+
+    return ss;
+}
+
+//TODO Remove this method once everything is passed by smart pointers
 template<typename T>
 std::string mangle(std::string functionName, std::vector<T*> typed){
     if(functionName == "main"){
@@ -67,7 +91,7 @@ class Parameter {
 class Function : public ParseNode {
 	private:
 		std::string m_name;
-        std::vector<Parameter*> m_parameters;
+        std::vector<std::shared_ptr<Parameter>> m_parameters;
         int m_currentPosition;
 
 	public:
