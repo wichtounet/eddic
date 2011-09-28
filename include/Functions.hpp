@@ -24,19 +24,17 @@ std::string mangle(std::string functionName, std::vector<std::shared_ptr<T>> typ
         return functionName;
     }
 
-    std::string ss;
+    std::ostringstream ss;
 
-    ss += "_F";
-    ss += toString(functionName.length());
-    ss += functionName;
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
 
-    typename std::vector<std::shared_ptr<T>>::const_iterator it = typed.begin();
-
-    for( ; it != typed.end(); ++it){
-        ss += mangle((*it)->type());
+    for(std::shared_ptr<T>& t : typed){
+        ss << mangle(t->type());
     }
 
-    return ss;
+    return ss.str();
 }
 
 //TODO Remove this method once everything is passed by smart pointers
