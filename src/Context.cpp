@@ -39,7 +39,7 @@ bool Context::exists(const std::string& variable) const {
 }
 
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
-    VisibleVariables::const_iterator iter = m_visibles.find(variable);
+    auto iter = m_visibles.find(variable);
 
     if(iter == m_visibles.end()){
         return m_parent->getVariable(variable);
@@ -49,7 +49,7 @@ std::shared_ptr<Variable> Context::getVariable(const std::string& variable) cons
 }
 
 std::shared_ptr<Variable> Context::getVariable(int index) const {
-    StoredVariables::const_iterator iter = m_stored.find(index);
+    auto iter = m_stored.find(index);
 
     if(iter == m_stored.end()){
         return m_parent->getVariable(index);
@@ -59,13 +59,9 @@ std::shared_ptr<Variable> Context::getVariable(int index) const {
 }
 
 void FunctionContext::write(AssemblyFileWriter& writer){
-    StoredVariables::const_iterator it = m_stored.begin();
-    StoredVariables::const_iterator end = m_stored.end();
-
     int s = 0;
-    
-    for ( ; it != end; ++it) {
-        s += size(it->second->type());
+    for(auto it : m_stored){
+        s += size(it.second->type());
     }
 
     if(s > 0){
@@ -74,13 +70,9 @@ void FunctionContext::write(AssemblyFileWriter& writer){
 }
 
 void FunctionContext::release(AssemblyFileWriter& writer){
-    StoredVariables::const_iterator it = m_stored.begin();
-    StoredVariables::const_iterator end = m_stored.end();
-
     int s = 0;
-    
-    for ( ; it != end; ++it) {
-        s += size(it->second->type());
+    for(auto it : m_stored){
+        s += size(it.second->type());
     }
 
     if(s > 0){
@@ -89,14 +81,11 @@ void FunctionContext::release(AssemblyFileWriter& writer){
 }
 
 void GlobalContext::write(AssemblyFileWriter& writer){
-    StoredVariables::const_iterator it = m_stored.begin();
-    StoredVariables::const_iterator end = m_stored.end();
-
-    for ( ; it != end; ++it) {
-        if (it->second->type() == INT) {
-            writer.stream() << ".comm VI" << it->second->position().name() << ",4,4" << endl;
-        } else if (it->second->type() == STRING) {
-            writer.stream() << ".comm VS" << it->second->position().name() << ",8,4" << endl;
+    for(auto it : m_stored){
+        if (it.second->type() == INT) {
+            writer.stream() << ".comm VI" << it.second->position().name() << ",4,4" << endl;
+        } else if (it.second->type() == STRING) {
+            writer.stream() << ".comm VS" << it.second->position().name() << ",8,4" << endl;
         }
     }
 }
