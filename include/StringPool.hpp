@@ -9,7 +9,7 @@
 #define STRING_POOL_H
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 #include "ParseNode.hpp"
 
@@ -17,7 +17,7 @@ namespace eddic {
 
 class StringPool : public ParseNode {
     private:
-        std::map<std::string, std::string> pool;
+        std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
     public:
         StringPool(std::shared_ptr<Context> context) : ParseNode(context), currentString(0) {

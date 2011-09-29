@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include <algorithm>
-#include <functional>
 
 #include "ParseNode.hpp"
 #include "Context.hpp"
@@ -56,7 +55,7 @@ void ParseNode::addFirst(std::shared_ptr<ParseNode> node) {
 void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node) {
     node->parent = std::weak_ptr<ParseNode>(shared_from_this());
 
-    list<std::shared_ptr<ParseNode>>::iterator it = find(childs.begin(), childs.end(), old);
+    auto it = find(childs.begin(), childs.end(), old);
     if(it != childs.end()){
         *it = node;
     }

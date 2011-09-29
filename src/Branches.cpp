@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+
 #include "Branches.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
@@ -146,10 +148,8 @@ void If::checkVariables() {
     }
 
     ParseNode::checkVariables();
-
-    for (std::vector<std::shared_ptr<ElseIf>>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->checkVariables();
-    }
+    
+    for_each(elseIfs.begin(), elseIfs.end(), [](std::shared_ptr<ElseIf> e){ e->checkVariables(); });
 }
 
 void If::checkStrings(StringPool& pool) {
@@ -163,10 +163,8 @@ void If::checkStrings(StringPool& pool) {
     }
 
     ParseNode::checkStrings(pool);
-
-    for (std::vector<std::shared_ptr<ElseIf>>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->checkStrings(pool);
-    }
+    
+    for_each(elseIfs.begin(), elseIfs.end(), [&](std::shared_ptr<ElseIf> e){ e->checkStrings(pool); });
 }
 
 void If::optimize() {
@@ -174,10 +172,8 @@ void If::optimize() {
         m_condition->lhs()->optimize();
         m_condition->rhs()->optimize();
     }
-
-    for (std::vector<std::shared_ptr<ElseIf>>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->optimize();
-    }
+    
+    for_each(elseIfs.begin(), elseIfs.end(), [](std::shared_ptr<ElseIf> e){ e->optimize(); });
 
     ParseNode::optimize();
 }

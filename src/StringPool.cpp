@@ -29,9 +29,8 @@ std::string StringPool::label(const std::string& value) {
 void StringPool::write(AssemblyFileWriter& writer) {
     writer.stream() << ".data" << std::endl;
 
-    std::map<std::string, std::string>::const_iterator it;
-    for (it = pool.begin(); it != pool.end(); ++it) {
-        writer.stream() << it->second << ":" << std::endl;
-        writer.stream() << ".string " << it->first << std::endl;
+    for (auto it : pool){
+        writer.stream() << it.second << ":" << std::endl;
+        writer.stream() << ".string " << it.first << std::endl;
     }
 }

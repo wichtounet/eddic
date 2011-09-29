@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <iostream>
+#include <algorithm>
 
 #include "AssemblyFileWriter.hpp"
 #include "Functions.hpp"
@@ -63,12 +64,7 @@ void Function::write(AssemblyFileWriter& writer){
 }
 
 void FunctionCall::write(AssemblyFileWriter& writer){
-    std::vector<std::shared_ptr<Value>>::reverse_iterator it = m_values.rbegin();
-    std::vector<std::shared_ptr<Value>>::reverse_iterator end = m_values.rend();
-
-    for( ; it != end; ++it){
-        (*it)->write(writer);
-    }
+    for_each(m_values.rbegin(), m_values.rend(), [&](std::shared_ptr<Value> v){ v->write(writer); });
 
     writer.stream() << "call " << m_function_mangled << endl;
 }

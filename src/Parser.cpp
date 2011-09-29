@@ -197,7 +197,7 @@ std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callTo
             lexer.pushBack();
 
             while(!lexer.isRightParenth()){
-                std::shared_ptr<Value> value = parseValue();
+                auto value = parseValue();
 
                 functionCall->addValue(value);
 
@@ -208,7 +208,7 @@ std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callTo
         return functionCall;
     }
 
-    std::shared_ptr<Value> value = parseValue();
+    auto value = parseValue();
 
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 
@@ -232,13 +232,13 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
         throw TokenException("A variable declaration must followed by '='", lexer.getCurrentToken());
     }
 
-    std::shared_ptr<Value> value = parseValue();
+    auto value = parseValue();
 
     return std::shared_ptr<ParseNode>(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
 }
 
 std::shared_ptr<ParseNode> Parser::parseAssignment(const std::shared_ptr<Token> variableToken) {
-    std::shared_ptr<Value> value = parseValue();
+    auto value = parseValue();
 
     return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
 }
@@ -256,7 +256,7 @@ std::shared_ptr<ParseNode> Parser::parseSwap(const std::shared_ptr<Token> lhs) {
 std::shared_ptr<ParseNode> Parser::parseIf() {
     assertNextIsLeftParenth(lexer, "An if instruction must be followed by a condition surrounded by parenth");
 
-    std::shared_ptr<Condition> condition = parseCondition();
+    auto condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the if must be closed by a right parenth");
 
@@ -310,7 +310,7 @@ std::shared_ptr<ParseNode> Parser::parseIf() {
 std::shared_ptr<ElseIf> Parser::parseElseIf() {
     assertNextIsLeftParenth(lexer, "An else if instruction must be followed by a condition surrounded by parenth");
 
-    std::shared_ptr<Condition> condition = parseCondition();
+    auto condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the else if must be closed by a right parenth");
 
@@ -360,9 +360,9 @@ std::shared_ptr<Else> Parser::parseElse() {
 std::shared_ptr<ParseNode> Parser::parseWhile() {
     assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
 
-    const std::shared_ptr<Token> token = lexer.getCurrentToken();
+    auto token = lexer.getCurrentToken();
 
-    std::shared_ptr<Condition> condition = parseCondition();
+    auto condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the while must be closed by a right parenth");
 
@@ -394,7 +394,7 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
     
-    const std::shared_ptr<Token> token = lexer.getCurrentToken();
+    auto token = lexer.getCurrentToken();
 
     lexer.next();
 
@@ -404,13 +404,13 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
 
-    std::shared_ptr<Condition> condition = parseCondition();
+    auto condition = parseCondition();
 
     assertNextIsStop(lexer, "The condition of the for loop must be closed by a semicolon");
 
     lexer.next();
 
-    std::shared_ptr<ParseNode> iter = parseRepeatableInstruction();
+    auto iter = parseRepeatableInstruction();
     
     assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
     
@@ -542,20 +542,20 @@ std::shared_ptr<Value> Parser::parseValue() {
             }
         }
 
-        list<std::shared_ptr<Part>>::iterator first = max;
+        auto first = max;
         --first;
 
-        std::shared_ptr<Part> left = *first;
-        std::shared_ptr<Part> center = *max;
+        auto left = *first;
+        auto center = *max;
 
         ++max;
-        std::shared_ptr<Part> right = *max;
+        auto right = *max;
 
-        std::shared_ptr<Value> lhs = left->getValue();
+        auto lhs = left->getValue();
+        auto rhs = right->getValue();
         Operator op = center->getOperator();
-        std::shared_ptr<Value> rhs = right->getValue();
 
-        std::shared_ptr<Value> value = NULL;
+        std::shared_ptr<Value> value;
 
         if (op == ADD) {
             value = std::shared_ptr<Value>(new Addition(currentContext, lhs->token(), lhs, rhs));
@@ -574,11 +574,7 @@ std::shared_ptr<Value> Parser::parseValue() {
         parts.insert(max, std::shared_ptr<Part>(new Part(value)));
     }
 
-    std::shared_ptr<Value> value = (*parts.begin())->getValue();
-
-    parts.clear();
-
-    return value;
+    return (*parts.begin())->getValue();
 }
 
 std::shared_ptr<Condition> Parser::parseCondition() {
@@ -592,7 +588,7 @@ std::shared_ptr<Condition> Parser::parseCondition() {
         lexer.pushBack();
     }
 
-    std::shared_ptr<Value> lhs = parseValue();
+    auto lhs = parseValue();
 
     if (!lexer.next()) {
         throw TokenException("waiting for a boolean operator", lexer.getCurrentToken());
@@ -615,7 +611,7 @@ std::shared_ptr<Condition> Parser::parseCondition() {
         throw TokenException("waiting for a boolean operator", lexer.getCurrentToken());
     }
 
-    std::shared_ptr<Value> rhs = parseValue();
+    auto rhs = parseValue();
 
     return std::shared_ptr<Condition>(new Condition(operation, lhs, rhs));
 }
