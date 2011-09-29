@@ -8,6 +8,7 @@
 #ifndef PARSE_NODE_H
 #define PARSE_NODE_H
 
+#include <memory>
 #include <list>
 #include <vector>
 
@@ -16,29 +17,27 @@ namespace eddic {
 class ParseNode;
 class Program;
 
-typedef std::list<ParseNode*>::const_iterator NodeIterator;
-typedef std::vector<ParseNode*>::const_iterator TrashIterator;
+typedef std::list<std::shared_ptr<ParseNode>>::const_iterator NodeIterator;
+typedef std::vector<std::shared_ptr<ParseNode>>::const_iterator TrashIterator;
 
 class Context;
 class AssemblyFileWriter;
 class StringPool;
 class Token;
 
-class ParseNode {
+class ParseNode : public std::enable_shared_from_this<ParseNode> {
     private:
-        std::list<ParseNode*> childs;
-        std::vector<ParseNode*> trash;
+        std::list<std::shared_ptr<ParseNode>> childs;
 
-        Context* m_context;
-        const Token* m_token;
+        std::shared_ptr<Context> m_context;
+        const std::shared_ptr<Token> m_token;
 
     protected:
-        ParseNode* parent;
+        std::weak_ptr<ParseNode> parent;
 
     public:
-        ParseNode(Context* context) : m_context(context), m_token(NULL), parent(NULL) {}
-        ParseNode(Context* context, const Token* token) : m_context(context), m_token(token), parent(NULL) {} 
-        virtual ~ParseNode();
+        ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
+        ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : m_context(context), m_token(token){} 
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkFunctions(Program& program);
@@ -46,20 +45,21 @@ class ParseNode {
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        void addFirst(ParseNode* node);
-        void addLast(ParseNode* node);
-        void replace(ParseNode* old, ParseNode* node);
-        void remove(ParseNode* node);
         NodeIterator begin();
         NodeIterator end();
 
-        Context* context() {
+        std::shared_ptr<Context> context() {
             return m_context;
         }
 
-        const Token* token(){
+        const std::shared_ptr<Token> token(){
             return m_token;
         }
+    
+        void addFirst(std::shared_ptr<ParseNode> node);
+        void addLast(std::shared_ptr<ParseNode> node);
+        void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
+        void remove(std::shared_ptr<ParseNode> node);
 };
 
 } //end of eddic

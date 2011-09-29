@@ -15,6 +15,7 @@
 using namespace eddic;
 
 using std::endl;
+using std::shared_ptr;
 
 std::string eddic::mangle(Type type){
     if(type == INT){
@@ -39,7 +40,7 @@ void FunctionCall::checkFunctions(Program& program){
 }
 
 void Function::addParameter(std::string name, Type type){
-    Parameter* param = new Parameter(name, type, m_currentPosition);
+    shared_ptr<Parameter> param(new Parameter(name, type, m_currentPosition));
     m_parameters.push_back(param);
 
     m_currentPosition += size(type);
@@ -62,8 +63,8 @@ void Function::write(AssemblyFileWriter& writer){
 }
 
 void FunctionCall::write(AssemblyFileWriter& writer){
-    std::vector<Value*>::reverse_iterator it = m_values.rbegin();
-    std::vector<Value*>::reverse_iterator end = m_values.rend();
+    std::vector<std::shared_ptr<Value>>::reverse_iterator it = m_values.rbegin();
+    std::vector<std::shared_ptr<Value>>::reverse_iterator end = m_values.rend();
 
     for( ; it != end; ++it){
         (*it)->write(writer);

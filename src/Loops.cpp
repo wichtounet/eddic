@@ -12,10 +12,6 @@
 
 using namespace eddic;
 
-While::~While() {
-    delete m_condition;
-}
-
 void While::write(AssemblyFileWriter& writer) {
     //Make something accessible for others operations
     static int labels = 0;
@@ -63,12 +59,6 @@ void While::optimize() {
     }
 
     ParseNode::optimize();
-}
-
-For::~For(){
-    delete m_condition;
-    delete m_start;
-    delete m_iter;
 }
 
 void For::write(AssemblyFileWriter& writer){

@@ -11,6 +11,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -90,17 +91,13 @@ class Variable {
         }
 };
 
-typedef std::unordered_map<int, Variable*> StoredVariables;
+typedef std::unordered_map<int, std::shared_ptr<Variable>> StoredVariables;
 typedef std::unordered_map<std::string, int> VisibleVariables;
 
-//TODO Improve the way to manage memory of context
-//TODO Rename to Context when finished the implementation
 class Context {
     private:
-        Context* m_parent;
+        std::shared_ptr<Context> m_parent;
         
-        static std::vector<Context*> contexts;
-
     protected:
         StoredVariables m_stored;
         VisibleVariables m_visibles;
@@ -108,15 +105,12 @@ class Context {
         static int currentVariable;
 
     public:
-        Context(Context* parent) : m_parent(parent) {
-            contexts.push_back(this);
-        }
-        virtual ~Context();
+        Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
         
-        virtual Variable* addVariable(const std::string& a, Type type) = 0;
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
         virtual bool exists(const std::string& a) const;
-        virtual Variable* getVariable(const std::string& variable) const;
-        virtual Variable* getVariable(int index) const;
+        virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
+        virtual std::shared_ptr<Variable> getVariable(int index) const;
         
         virtual void write(AssemblyFileWriter&){
             //Nothing by default    
@@ -126,13 +120,11 @@ class Context {
             //Nothing by default
         }
         
-        void storeVariable(int index, Variable* variable);
+        void storeVariable(int index, std::shared_ptr<Variable> variable);
 
-        Context* parent() const  {
+        std::shared_ptr<Context> parent() const  {
             return m_parent;
         }
-        
-        static void cleanup();
 };
 
 class GlobalContext : public Context {
@@ -141,7 +133,7 @@ class GlobalContext : public Context {
         
         void write(AssemblyFileWriter& writer);
         
-        Variable* addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
 };
 
 class FunctionContext : public Context {
@@ -150,25 +142,25 @@ class FunctionContext : public Context {
         int currentParameter;
 
     public:
-        FunctionContext(Context* parent) : Context(parent), currentPosition(4), currentParameter(8) {}
+        FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}
         
         void write(AssemblyFileWriter& writer);
         void release(AssemblyFileWriter& writer);
         
-        Variable* addVariable(const std::string& a, Type type);
-        Variable* addParameter(const std::string& a, Type type);
-        Variable* newVariable(const std::string& a, Type type);
-        Variable* newParameter(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addParameter(const std::string& a, Type type);
+        std::shared_ptr<Variable> newVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> newParameter(const std::string& a, Type type);
 };
 
 class BlockContext : public Context {
     private:
-        FunctionContext* m_functionContext;
+        std::shared_ptr<FunctionContext> m_functionContext;
 
     public:
-        BlockContext(Context* parent, FunctionContext* functionContext) : Context(parent), m_functionContext(functionContext){} 
+        BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext) : Context(parent), m_functionContext(functionContext){} 
         
-        Variable* addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
 };
 
 } //end of eddic

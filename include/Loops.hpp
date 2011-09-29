@@ -8,39 +8,37 @@
 #ifndef LOOPS_H
 #define LOOPS_H
 
+#include <memory>
+
 #include "Branches.hpp"
 
 namespace eddic {
 
 class While : public ParseNode {
     private:
-        Condition* m_condition;
+        std::shared_ptr<Condition> m_condition;
 
     public:
-        While(Context* context, const Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition) {}
-
-        virtual ~While();
+        While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        Condition* condition() {
+        std::shared_ptr<Condition> condition() {
             return m_condition;
         }
 };
 
 class For : public ParseNode {
     private: 
-        ParseNode* m_start;
-        ParseNode* m_iter;
-        Condition* m_condition;
+        std::shared_ptr<ParseNode> m_start;
+        std::shared_ptr<ParseNode> m_iter;
+        std::shared_ptr<Condition> m_condition;
 
     public:
-        For(Context* context, const Token* token, ParseNode* start, Condition* condition, ParseNode* iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
-
-        virtual ~For();
+        For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();

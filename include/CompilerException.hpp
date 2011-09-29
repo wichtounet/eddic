@@ -9,6 +9,7 @@
 #define COMPILER_EXCEPTION_H
 
 #include <string>
+#include <memory>
 
 #include "Token.hpp"
 
@@ -17,11 +18,11 @@ namespace eddic {
 class CompilerException: public std::exception {
     protected:
         std::string m_message;
-        const Token* m_token;
+        const std::shared_ptr<Token> m_token;
 
     public:
         CompilerException(const std::string& message) : m_message(message) {};
-        CompilerException(const std::string& message, const Token* token) : m_message(message), m_token(token) {};
+        CompilerException(const std::string& message, const std::shared_ptr<Token> token) : m_message(message), m_token(token) {};
         ~CompilerException() throw() {};
 
         virtual const char* what() const throw();
@@ -29,10 +30,10 @@ class CompilerException: public std::exception {
 
 class TokenException: public CompilerException {
     private:
-        Token* m_token;
+        std::shared_ptr<Token> m_token;
 
     public:
-        TokenException(const std::string& message, Token* token) : CompilerException(message), m_token(token) {}
+        TokenException(const std::string& message, std::shared_ptr<Token> token) : CompilerException(message), m_token(token) {}
         ~TokenException() throw() {};
 
         const char* what() const throw();

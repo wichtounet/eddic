@@ -20,19 +20,9 @@ using std::unordered_map;
 
 using namespace eddic;
 
-vector<Context*> Context::contexts;
 int Context::currentVariable = 0;
 
-Context::~Context() {
-    StoredVariables::const_iterator it = m_stored.begin();
-    StoredVariables::const_iterator end = m_stored.end();
-
-    for ( ; it != end; ++it) {
-        delete it->second;
-    }
-}
-
-void Context::storeVariable(int index, Variable* variable){
+void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
     m_stored[index] = variable;
 }
 
@@ -48,7 +38,7 @@ bool Context::exists(const std::string& variable) const {
     return found;
 }
 
-Variable* Context::getVariable(const std::string& variable) const {
+std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
     VisibleVariables::const_iterator iter = m_visibles.find(variable);
 
     if(iter == m_visibles.end()){
@@ -58,7 +48,7 @@ Variable* Context::getVariable(const std::string& variable) const {
     return getVariable(iter->second);
 }
 
-Variable* Context::getVariable(int index) const {
+std::shared_ptr<Variable> Context::getVariable(int index) const {
     StoredVariables::const_iterator iter = m_stored.find(index);
 
     if(iter == m_stored.end()){
@@ -66,10 +56,6 @@ Variable* Context::getVariable(int index) const {
     }
 
     return iter->second;
-}
-
-void Context::cleanup(){
-    for_each(contexts.begin(), contexts.end(), deleter());
 }
 
 void FunctionContext::write(AssemblyFileWriter& writer){
@@ -115,10 +101,10 @@ void GlobalContext::write(AssemblyFileWriter& writer){
     }
 }
 
-Variable* GlobalContext::addVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
     Position position(GLOBAL, variable);
 
-    Variable* v = new Variable(variable, type, position);
+    std::shared_ptr<Variable> v(new Variable(variable, type, position));
 
     m_visibles[variable] = currentVariable;
 
@@ -129,24 +115,24 @@ Variable* GlobalContext::addVariable(const std::string& variable, Type type){
     return v;
 }
 
-Variable* FunctionContext::newParameter(const std::string& variable, Type type){
+std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
     Position position(PARAMETER, currentParameter);
     
     currentParameter += size(type);
 
-    return new Variable(variable, type, position);
+    return std::shared_ptr<Variable>(new Variable(variable, type, position));
 }
 
-Variable* FunctionContext::newVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, Type type){
     Position position(STACK, currentPosition);
     
     currentPosition += size(type);
 
-    return new Variable(variable, type, position);
+    return std::shared_ptr<Variable>(new Variable(variable, type, position));
 }
 
-Variable* FunctionContext::addVariable(const std::string& variable, Type type){
-    Variable* v = newVariable(variable, type);
+std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type){
+    std::shared_ptr<Variable> v = newVariable(variable, type);
 
     m_visibles[variable] = currentVariable;
 
@@ -157,8 +143,8 @@ Variable* FunctionContext::addVariable(const std::string& variable, Type type){
     return v;
 }
 
-Variable* FunctionContext::addParameter(const std::string& parameter, Type type){
-   Variable* v = newParameter(parameter, type);
+std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, Type type){
+   std::shared_ptr<Variable> v = newParameter(parameter, type);
 
    m_visibles[parameter] = currentVariable;
 
@@ -169,8 +155,8 @@ Variable* FunctionContext::addParameter(const std::string& parameter, Type type)
    return v;
 }
 
-Variable* BlockContext::addVariable(const std::string& variable, Type type){
-    Variable* v = m_functionContext->newVariable(variable, type);
+std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type){
+    std::shared_ptr<Variable> v = m_functionContext->newVariable(variable, type);
 
     m_visibles[variable] = currentVariable;
 

@@ -11,37 +11,37 @@
 #include <vector>
 #include <string>
 
+#include <memory>
+
 #include "Nodes.hpp"
 #include "Utils.hpp"
 
 namespace eddic {
 
 template<typename T>
-std::string mangle(std::string functionName, std::vector<T*> typed){
+std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<T>>& typed){
     if(functionName == "main"){
         return functionName;
     }
 
-    std::string ss;
+    std::ostringstream ss;
 
-    ss += "_F";
-    ss += toString(functionName.length());
-    ss += functionName;
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
 
-    typename std::vector<T*>::const_iterator it = typed.begin();
-
-    for( ; it != typed.end(); ++it){
-        ss += mangle((*it)->type());
+    for(const std::shared_ptr<T>& t : typed){
+        ss << mangle(t->type());
     }
 
-    return ss;
+    return ss.str();
 }
 
 std::string mangle(Type type);
 
 class MainDeclaration : public ParseNode {
    public:
-        MainDeclaration(Context* context) : ParseNode(context) {};
+        MainDeclaration(std::shared_ptr<Context> context) : ParseNode(context) {};
 
         void write(AssemblyFileWriter& writer);
 };
@@ -67,11 +67,11 @@ class Parameter {
 class Function : public ParseNode {
 	private:
 		std::string m_name;
-        std::vector<Parameter*> m_parameters;
+        std::vector<std::shared_ptr<Parameter>> m_parameters;
         int m_currentPosition;
 
 	public:
-		Function(Context* context, const Token* token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
+		Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
 		
         void write(AssemblyFileWriter& writer);
 
@@ -90,15 +90,15 @@ class FunctionCall : public ParseNode {
     private:
         std::string m_function;
         std::string m_function_mangled;
-        std::vector<Value*> m_values;
+        std::vector<std::shared_ptr<Value>> m_values;
 
     public:
-        FunctionCall(Context* context, const Token* token, const std::string& function) : ParseNode(context, token), m_function(function) {}
+        FunctionCall(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& function) : ParseNode(context, token), m_function(function) {}
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);
 
-        void addValue(Value* value){
+        void addValue(std::shared_ptr<Value> value){
             m_values.push_back(value);
             addLast(value);
         }

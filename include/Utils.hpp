@@ -27,14 +27,6 @@ std::string toString(T number) {
     return out.str();
 }
 
-class deleter {
-    public:
-        template <typename T>
-        void operator()(const T& x) const {
-            delete x;
-        }
-};
-
 } //end of eddic
 
 #endif

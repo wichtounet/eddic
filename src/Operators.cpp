@@ -182,9 +182,9 @@ int Modulo::compute(int left, int right) {
 void BinaryOperator::optimize() {
     if (isConstant()) {
         if (Options::isSet(OPTIMIZE_INTEGERS)) {
-            Value* value = new Integer(context(), lhs->token(), getIntValue());
+            std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
-            parent->replace(this, value);
+            parent.lock()->replace(shared_from_this(), value);
         }
     }
 
@@ -196,9 +196,9 @@ void Addition::optimize() {
     if (isConstant()) {
         if (type() == INT) {
             if (Options::isSet(OPTIMIZE_INTEGERS)) {
-                Value* value = new Integer(context(), lhs->token(), getIntValue());
+                std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
-                parent->replace(this, value);
+                parent.lock()->replace(shared_from_this(), value);
             }
         } else if (type() == STRING) {
             if (Options::isSet(OPTIMIZE_STRINGS)) {
