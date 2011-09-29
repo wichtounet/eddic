@@ -168,7 +168,7 @@ std::shared_ptr<ParseNode> Parser::parseRepeatableInstruction() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
-    Token* token = lexer.getCurrentToken();
+    std::shared_ptr<Token> token = lexer.getCurrentToken();
 
     if (!lexer.next()) {
         throw TokenException("Incomplete instruction", lexer.getCurrentToken());
@@ -185,7 +185,7 @@ std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-std::shared_ptr<ParseNode> Parser::parseCall(const Token* callToken) {
+std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callToken) {
     string call = callToken->value();
 
     if (call != "Print" && call != "Println") {
@@ -237,13 +237,13 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
     return std::shared_ptr<ParseNode>(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
 }
 
-std::shared_ptr<ParseNode> Parser::parseAssignment(const Token* variableToken) {
+std::shared_ptr<ParseNode> Parser::parseAssignment(const std::shared_ptr<Token> variableToken) {
     std::shared_ptr<Value> value = parseValue();
 
     return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
 }
 
-std::shared_ptr<ParseNode> Parser::parseSwap(const Token* lhs) {
+std::shared_ptr<ParseNode> Parser::parseSwap(const std::shared_ptr<Token> lhs) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
@@ -360,7 +360,7 @@ std::shared_ptr<Else> Parser::parseElse() {
 std::shared_ptr<ParseNode> Parser::parseWhile() {
     assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
 
-    const Token* token = lexer.getCurrentToken();
+    const std::shared_ptr<Token> token = lexer.getCurrentToken();
 
     std::shared_ptr<Condition> condition = parseCondition();
 
@@ -394,7 +394,7 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
     
-    const Token* token = lexer.getCurrentToken();
+    const std::shared_ptr<Token> token = lexer.getCurrentToken();
 
     lexer.next();
 

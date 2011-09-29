@@ -55,7 +55,7 @@ void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condi
 
 class Else : public ParseNode {
     public:
-        Else(std::shared_ptr<Context> context, Token* token) : ParseNode(context, token) {}
+        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
 };
 
 class ElseIf : public ParseNode {
@@ -63,7 +63,7 @@ class ElseIf : public ParseNode {
         std::shared_ptr<Condition> m_condition;
 
     public:
-        ElseIf(std::shared_ptr<Context> context, Token* token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+        ElseIf(std::shared_ptr<Context> context, std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
@@ -81,7 +81,7 @@ class If : public ParseNode {
         std::vector<std::shared_ptr<ElseIf>> elseIfs;
 
     public:
-        If(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+        If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();

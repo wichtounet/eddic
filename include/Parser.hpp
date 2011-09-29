@@ -35,9 +35,9 @@ class Parser {
         std::shared_ptr<ParseNode> parseRepeatableInstruction();
         std::shared_ptr<ParseNode> parseDeclaration();
         std::shared_ptr<ParseNode> parseCallOrAssignment();
-        std::shared_ptr<ParseNode> parseCall(const Token* call);
-        std::shared_ptr<ParseNode> parseAssignment(const Token* variable);
-        std::shared_ptr<ParseNode> parseSwap(const Token* lhs);
+        std::shared_ptr<ParseNode> parseCall(const std::shared_ptr<Token> call);
+        std::shared_ptr<ParseNode> parseAssignment(const std::shared_ptr<Token> variable);
+        std::shared_ptr<ParseNode> parseSwap(const std::shared_ptr<Token> lhs);
         std::shared_ptr<ParseNode> parseIf();
         std::shared_ptr<ParseNode> parseWhile();
         std::shared_ptr<ParseNode> parseFor();

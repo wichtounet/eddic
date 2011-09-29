@@ -31,14 +31,14 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         std::vector<std::shared_ptr<ParseNode>> trash;//TODO Think about the trash
 
         std::shared_ptr<Context> m_context;
-        const Token* m_token;
+        const std::shared_ptr<Token> m_token;
 
     protected://TODO Put weak
         std::weak_ptr<ParseNode> parent;
 
     public:
         ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
-        ParseNode(std::shared_ptr<Context> context, const Token* token) : m_context(context), m_token(token){} 
+        ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : m_context(context), m_token(token){} 
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkFunctions(Program& program);
@@ -54,7 +54,7 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
             return m_context;
         }
 
-        const Token* token(){
+        const std::shared_ptr<Token> token(){
             return m_token;
         }
     

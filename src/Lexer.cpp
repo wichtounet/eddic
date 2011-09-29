@@ -38,7 +38,7 @@ bool Lexer::next() {
 }
 
 void Lexer::pushBack() {
-    Token* old = read.top();
+    std::shared_ptr<Token> old = read.top();
 
     buffer.push(old);
 
@@ -68,7 +68,7 @@ bool Lexer::readNext() {
 
         value += scanner.current();
 
-        current = new Token(value, LITTERAL, line, col);
+        current = std::shared_ptr<Token>(new Token(value, LITTERAL, line, col));
 
         return true;
     } else if (scanner.isAlpha()) {
@@ -81,19 +81,19 @@ bool Lexer::readNext() {
         scanner.pushBack();
 
         if (value == "true") {
-            current = new Token(TRUE_TYPE, line, col);
+            current = std::shared_ptr<Token>(new Token(TRUE_TYPE, line, col));
         } else if (value == "false") {
-            current = new Token(FALSE_TYPE, line, col);
+            current = std::shared_ptr<Token>(new Token(FALSE_TYPE, line, col));
         } else if (value == "if") {
-            current = new Token(IF, line, col);
+            current = std::shared_ptr<Token>(new Token(IF, line, col));
         } else if (value == "else") {
-            current = new Token(ELSE, line, col);
+            current = std::shared_ptr<Token>(new Token(ELSE, line, col));
         } else if (value == "while") {
-            current = new Token(WHILE, line, col);
+            current = std::shared_ptr<Token>(new Token(WHILE, line, col));
         } else if (value == "for") {
-            current = new Token(FOR, line, col);
+            current = std::shared_ptr<Token>(new Token(FOR, line, col));
         } else {
-            current = new Token(value, WORD, line, col);
+            current = std::shared_ptr<Token>(new Token(value, WORD, line, col));
         }
 
         return true;
@@ -106,50 +106,50 @@ bool Lexer::readNext() {
 
         scanner.pushBack();
 
-        current = new Token(value, INTEGER, line, col);
+        current = std::shared_ptr<Token>(new Token(value, INTEGER, line, col));
 
         return true;
     }
 
     switch (scanner.current()) {
         case ';':
-            current = new Token(STOP, line, col);
+            current = std::shared_ptr<Token>(new Token(STOP, line, col));
             return true;
         case ',':
-            current = new Token(COMMA, line, col);
+            current = std::shared_ptr<Token>(new Token(COMMA, line, col));
             return true;
         case '=':
             scanner.next();
 
             if (scanner.current() == '=') {
-                current = new Token(EQUALS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(EQUALS_TOKEN, line, col));
             } else {
                 scanner.pushBack();
 
-                current = new Token(ASSIGN, line, col);
+                current = std::shared_ptr<Token>(new Token(ASSIGN, line, col));
             }
 
             return true;
         case '(':
-            current = new Token(LEFT_PARENTH, line, col);
+            current = std::shared_ptr<Token>(new Token(LEFT_PARENTH, line, col));
             return true;
         case ')':
-            current = new Token(RIGHT_PARENTH, line, col);
+            current = std::shared_ptr<Token>(new Token(RIGHT_PARENTH, line, col));
             return true;
         case '{':
-            current = new Token(LEFT_BRACE, line, col);
+            current = std::shared_ptr<Token>(new Token(LEFT_BRACE, line, col));
             return true;
         case '}':
-            current = new Token(RIGHT_BRACE, line, col);
+            current = std::shared_ptr<Token>(new Token(RIGHT_BRACE, line, col));
             return true;
         case '+':
-            current = new Token(ADDITION, line, col);
+            current = std::shared_ptr<Token>(new Token(ADDITION, line, col));
             return true;
         case '-':
-            current = new Token(SUBTRACTION, line, col);
+            current = std::shared_ptr<Token>(new Token(SUBTRACTION, line, col));
             return true;
         case '*':
-            current = new Token(MULTIPLICATION, line, col);
+            current = std::shared_ptr<Token>(new Token(MULTIPLICATION, line, col));
             return true;
         case '/':
             scanner.next();
@@ -172,18 +172,18 @@ bool Lexer::readNext() {
             } else {
                 scanner.pushBack();
                 
-                current = new Token(DIVISION, line, col);
+                current = std::shared_ptr<Token>(new Token(DIVISION, line, col));
             }
             
             return true;
         case '%':
-            current = new Token(MODULO, line, col);
+            current = std::shared_ptr<Token>(new Token(MODULO, line, col));
             return true;
         case '!':
             scanner.next();
 
             if (scanner.current() == '=') {
-                current = new Token(NOT_EQUALS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(NOT_EQUALS_TOKEN, line, col));
 
                 return true;
             }
@@ -196,15 +196,15 @@ bool Lexer::readNext() {
                 scanner.next();
 
                 if (scanner.current() == '>') {
-                    current = new Token(SWAP, line, col);
+                    current = std::shared_ptr<Token>(new Token(SWAP, line, col));
                 } else {
                     scanner.pushBack();
-                    current = new Token(LESS_EQUALS_TOKEN, line, col);
+                    current = std::shared_ptr<Token>(new Token(LESS_EQUALS_TOKEN, line, col));
                 }
             } else {
                 scanner.pushBack();
 
-                current = new Token(LESS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(LESS_TOKEN, line, col));
             }
 
             return true;
@@ -212,11 +212,11 @@ bool Lexer::readNext() {
             scanner.next();
 
             if (scanner.current() == '=') {
-                current = new Token(GREATER_EQUALS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(GREATER_EQUALS_TOKEN, line, col));
             } else {
                 scanner.pushBack();
 
-                current = new Token(GREATER_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(GREATER_TOKEN, line, col));
             }
 
             return true;
@@ -225,7 +225,7 @@ bool Lexer::readNext() {
     return false;
 }
 
-Token* Lexer::getCurrentToken() const {
+std::shared_ptr<Token> Lexer::getCurrentToken() const {
     return current;
 }
 
