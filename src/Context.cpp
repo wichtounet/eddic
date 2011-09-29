@@ -28,7 +28,7 @@ Context::~Context() {
     StoredVariables::const_iterator end = m_stored.end();
 
     for ( ; it != end; ++it) {
-        delete it->second;
+        //TODO delete it->second;
     }
 }
 
