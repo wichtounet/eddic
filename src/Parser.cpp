@@ -571,16 +571,10 @@ std::shared_ptr<Value> Parser::parseValue() {
 
         parts.erase(first, ++max);
 
-        /*delete left;
-        delete center;
-        delete right;*/
-
         parts.insert(max, std::shared_ptr<Part>(new Part(value)));
     }
 
     std::shared_ptr<Value> value = (*parts.begin())->getValue();
-
-    //delete *parts.begin();
 
     parts.clear();
 
