@@ -33,7 +33,7 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         std::shared_ptr<Context> m_context;
         const std::shared_ptr<Token> m_token;
 
-    protected://TODO Put weak
+    protected:
         std::weak_ptr<ParseNode> parent;
 
     public:

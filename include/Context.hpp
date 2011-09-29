@@ -94,8 +94,6 @@ class Variable {
 typedef std::unordered_map<int, std::shared_ptr<Variable>> StoredVariables;
 typedef std::unordered_map<std::string, int> VisibleVariables;
 
-//TODO Improve the way to manage memory of context
-//TODO Rename to Context when finished the implementation
 class Context {
     private:
         std::shared_ptr<Context> m_parent;

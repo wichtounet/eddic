@@ -37,28 +37,6 @@ std::string mangle(const std::string& functionName, const std::vector<std::share
     return ss.str();
 }
 
-//TODO Remove this method once everything is passed by smart pointers
-template<typename T>
-std::string mangle(std::string functionName, std::vector<T*> typed){
-    if(functionName == "main"){
-        return functionName;
-    }
-
-    std::string ss;
-
-    ss += "_F";
-    ss += toString(functionName.length());
-    ss += functionName;
-
-    typename std::vector<T*>::const_iterator it = typed.begin();
-
-    for( ; it != typed.end(); ++it){
-        ss += mangle((*it)->type());
-    }
-
-    return ss;
-}
-
 std::string mangle(Type type);
 
 class MainDeclaration : public ParseNode {
