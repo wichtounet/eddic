@@ -475,9 +475,8 @@ int priority(Operator op) {
     }
 }
 
-//TODO Use shared_ptr for Part*
 std::shared_ptr<Value> Parser::parseValue() {
-    list<Part*> parts;
+    list<std::shared_ptr<Part>> parts;
 
     while (true) {
         if (!lexer.next()) {
@@ -507,22 +506,22 @@ std::shared_ptr<Value> Parser::parseValue() {
             throw TokenException("Invalid value", lexer.getCurrentToken());
         }
 
-        parts.push_back(new Part(node));
+        parts.push_back(std::shared_ptr<Part>(new Part(node)));
 
         if (!lexer.next()) {
             break;
         }
 
         if (lexer.isAddition()) {
-            parts.push_back(new Part(ADD));
+            parts.push_back(std::shared_ptr<Part>(new Part(ADD)));
         } else if (lexer.isSubtraction()) {
-            parts.push_back(new Part(SUB));
+            parts.push_back(std::shared_ptr<Part>(new Part(SUB)));
         } else if (lexer.isMultiplication()) {
-            parts.push_back(new Part(MUL));
+            parts.push_back(std::shared_ptr<Part>(new Part(MUL)));
         } else if (lexer.isDivision()) {
-            parts.push_back(new Part(DIV));
+            parts.push_back(std::shared_ptr<Part>(new Part(DIV)));
         } else if (lexer.isModulo()) {
-            parts.push_back(new Part(MOD));
+            parts.push_back(std::shared_ptr<Part>(new Part(MOD)));
         } else {
             lexer.pushBack();
             break;
@@ -531,9 +530,9 @@ std::shared_ptr<Value> Parser::parseValue() {
 
     while (parts.size() > 1) {
         int maxPriority = -1;
-        list<Part*>::iterator it, end, max;
+        list<std::shared_ptr<Part>>::iterator it, end, max;
         for (it = parts.begin(), end = parts.end(); it != end; ++it) {
-            Part* part = *it;
+            std::shared_ptr<Part> part = *it;
 
             if (!part->isResolved()) {
                 if (priority(part->getOperator()) > maxPriority) {
@@ -543,14 +542,14 @@ std::shared_ptr<Value> Parser::parseValue() {
             }
         }
 
-        list<Part*>::iterator first = max;
+        list<std::shared_ptr<Part>>::iterator first = max;
         --first;
 
-        Part* left = *first;
-        Part* center = *max;
+        std::shared_ptr<Part> left = *first;
+        std::shared_ptr<Part> center = *max;
 
         ++max;
-        Part* right = *max;
+        std::shared_ptr<Part> right = *max;
 
         std::shared_ptr<Value> lhs = left->getValue();
         Operator op = center->getOperator();
@@ -572,16 +571,16 @@ std::shared_ptr<Value> Parser::parseValue() {
 
         parts.erase(first, ++max);
 
-        delete left;
+        /*delete left;
         delete center;
-        delete right;
+        delete right;*/
 
-        parts.insert(max, new Part(value));
+        parts.insert(max, std::shared_ptr<Part>(new Part(value)));
     }
 
     std::shared_ptr<Value> value = (*parts.begin())->getValue();
 
-    delete *parts.begin();
+    //delete *parts.begin();
 
     parts.clear();
 
