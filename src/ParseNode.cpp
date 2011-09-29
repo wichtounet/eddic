@@ -54,8 +54,6 @@ void ParseNode::addFirst(std::shared_ptr<ParseNode> node) {
 }
 
 void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node) {
-    trash.push_back(old);
-
     node->parent = std::weak_ptr<ParseNode>(shared_from_this());
 
     list<std::shared_ptr<ParseNode>>::iterator it = find(childs.begin(), childs.end(), old);
@@ -66,8 +64,6 @@ void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNod
 
 void ParseNode::remove(std::shared_ptr<ParseNode> node) {
     childs.remove(node);
-
-    trash.push_back(node);
 }
 
 NodeIterator ParseNode::begin() {

@@ -28,7 +28,6 @@ class Token;
 class ParseNode : public std::enable_shared_from_this<ParseNode> {
     private:
         std::list<std::shared_ptr<ParseNode>> childs;
-        std::vector<std::shared_ptr<ParseNode>> trash;//TODO Think about the trash
 
         std::shared_ptr<Context> m_context;
         const std::shared_ptr<Token> m_token;
@@ -46,7 +45,6 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-
         NodeIterator begin();
         NodeIterator end();
 
@@ -63,7 +61,6 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
         void remove(std::shared_ptr<ParseNode> node);
 };
-        
 
 } //end of eddic
 
