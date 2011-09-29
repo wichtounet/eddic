@@ -184,7 +184,7 @@ void BinaryOperator::optimize() {
         if (Options::isSet(OPTIMIZE_INTEGERS)) {
             std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
-            parent->replace(std::shared_ptr<Value>(this), value);
+            parent.lock()->replace(std::shared_ptr<Value>(this), value);
         }
     }
 
@@ -198,7 +198,7 @@ void Addition::optimize() {
             if (Options::isSet(OPTIMIZE_INTEGERS)) {
                 std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
-                parent->replace(std::shared_ptr<Value>(this), value);
+                parent.lock()->replace(std::shared_ptr<Value>(this), value);
             }
         } else if (type() == STRING) {
             if (Options::isSet(OPTIMIZE_STRINGS)) {

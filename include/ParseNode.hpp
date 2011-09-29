@@ -28,13 +28,13 @@ class Token;
 class ParseNode {
     private:
         std::list<std::shared_ptr<ParseNode>> childs;
-        std::vector<std::shared_ptr<ParseNode>> trash;
+        std::vector<std::shared_ptr<ParseNode>> trash;//TODO Think about the trash
 
         std::shared_ptr<Context> m_context;
         const Token* m_token;
 
     protected://TODO Put weak
-        std::shared_ptr<ParseNode> parent;
+        std::weak_ptr<ParseNode> parent;
 
     public:
         ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
