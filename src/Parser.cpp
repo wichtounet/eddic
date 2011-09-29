@@ -9,6 +9,7 @@
 #include <cctype>
 #include <list>
 #include <string>
+#include <memory>
 
 #include "Types.hpp"
 #include "Utils.hpp"
@@ -44,12 +45,12 @@ bool isType(const Lexer& lexer) {
     return value == "int" || value == "string";
 }
 
-Program* Parser::parse() {
+std::shared_ptr<Program> Parser::parse() {
     //Create the global context
     globalContext = new GlobalContext();
     currentContext = globalContext;
 
-    Program* program = new Program(currentContext);
+    std::shared_ptr<Program> program(new Program(currentContext));
 
     while (lexer.next()) {
         program->addFunction(parseFunction());
@@ -58,7 +59,7 @@ Program* Parser::parse() {
     return program;
 }
 
-Function* Parser::parseFunction() {
+std::shared_ptr<Function> Parser::parseFunction() {
     if(!lexer.isWord()){
         throw TokenException("Not a function", lexer.getCurrentToken());
     }
@@ -76,7 +77,7 @@ Function* Parser::parseFunction() {
     functionContext = new FunctionContext(currentContext);
     currentContext = functionContext;
 
-    Function* function = new Function(currentContext, lexer.getCurrentToken(), functionName);
+    std::shared_ptr<Function> function(new Function(currentContext, lexer.getCurrentToken(), functionName));
 
     assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
  
@@ -134,8 +135,8 @@ Function* Parser::parseFunction() {
     return function;
 }
 
-ParseNode* Parser::parseInstruction() {
-    ParseNode* instruction = NULL;
+std::shared_ptr<ParseNode> Parser::parseInstruction() {
+    std::shared_ptr<ParseNode> instruction;
     
     if (lexer.isIf()) {
         return parseIf();
@@ -158,7 +159,7 @@ ParseNode* Parser::parseInstruction() {
     return instruction;
 }
 
-ParseNode* Parser::parseRepeatableInstruction() {
+std::shared_ptr<ParseNode> Parser::parseRepeatableInstruction() {
     if (lexer.isWord()) {
         return parseCallOrAssignment();
     }
@@ -166,7 +167,7 @@ ParseNode* Parser::parseRepeatableInstruction() {
     throw TokenException("Waiting for a repeatable instruction", lexer.getCurrentToken());
 }
 
-ParseNode* Parser::parseCallOrAssignment() {
+std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
     Token* token = lexer.getCurrentToken();
 
     if (!lexer.next()) {
@@ -184,11 +185,11 @@ ParseNode* Parser::parseCallOrAssignment() {
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-ParseNode* Parser::parseCall(const Token* callToken) {
+std::shared_ptr<ParseNode> Parser::parseCall(const Token* callToken) {
     string call = callToken->value();
 
     if (call != "Print" && call != "Println") {
-        FunctionCall* functionCall = new FunctionCall(currentContext, lexer.getCurrentToken(), call);
+        std::shared_ptr<FunctionCall> functionCall(new FunctionCall(currentContext, lexer.getCurrentToken(), call));
 
         lexer.next();
 
@@ -196,7 +197,7 @@ ParseNode* Parser::parseCall(const Token* callToken) {
             lexer.pushBack();
 
             while(!lexer.isRightParenth()){
-                Value* value = parseValue();
+                std::shared_ptr<Value> value = parseValue();
 
                 functionCall->addValue(value);
 
@@ -207,18 +208,18 @@ ParseNode* Parser::parseCall(const Token* callToken) {
         return functionCall;
     }
 
-    Value* value = parseValue();
+    std::shared_ptr<Value> value = parseValue();
 
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 
     if (call == "Print") {
-        return new Print(currentContext, callToken, value);
+        return std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
     } else {
-        return new Println(currentContext, callToken, value);
+        return std::shared_ptr<ParseNode>(new Println(currentContext, callToken, value));
     }
 }
 
-ParseNode* Parser::parseDeclaration() {
+std::shared_ptr<ParseNode> Parser::parseDeclaration() {
     string typeName = lexer.getCurrentToken()->value();
 
     Type type = stringToType(typeName);
@@ -231,31 +232,31 @@ ParseNode* Parser::parseDeclaration() {
         throw TokenException("A variable declaration must followed by '='", lexer.getCurrentToken());
     }
 
-    Value* value = parseValue();
+    std::shared_ptr<Value> value = parseValue();
 
-    return new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value);
+    return std::shared_ptr<ParseNode>(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
 }
 
-ParseNode* Parser::parseAssignment(const Token* variableToken) {
-    Value* value = parseValue();
+std::shared_ptr<ParseNode> Parser::parseAssignment(const Token* variableToken) {
+    std::shared_ptr<Value> value = parseValue();
 
-    return new Assignment(currentContext, variableToken, variableToken->value(), value);
+    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
 }
 
-ParseNode* Parser::parseSwap(const Token* lhs) {
+std::shared_ptr<ParseNode> Parser::parseSwap(const Token* lhs) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
 
     string rhs = lexer.getCurrentToken()->value();
 
-    return new Swap(currentContext, lexer.getCurrentToken(), lhs->value(), rhs);
+    return std::shared_ptr<ParseNode>(new Swap(currentContext, lexer.getCurrentToken(), lhs->value(), rhs));
 }
 
-ParseNode* Parser::parseIf() {
+std::shared_ptr<ParseNode> Parser::parseIf() {
     assertNextIsLeftParenth(lexer, "An if instruction must be followed by a condition surrounded by parenth");
 
-    Condition* condition = parseCondition();
+    std::shared_ptr<Condition> condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the if must be closed by a right parenth");
 
@@ -263,7 +264,7 @@ ParseNode* Parser::parseIf() {
 
     currentContext = new BlockContext(currentContext, functionContext);
 
-    If* block = new If(currentContext, lexer.getCurrentToken(), condition);
+    std::shared_ptr<If> block(new If(currentContext, lexer.getCurrentToken(), condition));
 
     lexer.next();
 
@@ -306,10 +307,10 @@ ParseNode* Parser::parseIf() {
     return block;
 }
 
-ElseIf* Parser::parseElseIf() {
+std::shared_ptr<ElseIf> Parser::parseElseIf() {
     assertNextIsLeftParenth(lexer, "An else if instruction must be followed by a condition surrounded by parenth");
 
-    Condition* condition = parseCondition();
+    std::shared_ptr<Condition> condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the else if must be closed by a right parenth");
 
@@ -317,7 +318,7 @@ ElseIf* Parser::parseElseIf() {
 
     currentContext = new BlockContext(currentContext, functionContext);
 
-    ElseIf* block = new ElseIf(currentContext, lexer.getCurrentToken(), condition);
+    std::shared_ptr<ElseIf> block(new ElseIf(currentContext, lexer.getCurrentToken(), condition));
 
     lexer.next();
 
@@ -336,10 +337,10 @@ ElseIf* Parser::parseElseIf() {
     return block;
 }
 
-Else* Parser::parseElse() {
+std::shared_ptr<Else> Parser::parseElse() {
     currentContext = new BlockContext(currentContext, functionContext);
 
-    Else* block = new Else(currentContext, lexer.getCurrentToken());
+    std::shared_ptr<Else> block(new Else(currentContext, lexer.getCurrentToken()));
 
     assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
 
@@ -356,12 +357,12 @@ Else* Parser::parseElse() {
     return block;
 }
 
-ParseNode* Parser::parseWhile() {
+std::shared_ptr<ParseNode> Parser::parseWhile() {
     assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
 
     const Token* token = lexer.getCurrentToken();
 
-    Condition* condition = parseCondition();
+    std::shared_ptr<Condition> condition = parseCondition();
 
     assertNextIsRightParenth(lexer, "The condition of the while must be closed by a right parenth");
 
@@ -369,7 +370,7 @@ ParseNode* Parser::parseWhile() {
 
     currentContext = new BlockContext(currentContext, functionContext);
 
-    While* block = new While(currentContext, token, condition);
+    std::shared_ptr<While> block(new While(currentContext, token, condition));
 
     lexer.next();
 
@@ -388,7 +389,7 @@ ParseNode* Parser::parseWhile() {
     return block;
 }
 
-ParseNode* Parser::parseFor() {
+std::shared_ptr<ParseNode> Parser::parseFor() {
     assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
 
     currentContext = new BlockContext(currentContext, functionContext);
@@ -399,23 +400,23 @@ ParseNode* Parser::parseFor() {
 
     //TODO Test for type
 
-    ParseNode* start = parseDeclaration();
+    std::shared_ptr<ParseNode> start = parseDeclaration();
 
     assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
 
-    Condition* condition = parseCondition();
+    std::shared_ptr<Condition> condition = parseCondition();
 
     assertNextIsStop(lexer, "The condition of the for loop must be closed by a semicolon");
 
     lexer.next();
 
-    ParseNode* iter = parseRepeatableInstruction();
+    std::shared_ptr<ParseNode> iter = parseRepeatableInstruction();
     
     assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
     
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    For* block = new For(currentContext, token, start, condition, iter);
+    std::shared_ptr<For> block(new For(currentContext, token, start, condition, iter));
 
     lexer.next();
 
@@ -440,11 +441,11 @@ enum Operator {
 
 class Part {
     private:
-        Value* value;
+        std::shared_ptr<Value> value;
         Operator op;
 
     public:
-        explicit Part(Value* v) : value(v), op(ERROR) {}
+        explicit Part(std::shared_ptr<Value> v) : value(v), op(ERROR) {}
         explicit Part(Operator o) : value(NULL), op(o) {}
         
         bool isResolved(){
@@ -455,7 +456,7 @@ class Part {
             return op;
         }
         
-        Value* getValue() {
+        std::shared_ptr<Value> getValue() {
             return value;
         }
 };
@@ -474,7 +475,8 @@ int priority(Operator op) {
     }
 }
 
-Value* Parser::parseValue() {
+//TODO Use shared_ptr for Part*
+std::shared_ptr<Value> Parser::parseValue() {
     list<Part*> parts;
 
     while (true) {
@@ -482,7 +484,7 @@ Value* Parser::parseValue() {
             throw TokenException("Waiting for a value", lexer.getCurrentToken());
         }
 
-        Value* node = NULL;
+        std::shared_ptr<Value> node;
 
         if (lexer.isLeftParenth()) {
             node = parseValue();
@@ -491,16 +493,16 @@ Value* Parser::parseValue() {
         } else if (lexer.isLitteral()) {
             string litteral = lexer.getCurrentToken()->value();
 
-            node = new Litteral(currentContext, lexer.getCurrentToken(), litteral);
+            node = std::shared_ptr<Value>(new Litteral(currentContext, lexer.getCurrentToken(), litteral));
         } else if (lexer.isWord()) {
             string variableRight = lexer.getCurrentToken()->value();
 
-            node = new VariableValue(currentContext, lexer.getCurrentToken(), variableRight);
+            node = std::shared_ptr<Value>(new VariableValue(currentContext, lexer.getCurrentToken(), variableRight));
         } else if (lexer.isInteger()) {
             string integer = lexer.getCurrentToken()->value();
             int value = toNumber<int>(integer);
 
-            node = new Integer(currentContext, lexer.getCurrentToken(), value);
+            node = std::shared_ptr<Value>(new Integer(currentContext, lexer.getCurrentToken(), value));
         } else {
             throw TokenException("Invalid value", lexer.getCurrentToken());
         }
@@ -550,22 +552,22 @@ Value* Parser::parseValue() {
         ++max;
         Part* right = *max;
 
-        Value* lhs = left->getValue();
+        std::shared_ptr<Value> lhs = left->getValue();
         Operator op = center->getOperator();
-        Value* rhs = right->getValue();
+        std::shared_ptr<Value> rhs = right->getValue();
 
-        Value* value = NULL;
+        std::shared_ptr<Value> value = NULL;
 
         if (op == ADD) {
-            value = new Addition(currentContext, lhs->token(), lhs, rhs);
+            value = std::shared_ptr<Value>(new Addition(currentContext, lhs->token(), lhs, rhs));
         } else if (op == SUB) {
-            value = new Subtraction(currentContext, lhs->token(), lhs, rhs);
+            value = std::shared_ptr<Value>(new Subtraction(currentContext, lhs->token(), lhs, rhs));
         } else if (op == MUL) {
-            value = new Multiplication(currentContext, lhs->token(), lhs, rhs);
+            value = std::shared_ptr<Value>(new Multiplication(currentContext, lhs->token(), lhs, rhs));
         } else if (op == DIV) {
-            value = new Division(currentContext, lhs->token(), lhs, rhs);
+            value = std::shared_ptr<Value>(new Division(currentContext, lhs->token(), lhs, rhs));
         } else if (op == MOD) {
-            value = new Modulo(currentContext, lhs->token(), lhs, rhs);
+            value = std::shared_ptr<Value>(new Modulo(currentContext, lhs->token(), lhs, rhs));
         }
 
         parts.erase(first, ++max);
@@ -577,7 +579,7 @@ Value* Parser::parseValue() {
         parts.insert(max, new Part(value));
     }
 
-    Value* value = (*parts.begin())->getValue();
+    std::shared_ptr<Value> value = (*parts.begin())->getValue();
 
     delete *parts.begin();
 
@@ -586,18 +588,18 @@ Value* Parser::parseValue() {
     return value;
 }
 
-Condition* Parser::parseCondition() {
+std::shared_ptr<Condition> Parser::parseCondition() {
     lexer.next();
 
     if (lexer.isTrue()) {
-        return new Condition(TRUE_VALUE);
+        return std::shared_ptr<Condition>(new Condition(TRUE_VALUE));
     } else if (lexer.isFalse()) {
-        return new Condition(FALSE_VALUE);
+        return std::shared_ptr<Condition>(new Condition(FALSE_VALUE));
     } else {
         lexer.pushBack();
     }
 
-    Value* lhs = parseValue();
+    std::shared_ptr<Value> lhs = parseValue();
 
     if (!lexer.next()) {
         throw TokenException("waiting for a boolean operator", lexer.getCurrentToken());
@@ -620,9 +622,9 @@ Condition* Parser::parseCondition() {
         throw TokenException("waiting for a boolean operator", lexer.getCurrentToken());
     }
 
-    Value* rhs = parseValue();
+    std::shared_ptr<Value> rhs = parseValue();
 
-    return new Condition(operation, lhs, rhs);
+    return std::shared_ptr<Condition>(new Condition(operation, lhs, rhs));
 }
 
 inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {

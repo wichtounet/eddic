@@ -63,8 +63,8 @@ void Function::write(AssemblyFileWriter& writer){
 }
 
 void FunctionCall::write(AssemblyFileWriter& writer){
-    std::vector<Value*>::reverse_iterator it = m_values.rbegin();
-    std::vector<Value*>::reverse_iterator end = m_values.rend();
+    std::vector<std::shared_ptr<Value>>::reverse_iterator it = m_values.rbegin();
+    std::vector<std::shared_ptr<Value>>::reverse_iterator end = m_values.rend();
 
     for( ; it != end; ++it){
         (*it)->write(writer);

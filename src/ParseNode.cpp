@@ -22,55 +22,55 @@ using std::bind2nd;
 using namespace eddic;
 
 ParseNode::~ParseNode() {
-    for_each(begin(), end(), deleter());
-    for_each(trash.begin(), trash.end(), deleter());
+    //TODO for_each(begin(), end(), deleter());
+    //TODO for_each(trash.begin(), trash.end(), deleter());
 }
 
 void ParseNode::write(AssemblyFileWriter& writer) {
-    for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::write), writer));
+    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
 }
 
 void ParseNode::checkFunctions(Program& program){
-    for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::checkFunctions), program));
+    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->checkFunctions(program); });
 }
 
 void ParseNode::checkVariables() {
-    for_each(begin(), end(), mem_fun(&ParseNode::checkVariables));
+    for_each(begin(), end(), [](std::shared_ptr<ParseNode> p){ p->checkVariables(); });
 }
 
 void ParseNode::checkStrings(StringPool& pool) {
-    for_each(begin(), end(), bind2nd(mem_fun(&ParseNode::checkStrings), pool));
+    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->checkStrings(pool); });
 }
 
 void ParseNode::optimize() {
-    for_each(begin(), end(), [=](ParseNode* p){ p->optimize(); });
+    for_each(begin(), end(), [](std::shared_ptr<ParseNode> p){ p->optimize(); });
 }
 
-void ParseNode::addLast(ParseNode* node) {
+void ParseNode::addLast(std::shared_ptr<ParseNode> node) {
     childs.push_back(node);
 
-    node->parent = this;
+    node->parent = std::shared_ptr<ParseNode>(this);
 }
 
-void ParseNode::addFirst(ParseNode* node) {
+void ParseNode::addFirst(std::shared_ptr<ParseNode> node) {
     childs.push_front(node);
 
-    node->parent = this;
+    node->parent = std::shared_ptr<ParseNode>(this);
 }
 
-void ParseNode::replace(ParseNode* old, ParseNode* node) {
+void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node) {
     trash.push_back(old);
     old->parent = NULL;
 
-    node->parent = this;
+    node->parent = std::shared_ptr<ParseNode>(this);
 
-    list<ParseNode*>::iterator it = find(childs.begin(), childs.end(), old);
+    list<std::shared_ptr<ParseNode>>::iterator it = find(childs.begin(), childs.end(), old);
     if(it != childs.end()){
         *it = node;
     }
 }
 
-void ParseNode::remove(ParseNode* node) {
+void ParseNode::remove(std::shared_ptr<ParseNode> node) {
     childs.remove(node);
 
     trash.push_back(node);

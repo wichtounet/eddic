@@ -37,12 +37,12 @@ int Compiler::compile(string file) {
 
         Parser parser(lexer);
 
-        Program* program = parser.parse();
+        std::shared_ptr<Program> program = parser.parse();
 
-        StringPool* pool = new StringPool(program->context());
+        std::shared_ptr<StringPool> pool(new StringPool(program->context()));
 
-        program->addFirst(new MainDeclaration(program->context()));
-        program->addLast(new Methods(program->context()));
+        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context())));
+        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context())));
         program->addLast(pool);
 
         //Semantical analysis
@@ -56,8 +56,6 @@ int Compiler::compile(string file) {
         //Compilation
         writer.open("output.asm");
         program->write(writer);
-
-        delete program;
 
         if(!Options::isSet(ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");

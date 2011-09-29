@@ -10,6 +10,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 #include <unordered_map>
 
@@ -24,14 +25,14 @@ class Variable;
 
 class Program : public ParseNode {
     private:
-        std::unordered_map<std::string, Function*> functions;
+        std::unordered_map<std::string, std::shared_ptr<Function>> functions;
 
     public:
         Program(Context* context) : ParseNode(context) {}
         ~Program();
         
         void write(AssemblyFileWriter& writer);
-        void addFunction(Function* function);
+        void addFunction(std::shared_ptr<Function> function);
         bool exists(std::string function);
 };
 
@@ -63,13 +64,10 @@ class VariableOperation : public ParseNode {
     protected:
         std::string m_variable;
         Variable* m_var;
-        Value* value;
+        std::shared_ptr<Value> value;
    
     public:
-        VariableOperation(Context* context, const Token* token, const std::string& variable, Value* v) : ParseNode(context, token), m_variable(variable), value(v) {};
-        ~VariableOperation() {
-            delete value;
-        }
+        VariableOperation(Context* context, const Token* token, const std::string& variable, std::shared_ptr<Value> v) : ParseNode(context, token), m_variable(variable), value(v) {};
         
         void checkStrings(StringPool& pool);
         void write(AssemblyFileWriter& writer);
@@ -80,14 +78,14 @@ class Declaration : public VariableOperation {
         Type m_type;
 
     public:
-        Declaration(Context* context, const Token* token, Type type, const std::string& variable, Value* v) : VariableOperation(context, token, variable, v) { m_type = type;  };
+        Declaration(Context* context, const Token* token, Type type, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) { m_type = type;  };
 
         void checkVariables();
 };
 
 class Assignment : public VariableOperation {
     public:
-        Assignment(Context* context, const Token* token, const std::string& variable, Value* v) : VariableOperation(context, token, variable, v) {};
+        Assignment(Context* context, const Token* token, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) {};
 
         void checkVariables();
 };
@@ -95,13 +93,10 @@ class Assignment : public VariableOperation {
 class Print : public ParseNode {
     protected:
         Type m_type;
-        Value* value;
+        std::shared_ptr<Value> value;
 
     public:
-        Print(Context* context, const Token* token, Value* v) : ParseNode(context, token), value(v) {};
-        virtual ~Print() {
-            delete value;
-        }
+        Print(Context* context, const Token* token, std::shared_ptr<Value> v) : ParseNode(context, token), value(v) {};
 
         void checkStrings(StringPool& pool);
         void checkVariables();
@@ -110,7 +105,7 @@ class Print : public ParseNode {
 
 class Println : public Print {
     public:
-        Println(Context* context, const Token* token, Value*v) : Print(context, token, v) {}
+        Println(Context* context, const Token* token, std::shared_ptr<Value> v) : Print(context, token, v) {}
         void write(AssemblyFileWriter& writer);
 };
 

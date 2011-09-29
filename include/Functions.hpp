@@ -112,7 +112,7 @@ class FunctionCall : public ParseNode {
     private:
         std::string m_function;
         std::string m_function_mangled;
-        std::vector<Value*> m_values;
+        std::vector<std::shared_ptr<Value>> m_values;
 
     public:
         FunctionCall(Context* context, const Token* token, const std::string& function) : ParseNode(context, token), m_function(function) {}
@@ -120,7 +120,7 @@ class FunctionCall : public ParseNode {
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);
 
-        void addValue(Value* value){
+        void addValue(std::shared_ptr<Value> value){
             m_values.push_back(value);
             addLast(value);
         }

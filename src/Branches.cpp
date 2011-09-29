@@ -13,16 +13,7 @@ using namespace eddic;
 
 using std::string;
 
-If::~If() {
-    delete m_condition;
-    delete m_elseBlock; //Can be null, problem ?
-
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        delete *it;
-    }
-}
-
-void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition) {
+void writeConditionOperands(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition) {
     condition->lhs()->write(writer);
     condition->rhs()->write(writer);
 
@@ -31,12 +22,10 @@ void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition) {
     writer.stream() << "addl $8, %esp" << std::endl;
 }
 
-void eddic::writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, string label, int labelIndex) {
+void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, string label, int labelIndex) {
     if (!condition->isOperator()) {
-
-        if (condition->condition() == TRUE_VALUE) {
-            //No need to jump
-        } else if (condition->condition() == FALSE_VALUE) {
+        //No need to jump if true
+        if (condition->condition() == FALSE_VALUE) {
             writer.stream() << "jmp " << label << labelIndex << std::endl;
         }
     } else {
@@ -109,8 +98,8 @@ void If::write(AssemblyFileWriter& writer) {
 
         writer.stream() << "jmp L" << end << std::endl;
 
-        for (std::vector<ElseIf*>::size_type i = 0; i < elseIfs.size(); ++i) {
-            ElseIf* elseIf = elseIfs[i];
+        for (std::vector<std::shared_ptr<ElseIf>>::size_type i = 0; i < elseIfs.size(); ++i) {
+            std::shared_ptr<ElseIf> elseIf = elseIfs[i];
 
             writer.stream() << "L" << next << ":" << std::endl;
 
@@ -158,7 +147,7 @@ void If::checkVariables() {
 
     ParseNode::checkVariables();
 
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<std::shared_ptr<ElseIf>>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         (*it)->checkVariables();
     }
 }
@@ -175,7 +164,7 @@ void If::checkStrings(StringPool& pool) {
 
     ParseNode::checkStrings(pool);
 
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<std::shared_ptr<ElseIf>>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         (*it)->checkStrings(pool);
     }
 }
@@ -186,7 +175,7 @@ void If::optimize() {
         m_condition->rhs()->optimize();
     }
 
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
+    for (std::vector<std::shared_ptr<ElseIf>>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
         (*it)->optimize();
     }
 

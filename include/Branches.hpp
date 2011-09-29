@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "Nodes.hpp"
 
@@ -29,21 +30,17 @@ enum BooleanCondition {
 class Condition {
     private:
         BooleanCondition m_condition;
-        Value* m_lhs;
-        Value* m_rhs;
+        std::shared_ptr<Value> m_lhs;
+        std::shared_ptr<Value> m_rhs;
 
     public:
         Condition(BooleanCondition condition) : m_condition(condition), m_lhs(NULL), m_rhs(NULL) {}
-        Condition(BooleanCondition condition, Value* lhs, Value* rhs) : m_condition(condition), m_lhs(lhs), m_rhs(rhs) {}
-        ~Condition() {
-            delete m_lhs;
-            delete m_rhs;
-        }
+        Condition(BooleanCondition condition, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : m_condition(condition), m_lhs(lhs), m_rhs(rhs) {}
 
-        Value* lhs() {
+        std::shared_ptr<Value> lhs() {
             return m_lhs;
         }
-        Value* rhs() {
+        std::shared_ptr<Value> rhs() {
             return m_rhs;
         }
         BooleanCondition condition() const {
@@ -54,7 +51,7 @@ class Condition {
         }
 };
 
-void writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, std::string label, int labelIndex);
+void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, std::string label, int labelIndex);
 
 class Else : public ParseNode {
     public:
@@ -63,48 +60,42 @@ class Else : public ParseNode {
 
 class ElseIf : public ParseNode {
     private:
-        Condition* m_condition;
+        std::shared_ptr<Condition> m_condition;
 
     public:
-        ElseIf(Context* context, Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition) {}
-
-        virtual ~ElseIf() {
-            delete m_condition;
-        }
+        ElseIf(Context* context, Token* token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        Condition* condition() {
+        std::shared_ptr<Condition> condition() {
             return m_condition;
         }
 };
 
 class If : public ParseNode {
     private:
-        Condition* m_condition;
-        Else* m_elseBlock;
-        std::vector<ElseIf*> elseIfs;
+        std::shared_ptr<Condition> m_condition;
+        std::shared_ptr<Else> m_elseBlock;
+        std::vector<std::shared_ptr<ElseIf>> elseIfs;
 
     public:
-        If(Context* context, const Token* token, Condition* condition) : ParseNode(context, token), m_condition(condition), m_elseBlock(NULL) {}
-
-        virtual ~If();
+        If(Context* context, const Token* token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        void setElse(Else* elseBlock) {
+        void setElse(std::shared_ptr<Else> elseBlock) {
             m_elseBlock = elseBlock;
         }
-        void addElseIf(ElseIf* elseIf) {
+        void addElseIf(std::shared_ptr<ElseIf> elseIf) {
             elseIfs.push_back(elseIf);
         }
 
-        Condition* condition() {
+        std::shared_ptr<Condition> condition() {
             return m_condition;
         }
 };

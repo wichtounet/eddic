@@ -8,6 +8,7 @@
 #ifndef PARSE_NODE_H
 #define PARSE_NODE_H
 
+#include <memory>
 #include <list>
 #include <vector>
 
@@ -16,8 +17,8 @@ namespace eddic {
 class ParseNode;
 class Program;
 
-typedef std::list<ParseNode*>::const_iterator NodeIterator;
-typedef std::vector<ParseNode*>::const_iterator TrashIterator;
+typedef std::list<std::shared_ptr<ParseNode>>::const_iterator NodeIterator;
+typedef std::vector<std::shared_ptr<ParseNode>>::const_iterator TrashIterator;
 
 class Context;
 class AssemblyFileWriter;
@@ -26,18 +27,18 @@ class Token;
 
 class ParseNode {
     private:
-        std::list<ParseNode*> childs;
-        std::vector<ParseNode*> trash;
+        std::list<std::shared_ptr<ParseNode>> childs;
+        std::vector<std::shared_ptr<ParseNode>> trash;
 
         Context* m_context;
         const Token* m_token;
 
-    protected:
-        ParseNode* parent;
+    protected://TODO Put weak
+        std::shared_ptr<ParseNode> parent;
 
     public:
-        ParseNode(Context* context) : m_context(context), m_token(NULL), parent(NULL) {}
-        ParseNode(Context* context, const Token* token) : m_context(context), m_token(token), parent(NULL) {} 
+        ParseNode(Context* context) : m_context(context) {}
+        ParseNode(Context* context, const Token* token) : m_context(context), m_token(token){} 
         virtual ~ParseNode();
 
         virtual void write(AssemblyFileWriter& writer);
@@ -46,10 +47,11 @@ class ParseNode {
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        void addFirst(ParseNode* node);
-        void addLast(ParseNode* node);
-        void replace(ParseNode* old, ParseNode* node);
-        void remove(ParseNode* node);
+        void addFirst(std::shared_ptr<ParseNode> node);
+        void addLast(std::shared_ptr<ParseNode> node);
+        void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
+        void remove(std::shared_ptr<ParseNode> node);
+        
         NodeIterator begin();
         NodeIterator end();
 

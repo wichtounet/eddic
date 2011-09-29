@@ -24,7 +24,7 @@ Program::~Program(){
     Context::cleanup();
 }
 
-void Program::addFunction(Function* function){
+void Program::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName()] = function;
 
     addLast(function);
