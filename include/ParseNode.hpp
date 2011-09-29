@@ -30,16 +30,15 @@ class ParseNode {
         std::list<std::shared_ptr<ParseNode>> childs;
         std::vector<std::shared_ptr<ParseNode>> trash;
 
-        Context* m_context;
+        std::shared_ptr<Context> m_context;
         const Token* m_token;
 
     protected://TODO Put weak
         std::shared_ptr<ParseNode> parent;
 
     public:
-        ParseNode(Context* context) : m_context(context) {}
-        ParseNode(Context* context, const Token* token) : m_context(context), m_token(token){} 
-        virtual ~ParseNode();
+        ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
+        ParseNode(std::shared_ptr<Context> context, const Token* token) : m_context(context), m_token(token){} 
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkFunctions(Program& program);
@@ -55,7 +54,7 @@ class ParseNode {
         NodeIterator begin();
         NodeIterator end();
 
-        Context* context() {
+        std::shared_ptr<Context> context() {
             return m_context;
         }
 

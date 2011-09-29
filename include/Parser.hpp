@@ -26,9 +26,9 @@ class Parser {
     private:
         Lexer& lexer;
 
-        GlobalContext* globalContext;
-        FunctionContext* functionContext;
-        Context* currentContext;
+        std::shared_ptr<GlobalContext> globalContext;
+        std::shared_ptr<FunctionContext> functionContext;
+        std::shared_ptr<Context> currentContext;
 
         std::shared_ptr<Function> parseFunction();
         std::shared_ptr<ParseNode> parseInstruction();

@@ -19,7 +19,7 @@ class BinaryOperator : public Value {
         std::shared_ptr<Value> lhs;
         std::shared_ptr<Value> rhs;
 
-        BinaryOperator(Context* context, const Token* token, std::shared_ptr<Value> l, std::shared_ptr<Value> r) : Value(context, token), lhs(l), rhs(r) {}
+        BinaryOperator(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Value> l, std::shared_ptr<Value> r) : Value(context, token), lhs(l), rhs(r) {}
 
         bool isConstant();
         void checkVariables();
@@ -35,7 +35,7 @@ class BinaryOperator : public Value {
 
 class Addition : public BinaryOperator {
     public:
-        Addition(Context* context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
+        Addition(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
         void optimize();
@@ -47,7 +47,7 @@ class Addition : public BinaryOperator {
 
 class Subtraction : public BinaryOperator {
     public:
-        Subtraction(Context* context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
+        Subtraction(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -56,7 +56,7 @@ class Subtraction : public BinaryOperator {
 
 class Multiplication : public BinaryOperator {
     public:
-        Multiplication(Context* context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
+        Multiplication(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -65,7 +65,7 @@ class Multiplication : public BinaryOperator {
 
 class Division : public BinaryOperator {
     public:
-        Division(Context* context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
+        Division(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 
@@ -74,7 +74,7 @@ class Division : public BinaryOperator {
 
 class Modulo : public BinaryOperator {
     public:
-        Modulo(Context* context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
+        Modulo(std::shared_ptr<Context> context, const Token* token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 

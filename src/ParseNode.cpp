@@ -21,11 +21,6 @@ using std::bind2nd;
 
 using namespace eddic;
 
-ParseNode::~ParseNode() {
-    //TODO for_each(begin(), end(), deleter());
-    //TODO for_each(trash.begin(), trash.end(), deleter());
-}
-
 void ParseNode::write(AssemblyFileWriter& writer) {
     for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
 }

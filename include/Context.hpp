@@ -98,10 +98,8 @@ typedef std::unordered_map<std::string, int> VisibleVariables;
 //TODO Rename to Context when finished the implementation
 class Context {
     private:
-        Context* m_parent;
+        std::shared_ptr<Context> m_parent;
         
-        static std::vector<Context*> contexts;
-
     protected:
         StoredVariables m_stored;
         VisibleVariables m_visibles;
@@ -109,10 +107,7 @@ class Context {
         static int currentVariable;
 
     public:
-        Context(Context* parent) : m_parent(parent) {
-            contexts.push_back(this);
-        }
-        virtual ~Context();
+        Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
         
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
         virtual bool exists(const std::string& a) const;
@@ -129,11 +124,9 @@ class Context {
         
         void storeVariable(int index, std::shared_ptr<Variable> variable);
 
-        Context* parent() const  {
+        std::shared_ptr<Context> parent() const  {
             return m_parent;
         }
-        
-        static void cleanup();
 };
 
 class GlobalContext : public Context {
@@ -151,7 +144,7 @@ class FunctionContext : public Context {
         int currentParameter;
 
     public:
-        FunctionContext(Context* parent) : Context(parent), currentPosition(4), currentParameter(8) {}
+        FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}
         
         void write(AssemblyFileWriter& writer);
         void release(AssemblyFileWriter& writer);
@@ -164,10 +157,10 @@ class FunctionContext : public Context {
 
 class BlockContext : public Context {
     private:
-        FunctionContext* m_functionContext;
+        std::shared_ptr<FunctionContext> m_functionContext;
 
     public:
-        BlockContext(Context* parent, FunctionContext* functionContext) : Context(parent), m_functionContext(functionContext){} 
+        BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext) : Context(parent), m_functionContext(functionContext){} 
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
 };

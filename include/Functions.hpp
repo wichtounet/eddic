@@ -63,7 +63,7 @@ std::string mangle(Type type);
 
 class MainDeclaration : public ParseNode {
    public:
-        MainDeclaration(Context* context) : ParseNode(context) {};
+        MainDeclaration(std::shared_ptr<Context> context) : ParseNode(context) {};
 
         void write(AssemblyFileWriter& writer);
 };
@@ -93,7 +93,7 @@ class Function : public ParseNode {
         int m_currentPosition;
 
 	public:
-		Function(Context* context, const Token* token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
+		Function(std::shared_ptr<Context> context, const Token* token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
 		
         void write(AssemblyFileWriter& writer);
 
@@ -115,7 +115,7 @@ class FunctionCall : public ParseNode {
         std::vector<std::shared_ptr<Value>> m_values;
 
     public:
-        FunctionCall(Context* context, const Token* token, const std::string& function) : ParseNode(context, token), m_function(function) {}
+        FunctionCall(std::shared_ptr<Context> context, const Token* token, const std::string& function) : ParseNode(context, token), m_function(function) {}
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);

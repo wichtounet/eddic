@@ -47,7 +47,7 @@ bool isType(const Lexer& lexer) {
 
 std::shared_ptr<Program> Parser::parse() {
     //Create the global context
-    globalContext = new GlobalContext();
+    globalContext = std::shared_ptr<GlobalContext>(new GlobalContext());
     currentContext = globalContext;
 
     std::shared_ptr<Program> program(new Program(currentContext));
@@ -74,7 +74,7 @@ std::shared_ptr<Function> Parser::parseFunction() {
 
     string functionName = lexer.getCurrentToken()->value();
 
-    functionContext = new FunctionContext(currentContext);
+    functionContext = std::shared_ptr<FunctionContext>(new FunctionContext(currentContext));
     currentContext = functionContext;
 
     std::shared_ptr<Function> function(new Function(currentContext, lexer.getCurrentToken(), functionName));
@@ -262,7 +262,7 @@ std::shared_ptr<ParseNode> Parser::parseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new BlockContext(currentContext, functionContext);
+    currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
     std::shared_ptr<If> block(new If(currentContext, lexer.getCurrentToken(), condition));
 
@@ -316,7 +316,7 @@ std::shared_ptr<ElseIf> Parser::parseElseIf() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new BlockContext(currentContext, functionContext);
+    currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
     std::shared_ptr<ElseIf> block(new ElseIf(currentContext, lexer.getCurrentToken(), condition));
 
@@ -338,7 +338,7 @@ std::shared_ptr<ElseIf> Parser::parseElseIf() {
 }
 
 std::shared_ptr<Else> Parser::parseElse() {
-    currentContext = new BlockContext(currentContext, functionContext);
+    currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
     std::shared_ptr<Else> block(new Else(currentContext, lexer.getCurrentToken()));
 
@@ -368,7 +368,7 @@ std::shared_ptr<ParseNode> Parser::parseWhile() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    currentContext = new BlockContext(currentContext, functionContext);
+    currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
     std::shared_ptr<While> block(new While(currentContext, token, condition));
 
@@ -392,7 +392,7 @@ std::shared_ptr<ParseNode> Parser::parseWhile() {
 std::shared_ptr<ParseNode> Parser::parseFor() {
     assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
 
-    currentContext = new BlockContext(currentContext, functionContext);
+    currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
     
     const Token* token = lexer.getCurrentToken();
 

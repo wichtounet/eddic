@@ -20,17 +20,7 @@ using std::unordered_map;
 
 using namespace eddic;
 
-vector<Context*> Context::contexts;
 int Context::currentVariable = 0;
-
-Context::~Context() {
-    StoredVariables::const_iterator it = m_stored.begin();
-    StoredVariables::const_iterator end = m_stored.end();
-
-    for ( ; it != end; ++it) {
-        //TODO delete it->second;
-    }
-}
 
 void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
     m_stored[index] = variable;
@@ -66,10 +56,6 @@ std::shared_ptr<Variable> Context::getVariable(int index) const {
     }
 
     return iter->second;
-}
-
-void Context::cleanup(){
-    for_each(contexts.begin(), contexts.end(), deleter());
 }
 
 void FunctionContext::write(AssemblyFileWriter& writer){

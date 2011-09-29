@@ -20,7 +20,7 @@ class StringPool : public ParseNode {
         std::map<std::string, std::string> pool;
         unsigned int currentString;
     public:
-        StringPool(Context* context) : ParseNode(context), currentString(0) {
+        StringPool(std::shared_ptr<Context> context) : ParseNode(context), currentString(0) {
             label("\"\\n\"");
         };
 
