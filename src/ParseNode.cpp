@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include <algorithm>
-#include <functional>
 
 #include "ParseNode.hpp"
 #include "Context.hpp"
