@@ -25,7 +25,7 @@ class AssemblyFileWriter;
 class StringPool;
 class Token;
 
-class ParseNode {
+class ParseNode : public std::enable_shared_from_this<ParseNode> {
     private:
         std::list<std::shared_ptr<ParseNode>> childs;
         std::vector<std::shared_ptr<ParseNode>> trash;//TODO Think about the trash
@@ -46,11 +46,7 @@ class ParseNode {
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        void addFirst(std::shared_ptr<ParseNode> node);
-        void addLast(std::shared_ptr<ParseNode> node);
-        void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
-        void remove(std::shared_ptr<ParseNode> node);
-        
+
         NodeIterator begin();
         NodeIterator end();
 
@@ -61,7 +57,13 @@ class ParseNode {
         const Token* token(){
             return m_token;
         }
+    
+        void addFirst(std::shared_ptr<ParseNode> node);
+        void addLast(std::shared_ptr<ParseNode> node);
+        void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
+        void remove(std::shared_ptr<ParseNode> node);
 };
+        
 
 } //end of eddic
 

@@ -44,19 +44,19 @@ void ParseNode::optimize() {
 void ParseNode::addLast(std::shared_ptr<ParseNode> node) {
     childs.push_back(node);
 
-    node->parent = std::weak_ptr<ParseNode>(this);
+    node->parent = std::weak_ptr<ParseNode>(shared_from_this());
 }
 
 void ParseNode::addFirst(std::shared_ptr<ParseNode> node) {
     childs.push_front(node);
 
-    node->parent = std::weak_ptr<ParseNode>(this);
+    node->parent = std::weak_ptr<ParseNode>(shared_from_this());
 }
 
 void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node) {
     trash.push_back(old);
 
-    node->parent = std::weak_ptr<ParseNode>(this);
+    node->parent = std::weak_ptr<ParseNode>(shared_from_this());
 
     list<std::shared_ptr<ParseNode>>::iterator it = find(childs.begin(), childs.end(), old);
     if(it != childs.end()){
