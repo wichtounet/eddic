@@ -11,6 +11,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -90,7 +91,7 @@ class Variable {
         }
 };
 
-typedef std::unordered_map<int, Variable*> StoredVariables;
+typedef std::unordered_map<int, std::shared_ptr<Variable>> StoredVariables;
 typedef std::unordered_map<std::string, int> VisibleVariables;
 
 //TODO Improve the way to manage memory of context
@@ -113,10 +114,10 @@ class Context {
         }
         virtual ~Context();
         
-        virtual Variable* addVariable(const std::string& a, Type type) = 0;
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
         virtual bool exists(const std::string& a) const;
-        virtual Variable* getVariable(const std::string& variable) const;
-        virtual Variable* getVariable(int index) const;
+        virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
+        virtual std::shared_ptr<Variable> getVariable(int index) const;
         
         virtual void write(AssemblyFileWriter&){
             //Nothing by default    
@@ -126,7 +127,7 @@ class Context {
             //Nothing by default
         }
         
-        void storeVariable(int index, Variable* variable);
+        void storeVariable(int index, std::shared_ptr<Variable> variable);
 
         Context* parent() const  {
             return m_parent;
@@ -141,7 +142,7 @@ class GlobalContext : public Context {
         
         void write(AssemblyFileWriter& writer);
         
-        Variable* addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
 };
 
 class FunctionContext : public Context {
@@ -155,10 +156,10 @@ class FunctionContext : public Context {
         void write(AssemblyFileWriter& writer);
         void release(AssemblyFileWriter& writer);
         
-        Variable* addVariable(const std::string& a, Type type);
-        Variable* addParameter(const std::string& a, Type type);
-        Variable* newVariable(const std::string& a, Type type);
-        Variable* newParameter(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addParameter(const std::string& a, Type type);
+        std::shared_ptr<Variable> newVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> newParameter(const std::string& a, Type type);
 };
 
 class BlockContext : public Context {
@@ -168,7 +169,7 @@ class BlockContext : public Context {
     public:
         BlockContext(Context* parent, FunctionContext* functionContext) : Context(parent), m_functionContext(functionContext){} 
         
-        Variable* addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
 };
 
 } //end of eddic

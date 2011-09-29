@@ -63,7 +63,7 @@ class Methods : public ParseNode {
 class VariableOperation : public ParseNode {
     protected:
         std::string m_variable;
-        Variable* m_var;
+        std::shared_ptr<Variable> m_var;
         std::shared_ptr<Value> value;
    
     public:
@@ -113,8 +113,8 @@ class Swap : public ParseNode {
     private:
         std::string m_lhs;
         std::string m_rhs;
-        Variable* m_lhs_var;
-        Variable* m_rhs_var;
+        std::shared_ptr<Variable> m_lhs_var;
+        std::shared_ptr<Variable> m_rhs_var;
         Type m_type;
 
     public:
@@ -153,7 +153,7 @@ class Integer : public Value {
 class VariableValue : public Value {
     private:
         std::string m_variable;
-        Variable* m_var;
+        std::shared_ptr<Variable> m_var;
     
     public:
         VariableValue(Context* context, const Token* token, const std::string& variable) : Value(context, token), m_variable(variable) {};
