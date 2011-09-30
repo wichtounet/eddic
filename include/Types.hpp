@@ -18,6 +18,8 @@ enum Type {
 
 int size(Type type);
 
+bool isType(std::string type);
+
 Type stringToType(std::string type);
 
 } //end of eddic

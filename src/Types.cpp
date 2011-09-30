@@ -16,6 +16,10 @@ int eddic::size(Type type){
     return type == INT ? 4 : 8;
 }
 
+bool eddic::isType(std::string type){
+    return type == "int" || type == "void" || type == "string";
+}
+
 Type eddic::stringToType(std::string type){
     if (type == "int") {
         return  INT;

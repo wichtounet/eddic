@@ -35,14 +35,14 @@ inline static void assertNextIsStop(Lexer& lexer, const string& message);
 inline static void assertNextIsWord(Lexer& lexer, const string& message);
 
 //Move to some utility class
-bool isType(const Lexer& lexer) {
+bool isTokenType(const Lexer& lexer) {
     if (!lexer.isWord()) {
         return false;
     }
 
     string value = lexer.getCurrentToken()->value();
 
-    return value == "int" || value == "string";
+    return isType(value);
 }
 
 std::shared_ptr<Program> Parser::parse() {
@@ -52,35 +52,41 @@ std::shared_ptr<Program> Parser::parse() {
 
     std::shared_ptr<Program> program(new Program(currentContext));
 
-    while (lexer.next()) {
-        program->addFunction(parseFunction());
+    while (lexer.next()) {        
+        if(!isTokenType(lexer)){
+            throw TokenException("A function or a global variable must start with a type", lexer.getCurrentToken()); 
+        }
+
+        Type type = stringToType(lexer.getCurrentToken()->value());
+
+        assertNextIsWord(lexer, "A function or a global variable must have a name");
+
+        string name = lexer.getCurrentToken()->value();
+
+        lexer.next();
+
+        if(lexer.isLeftParenth()){
+            program->addFunction(parseFunction(type, name));
+        } else if(lexer.isAssign()){
+            program->addLast(parseGlobalDeclaration(type, name));
+        } else {
+            throw TokenException("The body of the file can only contains global variables and function declarations", lexer.getCurrentToken());
+        }
     }
 
     return program;
 }
 
-std::shared_ptr<Function> Parser::parseFunction() {
-    if(!lexer.isWord()){
-        throw TokenException("Not a function", lexer.getCurrentToken());
+std::shared_ptr<Function> Parser::parseFunction(Type type, string functionName) {
+    if(type != VOID){
+        throw TokenException("The return type of a function must be void", lexer.getCurrentToken());
     }
-
-    string returnType = lexer.getCurrentToken()->value();
-
-    if(returnType != "void"){
-        throw TokenException("Invalid return type", lexer.getCurrentToken());
-    }
-
-    assertNextIsWord(lexer, "Expecting a function name");
-
-    string functionName = lexer.getCurrentToken()->value();
 
     functionContext = std::shared_ptr<FunctionContext>(new FunctionContext(currentContext));
     currentContext = functionContext;
 
     std::shared_ptr<Function> function(new Function(currentContext, lexer.getCurrentToken(), functionName));
 
-    assertNextIsLeftParenth(lexer, "Waiting for a left parenth");
- 
     std::unordered_set<std::string> params;
 
     while(true){
@@ -93,7 +99,7 @@ std::shared_ptr<Function> Parser::parseFunction() {
                 lexer.next();
             }
 
-            if(!isType(lexer)){
+            if(!isTokenType(lexer)){
                 throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
             }
 
@@ -135,6 +141,16 @@ std::shared_ptr<Function> Parser::parseFunction() {
     return function;
 }
 
+std::shared_ptr<ParseNode> Parser::parseGlobalDeclaration(Type type, string variable){
+    if(type == VOID){
+        throw TokenException("void is not a valid type for a variable", lexer.getCurrentToken());
+    }
+
+    auto value = parseValue();
+
+    return std::shared_ptr<ParseNode>(new Declaration(globalContext, lexer.getCurrentToken(), type, variable, value));
+}
+
 std::shared_ptr<ParseNode> Parser::parseInstruction() {
     std::shared_ptr<ParseNode> instruction;
     
@@ -144,7 +160,7 @@ std::shared_ptr<ParseNode> Parser::parseInstruction() {
         return parseWhile();
     } else if (lexer.isFor()) {
         return parseFor();
-    } else if (isType(lexer)) {
+    } else if (isTokenType(lexer)) {
         instruction = parseDeclaration();
     } else if (lexer.isWord()) {
         instruction = parseCallOrAssignment();
