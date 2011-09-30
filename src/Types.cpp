@@ -8,6 +8,7 @@
 #include <string>
 
 #include "Types.hpp"
+#include "CompilerException.hpp"
 
 using namespace eddic;
 
@@ -18,7 +19,11 @@ int eddic::size(Type type){
 Type eddic::stringToType(std::string type){
     if (type == "int") {
         return  INT;
-    } else {
+    } else if (type == "string"){
         return STRING;
+    } else if(type == "void") {
+        return VOID;
     }
+
+    throw CompilerException("Invalid type");
 }

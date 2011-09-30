@@ -12,7 +12,8 @@ namespace eddic {
 
 enum Type {
     STRING = 0,
-    INT = 1
+    INT = 1,
+    VOID = 2
 };
 
 int size(Type type);
