@@ -259,6 +259,8 @@ void Swap::write(AssemblyFileWriter& writer) {
             m_rhs_var->moveFromRegister(writer, "%eax", "%ebx"); 
 
             break;
+        default:
+            throw CompilerException("Variable of invalid type");
     }
 }
 
@@ -276,6 +278,8 @@ void Print::write(AssemblyFileWriter& writer) {
             writer.stream() << "addl $8, %esp" << endl;
 
             break;
+        default:
+            throw CompilerException("Variable of invalid type");
     }
 }
 
