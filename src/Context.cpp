@@ -224,8 +224,8 @@ void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg1, st
            writer.stream() << "movl " << reg1 << ", " << m_position.offset() << "(%ebp)" << endl;
            writer.stream() << "movl " << reg2 << ", " << (m_position.offset() + 4) << "(%ebp)" << endl;
        } else {
-           writer.stream() << "movl " << reg1 << ", VS" << m_position.name() << endl;
-           writer.stream() << "movl " << reg2 << ", VS" << m_position.name() << "+4" << endl;
+           writer.stream() << "movl " << reg1 << ", VS" << m_position.name() << "+4" << endl;
+           writer.stream() << "movl " << reg2 << ", VS" << m_position.name() << endl;
        }
    }
 }
