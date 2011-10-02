@@ -10,10 +10,12 @@
 
 namespace eddic {
 
-enum Type {
-    STRING = 0,
-    INT = 1,
-    VOID = 2
+enum class Type : unsigned int {
+    STRING,
+    INT,
+    VOID, 
+
+    COUNT
 };
 
 int size(Type type);

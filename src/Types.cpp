@@ -13,7 +13,7 @@
 using namespace eddic;
 
 int eddic::size(Type type){
-    return type == INT ? 4 : 8;
+    return type == Type::INT ? 4 : 8;
 }
 
 bool eddic::isType(std::string type){
@@ -22,11 +22,11 @@ bool eddic::isType(std::string type){
 
 Type eddic::stringToType(std::string type){
     if (type == "int") {
-        return  INT;
+        return Type::INT;
     } else if (type == "string"){
-        return STRING;
+        return Type::STRING;
     } else if(type == "void") {
-        return VOID;
+        return Type::VOID;
     }
 
     throw CompilerException("Invalid type");

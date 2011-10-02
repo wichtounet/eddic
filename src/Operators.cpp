@@ -31,7 +31,7 @@ void BinaryOperator::checkStrings(StringPool& pool) {
 }
 
 Type BinaryOperator::checkTypes(Type left, Type right) {
-    if (left != right || left != INT) {
+    if (left != right || left != Type::INT) {
         throw CompilerException("Can only compute two integers", token());
     }
 
@@ -52,7 +52,7 @@ void Addition::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
-    if (m_type == INT) {
+    if (m_type == Type::INT) {
         writer.stream() << "movl (%esp), %eax" << std::endl;
         writer.stream() << "movl 4(%esp), %ecx" << std::endl;
         writer.stream() << "addl %ecx, %eax" << std::endl;
@@ -122,7 +122,7 @@ bool BinaryOperator::isConstant() {
 //Values
 
 int BinaryOperator::getIntValue() {
-    if (type() != INT) {
+    if (type() != Type::INT) {
         throw "Invalid type";
     }
 
@@ -134,7 +134,7 @@ int BinaryOperator::getIntValue() {
 }
 
 string BinaryOperator::getStringValue() {
-    if (type() != STRING) {
+    if (type() != Type::STRING) {
         throw "Invalid type";
     }
 
@@ -194,13 +194,13 @@ void BinaryOperator::optimize() {
 
 void Addition::optimize() {
     if (isConstant()) {
-        if (type() == INT) {
+        if (type() == Type::INT) {
             if (Options::isSet(OPTIMIZE_INTEGERS)) {
                 std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
                 parent.lock()->replace(shared_from_this(), value);
             }
-        } else if (type() == STRING) {
+        } else if (type() == Type::STRING) {
             if (Options::isSet(OPTIMIZE_STRINGS)) {
                 //No optimization at this time
             }

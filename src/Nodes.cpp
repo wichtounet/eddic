@@ -243,7 +243,7 @@ void VariableOperation::write(AssemblyFileWriter& writer) {
 
 void Swap::write(AssemblyFileWriter& writer) {
     switch (m_type) {
-        case INT:
+        case Type::INT:
             m_lhs_var->moveToRegister(writer, "%eax"); 
             m_rhs_var->moveToRegister(writer, "%ebx"); 
             
@@ -251,7 +251,7 @@ void Swap::write(AssemblyFileWriter& writer) {
             m_rhs_var->moveFromRegister(writer, "%eax"); 
 
             break;
-        case STRING:
+        case Type::STRING:
             m_lhs_var->moveToRegister(writer, "%eax", "%ebx"); 
             m_rhs_var->moveToRegister(writer, "%ecx", "%edx"); 
             
@@ -268,12 +268,12 @@ void Print::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (value->type()) {
-        case INT:
+        case Type::INT:
             writer.stream() << "call print_integer" << endl;
             writer.stream() << "addl $4, %esp" << endl;
 
             break;
-        case STRING:
+        case Type::STRING:
             writer.stream() << "call print_string" << endl;
             writer.stream() << "addl $8, %esp" << endl;
 

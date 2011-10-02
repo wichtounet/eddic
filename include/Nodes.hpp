@@ -129,7 +129,7 @@ class Litteral : public Value {
         std::string m_label;
     public:
         Litteral(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& litteral) : Value(context, token), m_litteral(litteral) {
-            m_type = STRING;
+            m_type = Type::STRING;
         };
         void checkStrings(StringPool& pool);
         void write(AssemblyFileWriter& writer);
@@ -142,7 +142,7 @@ class Integer : public Value {
         int m_value;
     public:
         Integer(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, int value) : Value(context, token), m_value(value) {
-            m_type = INT;
+            m_type = Type::INT;
         };
         void write(AssemblyFileWriter& writer);
         bool isConstant();
