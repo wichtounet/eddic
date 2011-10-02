@@ -328,8 +328,8 @@ void VariableValue::write(AssemblyFileWriter& writer) {
 }
 
 void Litteral::write(AssemblyFileWriter& writer) {
-    writer.stream() << "pushl $" << m_label << std::endl;
-    writer.stream() << "pushl $" << (m_litteral.size() - 2) << std::endl;
+    writer.stream() << "pushl $" << getStringLabel() << std::endl;
+    writer.stream() << "pushl $" << getStringSize() << std::endl;
 }
 
 //Constantness
@@ -356,6 +356,14 @@ string Value::getStringValue() {
     throw "Not constant";
 }
 
+string Value::getStringLabel() {
+    throw "Not constant";
+}
+
+int Value::getStringSize() {
+    throw "Not constant";
+}
+
 int Value::getIntValue() {
     throw "Not constant";
 }
@@ -366,4 +374,12 @@ int Integer::getIntValue() {
 
 string Litteral::getStringValue() {
     return m_litteral;
+}  
+
+string Litteral::getStringLabel(){
+    return m_label;
+}
+
+int Litteral::getStringSize(){
+    return m_litteral.size() - 2;
 }

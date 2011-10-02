@@ -49,7 +49,11 @@ class Value : public ParseNode {
         };
 
         virtual bool isConstant();
+        
         virtual std::string getStringValue();
+        virtual std::string getStringLabel();
+        virtual int getStringSize();
+        
         virtual int getIntValue();
 };
 
@@ -151,6 +155,8 @@ class Litteral : public Value {
         void write(AssemblyFileWriter& writer);
         bool isConstant();
         std::string getStringValue();
+        std::string getStringLabel();
+        int getStringSize();
 };
 
 class Integer : public Value {

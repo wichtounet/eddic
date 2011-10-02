@@ -1,4 +1,5 @@
 int zz = 888;
+string yy = "trest";
 
 void main(){
     test(4, 8, 9);
@@ -7,6 +8,9 @@ void main(){
 
     Print("Global variable zz=");
     Println(zz);
+
+    Print("Global variable yy=");
+    Println(yy);
 }
 
 void test(int a, int b){

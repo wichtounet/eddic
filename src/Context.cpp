@@ -87,9 +87,13 @@ void GlobalContext::write(AssemblyFileWriter& writer){
             writer.stream() << ".size VI" << it.second->position().name() << ", 4" << endl;
             writer.stream() << "VI" << it.second->position().name() << ":" << endl;
             writer.stream() << ".long " << it.second->value()->getIntValue() << endl;
-
         } else if (it.second->type() == Type::STRING) {
-            writer.stream() << ".comm VS" << it.second->position().name() << ",8,4" << endl;
+            writer.stream() << ".size VS" << it.second->position().name() << ", 8" << endl;
+            writer.stream() << "VS" << it.second->position().name() << ":" << endl;
+            writer.stream() << ".long " << it.second->value()->getStringLabel() << endl;
+            writer.stream() << ".long " << it.second->value()->getStringSize() << endl;
+            
+            //writer.stream() << ".comm VS" << it.second->position().name() << ",8,4" << endl;
         }
     }
 }
@@ -246,8 +250,8 @@ void Variable::pushToStack(AssemblyFileWriter& writer){
                 writer.stream() << "pushl " << (m_position.offset() + 4) << "(%ebp)" << std::endl;
                 writer.stream() << "pushl " << m_position.offset() << "(%ebp)" << std::endl;
             } else if(m_position.isGlobal()){
-                writer.stream() << "pushl VS" << m_index << endl;
-                writer.stream() << "pushl VS" << m_index << "+4" << std::endl;
+                writer.stream() << "pushl VS" << m_position.name() << endl;
+                writer.stream() << "pushl VS" << m_position.name() << "+4" << std::endl;
             }
 
             break;

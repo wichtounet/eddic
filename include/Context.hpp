@@ -65,7 +65,6 @@ class Variable {
     private:
         const std::string m_name;
         const Type m_type;
-        int m_index;
         Position m_position;
         std::shared_ptr<Value> m_value;
 
