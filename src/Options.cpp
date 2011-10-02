@@ -9,5 +9,5 @@
 
 using namespace eddic;
 
-std::map<BooleanOption, bool> Options::booleanOptions;
-std::map<ValueOption, std::string> Options::valueOptions;
+bool Options::booleanOptions[(int) BooleanOption::COUNT];
+std::string Options::valueOptions[(int) ValueOption::COUNT];

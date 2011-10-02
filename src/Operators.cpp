@@ -181,7 +181,7 @@ int Modulo::compute(int left, int right) {
 
 void BinaryOperator::optimize() {
     if (isConstant()) {
-        if (Options::isSet(OPTIMIZE_INTEGERS)) {
+        if (Options::isSet(BooleanOption::OPTIMIZE_INTEGERS)) {
             std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
             parent.lock()->replace(shared_from_this(), value);
@@ -195,13 +195,13 @@ void BinaryOperator::optimize() {
 void Addition::optimize() {
     if (isConstant()) {
         if (type() == Type::INT) {
-            if (Options::isSet(OPTIMIZE_INTEGERS)) {
+            if (Options::isSet(BooleanOption::OPTIMIZE_INTEGERS)) {
                 std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
 
                 parent.lock()->replace(shared_from_this(), value);
             }
         } else if (type() == Type::STRING) {
-            if (Options::isSet(OPTIMIZE_STRINGS)) {
+            if (Options::isSet(BooleanOption::OPTIMIZE_STRINGS)) {
                 //No optimization at this time
             }
         }
