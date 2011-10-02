@@ -12,8 +12,10 @@
 
 using namespace eddic;
 
+const int typeSizes[(int) Type::COUNT] = { 8, 4, 0 };
+
 int eddic::size(Type type){
-    return type == Type::INT ? 4 : 8;
+    return typeSizes[(int) type];
 }
 
 bool eddic::isType(std::string type){
