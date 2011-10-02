@@ -189,6 +189,28 @@ void VariableOperation::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
+void GlobalDeclaration::checkVariables() {
+    if (context()->exists(m_variable)) {
+        throw CompilerException("Variable has already been declared", token());
+    }
+    
+    value->checkVariables();
+
+    if(!value->isConstant()){
+        throw CompilerException("The value must be constant", token());
+    }
+
+    m_var = m_globalContext->addVariable(m_variable, m_type, value);
+
+    if (value->type() != m_type) {
+        throw CompilerException("Incompatible type", token());
+    }
+}
+
+void GlobalDeclaration::checkStrings(StringPool& pool) {
+    value->checkStrings(pool);
+}
+
 void Assignment::checkVariables() {
     if (!context()->exists(m_variable)) {
         throw CompilerException("Variable has not  been declared", token());
@@ -243,7 +265,7 @@ void VariableOperation::write(AssemblyFileWriter& writer) {
 
 void Swap::write(AssemblyFileWriter& writer) {
     switch (m_type) {
-        case INT:
+        case Type::INT:
             m_lhs_var->moveToRegister(writer, "%eax"); 
             m_rhs_var->moveToRegister(writer, "%ebx"); 
             
@@ -251,7 +273,7 @@ void Swap::write(AssemblyFileWriter& writer) {
             m_rhs_var->moveFromRegister(writer, "%eax"); 
 
             break;
-        case STRING:
+        case Type::STRING:
             m_lhs_var->moveToRegister(writer, "%eax", "%ebx"); 
             m_rhs_var->moveToRegister(writer, "%ecx", "%edx"); 
             
@@ -259,6 +281,8 @@ void Swap::write(AssemblyFileWriter& writer) {
             m_rhs_var->moveFromRegister(writer, "%eax", "%ebx"); 
 
             break;
+        default:
+            throw CompilerException("Variable of invalid type");
     }
 }
 
@@ -266,16 +290,18 @@ void Print::write(AssemblyFileWriter& writer) {
     value->write(writer);
 
     switch (value->type()) {
-        case INT:
+        case Type::INT:
             writer.stream() << "call print_integer" << endl;
             writer.stream() << "addl $4, %esp" << endl;
 
             break;
-        case STRING:
+        case Type::STRING:
             writer.stream() << "call print_string" << endl;
             writer.stream() << "addl $8, %esp" << endl;
 
             break;
+        default:
+            throw CompilerException("Variable of invalid type");
     }
 }
 
@@ -302,8 +328,8 @@ void VariableValue::write(AssemblyFileWriter& writer) {
 }
 
 void Litteral::write(AssemblyFileWriter& writer) {
-    writer.stream() << "pushl $" << m_label << std::endl;
-    writer.stream() << "pushl $" << (m_litteral.size() - 2) << std::endl;
+    writer.stream() << "pushl $" << getStringLabel() << std::endl;
+    writer.stream() << "pushl $" << getStringSize() << std::endl;
 }
 
 //Constantness
@@ -330,6 +356,14 @@ string Value::getStringValue() {
     throw "Not constant";
 }
 
+string Value::getStringLabel() {
+    throw "Not constant";
+}
+
+int Value::getStringSize() {
+    throw "Not constant";
+}
+
 int Value::getIntValue() {
     throw "Not constant";
 }
@@ -340,4 +374,12 @@ int Integer::getIntValue() {
 
 string Litteral::getStringValue() {
     return m_litteral;
+}  
+
+string Litteral::getStringLabel(){
+    return m_label;
+}
+
+int Litteral::getStringSize(){
+    return m_litteral.size() - 2;
 }

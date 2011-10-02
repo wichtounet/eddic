@@ -10,12 +10,17 @@
 
 namespace eddic {
 
-enum Type {
-    STRING = 0,
-    INT = 1
+enum class Type : unsigned int {
+    STRING,
+    INT,
+    VOID, 
+
+    COUNT
 };
 
 int size(Type type);
+
+bool isType(std::string type);
 
 Type stringToType(std::string type);
 

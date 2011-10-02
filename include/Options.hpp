@@ -13,41 +13,45 @@
 
 namespace eddic {
 
-enum BooleanOption {
+enum class BooleanOption : unsigned int {
     OPTIMIZE_INTEGERS,
     OPTIMIZE_STRINGS,
-    ASSEMBLY_ONLY
+    ASSEMBLY_ONLY, 
+
+    COUNT
 };
 
-enum ValueOption {
-    OUTPUT
+enum class ValueOption : unsigned int {
+    OUTPUT, 
+
+    COUNT
 };
 
 class Options {
     private:
-        static std::map<BooleanOption, bool> booleanOptions;
-        static std::map<ValueOption, std::string> valueOptions;
-
+        static bool booleanOptions[(int) BooleanOption::COUNT];
+        static std::string valueOptions[(int) ValueOption::COUNT];
+        
     public:
         static void setDefaults() {
-            set(OUTPUT, "a.out");
+            set(ValueOption::OUTPUT, "a.out");
         }
 
         static void set(BooleanOption option) {
-            booleanOptions[option] = true;
+            booleanOptions[(int) option] = true;
         }
         static void unset(BooleanOption option) {
-            booleanOptions[option] = false;
+            booleanOptions[(int) option] = false;
         }
         static bool isSet(BooleanOption option) {
-            return booleanOptions[option];
+            return booleanOptions[(int) option];
         }
 
         static void set(ValueOption option, std::string value) {
-            valueOptions[option] = value;
+            valueOptions[(int) option] = value;
         }
         static std::string get(ValueOption option) {
-            return valueOptions[option];
+            return valueOptions[(int) option];
         }
 };
 

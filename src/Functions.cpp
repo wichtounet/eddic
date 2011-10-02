@@ -19,7 +19,7 @@ using std::endl;
 using std::shared_ptr;
 
 std::string eddic::mangle(Type type){
-    if(type == INT){
+    if(type == Type::INT){
         return "I";
     } else {
         return "S";

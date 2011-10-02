@@ -22,6 +22,8 @@
 
 namespace eddic {
 
+class Value;
+
 enum PositionType {
     STACK, 
     PARAMETER,
@@ -63,11 +65,12 @@ class Variable {
     private:
         const std::string m_name;
         const Type m_type;
-        int m_index;
         Position m_position;
+        std::shared_ptr<Value> m_value;
 
     public:
         Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
+        Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value) : m_name(name), m_type(type), m_position(position), m_value(value) {}
 
         void moveToRegister(AssemblyFileWriter& writer, std::string reg);
         void moveToRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2);
@@ -88,6 +91,10 @@ class Variable {
         
         Position position() const {
             return m_position;
+        }
+        
+        std::shared_ptr<Value> value() const {
+            return m_value;
         }
 };
 
@@ -134,6 +141,7 @@ class GlobalContext : public Context {
         void write(AssemblyFileWriter& writer);
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, std::shared_ptr<Value> value);
 };
 
 class FunctionContext : public Context {

@@ -138,7 +138,7 @@ void If::checkVariables() {
         m_condition->lhs()->checkVariables();
         m_condition->rhs()->checkVariables();
 
-        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
+        if (m_condition->lhs()->type() != Type::INT || m_condition->rhs()->type() != Type::INT) {
             throw CompilerException("Can only compare integers", token());
         }
     }
@@ -183,7 +183,7 @@ void ElseIf::checkVariables() {
         m_condition->lhs()->checkVariables();
         m_condition->rhs()->checkVariables();
 
-        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
+        if (m_condition->lhs()->type() != Type::INT || m_condition->rhs()->type() != Type::INT) {
             throw CompilerException("Can only compare integers", token());
         }
     }

@@ -8,17 +8,28 @@
 #include <string>
 
 #include "Types.hpp"
+#include "CompilerException.hpp"
 
 using namespace eddic;
 
+const int typeSizes[(int) Type::COUNT] = { 8, 4, 0 };
+
 int eddic::size(Type type){
-    return type == INT ? 4 : 8;
+    return typeSizes[(int) type];
+}
+
+bool eddic::isType(std::string type){
+    return type == "int" || type == "void" || type == "string";
 }
 
 Type eddic::stringToType(std::string type){
     if (type == "int") {
-        return  INT;
-    } else {
-        return STRING;
+        return Type::INT;
+    } else if (type == "string"){
+        return Type::STRING;
+    } else if(type == "void") {
+        return Type::VOID;
     }
+
+    throw CompilerException("Invalid type");
 }

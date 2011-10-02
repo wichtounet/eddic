@@ -1,7 +1,26 @@
+int zz = 888;
+string yy = "trest";
+
 void main(){
     test(4, 8, 9);
 
     tester("hello", "adios", "hi");
+
+    Print("Global variable zz=");
+    Println(zz);
+
+    zz = 999;
+    
+    Print("Global variable zz=");
+    Println(zz);
+
+    Print("Global variable yy=");
+    Println(yy);
+    
+    yy = "test";
+
+    Print("Global variable yy=");
+    Println(yy);
 }
 
 void test(int a, int b){

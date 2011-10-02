@@ -29,7 +29,7 @@ int Compiler::compile(string file) {
 
     Timer timer;
 
-    string output = Options::get(OUTPUT);
+    string output = Options::get(ValueOption::OUTPUT);
 
     int code = 0;
     try {
@@ -57,7 +57,7 @@ int Compiler::compile(string file) {
         writer.open("output.asm");
         program->write(writer);
 
-        if(!Options::isSet(ASSEMBLY_ONLY)){
+        if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
 
             string ldCommand = "gcc -m32 -static -o ";
