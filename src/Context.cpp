@@ -10,6 +10,7 @@
 
 #include "Context.hpp"
 #include "Utils.hpp"
+#include "Nodes.hpp"
 
 using std::map;
 using std::string;
@@ -83,7 +84,10 @@ void FunctionContext::release(AssemblyFileWriter& writer){
 void GlobalContext::write(AssemblyFileWriter& writer){
     for(auto it : m_stored){
         if (it.second->type() == Type::INT) {
-            writer.stream() << ".comm VI" << it.second->position().name() << ",4,4" << endl;
+            writer.stream() << ".size VI" << it.second->position().name() << ", 4" << endl;
+            writer.stream() << "VI" << it.second->position().name() << ":" << endl;
+            writer.stream() << ".long " << it.second->value()->getIntValue() << endl;
+
         } else if (it.second->type() == Type::STRING) {
             writer.stream() << ".comm VS" << it.second->position().name() << ",8,4" << endl;
         }
@@ -91,9 +95,13 @@ void GlobalContext::write(AssemblyFileWriter& writer){
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
+    throw CompilerException("A global variable must have a value");
+}
+
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, std::shared_ptr<Value> value){
     Position position(GLOBAL, variable);
 
-    std::shared_ptr<Variable> v(new Variable(variable, type, position));
+    std::shared_ptr<Variable> v(new Variable(variable, type, position, value));
 
     m_visibles[variable] = currentVariable;
 

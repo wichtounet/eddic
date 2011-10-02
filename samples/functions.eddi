@@ -4,6 +4,9 @@ void main(){
     test(4, 8, 9);
 
     tester("hello", "adios", "hi");
+
+    Print("Global variable zz=");
+    Println(zz);
 }
 
 void test(int a, int b){

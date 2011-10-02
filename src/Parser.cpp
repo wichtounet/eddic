@@ -150,7 +150,7 @@ std::shared_ptr<ParseNode> Parser::parseGlobalDeclaration(Type type, string vari
 
     assertNextIsStop(lexer, "A variable declaration must be followed by a ;");
 
-    return std::shared_ptr<ParseNode>(new Declaration(globalContext, lexer.getCurrentToken(), type, variable, value));
+    return std::shared_ptr<ParseNode>(new GlobalDeclaration(globalContext, lexer.getCurrentToken(), type, variable, value));
 }
 
 std::shared_ptr<ParseNode> Parser::parseInstruction() {

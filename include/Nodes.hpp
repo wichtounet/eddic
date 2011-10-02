@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 #include "Types.hpp"
+#include "Context.hpp"
 
 #include "ParseNode.hpp"
 
@@ -79,6 +80,21 @@ class Declaration : public VariableOperation {
     public:
         Declaration(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) { m_type = type;  };
 
+        void checkVariables();
+};
+
+class GlobalDeclaration : public ParseNode {
+    private:
+        std::shared_ptr<GlobalContext> m_globalContext;
+        Type m_type;
+        std::string m_variable;
+        std::shared_ptr<Variable> m_var;
+        std::shared_ptr<Value> value;
+
+    public:
+        GlobalDeclaration(std::shared_ptr<GlobalContext> context, const std::shared_ptr<Token> token, Type type, const std::string& variable, std::shared_ptr<Value> v) : ParseNode(context, token), m_globalContext(context), m_variable(variable), value(v){ m_type = type;  };
+
+        void checkStrings(StringPool& pool);
         void checkVariables();
 };
 

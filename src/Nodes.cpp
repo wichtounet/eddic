@@ -189,6 +189,28 @@ void VariableOperation::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
+void GlobalDeclaration::checkVariables() {
+    if (context()->exists(m_variable)) {
+        throw CompilerException("Variable has already been declared", token());
+    }
+    
+    value->checkVariables();
+
+    if(!value->isConstant()){
+        throw CompilerException("The value must be constant", token());
+    }
+
+    m_var = m_globalContext->addVariable(m_variable, m_type, value);
+
+    if (value->type() != m_type) {
+        throw CompilerException("Incompatible type", token());
+    }
+}
+
+void GlobalDeclaration::checkStrings(StringPool& pool) {
+    value->checkStrings(pool);
+}
+
 void Assignment::checkVariables() {
     if (!context()->exists(m_variable)) {
         throw CompilerException("Variable has not  been declared", token());
