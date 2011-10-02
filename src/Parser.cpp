@@ -52,7 +52,7 @@ std::shared_ptr<Program> Parser::parse() {
 
     std::shared_ptr<Program> program(new Program(currentContext));
 
-    while (lexer.next()) {        
+    while (lexer.next()) {
         if(!isTokenType(lexer)){
             throw TokenException("A function or a global variable must start with a type", lexer.getCurrentToken()); 
         }
@@ -147,6 +147,8 @@ std::shared_ptr<ParseNode> Parser::parseGlobalDeclaration(Type type, string vari
     }
 
     auto value = parseValue();
+
+    assertNextIsStop(lexer, "A variable declaration must be followed by a ;");
 
     return std::shared_ptr<ParseNode>(new Declaration(globalContext, lexer.getCurrentToken(), type, variable, value));
 }

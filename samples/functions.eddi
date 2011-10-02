@@ -1,3 +1,5 @@
+int zz = 888;
+
 void main(){
     test(4, 8, 9);
 
