@@ -137,3 +137,28 @@ void For::optimize(){
 
     ParseNode::optimize();
 }
+
+void Foreach::write(AssemblyFileWriter& writer){
+    //TODO Review
+}
+
+void Foreach::checkVariables(){
+    m_from->checkVariables();
+    m_to->checkVariables();
+
+    ParseNode::checkVariables();
+}
+
+void Foreach::checkStrings(StringPool& pool){
+    m_from->checkStrings(pool);
+    m_to->checkStrings(pool);
+
+    ParseNode::checkStrings(pool);
+}
+
+void Foreach::optimize(){
+    m_from->optimize();
+    m_to->optimize();
+
+    ParseNode::optimize();
+}

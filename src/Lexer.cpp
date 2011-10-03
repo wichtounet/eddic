@@ -335,6 +335,18 @@ bool Lexer::isFor() const {
     return current->type() == FOR;
 }
 
+bool Lexer::isForeach() const {
+    return current->type() == FOREACH;
+}
+
+bool Lexer::isFrom() const {
+    return current->type() == FROM;
+}
+
+bool Lexer::isTo() const {
+    return current->type() == TO;
+}
+
 bool Lexer::isBooleanOperator() const {
     return current->type() >= EQUALS_TOKEN && current->type() <= LESS_EQUALS_TOKEN;
 }

@@ -441,14 +441,16 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
     assertNextIsLeftParenth(lexer, "A foreach loop declaration must be followed by a left parenth");
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
-    
+
     auto token = lexer.getCurrentToken();
 
     if(!isType(lexer)){
         throw TokenException("The foreach must be followed by a type", lexer.getCurrentToken());
     }
 
-    Type type = parseType(lexer);
+    string typeName = lexer.getCurrentToken()->value();
+
+    Type type = stringToType(typeName);
 
     if(type != INT){
         throw TokenException("The foreach variable type must be int", lexer.getCurrentToken());
@@ -463,15 +465,15 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
     }
 
     auto fromValue = parseValue();
-    
+
     if(!lexer.next() || !lexer.isTo()){
         throw TokenException("The foreach variable must be followed by the from declaration", lexer.getCurrentToken());
     }
 
     auto toValue = parseValue();
-    
+
     assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
-    
+
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
     std::shared_ptr<Foreach> block(new Foreach(currentContext, token, fromValue, toValue));
