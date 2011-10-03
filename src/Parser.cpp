@@ -476,7 +476,7 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
 
     assertNextIsLeftBrace(lexer, "Waiting for a left brace");
 
-    std::shared_ptr<Foreach> block(new Foreach(currentContext, token, fromValue, toValue));
+    std::shared_ptr<Foreach> block(new Foreach(currentContext, token, type, variable, fromValue, toValue));
 
     lexer.next();
 

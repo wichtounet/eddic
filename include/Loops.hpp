@@ -48,11 +48,13 @@ class For : public ParseNode {
 
 class Foreach : public ParseNode {
     private: 
+        Type m_type;
+        std::string m_var;
         std::shared_ptr<Value> m_from;
         std::shared_ptr<Value> m_to;
 
     public:
-        Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> from, std::shared_ptr<Value> to) : ParseNode(context, token), m_from(from), m_to(to) {}
+        Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, std::string var, std::shared_ptr<Value> from, std::shared_ptr<Value> to) : ParseNode(context, token), m_type(type), m_var(var), m_from(from), m_to(to) {}
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
