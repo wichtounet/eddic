@@ -143,6 +143,12 @@ void Foreach::write(AssemblyFileWriter& writer){
 }
 
 void Foreach::checkVariables(){
+    if(context()->exists(m_var)){
+        throw CompilerException("The variable " + m_var + " already exists", token());
+    }
+
+    context()->addVariable(m_var, m_type);
+
     m_from->checkVariables();
     m_to->checkVariables();
 
