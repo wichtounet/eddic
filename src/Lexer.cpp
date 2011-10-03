@@ -92,6 +92,12 @@ bool Lexer::readNext() {
             current = std::shared_ptr<Token>(new Token(WHILE, line, col));
         } else if (value == "for") {
             current = std::shared_ptr<Token>(new Token(FOR, line, col));
+        } else if (value == "foreach") {
+            current = std::shared_ptr<Token>(new Token(FOREACH, line, col));
+        } else if (value == "from") {
+            current = std::shared_ptr<Token>(new Token(FROM, line, col));
+        } else if (value == "to") {
+            current = std::shared_ptr<Token>(new Token(TO, line, col));
         } else {
             current = std::shared_ptr<Token>(new Token(value, WORD, line, col));
         }

@@ -48,7 +48,10 @@ enum TokenType {
     IF,
     ELSE,
     WHILE,
-    FOR
+    FOR,
+    FOREACH,
+    FROM,
+    TO
 };
 
 class Token {
