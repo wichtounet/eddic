@@ -46,6 +46,20 @@ class For : public ParseNode {
         virtual void optimize();
 };
 
+class Foreach : public ParseNode {
+    private: 
+        std::shared_ptr<Value> m_from;
+        std::shared_ptr<Value> m_to;
+
+    public:
+        Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> from, std::shared_ptr<Value> to) : ParseNode(context, token), m_from(from), m_to(to) {}
+
+        virtual void write(AssemblyFileWriter& writer);
+        virtual void checkVariables();
+        virtual void checkStrings(StringPool& pool);
+        virtual void optimize();
+};
+
 } //end of eddic
 
 #endif
