@@ -156,6 +156,8 @@ class VariableValue : public Value {
     
     public:
         VariableValue(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable) : Value(context, token), m_variable(variable) {};
+        VariableValue(std::shared_ptr<Variable> var) : Value(NULL, NULL), m_var(var) {}
+
         void checkVariables();
         void write(AssemblyFileWriter& writer);
         bool isConstant();
