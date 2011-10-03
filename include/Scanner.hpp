@@ -8,6 +8,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <cctype>
@@ -17,6 +18,7 @@ namespace eddic {
 class Scanner {
     private:
         std::ifstream stream;
+        std::filebuf* buffer;
 
         char m_current;
         int m_line;

@@ -18,11 +18,12 @@ using namespace eddic;
 
 void Scanner::scan(const string& file) {
     stream.open(file.c_str());
-    stream.unsetf(ios_base::skipws);
 
     if (!stream) {
         throw CompilerException("Unable to open the input file");
     }
+
+    buffer = stream.rdbuf();
 }
 
 void Scanner::close() {
@@ -30,7 +31,7 @@ void Scanner::close() {
 }
 
 bool Scanner::next() {
-    if (stream.eof()) {
+    if (buffer->sgetc() == EOF) {
         return false;
     }
 
@@ -41,11 +42,11 @@ bool Scanner::next() {
         ++m_col;
     }
 
-    stream >> m_current;
+    m_current = buffer->sbumpc();
 
     return true;
 }
 
 void Scanner::pushBack() {
-    stream.putback(m_current);
+    buffer->sputbackc(m_current);
 }
