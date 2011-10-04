@@ -162,6 +162,8 @@ std::shared_ptr<ParseNode> Parser::parseInstruction() {
         return parseWhile();
     } else if (lexer.isFor()) {
         return parseFor();
+    } else if (lexer.isForeach()) {
+        return parseForeach();
     } else if (isTokenType(lexer)) {
         instruction = parseDeclaration();
     } else if (lexer.isWord()) {
@@ -448,6 +450,66 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     if (!lexer.isRightBrace()) {
         throw TokenException("If body must be closed with right brace", lexer.getCurrentToken());
+    }
+
+    return block;
+}
+
+std::shared_ptr<ParseNode> Parser::parseForeach() {
+    assertNextIsLeftParenth(lexer, "A foreach loop declaration must be followed by a left parenth");
+
+    currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
+
+    auto token = lexer.getCurrentToken();
+
+    lexer.next();
+
+    if(!isTokenType(lexer)){
+        throw TokenException("The foreach must be followed by a type", lexer.getCurrentToken());
+    }
+
+    string typeName = lexer.getCurrentToken()->value();
+
+    Type type = stringToType(typeName);
+
+    if(type != Type::INT){
+        throw TokenException("The foreach variable type must be int", lexer.getCurrentToken());
+    }
+
+    assertNextIsWord(lexer, "The type must be followed by a variable name");
+
+    string variable = lexer.getCurrentToken()->value();
+
+    if(!lexer.next() || !lexer.isFrom()){
+        throw TokenException("The foreach variable must be followed by the from declaration", lexer.getCurrentToken());
+    }
+
+    auto fromValue = parseValue();
+
+    if(!lexer.next() || !lexer.isTo()){
+        throw TokenException("The foreach variable must be followed by the from declaration", lexer.getCurrentToken());
+    }
+
+    auto toValue = parseValue();
+
+    assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
+
+    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+
+    std::shared_ptr<Foreach> block(new Foreach(currentContext, token, type, variable, fromValue, toValue));
+
+    lexer.next();
+
+    while (!lexer.isRightBrace()) {
+        block->addLast(parseInstruction());
+
+        lexer.next();
+    }
+
+    currentContext = currentContext->parent();
+
+    if (!lexer.isRightBrace()) {
+        throw TokenException("Foreach body must be closed with right brace", lexer.getCurrentToken());
     }
 
     return block;

@@ -64,6 +64,9 @@ class Lexer {
         bool isElse() const;
         bool isWhile() const;
         bool isFor() const;
+        bool isForeach() const;
+        bool isFrom() const;
+        bool isTo() const;
         bool isBooleanOperator() const;
         bool isBoolean() const;
         bool isTrue() const;

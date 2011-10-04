@@ -52,7 +52,7 @@ void Addition::write(AssemblyFileWriter& writer) {
     lhs->write(writer);
     rhs->write(writer);
 
-    if (m_type == Type::INT) {
+    if (lhs->type() == Type::INT) {
         writer.stream() << "movl (%esp), %eax" << std::endl;
         writer.stream() << "movl 4(%esp), %ecx" << std::endl;
         writer.stream() << "addl %ecx, %eax" << std::endl;

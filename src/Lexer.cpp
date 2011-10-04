@@ -92,6 +92,12 @@ bool Lexer::readNext() {
             current = std::shared_ptr<Token>(new Token(WHILE, line, col));
         } else if (value == "for") {
             current = std::shared_ptr<Token>(new Token(FOR, line, col));
+        } else if (value == "foreach") {
+            current = std::shared_ptr<Token>(new Token(FOREACH, line, col));
+        } else if (value == "from") {
+            current = std::shared_ptr<Token>(new Token(FROM, line, col));
+        } else if (value == "to") {
+            current = std::shared_ptr<Token>(new Token(TO, line, col));
         } else {
             current = std::shared_ptr<Token>(new Token(value, WORD, line, col));
         }
@@ -327,6 +333,18 @@ bool Lexer::isWhile() const {
 
 bool Lexer::isFor() const {
     return current->type() == FOR;
+}
+
+bool Lexer::isForeach() const {
+    return current->type() == FOREACH;
+}
+
+bool Lexer::isFrom() const {
+    return current->type() == FROM;
+}
+
+bool Lexer::isTo() const {
+    return current->type() == TO;
 }
 
 bool Lexer::isBooleanOperator() const {

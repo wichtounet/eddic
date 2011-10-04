@@ -42,6 +42,7 @@ class Parser {
         std::shared_ptr<ParseNode> parseIf();
         std::shared_ptr<ParseNode> parseWhile();
         std::shared_ptr<ParseNode> parseFor();
+        std::shared_ptr<ParseNode> parseForeach();
         std::shared_ptr<Condition> parseCondition();
         std::shared_ptr<ElseIf> parseElseIf();
         std::shared_ptr<Else> parseElse();
