@@ -444,6 +444,8 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
 
     auto token = lexer.getCurrentToken();
 
+    lexer.next();
+
     if(!isType(lexer)){
         throw TokenException("The foreach must be followed by a type", lexer.getCurrentToken());
     }
