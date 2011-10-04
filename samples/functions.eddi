@@ -1,6 +1,6 @@
 void main(){
     foreach(int a from 0 to 6){
-        Print(6);
+        Print(a);
     }
 
     test(4, 8, 9);
