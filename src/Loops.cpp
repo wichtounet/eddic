@@ -139,6 +139,7 @@ void For::optimize(){
     ParseNode::optimize();
 }
 
+//TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
 void Foreach::write(AssemblyFileWriter& writer){
     //Assign the base value to the variable
     m_from->write(writer);
