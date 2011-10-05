@@ -18,7 +18,11 @@
 #include "Operators.hpp"
 #include "Lexer.hpp"
 #include "Branches.hpp"
-#include "Loops.hpp"
+
+#include "For.hpp"
+#include "Foreach.hpp"
+#include "While.hpp"
+
 #include "Functions.hpp"
 
 using std::string;
