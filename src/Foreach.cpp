@@ -8,8 +8,10 @@
 #include "Foreach.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
-#include "Branches.hpp"
 #include "Operators.hpp"
+
+#include "If.hpp"
+#include "Condition.hpp"
 
 using namespace eddic;
 

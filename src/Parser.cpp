@@ -17,7 +17,12 @@
 #include "Parser.hpp"
 #include "Operators.hpp"
 #include "Lexer.hpp"
-#include "Branches.hpp"
+
+#include "BooleanCondition.hpp"
+#include "Condition.hpp"
+#include "Else.hpp"
+#include "ElseIf.hpp"
+#include "If.hpp"
 
 #include "For.hpp"
 #include "Foreach.hpp"

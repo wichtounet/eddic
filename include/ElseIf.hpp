@@ -5,9 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef FOR_H
-#define FOR_H
+#ifndef ELSE_IF_H
+#define ELSE_IF_H
 
+#include <vector>
+#include <string>
 #include <memory>
 
 #include "ParseNode.hpp"
@@ -16,19 +18,20 @@ namespace eddic {
 
 class Condition;
 
-class For : public ParseNode {
-    private: 
-        std::shared_ptr<ParseNode> m_start;
-        std::shared_ptr<ParseNode> m_iter;
+class ElseIf : public ParseNode {
+    private:
         std::shared_ptr<Condition> m_condition;
 
     public:
-        For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
+        ElseIf(std::shared_ptr<Context> context, std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
-        virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
+
+        std::shared_ptr<Condition> condition() {
+            return m_condition;
+        }
 };
 
 } //end of eddic

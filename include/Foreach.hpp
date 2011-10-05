@@ -9,10 +9,16 @@
 #define FOREACH_H
 
 #include <memory>
+#include <string>
 
-#include "Branches.hpp"
+#include "ParseNode.hpp"
+#include "Types.hpp"
 
 namespace eddic {
+
+class Condition;
+class Variable;
+class Value;
 
 class Foreach : public ParseNode {
     private: 

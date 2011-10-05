@@ -5,9 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef WHILE_H
-#define WHILE_H
+#ifndef IF_H
+#define IF_H
 
+#include <vector>
+#include <string>
 #include <memory>
 
 #include "ParseNode.hpp"
@@ -15,23 +17,36 @@
 namespace eddic {
 
 class Condition;
+class Else;
+class ElseIf;
 
-class While : public ParseNode {
+class If : public ParseNode {
     private:
         std::shared_ptr<Condition> m_condition;
+        std::shared_ptr<Else> m_elseBlock;
+        std::vector<std::shared_ptr<ElseIf>> elseIfs;
 
     public:
-        While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+        If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
+        void setElse(std::shared_ptr<Else> elseBlock) {
+            m_elseBlock = elseBlock;
+        }
+        void addElseIf(std::shared_ptr<ElseIf> elseIf) {
+            elseIfs.push_back(elseIf);
+        }
+
         std::shared_ptr<Condition> condition() {
             return m_condition;
         }
 };
+
+void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, std::string label, int labelIndex);
 
 } //end of eddic
 

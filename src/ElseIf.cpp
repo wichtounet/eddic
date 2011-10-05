@@ -5,35 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "While.hpp"
+#include <algorithm>
+
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
-#include "Operators.hpp"
 
-#include "If.hpp"
+#include "ElseIf.hpp"
 #include "Condition.hpp"
+
+#include "Nodes.hpp"
 
 using namespace eddic;
 
-void While::write(AssemblyFileWriter& writer) {
-    //Make something accessible for others operations
-    static int labels = 0;
+using std::string;
 
-    int startLabel = labels++;
-    int endLabel = labels++;
-
-    writer.stream() << "WL" << startLabel << ":" << std::endl;
-
-    writeJumpIfNot(writer, m_condition, "WL", endLabel);
-
-    ParseNode::write(writer);
-
-    writer.stream() << "jmp WL" << startLabel << std::endl;
-
-    writer.stream() << "WL" << endLabel << ":" << std::endl;
-}
-
-void While::checkVariables() {
+void ElseIf::checkVariables() {
     if (m_condition->isOperator()) {
         m_condition->lhs()->checkVariables();
         m_condition->rhs()->checkVariables();
@@ -46,7 +32,7 @@ void While::checkVariables() {
     ParseNode::checkVariables();
 }
 
-void While::checkStrings(StringPool& pool) {
+void ElseIf::checkStrings(StringPool& pool) {
     if (m_condition->isOperator()) {
         m_condition->lhs()->checkStrings(pool);
         m_condition->rhs()->checkStrings(pool);
@@ -55,7 +41,7 @@ void While::checkStrings(StringPool& pool) {
     ParseNode::checkStrings(pool);
 }
 
-void While::optimize() {
+void ElseIf::optimize() {
     if (m_condition->isOperator()) {
         m_condition->lhs()->optimize();
         m_condition->rhs()->optimize();

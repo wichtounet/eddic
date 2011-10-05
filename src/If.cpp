@@ -7,9 +7,15 @@
 
 #include <algorithm>
 
-#include "Branches.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+
+#include "If.hpp"
+#include "Else.hpp"
+#include "ElseIf.hpp"
+#include "Condition.hpp"
+
+#include "Nodes.hpp"
 
 using namespace eddic;
 
@@ -174,37 +180,6 @@ void If::optimize() {
     }
     
     for_each(elseIfs.begin(), elseIfs.end(), [](std::shared_ptr<ElseIf> e){ e->optimize(); });
-
-    ParseNode::optimize();
-}
-
-void ElseIf::checkVariables() {
-    if (m_condition->isOperator()) {
-        m_condition->lhs()->checkVariables();
-        m_condition->rhs()->checkVariables();
-
-        if (m_condition->lhs()->type() != Type::INT || m_condition->rhs()->type() != Type::INT) {
-            throw CompilerException("Can only compare integers", token());
-        }
-    }
-
-    ParseNode::checkVariables();
-}
-
-void ElseIf::checkStrings(StringPool& pool) {
-    if (m_condition->isOperator()) {
-        m_condition->lhs()->checkStrings(pool);
-        m_condition->rhs()->checkStrings(pool);
-    }
-
-    ParseNode::checkStrings(pool);
-}
-
-void ElseIf::optimize() {
-    if (m_condition->isOperator()) {
-        m_condition->lhs()->optimize();
-        m_condition->rhs()->optimize();
-    }
 
     ParseNode::optimize();
 }
