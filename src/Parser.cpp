@@ -15,8 +15,14 @@
 #include "Utils.hpp"
 
 #include "Parser.hpp"
-#include "Operators.hpp"
 #include "Lexer.hpp"
+
+#include "BinaryOperator.hpp"
+#include "Addition.hpp"
+#include "Division.hpp"
+#include "Multiplication.hpp"
+#include "Subtraction.hpp"
+#include "Modulo.hpp"
 
 #include "BooleanCondition.hpp"
 #include "Condition.hpp"

@@ -8,10 +8,11 @@
 #include "For.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
-#include "Operators.hpp"
 
 #include "If.hpp"
 #include "Condition.hpp"
+
+#include "Nodes.hpp"
 
 using namespace eddic;
 
