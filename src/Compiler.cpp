@@ -14,7 +14,7 @@
 #include "Compiler.hpp"
 #include "Nodes.hpp"
 #include "Parser.hpp"
-#include "Functions.hpp"
+#include "MainDeclaration.hpp"
 
 using std::string;
 using std::cout;

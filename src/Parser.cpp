@@ -34,7 +34,9 @@
 #include "Foreach.hpp"
 #include "While.hpp"
 
-#include "Functions.hpp"
+#include "Function.hpp"
+#include "Parameter.hpp"
+#include "FunctionCall.hpp"
 
 using std::string;
 using std::ios_base;

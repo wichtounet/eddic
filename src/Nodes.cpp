@@ -10,7 +10,7 @@
 #include "Options.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
-#include "Functions.hpp"
+#include "Function.hpp"
 
 #include <cassert>
 
