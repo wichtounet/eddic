@@ -17,6 +17,11 @@ using namespace eddic;
 
 using std::endl;
 
+void FunctionCall::addValue(std::shared_ptr<Value> value){
+    m_values.push_back(value);
+    addLast(value);
+}
+
 void FunctionCall::checkFunctions(Program& program){
     m_function_mangled = mangle(m_function, m_values);
 

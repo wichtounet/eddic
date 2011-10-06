@@ -14,9 +14,10 @@
 #include <memory>
 
 #include "ParseNode.hpp"
-#include "Nodes.hpp"
 
 namespace eddic {
+
+class Value;
 
 class FunctionCall : public ParseNode {
     private:
@@ -29,11 +30,7 @@ class FunctionCall : public ParseNode {
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);
-
-        void addValue(std::shared_ptr<Value> value){
-            m_values.push_back(value);
-            addLast(value);
-        }
+        void addValue(std::shared_ptr<Value> value);
 };
 
 } //end of eddic
