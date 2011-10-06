@@ -9,6 +9,7 @@
 #include "Options.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+#include "Integer.hpp"
 
 #include <cassert>
 

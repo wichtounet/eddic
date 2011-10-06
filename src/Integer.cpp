@@ -5,18 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ELSE_H
-#define ELSE_H
+#include "Integer.hpp"
 
-#include "ParseNode.hpp"
+#include "AssemblyFileWriter.hpp"
 
-namespace eddic {
+using namespace eddic;
 
-class Else : public ParseNode {
-    public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
-};
+void Integer::write(AssemblyFileWriter& writer) {
+    writer.stream() << "pushl $" << m_value << std::endl;
+}
 
-} //end of eddic
+bool Integer::isConstant() {
+    return true;
+}
 
-#endif
+int Integer::getIntValue() {
+    return m_value;
+}

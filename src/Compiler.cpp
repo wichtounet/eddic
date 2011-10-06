@@ -12,9 +12,10 @@
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "Compiler.hpp"
-#include "Nodes.hpp"
+#include "Program.hpp"
 #include "Parser.hpp"
 #include "MainDeclaration.hpp"
+#include "Methods.hpp"
 
 using std::string;
 using std::cout;

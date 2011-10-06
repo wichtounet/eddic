@@ -13,7 +13,7 @@
 #include "ElseIf.hpp"
 #include "Condition.hpp"
 
-#include "Nodes.hpp"
+#include "Value.hpp"
 
 using namespace eddic;
 

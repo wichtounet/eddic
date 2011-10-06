@@ -5,16 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ELSE_H
-#define ELSE_H
+#ifndef ASSIGNMENT_H
+#define ASSIGNMENT_H
 
-#include "ParseNode.hpp"
+#include "VariableOperation.hpp"
 
 namespace eddic {
 
-class Else : public ParseNode {
+class Assignment : public VariableOperation {
     public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
+        Assignment(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) {};
+
+        void checkVariables();
 };
 
 } //end of eddic

@@ -5,18 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ELSE_H
-#define ELSE_H
+#include "Value.hpp"
 
-#include "ParseNode.hpp"
+using namespace eddic;
 
-namespace eddic {
+bool Value::isConstant() {
+    return false;
+}
 
-class Else : public ParseNode {
-    public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
-};
+std::string Value::getStringValue() {
+    throw "Not constant";
+}
 
-} //end of eddic
+std::string Value::getStringLabel() {
+    throw "Not constant";
+}
 
-#endif
+int Value::getStringSize() {
+    throw "Not constant";
+}
+
+int Value::getIntValue() {
+    throw "Not constant";
+}

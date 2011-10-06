@@ -5,16 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ELSE_H
-#define ELSE_H
+#ifndef PRINTLN_H
+#define PRINTLN_H
 
-#include "ParseNode.hpp"
+#include "Print.hpp"
 
 namespace eddic {
 
-class Else : public ParseNode {
+class Println : public Print {
     public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
+        Println(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v) : Print(context, token, v) {}
+        
+		void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

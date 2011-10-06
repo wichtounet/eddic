@@ -5,18 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ELSE_H
-#define ELSE_H
+#include "VariableOperation.hpp"
 
-#include "ParseNode.hpp"
+#include "Value.hpp"
+#include "Variable.hpp"
 
-namespace eddic {
+using namespace eddic;
 
-class Else : public ParseNode {
-    public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
-};
+void VariableOperation::checkStrings(StringPool& pool) {
+    value->checkStrings(pool);
+}
 
-} //end of eddic
+void VariableOperation::write(AssemblyFileWriter& writer) {
+    value->write(writer);
 
-#endif
+    m_var->popFromStack(writer);
+}

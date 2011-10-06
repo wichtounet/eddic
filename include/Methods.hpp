@@ -5,16 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ELSE_H
-#define ELSE_H
+#ifndef METHODS_H
+#define METHODS_H
 
 #include "ParseNode.hpp"
 
 namespace eddic {
 
-class Else : public ParseNode {
+class Methods : public ParseNode {
     public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
+        Methods(std::shared_ptr<Context> context) : ParseNode(context) {}
+
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

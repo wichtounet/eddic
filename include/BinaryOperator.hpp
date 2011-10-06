@@ -8,9 +8,7 @@
 #ifndef BINARY_OPERATOR_H
 #define BINARY_OPERATOR_H
 
-#include <memory>
-
-#include "Nodes.hpp"
+#include "Value.hpp"
 
 namespace eddic {
 

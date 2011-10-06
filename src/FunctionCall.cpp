@@ -9,8 +9,11 @@
 #include <algorithm>
 
 #include "FunctionCall.hpp"
-#include "Nodes.hpp"
+
 #include "AssemblyFileWriter.hpp"
+#include "Value.hpp"
+#include "Program.hpp"
+
 #include "mangling.hpp"
 
 using namespace eddic;

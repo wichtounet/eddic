@@ -14,7 +14,9 @@
 #include "Condition.hpp"
 #include "Addition.hpp"
 
-#include "Nodes.hpp"
+#include "Value.hpp"
+#include "VariableValue.hpp"
+#include "Integer.hpp"
 
 using namespace eddic;
 
