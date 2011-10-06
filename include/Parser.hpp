@@ -21,6 +21,9 @@ class ElseIf;
 class Else;
 class Value;
 class Condition;
+class Context;
+class GlobalContext;
+class FunctionContext;
 
 class Parser {
     private:

@@ -8,6 +8,7 @@
 #include "Foreach.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+#include "Variable.hpp"
 
 #include "If.hpp"
 #include "Condition.hpp"

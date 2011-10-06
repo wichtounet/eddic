@@ -16,6 +16,9 @@
 
 #include "Types.hpp"
 #include "Context.hpp"
+#include "GlobalContext.hpp"
+#include "FunctionContext.hpp"
+#include "BlockContext.hpp"
 
 #include "ParseNode.hpp"
 

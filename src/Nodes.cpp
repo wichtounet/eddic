@@ -11,6 +11,7 @@
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
 #include "Function.hpp"
+#include "Variable.hpp"
 
 #include <cassert>
 
