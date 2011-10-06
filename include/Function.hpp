@@ -10,15 +10,14 @@
 
 #include <vector>
 #include <string>
-
 #include <memory>
 
-#include "mangling.hpp"
 #include "ParseNode.hpp"
 #include "Types.hpp"
-#include "Parameter.hpp"
 
 namespace eddic {
+
+class Parameter;
 
 class Function : public ParseNode {
 	private:
@@ -31,13 +30,8 @@ class Function : public ParseNode {
 		
         void write(AssemblyFileWriter& writer);
 
-        std::string name(){
-            return m_name;
-        }
-
-        std::string mangledName(){
-            return mangle(m_name, m_parameters);
-        }
+        std::string name();
+        std::string mangledName();
 
         void addParameter(std::string name, Type type);
 };

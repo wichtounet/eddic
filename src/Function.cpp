@@ -11,11 +11,20 @@
 #include "Context.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Parameter.hpp"
+#include "mangling.hpp"
 
 using namespace eddic;
 
 using std::endl;
 
+std::string Function::name(){
+    return m_name;
+}
+
+std::string Function::mangledName(){
+    return mangle(m_name, m_parameters);
+}
+		
 void Function::addParameter(std::string name, Type type){
     std::shared_ptr<Parameter> param(new Parameter(name, type, m_currentPosition));
     m_parameters.push_back(param);
