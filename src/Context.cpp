@@ -23,6 +23,20 @@ using namespace eddic;
 
 int Context::currentVariable = 0;
 
+Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
+
+void Context::write(AssemblyFileWriter&){
+    //Nothing by default    
+}
+
+void Context::release(AssemblyFileWriter&){
+    //Nothing by default
+}
+
+std::shared_ptr<Context> Context::parent() const  {
+    return m_parent;
+}
+
 void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
     m_stored[index] = variable;
 }

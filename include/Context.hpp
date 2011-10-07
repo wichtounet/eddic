@@ -39,26 +39,18 @@ class Context {
         static int currentVariable;
 
     public:
-        Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
+        Context(std::shared_ptr<Context> parent);
         
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
         virtual bool exists(const std::string& a) const;
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
         virtual std::shared_ptr<Variable> getVariable(int index) const;
         
-        virtual void write(AssemblyFileWriter&){
-            //Nothing by default    
-        }
-
-        virtual void release(AssemblyFileWriter&){
-            //Nothing by default
-        }
+        virtual void write(AssemblyFileWriter& writer);
+        virtual void release(AssemblyFileWriter& writer);
+        std::shared_ptr<Context> parent() const ;
         
         void storeVariable(int index, std::shared_ptr<Variable> variable);
-
-        std::shared_ptr<Context> parent() const  {
-            return m_parent;
-        }
 };
 
 } //end of eddic

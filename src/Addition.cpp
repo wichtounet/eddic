@@ -14,6 +14,8 @@
 using std::string;
 
 using namespace eddic;
+        
+Addition::Addition(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
 Type Addition::checkTypes(Type left, Type right) {
     if (left != right) {
