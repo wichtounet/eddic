@@ -14,6 +14,8 @@
 
 using namespace eddic;
 
+Swap::Swap(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& lhs, const std::string& rhs) : ParseNode(context, token), m_lhs(lhs), m_rhs(rhs) {}
+
 void Swap::checkVariables() {
     if (m_lhs == m_rhs) {
         throw CompilerException("Cannot swap a variable with itself", token());

@@ -12,6 +12,8 @@
 
 using namespace eddic;
 
+Program::Program(std::shared_ptr<Context> context) : ParseNode(context) {}
+
 void Program::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName()] = function;
 

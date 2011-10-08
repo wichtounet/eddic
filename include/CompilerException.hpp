@@ -21,22 +21,11 @@ class CompilerException: public std::exception {
         const std::shared_ptr<Token> m_token;
 
     public:
-        CompilerException(const std::string& message) : m_message(message) {};
-        CompilerException(const std::string& message, const std::shared_ptr<Token> token) : m_message(message), m_token(token) {};
-        ~CompilerException() throw() {};
+        CompilerException(const std::string& message);
+        CompilerException(const std::string& message, const std::shared_ptr<Token> token);
+        ~CompilerException() throw();
 
         virtual const char* what() const throw();
-};
-
-class TokenException: public CompilerException {
-    private:
-        std::shared_ptr<Token> m_token;
-
-    public:
-        TokenException(const std::string& message, std::shared_ptr<Token> token) : CompilerException(message), m_token(token) {}
-        ~TokenException() throw() {};
-
-        const char* what() const throw();
 };
 
 } //end of eddic

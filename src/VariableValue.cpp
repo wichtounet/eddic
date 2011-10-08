@@ -14,6 +14,9 @@
 
 using namespace eddic;
 
+VariableValue::VariableValue(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable) : Value(context, token), m_variable(variable) {}
+VariableValue::VariableValue(std::shared_ptr<Variable> var) : Value(NULL, NULL), m_var(var) {}
+
 void VariableValue::checkVariables() {
     if (!context()->exists(m_variable)) {
         throw CompilerException("Variable has not been declared", token());

@@ -62,24 +62,13 @@ class Token {
         int m_col;
 
     public:
-        Token(std::string value, TokenType type, int line, int col) : m_value(value), m_type(type), m_line(line), m_col(col) {}
-        Token(TokenType type, int line, int col) : m_value(""), m_type(type), m_line(line), m_col(col) {}
+        Token(std::string value, TokenType type, int line, int col);
+        Token(TokenType type, int line, int col);
 
-        std::string value() const {
-            return m_value;
-        }
-
-        TokenType type() const {
-            return m_type;
-        }
-
-        int line() const {
-            return m_line;
-        }
-
-        int col() const {
-            return m_col;
-        }
+        std::string value() const ;
+        TokenType type() const ;
+        int line() const ;
+        int col() const ;
 };
 
 } //end of eddic

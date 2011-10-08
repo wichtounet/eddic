@@ -13,6 +13,8 @@
 using namespace eddic;
 
 using std::endl;
+        
+MainDeclaration::MainDeclaration(std::shared_ptr<Context> context) : ParseNode(context) {}
 
 void MainDeclaration::write(AssemblyFileWriter& writer){
     writer.stream() << ".text" << endl

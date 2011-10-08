@@ -16,6 +16,12 @@
 
 using namespace eddic;
 
+While::While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+
+std::shared_ptr<Condition> While::condition() {
+    return m_condition;
+}
+
 void While::write(AssemblyFileWriter& writer) {
     //Make something accessible for others operations
     static int labels = 0;

@@ -23,8 +23,9 @@ class Scanner {
         char m_current;
         int m_line;
         int m_col;
+
     public:
-        Scanner() : m_current(0), m_line(1), m_col(0) {}
+        Scanner();
 
         /* File manipulations */
         void scan(const std::string& file);
@@ -35,26 +36,14 @@ class Scanner {
         void pushBack();
 
         /* Getters */
-        inline char current() const {
-            return m_current;
-        };
-        inline int line() const {
-            return m_line;
-        };
-        inline int col() const {
-            return m_col;
-        };
+        char current() const ;
+        int line() const ;
+        int col() const ;
 
         /* Utility */
-        inline bool isAlpha() const {
-            return isalpha(m_current);
-        };
-        inline bool isSpace() const {
-            return isspace(m_current);
-        };
-        inline bool isDigit() const {
-            return isdigit(m_current);
-        };
+        bool isAlpha() const ;
+        bool isSpace() const ;
+        bool isDigit() const ;
 };
 
 } //end of eddic

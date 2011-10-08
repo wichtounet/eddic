@@ -26,7 +26,7 @@ class Function : public ParseNode {
         int m_currentPosition;
 
 	public:
-		Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
+		Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name);
 		
         void write(AssemblyFileWriter& writer);
 

@@ -23,7 +23,7 @@ class Print : public ParseNode {
         std::shared_ptr<Value> value;
 
     public:
-        Print(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v) : ParseNode(context, token), value(v) {};
+        Print(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v);
 
         void checkStrings(StringPool& pool);
         void checkVariables();

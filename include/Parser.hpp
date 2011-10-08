@@ -52,8 +52,8 @@ class Parser {
         std::shared_ptr<Value> parseValue();
 
     public:
-        Parser(Lexer& l) : lexer(l) {};
-        std::shared_ptr<Program> parse() ;
+        Parser(Lexer& l);
+        std::shared_ptr<Program> parse();
 };
 
 } //end of eddic

@@ -21,16 +21,14 @@ class While : public ParseNode {
         std::shared_ptr<Condition> m_condition;
 
     public:
-        While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+        While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 
-        std::shared_ptr<Condition> condition() {
-            return m_condition;
-        }
+        std::shared_ptr<Condition> condition();
 };
 
 } //end of eddic

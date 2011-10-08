@@ -5,18 +5,25 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef PRINTLN_H
-#define PRINTLN_H
+#ifndef TOKEN_EXCEPTION_H
+#define TOKEN_EXCEPTION_H
 
-#include "Print.hpp"
+#include <string>
+#include <memory>
+
+#include "CompilerException.hpp"
 
 namespace eddic {
 
-class Println : public Print {
+class TokenException: public CompilerException {
+    private:
+        std::shared_ptr<Token> m_token;
+
     public:
-        Println(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v);
-        
-		void write(AssemblyFileWriter& writer);
+        TokenException(const std::string& message, std::shared_ptr<Token> token);
+        ~TokenException() throw();
+
+        const char* what() const throw();
 };
 
 } //end of eddic

@@ -12,6 +12,8 @@ using std::string;
 using std::ios_base;
 
 using namespace eddic;
+        
+Lexer::Lexer() : current(new Token(NOTHING, -1, -1)) {}
 
 void Lexer::lex(string file) {
     scanner.scan(file);

@@ -12,6 +12,8 @@
 
 using namespace eddic;
 
+VariableOperation::VariableOperation(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v) : ParseNode(context, token), m_variable(variable), value(v) {}
+
 void VariableOperation::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }

@@ -21,15 +21,10 @@ class Parameter {
         int m_offset;
 
     public:
-        Parameter(const std::string& name, Type type, int offset) : m_name(name), m_type(type), m_offset(offset) {}
+        Parameter(const std::string& name, Type type, int offset);
 
-        Type type(){
-            return m_type;
-        }
-
-        int offset(){
-            return m_offset;
-        }
+        Type type();
+        int offset();
 };
 
 } //end of eddic

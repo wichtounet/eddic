@@ -15,6 +15,10 @@ using std::string;
 
 using namespace eddic;
 
+StringPool::StringPool(std::shared_ptr<Context> context) : ParseNode(context), currentString(0) {
+    label("\"\\n\"");
+}
+
 std::string StringPool::label(const std::string& value) {
     if (pool.find(value) == pool.end()) {
         std::stringstream ss;

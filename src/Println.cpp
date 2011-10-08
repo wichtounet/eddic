@@ -12,6 +12,8 @@
 
 using namespace eddic;
 
+Println::Println(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v) : Print(context, token, v) {}
+
 void Println::write(AssemblyFileWriter& writer) {
     Print::write(writer);
 

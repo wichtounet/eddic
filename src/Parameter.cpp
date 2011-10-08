@@ -5,20 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef PRINTLN_H
-#define PRINTLN_H
+#include "Parameter.hpp"
 
-#include "Print.hpp"
+using namespace eddic;
 
-namespace eddic {
+Parameter::Parameter(const std::string& name, Type type, int offset) : m_name(name), m_type(type), m_offset(offset) {}
 
-class Println : public Print {
-    public:
-        Println(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v);
-        
-		void write(AssemblyFileWriter& writer);
-};
+Type Parameter::type(){
+    return m_type;
+}
 
-} //end of eddic
-
-#endif
+int Parameter::offset(){
+    return m_offset;
+}

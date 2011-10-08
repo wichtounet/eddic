@@ -35,7 +35,7 @@ void GlobalContext::write(AssemblyFileWriter& writer){
     }
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
     throw CompilerException("A global variable must have a value");
 }
 

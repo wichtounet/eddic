@@ -14,7 +14,7 @@ namespace eddic {
 
 class Assignment : public VariableOperation {
     public:
-        Assignment(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) {};
+        Assignment(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v);
 
         void checkVariables();
 };

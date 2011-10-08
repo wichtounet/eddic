@@ -30,7 +30,7 @@ class Lexer {
 
         bool readNext();
     public:
-        Lexer() : current(new Token(NOTHING, -1, -1)) {};
+        Lexer();
 
         void lex(std::string file);
         void close();

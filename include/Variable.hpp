@@ -33,8 +33,8 @@ class Variable {
         std::shared_ptr<Value> m_value;
 
     public:
-        Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
-        Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value) : m_name(name), m_type(type), m_position(position), m_value(value) {}
+        Variable(const std::string& name, Type type, Position position);
+        Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value);
 
         void moveToRegister(AssemblyFileWriter& writer, std::string reg);
         void moveToRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2);
@@ -45,21 +45,10 @@ class Variable {
         void pushToStack(AssemblyFileWriter& writer);
         void popFromStack(AssemblyFileWriter& writer);
 
-        std::string name() const  {
-            return m_name;
-        }
-        
-        Type type() const {
-            return m_type;
-        }
-        
-        Position position() const {
-            return m_position;
-        }
-        
-        std::shared_ptr<Value> value() const {
-            return m_value;
-        }
+        std::string name() const ;
+        Type type() const ;
+        Position position() const ;
+        std::shared_ptr<Value> value() const ;
 };
 
 } //end of eddic

@@ -36,8 +36,8 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         std::weak_ptr<ParseNode> parent;
 
     public:
-        ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
-        ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : m_context(context), m_token(token){} 
+        ParseNode(std::shared_ptr<Context> context);
+        ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkFunctions(Program& program);
@@ -48,13 +48,8 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         NodeIterator begin();
         NodeIterator end();
 
-        std::shared_ptr<Context> context() {
-            return m_context;
-        }
-
-        const std::shared_ptr<Token> token(){
-            return m_token;
-        }
+        std::shared_ptr<Context> context();
+        const std::shared_ptr<Token> token();
     
         void addFirst(std::shared_ptr<ParseNode> node);
         void addLast(std::shared_ptr<ParseNode> node);

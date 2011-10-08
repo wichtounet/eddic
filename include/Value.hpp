@@ -20,12 +20,10 @@ class Value : public ParseNode {
         Type m_type;
 
     public:
-        Value(std::shared_ptr<Context> context) : ParseNode(context) {}
-        Value(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : ParseNode(context, token) {}
+        Value(std::shared_ptr<Context> context);
+        Value(std::shared_ptr<Context> context, const std::shared_ptr<Token> token);
 
-        Type type() const {
-            return m_type;
-        };
+        Type type() const ;
 
         virtual bool isConstant();
         

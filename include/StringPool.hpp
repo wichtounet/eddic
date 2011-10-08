@@ -19,10 +19,9 @@ class StringPool : public ParseNode {
     private:
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
+	
     public:
-        StringPool(std::shared_ptr<Context> context) : ParseNode(context), currentString(0) {
-            label("\"\\n\"");
-        };
+        StringPool(std::shared_ptr<Context> context);
 
         std::string label(const std::string& value);
         void write(AssemblyFileWriter& writer);

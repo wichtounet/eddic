@@ -20,6 +20,17 @@ using std::bind2nd;
 
 using namespace eddic;
 
+ParseNode::ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
+ParseNode::ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : m_context(context), m_token(token){} 
+
+std::shared_ptr<Context> ParseNode::context() {
+    return m_context;
+}
+
+const std::shared_ptr<Token> ParseNode::token(){
+    return m_token;
+}
+
 void ParseNode::write(AssemblyFileWriter& writer) {
     for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
 }

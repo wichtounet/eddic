@@ -9,6 +9,13 @@
 
 using namespace eddic;
 
+Value::Value(std::shared_ptr<Context> context) : ParseNode(context) {}
+Value::Value(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : ParseNode(context, token) {}
+
+Type Value::type() const {
+    return m_type;
+}
+
 bool Value::isConstant() {
     return false;
 }

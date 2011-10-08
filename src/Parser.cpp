@@ -53,6 +53,8 @@
 #include "Parameter.hpp"
 #include "FunctionCall.hpp"
 
+#include "TokenException.hpp"
+
 using std::string;
 using std::ios_base;
 using std::list;
@@ -76,6 +78,8 @@ bool isTokenType(const Lexer& lexer) {
 
     return isType(value);
 }
+
+Parser::Parser(Lexer& l) : lexer(l) {}
 
 std::shared_ptr<Program> Parser::parse() {
     //Create the global context

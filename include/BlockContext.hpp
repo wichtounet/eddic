@@ -26,7 +26,7 @@ class BlockContext : public Context {
         std::shared_ptr<FunctionContext> m_functionContext;
 
     public:
-        BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext) : Context(parent), m_functionContext(functionContext){} 
+        BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext);
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
 };

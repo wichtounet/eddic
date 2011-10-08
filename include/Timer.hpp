@@ -16,6 +16,7 @@ class Timer {
     public:
         Timer();
         double elapsed();
+	
     private:
         timeval startTime;
         timeval endTime;

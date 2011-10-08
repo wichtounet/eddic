@@ -17,6 +17,8 @@ using namespace eddic;
 
 using std::endl;
 
+Function::Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
+
 std::string Function::name(){
     return m_name;
 }

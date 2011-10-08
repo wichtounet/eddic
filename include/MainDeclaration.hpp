@@ -16,7 +16,7 @@ namespace eddic {
 
 class MainDeclaration : public ParseNode {
    public:
-        MainDeclaration(std::shared_ptr<Context> context) : ParseNode(context) {};
+        MainDeclaration(std::shared_ptr<Context> context);
 
         void write(AssemblyFileWriter& writer);
 };
