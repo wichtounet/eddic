@@ -36,11 +36,11 @@ class Variable {
         Variable(const std::string& name, Type type, Position position);
         Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value);
 
-        void moveToRegister(AssemblyFileWriter& writer, std::string reg);
-        void moveToRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2);
+        void moveToRegister(AssemblyFileWriter& writer, const std::string& reg);
+        void moveToRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2);
 
-        void moveFromRegister(AssemblyFileWriter& writer, std::string reg);
-        void moveFromRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2);
+        void moveFromRegister(AssemblyFileWriter& writer, const std::string& reg);
+        void moveFromRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2);
 
         void pushToStack(AssemblyFileWriter& writer);
         void popFromStack(AssemblyFileWriter& writer);

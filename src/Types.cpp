@@ -18,11 +18,11 @@ int eddic::size(Type type){
     return typeSizes[(int) type];
 }
 
-bool eddic::isType(std::string type){
+bool eddic::isType(const std::string& type){
     return type == "int" || type == "void" || type == "string";
 }
 
-Type eddic::stringToType(std::string type){
+Type eddic::stringToType(const std::string& type){
     if (type == "int") {
         return Type::INT;
     } else if (type == "string"){

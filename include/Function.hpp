@@ -24,16 +24,18 @@ class Function : public ParseNode {
 		std::string m_name;
         std::vector<std::shared_ptr<Parameter>> m_parameters;
         int m_currentPosition;
+        
+        mutable std::string m_mangled_name;
 
 	public:
 		Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name);
 		
         void write(AssemblyFileWriter& writer);
 
-        std::string name();
-        std::string mangledName();
+        const std::string& name() const;
+        const std::string& mangledName() const;
 
-        void addParameter(std::string name, Type type);
+        void addParameter(const std::string& name, Type type);
 };
 
 } //end of eddic

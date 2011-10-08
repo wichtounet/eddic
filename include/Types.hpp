@@ -20,9 +20,9 @@ enum class Type : unsigned int {
 
 int size(Type type);
 
-bool isType(std::string type);
+bool isType(const std::string& type);
 
-Type stringToType(std::string type);
+Type stringToType(const std::string& type);
 
 } //end of eddic
 

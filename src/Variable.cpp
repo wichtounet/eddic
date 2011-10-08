@@ -35,7 +35,7 @@ std::shared_ptr<Value> Variable::value() const {
     return m_value;
 }
 
-void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg){
+void Variable::moveToRegister(AssemblyFileWriter& writer, const std::string& reg){
     if(m_type == Type::INT){ 
         if(m_position.isStack()){
             writer.stream() << "movl -" << m_position.offset() << "(%ebp), " << reg << endl;
@@ -49,7 +49,7 @@ void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg){
    }
 }
 
-void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2){
+void Variable::moveToRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2){
     if(m_type == Type::INT){ 
        //TODO Should never be called 
    } else if (m_type == Type::STRING){
@@ -66,7 +66,7 @@ void Variable::moveToRegister(AssemblyFileWriter& writer, std::string reg1, std:
    }
 }
 
-void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg){
+void Variable::moveFromRegister(AssemblyFileWriter& writer, const std::string& reg){
     if(m_type == Type::INT){ 
         if(m_position.isStack()){
             writer.stream() << "movl " << reg << ", -" << m_position.offset() << "(%ebp)" << endl;
@@ -80,7 +80,7 @@ void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg){
    }
 }
 
-void Variable::moveFromRegister(AssemblyFileWriter& writer, std::string reg1, std::string reg2){
+void Variable::moveFromRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2){
     if(m_type == Type::INT){ 
        //TODO Should never be called 
    } else if (m_type == Type::STRING){

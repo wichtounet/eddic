@@ -19,15 +19,19 @@ using std::endl;
 
 Function::Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name) : ParseNode(context, token), m_name(name), m_currentPosition(0) {}
 
-std::string Function::name(){
+const std::string& Function::name() const {
     return m_name;
 }
 
-std::string Function::mangledName(){
-    return mangle(m_name, m_parameters);
+const std::string& Function::mangledName() const {
+    if(m_mangled_name.empty()){
+        m_mangled_name = mangle(m_name, m_parameters);
+    }
+
+    return m_mangled_name;
 }
 		
-void Function::addParameter(std::string name, Type type){
+void Function::addParameter(const std::string& name, Type type){
     std::shared_ptr<Parameter> param(new Parameter(name, type, m_currentPosition));
     m_parameters.push_back(param);
 
