@@ -16,6 +16,8 @@
 
 using namespace eddic;
 
+For::For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
+
 void For::write(AssemblyFileWriter& writer){
     if(m_start){
         m_start->write(writer);

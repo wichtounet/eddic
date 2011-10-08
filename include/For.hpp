@@ -23,7 +23,7 @@ class For : public ParseNode {
         std::shared_ptr<Condition> m_condition;
 
     public:
-        For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
+        For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();

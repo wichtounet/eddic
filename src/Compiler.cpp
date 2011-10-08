@@ -23,9 +23,9 @@ using std::endl;
 
 using namespace eddic;
 
-void execCommand(string command);
+void execCommand(const string& command);
 
-int Compiler::compile(string file) {
+int Compiler::compile(const string& file) {
     cout << "Compile " << file << endl;
 
     Timer timer;
@@ -85,7 +85,7 @@ int Compiler::compile(string file) {
     return code;
 }
 
-void execCommand(string command) {
+void execCommand(const string& command) {
     cout << "eddic : exec command : " << command << endl;
 
     char buffer[1024];

@@ -21,6 +21,20 @@ using namespace eddic;
 
 using std::string;
 
+If::If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+
+void If::setElse(std::shared_ptr<Else> elseBlock) {
+    m_elseBlock = elseBlock;
+}
+
+void If::addElseIf(std::shared_ptr<ElseIf> elseIf) {
+    elseIfs.push_back(elseIf);
+}
+
+std::shared_ptr<Condition> If::condition() {
+    return m_condition;
+}
+
 void writeConditionOperands(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition) {
     condition->lhs()->write(writer);
     condition->rhs()->write(writer);
@@ -30,7 +44,7 @@ void writeConditionOperands(AssemblyFileWriter& writer, std::shared_ptr<Conditio
     writer.stream() << "addl $8, %esp" << std::endl;
 }
 
-void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, string label, int labelIndex) {
+void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
     if (!condition->isOperator()) {
         //No need to jump if true
         if (condition->condition() == FALSE_VALUE) {

@@ -13,7 +13,7 @@
 namespace eddic {
 
 template <typename T>
-T toNumber (std::string text) {
+T toNumber (const std::string& text) {
     std::stringstream ss(text);
     T result;
     ss >> result;
@@ -21,7 +21,7 @@ T toNumber (std::string text) {
 }
 
 template <typename T>
-std::string toString(T number) {
+const std::string& toString(T number) {
     std::stringstream out;
     out << number;
     return out.str();

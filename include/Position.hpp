@@ -26,13 +26,14 @@ class Position {
 
     public:
         Position(PositionType type, int offset);
-        Position(PositionType type, std::string name);
+        Position(PositionType type, const std::string& name);
 
         bool isStack();
         bool isParameter();
         bool isGlobal();
         int offset();
-        std::string name();
+		
+        const std::string& name();
 };
 
 } //end of eddic

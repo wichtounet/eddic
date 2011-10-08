@@ -21,7 +21,7 @@ class Compiler {
         AssemblyFileWriter writer;
 
     public:
-        int compile (std::string file);
+        int compile (const std::string& file);
 };
 
 } //end of eddic

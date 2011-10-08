@@ -27,26 +27,19 @@ class If : public ParseNode {
         std::vector<std::shared_ptr<ElseIf>> elseIfs;
 
     public:
-        If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
-
+        If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition);
+		
+        void setElse(std::shared_ptr<Else> elseBlock);
+        void addElseIf(std::shared_ptr<ElseIf> elseIf);
+        std::shared_ptr<Condition> condition();
+		
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
-
-        void setElse(std::shared_ptr<Else> elseBlock) {
-            m_elseBlock = elseBlock;
-        }
-        void addElseIf(std::shared_ptr<ElseIf> elseIf) {
-            elseIfs.push_back(elseIf);
-        }
-
-        std::shared_ptr<Condition> condition() {
-            return m_condition;
-        }
 };
 
-void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, std::string label, int labelIndex);
+void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const std::string& label, int labelIndex);
 
 } //end of eddic
 

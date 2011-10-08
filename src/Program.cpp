@@ -20,7 +20,7 @@ void Program::addFunction(std::shared_ptr<Function> function){
     addLast(function);
 }
 
-bool Program::exists(std::string function){
+bool Program::exists(const std::string& function){
     return functions.find(function) != functions.end();
 }
 

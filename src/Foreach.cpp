@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+Foreach::Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, std::string variable, std::shared_ptr<Value> from, std::shared_ptr<Value> to) : ParseNode(context, token), m_type(type), m_variable(variable), m_from(from), m_to(to) {}
+
 //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
 void Foreach::write(AssemblyFileWriter& writer){
     //Assign the base value to the variable

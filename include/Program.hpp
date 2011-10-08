@@ -26,7 +26,7 @@ class Program : public ParseNode {
         
         void write(AssemblyFileWriter& writer);
         void addFunction(std::shared_ptr<Function> function);
-        bool exists(std::string function);
+        bool exists(const std::string& function);
 };
 
 } //end of eddic

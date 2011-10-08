@@ -10,7 +10,7 @@
 using namespace eddic;
 
 Position::Position(PositionType type, int offset) : m_type(type), m_offset(offset), m_name("") {}
-Position::Position(PositionType type, std::string name) : m_type(type), m_offset(0), m_name(name) {}
+Position::Position(PositionType type, const std::string& name) : m_type(type), m_offset(0), m_name(name) {}
 
 bool Position::isStack(){
     return m_type == STACK;
@@ -28,6 +28,6 @@ int Position::offset(){
     return m_offset;
 }
 
-std::string Position::name(){
+const std::string& Position::name(){
     return m_name;
 }
