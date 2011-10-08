@@ -18,7 +18,6 @@ class ParseNode;
 class Program;
 
 typedef std::list<std::shared_ptr<ParseNode>>::const_iterator NodeIterator;
-typedef std::vector<std::shared_ptr<ParseNode>>::const_iterator TrashIterator;
 
 class Context;
 class AssemblyFileWriter;
