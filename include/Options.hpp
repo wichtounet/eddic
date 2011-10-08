@@ -33,26 +33,12 @@ class Options {
         static std::string valueOptions[(int) ValueOption::COUNT];
         
     public:
-        static void setDefaults() {
-            set(ValueOption::OUTPUT, "a.out");
-        }
-
-        static void set(BooleanOption option) {
-            booleanOptions[(int) option] = true;
-        }
-        static void unset(BooleanOption option) {
-            booleanOptions[(int) option] = false;
-        }
-        static bool isSet(BooleanOption option) {
-            return booleanOptions[(int) option];
-        }
-
-        static void set(ValueOption option, std::string value) {
-            valueOptions[(int) option] = value;
-        }
-        static std::string get(ValueOption option) {
-            return valueOptions[(int) option];
-        }
+        static void setDefaults();
+        static void set(BooleanOption option);
+        static void unset(BooleanOption option);
+        static bool isSet(BooleanOption option);
+        static void set(ValueOption option, const std::string& value);
+        static const std::string& get(ValueOption option);
 };
 
 } //end of eddic

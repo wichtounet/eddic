@@ -11,3 +11,27 @@ using namespace eddic;
 
 bool Options::booleanOptions[(int) BooleanOption::COUNT];
 std::string Options::valueOptions[(int) ValueOption::COUNT];
+        
+void Options::setDefaults() {
+    set(ValueOption::OUTPUT, "a.out");
+}
+
+void Options::set(BooleanOption option) {
+    booleanOptions[(int) option] = true;
+}
+
+void Options::unset(BooleanOption option) {
+    booleanOptions[(int) option] = false;
+}
+
+bool Options::isSet(BooleanOption option) {
+    return booleanOptions[(int) option];
+}
+
+void Options::set(ValueOption option, const std::string& value) {
+    valueOptions[(int) option] = value;
+}
+
+const std::string& Options::get(ValueOption option) {
+    return valueOptions[(int) option];
+}

@@ -113,7 +113,7 @@ std::shared_ptr<Program> Parser::parse() {
     return program;
 }
 
-std::shared_ptr<Function> Parser::parseFunction(Type type, string functionName) {
+std::shared_ptr<Function> Parser::parseFunction(Type type, const string& functionName) {
     if(type != Type::VOID){
         throw TokenException("The return type of a function must be void", lexer.getCurrentToken());
     }
@@ -177,7 +177,7 @@ std::shared_ptr<Function> Parser::parseFunction(Type type, string functionName) 
     return function;
 }
 
-std::shared_ptr<ParseNode> Parser::parseGlobalDeclaration(Type type, string variable){
+std::shared_ptr<ParseNode> Parser::parseGlobalDeclaration(Type type, const string& variable){
     if(type == Type::VOID){
         throw TokenException("void is not a valid type for a variable", lexer.getCurrentToken());
     }

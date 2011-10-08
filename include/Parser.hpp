@@ -33,8 +33,8 @@ class Parser {
         std::shared_ptr<FunctionContext> functionContext;
         std::shared_ptr<Context> currentContext;
 
-        std::shared_ptr<Function> parseFunction(Type type, std::string functionName);
-        std::shared_ptr<ParseNode> parseGlobalDeclaration(Type type, std::string functionName);
+        std::shared_ptr<Function> parseFunction(Type type, const std::string& functionName);
+        std::shared_ptr<ParseNode> parseGlobalDeclaration(Type type, const std::string& functionName);
         std::shared_ptr<ParseNode> parseInstruction();
         std::shared_ptr<ParseNode> parseRepeatableInstruction();
         std::shared_ptr<ParseNode> parseDeclaration();
