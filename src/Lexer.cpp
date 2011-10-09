@@ -15,7 +15,7 @@ using namespace eddic;
         
 Lexer::Lexer() : current(new Token(NOTHING, -1, -1)) {}
 
-void Lexer::lex(string file) {
+void Lexer::lex(const string& file) {
     scanner.scan(file);
 }
 

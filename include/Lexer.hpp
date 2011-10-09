@@ -29,10 +29,11 @@ class Lexer {
         std::stack<std::shared_ptr<Token>> buffer;
 
         bool readNext();
+	
     public:
         Lexer();
 
-        void lex(std::string file);
+        void lex(const std::string& file);
         void close();
         bool next();
         void pushBack();
