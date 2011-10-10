@@ -5,23 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef INSTRUCTION_FACTORY_H
-#define INSTRUCTION_FACTORY_H
+#ifndef FUNCTION_DECLARATION_H
+#define FUNCTION_DECLARATION_H
 
 #include <string>
-#include <memory>
 
 #include "il/Instruction.hpp"
 
 namespace eddic {
 
-class InstructionFactory {
-    public:
-        std::shared_ptr<Instruction> createMOV();
-        std::shared_ptr<Instruction> createLabel(const std::string& label);
-        std::shared_ptr<Instruction> createCall(const std::string& function);
-        std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0);
+class AssemblyFileWriter;
 
+class FunctionDeclaration : public Instruction {
+    private:
+        std::string m_name;
+        int m_size;
+
+    public:
+        FunctionDeclaration(std::string name, int size = 0);
+
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic
