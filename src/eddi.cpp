@@ -84,6 +84,7 @@ int main(int argc, const char* argv[]) {
 }
 
 void printUsage() {
+    cout << "eddic Version 0.5" << endl;
     cout << "Usage: eddic [options] file" << endl;
 
     cout << "Options:" << endl;
