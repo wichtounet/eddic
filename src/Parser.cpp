@@ -244,7 +244,7 @@ std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
 std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callToken) {
     string call = callToken->value();
 
-    if (call != "Print" && call != "Println") {
+    if (call != "print" && call != "println") {
         std::shared_ptr<FunctionCall> functionCall(new FunctionCall(currentContext, lexer.getCurrentToken(), call));
 
         lexer.next();
@@ -268,7 +268,7 @@ std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callTo
 
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
 
-    if (call == "Print") {
+    if (call == "print") {
         return std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
     } else {
         return std::shared_ptr<ParseNode>(new Println(currentContext, callToken, value));
