@@ -11,6 +11,10 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
+
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Types.hpp"
 
@@ -18,53 +22,35 @@
 
 namespace eddic {
 
-class Variable {
-    private:
-        const std::string m_name;
-        const Type m_type;
-        const int m_index;
-    public:
-        Variable(const std::string& name, Type type, int index) : m_name(name), m_type(type), m_index(index) {}
-        std::string name() const  {
-            return m_name;
-        }
-        int index() const {
-            return m_index;
-        }
-        Type type() const {
-            return m_type;
-        }
-};
+class Value;
+class Variable;
 
 class Context {
     private:
-        static std::vector<Context*> contexts;
-        static unsigned int currentVariable;
+        std::shared_ptr<Context> m_parent;
 
-        std::map<std::string, Variable*> variables;
-        Context* m_parent;
+    protected:
+        typedef std::unordered_map<int, std::shared_ptr<Variable>> StoredVariables;
+        typedef std::unordered_map<std::string, int> VisibleVariables;
+
+        StoredVariables m_stored;
+        VisibleVariables m_visibles;
+
+        static int currentVariable;
 
     public:
-        Context() : m_parent(NULL) {
-            contexts.push_back(this);
-        }
-        Context(Context* parent) : m_parent(parent) {
-            contexts.push_back(this);
-        }
-        ~Context();
+        Context(std::shared_ptr<Context> parent);
 
-        bool exists(const std::string& variable) const;
-        unsigned int index(const std::string& variable) const;
-        Variable* create(const std::string& variable, Type type);
-        Variable* find(const std::string& variable);
-        void write(AssemblyFileWriter& writer);
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
+        virtual bool exists(const std::string& a) const;
+        virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
+        virtual std::shared_ptr<Variable> getVariable(int index) const;
 
-        Context* parent() {
-            return m_parent;
-        }
+        virtual void write(AssemblyFileWriter& writer);
+        virtual void release(AssemblyFileWriter& writer);
+        std::shared_ptr<Context> parent() const ;
 
-        static void writeAll(AssemblyFileWriter& writer);
-        static void cleanup();
+        void storeVariable(int index, std::shared_ptr<Variable> variable);
 };
 
 } //end of eddic

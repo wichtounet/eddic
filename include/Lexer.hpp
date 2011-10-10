@@ -23,21 +23,22 @@ class Lexer {
     private:
         Scanner scanner;
 
-        Token current;
+        std::shared_ptr<Token> current;
 
-        std::stack<Token> read;
-        std::stack<Token> buffer;
+        std::stack<std::shared_ptr<Token>> read;
+        std::stack<std::shared_ptr<Token>> buffer;
 
         bool readNext();
+	
     public:
-        Lexer() : current(Token(NOTHING, -1, -1)) {};
+        Lexer();
 
-        void lex(std::string file);
+        void lex(const std::string& file);
         void close();
         bool next();
         void pushBack();
 
-        Token getCurrentToken() const;
+        std::shared_ptr<Token> getCurrentToken() const;
 
         bool isWord() const;
         bool isAssign() const;
@@ -64,10 +65,14 @@ class Lexer {
         bool isElse() const;
         bool isWhile() const;
         bool isFor() const;
+        bool isForeach() const;
+        bool isFrom() const;
+        bool isTo() const;
         bool isBooleanOperator() const;
         bool isBoolean() const;
         bool isTrue() const;
         bool isFalse() const;
+        bool isComma() const;
 };
 
 } //end of eddic

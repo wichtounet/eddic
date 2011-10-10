@@ -38,14 +38,14 @@ int main(int argc, const char* argv[]) {
         }
 
         if (arg == "--optimize-all") {
-            Options::set(OPTIMIZE_INTEGERS);
-            Options::set(OPTIMIZE_STRINGS);
+            Options::set(BooleanOption::OPTIMIZE_INTEGERS);
+            Options::set(BooleanOption::OPTIMIZE_STRINGS);
         } else if (arg == "--optimize-integers") {
-            Options::set(OPTIMIZE_INTEGERS);
+            Options::set(BooleanOption::OPTIMIZE_INTEGERS);
         } else if (arg == "--optimize-strings") {
-            Options::set(OPTIMIZE_STRINGS);
+            Options::set(BooleanOption::OPTIMIZE_STRINGS);
         } else if (arg == "-S") {
-            Options::set(ASSEMBLY_ONLY);
+            Options::set(BooleanOption::ASSEMBLY_ONLY);
         } else if (arg == "--help" || arg == "-h") {
             printUsage();
 
@@ -60,7 +60,7 @@ int main(int argc, const char* argv[]) {
 
                 return -1;
             } else {
-                Options::set(OUTPUT, argv[i]);
+                Options::set(ValueOption::OUTPUT, argv[i]);
             }
         } else {
             cout << "eddic: unrecognized option \"" << arg << "\"" << endl;
@@ -84,6 +84,7 @@ int main(int argc, const char* argv[]) {
 }
 
 void printUsage() {
+    cout << "eddic Version 0.5" << endl;
     cout << "Usage: eddic [options] file" << endl;
 
     cout << "Options:" << endl;

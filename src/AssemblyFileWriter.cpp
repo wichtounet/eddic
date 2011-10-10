@@ -24,3 +24,7 @@ void AssemblyFileWriter::open(const std::string& path) {
 void AssemblyFileWriter::close() {
     m_stream.close();
 }
+
+std::ofstream& AssemblyFileWriter::stream() {
+    return m_stream;
+}

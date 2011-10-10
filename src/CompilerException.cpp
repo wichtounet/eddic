@@ -13,17 +13,20 @@ using namespace eddic;
 
 using std::stringstream;
 
-const char* CompilerException::what() const throw() {
-    return m_message.c_str();
-}
+CompilerException::CompilerException(const std::string& message) : m_message(message) {}
+CompilerException::CompilerException(const std::string& message, const std::shared_ptr<Token> token) : m_message(message), m_token(token) {}
+CompilerException::~CompilerException() throw() {}
 
-const char* TokenException::what() const throw() {
+const char* CompilerException::what() const throw() {
     stringstream value;
 
     value << m_message;
-    value << std::endl;
-    value << "\tline:" << m_token.line();
-    value << " col:" << m_token.col();
+
+    if(m_token){
+        value << std::endl;
+        value << "\tline:" << m_token->line();
+        value << " col:" << m_token->col();
+    }
 
     return value.str().c_str();
 }

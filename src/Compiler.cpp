@@ -12,9 +12,10 @@
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "Compiler.hpp"
-#include "Nodes.hpp"
+#include "Program.hpp"
 #include "Parser.hpp"
-#include "Functions.hpp"
+#include "MainDeclaration.hpp"
+#include "Methods.hpp"
 
 using std::string;
 using std::cout;
@@ -22,14 +23,14 @@ using std::endl;
 
 using namespace eddic;
 
-void execCommand(string command);
+void execCommand(const string& command);
 
-int Compiler::compile(string file) {
+int Compiler::compile(const string& file) {
     cout << "Compile " << file << endl;
 
     Timer timer;
 
-    string output = Options::get(OUTPUT);
+    string output = Options::get(ValueOption::OUTPUT);
 
     int code = 0;
     try {
@@ -37,12 +38,12 @@ int Compiler::compile(string file) {
 
         Parser parser(lexer);
 
-        Program* program = parser.parse();
+        std::shared_ptr<Program> program = parser.parse();
 
-        StringPool* pool = new StringPool(program->context());
+        std::shared_ptr<StringPool> pool(new StringPool(program->context()));
 
-        program->addFirst(new MainDeclaration(program->context()));
-        program->addLast(new Methods(program->context()));
+        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context())));
+        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context())));
         program->addLast(pool);
 
         //Semantical analysis
@@ -57,13 +58,7 @@ int Compiler::compile(string file) {
         writer.open("output.asm");
         program->write(writer);
 
-        //TODO Find a better way to write and delete the Contexts
-        Context::writeAll(writer);
-        Context::cleanup();
-
-        delete program;
-
-        if(!Options::isSet(ASSEMBLY_ONLY)){
+        if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
 
             string ldCommand = "gcc -m32 -static -o ";
@@ -90,7 +85,7 @@ int Compiler::compile(string file) {
     return code;
 }
 
-void execCommand(string command) {
+void execCommand(const string& command) {
     cout << "eddic : exec command : " << command << endl;
 
     char buffer[1024];

@@ -1,97 +1,97 @@
 //Main function
 void main(){
     string x = "ED" + "DI";
-    Println(x);
+    println(x);
 
     string a = "Variable a";
-    Print("Should print 'Variable a' : ");
-    Println(a);
+    print("Should print 'Variable a' : ");
+    println(a);
 
     a = "New variable a";
-    Print("Should print 'New variable a' : ");
-    Println (a);
+    print("Should print 'New variable a' : ");
+    println (a);
 
     string b = "Variable b";
-    Print("Should print 'Variable b' : ");
-    Println(b);
+    print("Should print 'Variable b' : ");
+    println(b);
 
     b = a;
-    Print("Should print 'New variable a' : ");
-    Println(b);
+    print("Should print 'New variable a' : ");
+    println(b);
 
     string e = "Variable e";
     string f = "Variable f";
 
     f <=> e;
 
-    Print("Should print 'Variable e' : ");
-    Println(f);
-    Print("Should print 'Variable f' : ");
-    Println(e);
+    print("Should print 'Variable e' : ");
+    println(f);
+    print("Should print 'Variable f' : ");
+    println(e);
 
     int c = 1111;
-    Println(c);
+    println(c);
 
     c = 2222;
-    Println(c);
+    println(c);
 
     int d = 3333;
-    Println(d);
+    println(d);
 
     d = c;
-    Println(d);
+    println(d);
 
-    Print("666 + 333 = ");
-    Println(666 + 333);
+    print("666 + 333 = ");
+    println(666 + 333);
 
-    Print("10 * 33 = ");
-    Println(330);
+    print("10 * 33 = ");
+    println(330);
 
-    Print("122 / 2 = ");
-    Println(122 / 2);
+    print("122 / 2 = ");
+    println(122 / 2);
 
-    Print("7 % 5 = ");
-    Println(7 % 5);
+    print("7 % 5 = ");
+    println(7 % 5);
 
-    Print("444 - 333 = ");
-    Println(444 - 333);
+    print("444 - 333 = ");
+    println(444 - 333);
 
-    Print("((444 - 333) * (2)) = ");
-    Println(((444 - 333) * (2)));
+    print("((444 - 333) * (2)) = ");
+    println(((444 - 333) * (2)));
 
     if(4 > 3){
         string xa = "Cool";
-        Println(xa);
+        println(xa);
     } else {
         string xa = "Super pas cool";
-        Println(xa);
+        println(xa);
     }
 
     if(3 == 3){
         string xa = "Cool";
-        Println(xa);
+        println(xa);
     } else {
-        Println("Pas cool");
+        println("Pas cool");
     }
 
     if(55 < 33){
-        Println("Pas cool");
+        println("Pas cool");
     } else if(33 <= 11){
-        Println("Pas cool");
+        println("Pas cool");
     } else {
-        Println("Cool");
+        println("Cool");
     }
 
     int i = 0;
     while(i < 5){
         i = i + 1; //Could be increment
-        Print("While");
-        Println(i);
+        print("While");
+        println(i);
     }
 
     for(int zzz = 0; zzz < 5; zzz = zzz + 1){
-        Print("For");
-        Println(zzz);
+        print("For");
+        println(zzz);
     }
     
     for(int zzz = 0; zzz < 5; zzz = zzz + 1){
@@ -104,7 +104,11 @@ void main(){
 
 //Test function
 void test(){
-    Println("Hello from test");
+    string x = "test depuis method";
+
+    println(x);
+
+    println("Hello from test");
 }
 
 /* Multiline comment 2  */

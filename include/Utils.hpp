@@ -12,21 +12,20 @@
 
 namespace eddic {
 
-template <class T>
-T toNumber (std::string text) {
+template <typename T>
+T toNumber (const std::string& text) {
     std::stringstream ss(text);
     T result;
     ss >> result;
     return result;
 }
 
-class deleter {
-    public:
-        template <typename T>
-        void operator()(const T& x) const {
-            delete x;
-        }
-};
+template <typename T>
+const std::string& toString(T number) {
+    std::stringstream out;
+    out << number;
+    return out.str();
+}
 
 } //end of eddic
 

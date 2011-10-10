@@ -5,96 +5,70 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+#include <functional>
+
 #include "Context.hpp"
+#include "Utils.hpp"
+#include "Value.hpp"
 
 using std::map;
 using std::string;
 using std::endl;
 using std::vector;
+using std::unordered_set;
+using std::unordered_map;
 
 using namespace eddic;
 
-vector<Context*> Context::contexts;
-unsigned int Context::currentVariable = 0;
+int Context::currentVariable = 0;
 
-Context::~Context() {
-    map<string, Variable*>::const_iterator it = variables.begin();
-    map<string, Variable*>::const_iterator end = variables.end();
+Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
 
-    for ( ; it != end; ++it) {
-        delete it->second;
-    }
+void Context::write(AssemblyFileWriter&){
+    //Nothing by default    
 }
 
-Variable* Context::find(const std::string& variable) {
-    map<string, Variable*>::const_iterator it = variables.find(variable);
+void Context::release(AssemblyFileWriter&){
+    //Nothing by default
+}
 
-    if (it == variables.end()) {
-        if (m_parent != NULL) {
-            return m_parent->find(variable);
-        }
+std::shared_ptr<Context> Context::parent() const  {
+    return m_parent;
+}
 
-        return NULL;
-    }
-
-    return it->second;
+void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
+    m_stored[index] = variable;
 }
 
 bool Context::exists(const std::string& variable) const {
-    if (variables.find(variable) != variables.end()) {
-        return true;
-    }
+    bool found = m_visibles.find(variable) != m_visibles.end();
 
-    if (m_parent != NULL) {
-        return m_parent->exists(variable);
-    }
-
-    return false;
-}
-
-unsigned int Context::index(const std::string& variable) const {
-    map<string, Variable*>::const_iterator it = variables.find(variable);
-
-    if (it == variables.end()) {
-        if (m_parent != NULL) {
-            return m_parent->index(variable);
-        }
-
-        return -1;
-    }
-
-    return it->second->index();
-}
-
-Variable* Context::create(const std::string& variable, Type type) {
-    Variable* v = new Variable(variable, type, currentVariable++);
-
-    variables[variable] = v;
-
-    return v;
-}
-
-void Context::write(AssemblyFileWriter& writer) {
-    map<string, Variable*>::const_iterator it = variables.begin();
-    map<string, Variable*>::const_iterator end = variables.end();
-
-    for ( ; it != end; ++it) {
-        if (it->second->type() == INT) {
-            writer.stream() << ".comm VI" << it->second->index() << ",4,4" << endl;
-        } else if (it->second->type() == STRING) {
-            writer.stream() << ".comm VS" << it->second->index() << ",8,4" << endl;
+    if(!found){
+        if(m_parent){
+            return m_parent->exists(variable);
         }
     }
+
+    return found;
 }
 
-void Context::writeAll(AssemblyFileWriter& writer) {
-    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
-        (*it)->write(writer);
+std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
+    auto iter = m_visibles.find(variable);
+
+    if(iter == m_visibles.end()){
+        return m_parent->getVariable(variable);
     }
+    
+    return getVariable(iter->second);
 }
 
-void Context::cleanup(){
-    for (vector<Context*>::const_iterator it = contexts.begin(); it != contexts.end(); ++it) {
-        delete *it;
+std::shared_ptr<Variable> Context::getVariable(int index) const {
+    auto iter = m_stored.find(index);
+
+    if(iter == m_stored.end()){
+        return m_parent->getVariable(index);
     }
+
+    return iter->second;
 }

@@ -17,14 +17,11 @@ namespace eddic {
 class AssemblyFileWriter {
     private:
         std::ofstream m_stream;
-    public:
-        AssemblyFileWriter() {};
+	
+    public:		
         void open(const std::string& path) ;
         void close();
-
-        std::ofstream& stream() {
-            return m_stream;
-        }
+        std::ofstream& stream();
 };
 
 } //end of eddic

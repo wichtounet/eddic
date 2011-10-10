@@ -5,24 +5,37 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Branches.hpp"
+#include <algorithm>
+
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+
+#include "If.hpp"
+#include "Else.hpp"
+#include "ElseIf.hpp"
+#include "Condition.hpp"
+
+#include "Value.hpp"
 
 using namespace eddic;
 
 using std::string;
 
-If::~If() {
-    delete m_condition;
-    delete m_elseBlock; //Can be null, problem ?
+If::If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        delete *it;
-    }
+void If::setElse(std::shared_ptr<Else> elseBlock) {
+    m_elseBlock = elseBlock;
 }
 
-void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition) {
+void If::addElseIf(std::shared_ptr<ElseIf> elseIf) {
+    elseIfs.push_back(elseIf);
+}
+
+std::shared_ptr<Condition> If::condition() {
+    return m_condition;
+}
+
+void writeConditionOperands(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition) {
     condition->lhs()->write(writer);
     condition->rhs()->write(writer);
 
@@ -31,12 +44,10 @@ void writeConditionOperands(AssemblyFileWriter& writer, Condition* condition) {
     writer.stream() << "addl $8, %esp" << std::endl;
 }
 
-void eddic::writeJumpIfNot(AssemblyFileWriter& writer, Condition* condition, string label, int labelIndex) {
+void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
     if (!condition->isOperator()) {
-
-        if (condition->condition() == TRUE_VALUE) {
-            //No need to jump
-        } else if (condition->condition() == FALSE_VALUE) {
+        //No need to jump if true
+        if (condition->condition() == FALSE_VALUE) {
             writer.stream() << "jmp " << label << labelIndex << std::endl;
         }
     } else {
@@ -109,8 +120,8 @@ void If::write(AssemblyFileWriter& writer) {
 
         writer.stream() << "jmp L" << end << std::endl;
 
-        for (std::vector<ElseIf*>::size_type i = 0; i < elseIfs.size(); ++i) {
-            ElseIf* elseIf = elseIfs[i];
+        for (std::vector<std::shared_ptr<ElseIf>>::size_type i = 0; i < elseIfs.size(); ++i) {
+            std::shared_ptr<ElseIf> elseIf = elseIfs[i];
 
             writer.stream() << "L" << next << ":" << std::endl;
 
@@ -147,8 +158,8 @@ void If::checkVariables() {
         m_condition->lhs()->checkVariables();
         m_condition->rhs()->checkVariables();
 
-        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
-            throw CompilerException("Can only compare integers");
+        if (m_condition->lhs()->type() != Type::INT || m_condition->rhs()->type() != Type::INT) {
+            throw CompilerException("Can only compare integers", token());
         }
     }
 
@@ -157,10 +168,8 @@ void If::checkVariables() {
     }
 
     ParseNode::checkVariables();
-
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->checkVariables();
-    }
+    
+    for_each(elseIfs.begin(), elseIfs.end(), [](std::shared_ptr<ElseIf> e){ e->checkVariables(); });
 }
 
 void If::checkStrings(StringPool& pool) {
@@ -174,10 +183,8 @@ void If::checkStrings(StringPool& pool) {
     }
 
     ParseNode::checkStrings(pool);
-
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->checkStrings(pool);
-    }
+    
+    for_each(elseIfs.begin(), elseIfs.end(), [&](std::shared_ptr<ElseIf> e){ e->checkStrings(pool); });
 }
 
 void If::optimize() {
@@ -185,123 +192,8 @@ void If::optimize() {
         m_condition->lhs()->optimize();
         m_condition->rhs()->optimize();
     }
-
-    for (std::vector<ElseIf*>::iterator it = elseIfs.begin(); it != elseIfs.end(); ++it) {
-        (*it)->optimize();
-    }
-
-    ParseNode::optimize();
-}
-
-void ElseIf::checkVariables() {
-    if (m_condition->isOperator()) {
-        m_condition->lhs()->checkVariables();
-        m_condition->rhs()->checkVariables();
-
-        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
-            throw CompilerException("Can only compare integers");
-        }
-    }
-
-    ParseNode::checkVariables();
-}
-
-void ElseIf::checkStrings(StringPool& pool) {
-    if (m_condition->isOperator()) {
-        m_condition->lhs()->checkStrings(pool);
-        m_condition->rhs()->checkStrings(pool);
-    }
-
-    ParseNode::checkStrings(pool);
-}
-
-void ElseIf::optimize() {
-    if (m_condition->isOperator()) {
-        m_condition->lhs()->optimize();
-        m_condition->rhs()->optimize();
-    }
-
-    ParseNode::optimize();
-}
-For::~For(){
-    delete m_condition;
-    delete m_start;
-    delete m_iter;
-}
-
-void For::write(AssemblyFileWriter& writer){
-    if(m_start){
-        m_start->write(writer);
-    }
-
-    static int labels = -1;
-
-    ++labels;
-
-    writer.stream() << "start_for" << labels << ":" << std::endl;
-
-    if(m_condition){
-        writeJumpIfNot(writer, m_condition, "end_for", labels);
-    }
-
-    ParseNode::write(writer);
-
-    if(m_iter){
-        m_iter->write(writer);
-    }
-
-    writer.stream() << "jmp start_for" << labels << std::endl;
-
-    writer.stream() << "end_for" << labels << ":" << std::endl;
-}
-
-void For::checkVariables(){
-    if(m_start){
-        m_start->checkVariables();
-    }
     
-    if(m_condition){
-        m_condition->lhs()->checkVariables();
-        m_condition->rhs()->checkVariables();
-    }
-
-    if(m_iter){
-        m_iter->checkVariables();
-    }
-
-    ParseNode::checkVariables();
-}
-
-void For::checkStrings(StringPool& pool){
-    if(m_start){
-        m_start->checkStrings(pool);
-    }
-    
-    if(m_condition){
-        m_condition->lhs()->checkStrings(pool);
-        m_condition->rhs()->checkStrings(pool);
-    }
-
-    if(m_iter){
-        m_iter->checkStrings(pool);
-    }
-
-    ParseNode::checkStrings(pool);
-}
-
-void For::optimize(){
-    if(m_condition){
-        m_condition->lhs()->optimize();
-        m_condition->rhs()->optimize();
-    }
-
-    if(m_start){
-        m_start->optimize();
-    }
-    
-    if(m_iter){
-        m_iter->optimize();
-    }
+    for_each(elseIfs.begin(), elseIfs.end(), [](std::shared_ptr<ElseIf> e){ e->optimize(); });
 
     ParseNode::optimize();
 }

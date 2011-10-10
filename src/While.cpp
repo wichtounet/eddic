@@ -5,15 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Loops.hpp"
+#include "While.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
-#include "Branches.hpp"
+
+#include "If.hpp"
+#include "Condition.hpp"
+
+#include "Value.hpp"
 
 using namespace eddic;
 
-While::~While() {
-    delete m_condition;
+While::While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+
+std::shared_ptr<Condition> While::condition() {
+    return m_condition;
 }
 
 void While::write(AssemblyFileWriter& writer) {
@@ -39,8 +45,8 @@ void While::checkVariables() {
         m_condition->lhs()->checkVariables();
         m_condition->rhs()->checkVariables();
 
-        if (m_condition->lhs()->type() != INT || m_condition->rhs()->type() != INT) {
-            throw CompilerException("Can only compare integers");
+        if (m_condition->lhs()->type() != Type::INT || m_condition->rhs()->type() != Type::INT) {
+            throw CompilerException("Can only compare integers", token());
         }
     }
 

@@ -5,30 +5,30 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef LOOPS_H
-#define LOOPS_H
+#ifndef FOR_H
+#define FOR_H
 
-#include "Branches.hpp"
+#include <memory>
+
+#include "ParseNode.hpp"
 
 namespace eddic {
 
-class While : public ParseNode {
-    private:
-        Condition* m_condition;
+class Condition;
+
+class For : public ParseNode {
+    private: 
+        std::shared_ptr<ParseNode> m_start;
+        std::shared_ptr<ParseNode> m_iter;
+        std::shared_ptr<Condition> m_condition;
 
     public:
-        While(Context* context, Condition* condition) : ParseNode(context), m_condition(condition) {}
-
-        virtual ~While();
+        For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
-
-        Condition* condition() {
-            return m_condition;
-        }
 };
 
 } //end of eddic

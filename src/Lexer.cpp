@@ -12,8 +12,10 @@ using std::string;
 using std::ios_base;
 
 using namespace eddic;
+        
+Lexer::Lexer() : current(new Token(NOTHING, -1, -1)) {}
 
-void Lexer::lex(string file) {
+void Lexer::lex(const string& file) {
     scanner.scan(file);
 }
 
@@ -38,7 +40,7 @@ bool Lexer::next() {
 }
 
 void Lexer::pushBack() {
-    Token old = read.top();
+    std::shared_ptr<Token> old = read.top();
 
     buffer.push(old);
 
@@ -68,7 +70,7 @@ bool Lexer::readNext() {
 
         value += scanner.current();
 
-        current = Token(value, LITTERAL, line, col);
+        current = std::shared_ptr<Token>(new Token(value, LITTERAL, line, col));
 
         return true;
     } else if (scanner.isAlpha()) {
@@ -81,19 +83,25 @@ bool Lexer::readNext() {
         scanner.pushBack();
 
         if (value == "true") {
-            current = Token(TRUE_TYPE, line, col);
+            current = std::shared_ptr<Token>(new Token(TRUE_TYPE, line, col));
         } else if (value == "false") {
-            current = Token(FALSE_TYPE, line, col);
+            current = std::shared_ptr<Token>(new Token(FALSE_TYPE, line, col));
         } else if (value == "if") {
-            current = Token(IF, line, col);
+            current = std::shared_ptr<Token>(new Token(IF, line, col));
         } else if (value == "else") {
-            current = Token(ELSE, line, col);
+            current = std::shared_ptr<Token>(new Token(ELSE, line, col));
         } else if (value == "while") {
-            current = Token(WHILE, line, col);
+            current = std::shared_ptr<Token>(new Token(WHILE, line, col));
         } else if (value == "for") {
-            current = Token(FOR, line, col);
+            current = std::shared_ptr<Token>(new Token(FOR, line, col));
+        } else if (value == "foreach") {
+            current = std::shared_ptr<Token>(new Token(FOREACH, line, col));
+        } else if (value == "from") {
+            current = std::shared_ptr<Token>(new Token(FROM, line, col));
+        } else if (value == "to") {
+            current = std::shared_ptr<Token>(new Token(TO, line, col));
         } else {
-            current = Token(value, WORD, line, col);
+            current = std::shared_ptr<Token>(new Token(value, WORD, line, col));
         }
 
         return true;
@@ -106,47 +114,50 @@ bool Lexer::readNext() {
 
         scanner.pushBack();
 
-        current = Token(value, INTEGER, line, col);
+        current = std::shared_ptr<Token>(new Token(value, INTEGER, line, col));
 
         return true;
     }
 
     switch (scanner.current()) {
         case ';':
-            current = Token(STOP, line, col);
+            current = std::shared_ptr<Token>(new Token(STOP, line, col));
+            return true;
+        case ',':
+            current = std::shared_ptr<Token>(new Token(COMMA, line, col));
             return true;
         case '=':
             scanner.next();
 
             if (scanner.current() == '=') {
-                current = Token(EQUALS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(EQUALS_TOKEN, line, col));
             } else {
                 scanner.pushBack();
 
-                current = Token(ASSIGN, line, col);
+                current = std::shared_ptr<Token>(new Token(ASSIGN, line, col));
             }
 
             return true;
         case '(':
-            current = Token(LEFT_PARENTH, line, col);
+            current = std::shared_ptr<Token>(new Token(LEFT_PARENTH, line, col));
             return true;
         case ')':
-            current = Token(RIGHT_PARENTH, line, col);
+            current = std::shared_ptr<Token>(new Token(RIGHT_PARENTH, line, col));
             return true;
         case '{':
-            current = Token(LEFT_BRACE, line, col);
+            current = std::shared_ptr<Token>(new Token(LEFT_BRACE, line, col));
             return true;
         case '}':
-            current = Token(RIGHT_BRACE, line, col);
+            current = std::shared_ptr<Token>(new Token(RIGHT_BRACE, line, col));
             return true;
         case '+':
-            current = Token(ADDITION, line, col);
+            current = std::shared_ptr<Token>(new Token(ADDITION, line, col));
             return true;
         case '-':
-            current = Token(SUBTRACTION, line, col);
+            current = std::shared_ptr<Token>(new Token(SUBTRACTION, line, col));
             return true;
         case '*':
-            current = Token(MULTIPLICATION, line, col);
+            current = std::shared_ptr<Token>(new Token(MULTIPLICATION, line, col));
             return true;
         case '/':
             scanner.next();
@@ -169,18 +180,18 @@ bool Lexer::readNext() {
             } else {
                 scanner.pushBack();
                 
-                current = Token(DIVISION, line, col);
+                current = std::shared_ptr<Token>(new Token(DIVISION, line, col));
             }
             
             return true;
         case '%':
-            current = Token(MODULO, line, col);
+            current = std::shared_ptr<Token>(new Token(MODULO, line, col));
             return true;
         case '!':
             scanner.next();
 
             if (scanner.current() == '=') {
-                current = Token(NOT_EQUALS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(NOT_EQUALS_TOKEN, line, col));
 
                 return true;
             }
@@ -193,15 +204,15 @@ bool Lexer::readNext() {
                 scanner.next();
 
                 if (scanner.current() == '>') {
-                    current = Token(SWAP, line, col);
+                    current = std::shared_ptr<Token>(new Token(SWAP, line, col));
                 } else {
                     scanner.pushBack();
-                    current = Token(LESS_EQUALS_TOKEN, line, col);
+                    current = std::shared_ptr<Token>(new Token(LESS_EQUALS_TOKEN, line, col));
                 }
             } else {
                 scanner.pushBack();
 
-                current = Token(LESS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(LESS_TOKEN, line, col));
             }
 
             return true;
@@ -209,11 +220,11 @@ bool Lexer::readNext() {
             scanner.next();
 
             if (scanner.current() == '=') {
-                current = Token(GREATER_EQUALS_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(GREATER_EQUALS_TOKEN, line, col));
             } else {
                 scanner.pushBack();
 
-                current = Token(GREATER_TOKEN, line, col);
+                current = std::shared_ptr<Token>(new Token(GREATER_TOKEN, line, col));
             }
 
             return true;
@@ -222,122 +233,138 @@ bool Lexer::readNext() {
     return false;
 }
 
-Token Lexer::getCurrentToken() const {
+std::shared_ptr<Token> Lexer::getCurrentToken() const {
     return current;
 }
 
 bool Lexer::isWord() const {
-    return current.type() == WORD;
+    return current->type() == WORD;
 }
 
 bool Lexer::isLitteral() const {
-    return current.type() == LITTERAL;
+    return current->type() == LITTERAL;
 }
 
 bool Lexer::isAssign() const {
-    return current.type() == ASSIGN;
+    return current->type() == ASSIGN;
 }
 
 bool Lexer::isSwap() const {
-    return current.type() == SWAP;
+    return current->type() == SWAP;
 }
 
 bool Lexer::isLeftParenth() const {
-    return current.type() == LEFT_PARENTH;
+    return current->type() == LEFT_PARENTH;
 }
 
 bool Lexer::isRightParenth() const {
-    return current.type() == RIGHT_PARENTH;
+    return current->type() == RIGHT_PARENTH;
 }
 
 bool Lexer::isLeftBrace() const {
-    return current.type() == LEFT_BRACE;
+    return current->type() == LEFT_BRACE;
 }
 
 bool Lexer::isRightBrace() const {
-    return current.type() == RIGHT_BRACE;
+    return current->type() == RIGHT_BRACE;
 }
 
 bool Lexer::isStop() const {
-    return current.type() == STOP;
+    return current->type() == STOP;
 }
 
 bool Lexer::isInteger() const {
-    return current.type() == INTEGER;
+    return current->type() == INTEGER;
 }
 
 bool Lexer::isAddition() const {
-    return current.type() == ADDITION;
+    return current->type() == ADDITION;
 }
 
 bool Lexer::isSubtraction() const {
-    return current.type() == SUBTRACTION;
+    return current->type() == SUBTRACTION;
 }
 
 bool Lexer::isMultiplication() const {
-    return current.type() == MULTIPLICATION;
+    return current->type() == MULTIPLICATION;
 }
 
 bool Lexer::isModulo() const {
-    return current.type() == MODULO;
+    return current->type() == MODULO;
 }
 
 bool Lexer::isDivision() const {
-    return current.type() == DIVISION;
+    return current->type() == DIVISION;
 }
 
 bool Lexer::isEquals() const {
-    return current.type() == EQUALS_TOKEN;
+    return current->type() == EQUALS_TOKEN;
 }
 
 bool Lexer::isNotEquals() const {
-    return current.type() == NOT_EQUALS_TOKEN;
+    return current->type() == NOT_EQUALS_TOKEN;
 }
 
 bool Lexer::isGreater() const {
-    return current.type() == GREATER_TOKEN;
+    return current->type() == GREATER_TOKEN;
 }
 
 bool Lexer::isLess() const {
-    return current.type() == LESS_TOKEN;
+    return current->type() == LESS_TOKEN;
 }
 
 bool Lexer::isGreaterOrEquals() const {
-    return current.type() == GREATER_EQUALS_TOKEN;
+    return current->type() == GREATER_EQUALS_TOKEN;
 }
 
 bool Lexer::isLessOrEquals() const {
-    return current.type() == LESS_EQUALS_TOKEN;
+    return current->type() == LESS_EQUALS_TOKEN;
 }
 
 bool Lexer::isIf() const {
-    return current.type() == IF;
+    return current->type() == IF;
 }
 
 bool Lexer::isElse() const {
-    return current.type() == ELSE;
+    return current->type() == ELSE;
 }
 
 bool Lexer::isWhile() const {
-    return current.type() == WHILE;
+    return current->type() == WHILE;
 }
 
 bool Lexer::isFor() const {
-    return current.type() == FOR;
+    return current->type() == FOR;
+}
+
+bool Lexer::isForeach() const {
+    return current->type() == FOREACH;
+}
+
+bool Lexer::isFrom() const {
+    return current->type() == FROM;
+}
+
+bool Lexer::isTo() const {
+    return current->type() == TO;
 }
 
 bool Lexer::isBooleanOperator() const {
-    return current.type() >= EQUALS_TOKEN && current.type() <= LESS_EQUALS_TOKEN;
+    return current->type() >= EQUALS_TOKEN && current->type() <= LESS_EQUALS_TOKEN;
 }
 
 bool Lexer::isBoolean() const {
-    return current.type() == TRUE_TYPE || current.type() == FALSE_TYPE;
+    return current->type() == TRUE_TYPE || current->type() == FALSE_TYPE;
 }
 
 bool Lexer::isTrue() const {
-    return current.type() == TRUE_TYPE;
+    return current->type() == TRUE_TYPE;
 }
 
 bool Lexer::isFalse() const {
-    return current.type() == FALSE_TYPE;
+    return current->type() == FALSE_TYPE;
+}
+
+bool Lexer::isComma() const {
+    return current->type() == COMMA;
 }

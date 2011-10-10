@@ -21,31 +21,39 @@ class ElseIf;
 class Else;
 class Value;
 class Condition;
+class Context;
+class GlobalContext;
+class FunctionContext;
 
 class Parser {
     private:
         Lexer& lexer;
-        Context* currentContext;
 
-        Function* parseFunction();
-        ParseNode* parseInstruction();
-        ParseNode* parseRepeatableInstruction();
-        ParseNode* parseDeclaration();
-        ParseNode* parseCallOrAssignment();
-        ParseNode* parseCall(const Token& call);
-        ParseNode* parseAssignment(const Token& variable);
-        ParseNode* parseSwap(const Token& lhs);
-        ParseNode* parseIf();
-        ParseNode* parseWhile();
-        ParseNode* parseFor();
-        Condition* parseCondition();
-        ElseIf* parseElseIf();
-        Else* parseElse();
-        Value* parseValue();
+        std::shared_ptr<GlobalContext> globalContext;
+        std::shared_ptr<FunctionContext> functionContext;
+        std::shared_ptr<Context> currentContext;
+
+        std::shared_ptr<Function> parseFunction(Type type, const std::string& functionName);
+        std::shared_ptr<ParseNode> parseGlobalDeclaration(Type type, const std::string& functionName);
+        std::shared_ptr<ParseNode> parseInstruction();
+        std::shared_ptr<ParseNode> parseRepeatableInstruction();
+        std::shared_ptr<ParseNode> parseDeclaration();
+        std::shared_ptr<ParseNode> parseCallOrAssignment();
+        std::shared_ptr<ParseNode> parseCall(const std::shared_ptr<Token> call);
+        std::shared_ptr<ParseNode> parseAssignment(const std::shared_ptr<Token> variable);
+        std::shared_ptr<ParseNode> parseSwap(const std::shared_ptr<Token> lhs);
+        std::shared_ptr<ParseNode> parseIf();
+        std::shared_ptr<ParseNode> parseWhile();
+        std::shared_ptr<ParseNode> parseFor();
+        std::shared_ptr<ParseNode> parseForeach();
+        std::shared_ptr<Condition> parseCondition();
+        std::shared_ptr<ElseIf> parseElseIf();
+        std::shared_ptr<Else> parseElse();
+        std::shared_ptr<Value> parseValue();
 
     public:
-        Parser(Lexer& l) : lexer(l), currentContext(new Context()) {};
-        Program* parse() ;
+        Parser(Lexer& l);
+        std::shared_ptr<Program> parse();
 };
 
 } //end of eddic

@@ -1,0 +1,56 @@
+int zz = 888;
+string yy = "trest";
+
+void main(){
+    foreach(int a from 0 to 6){
+        print(a);
+    }
+
+    test(4, 8, 9);
+
+    tester("hello", "adios", "hi");
+
+    print("Global variable zz=");
+    println(zz);
+
+    zz = 999;
+    
+    print("Global variable zz=");
+    println(zz);
+
+    print("Global variable yy=");
+    println(yy);
+    
+    yy = "test";
+
+    print("Global variable yy=");
+    println(yy);
+}
+
+void test(int a, int b){
+    //Nothing
+}
+
+void test(int x, int y, int z){
+    println("test()");
+
+    print("x=");
+    println(x);
+    
+    print("y=");
+    println(y);
+    
+    print("z=");
+    println(z);
+
+    x = 55;
+    
+    print("x=");
+    println(x);
+}
+
+void tester(string a, string b, string c){
+    println(a);
+    println(b);
+    println(c);
+}
