@@ -7,6 +7,7 @@
 
 #include "il/InstructionFactory.hpp"
 #include "il/Instruction.hpp"
+#include "il/Label.hpp"
 
 using namespace eddic;
 
@@ -15,5 +16,5 @@ Instruction InstructionFactory::createMOV(){
 }
 
 Instruction InstructionFactory::createLabel(const std::string& label){
-   return Instruction(); 
+   return Label(); 
 }

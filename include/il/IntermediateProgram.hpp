@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#include "il/InstructionFactory.hpp"
+
 namespace eddic {
 
 class AssemblyFileWriter;
