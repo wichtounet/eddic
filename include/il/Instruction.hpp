@@ -10,8 +10,11 @@
 
 namespace eddic {
 
-class Instruction {
+class AssemblyFileWriter;
 
+class Instruction {
+    public:
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic
