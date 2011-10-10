@@ -3,28 +3,28 @@ string yy = "trest";
 
 void main(){
     foreach(int a from 0 to 6){
-        Print(a);
+        print(a);
     }
 
     test(4, 8, 9);
 
     tester("hello", "adios", "hi");
 
-    Print("Global variable zz=");
-    Println(zz);
+    print("Global variable zz=");
+    println(zz);
 
     zz = 999;
     
-    Print("Global variable zz=");
-    Println(zz);
+    print("Global variable zz=");
+    println(zz);
 
-    Print("Global variable yy=");
-    Println(yy);
+    print("Global variable yy=");
+    println(yy);
     
     yy = "test";
 
-    Print("Global variable yy=");
-    Println(yy);
+    print("Global variable yy=");
+    println(yy);
 }
 
 void test(int a, int b){
@@ -32,25 +32,25 @@ void test(int a, int b){
 }
 
 void test(int x, int y, int z){
-    Println("test()");
+    println("test()");
 
-    Print("x=");
-    Println(x);
+    print("x=");
+    println(x);
     
-    Print("y=");
-    Println(y);
+    print("y=");
+    println(y);
     
-    Print("z=");
-    Println(z);
+    print("z=");
+    println(z);
 
     x = 55;
     
-    Print("x=");
-    Println(x);
+    print("x=");
+    println(x);
 }
 
 void tester(string a, string b, string c){
-    Println(a);
-    Println(b);
-    Println(c);
+    println(a);
+    println(b);
+    println(c);
 }

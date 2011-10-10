@@ -1,32 +1,32 @@
-Print("Hello 1");
+print("Hello 1");
 
-Print("Hello 2");
+print("Hello 2");
 
 if(3 > 2){
-	Print("Hello 4");
-	Print("Hello 5");
+	print("Hello 4");
+	print("Hello 5");
 }
 
 if(true){
-	Print("true");
+	print("true");
 }
 
 if(false){
-	Print("false");
+	print("false");
 } else {
-	Print("Yippikai");
+	print("Yippikai");
 }
 
-Print("Test");
+print("Test");
 
 if(2 > 3){
-	Print("pee");
-	Print("2");
+	print("pee");
+	print("2");
 } else if(6 > 3){ 
-	Print("Too bad");
+	print("Too bad");
 } else {
-	Print("or poo");
-	Print("That is the question");
+	print("or poo");
+	print("That is the question");
 }
 
-Print("This is the end of the world");
+print("This is the end of the world");
