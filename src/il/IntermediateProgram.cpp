@@ -5,8 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Instruction.hpp"
+#include "il/IntermediateProgram.hpp"
+#include "il/Instruction.hpp"
 
 using namespace eddic;
 
+void IntermediateProgram::addInstruction(Instruction instruction){
+    //TODO
+}
 
+void IntermediateProgram::writeAsm(AssemblyFileWriter& writer){
+    //TODO
+}

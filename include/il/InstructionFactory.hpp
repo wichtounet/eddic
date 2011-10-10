@@ -5,15 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "InstructionFactory.hpp"
-#include "Instruction.hpp"
+#ifndef INSTRUCTION_FACTORY_H
+#define INSTRUCTION_FACTORY_H
 
-using namespace eddic;
+#include <string>
 
-Instruction InstructionFactory::createMOV(){
-   return Instruction(); 
-}
+#include "il/Instruction.hpp"
 
-Instruction InstructionFactory::createLabel(const std::string& label){
-   return Instruction(); 
-}
+namespace eddic {
+
+class InstructionFactory {
+    public:
+        Instruction createMOV();
+        Instruction createLabel(const std::string& label);
+};
+
+} //end of eddic
+
+#endif

@@ -5,15 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "IntermediateProgram.hpp"
+#ifndef LABEL_H
+#define LABEL_H
+
 #include "Instruction.hpp"
 
-using namespace eddic;
+namespace eddic {
 
-void IntermediateProgram::addInstruction(Instruction instruction){
-    //TODO
-}
+class Label : public Instruction {
 
-void IntermediateProgram::writeAsm(AssemblyFileWriter& writer){
-    //TODO
-}
+};
+
+} //end of eddic
+
+#endif
