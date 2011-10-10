@@ -6,6 +6,12 @@
 //=======================================================================
 
 #include "il/Label.hpp"
+#include "AssemblyFileWriter.hpp"
 
 using namespace eddic;
 
+Label::Label(std::string name) : m_name(name) {}
+
+void Label::write(AssemblyFileWriter& writer){
+    writer.stream() << m_name << ":" << std::endl;
+}

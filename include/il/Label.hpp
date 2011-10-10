@@ -8,12 +8,20 @@
 #ifndef LABEL_H
 #define LABEL_H
 
+#include <string>
+
 #include "Instruction.hpp"
 
 namespace eddic {
 
 class Label : public Instruction {
+    private:
+        std::string m_name;
 
+    public:
+        Label(std::string name);
+
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

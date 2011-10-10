@@ -16,5 +16,5 @@ std::shared_ptr<Instruction> InstructionFactory::createMOV(){
 }
 
 std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& label){
-   return std::shared_ptr<Instruction>(new Label()); 
+   return std::shared_ptr<Instruction>(new Label(label)); 
 }
