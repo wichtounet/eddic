@@ -17,9 +17,11 @@ class Instruction;
 
 class IntermediateProgram {
     private:
-        std::vector<Instruction> instructions;
+        std::vector<Instruction> m_instructions;
+        InstructionFactory m_factory;
 
     public:
+        InstructionFactory factory();
         void addInstruction(Instruction instruction);
         void writeAsm(AssemblyFileWriter& writer);
 };
