@@ -8,6 +8,7 @@
 #include "il/InstructionFactory.hpp"
 #include "il/Instruction.hpp"
 #include "il/Label.hpp"
+#include "il/Call.hpp"
 
 using namespace eddic;
 
@@ -17,4 +18,8 @@ std::shared_ptr<Instruction> InstructionFactory::createMOV(){
 
 std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& label){
    return std::shared_ptr<Instruction>(new Label(label)); 
+}
+
+std::shared_ptr<Instruction> createCall(const std::string& function){
+   return std::shared_ptr<Instruction>(new Call(function)); 
 }
