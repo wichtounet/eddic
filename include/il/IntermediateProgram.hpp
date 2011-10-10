@@ -9,6 +9,7 @@
 #define INTERMEDIATE_PROGRAM_H
 
 #include <vector>
+#include <memory>
 
 #include "il/InstructionFactory.hpp"
 
@@ -19,12 +20,12 @@ class Instruction;
 
 class IntermediateProgram {
     private:
-        std::vector<Instruction> m_instructions;
+        std::vector<std::shared_ptr<Instruction>> m_instructions;
         InstructionFactory m_factory;
 
     public:
         InstructionFactory factory();
-        void addInstruction(Instruction instruction);
+        void addInstruction(std::shared_ptr<Instruction> instruction);
         void writeAsm(AssemblyFileWriter& writer);
 };
 

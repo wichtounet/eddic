@@ -11,10 +11,10 @@
 
 using namespace eddic;
 
-Instruction InstructionFactory::createMOV(){
-   return Instruction(); 
+std::shared_ptr<Instruction> InstructionFactory::createMOV(){
+   return std::shared_ptr<Instruction>(new Instruction()); 
 }
 
-Instruction InstructionFactory::createLabel(const std::string& label){
-   return Label(); 
+std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& label){
+   return std::shared_ptr<Instruction>(new Label()); 
 }

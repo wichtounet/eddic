@@ -14,7 +14,7 @@ InstructionFactory IntermediateProgram::factory(){
     return m_factory;
 }
 
-void IntermediateProgram::addInstruction(Instruction instruction){
+void IntermediateProgram::addInstruction(std::shared_ptr<Instruction> instruction){
     m_instructions.push_back(instruction);
 }
 

@@ -9,6 +9,7 @@
 #define INSTRUCTION_FACTORY_H
 
 #include <string>
+#include <memory>
 
 #include "il/Instruction.hpp"
 
@@ -16,8 +17,8 @@ namespace eddic {
 
 class InstructionFactory {
     public:
-        Instruction createMOV();
-        Instruction createLabel(const std::string& label);
+        std::shared_ptr<Instruction> createMOV();
+        std::shared_ptr<Instruction> createLabel(const std::string& label);
 };
 
 } //end of eddic
