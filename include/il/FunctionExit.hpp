@@ -19,7 +19,7 @@ class FunctionExit : public Instruction {
         int m_size;
 
     public:
-        FunctionExit(int size);
+        FunctionExit(int size = 0);
 
         void write(AssemblyFileWriter& writer);
 };

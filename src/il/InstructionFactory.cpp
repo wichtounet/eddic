@@ -10,6 +10,7 @@
 #include "il/Label.hpp"
 #include "il/Call.hpp"
 #include "il/FunctionDeclaration.hpp"
+#include "il/FunctionExit.hpp"
 
 using namespace eddic;
 
@@ -21,10 +22,14 @@ std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& 
    return std::shared_ptr<Instruction>(new Label(label)); 
 }
 
-std::shared_ptr<Instruction> createCall(const std::string& function){
+std::shared_ptr<Instruction> InstructionFactory::createCall(const std::string& function){
    return std::shared_ptr<Instruction>(new Call(function)); 
 }
 
-std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0){
+std::shared_ptr<Instruction> InstructionFactory::createFunctionDeclaration(const std::string& function, int size){
    return std::shared_ptr<Instruction>(new FunctionDeclaration(function, size)); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createFunctionExit(int size){
+   return std::shared_ptr<Instruction>(new FunctionExit(size)); 
 }
