@@ -16,6 +16,8 @@ namespace eddic {
 
 class Value;
 
+//TODO Put implementation into source files
+
 class Condition {
     private:
         BooleanCondition m_condition;

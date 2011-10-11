@@ -9,6 +9,7 @@
 #include "il/Instruction.hpp"
 #include "il/Label.hpp"
 #include "il/Call.hpp"
+#include "il/Jump.hpp"
 #include "il/FunctionDeclaration.hpp"
 #include "il/FunctionExit.hpp"
 
@@ -20,6 +21,10 @@ std::shared_ptr<Instruction> InstructionFactory::createMOV(){
 
 std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& label){
    return std::shared_ptr<Instruction>(new Label(label)); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createJump(const std::string& label){
+   return std::shared_ptr<Instruction>(new Jump(label)); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory::createCall(const std::string& function){
