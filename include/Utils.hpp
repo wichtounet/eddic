@@ -21,7 +21,7 @@ T toNumber (const std::string& text) {
 }
 
 template <typename T>
-const std::string& toString(T number) {
+std::string toString(T number) {
     std::stringstream out;
     out << number;
     return out.str();
