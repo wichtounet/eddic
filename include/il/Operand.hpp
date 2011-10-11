@@ -12,13 +12,25 @@
 
 namespace eddic {
 
+enum class OperandType : unsigned int {
+    IMMEDIATE,
+    REGISTER,
+    STACK,
+    GLOBAL
+};
+
 class Operand {
+    private:
+        OperandType m_type;
+
     public:
+        Operand(OperandType type);
+
         virtual std::string getValue() = 0;
-        virtual bool isImmediate() = 0;
-        virtual bool isRegister() = 0;
-        virtual bool isStack() = 0;
-        virtual bool isGlobal() = 0;
+        bool isImmediate();
+        bool isRegister();
+        bool isStack();
+        bool isGlobal();
 };
 
 } //end of eddic
