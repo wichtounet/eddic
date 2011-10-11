@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+
 #include "il/IntermediateProgram.hpp"
 #include "il/Instruction.hpp"
 
@@ -19,5 +21,5 @@ void IntermediateProgram::addInstruction(std::shared_ptr<Instruction> instructio
 }
 
 void IntermediateProgram::writeAsm(AssemblyFileWriter& writer){
-    //TODO
+    for_each(m_instructions.begin(), m_instructions.end(), [&](std::shared_ptr<Instruction> i){ i->write(writer); });
 }
