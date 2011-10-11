@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "il/Instruction.hpp"
+#include "il/Math.hpp"
 
 namespace eddic {
 
@@ -25,6 +26,7 @@ class InstructionFactory {
         std::shared_ptr<Instruction> createCall(const std::string& function);
         std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0);
         std::shared_ptr<Instruction> createFunctionExit(int size = 0);
+        std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
 };
 
 } //end of eddic
