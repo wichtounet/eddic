@@ -12,10 +12,11 @@
 #include "il/Jump.hpp"
 #include "il/FunctionDeclaration.hpp"
 #include "il/FunctionExit.hpp"
+#include "il/Operand.hpp"
 
 using namespace eddic;
 
-std::shared_ptr<Instruction> InstructionFactory::createMove(){
+std::shared_ptr<Instruction> InstructionFactory::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
    return std::shared_ptr<Instruction>(new Instruction()); 
 }
 
