@@ -13,11 +13,12 @@
 #include "il/FunctionDeclaration.hpp"
 #include "il/FunctionExit.hpp"
 #include "il/Operand.hpp"
+#include "il/Move.hpp"
 
 using namespace eddic;
 
 std::shared_ptr<Instruction> InstructionFactory::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
-   return std::shared_ptr<Instruction>(new Instruction()); 
+   return std::shared_ptr<Instruction>(new Move(lhs, rhs)); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& label){
