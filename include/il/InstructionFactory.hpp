@@ -13,6 +13,7 @@
 
 #include "il/Instruction.hpp"
 #include "il/Math.hpp"
+#include "il/Jump.hpp"
 
 namespace eddic {
 
@@ -22,7 +23,7 @@ class InstructionFactory {
     public:
         std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
         std::shared_ptr<Instruction> createLabel(const std::string& label);
-        std::shared_ptr<Instruction> createJump(const std::string& label);
+        std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label);
         std::shared_ptr<Instruction> createCall(const std::string& function);
         std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0);
         std::shared_ptr<Instruction> createFunctionExit(int size = 0);

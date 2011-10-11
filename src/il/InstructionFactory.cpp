@@ -25,8 +25,8 @@ std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& 
    return std::shared_ptr<Instruction>(new Label(label)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createJump(const std::string& label){
-   return std::shared_ptr<Instruction>(new Jump(label)); 
+std::shared_ptr<Instruction> InstructionFactory::createJump(JumpCondition condition, const std::string& label){
+   return std::shared_ptr<Instruction>(new Jump(condition, label)); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory::createCall(const std::string& function){

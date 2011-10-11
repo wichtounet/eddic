@@ -14,12 +14,23 @@
 
 namespace eddic {
 
+enum class JumpCondition : unsigned int {
+    ALWAYS,
+    LESS,
+    GREATER,
+    EQUALS,
+    NOT_EQUALS,
+    GREATER_EQUALS,
+    LESS_EQUALS
+};
+
 class Jump : public Instruction {
     private:
+        JumpCondition m_condition;
         std::string m_label;
 
     public:
-        Jump(std::string label);
+        Jump(JumpCondition condition, std::string label);
 
         void write(AssemblyFileWriter& writer);
 };
