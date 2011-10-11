@@ -17,7 +17,7 @@ namespace eddic {
 
 class InstructionFactory {
     public:
-        std::shared_ptr<Instruction> createMOV();
+        std::shared_ptr<Instruction> createMove();
         std::shared_ptr<Instruction> createLabel(const std::string& label);
         std::shared_ptr<Instruction> createJump(const std::string& label);
         std::shared_ptr<Instruction> createCall(const std::string& function);

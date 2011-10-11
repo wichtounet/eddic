@@ -15,7 +15,7 @@
 
 using namespace eddic;
 
-std::shared_ptr<Instruction> InstructionFactory::createMOV(){
+std::shared_ptr<Instruction> InstructionFactory::createMove(){
    return std::shared_ptr<Instruction>(new Instruction()); 
 }
 
