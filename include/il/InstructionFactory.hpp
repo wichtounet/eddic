@@ -22,6 +22,7 @@ class Operand;
 class InstructionFactory {
     public:
         std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
+        std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand);
         std::shared_ptr<Instruction> createLabel(const std::string& label);
         std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label);
         std::shared_ptr<Instruction> createCall(const std::string& function);
