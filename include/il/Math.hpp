@@ -22,7 +22,7 @@ enum class Operation : unsigned int {
     MODULO
 };
 
-class Math;
+class Operand;
 
 class Math : public Instruction {
     private:

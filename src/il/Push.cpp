@@ -8,6 +8,7 @@
 #include "il/Push.hpp"
 
 #include "il/Operand.hpp"
+#include "AssemblyFileWriter.hpp"
 
 using namespace eddic;
 
@@ -15,7 +16,7 @@ Push::Push(std::shared_ptr<Operand> operand) : m_operand(operand) {}
 
 void Push::write(AssemblyFileWriter& writer){
     //We can always put an immediate value everywhere
-    writer.stream() << "movl " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+    writer.stream() << "pushl " << m_operand->getValue() << std::endl;
 
     //TODO Improve ?
 }
