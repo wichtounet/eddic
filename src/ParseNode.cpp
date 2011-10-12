@@ -39,8 +39,8 @@ void ParseNode::write(AssemblyFileWriter& writer) {
     for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
 }
 
-void ParseNode::write(IntermediateProgram& program) {
-    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(program); });
+void ParseNode::writeIL(IntermediateProgram& program) {
+    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->writeIL(program); });
 }
 
 void ParseNode::checkFunctions(Program& program){

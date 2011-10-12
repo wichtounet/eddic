@@ -39,7 +39,7 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         ParseNode(std::shared_ptr<Context> context);
         ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token);
 
-        virtual void write(IntermediateProgram& program);
+        virtual void writeIL(IntermediateProgram& program);
         virtual void write(AssemblyFileWriter& writer);     //TODO Remove
         virtual void checkFunctions(Program& program);
         virtual void checkVariables();

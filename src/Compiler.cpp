@@ -16,6 +16,7 @@
 #include "Parser.hpp"
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
+#include "il/IntermediateProgram.hpp"
 
 using std::string;
 using std::cout;
@@ -57,6 +58,11 @@ int Compiler::compile(const string& file) {
         //Compilation
         writer.open("output.asm");
         program->write(writer);
+
+        IntermediateProgram il;
+        program->writeIL(il);
+
+        //il.write(writer);
 
         if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
