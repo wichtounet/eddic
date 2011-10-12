@@ -10,8 +10,8 @@
 #include "AssemblyFileWriter.hpp"
 #include "il/Operand.hpp"
 #include "il/Operands.hpp"
-#include "Variable.hpp"
 #include "il/IntermediateProgram.hpp"
+#include "Variable.hpp"
 
 using namespace eddic;
 
@@ -27,24 +27,11 @@ int Integer::getIntValue() {
     return m_value;
 } 
 
-//TODO Move Into variabl
-std::shared_ptr<Operand> toIntegerOperand(std::shared_ptr<Variable> variable){
-    if(variable->position().isStack()){
-        return createBaseStackOperand(variable->position().offset());
-    } else if(variable->position().isParameter()){
-        return createBaseStackOperand(variable->position().offset());
-    } else if(variable->position().isGlobal()){
-        return createGlobalOperand(variable->position().name());
-    }
-
-    throw "ERROR";
-}
-
 void Integer::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
     program.addInstruction(
         program.factory().createMove(
            createImmediateOperand(m_value),
-           toIntegerOperand(variable)
+           variable->toIntegerOperand()
         )
     ); 
 }

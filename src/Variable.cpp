@@ -9,7 +9,8 @@
 #include "Utils.hpp"
 #include "Value.hpp"
 
-#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
+#include "il/Operand.hpp"
 
 using std::map;
 using std::string;
@@ -149,4 +150,18 @@ void Variable::popFromStack(AssemblyFileWriter& writer){
         default:
             throw CompilerException("Variable of invalid type");
     }
+}
+
+std::shared_ptr<Operand> Variable::toIntegerOperand(){
+    //TODO Assert that type is int
+    
+    if(m_position.isStack()){
+        return createBaseStackOperand(m_position.offset());
+    } else if(m_position.isParameter()){
+        return createBaseStackOperand(m_position.offset());
+    } else if(m_position.isGlobal()){
+        return createGlobalOperand(m_position.name());
+    }
+
+    throw "ERROR";
 }

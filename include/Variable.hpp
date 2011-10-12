@@ -25,6 +25,7 @@ namespace eddic {
 
 class Value;
 class IntermediateProgram;
+class Operand;
 
 class Variable {
     private:
@@ -45,6 +46,8 @@ class Variable {
 
         void pushToStack(AssemblyFileWriter& writer);
         void popFromStack(AssemblyFileWriter& writer);
+
+        std::shared_ptr<Operand> toIntegerOperand();
 
         std::string name() const ;
         Type type() const ;
