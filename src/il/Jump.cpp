@@ -19,6 +19,30 @@ void Jump::write(AssemblyFileWriter& writer){
             writer.stream() << "jmp " << m_label << std::endl;
             
             break;
+        case JumpCondition::LESS:
+            writer.stream() << "jl " << m_label << std::endl;
+            
+            break;
+        case JumpCondition::GREATER:
+            writer.stream() << "jg " << m_label << std::endl;
+            
+            break;
+        case JumpCondition::EQUALS:
+            writer.stream() << "je " << m_label << std::endl;
+            
+            break;
+        case JumpCondition::NOT_EQUALS:
+            writer.stream() << "jne " << m_label << std::endl;
+            
+            break;
+        case JumpCondition::GREATER_EQUALS:
+            writer.stream() << "jge " << m_label << std::endl;
+            
+            break;
+        case JumpCondition::LESS_EQUALS:
+            writer.stream() << "jle " << m_label << std::endl;
+            
+            break;
     }
 
     //TODO Complete the switch
