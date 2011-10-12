@@ -5,27 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef STRING_POOL_H
-#define STRING_POOL_H
+#ifndef DATA_SECTION_H
+#define DATA_SECTION_H
 
 #include <string>
 #include <unordered_map>
 
-#include "ParseNode.hpp"
+#include "il/Instruction.hpp"
 
 namespace eddic {
 
-class StringPool : public ParseNode {
+class DataSection : public Instruction {
     private:
-        std::unordered_map<std::string, std::string> pool;
-        unsigned int currentString;
-	
-    public:
-        StringPool(std::shared_ptr<Context> context);
+        std::unordered_map<std::string, std::string> m_pool;
 
-        std::string label(const std::string& value);
+    public:
+        DataSection(std::unordered_map<std::string, std::string> pool);
+
         void write(AssemblyFileWriter& writer);
-        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

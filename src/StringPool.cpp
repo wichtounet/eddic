@@ -9,6 +9,9 @@
 #include "AssemblyFileWriter.hpp"
 #include "ParseNode.hpp"
 
+#include "il/IntermediateProgram.hpp"
+#include "il/DataSection.hpp"
+
 #include <sstream>
 
 using std::string;
@@ -37,4 +40,8 @@ void StringPool::write(AssemblyFileWriter& writer) {
         writer.stream() << it.second << ":" << std::endl;
         writer.stream() << ".string " << it.first << std::endl;
     }
+}
+
+void StringPool::writeIL(IntermediateProgram& program){
+    program.addInstruction(std::shared_ptr<Instruction>(new DataSection(pool)));
 }
