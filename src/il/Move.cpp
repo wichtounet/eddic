@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "il/Move.hpp"
+#include "il/Operand.hpp"
+#include "il/AssemblyFileWriter.hpp"
 
 using namespace eddic;
 

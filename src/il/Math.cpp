@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "il/Math.hpp"
+#include "il/Operand.hpp"
 
 using namespace eddic;
 

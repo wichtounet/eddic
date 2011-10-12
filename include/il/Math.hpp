@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "il/Instruction.hpp"
-#include "il/Operand.hpp"
 
 namespace eddic {
 
@@ -22,6 +21,8 @@ enum class Operation : unsigned int {
     MUL,
     MODULO
 };
+
+class Math;
 
 class Math : public Instruction {
     private:

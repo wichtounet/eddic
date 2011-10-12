@@ -12,9 +12,9 @@
 
 #include "il/Instruction.hpp"
 
-#include "il/Operand.hpp"
-
 namespace eddic {
+
+class Operand;
 
 class Move : public Instruction {
     private:
