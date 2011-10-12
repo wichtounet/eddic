@@ -15,6 +15,9 @@
 
 namespace eddic {
 
+class Variable;
+class IntermediateProgram;
+
 class Value : public ParseNode {
     protected:
         Type m_type;
@@ -32,6 +35,8 @@ class Value : public ParseNode {
         virtual int getStringSize();
         
         virtual int getIntValue();
+
+        virtual void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
 };
 
 } //end of eddic

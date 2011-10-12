@@ -23,3 +23,7 @@ void VariableOperation::write(AssemblyFileWriter& writer) {
 
     m_var->popFromStack(writer);
 }
+
+void VariableOperation::writeIL(IntermediateProgram& program){
+   value->assignTo(m_var, program); 
+}

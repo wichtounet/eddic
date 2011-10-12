@@ -16,6 +16,7 @@ namespace eddic {
 
 class Value;
 class Variable;
+class IntermediateProgram;
 
 class VariableOperation : public ParseNode {
     protected:
@@ -28,6 +29,7 @@ class VariableOperation : public ParseNode {
         
         void checkStrings(StringPool& pool);
         void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

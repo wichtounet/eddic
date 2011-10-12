@@ -24,6 +24,7 @@
 namespace eddic {
 
 class Value;
+class IntermediateProgram;
 
 class Variable {
     private:

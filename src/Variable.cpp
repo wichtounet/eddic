@@ -9,6 +9,8 @@
 #include "Utils.hpp"
 #include "Value.hpp"
 
+#include "il/IntermediateProgram.hpp"
+
 using std::map;
 using std::string;
 using std::endl;
