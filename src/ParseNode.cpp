@@ -10,7 +10,11 @@
 #include "ParseNode.hpp"
 #include "Context.hpp"
 #include "StringPool.hpp"
-#include "AssemblyFileWriter.hpp"
+
+#include "AssemblyFileWriter.hpp" //TODO Remove
+
+#include "il/IntermediateProgram.hpp"
+
 #include "Utils.hpp"
 
 using std::list;
@@ -33,6 +37,10 @@ const std::shared_ptr<Token> ParseNode::token(){
 
 void ParseNode::write(AssemblyFileWriter& writer) {
     for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
+}
+
+void ParseNode::write(IntermediateProgram& program) {
+    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(program); });
 }
 
 void ParseNode::checkFunctions(Program& program){
