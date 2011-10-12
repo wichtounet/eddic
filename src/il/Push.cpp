@@ -14,5 +14,8 @@ using namespace eddic;
 Push::Push(std::shared_ptr<Operand> operand) : m_operand(operand) {}
 
 void Push::write(AssemblyFileWriter& writer){
-    //TODO
+    //We can always put an immediate value everywhere
+    writer.stream() << "movl " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+
+    //TODO Improve ?
 }

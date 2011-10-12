@@ -44,6 +44,4 @@ void Jump::write(AssemblyFileWriter& writer){
             
             break;
     }
-
-    //TODO Complete the switch
 }

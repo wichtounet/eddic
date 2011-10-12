@@ -14,4 +14,29 @@ Math::Math(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Op
 
 void Math::write(AssemblyFileWriter& writer){
    //TODO 
+    //We can always put an immediate value everywhere
+
+    //TODO Improve ?
+    switch(m_operation){
+        case ADD: 
+            writer.stream() << "addl " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+
+            break;
+        case SUB:
+            writer.stream() << "subl " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+
+            break;
+        case DIV:
+            writer.stream() << "divl " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+
+            break;
+        case MUL:
+            writer.stream() << "mull " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+
+            break;
+        case MODULO:
+            writer.stream() << "modl " << m_lhs.getValue() << ", " << m_rhs.getValue() << std::endl;
+
+            break;
+    }
 }
