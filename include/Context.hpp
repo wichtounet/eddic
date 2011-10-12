@@ -46,8 +46,11 @@ class Context {
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
         virtual std::shared_ptr<Variable> getVariable(int index) const;
 
-        virtual void write(AssemblyFileWriter& writer);
-        virtual void release(AssemblyFileWriter& writer);
+        virtual int size();
+
+        virtual void write(AssemblyFileWriter& writer); //TODO Remove
+        virtual void release(AssemblyFileWriter& writer); //TODO Remove
+        
         std::shared_ptr<Context> parent() const ;
 
         void storeVariable(int index, std::shared_ptr<Variable> variable);

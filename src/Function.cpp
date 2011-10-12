@@ -13,6 +13,8 @@
 #include "Parameter.hpp"
 #include "mangling.hpp"
 
+#include "il/IntermediateProgram.hpp"
+
 using namespace eddic;
 
 using std::endl;
@@ -52,4 +54,12 @@ void Function::write(AssemblyFileWriter& writer){
 
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;
+}
+
+void Function::writeIL(IntermediateProgram& program){
+    program.addInstruction(program.factory().createFunctionDeclaration(mangledName(), context()->size()));
+
+    ParseNode::writeIL(program);
+
+    program.addInstruction(program.factory().createFunctionExit(context()->size()));
 }

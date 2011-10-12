@@ -37,6 +37,10 @@ std::shared_ptr<Context> Context::parent() const  {
     return m_parent;
 }
 
+int Context::size(){
+    return 0;
+}
+
 void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
     m_stored[index] = variable;
 }
