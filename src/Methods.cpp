@@ -145,3 +145,17 @@ void Methods::write(AssemblyFileWriter& writer) {
     writePrintLine(writer.stream());
 	writeConcat(writer.stream());
 }
+
+#include "il/PrintStringFunction.hpp"
+#include "il/PrintLineFunction.hpp"
+#include "il/PrintIntegerFunction.hpp"
+#include "il/ConcatFunction.hpp"
+
+#include "il/IntermediateProgram.hpp"
+
+void Methods::writeIL(IntermediateProgram& program){
+    program.addInstruction(std::shared_ptr<Instruction>(new PrintStringFunction()));
+    program.addInstruction(std::shared_ptr<Instruction>(new PrintIntegerFunction()));
+    program.addInstruction(std::shared_ptr<Instruction>(new PrintLineFunction()));
+    program.addInstruction(std::shared_ptr<Instruction>(new ConcatFunction()));
+}

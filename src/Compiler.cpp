@@ -68,7 +68,6 @@ int Compiler::compile(const string& file) {
         il.writeAsm(writer);
         //End of Temporary test
 
-
         if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
 
