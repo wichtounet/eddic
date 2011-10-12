@@ -10,6 +10,11 @@
 #include "Options.hpp"
 #include "Integer.hpp"
 #include "Value.hpp"
+#include "Variable.hpp"
+
+#include "il/Operand.hpp"
+#include "il/Operands.hpp"
+#include "il/IntermediateProgram.hpp"
 
 using std::string;
 
@@ -41,6 +46,33 @@ void Addition::write(AssemblyFileWriter& writer) {
 
         writer.stream() << "pushl %eax" << std::endl;
         writer.stream() << "pushl %edx" << std::endl;
+    }
+}
+
+void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    //TODO 
+    //Warning string
+}
+
+void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    if(lhs->type() == Type::INT){
+        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+        std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+
+        lhs->assignTo(registerA, program);
+        rhs->assignTo(registerB, program);
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+        program.addInstruction(program.factory().createMove(registerB, variable->toIntegerOperand()));
+    } else {
+        //TODO PUSH a, b
+
+        program.addInstruction(program.factory().createCall("concat"));
+
+        //TODO add 16 esp
+
+        //TODO PUSH eax, edx
     }
 }
 

@@ -28,10 +28,14 @@ int Integer::getIntValue() {
 } 
 
 void Integer::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    assignTo(variable->toIntegerOperand(), program);
+}
+
+void Integer::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
     program.addInstruction(
         program.factory().createMove(
            createImmediateOperand(m_value),
-           variable->toIntegerOperand()
+           operand
         )
     ); 
 }

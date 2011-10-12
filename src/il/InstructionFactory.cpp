@@ -46,6 +46,6 @@ std::shared_ptr<Instruction> InstructionFactory::createFunctionExit(int size){
    return std::shared_ptr<Instruction>(new FunctionExit(size)); 
 }
 
-std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
+std::shared_ptr<Instruction> InstructionFactory::createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
    return std::shared_ptr<Instruction>(new Math(operation, lhs, rhs)); 
 }

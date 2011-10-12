@@ -24,6 +24,9 @@ class Addition : public BinaryOperator {
         Type checkTypes(Type left, Type right);
         std::string compute(const std::string& left, const std::string& right);
         int compute(int left, int right);
+        
+        void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
 };
 
 } //end of eddic
