@@ -12,6 +12,8 @@
 #include "Value.hpp"
 #include "Variable.hpp"
 
+#include "il/IntermediateProgram.hpp"
+
 using namespace eddic;
 
 VariableValue::VariableValue(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable) : Value(context, token), m_variable(variable) {}
@@ -32,4 +34,16 @@ void VariableValue::write(AssemblyFileWriter& writer) {
 
 bool VariableValue::isConstant() {
     return false;
+}
+
+void VariableValue::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    //TODO Implement
+}
+
+void VariableValue::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    if(m_var->type() == Type::INT){
+        program.addInstruction(program.factory().createMove(m_var->toIntegerOperand(), operand));
+    } else {
+        //TODO Arf
+    }
 }

@@ -28,6 +28,9 @@ class VariableValue : public Value {
         void checkVariables();
         void write(AssemblyFileWriter& writer);
         bool isConstant();
+
+        virtual void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        virtual void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
 };
 
 } //end of eddic
