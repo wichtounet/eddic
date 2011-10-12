@@ -9,6 +9,8 @@
 
 #include "MainDeclaration.hpp"
 #include "AssemblyFileWriter.hpp"
+#include "il/IntermediateProgram.hpp"
+#include "il/Main.hpp"
 
 using namespace eddic;
 
@@ -20,4 +22,8 @@ void MainDeclaration::write(AssemblyFileWriter& writer){
     writer.stream() << ".text" << endl
                     << ".globl main" << endl
                     << "\t.type main, @function" << endl;
+}  
+
+void MainDeclaration::writeIL(IntermediateProgram& program){
+    program.addInstruction(std::shared_ptr<Instruction>(new Main()));
 }

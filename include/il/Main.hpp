@@ -5,21 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MAIN_DECLARATION_H
-#define MAIN_DECLARATION_H
+#ifndef MAIN_H
+#define MAIN_H
 
-#include <memory>
-
-#include "ParseNode.hpp"
+#include "il/Instruction.hpp"
 
 namespace eddic {
 
-class MainDeclaration : public ParseNode {
-   public:
-        MainDeclaration(std::shared_ptr<Context> context);
-
+class Main : public Instruction {
+    public:
         void write(AssemblyFileWriter& writer);
-        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic
