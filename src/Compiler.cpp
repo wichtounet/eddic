@@ -62,7 +62,12 @@ int Compiler::compile(const string& file) {
         IntermediateProgram il;
         program->writeIL(il);
 
-        //il.write(writer);
+        //Temporary test
+        writer.close();
+        writer.open("better.asm");
+        il.writeAsm(writer);
+        //End of Temporary test
+
 
         if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
