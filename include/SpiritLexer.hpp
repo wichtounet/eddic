@@ -60,6 +60,13 @@ class SimpleLexer : public lex::lexer<L> {
             division = ("\\/");
             modulo = ("%");
 
+            equals = ("==");
+            not_equals = ("!=");
+            greater = (">");
+            less = ("<");
+            greater_equals = (">=");
+            less_equals = ("<=");
+
             whitespaces = ("[ \\t\\n]+");
             comments = ("\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/");
 
