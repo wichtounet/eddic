@@ -9,8 +9,6 @@
 
 #include <sstream>
 
-#include "SpiritLexer.hpp"
-
 using namespace eddic;
 
 using std::stringstream;

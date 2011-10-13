@@ -12,7 +12,7 @@
 #include <list>
 #include <vector>
 
-#include "SpiritLexer.hpp"
+#include "SpiritToken.hpp"
 
 namespace eddic {
 

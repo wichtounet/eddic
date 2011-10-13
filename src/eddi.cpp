@@ -18,8 +18,6 @@ using namespace eddic;
 
 void printUsage();
 
-#include "SpiritLexer.hpp"
-
 int main(int argc, const char* argv[]) {
     if (argc == 1) {
         cout << "eddic: no input files" << endl;

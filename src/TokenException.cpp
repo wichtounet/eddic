@@ -7,8 +7,6 @@
 
 #include "TokenException.hpp"
 
-#include "SpiritLexer.hpp"
-
 #include <sstream>
 
 using namespace eddic;

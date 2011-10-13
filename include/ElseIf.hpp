@@ -23,7 +23,7 @@ class ElseIf : public ParseNode {
         std::shared_ptr<Condition> m_condition;
 
     public:
-        ElseIf(std::shared_ptr<Context> context, Tok token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+        ElseIf(std::shared_ptr<Context> context, const Tok& token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);

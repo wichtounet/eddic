@@ -17,6 +17,8 @@
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
 
+#include "SpiritLexer.hpp"
+
 using std::string;
 using std::cout;
 using std::endl;
@@ -34,6 +36,7 @@ int Compiler::compile(const string& file) {
 
     int code = 0;
     try {
+        SpiritLexer lexer;
         lexer.lex(file);
 
         Parser parser(lexer);

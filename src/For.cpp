@@ -13,10 +13,11 @@
 #include "Condition.hpp"
 
 #include "Value.hpp"
+#include "SpiritToken.hpp"
 
 using namespace eddic;
 
-For::For(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
+For::For(std::shared_ptr<Context> context, const Tok& token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
 
 void For::write(AssemblyFileWriter& writer){
     if(m_start){

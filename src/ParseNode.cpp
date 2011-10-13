@@ -13,8 +13,6 @@
 #include "AssemblyFileWriter.hpp"
 #include "Utils.hpp"
 
-#include "SpiritLexer.hpp"
-
 using std::list;
 using std::vector;
 using std::mem_fun;

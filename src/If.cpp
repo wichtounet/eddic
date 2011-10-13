@@ -7,10 +7,10 @@
 
 #include <algorithm>
 
+#include "If.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
 
-#include "If.hpp"
 #include "Else.hpp"
 #include "ElseIf.hpp"
 #include "Condition.hpp"
@@ -21,7 +21,7 @@ using namespace eddic;
 
 using std::string;
 
-If::If(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+If::If(std::shared_ptr<Context> context, const Tok& token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
 void If::setElse(std::shared_ptr<Else> elseBlock) {
     m_elseBlock = elseBlock;

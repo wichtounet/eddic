@@ -10,6 +10,10 @@
 #include "AssemblyFileWriter.hpp"
 
 using namespace eddic;
+        
+Integer::Integer(std::shared_ptr<Context> context, const Tok token, int value) : Value(context, token), m_value(value) {
+    m_type = Type::INT;
+}
 
 void Integer::write(AssemblyFileWriter& writer) {
     writer.stream() << "pushl $" << m_value << std::endl;

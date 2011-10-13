@@ -13,6 +13,7 @@
 #include <utility>
 #include <stack>
 
+#include "SpiritToken.hpp"
 #include <boost/spirit/include/lex_lexertl.hpp>
 
 namespace eddic {
@@ -20,8 +21,6 @@ namespace eddic {
 namespace spirit = boost::spirit;
 namespace lex = boost::spirit::lex;
 
-typedef std::string::iterator base_iterator_type;
-typedef lex::lexertl::token<base_iterator_type, boost::mpl::vector<unsigned int, std::string>, boost::mpl::false_> Tok;
 typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
 template<typename L>

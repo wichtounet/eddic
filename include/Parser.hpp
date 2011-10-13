@@ -10,11 +10,10 @@
 
 #include "Context.hpp"
 #include "CompilerException.hpp"
-#include "SpiritLexer.hpp"
 
 namespace eddic {
 
-class Lexer;
+class SpiritLexer;
 class Program;
 class Function;
 class ParseNode;

@@ -5,26 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef INTEGER_H
-#define INTEGER_H
+#ifndef SPIRIT_TOKEN_H
+#define SPIRIT_TOKEN_H
 
-#include <string>
-
-#include "Value.hpp"
+//TODO Reduce the include to the exact necessary files
+#include <boost/spirit/include/lex_lexertl.hpp>
 
 namespace eddic {
 
-class Integer : public Value {
-    private:
-        int m_value;
-
-    public:
-        Integer(std::shared_ptr<Context> context, const Tok token, int value);
-
-        void write(AssemblyFileWriter& writer);
-        bool isConstant();
-        int getIntValue();
-};
+    typedef std::string::iterator base_iterator_type;
+    typedef boost::spirit::lex::lexertl::token<base_iterator_type, boost::mpl::vector<unsigned int, std::string>, boost::mpl::false_> Tok;
 
 } //end of eddic
 

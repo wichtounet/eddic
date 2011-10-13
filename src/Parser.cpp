@@ -55,6 +55,8 @@
 
 #include "TokenException.hpp"
 
+#include "SpiritLexer.hpp"
+
 using std::string;
 using std::ios_base;
 using std::list;

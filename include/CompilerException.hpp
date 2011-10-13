@@ -11,7 +11,7 @@
 #include <string>
 #include <memory>
 
-#include "SpiritLexer.hpp"
+#include "SpiritToken.hpp"
 
 namespace eddic {
 
