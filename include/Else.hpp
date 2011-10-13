@@ -14,7 +14,7 @@ namespace eddic {
 
 class Else : public ParseNode {
     public:
-        Else(std::shared_ptr<Context> context, std::shared_ptr<Token> token) : ParseNode(context, token) {}
+        Else(std::shared_ptr<Context> context, Tok token) : ParseNode(context, token) {}
 };
 
 } //end of eddic

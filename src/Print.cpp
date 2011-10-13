@@ -14,7 +14,7 @@
 
 using namespace eddic;
 
-Print::Print(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v) : ParseNode(context, token), value(v) {}
+Print::Print(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> v) : ParseNode(context, token), value(v) {}
 
 void Print::write(AssemblyFileWriter& writer) {
     value->write(writer);

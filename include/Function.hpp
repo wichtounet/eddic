@@ -28,7 +28,7 @@ class Function : public ParseNode {
         mutable std::string m_mangled_name;
 
 	public:
-		Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name);
+		Function(std::shared_ptr<Context> context, const Tok token, const std::string& name);
 		
         void write(AssemblyFileWriter& writer);
 

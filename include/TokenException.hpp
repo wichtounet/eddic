@@ -17,10 +17,10 @@ namespace eddic {
 
 class TokenException: public CompilerException {
     private:
-        std::shared_ptr<Token> m_token;
+        const Tok& m_token;
 
     public:
-        TokenException(const std::string& message, std::shared_ptr<Token> token);
+        TokenException(const std::string& message, const Tok& token);
         ~TokenException() throw();
 
         const char* what() const throw();

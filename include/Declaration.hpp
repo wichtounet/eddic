@@ -18,7 +18,7 @@ class Declaration : public VariableOperation {
         Type m_type;
 
     public:
-        Declaration(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) { m_type = type;  };
+        Declaration(std::shared_ptr<Context> context, const Tok token, Type type, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) { m_type = type;  };
 
         void checkVariables();
 };

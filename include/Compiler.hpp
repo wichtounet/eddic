@@ -12,12 +12,13 @@
 
 #include "Lexer.hpp"
 #include "AssemblyFileWriter.hpp"
+#include "SpiritLexer.hpp"
 
 namespace eddic {
 
 class Compiler {
     private:
-        Lexer lexer;
+        SpiritLexer lexer;
         AssemblyFileWriter writer;
 
     public:

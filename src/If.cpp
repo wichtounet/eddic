@@ -21,7 +21,7 @@ using namespace eddic;
 
 using std::string;
 
-If::If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
+If::If(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Condition> condition) : ParseNode(context, token), m_condition(condition) {}
 
 void If::setElse(std::shared_ptr<Else> elseBlock) {
     m_elseBlock = elseBlock;

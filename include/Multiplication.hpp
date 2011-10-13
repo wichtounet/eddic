@@ -16,7 +16,7 @@ namespace eddic {
 
 class Multiplication : public BinaryOperator {
     public:
-        Multiplication(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
+        Multiplication(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs) : BinaryOperator(context, token, lhs, rhs) {}
 
         void write(AssemblyFileWriter& writer);
 

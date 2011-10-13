@@ -20,7 +20,7 @@ class Litteral : public Value {
         std::string m_label;
 	
     public:
-        Litteral(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& litteral) : Value(context, token), m_litteral(litteral) {
+        Litteral(std::shared_ptr<Context> context, const Tok token, const std::string& litteral) : Value(context, token), m_litteral(litteral) {
             m_type = Type::STRING;
         };
 		

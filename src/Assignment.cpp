@@ -13,7 +13,7 @@
 
 using namespace eddic;
 
-Assignment::Assignment(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) {}
+Assignment::Assignment(std::shared_ptr<Context> context, const Tok token, const std::string& variable, std::shared_ptr<Value> v) : VariableOperation(context, token, variable, v) {}
 
 void Assignment::checkVariables() {
     if (!context()->exists(m_variable)) {

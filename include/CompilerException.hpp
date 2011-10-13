@@ -11,18 +11,18 @@
 #include <string>
 #include <memory>
 
-#include "Token.hpp"
+#include "SpiritLexer.hpp"
 
 namespace eddic {
 
 class CompilerException: public std::exception {
     protected:
         std::string m_message;
-        const std::shared_ptr<Token> m_token;
+        const Tok& m_token;
 
     public:
         CompilerException(const std::string& message);
-        CompilerException(const std::string& message, const std::shared_ptr<Token> token);
+        CompilerException(const std::string& message, const Tok& token);
         ~CompilerException() throw();
 
         virtual const char* what() const throw();

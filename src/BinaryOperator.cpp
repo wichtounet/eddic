@@ -17,7 +17,7 @@ using std::string;
 
 using namespace eddic;
 
-BinaryOperator::BinaryOperator(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> l, std::shared_ptr<Value> r) : Value(context, token), lhs(l), rhs(r) {}
+BinaryOperator::BinaryOperator(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> l, std::shared_ptr<Value> r) : Value(context, token), lhs(l), rhs(r) {}
 
 void BinaryOperator::checkVariables() {
     lhs->checkVariables();

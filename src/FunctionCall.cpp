@@ -20,7 +20,7 @@ using namespace eddic;
 
 using std::endl;
 
-FunctionCall::FunctionCall(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& function) : ParseNode(context, token), m_function(function) {}
+FunctionCall::FunctionCall(std::shared_ptr<Context> context, const Tok token, const std::string& function) : ParseNode(context, token), m_function(function) {}
 
 void FunctionCall::addValue(std::shared_ptr<Value> value){
     m_values.push_back(value);

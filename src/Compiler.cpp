@@ -77,7 +77,7 @@ int Compiler::compile(const string& file) {
     }
 
     //Close input and output
-    lexer.close();
+//    lexer.close();
     writer.close();
 
     cout << "Compilation took " << timer.elapsed() << "ms" << endl;

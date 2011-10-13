@@ -13,6 +13,8 @@
 #include "AssemblyFileWriter.hpp"
 #include "Utils.hpp"
 
+#include "SpiritLexer.hpp"
+
 using std::list;
 using std::vector;
 using std::mem_fun;
@@ -21,13 +23,13 @@ using std::bind2nd;
 using namespace eddic;
 
 ParseNode::ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
-ParseNode::ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token) : m_context(context), m_token(token){} 
+ParseNode::ParseNode(std::shared_ptr<Context> context, const Tok token) : m_context(context), m_token(token){} 
 
 std::shared_ptr<Context> ParseNode::context() {
     return m_context;
 }
 
-const std::shared_ptr<Token> ParseNode::token(){
+const Tok& ParseNode::token(){
     return m_token;
 }
 

@@ -9,12 +9,14 @@
 
 #include <sstream>
 
+#include "SpiritLexer.hpp"
+
 using namespace eddic;
 
 using std::stringstream;
 
 CompilerException::CompilerException(const std::string& message) : m_message(message) {}
-CompilerException::CompilerException(const std::string& message, const std::shared_ptr<Token> token) : m_message(message), m_token(token) {}
+CompilerException::CompilerException(const std::string& message, Tok token) : m_message(message), m_token(token) {}
 CompilerException::~CompilerException() throw() {}
 
 const char* CompilerException::what() const throw() {
@@ -24,8 +26,8 @@ const char* CompilerException::what() const throw() {
 
     if(m_token){
         value << std::endl;
-        value << "\tline:" << m_token->line();
-        value << " col:" << m_token->col();
+        //value << "\tline:" << m_token->line();
+        //value << " col:" << m_token->col();
     }
 
     return value.str().c_str();

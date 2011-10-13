@@ -26,7 +26,7 @@ class FunctionCall : public ParseNode {
         std::vector<std::shared_ptr<Value>> m_values;
 
     public:
-        FunctionCall(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& function);
+        FunctionCall(std::shared_ptr<Context> context, const Tok token, const std::string& function);
 
         void write(AssemblyFileWriter& writer);
         void checkFunctions(Program& program);

@@ -27,7 +27,7 @@ class If : public ParseNode {
         std::vector<std::shared_ptr<ElseIf>> elseIfs;
 
     public:
-        If(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition);
+        If(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Condition> condition);
 		
         void setElse(std::shared_ptr<Else> elseBlock);
         void addElseIf(std::shared_ptr<ElseIf> elseIf);

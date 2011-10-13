@@ -16,7 +16,7 @@ namespace eddic {
 
 class Subtraction : public BinaryOperator {
     public:
-        Subtraction(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs);
+        Subtraction(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs);
 
         void write(AssemblyFileWriter& writer);
 

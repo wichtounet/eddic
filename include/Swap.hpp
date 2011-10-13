@@ -26,7 +26,7 @@ class Swap : public ParseNode {
         Type m_type;
 
     public:
-        Swap(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& lhs, const std::string& rhs);
+        Swap(std::shared_ptr<Context> context, const Tok token, const std::string& lhs, const std::string& rhs);
 
         void checkVariables();
         void write(AssemblyFileWriter& writer);

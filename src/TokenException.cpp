@@ -7,13 +7,15 @@
 
 #include "TokenException.hpp"
 
+#include "SpiritLexer.hpp"
+
 #include <sstream>
 
 using namespace eddic;
 
 using std::stringstream;
 
-TokenException::TokenException(const std::string& message, std::shared_ptr<Token> token) : CompilerException(message), m_token(token) {}
+TokenException::TokenException(const std::string& message, const Tok& token) : CompilerException(message), m_token(token) {}
 TokenException::~TokenException() throw() {}
 
 const char* TokenException::what() const throw() {
@@ -21,8 +23,8 @@ const char* TokenException::what() const throw() {
 
     value << m_message;
     value << std::endl;
-    value << "\tline:" << m_token->line();
-    value << " col:" << m_token->col();
+    //value << "\tline:" << m_token->line();
+    //value << " col:" << m_token->col();
 
     return value.str().c_str();
 }

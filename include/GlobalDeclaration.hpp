@@ -28,7 +28,7 @@ class GlobalDeclaration : public ParseNode {
         std::shared_ptr<Value> value;
 
     public:
-        GlobalDeclaration(std::shared_ptr<GlobalContext> context, const std::shared_ptr<Token> token, Type type, const std::string& variable, std::shared_ptr<Value> v) : ParseNode(context, token), m_globalContext(context), m_variable(variable), value(v){ m_type = type;  };
+        GlobalDeclaration(std::shared_ptr<GlobalContext> context, const Tok token, Type type, const std::string& variable, std::shared_ptr<Value> v) : ParseNode(context, token), m_globalContext(context), m_variable(variable), value(v){ m_type = type;  };
 
         void checkStrings(StringPool& pool);
         void checkVariables();

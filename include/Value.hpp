@@ -21,7 +21,7 @@ class Value : public ParseNode {
 
     public:
         Value(std::shared_ptr<Context> context);
-        Value(std::shared_ptr<Context> context, const std::shared_ptr<Token> token);
+        Value(std::shared_ptr<Context> context, const Tok token);
 
         Type type() const ;
 

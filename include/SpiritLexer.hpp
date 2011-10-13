@@ -15,10 +15,6 @@
 
 #include <boost/spirit/include/lex_lexertl.hpp>
 
-#include "Scanner.hpp"
-#include "CompilerException.hpp"
-#include "Token.hpp"
-
 namespace eddic {
 
 namespace spirit = boost::spirit;

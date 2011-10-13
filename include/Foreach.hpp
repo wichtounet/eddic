@@ -29,7 +29,7 @@ class Foreach : public ParseNode {
         std::shared_ptr<Value> m_to;
 
     public:
-        Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, std::string variable, std::shared_ptr<Value> from, std::shared_ptr<Value> to);
+        Foreach(std::shared_ptr<Context> context, const Tok token, Type type, std::string variable, std::shared_ptr<Value> from, std::shared_ptr<Value> to);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkVariables();

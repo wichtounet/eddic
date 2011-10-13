@@ -79,7 +79,7 @@ bool isTokenType(const Lexer& lexer) {
     return isType(value);
 }
 
-Parser::Parser(Lexer& l) : lexer(l) {}
+Parser::Parser(SpiritLexer& l) : lexer(l) {}
 
 std::shared_ptr<Program> Parser::parse() {
     //Create the global context
@@ -224,7 +224,7 @@ std::shared_ptr<ParseNode> Parser::parseRepeatableInstruction() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
-    std::shared_ptr<Token> token = lexer.getCurrentToken();
+    Tok token = lexer.getCurrentToken();
 
     if (!lexer.next()) {
         throw TokenException("Incomplete instruction", lexer.getCurrentToken());
@@ -241,7 +241,7 @@ std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
     throw TokenException("Not an instruction", lexer.getCurrentToken());
 }
 
-std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callToken) {
+std::shared_ptr<ParseNode> Parser::parseCall(const Tok callToken) {
     string call = callToken->value();
 
     if (call != "print" && call != "println") {
@@ -293,13 +293,13 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
     return std::shared_ptr<ParseNode>(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
 }
 
-std::shared_ptr<ParseNode> Parser::parseAssignment(const std::shared_ptr<Token> variableToken) {
+std::shared_ptr<ParseNode> Parser::parseAssignment(const Tok variableToken) {
     auto value = parseValue();
 
     return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
 }
 
-std::shared_ptr<ParseNode> Parser::parseSwap(const std::shared_ptr<Token> lhs) {
+std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }

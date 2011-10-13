@@ -12,6 +12,8 @@
 #include <list>
 #include <vector>
 
+#include "SpiritLexer.hpp"
+
 namespace eddic {
 
 class ParseNode;
@@ -22,21 +24,20 @@ typedef std::list<std::shared_ptr<ParseNode>>::const_iterator NodeIterator;
 class Context;
 class AssemblyFileWriter;
 class StringPool;
-class Token;
 
 class ParseNode : public std::enable_shared_from_this<ParseNode> {
     private:
         std::list<std::shared_ptr<ParseNode>> childs;
 
         std::shared_ptr<Context> m_context;
-        const std::shared_ptr<Token> m_token;
+        const Tok& m_token;
 
     protected:
         std::weak_ptr<ParseNode> parent;
 
     public:
         ParseNode(std::shared_ptr<Context> context);
-        ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token);
+        ParseNode(std::shared_ptr<Context> context, Tok token);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkFunctions(Program& program);
@@ -48,7 +49,7 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         NodeIterator end();
 
         std::shared_ptr<Context> context();
-        const std::shared_ptr<Token> token();
+        const Tok& token();
     
         void addFirst(std::shared_ptr<ParseNode> node);
         void addLast(std::shared_ptr<ParseNode> node);
