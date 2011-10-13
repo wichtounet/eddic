@@ -22,8 +22,7 @@ using std::bind2nd;
 
 using namespace eddic;
 
-ParseNode::ParseNode(std::shared_ptr<Context> context) : m_context(context) {}
-ParseNode::ParseNode(std::shared_ptr<Context> context, const Tok token) : m_context(context), m_token(token){} 
+ParseNode::ParseNode(std::shared_ptr<Context> context, const Tok& token) : m_context(context), m_token(token){} 
 
 std::shared_ptr<Context> ParseNode::context() {
     return m_context;

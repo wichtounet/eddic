@@ -22,7 +22,7 @@ class Program : public ParseNode {
         std::unordered_map<std::string, std::shared_ptr<Function>> functions;
 
     public:
-        Program(std::shared_ptr<Context> context);
+        Program(std::shared_ptr<Context> context, const Tok& tok);
         
         void write(AssemblyFileWriter& writer);
         void addFunction(std::shared_ptr<Function> function);

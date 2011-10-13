@@ -22,8 +22,8 @@ class VariableValue : public Value {
         std::shared_ptr<Variable> m_var;
     
     public:
-        VariableValue(std::shared_ptr<Context> context, const Tok token, const std::string& variable);
-        VariableValue(std::shared_ptr<Variable> var);
+        VariableValue(std::shared_ptr<Context> context, const Tok& token, const std::string& variable);
+        VariableValue(std::shared_ptr<Context> context, const Tok& token, std::shared_ptr<Variable> var);
 
         void checkVariables();
         void write(AssemblyFileWriter& writer);

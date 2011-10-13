@@ -15,8 +15,7 @@ using namespace eddic;
 
 using std::stringstream;
 
-CompilerException::CompilerException(const std::string& message) : m_message(message) {}
-CompilerException::CompilerException(const std::string& message, Tok token) : m_message(message), m_token(token) {}
+CompilerException::CompilerException(const std::string& message, const Tok& token) : m_message(message), m_token(token) {}
 CompilerException::~CompilerException() throw() {}
 
 const char* CompilerException::what() const throw() {

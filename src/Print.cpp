@@ -31,7 +31,7 @@ void Print::write(AssemblyFileWriter& writer) {
 
             break;
         default:
-            throw CompilerException("Variable of invalid type");
+            throw CompilerException("Variable of invalid type", token());
     }
 }
 

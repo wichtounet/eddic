@@ -36,8 +36,7 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         std::weak_ptr<ParseNode> parent;
 
     public:
-        ParseNode(std::shared_ptr<Context> context);
-        ParseNode(std::shared_ptr<Context> context, Tok token);
+        ParseNode(std::shared_ptr<Context> context, const Tok& token);
 
         virtual void write(AssemblyFileWriter& writer);
         virtual void checkFunctions(Program& program);

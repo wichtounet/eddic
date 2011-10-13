@@ -15,7 +15,7 @@ using std::string;
 
 using namespace eddic;
 
-StringPool::StringPool(std::shared_ptr<Context> context) : ParseNode(context), currentString(0) {
+StringPool::StringPool(std::shared_ptr<Context> context, const Tok& token) : ParseNode(context, token), currentString(0) {
     label("\"\\n\"");
 }
 

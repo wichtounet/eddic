@@ -21,7 +21,6 @@ class CompilerException: public std::exception {
         const Tok& m_token;
 
     public:
-        CompilerException(const std::string& message);
         CompilerException(const std::string& message, const Tok& token);
         ~CompilerException() throw();
 

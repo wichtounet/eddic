@@ -105,6 +105,7 @@ class SpiritLexer {
         lexer_type::iterator_type end;
 
         Tok current;
+        Tok defaultToken;
 
         std::stack<Tok> buffer;
 
@@ -118,6 +119,7 @@ class SpiritLexer {
         void pushBack(Tok token);
 
         Tok getCurrentToken() const;
+        const Tok& getDefaultToken() const;
 
         bool isWord() const;
         bool isAssign() const;

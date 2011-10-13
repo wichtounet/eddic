@@ -46,7 +46,7 @@ void Scanner::scan(const string& file) {
     stream.open(file.c_str());
 
     if (!stream) {
-        throw CompilerException("Unable to open the input file");
+        //TODO throw CompilerException("Unable to open the input file");
     }
 
     buffer = stream.rdbuf();

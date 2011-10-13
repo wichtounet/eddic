@@ -80,8 +80,8 @@ void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition
                 writer.stream() << "je " << label << labelIndex << std::endl;
 
                 break;
-            default:
-                throw CompilerException("The condition must be managed using not-operator");
+            //TODO default:
+                //TODO throw CompilerException("The condition must be managed using not-operator");
         }
     }
 }

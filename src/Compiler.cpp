@@ -40,10 +40,10 @@ int Compiler::compile(const string& file) {
 
         std::shared_ptr<Program> program = parser.parse();
 
-        std::shared_ptr<StringPool> pool(new StringPool(program->context()));
+        std::shared_ptr<StringPool> pool(new StringPool(program->context(), lexer.getCurrentToken()));
 
-        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context())));
-        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context())));
+        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), lexer.getCurrentToken())));
+        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), lexer.getCurrentToken())));
         program->addLast(pool);
 
         //Semantical analysis

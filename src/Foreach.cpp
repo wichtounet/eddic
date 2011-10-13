@@ -35,7 +35,7 @@ void Foreach::write(AssemblyFileWriter& writer){
     writer.stream() << "start_foreach" << labels << ":" << std::endl;
 
     //Create a condition
-    std::shared_ptr<Value> variableValue(new VariableValue(m_var));
+    std::shared_ptr<Value> variableValue(new VariableValue(context(), token(), m_var));
     std::shared_ptr<Condition> condition(new Condition(LESS_EQUALS_OPERATOR, variableValue, m_to));
     writeJumpIfNot(writer, condition, "end_foreach", labels);
 

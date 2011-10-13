@@ -21,7 +21,7 @@ class StringPool : public ParseNode {
         unsigned int currentString;
 	
     public:
-        StringPool(std::shared_ptr<Context> context);
+        StringPool(std::shared_ptr<Context> context, const Tok& pool);
 
         std::string label(const std::string& value);
         void write(AssemblyFileWriter& writer);

@@ -17,7 +17,7 @@ void AssemblyFileWriter::open(const std::string& path) {
     m_stream.open(path.c_str());
 
     if (!m_stream) {
-        throw CompilerException("Unable to open the output file");
+        //TODO throw CompilerException("Unable to open the output file");
     }
 }
 

@@ -54,6 +54,10 @@ void SpiritLexer::lex(const string& file) {
     }*/
 }
 
+const Tok& SpiritLexer::getDefaultToken() const{
+    return defaultToken;
+}
+
 bool SpiritLexer::next() {
     if (!buffer.empty()) {
         current = buffer.top();

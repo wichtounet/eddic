@@ -12,7 +12,7 @@
 
 using namespace eddic;
 
-Program::Program(std::shared_ptr<Context> context) : ParseNode(context) {}
+Program::Program(std::shared_ptr<Context> context, const Tok& token) : ParseNode(context, token) {}
 
 void Program::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName()] = function;

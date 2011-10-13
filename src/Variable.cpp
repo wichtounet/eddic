@@ -122,8 +122,8 @@ void Variable::pushToStack(AssemblyFileWriter& writer){
             }
 
             break;
-        default:
-            throw CompilerException("Variable of invalid type");
+        //default:
+            //TODO throw CompilerException("Variable of invalid type");
     }
 }
 
@@ -144,7 +144,7 @@ void Variable::popFromStack(AssemblyFileWriter& writer){
             moveFromRegister(writer, "%eax", "%ebx");
             
             break;
-        default:
-            throw CompilerException("Variable of invalid type");
+        //default:
+            //TODO throw CompilerException("Variable of invalid type");
     }
 }

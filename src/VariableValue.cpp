@@ -14,8 +14,8 @@
 
 using namespace eddic;
 
-VariableValue::VariableValue(std::shared_ptr<Context> context, const Tok token, const std::string& variable) : Value(context, token), m_variable(variable) {}
-VariableValue::VariableValue(std::shared_ptr<Variable> var) : Value(NULL), m_var(var) {}
+VariableValue::VariableValue(std::shared_ptr<Context> context, const Tok& token, const std::string& variable) : Value(context, token), m_variable(variable) {}
+VariableValue::VariableValue(std::shared_ptr<Context> context, const Tok& token, std::shared_ptr<Variable> var) : Value(context, token), m_var(var) {}
 
 void VariableValue::checkVariables() {
     if (!context()->exists(m_variable)) {

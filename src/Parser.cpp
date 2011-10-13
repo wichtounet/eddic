@@ -61,20 +61,20 @@ using std::list;
 
 using namespace eddic;
 
-inline static void assertNextIsRightParenth(Lexer& lexer, const string& message);
-inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message);
-inline static void assertNextIsRightBrace(Lexer& lexer, const string& message);
-inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
-inline static void assertNextIsStop(Lexer& lexer, const string& message);
-inline static void assertNextIsWord(Lexer& lexer, const string& message);
+inline static void assertNextIsRightParenth(SpiritLexer& lexer, const string& message);
+inline static void assertNextIsLeftParenth(SpiritLexer& lexer, const string& message);
+inline static void assertNextIsRightBrace(SpiritLexer& lexer, const string& message);
+inline static void assertNextIsLeftBrace(SpiritLexer& lexer, const string& message);
+inline static void assertNextIsStop(SpiritLexer& lexer, const string& message);
+inline static void assertNextIsWord(SpiritLexer& lexer, const string& message);
 
 //Move to some utility class
-bool isTokenType(const Lexer& lexer) {
+bool isTokenType(const SpiritLexer& lexer) {
     if (!lexer.isWord()) {
         return false;
     }
 
-    string value = lexer.getCurrentToken()->value();
+    string value = boost::get<std::string>(lexer.getCurrentToken().value());
 
     return isType(value);
 }
@@ -86,18 +86,18 @@ std::shared_ptr<Program> Parser::parse() {
     globalContext = std::shared_ptr<GlobalContext>(new GlobalContext());
     currentContext = globalContext;
 
-    std::shared_ptr<Program> program(new Program(currentContext));
+    std::shared_ptr<Program> program(new Program(currentContext, lexer.getCurrentToken()));
 
     while (lexer.next()) {
         if(!isTokenType(lexer)){
             throw TokenException("A function or a global variable must start with a type", lexer.getCurrentToken()); 
         }
 
-        Type type = stringToType(lexer.getCurrentToken()->value());
+        Type type = stringToType(boost::get<std::string>(lexer.getCurrentToken().value()));
 
         assertNextIsWord(lexer, "A function or a global variable must have a name");
 
-        string name = lexer.getCurrentToken()->value();
+        string name = boost::get<std::string>(lexer.getCurrentToken().value());
 
         lexer.next();
 
@@ -139,13 +139,13 @@ std::shared_ptr<Function> Parser::parseFunction(Type type, const string& functio
                 throw TokenException("Expecting a parameter type", lexer.getCurrentToken());
             }
 
-            string typeName = lexer.getCurrentToken()->value();
+            string typeName = boost::get<std::string>(lexer.getCurrentToken().value());
 
             Type type = stringToType(typeName);
 
             assertNextIsWord(lexer, "Expecting a parameter name");
 
-            string parameterName = lexer.getCurrentToken()->value();
+            string parameterName = boost::get<std::string>(lexer.getCurrentToken().value());
 
             if(params.find(parameterName) != params.end()){
                 throw TokenException("The parameter's name must be unique", lexer.getCurrentToken());
@@ -242,7 +242,7 @@ std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseCall(const Tok callToken) {
-    string call = callToken->value();
+    string call = boost::get<std::string>(callToken.value());
 
     if (call != "print" && call != "println") {
         std::shared_ptr<FunctionCall> functionCall(new FunctionCall(currentContext, lexer.getCurrentToken(), call));
@@ -276,13 +276,13 @@ std::shared_ptr<ParseNode> Parser::parseCall(const Tok callToken) {
 }
 
 std::shared_ptr<ParseNode> Parser::parseDeclaration() {
-    string typeName = lexer.getCurrentToken()->value();
+    string typeName = boost::get<std::string>(lexer.getCurrentToken().value());
 
     Type type = stringToType(typeName);
 
     assertNextIsWord(lexer, "A type must be followed by variable name"); 
 
-    string variable = lexer.getCurrentToken()->value();
+    string variable = boost::get<std::string>(lexer.getCurrentToken().value());
 
     if (!lexer.next() || !lexer.isAssign()) {
         throw TokenException("A variable declaration must followed by '='", lexer.getCurrentToken());
@@ -296,7 +296,7 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
 std::shared_ptr<ParseNode> Parser::parseAssignment(const Tok variableToken) {
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
+    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, boost::get<std::string>(variableToken.value()), value));
 }
 
 std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
@@ -304,9 +304,9 @@ std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
 
-    string rhs = lexer.getCurrentToken()->value();
+    string rhs = boost::get<std::string>(lexer.getCurrentToken().value());
 
-    return std::shared_ptr<ParseNode>(new Swap(currentContext, lexer.getCurrentToken(), lhs->value(), rhs));
+    return std::shared_ptr<ParseNode>(new Swap(currentContext, lexer.getCurrentToken(), boost::get<std::string>(lhs.value()), rhs));
 }
 
 std::shared_ptr<ParseNode> Parser::parseIf() {
@@ -504,7 +504,7 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
         throw TokenException("The foreach must be followed by a type", lexer.getCurrentToken());
     }
 
-    string typeName = lexer.getCurrentToken()->value();
+    string typeName = boost::get<std::string>(lexer.getCurrentToken().value());
 
     Type type = stringToType(typeName);
 
@@ -514,7 +514,7 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
 
     assertNextIsWord(lexer, "The type must be followed by a variable name");
 
-    string variable = lexer.getCurrentToken()->value();
+    string variable = boost::get<std::string>(lexer.getCurrentToken().value());
 
     if(!lexer.next() || !lexer.isFrom()){
         throw TokenException("The foreach variable must be followed by the from declaration", lexer.getCurrentToken());
@@ -606,16 +606,15 @@ std::shared_ptr<Value> Parser::parseValue() {
 
             assertNextIsRightParenth(lexer, "parenth is not closed");
         } else if (lexer.isLitteral()) {
-            string litteral = lexer.getCurrentToken()->value();
+            string litteral = boost::get<std::string>(lexer.getCurrentToken().value());
 
             node = std::shared_ptr<Value>(new Litteral(currentContext, lexer.getCurrentToken(), litteral));
         } else if (lexer.isWord()) {
-            string variableRight = lexer.getCurrentToken()->value();
+            string variableRight = boost::get<std::string>(lexer.getCurrentToken().value());
 
             node = std::shared_ptr<Value>(new VariableValue(currentContext, lexer.getCurrentToken(), variableRight));
         } else if (lexer.isInteger()) {
-            string integer = lexer.getCurrentToken()->value();
-            int value = toNumber<int>(integer);
+            int value = boost::get<int>(lexer.getCurrentToken().value());
 
             node = std::shared_ptr<Value>(new Integer(currentContext, lexer.getCurrentToken(), value));
         } else {
@@ -732,37 +731,37 @@ std::shared_ptr<Condition> Parser::parseCondition() {
     return std::shared_ptr<Condition>(new Condition(operation, lhs, rhs));
 }
 
-inline static void assertNextIsRightParenth(Lexer& lexer, const string& message) {
+inline static void assertNextIsRightParenth(SpiritLexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isRightParenth()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsLeftParenth(Lexer& lexer, const string& message) {
+inline static void assertNextIsLeftParenth(SpiritLexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isLeftParenth()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsRightBrace(Lexer& lexer, const string& message) {
+inline static void assertNextIsRightBrace(SpiritLexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isRightBrace()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message) {
+inline static void assertNextIsLeftBrace(SpiritLexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isLeftBrace()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsStop(Lexer& lexer, const string& message) {
+inline static void assertNextIsStop(SpiritLexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isStop()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsWord(Lexer& lexer, const string& message) {
+inline static void assertNextIsWord(SpiritLexer& lexer, const string& message) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
