@@ -18,12 +18,22 @@ using namespace eddic;
 
 void printUsage();
 
+#include "SpiritLexer.hpp"
+
 int main(int argc, const char* argv[]) {
     if (argc == 1) {
         cout << "eddic: no input files" << endl;
 
         return -1;
     }
+
+    //Temporary
+
+    SpiritLexer lexer;
+    string file = argv[1];
+    lexer.lex(file);
+
+    //END of temporary
 
     Options::setDefaults();
 
