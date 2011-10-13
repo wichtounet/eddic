@@ -27,14 +27,6 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    //Temporary
-
-    SpiritLexer lexer;
-    string file = argv[1];
-    lexer.lex(file);
-
-    //END of temporary
-
     Options::setDefaults();
 
     string sourceFile;

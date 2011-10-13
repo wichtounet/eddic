@@ -110,7 +110,6 @@ class SpiritLexer {
 
         Tok current;
 
-        std::stack<Tok> read;
         std::stack<Tok> buffer;
 
         bool readNext();
@@ -120,7 +119,7 @@ class SpiritLexer {
 
         void lex(const std::string& file);
         bool next();
-        void pushBack();
+        void pushBack(Tok token);
 
         Tok getCurrentToken() const;
 

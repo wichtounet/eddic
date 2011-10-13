@@ -62,20 +62,14 @@ bool SpiritLexer::next() {
 
         return true;
     } else if (readNext()) {
-        read.push(current);
-
         return true;
     }
 
     return false;
 }
 
-void SpiritLexer::pushBack() {
-    Tok old = read.top();
-
-    buffer.push(old);
-
-    read.pop();
+void SpiritLexer::pushBack(Tok token) {
+    buffer.push(token);
 }
 
 bool SpiritLexer::readNext() {
