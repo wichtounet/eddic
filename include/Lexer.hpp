@@ -25,7 +25,6 @@ class Lexer {
 
         std::shared_ptr<Token> current;
 
-        std::stack<std::shared_ptr<Token>> read;
         std::stack<std::shared_ptr<Token>> buffer;
 
         bool readNext();
@@ -36,7 +35,7 @@ class Lexer {
         void lex(const std::string& file);
         void close();
         bool next();
-        void pushBack();
+        void pushBack(std::shared_ptr<Token> token);
 
         std::shared_ptr<Token> getCurrentToken() const;
 

@@ -31,20 +31,14 @@ bool Lexer::next() {
 
         return true;
     } else if (readNext()) {
-        read.push(current);
-
         return true;
     }
 
     return false;
 }
 
-void Lexer::pushBack() {
-    std::shared_ptr<Token> old = read.top();
-
-    buffer.push(old);
-
-    read.pop();
+void Lexer::pushBack(std::shared_ptr<Token> token) {
+    buffer.push(token);
 }
 
 bool Lexer::readNext() {

@@ -250,7 +250,7 @@ std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callTo
         lexer.next();
 
         if(!lexer.isRightParenth()){
-            lexer.pushBack();
+            lexer.pushBack(lexer.getCurrentToken());
 
             while(!lexer.isRightParenth()){
                 auto value = parseValue();
@@ -344,14 +344,14 @@ std::shared_ptr<ParseNode> Parser::parseIf() {
                 if (lexer.isIf()) {
                     block->addElseIf(parseElseIf());
                 } else {
-                    lexer.pushBack();
+                    lexer.pushBack(lexer.getCurrentToken());
 
                     block->setElse(parseElse());
 
                     break;
                 }
             } else {
-                lexer.pushBack();
+                lexer.pushBack(lexer.getCurrentToken());
 
                 break;
             }
@@ -639,7 +639,7 @@ std::shared_ptr<Value> Parser::parseValue() {
         } else if (lexer.isModulo()) {
             parts.push_back(Part(MOD));
         } else {
-            lexer.pushBack();
+            lexer.pushBack(lexer.getCurrentToken());
             break;
         }
     }
@@ -701,7 +701,7 @@ std::shared_ptr<Condition> Parser::parseCondition() {
     } else if (lexer.isFalse()) {
         return std::shared_ptr<Condition>(new Condition(FALSE_VALUE));
     } else {
-        lexer.pushBack();
+        lexer.pushBack(lexer.getCurrentToken());
     }
 
     auto lhs = parseValue();
