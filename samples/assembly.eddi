@@ -1,4 +1,3 @@
-//Main function
 void main(){
     string x = "ED" + "DI";
     println(x);

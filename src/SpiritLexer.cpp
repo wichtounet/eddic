@@ -42,16 +42,51 @@ void SpiritLexer::lex(const string& file) {
     iter = lexer.begin(first, last);
     end = lexer.end();
 
-    /*while (iter != end && token_is_valid(*iter)){
-        ++iter;
-    }
+    #ifdef DEBUG_LEXER
 
-    if (iter == end) {
-        std:: cout << "Lexical analysis passed" << std::endl;
-    } else {
-        std::string rest(first, last);
-        std::cout << "Lexical analysis failed\n" << "stopped at: \"" << rest << "\"\n";
-    }*/
+    std::cout << "Token Ids : " << std::endl;
+
+    std::cout << "keyword_for = " << lexer.keyword_for.id() << std::endl;
+    std::cout << "keyword_while = " << lexer.keyword_while.id() << std::endl;
+    std::cout << "keyword_if = " << lexer.keyword_while.id() << std::endl;
+    std::cout << "keyword_else = " << lexer.keyword_else.id() << std::endl;
+    std::cout << "keyword_false = " << lexer.keyword_false.id() << std::endl;
+    std::cout << "keyword_true = " << lexer.keyword_true.id() << std::endl;
+    std::cout << "keyword_from = " << lexer.keyword_from.id() << std::endl;
+    std::cout << "keyword_to = " << lexer.keyword_foreach.id() << std::endl;
+    std::cout << "keyword_foreach = " << lexer.keyword_foreach.id() << std::endl;
+
+    std::cout << "word = " << lexer.word.id() << std::endl;
+    std::cout << "integer = " << lexer.integer.id() << std::endl;
+    std::cout << "litteral = " << lexer.litteral.id() << std::endl;
+
+    std::cout << "left_parenth = " << lexer.left_parenth.id() << std::endl;
+    std::cout << "right_parenth = " << lexer.right_parenth.id() << std::endl;
+    std::cout << "left_brace = " << lexer.left_brace.id() << std::endl;
+    std::cout << "right_brace = " << lexer.right_brace.id() << std::endl;
+
+    std::cout << "stop = " << lexer.stop.id() << std::endl;
+    std::cout << "comma = " << lexer.comma.id() << std::endl;
+
+    std::cout << "assign = " << lexer.assign.id() << std::endl;
+    std::cout << "swap = " << lexer.swap.id() << std::endl;
+    std::cout << "addition = " << lexer.addition.id() << std::endl;
+    std::cout << "subtraction = " << lexer.subtraction.id() << std::endl;
+    std::cout << "multiplication = " << lexer.multiplication.id() << std::endl;
+    std::cout << "division = " << lexer.division.id() << std::endl;
+    std::cout << "modulo = " << lexer.modulo.id() << std::endl;
+
+    std::cout << "equals = " << lexer.equals.id() << std::endl;
+    std::cout << "not_equals = " << lexer.not_equals.id() << std::endl;
+    std::cout << "greater = " << lexer.greater.id() << std::endl;
+    std::cout << "less = " << lexer.less.id() << std::endl;
+    std::cout << "greater_equals = " << lexer.greater_equals.id() << std::endl;
+    std::cout << "less_equals = " << lexer.less_equals.id() << std::endl;
+
+    std::cout << "whitespaces = " << lexer.whitespaces.id() << std::endl;
+    std::cout << "comments = " << lexer.comments.id() << std::endl;
+
+    #endif
 }
 
 const Tok& SpiritLexer::getDefaultToken() const{
@@ -81,14 +116,14 @@ bool SpiritLexer::readNext() {
         return false;
     }
 
-    ++iter;
-
     if(!token_is_valid(*iter)){
         //TODO Throw error
         return false;
     }
 
     current = *iter;
+
+    ++iter;
 
     return true;
 }

@@ -29,54 +29,54 @@ class SimpleLexer : public lex::lexer<L> {
 
     public:
         SimpleLexer() {
-            keyword_for = ("for");
-            keyword_while = ("while");
-            keyword_if = ("if");
-            keyword_else = ("else");
-            keyword_false = ("false");
-            keyword_true = ("true");
-            keyword_from = ("from");
-            keyword_to = ("to");
-            keyword_foreach = ("foreach");
+            keyword_for = "for";
+            keyword_while = "while";
+            keyword_if = "if";
+            keyword_else = "else";
+            keyword_false = "false";
+            keyword_true = "true";
+            keyword_from = "from";
+            keyword_to = "to";
+            keyword_foreach = "foreach";
 
-            word = ("[a-zA-Z]*");
-            integer = ("[0-9]*");
-            litteral = ("\"[.]*\"");
+            word = "[a-zA-Z]+";
+            integer = "[0-9]+";
+            litteral = "...";
 
-            left_parenth = ("\\("); 
-            right_parenth = ("\\)"); 
-            left_brace = ("\\{"); 
-            right_brace = ("\\}"); 
+            left_parenth = '('; 
+            right_parenth = ')'; 
+            left_brace = '{'; 
+            right_brace = '}'; 
 
-            stop = (";");
-            comma = (",");
+            stop = ';';
+            comma = ',';
 
-            assign = ("=");
-            swap = ("<>");
-            addition = ("\\+");
-            subtraction = ("-");
-            multiplication = ("\\*");
-            division = ("\\/");
-            modulo = ("%");
+            swap = "<>";
+            assign = '=';
+            addition = '+';
+            subtraction = '-';
+            multiplication = '*';
+            division = '/';
+            modulo = '%';
 
-            equals = ("==");
-            not_equals = ("!=");
-            greater = (">");
-            less = ("<");
-            greater_equals = (">=");
-            less_equals = ("<=");
+            equals = "==";
+            not_equals = "!=";
+            greater = '>';
+            less = '<';
+            greater_equals = ">=";
+            less_equals = "<=";
 
-            whitespaces = ("[ \\t\\n]+");
-            comments = ("\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/");
+            whitespaces = "[ \\t\\n]+";
+            comments = "\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/";
 
             //Add keywords
-            this->self = keyword_for | keyword_while | keyword_true | keyword_false | keyword_if | keyword_else | keyword_from | keyword_to | keyword_foreach;
+            this->self += keyword_for | keyword_while | keyword_true | keyword_false | keyword_if | keyword_else | keyword_from | keyword_to | keyword_foreach;
+            this->self += integer | litteral | word;
            
-            this->self += equals | not_equals | greater | less | greater_equals | less_equals;
+            this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += left_parenth | right_parenth | left_brace | right_brace;
             this->self += comma | stop;
             this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
-            this->self += integer | litteral | word;
 
             //Ignore whitespaces and comments
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
@@ -85,20 +85,20 @@ class SimpleLexer : public lex::lexer<L> {
        
         lex::token_def<std::string> word, litteral, integer;
 
-        lex::token_def<> left_parenth, right_parenth, left_brace, right_brace;
+        lex::token_def<lex::omit> left_parenth, right_parenth, left_brace, right_brace;
         
-        lex::token_def<> stop, comma;
+        lex::token_def<lex::omit> stop, comma;
         
-        lex::token_def<> assign, swap, addition, subtraction, multiplication, division, modulo;
-        lex::token_def<> equals, not_equals, greater, less, greater_equals, less_equals;
+        lex::token_def<lex::omit> assign, swap, addition, subtraction, multiplication, division, modulo;
+        lex::token_def<lex::omit> equals, not_equals, greater, less, greater_equals, less_equals;
         
         //Keywords
-        lex::token_def<> keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
-        lex::token_def<> keyword_true, keyword_false;
+        lex::token_def<lex::omit> keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
+        lex::token_def<lex::omit> keyword_true, keyword_false;
 
         //Ignored tokens
-        lex::token_def<> whitespaces;
-        lex::token_def<> comments;
+        lex::token_def<lex::omit> whitespaces;
+        lex::token_def<lex::omit> comments;
 };
 
 class SpiritLexer {
