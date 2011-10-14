@@ -50,21 +50,22 @@ void Addition::write(AssemblyFileWriter& writer) {
 }
 
 void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
-    //TODO 
-    //Warning string
+    //TODO //Warning string
+
+    std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+    std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+
+    lhs->assignTo(registerA, program);
+    rhs->assignTo(registerB, program);
+
+    program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+    program.addInstruction(program.factory().createMove(registerB, operand));
 }
 
 void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
     if(lhs->type() == Type::INT){
-        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
-        std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
-
-        lhs->assignTo(registerA, program);
-        rhs->assignTo(registerB, program);
-
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
-
-        program.addInstruction(program.factory().createMove(registerB, variable->toIntegerOperand()));
+        assignTo(variable->toIntegerOperand(), program);
     } else {
         //TODO PUSH a, b
 

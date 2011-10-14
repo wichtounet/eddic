@@ -19,7 +19,7 @@ enum class Operation : unsigned int {
     SUB,
     DIV,
     MUL,
-    MODULO
+    MOD
 };
 
 class Operand;

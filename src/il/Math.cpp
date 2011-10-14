@@ -32,7 +32,7 @@ void Math::write(AssemblyFileWriter& writer){
             writer.stream() << "mull " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
 
             break;
-        case Operation::MODULO:
+        case Operation::MOD:
             writer.stream() << "modl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
 
             break;

@@ -21,6 +21,9 @@ class Division : public BinaryOperator {
         void write(AssemblyFileWriter& writer);
 
         int compute(int left, int right);
+        
+        void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
 };
 
 } //end of eddic
