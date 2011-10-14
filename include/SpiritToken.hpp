@@ -14,7 +14,7 @@
 namespace eddic {
 
     typedef std::string::iterator base_iterator_type;
-    typedef boost::spirit::lex::lexertl::token<base_iterator_type, boost::mpl::vector<unsigned int, std::string>> Tok;
+    typedef boost::spirit::lex::lexertl::token<base_iterator_type, boost::mpl::vector<int, std::string>> Tok;
 
 } //end of eddic
 

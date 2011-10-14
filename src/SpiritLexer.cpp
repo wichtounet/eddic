@@ -35,12 +35,19 @@ std::string readI(const std::string& spec){
 
 void SpiritLexer::lex(const string& file) {
     std::string contents = readI(file);
+    //contents = "void";
 
     base_iterator_type first = contents.begin();
     base_iterator_type last = contents.end();
 
     iter = lexer.begin(first, last);
     end = lexer.end();
+
+    //Because the iter is already on the first element
+    current = *iter;
+    pushBack(current);
+    
+    //std::cout << "Value = " << boost::get<std::string>(iter->value()) << std::endl;
 
     #ifdef DEBUG_LEXER
 

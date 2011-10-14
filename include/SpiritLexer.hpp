@@ -83,22 +83,23 @@ class SimpleLexer : public lex::lexer<L> {
             this->self += comments [lex::_pass = lex::pass_flags::pass_ignore]; 
         }
        
-        lex::token_def<std::string> word, litteral, integer;
+        lex::token_def<std::string> word, litteral;
+        lex::token_def<int> integer;
 
-        lex::token_def<lex::omit> left_parenth, right_parenth, left_brace, right_brace;
+        lex::token_def<> left_parenth, right_parenth, left_brace, right_brace;
         
-        lex::token_def<lex::omit> stop, comma;
+        lex::token_def<> stop, comma;
         
-        lex::token_def<lex::omit> assign, swap, addition, subtraction, multiplication, division, modulo;
-        lex::token_def<lex::omit> equals, not_equals, greater, less, greater_equals, less_equals;
+        lex::token_def<> assign, swap, addition, subtraction, multiplication, division, modulo;
+        lex::token_def<> equals, not_equals, greater, less, greater_equals, less_equals;
         
         //Keywords
-        lex::token_def<lex::omit> keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
-        lex::token_def<lex::omit> keyword_true, keyword_false;
+        lex::token_def<> keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
+        lex::token_def<> keyword_true, keyword_false;
 
         //Ignored tokens
-        lex::token_def<lex::omit> whitespaces;
-        lex::token_def<lex::omit> comments;
+        lex::token_def<> whitespaces;
+        lex::token_def<> comments;
 };
 
 class SpiritLexer {
