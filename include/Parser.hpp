@@ -10,10 +10,10 @@
 
 #include "Context.hpp"
 #include "CompilerException.hpp"
+#include "SpiritLexer.hpp"
 
 namespace eddic {
 
-class SpiritLexer;
 class Program;
 class Function;
 class ParseNode;
@@ -27,7 +27,7 @@ class FunctionContext;
 
 class Parser {
     private:
-        SpiritLexer& lexer;
+        SpiritLexer lexer;
 
         std::shared_ptr<GlobalContext> globalContext;
         std::shared_ptr<FunctionContext> functionContext;
@@ -52,8 +52,9 @@ class Parser {
         std::shared_ptr<Value> parseValue();
 
     public:
-        Parser(SpiritLexer& l);
-        std::shared_ptr<Program> parse();
+        std::shared_ptr<Program> parse(const std::string& file);
+
+		const SpiritLexer& getLexer();
 };
 
 } //end of eddic

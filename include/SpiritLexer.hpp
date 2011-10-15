@@ -41,7 +41,7 @@ class SimpleLexer : public lex::lexer<L> {
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
-            litteral = "...";
+            litteral = "\"...\"";
 
             left_parenth = '('; 
             right_parenth = ')'; 
@@ -71,7 +71,7 @@ class SimpleLexer : public lex::lexer<L> {
 
             //Add keywords
             this->self += keyword_for | keyword_while | keyword_true | keyword_false | keyword_if | keyword_else | keyword_from | keyword_to | keyword_foreach;
-            this->self += integer | litteral | word;
+            this->self += integer | word | litteral;
            
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += left_parenth | right_parenth | left_brace | right_brace;
@@ -111,10 +111,14 @@ class SpiritLexer {
         lexer_type::iterator_type iter;
         lexer_type::iterator_type end;
 
-        Tok current;
-        Tok defaultToken;
+		Tok def;
 
-        std::stack<Tok> buffer;
+        //Tok& current;
+        Tok& defaultToken;
+
+		bool first;
+
+        //std::stack<std::reference_wrapper<const Tok>> buffer;
 
         bool readNext();
 	
@@ -123,9 +127,9 @@ class SpiritLexer {
 
         void lex(const std::string& file);
         bool next();
-        void pushBack(Tok token);
+        void pushBack(const Tok& token);
 
-        Tok getCurrentToken() const;
+        const Tok& getCurrentToken() const;
         const Tok& getDefaultToken() const;
 
         bool isWord() const;

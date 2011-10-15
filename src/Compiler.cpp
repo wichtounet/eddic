@@ -36,17 +36,14 @@ int Compiler::compile(const string& file) {
 
     int code = 0;
     try {
-        SpiritLexer lexer;
-        lexer.lex(file);
+        Parser parser;
 
-        Parser parser(lexer);
+        std::shared_ptr<Program> program = parser.parse(file);
 
-        std::shared_ptr<Program> program = parser.parse();
+        std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
 
-        std::shared_ptr<StringPool> pool(new StringPool(program->context(), lexer.getCurrentToken()));
-
-        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), lexer.getCurrentToken())));
-        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), lexer.getCurrentToken())));
+        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
+        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
         program->addLast(pool);
 
         //Semantical analysis
@@ -80,7 +77,6 @@ int Compiler::compile(const string& file) {
     }
 
     //Close input and output
-//    lexer.close();
     writer.close();
 
     cout << "Compilation took " << timer.elapsed() << "ms" << endl;

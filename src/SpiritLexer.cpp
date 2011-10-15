@@ -18,7 +18,7 @@ using std::ios_base;
 
 using namespace eddic;
 
-SpiritLexer::SpiritLexer() {}
+SpiritLexer::SpiritLexer() : defaultToken(def), first(true) {}
 
 std::string readI(const std::string& spec){
     std::ifstream in(spec.c_str());
@@ -35,20 +35,18 @@ std::string readI(const std::string& spec){
 
 void SpiritLexer::lex(const string& file) {
     std::string contents = readI(file);
-    //contents = "void";
-
+    
     base_iterator_type first = contents.begin();
     base_iterator_type last = contents.end();
 
     iter = lexer.begin(first, last);
     end = lexer.end();
 
-    //Because the iter is already on the first element
-    current = *iter;
-    pushBack(current);
-    
-    //std::cout << "Value = " << boost::get<std::string>(iter->value()) << std::endl;
-
+	std::string s;
+	boost::spirit::traits::assign_to(*iter, s);
+	std::cout << "Lexer::value() = " << s << std::endl;
+	std::cout << "Lexer::id() = " << iter->id() << std::endl;
+	
     #ifdef DEBUG_LEXER
 
     std::cout << "Token Ids : " << std::endl;
@@ -93,7 +91,17 @@ void SpiritLexer::lex(const string& file) {
     std::cout << "whitespaces = " << lexer.whitespaces.id() << std::endl;
     std::cout << "comments = " << lexer.comments.id() << std::endl;
 
-    #endif
+	while(iter != end){
+		if(!token_is_valid(*iter)){
+			std::cout << "Invalid" << std::endl;
+			break;
+		} else {
+			std::cout << "valid" << iter->id() << std::endl;
+			++iter;
+		}
+	}
+
+    #endif	
 }
 
 const Tok& SpiritLexer::getDefaultToken() const{
@@ -101,164 +109,163 @@ const Tok& SpiritLexer::getDefaultToken() const{
 }
 
 bool SpiritLexer::next() {
-    if (!buffer.empty()) {
-        current = buffer.top();
+	if(first){
+		first = false;
+		return token_is_valid(*iter);
+	}
 
-        buffer.pop();
-
-        return true;
-    } else if (readNext()) {
-        return true;
-    }
-
-    return false;
-}
-
-void SpiritLexer::pushBack(Tok token) {
-    buffer.push(token);
-}
-
-bool SpiritLexer::readNext() {
     if(iter == end){
         return false;
     }
+	
+    ++iter;
 
     if(!token_is_valid(*iter)){
-        //TODO Throw error
+    	std::cout << "Lexer::invalid_token()" << std::endl;
         return false;
     }
-
-    current = *iter;
-
-    ++iter;
+	
+    std::string s;
+    boost::spirit::traits::assign_to(*iter, s);
+    std::cout << "Lexer::value() = " << s << std::endl;
+	std::cout << "Lexer::id() = " << iter->id() << std::endl;
 
     return true;
 }
 
-Tok SpiritLexer::getCurrentToken() const {
-    return current;
+void SpiritLexer::pushBack(const Tok& token) {
+	throw "shit";
+    //buffer.push(std::reference_wrapper<const Tok>(token));
+}
+
+bool SpiritLexer::readNext() {
+	throw "shit";
+}
+
+const Tok& SpiritLexer::getCurrentToken() const {
+    return *iter;
 }
 
 bool SpiritLexer::isWord() const {
-    return current.id() == lexer.word.id();
+    return iter->id() == lexer.word.id();
 }
 
 bool SpiritLexer::isLitteral() const {
-    return current.id() == lexer.litteral.id();
+    return iter->id() == lexer.litteral.id();
 }
 
 bool SpiritLexer::isAssign() const {
-    return current.id() == lexer.assign.id();
+    return iter->id() == lexer.assign.id();
 }
 
 bool SpiritLexer::isSwap() const {
-    return current.id() == lexer.swap.id();
+    return iter->id() == lexer.swap.id();
 }
 
 bool SpiritLexer::isLeftParenth() const {
-    return current.id() == lexer.left_parenth.id();
+    return iter->id() == lexer.left_parenth.id();
 }
 
 bool SpiritLexer::isRightParenth() const {
-    return current.id() == lexer.right_parenth.id();
+    return iter->id() == lexer.right_parenth.id();
 }
 
 bool SpiritLexer::isLeftBrace() const {
-    return current.id() == lexer.left_brace.id();
+    return iter->id() == lexer.left_brace.id();
 }
 
 bool SpiritLexer::isRightBrace() const {
-    return current.id() == lexer.right_brace.id();
+    return iter->id() == lexer.right_brace.id();
 }
 
 bool SpiritLexer::isStop() const {
-    return current.id() == lexer.stop.id();
+    return iter->id() == lexer.stop.id();
 }
 
 bool SpiritLexer::isInteger() const {
-    return current.id() == lexer.integer.id();
+    return iter->id() == lexer.integer.id();
 }
 
 bool SpiritLexer::isAddition() const {
-    return current.id() == lexer.addition.id();
+    return iter->id() == lexer.addition.id();
 }
 
 bool SpiritLexer::isSubtraction() const {
-    return current.id() == lexer.subtraction.id();
+    return iter->id() == lexer.subtraction.id();
 }
 
 bool SpiritLexer::isMultiplication() const {
-    return current.id() == lexer.multiplication.id();
+    return iter->id() == lexer.multiplication.id();
 }
 
 bool SpiritLexer::isModulo() const {
-    return current.id() == lexer.modulo.id();
+    return iter->id() == lexer.modulo.id();
 }
 
 bool SpiritLexer::isDivision() const {
-    return current.id() == lexer.division.id();
+    return iter->id() == lexer.division.id();
 }
 
 bool SpiritLexer::isEquals() const {
-    return current.id() == lexer.equals.id();
+    return iter->id() == lexer.equals.id();
 }
 
 bool SpiritLexer::isNotEquals() const {
-    return current.id() == lexer.not_equals.id();
+    return iter->id() == lexer.not_equals.id();
 }
 
 bool SpiritLexer::isGreater() const {
-    return current.id() == lexer.greater.id();
+    return iter->id() == lexer.greater.id();
 }
 
 bool SpiritLexer::isLess() const {
-    return current.id() == lexer.less.id();
+    return iter->id() == lexer.less.id();
 }
 
 bool SpiritLexer::isGreaterOrEquals() const {
-    return current.id() == lexer.greater_equals.id();
+    return iter->id() == lexer.greater_equals.id();
 }
 
 bool SpiritLexer::isLessOrEquals() const {
-    return current.id() == lexer.less_equals.id();
+    return iter->id() == lexer.less_equals.id();
 }
 
 bool SpiritLexer::isIf() const {
-    return current.id() == lexer.keyword_if.id();
+    return iter->id() == lexer.keyword_if.id();
 }
 
 bool SpiritLexer::isElse() const {
-    return current.id() == lexer.keyword_else.id();
+    return iter->id() == lexer.keyword_else.id();
 }
 
 bool SpiritLexer::isWhile() const {
-    return current.id() == lexer.keyword_while.id();
+    return iter->id() == lexer.keyword_while.id();
 }
 
 bool SpiritLexer::isFor() const {
-    return current.id() == lexer.keyword_for.id();
+    return iter->id() == lexer.keyword_for.id();
 }
 
 bool SpiritLexer::isForeach() const {
-    return current.id() == lexer.keyword_foreach.id();
+    return iter->id() == lexer.keyword_foreach.id();
 }
 
 bool SpiritLexer::isFrom() const {
-    return current.id() == lexer.keyword_from.id();
+    return iter->id() == lexer.keyword_from.id();
 }
 
 bool SpiritLexer::isTo() const {
-    return current.id() == lexer.keyword_to.id();
+    return iter->id() == lexer.keyword_to.id();
 }
 
 bool SpiritLexer::isTrue() const {
-    return current.id() == lexer.keyword_true.id();
+    return iter->id() == lexer.keyword_true.id();
 }
 
 bool SpiritLexer::isFalse() const {
-    return current.id() == lexer.keyword_false.id();
+    return iter->id() == lexer.keyword_false.id();
 }
 
 bool SpiritLexer::isComma() const {
-    return current.id() == lexer.comma.id();
+    return iter->id() == lexer.comma.id();
 }
