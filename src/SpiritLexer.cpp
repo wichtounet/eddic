@@ -35,20 +35,13 @@ std::string readI(const std::string& spec){
 
 void SpiritLexer::lex(const string& file) {
     std::string contents = readI(file);
-    
+
     base_iterator_type first = contents.begin();
     base_iterator_type last = contents.end();
 
     iter = lexer.begin(first, last);
     end = lexer.end();
-
-	std::string s;
-	boost::spirit::traits::assign_to(*iter, s);
-	std::cout << "Lexer::value() = " << s << std::endl;
-	std::cout << "Lexer::id() = " << iter->id() << std::endl;
-	
-    #ifdef DEBUG_LEXER
-
+    
     std::cout << "Token Ids : " << std::endl;
 
     std::cout << "keyword_for = " << lexer.keyword_for.id() << std::endl;
@@ -91,17 +84,17 @@ void SpiritLexer::lex(const string& file) {
     std::cout << "whitespaces = " << lexer.whitespaces.id() << std::endl;
     std::cout << "comments = " << lexer.comments.id() << std::endl;
 
+    std::cout << "Lexer test" << std::endl;
+
 	while(iter != end){
 		if(!token_is_valid(*iter)){
 			std::cout << "Invalid" << std::endl;
 			break;
 		} else {
-			std::cout << "valid" << iter->id() << std::endl;
+			std::cout << "valid (" << iter->id() << ") = [" << iter->value() << "]" << std::endl;
 			++iter;
 		}
 	}
-
-    #endif	
 }
 
 const Tok& SpiritLexer::getDefaultToken() const{
@@ -109,7 +102,7 @@ const Tok& SpiritLexer::getDefaultToken() const{
 }
 
 bool SpiritLexer::next() {
-	if(first){
+    if(first){
 		first = false;
 		return token_is_valid(*iter);
 	}
@@ -124,18 +117,12 @@ bool SpiritLexer::next() {
     	std::cout << "Lexer::invalid_token()" << std::endl;
         return false;
     }
-	
-    std::string s;
-    boost::spirit::traits::assign_to(*iter, s);
-    std::cout << "Lexer::value() = " << s << std::endl;
-	std::cout << "Lexer::id() = " << iter->id() << std::endl;
-
+    
     return true;
 }
 
 void SpiritLexer::pushBack(const Tok& token) {
 	throw "shit";
-    //buffer.push(std::reference_wrapper<const Tok>(token));
 }
 
 bool SpiritLexer::readNext() {

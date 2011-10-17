@@ -41,7 +41,8 @@ class SimpleLexer : public lex::lexer<L> {
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
-            litteral = "\"...\"";
+            //litteral = "\\\"...\\\"";
+            litteral = "\\\"[^\\\"]*\\\"";
 
             left_parenth = '('; 
             right_parenth = ')'; 
@@ -83,8 +84,8 @@ class SimpleLexer : public lex::lexer<L> {
             this->self += comments [lex::_pass = lex::pass_flags::pass_ignore]; 
         }
        
-        lex::token_def<std::string> word, litteral;
-        lex::token_def<int> integer;
+        lex::token_def<> word, litteral;
+        lex::token_def<> integer;
 
         lex::token_def<> left_parenth, right_parenth, left_brace, right_brace;
         

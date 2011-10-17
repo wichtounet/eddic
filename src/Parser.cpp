@@ -61,13 +61,6 @@ using std::list;
 
 using namespace eddic;
 
-inline static void assertNextIsRightParenth(SpiritLexer& lexer, const string& message);
-inline static void assertNextIsLeftParenth(SpiritLexer& lexer, const string& message);
-inline static void assertNextIsRightBrace(SpiritLexer& lexer, const string& message);
-inline static void assertNextIsLeftBrace(SpiritLexer& lexer, const string& message);
-inline static void assertNextIsStop(SpiritLexer& lexer, const string& message);
-inline static void assertNextIsWord(SpiritLexer& lexer, const string& message);
-
 template<typename T>
 T get(const Tok& token){
     assert(false); //The type is not implemented
@@ -75,13 +68,9 @@ T get(const Tok& token){
 
 template<>
 std::string get(const Tok& token){
-    //if(token.value().which() == 0){
-        std::string s;
-        boost::spirit::traits::assign_to(token, s);
-        return s;
-    //} 
-
-    //return boost::get<std::string>(token.value());
+    std::string tokenvalue(token.value().begin(), token.value().end());
+    std::cout << "Parser::value() = " << tokenvalue << std::endl;
+    return tokenvalue;
 }
 
 template<>
@@ -124,7 +113,7 @@ std::shared_ptr<Program> Parser::parse(const std::string& file) {
 		
         Type type = stringToType(get<std::string>(lexer.getCurrentToken()));
 
-        assertNextIsWord(lexer, "A function or a global variable must have a name");
+        assertNextIsWord("A function or a global variable must have a name");
 
         string name = get<std::string>(lexer.getCurrentToken());
 
@@ -172,7 +161,7 @@ std::shared_ptr<Function> Parser::parseFunction(Type type, const string& functio
 
             Type type = stringToType(typeName);
 
-            assertNextIsWord(lexer, "Expecting a parameter name");
+            assertNextIsWord("Expecting a parameter name");
 
             string parameterName = get<std::string>(lexer.getCurrentToken());
 
@@ -187,7 +176,7 @@ std::shared_ptr<Function> Parser::parseFunction(Type type, const string& functio
         }
     }
 
-    assertNextIsLeftBrace(lexer, "The instructions of the function must be enclosed in braces");
+    assertNextIsLeftBrace("The instructions of the function must be enclosed in braces");
 
     lexer.next();
 
@@ -213,7 +202,7 @@ std::shared_ptr<ParseNode> Parser::parseGlobalDeclaration(Type type, const strin
 
     auto value = parseValue();
 
-    assertNextIsStop(lexer, "A variable declaration must be followed by a ;");
+    assertNextIsStop("A variable declaration must be followed by a ;");
 
     return std::shared_ptr<ParseNode>(new GlobalDeclaration(globalContext, lexer.getCurrentToken(), type, variable, value));
 }
@@ -239,7 +228,7 @@ std::shared_ptr<ParseNode> Parser::parseInstruction() {
         throw TokenException("Not an instruction", lexer.getCurrentToken());
     }
     
-    assertNextIsStop(lexer, "Every instruction must be closed by a semicolon");
+    assertNextIsStop("Every instruction must be closed by a semicolon");
     
     return instruction;
 }
@@ -271,7 +260,7 @@ std::shared_ptr<ParseNode> Parser::parseCallOrAssignment() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseCall(const Tok callToken) {
-    string call = get<std::string>(callToken.value());
+    string call = get<std::string>(callToken);
 
     if (call != "print" && call != "println") {
         std::shared_ptr<FunctionCall> functionCall(new FunctionCall(currentContext, lexer.getCurrentToken(), call));
@@ -295,7 +284,7 @@ std::shared_ptr<ParseNode> Parser::parseCall(const Tok callToken) {
 
     auto value = parseValue();
 
-    assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
+    assertNextIsRightParenth("The call must be closed with a right parenth");
 
     if (call == "print") {
         return std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
@@ -309,7 +298,7 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
 
     Type type = stringToType(typeName);
 
-    assertNextIsWord(lexer, "A type must be followed by variable name"); 
+    assertNextIsWord("A type must be followed by variable name"); 
 
     string variable = get<std::string>(lexer.getCurrentToken());
 
@@ -325,7 +314,7 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
 std::shared_ptr<ParseNode> Parser::parseAssignment(const Tok variableToken) {
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, get<std::string>(variableToken.value()), value));
+    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, get<std::string>(variableToken), value));
 }
 
 std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
@@ -335,17 +324,17 @@ std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
 
     string rhs = get<std::string>(lexer.getCurrentToken());
 
-    return std::shared_ptr<ParseNode>(new Swap(currentContext, lexer.getCurrentToken(), get<std::string>(lhs.value()), rhs));
+    return std::shared_ptr<ParseNode>(new Swap(currentContext, lexer.getCurrentToken(), get<std::string>(lhs), rhs));
 }
 
 std::shared_ptr<ParseNode> Parser::parseIf() {
-    assertNextIsLeftParenth(lexer, "An if instruction must be followed by a condition surrounded by parenth");
+    assertNextIsLeftParenth("An if instruction must be followed by a condition surrounded by parenth");
 
     auto condition = parseCondition();
 
-    assertNextIsRightParenth(lexer, "The condition of the if must be closed by a right parenth");
+    assertNextIsRightParenth("The condition of the if must be closed by a right parenth");
 
-    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+    assertNextIsLeftBrace("Waiting for a left brace");
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
@@ -393,13 +382,13 @@ std::shared_ptr<ParseNode> Parser::parseIf() {
 }
 
 std::shared_ptr<ElseIf> Parser::parseElseIf() {
-    assertNextIsLeftParenth(lexer, "An else if instruction must be followed by a condition surrounded by parenth");
+    assertNextIsLeftParenth("An else if instruction must be followed by a condition surrounded by parenth");
 
     auto condition = parseCondition();
 
-    assertNextIsRightParenth(lexer, "The condition of the else if must be closed by a right parenth");
+    assertNextIsRightParenth("The condition of the else if must be closed by a right parenth");
 
-    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+    assertNextIsLeftBrace("Waiting for a left brace");
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
@@ -427,7 +416,7 @@ std::shared_ptr<Else> Parser::parseElse() {
 
     std::shared_ptr<Else> block(new Else(currentContext, lexer.getCurrentToken()));
 
-    assertNextIsLeftBrace(lexer, "else statement must be followed by left brace");
+    assertNextIsLeftBrace("else statement must be followed by left brace");
 
     while (lexer.next() && !lexer.isRightBrace()) {
         block->addLast(parseInstruction());
@@ -443,15 +432,15 @@ std::shared_ptr<Else> Parser::parseElse() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseWhile() {
-    assertNextIsLeftParenth(lexer, "A while instruction must be followed by a condition surrounded by parenth");
+    assertNextIsLeftParenth("A while instruction must be followed by a condition surrounded by parenth");
 
     auto token = lexer.getCurrentToken();
 
     auto condition = parseCondition();
 
-    assertNextIsRightParenth(lexer, "The condition of the while must be closed by a right parenth");
+    assertNextIsRightParenth("The condition of the while must be closed by a right parenth");
 
-    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+    assertNextIsLeftBrace("Waiting for a left brace");
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
@@ -475,7 +464,7 @@ std::shared_ptr<ParseNode> Parser::parseWhile() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseFor() {
-    assertNextIsLeftParenth(lexer, "A for loop declaration must be followed by a left parenth");
+    assertNextIsLeftParenth("A for loop declaration must be followed by a left parenth");
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
     
@@ -487,19 +476,19 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     std::shared_ptr<ParseNode> start = parseDeclaration();
 
-    assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
+    assertNextIsStop("The start instruction of the for loop must be closed by a semicolon");
 
     auto condition = parseCondition();
 
-    assertNextIsStop(lexer, "The condition of the for loop must be closed by a semicolon");
+    assertNextIsStop("The condition of the for loop must be closed by a semicolon");
 
     lexer.next();
 
     auto iter = parseRepeatableInstruction();
     
-    assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
+    assertNextIsRightParenth("The components of the for loop must be closed by a right parenth");
     
-    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+    assertNextIsLeftBrace("Waiting for a left brace");
 
     std::shared_ptr<For> block(new For(currentContext, token, start, condition, iter));
 
@@ -521,7 +510,7 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 }
 
 std::shared_ptr<ParseNode> Parser::parseForeach() {
-    assertNextIsLeftParenth(lexer, "A foreach loop declaration must be followed by a left parenth");
+    assertNextIsLeftParenth("A foreach loop declaration must be followed by a left parenth");
 
     currentContext = std::shared_ptr<Context>(new BlockContext(currentContext, functionContext));
 
@@ -541,7 +530,7 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
         throw TokenException("The foreach variable type must be int", lexer.getCurrentToken());
     }
 
-    assertNextIsWord(lexer, "The type must be followed by a variable name");
+    assertNextIsWord("The type must be followed by a variable name");
 
     string variable = get<std::string>(lexer.getCurrentToken());
 
@@ -557,9 +546,9 @@ std::shared_ptr<ParseNode> Parser::parseForeach() {
 
     auto toValue = parseValue();
 
-    assertNextIsRightParenth(lexer, "The components of the for loop must be closed by a right parenth");
+    assertNextIsRightParenth("The components of the for loop must be closed by a right parenth");
 
-    assertNextIsLeftBrace(lexer, "Waiting for a left brace");
+    assertNextIsLeftBrace("Waiting for a left brace");
 
     std::shared_ptr<Foreach> block(new Foreach(currentContext, token, type, variable, fromValue, toValue));
 
@@ -633,7 +622,7 @@ std::shared_ptr<Value> Parser::parseValue() {
         if (lexer.isLeftParenth()) {
             node = parseValue();
 
-            assertNextIsRightParenth(lexer, "parenth is not closed");
+            assertNextIsRightParenth("parenth is not closed");
         } else if (lexer.isLitteral()) {
             string litteral = get<std::string>(lexer.getCurrentToken());
 
@@ -760,37 +749,37 @@ std::shared_ptr<Condition> Parser::parseCondition() {
     return std::shared_ptr<Condition>(new Condition(operation, lhs, rhs));
 }
 
-inline static void assertNextIsRightParenth(SpiritLexer& lexer, const string& message) {
+void Parser::assertNextIsRightParenth(const string& message) {
     if (!lexer.next() || !lexer.isRightParenth()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsLeftParenth(SpiritLexer& lexer, const string& message) {
+void Parser::assertNextIsLeftParenth(const string& message) {
     if (!lexer.next() || !lexer.isLeftParenth()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsRightBrace(SpiritLexer& lexer, const string& message) {
+void Parser::assertNextIsRightBrace(const string& message) {
     if (!lexer.next() || !lexer.isRightBrace()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsLeftBrace(SpiritLexer& lexer, const string& message) {
+void Parser::assertNextIsLeftBrace(const string& message) {
     if (!lexer.next() || !lexer.isLeftBrace()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsStop(SpiritLexer& lexer, const string& message) {
+void Parser::assertNextIsStop(const string& message) {
     if (!lexer.next() || !lexer.isStop()) {
         throw TokenException(message, lexer.getCurrentToken());
     }
 }
 
-inline static void assertNextIsWord(SpiritLexer& lexer, const string& message) {
+void Parser::assertNextIsWord(const string& message) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException(message, lexer.getCurrentToken());
     }

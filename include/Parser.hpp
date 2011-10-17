@@ -8,6 +8,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <string>
+
 #include "Context.hpp"
 #include "CompilerException.hpp"
 #include "SpiritLexer.hpp"
@@ -51,10 +53,17 @@ class Parser {
         std::shared_ptr<Else> parseElse();
         std::shared_ptr<Value> parseValue();
 
+        void assertNextIsRightParenth(const std::string& message);
+        void assertNextIsLeftParenth(const std::string& message);
+        void assertNextIsRightBrace(const std::string& message);
+        void assertNextIsLeftBrace(const std::string& message);
+        void assertNextIsStop(const std::string& message);
+        void assertNextIsWord(const std::string& message);
+
     public:
         std::shared_ptr<Program> parse(const std::string& file);
 
-		const SpiritLexer& getLexer();
+        const SpiritLexer& getLexer();
 };
 
 } //end of eddic
