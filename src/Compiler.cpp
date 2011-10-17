@@ -40,6 +40,8 @@ int Compiler::compile(const string& file) {
 
         std::shared_ptr<Program> program = parser.parse(file);
 
+        throw "Do not compile";
+
         std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
 
         program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));

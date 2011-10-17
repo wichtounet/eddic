@@ -104,9 +104,9 @@ std::shared_ptr<Program> Parser::parse(const std::string& file) {
     globalContext = std::shared_ptr<GlobalContext>(new GlobalContext());
     currentContext = globalContext;
 
-    std::shared_ptr<Program> program(new Program(currentContext, lexer.getCurrentToken()));
+    std::shared_ptr<Program> program(new Program(currentContext, lexer.getDefaultToken()));
 
-    while (lexer.next()) {
+    /*while (lexer.next()) {
         if(!isTokenType(lexer)){
             throw TokenException("A function or a global variable must start with a type", lexer.getCurrentToken()); 
         }
@@ -126,7 +126,7 @@ std::shared_ptr<Program> Parser::parse(const std::string& file) {
         } else {
             throw TokenException("The body of the file can only contains global variables and function declarations", lexer.getCurrentToken());
         }
-    }
+    }*/
 
     return program;
 }
