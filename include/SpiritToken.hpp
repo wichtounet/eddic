@@ -8,13 +8,15 @@
 #ifndef SPIRIT_TOKEN_H
 #define SPIRIT_TOKEN_H
 
+#include <string>
+
 //TODO Reduce the include to the exact necessary files
 #include <boost/spirit/include/lex_lexertl.hpp>
 
 namespace eddic {
 
     typedef std::string::iterator base_iterator_type;
-    typedef boost::spirit::lex::lexertl::token<base_iterator_type> Tok;
+    typedef boost::spirit::lex::lexertl::token<base_iterator_type, boost::mpl::vector<std::string, int>> Tok;
 
 } //end of eddic
 

@@ -68,9 +68,9 @@ T get(const Tok& token){
 
 template<>
 std::string get(const Tok& token){
-    std::string tokenvalue(token.value().begin(), token.value().end());
-    std::cout << "Parser::value() = " << tokenvalue << std::endl;
-    return tokenvalue;
+    //std::string tokenvalue(token.value().begin(), token.value().end());
+    //std::cout << "Parser::value() = " << tokenvalue << std::endl;
+    return "tokenvalue";
 }
 
 template<>

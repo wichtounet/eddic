@@ -7,7 +7,11 @@
 
 #include "SpiritLexer.hpp"
 
+#include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/lex_lexertl.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_statement.hpp>
+#include <boost/spirit/include/phoenix_container.hpp>
 
 #include <iostream>
 #include <string>
@@ -17,6 +21,8 @@ using std::string;
 using std::ios_base;
 
 using namespace eddic;
+
+namespace qi = boost::spirit::qi;
 
 SpiritLexer::SpiritLexer() : defaultToken(def), first(true) {}
 
@@ -33,16 +39,42 @@ std::string readI(const std::string& spec){
     return storage;
 }
 
+template <typename Iterator>
+struct EddiGrammar : qi::grammar<Iterator> {
+   template <typename TokenDef>
+   EddiGrammar(const TokenDef& tok) : EddiGrammar::base_type(program) {
+        globalVariable = tok.word >> tok.word >> tok.assign >> (tok.integer | tok.word);
+
+        function = tok.word >> tok.word >> tok.left_parenth >> tok.right_parenth >> tok.left_brace >> tok.right_brace;
+
+        program = *( function | globalVariable );
+   }
+
+   qi::rule<Iterator> program;
+   qi::rule<Iterator> function;
+   qi::rule<Iterator> globalVariable;
+};
+
 void SpiritLexer::lex(const string& file) {
     std::string contents = readI(file);
 
+    contents = "void main(){}";
+
     base_iterator_type first = contents.begin();
     base_iterator_type last = contents.end();
-
-    iter = lexer.begin(first, last);
-    end = lexer.end();
     
-    std::cout << "Token Ids : " << std::endl;
+    EddiGrammar<lexer_type::iterator_type> parser (lexer); 
+
+    bool r = lex::tokenize_and_parse(first, last, lexer, parser);
+
+    if (r) {
+        std::cout << "Parsing passed" << std::endl;
+    } else {
+        std::string rest(first, last);
+        std::cerr << "Parsing failed\n" << "stopped at: \"" << rest << "\"\n";
+    }
+
+    /*std::cout << "Token Ids : " << std::endl;
 
     std::cout << "keyword_for = " << lexer.keyword_for.id() << std::endl;
     std::cout << "keyword_while = " << lexer.keyword_while.id() << std::endl;
@@ -86,15 +118,21 @@ void SpiritLexer::lex(const string& file) {
 
     std::cout << "Lexer test" << std::endl;
 
-	while(iter != end){
-		if(!token_is_valid(*iter)){
-			std::cout << "Invalid" << std::endl;
-			break;
-		} else {
-			std::cout << "valid (" << iter->id() << ") = [" << iter->value() << "]" << std::endl;
-			++iter;
-		}
-	}
+    while(iter != end){
+        if(!token_is_valid(*iter)){
+            std::cout << "Invalid" << std::endl;
+            break;
+        } else {
+            //std::cout << "valid (" << iter->id() << ") = [" << iter->value() << "]" << std::endl;
+            ++iter;
+        }
+    }
+
+    if(iter == end){
+        std::cout << "Lexical analysis passed" << std::endl;
+    } else {
+        std::cout << "Lexical analysis failed" << std::endl;
+    }*/
 }
 
 const Tok& SpiritLexer::getDefaultToken() const{

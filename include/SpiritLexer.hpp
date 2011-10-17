@@ -41,7 +41,6 @@ class SimpleLexer : public lex::lexer<L> {
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
-            //litteral = "\\\"...\\\"";
             litteral = "\\\"[^\\\"]*\\\"";
 
             left_parenth = '('; 
@@ -83,24 +82,28 @@ class SimpleLexer : public lex::lexer<L> {
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
             this->self += comments [lex::_pass = lex::pass_flags::pass_ignore]; 
         }
-       
-        lex::token_def<> word, litteral;
-        lex::token_def<> integer;
+      
+        typedef lex::token_def<lex::omit> ConsumedToken;
+        typedef lex::token_def<std::string> StringToken;
+        typedef lex::token_def<int> IntegerToken;
 
-        lex::token_def<> left_parenth, right_parenth, left_brace, right_brace;
+        StringToken word, litteral;
+        IntegerToken integer;
+
+        ConsumedToken left_parenth, right_parenth, left_brace, right_brace;
         
-        lex::token_def<> stop, comma;
+        ConsumedToken stop, comma;
         
-        lex::token_def<> assign, swap, addition, subtraction, multiplication, division, modulo;
-        lex::token_def<> equals, not_equals, greater, less, greater_equals, less_equals;
+        ConsumedToken assign, swap, addition, subtraction, multiplication, division, modulo;
+        ConsumedToken equals, not_equals, greater, less, greater_equals, less_equals;
         
         //Keywords
-        lex::token_def<> keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
-        lex::token_def<> keyword_true, keyword_false;
+        ConsumedToken keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
+        ConsumedToken keyword_true, keyword_false;
 
         //Ignored tokens
-        lex::token_def<> whitespaces;
-        lex::token_def<> comments;
+        ConsumedToken whitespaces;
+        ConsumedToken comments;
 };
 
 class SpiritLexer {
