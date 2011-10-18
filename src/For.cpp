@@ -13,6 +13,9 @@
 #include "Condition.hpp"
 
 #include "Value.hpp"
+#include "Utils.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using namespace eddic;
 
@@ -42,6 +45,32 @@ void For::write(AssemblyFileWriter& writer){
     writer.stream() << "jmp start_for" << labels << std::endl;
 
     writer.stream() << "end_for" << labels << ":" << std::endl;
+}
+
+void For::writeIL(IntermediateProgram& program){
+    if(m_start){
+        m_start->writeIL(program);
+    }
+
+    static int labels = -1;
+
+    ++labels;
+
+    program.addInstruction(program.factory().createLabel("start_for" + toString(labels)));
+
+    if(m_condition){
+        writeILJumpIfNot(program, m_condition, "end_for", labels);
+    }
+
+    ParseNode::writeIL(program);
+
+    if(m_iter){
+        m_iter->writeIL(program);
+    }
+
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "start_for" + toString(labels)));
+
+    program.addInstruction(program.factory().createLabel("end_for" + toString(labels)));
 }
 
 void For::checkVariables(){
