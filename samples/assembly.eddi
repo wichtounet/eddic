@@ -1,8 +1,9 @@
+//Main method
 void main(){
     string x = "ED" + "DI";
     println(x);
 
-    string a = "Variable a";
+    string a = "Variable a" + "EDDI";
     print("Should print 'Variable a' : ");
     println(a);
 

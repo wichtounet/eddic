@@ -14,7 +14,12 @@
 #include <stack>
 
 #include "SpiritToken.hpp"
+
 #include <boost/spirit/include/lex_lexertl.hpp>
+#include <boost/spirit/include/classic_core.hpp>
+#include <boost/spirit/include/classic_functor_parser.hpp>
+#include <boost/spirit/include/classic_attribute.hpp>
+#include <boost/spirit/include/classic_symbols.hpp>
 
 namespace eddic {
 
@@ -29,15 +34,15 @@ class SimpleLexer : public lex::lexer<L> {
 
     public:
         SimpleLexer() {
-            keyword_for = "for";
-            keyword_while = "while";
-            keyword_if = "if";
-            keyword_else = "else";
-            keyword_false = "false";
-            keyword_true = "true";
-            keyword_from = "from";
-            keyword_to = "to";
-            keyword_foreach = "foreach";
+            for_ = "for";
+            while_ = "while";
+            if_ = "if";
+            else_ = "else";
+            false_ = "false";
+            true_ = "true";
+            from_ = "from";
+            to_ = "to";
+            foreach_ = "foreach";
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
@@ -51,7 +56,7 @@ class SimpleLexer : public lex::lexer<L> {
             stop = ';';
             comma = ',';
 
-            swap = "<>";
+            swap = "<=>";
             assign = '=';
             addition = '+';
             subtraction = '-';
@@ -67,12 +72,12 @@ class SimpleLexer : public lex::lexer<L> {
             less_equals = "<=";
 
             whitespaces = "[ \\t\\n]+";
-            comments = "\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/";
-
+            comments = "(\\/\\*([^*]|[\r\n]|(\\*+([^*\\/]|[\r\n])))*\\*+\\/)|(\\/\\/.*)";
+            
             //Add keywords
-            this->self += keyword_for | keyword_while | keyword_true | keyword_false | keyword_if | keyword_else | keyword_from | keyword_to | keyword_foreach;
+            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | foreach_;
             this->self += integer | word | litteral;
-           
+
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += left_parenth | right_parenth | left_brace | right_brace;
             this->self += comma | stop;
@@ -98,12 +103,11 @@ class SimpleLexer : public lex::lexer<L> {
         ConsumedToken equals, not_equals, greater, less, greater_equals, less_equals;
         
         //Keywords
-        ConsumedToken keyword_if, keyword_else, keyword_for, keyword_while, keyword_from, keyword_to, keyword_foreach;
-        ConsumedToken keyword_true, keyword_false;
+        ConsumedToken if_, else_, for_, while_, from_, to_, foreach_;
+        ConsumedToken true_, false_;
 
         //Ignored tokens
-        ConsumedToken whitespaces;
-        ConsumedToken comments;
+        ConsumedToken whitespaces, comments;
 };
 
 class SpiritLexer {
