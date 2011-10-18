@@ -8,7 +8,10 @@
 #include <algorithm>
 
 #include "AssemblyFileWriter.hpp"
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
 #include "Context.hpp"
+#include "Utils.hpp"
 
 #include "If.hpp"
 #include "Else.hpp"
@@ -86,6 +89,49 @@ void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition
     }
 }
 
+void eddic::writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
+    if (!condition->isOperator()) {
+        //No need to jump if true
+        if (condition->condition() == FALSE_VALUE) {
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label + toString(labelIndex)));
+        }
+    } else {
+        condition->lhs()->assignTo(createRegisterOperand("eax"), program);
+        condition->rhs()->assignTo(createRegisterOperand("ebx"), program);
+
+        program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
+
+        switch (condition->condition()) {
+            case GREATER_OPERATOR:
+                program.addInstruction(program.factory().createJump(JumpCondition::LESS_EQUALS, label + toString(labelIndex)));
+
+                break;
+            case GREATER_EQUALS_OPERATOR:
+                program.addInstruction(program.factory().createJump(JumpCondition::LESS, label + toString(labelIndex)));
+
+                break;
+            case LESS_OPERATOR:
+                program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, label + toString(labelIndex)));
+
+                break;
+            case LESS_EQUALS_OPERATOR:
+                program.addInstruction(program.factory().createJump(JumpCondition::GREATER, label + toString(labelIndex)));
+
+                break;
+            case EQUALS_OPERATOR:
+                program.addInstruction(program.factory().createJump(JumpCondition::NOT_EQUALS, label + toString(labelIndex)));
+
+                break;
+            case NOT_EQUALS_OPERATOR:
+                program.addInstruction(program.factory().createJump(JumpCondition::EQUALS, label + toString(labelIndex)));
+
+                break;
+            default:
+                throw CompilerException("The condition must be managed using not-operator");
+        }
+    }
+}
+
 void If::write(AssemblyFileWriter& writer) {
     //Make something accessible for others operations
     static int labels = 0;
@@ -150,6 +196,73 @@ void If::write(AssemblyFileWriter& writer) {
         }
 
         writer.stream() << "L" << end << ":" << std::endl;
+    }
+}
+
+void If::writeIL(IntermediateProgram& program){
+    //Make something accessible for others operations
+    static int labels = 0;
+
+    if (elseIfs.empty()) {
+        int a = labels++;
+
+        writeILJumpIfNot(program, m_condition, "L", a);
+
+        ParseNode::writeIL(program);
+
+        if (m_elseBlock) {
+            int b = labels++;
+
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "L" + toString(b)));
+
+            program.addInstruction(program.factory().createLabel("L" + toString(a)));
+
+            m_elseBlock->writeIL(program);
+
+            program.addInstruction(program.factory().createLabel("L" + toString(b)));
+        } else {
+            program.addInstruction(program.factory().createLabel("L" + toString(a)));
+        }
+    } else {
+        int end = labels++;
+        int next = labels++;
+
+        writeILJumpIfNot(program, m_condition, "L", next);
+
+        ParseNode::writeIL(program);
+
+        program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "L" + toString(end)));
+
+        for (std::vector<std::shared_ptr<ElseIf>>::size_type i = 0; i < elseIfs.size(); ++i) {
+            std::shared_ptr<ElseIf> elseIf = elseIfs[i];
+
+            program.addInstruction(program.factory().createLabel("L" + toString(next)));
+
+            //Last elseif
+            if (i == elseIfs.size() - 1) {
+                if (m_elseBlock) {
+                    next = labels++;
+                } else {
+                    next = end;
+                }
+            } else {
+                next = labels++;
+            }
+
+            writeILJumpIfNot(program, elseIf->condition(), "L", next);
+
+            elseIf->writeIL(program);
+
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "L" + toString(end)));
+        }
+
+        if (m_elseBlock) {
+            program.addInstruction(program.factory().createLabel("L" + toString(next)));
+
+            m_elseBlock->writeIL(program);
+        }
+
+        program.addInstruction(program.factory().createLabel("L" + toString(end)));
     }
 }
 

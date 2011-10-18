@@ -34,12 +34,14 @@ class If : public ParseNode {
         std::shared_ptr<Condition> condition();
 		
         virtual void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();
 };
 
-void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const std::string& label, int labelIndex);
+void writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const std::string& label, int labelIndex);//TODO Delete
+void writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condition> condition, const std::string& label, int labelIndex);
 
 } //end of eddic
 

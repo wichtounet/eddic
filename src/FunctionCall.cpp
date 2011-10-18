@@ -11,6 +11,7 @@
 #include "FunctionCall.hpp"
 
 #include "AssemblyFileWriter.hpp"
+#include "il/IntermediateProgram.hpp"
 #include "Value.hpp"
 #include "Program.hpp"
 
@@ -39,4 +40,10 @@ void FunctionCall::write(AssemblyFileWriter& writer){
     for_each(m_values.rbegin(), m_values.rend(), [&](std::shared_ptr<Value> v){ v->write(writer); });
 
     writer.stream() << "call " << m_function_mangled << endl;
+}
+
+void FunctionCall::writeIL(IntermediateProgram& program){
+   //TODO Push every values to the stack
+
+   program.addInstruction(program.factory().createCall(m_function_mangled));
 }
