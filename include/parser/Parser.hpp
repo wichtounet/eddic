@@ -12,7 +12,7 @@
 
 #include "Context.hpp"
 #include "CompilerException.hpp"
-#include "SpiritLexer.hpp"
+#include "lexer/SpiritLexer.hpp"
 
 namespace eddic {
 

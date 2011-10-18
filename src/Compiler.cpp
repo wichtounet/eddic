@@ -13,11 +13,11 @@
 #include "StringPool.hpp"
 #include "Compiler.hpp"
 #include "Program.hpp"
-#include "Parser.hpp"
+#include "parser/Parser.hpp"
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
 
-#include "SpiritLexer.hpp"
+#include "lexer/SpiritLexer.hpp"
 
 using std::string;
 using std::cout;

@@ -13,7 +13,7 @@
 #include <utility>
 #include <stack>
 
-#include "SpiritToken.hpp"
+#include "lexer/SpiritToken.hpp"
 
 #include <boost/spirit/include/lex_lexertl.hpp>
 #include <boost/spirit/include/classic_core.hpp>

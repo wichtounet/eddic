@@ -14,8 +14,7 @@
 #include "Types.hpp"
 #include "Utils.hpp"
 
-#include "Parser.hpp"
-#include "Lexer.hpp"
+#include "parser/Parser.hpp"
 
 #include "Program.hpp"
 #include "Integer.hpp"

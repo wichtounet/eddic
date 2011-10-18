@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "SpiritLexer.hpp"
+#include "lexer/SpiritLexer.hpp"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/lex_lexertl.hpp>
@@ -31,7 +31,6 @@ using std::ios_base;
 using namespace eddic;
 
 namespace qi = boost::spirit::qi;
-//namespace phoenix = boost::phoenix;
 
 SpiritLexer::SpiritLexer() : defaultToken(def), first(true) {}
 
@@ -48,6 +47,7 @@ std::string readI(const std::string& spec){
     return storage;
 }
 
+//TODO Improve to get line
 struct error_handler_ {
     template <typename, typename, typename>
     struct result { typedef void type; };
@@ -93,8 +93,6 @@ struct EddiGrammar : qi::grammar<Iterator> {
        unaryValue = 
             primaryValue.alias();
             
-       //TODO Add an error handler
-       //TODO Take care that the parenth are not mixed with function calls
        primaryValue = constant | tok.word | (tok.left_parenth > value > tok.right_parenth);
 
        globalDeclaration = tok.word >> tok.word >> tok.assign >> constant;
@@ -214,66 +212,6 @@ void SpiritLexer::lex(const string& file) {
             std::setw(pos.column) << " " << "^- here";
         throw std::runtime_error(msg.str());
     }
-
-    /*std::cout << "Token Ids : " << std::endl;
-
-      std::cout << "for = " << lexer.for.id() << std::endl;
-      std::cout << "while = " << lexer.while.id() << std::endl;
-      std::cout << "if = " << lexer.while.id() << std::endl;
-      std::cout << "else = " << lexer.else.id() << std::endl;
-      std::cout << "false = " << lexer.false.id() << std::endl;
-      std::cout << "true = " << lexer.true.id() << std::endl;
-      std::cout << "from = " << lexer.from.id() << std::endl;
-      std::cout << "to = " << lexer.foreach.id() << std::endl;
-      std::cout << "foreach = " << lexer.foreach.id() << std::endl;
-
-      std::cout << "word = " << lexer.word.id() << std::endl;
-      std::cout << "integer = " << lexer.integer.id() << std::endl;
-      std::cout << "litteral = " << lexer.litteral.id() << std::endl;
-
-      std::cout << "left_parenth = " << lexer.left_parenth.id() << std::endl;
-      std::cout << "right_parenth = " << lexer.right_parenth.id() << std::endl;
-      std::cout << "left_brace = " << lexer.left_brace.id() << std::endl;
-      std::cout << "right_brace = " << lexer.right_brace.id() << std::endl;
-
-      std::cout << "stop = " << lexer.stop.id() << std::endl;
-      std::cout << "comma = " << lexer.comma.id() << std::endl;
-
-      std::cout << "assign = " << lexer.assign.id() << std::endl;
-      std::cout << "swap = " << lexer.swap.id() << std::endl;
-      std::cout << "addition = " << lexer.addition.id() << std::endl;
-      std::cout << "subtraction = " << lexer.subtraction.id() << std::endl;
-      std::cout << "multiplication = " << lexer.multiplication.id() << std::endl;
-      std::cout << "division = " << lexer.division.id() << std::endl;
-      std::cout << "modulo = " << lexer.modulo.id() << std::endl;
-
-      std::cout << "equals = " << lexer.equals.id() << std::endl;
-      std::cout << "not_equals = " << lexer.not_equals.id() << std::endl;
-      std::cout << "greater = " << lexer.greater.id() << std::endl;
-      std::cout << "less = " << lexer.less.id() << std::endl;
-      std::cout << "greater_equals = " << lexer.greater_equals.id() << std::endl;
-      std::cout << "less_equals = " << lexer.less_equals.id() << std::endl;
-
-      std::cout << "whitespaces = " << lexer.whitespaces.id() << std::endl;
-      std::cout << "comments = " << lexer.comments.id() << std::endl;
-
-      std::cout << "Lexer test" << std::endl;
-
-      while(iter != end){
-      if(!token_is_valid(*iter)){
-      std::cout << "Invalid" << std::endl;
-      break;
-      } else {
-    //std::cout << "valid (" << iter->id() << ") = [" << iter->value() << "]" << std::endl;
-    ++iter;
-    }
-    }
-
-    if(iter == end){
-    std::cout << "Lexical analysis passed" << std::endl;
-    } else {
-    std::cout << "Lexical analysis failed" << std::endl;
-    }*/
 }
 
 const Tok& SpiritLexer::getDefaultToken() const{

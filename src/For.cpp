@@ -13,7 +13,7 @@
 #include "Condition.hpp"
 
 #include "Value.hpp"
-#include "SpiritToken.hpp"
+#include "lexer/SpiritToken.hpp"
 
 using namespace eddic;
 
