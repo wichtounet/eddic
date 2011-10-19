@@ -6,11 +6,16 @@
 //=======================================================================
 
 #include <iostream>
+#include <cassert>
 
 #include "Litteral.hpp"
 
 #include "StringPool.hpp"
 #include "AssemblyFileWriter.hpp"
+#include "Variable.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
 
 using namespace eddic;
 
@@ -37,4 +42,41 @@ std::string Litteral::getStringLabel(){
 
 int Litteral::getStringSize(){
     return m_litteral.size() - 2;
+}
+
+void Litteral::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> operands = variable->toStringOperand();
+
+    program.addInstruction(
+        program.factory().createMove(
+            createGlobalOperand(getStringLabel()),
+            operands.first
+        )
+    );
+    
+    program.addInstruction(
+        program.factory().createMove(
+            createImmediateOperand(getStringSize()),
+            operands.second
+        )
+    );
+}
+
+void Litteral::assignTo(std::shared_ptr<Operand>, IntermediateProgram&){
+    assert(false); //Cannot assign a string to a single operand
+}
+
+void Litteral::push(IntermediateProgram& program){
+    //Verify that it is corresponding to pushl $label
+    program.addInstruction(
+        program.factory().createPush(
+            createGlobalOperand(getStringLabel())
+        )
+    );
+    
+    program.addInstruction(
+        program.factory().createPush(
+            createImmediateOperand(getStringSize())
+        )
+    );
 }
