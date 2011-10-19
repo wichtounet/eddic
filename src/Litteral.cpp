@@ -49,7 +49,7 @@ void Litteral::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram&
 
     program.addInstruction(
         program.factory().createMove(
-            createGlobalOperand(getStringLabel()),
+            createImmediateOperand(getStringLabel()),
             operands.first
         )
     );
@@ -70,7 +70,7 @@ void Litteral::push(IntermediateProgram& program){
     //TODO Verify that it is corresponding to pushl $label
     program.addInstruction(
         program.factory().createPush(
-            createGlobalOperand(getStringLabel())
+            createImmediateOperand(getStringLabel())
         )
     );
     
