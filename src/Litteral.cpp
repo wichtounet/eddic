@@ -67,7 +67,7 @@ void Litteral::assignTo(std::shared_ptr<Operand>, IntermediateProgram&){
 }
 
 void Litteral::push(IntermediateProgram& program){
-    //Verify that it is corresponding to pushl $label
+    //TODO Verify that it is corresponding to pushl $label
     program.addInstruction(
         program.factory().createPush(
             createGlobalOperand(getStringLabel())

@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
 #include "VariableValue.hpp"
 
 #include "AssemblyFileWriter.hpp"
@@ -37,14 +39,20 @@ bool VariableValue::isConstant() {
 }
 
 void VariableValue::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
-    //TODO Implement
+    if(m_var->type() == Type::INT){
+        program.addInstruction(program.factory().createMove(m_var->toIntegerOperand(), variable->toIntegerOperand()));
+    } else {
+        program.addInstruction(program.factory().createMove(m_var->toStringOperand().first, variable->toStringOperand().first));
+        program.addInstruction(program.factory().createMove(m_var->toStringOperand().second, variable->toStringOperand().second));
+        
+    }
 }
 
 void VariableValue::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
     if(m_var->type() == Type::INT){
         program.addInstruction(program.factory().createMove(m_var->toIntegerOperand(), operand));
     } else {
-        //TODO Arf
+        assert(false); //Cannot assign a string to a single operand
     }
 }
 
@@ -56,6 +64,16 @@ void VariableValue::push(IntermediateProgram& program){
             )
         );
     } else {
-        //TODO Arf
+        program.addInstruction(
+            program.factory().createPush(
+                m_var->toStringOperand().first
+            )
+        );
+        
+        program.addInstruction(
+            program.factory().createPush(
+                m_var->toStringOperand().second
+            )
+        );
     }
 }
