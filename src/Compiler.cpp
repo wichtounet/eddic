@@ -56,15 +56,15 @@ int Compiler::compile(const string& file) {
         program->optimize();
 
         //Compilation
-        writer.open("output.asm");
-        program->write(writer);
+//        writer.open("output.asm");
+//        program->write(writer);
 
         IntermediateProgram il;
         program->writeIL(il);
 
         //Temporary test
-        writer.close();
-        writer.open("better.asm");
+//        writer.close();
+        writer.open("output.asm");
         il.writeAsm(writer);
         //End of Temporary test
 
