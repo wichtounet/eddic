@@ -19,6 +19,10 @@ std::shared_ptr<Operand> eddic::createImmediateOperand(int value){
     return std::shared_ptr<Operand>(new ImmediateOperand(value));
 }
 
+std::shared_ptr<Operand> eddic::createImmediateOperand(std::string value){
+    return std::shared_ptr<Operand>(new ImmediateOperand(value));
+}
+
 std::shared_ptr<Operand> eddic::createRegisterOperand(std::string reg){
     return std::shared_ptr<Operand>(new RegisterOperand(reg));
 }

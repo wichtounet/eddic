@@ -11,8 +11,13 @@
 
 using namespace eddic;
 
-ImmediateOperand::ImmediateOperand(int value) : Operand(OperandType::IMMEDIATE), m_value(value) {}
+ImmediateOperand::ImmediateOperand(int value) : Operand(OperandType::IMMEDIATE), string(false), m_int(value) {}
+ImmediateOperand::ImmediateOperand(std::string value) : Operand(OperandType::IMMEDIATE), string(true), m_string(value) {}
 
 std::string ImmediateOperand::getValue(){
-    return "$" + toString(m_value);
+    if(string){
+        return "$" + m_string;
+    } else {
+        return "$" + toString(m_int);
+    }
 }

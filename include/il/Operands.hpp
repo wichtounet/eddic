@@ -16,6 +16,7 @@
 namespace eddic {
     
 std::shared_ptr<Operand> createImmediateOperand(int value);
+std::shared_ptr<Operand> createImmediateOperand(std::string value);
 std::shared_ptr<Operand> createRegisterOperand(std::string reg); 
 std::shared_ptr<Operand> createGlobalOperand(std::string label);
 std::shared_ptr<Operand> createGlobalOperand(std::string label, int offset);

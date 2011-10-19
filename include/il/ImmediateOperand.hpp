@@ -14,10 +14,13 @@ namespace eddic {
 
 class ImmediateOperand : public Operand {
     private:
-        int m_value;
+        bool string;
+        int m_int;
+        std::string m_string;
 
     public:
         ImmediateOperand(int value);
+        ImmediateOperand(std::string value);
 
         std::string getValue();
 };
