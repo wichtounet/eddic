@@ -35,15 +35,3 @@ int Value::getStringSize() {
 int Value::getIntValue() {
     throw "Not constant";
 }
-
-void Value::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
-    //Nothing //TODO Remove later
-}
-
-void Value::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
-    //Nothing //TODO Remove later
-}
-
-void Value::push(IntermediateProgram& program){
-    //Nothing //TODO Remove later
-}
