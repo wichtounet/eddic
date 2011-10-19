@@ -49,6 +49,8 @@ void Addition::write(AssemblyFileWriter& writer) {
     }
 }
 
+//TODO Remove similar code
+
 void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
     //TODO //Warning string
 
@@ -67,13 +69,47 @@ void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram&
     if(lhs->type() == Type::INT){
         assignTo(variable->toIntegerOperand(), program);
     } else {
-        //TODO PUSH a, b
+        lhs->push(program);
+        rhs->push(program);
 
         program.addInstruction(program.factory().createCall("concat"));
 
         //TODO add 16 esp
 
-        //TODO PUSH eax, edx
+        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+        std::shared_ptr<Operand> registerB = createRegisterOperand("edx");
+        
+        program.addInstruction(program.factory().createPush(registerA));
+        program.addInstruction(program.factory().createPush(registerB));
+
+        //TODO Assign to variable
+    }
+}
+
+void Addition::push(IntermediateProgram& program){
+    if(lhs->type() == Type::INT){
+        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+        std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+
+        lhs->assignTo(registerA, program);
+        rhs->assignTo(registerB, program);
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+        program.addInstruction(program.factory().createPush(registerB));
+    } else {
+        lhs->push(program);
+        rhs->push(program);
+
+        program.addInstruction(program.factory().createCall("concat"));
+
+        //TODO add 16 esp
+
+        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+        std::shared_ptr<Operand> registerB = createRegisterOperand("edx");
+        
+        program.addInstruction(program.factory().createPush(registerA));
+        program.addInstruction(program.factory().createPush(registerB));
     }
 }
 

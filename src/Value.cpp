@@ -43,3 +43,7 @@ void Value::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& pr
 void Value::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
     //Nothing //TODO Remove later
 }
+
+void Value::push(IntermediateProgram& program){
+    //Nothing //TODO Remove later
+}

@@ -39,3 +39,11 @@ void Integer::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& pr
         )
     ); 
 }
+
+void Integer::push(IntermediateProgram& program){
+    program.addInstruction(
+        program.factory().createPush(
+            createImmediateOperand(m_value)
+        )
+    );
+}

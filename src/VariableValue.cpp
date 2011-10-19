@@ -47,3 +47,15 @@ void VariableValue::assignTo(std::shared_ptr<Operand> operand, IntermediateProgr
         //TODO Arf
     }
 }
+
+void VariableValue::push(IntermediateProgram& program){
+    if(m_var->type() == Type::INT){
+        program.addInstruction(
+            program.factory().createPush(
+                m_var->toIntegerOperand()
+            )
+        );
+    } else {
+        //TODO Arf
+    }
+}

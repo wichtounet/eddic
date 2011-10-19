@@ -29,6 +29,7 @@ class Integer : public Value {
         
         void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
         void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

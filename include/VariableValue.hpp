@@ -31,6 +31,7 @@ class VariableValue : public Value {
 
         virtual void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
         virtual void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

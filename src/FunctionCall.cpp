@@ -43,7 +43,7 @@ void FunctionCall::write(AssemblyFileWriter& writer){
 }
 
 void FunctionCall::writeIL(IntermediateProgram& program){
-   //TODO Push every values to the stack
+    for_each(m_values.rbegin(), m_values.rend(), [&](std::shared_ptr<Value> v){ v->push(program); });
 
    program.addInstruction(program.factory().createCall(m_function_mangled));
 }
