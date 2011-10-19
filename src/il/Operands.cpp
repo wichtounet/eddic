@@ -27,6 +27,10 @@ std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label){
     return std::shared_ptr<Operand>(new GlobalOperand(label));
 }
 
+std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label, int offset){
+    return std::shared_ptr<Operand>(new GlobalOperand(label, offset));
+}
+
 std::shared_ptr<Operand> eddic::createStackOperand(int offset){
     return std::shared_ptr<Operand>(new StackOperand(offset));
 }

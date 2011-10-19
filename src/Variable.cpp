@@ -165,3 +165,27 @@ std::shared_ptr<Operand> Variable::toIntegerOperand(){
 
     throw "ERROR";
 }
+
+std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
+    //TODO Assert that type is string
+   
+    //TODO Verify
+    if(m_position.isStack()){
+        return make_pair(
+                    createBaseStackOperand(m_position.offset()), 
+                    createBaseStackOperand(m_position.offset() + 4)
+                );
+    } else if(m_position.isParameter()){
+        return make_pair(
+                    createBaseStackOperand(m_position.offset()), 
+                    createBaseStackOperand(m_position.offset() + 4)
+                );
+    } else if(m_position.isGlobal()){
+        return make_pair(
+                    createGlobalOperand(m_position.name()), 
+                    createGlobalOperand(m_position.name(), 4)
+                );
+    }
+
+    throw "ERROR";
+}

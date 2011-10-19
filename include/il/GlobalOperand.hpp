@@ -15,9 +15,10 @@ namespace eddic {
 class GlobalOperand : public Operand {
     private:
         std::string m_label;
+        int m_offset;
 
     public:
-        GlobalOperand(std::string label);
+        GlobalOperand(std::string label, int offset = 0);
 
         std::string getValue();
 };

@@ -8,6 +8,7 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
+#include <utility>
 #include <string>
 #include <map>
 #include <vector>
@@ -26,6 +27,8 @@ namespace eddic {
 class Value;
 class IntermediateProgram;
 class Operand;
+
+typedef std::shared_ptr<Operand> OperandPtr;
 
 class Variable {
     private:
@@ -47,7 +50,8 @@ class Variable {
         void pushToStack(AssemblyFileWriter& writer);
         void popFromStack(AssemblyFileWriter& writer);
 
-        std::shared_ptr<Operand> toIntegerOperand();
+        OperandPtr toIntegerOperand();
+        std::pair<OperandPtr, OperandPtr> toStringOperand();
 
         std::string name() const ;
         Type type() const ;
