@@ -14,6 +14,8 @@ using namespace eddic;
 Math::Math(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) : m_operation(operation), m_lhs(lhs), m_rhs(rhs) {}
 
 void Math::write(AssemblyFileWriter& writer){
+    //TODO Warn if eax or edx is used by the operands
+    
     //TODO Improve ?
     switch(m_operation){
         case Operation::ADD: 
@@ -25,15 +27,27 @@ void Math::write(AssemblyFileWriter& writer){
 
             break;
         case Operation::DIV:
-            writer.stream() << "divl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
+            writer.stream() << "movl " << m_lhs->getValue() << ", %eax" << std::endl;
+            writer.stream() << "movl " << m_rhs->getValue() << ", %ecx" << std::endl;
+            writer.stream() << "movl $0, %edx" << std::endl;
+            writer.stream() << "divl %ecx" << std::endl;
+            writer.stream() << "movl %eax, " << m_rhs->getValue() << std::endl;
 
             break;
         case Operation::MUL:
-            writer.stream() << "mull " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
+            writer.stream() << "movl " << m_lhs->getValue() << ", %eax" << std::endl;
+            writer.stream() << "movl " << m_rhs->getValue() << ", %ecx" << std::endl;
+            writer.stream() << "mull %ecx" << std::endl;
+            writer.stream() << "movl %eax, " << m_rhs->getValue() << std::endl;
 
             break;
         case Operation::MOD:
-            writer.stream() << "modl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
+            writer.stream() << "movl " << m_lhs->getValue() << ", %eax" << std::endl;
+            writer.stream() << "movl " << m_rhs->getValue() << ", %ecx" << std::endl;
+            writer.stream() << "movl $0, %edx" << std::endl;
+            writer.stream() << "divl %ecx" << std::endl;
+            writer.stream() << "movl %edx, " << m_rhs->getValue() << std::endl;
+
 
             break;
     }
