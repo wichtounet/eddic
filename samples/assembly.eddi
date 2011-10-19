@@ -3,7 +3,7 @@ void main(){
     string x = "ED" + "DI";
     println(x);
 
-    string a = "Variable a" + "EDDI";
+    string a = "Variable a";
     print("Should print 'Variable a' : ");
     println(a);
 
