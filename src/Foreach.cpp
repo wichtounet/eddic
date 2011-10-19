@@ -19,7 +19,7 @@
 #include "Integer.hpp"
 
 #include "il/IntermediateProgram.hpp"
-#include "Utils.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 
@@ -67,7 +67,7 @@ void Foreach::writeIL(IntermediateProgram& program){
 
     ++labels;
 
-    program.addInstruction(program.factory().createLabel("start_foreach" + toString(labels)));
+    program.addInstruction(program.factory().createLabel(label("start_foreach", labels)));
 
     //Create a condition
     std::shared_ptr<Value> variableValue(new VariableValue(m_var));
@@ -83,9 +83,9 @@ void Foreach::writeIL(IntermediateProgram& program){
 
     addition->assignTo(m_var, program);
 
-    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "start_foreach" + toString(labels)));
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_foreach", labels)));
 
-    program.addInstruction(program.factory().createLabel("end_foreach" + toString(labels)));
+    program.addInstruction(program.factory().createLabel(label("end_foreach", labels)));
 }
 
 void Foreach::checkVariables(){

@@ -10,6 +10,7 @@
 #include "AssemblyFileWriter.hpp"
 #include "il/IntermediateProgram.hpp"
 #include "il/Operands.hpp"
+#include "il/Labels.hpp"
 #include "Context.hpp"
 #include "Utils.hpp"
 
@@ -93,7 +94,7 @@ void eddic::writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condi
     if (!condition->isOperator()) {
         //No need to jump if true
         if (condition->condition() == FALSE_VALUE) {
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label + toString(labelIndex)));
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
         }
     } else {
         condition->lhs()->assignTo(createRegisterOperand("eax"), program);
@@ -103,27 +104,27 @@ void eddic::writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condi
 
         switch (condition->condition()) {
             case GREATER_OPERATOR:
-                program.addInstruction(program.factory().createJump(JumpCondition::LESS_EQUALS, label + toString(labelIndex)));
+                program.addInstruction(program.factory().createJump(JumpCondition::LESS_EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             case GREATER_EQUALS_OPERATOR:
-                program.addInstruction(program.factory().createJump(JumpCondition::LESS, label + toString(labelIndex)));
+                program.addInstruction(program.factory().createJump(JumpCondition::LESS, eddic::label(label, labelIndex)));
 
                 break;
             case LESS_OPERATOR:
-                program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, label + toString(labelIndex)));
+                program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             case LESS_EQUALS_OPERATOR:
-                program.addInstruction(program.factory().createJump(JumpCondition::GREATER, label + toString(labelIndex)));
+                program.addInstruction(program.factory().createJump(JumpCondition::GREATER, eddic::label(label, labelIndex)));
 
                 break;
             case EQUALS_OPERATOR:
-                program.addInstruction(program.factory().createJump(JumpCondition::NOT_EQUALS, label + toString(labelIndex)));
+                program.addInstruction(program.factory().createJump(JumpCondition::NOT_EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             case NOT_EQUALS_OPERATOR:
-                program.addInstruction(program.factory().createJump(JumpCondition::EQUALS, label + toString(labelIndex)));
+                program.addInstruction(program.factory().createJump(JumpCondition::EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             default:
@@ -213,15 +214,15 @@ void If::writeIL(IntermediateProgram& program){
         if (m_elseBlock) {
             int b = labels++;
 
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "L" + toString(b)));
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", b)));
 
-            program.addInstruction(program.factory().createLabel("L" + toString(a)));
+            program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
 
             m_elseBlock->writeIL(program);
 
-            program.addInstruction(program.factory().createLabel("L" + toString(b)));
+            program.addInstruction(program.factory().createLabel(eddic::label("L", b)));
         } else {
-            program.addInstruction(program.factory().createLabel("L" + toString(a)));
+            program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
         }
     } else {
         int end = labels++;
@@ -231,12 +232,12 @@ void If::writeIL(IntermediateProgram& program){
 
         ParseNode::writeIL(program);
 
-        program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "L" + toString(end)));
+        program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
 
         for (std::vector<std::shared_ptr<ElseIf>>::size_type i = 0; i < elseIfs.size(); ++i) {
             std::shared_ptr<ElseIf> elseIf = elseIfs[i];
 
-            program.addInstruction(program.factory().createLabel("L" + toString(next)));
+            program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
             //Last elseif
             if (i == elseIfs.size() - 1) {
@@ -253,16 +254,16 @@ void If::writeIL(IntermediateProgram& program){
 
             elseIf->writeIL(program);
 
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "L" + toString(end)));
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
         }
 
         if (m_elseBlock) {
-            program.addInstruction(program.factory().createLabel("L" + toString(next)));
+            program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
             m_elseBlock->writeIL(program);
         }
 
-        program.addInstruction(program.factory().createLabel("L" + toString(end)));
+        program.addInstruction(program.factory().createLabel(eddic::label("L", end)));
     }
 }
 

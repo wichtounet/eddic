@@ -13,9 +13,9 @@
 #include "Condition.hpp"
 
 #include "Value.hpp"
-#include "Utils.hpp"
 
 #include "il/IntermediateProgram.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 
@@ -50,15 +50,15 @@ void While::writeIL(IntermediateProgram& program) {
     int startLabel = labels++;
     int endLabel = labels++;
 
-    program.addInstruction(program.factory().createLabel("WL" + toString(startLabel)));
+    program.addInstruction(program.factory().createLabel(label("WL", startLabel)));
 
     writeILJumpIfNot(program, m_condition, "WL", endLabel);
 
     ParseNode::writeIL(program);
 
-    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "WL" + toString(startLabel)));
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("WL", startLabel)));
 
-    program.addInstruction(program.factory().createLabel("WL" + toString(endLabel)));
+    program.addInstruction(program.factory().createLabel(label("WL", endLabel)));
 }
 
 void While::checkVariables() {

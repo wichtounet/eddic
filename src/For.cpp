@@ -13,9 +13,10 @@
 #include "Condition.hpp"
 
 #include "Value.hpp"
-#include "Utils.hpp"
+#include "il/Labels.hpp"
 
 #include "il/IntermediateProgram.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 
@@ -56,7 +57,7 @@ void For::writeIL(IntermediateProgram& program){
 
     ++labels;
 
-    program.addInstruction(program.factory().createLabel("start_for" + toString(labels)));
+    program.addInstruction(program.factory().createLabel(label("start_for", labels)));
 
     if(m_condition){
         writeILJumpIfNot(program, m_condition, "end_for", labels);
@@ -68,9 +69,9 @@ void For::writeIL(IntermediateProgram& program){
         m_iter->writeIL(program);
     }
 
-    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, "start_for" + toString(labels)));
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_for", labels)));
 
-    program.addInstruction(program.factory().createLabel("end_for" + toString(labels)));
+    program.addInstruction(program.factory().createLabel(label("end_for", labels)));
 }
 
 void For::checkVariables(){
