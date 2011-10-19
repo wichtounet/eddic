@@ -47,3 +47,15 @@ void Division::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& p
 void Division::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
     assignTo(variable->toIntegerOperand(), program);
 }
+
+void Division::push(IntermediateProgram& program){
+    std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+    std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+
+    lhs->assignTo(registerA, program);
+    rhs->assignTo(registerB, program);
+
+    program.addInstruction(program.factory().createMath(Operation::DIV, registerA, registerB));
+
+    program.addInstruction(program.factory().createPush(registerA));
+}

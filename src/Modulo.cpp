@@ -49,3 +49,15 @@ void Modulo::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& pro
 void Modulo::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
     assignTo(variable->toIntegerOperand(), program);
 }
+
+void Modulo::push(IntermediateProgram& program){
+    std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+    std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+
+    lhs->assignTo(registerA, program);
+    rhs->assignTo(registerB, program);
+
+    program.addInstruction(program.factory().createMath(Operation::MOD, registerA, registerB));
+
+    program.addInstruction(program.factory().createPush(registerA));
+}

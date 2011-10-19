@@ -74,15 +74,13 @@ void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram&
 
         program.addInstruction(program.factory().createCall("concat"));
 
-        //TODO add 16 esp
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
 
         std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
         std::shared_ptr<Operand> registerB = createRegisterOperand("edx");
         
-        program.addInstruction(program.factory().createPush(registerA));
-        program.addInstruction(program.factory().createPush(registerB));
-
-        //TODO Assign to variable
+        program.addInstruction(program.factory().createMove(registerA, variable->toStringOperand().first));
+        program.addInstruction(program.factory().createMove(registerB, variable->toStringOperand().second));
     }
 }
 
@@ -103,7 +101,7 @@ void Addition::push(IntermediateProgram& program){
 
         program.addInstruction(program.factory().createCall("concat"));
 
-        //TODO add 16 esp
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
 
         std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
         std::shared_ptr<Operand> registerB = createRegisterOperand("edx");

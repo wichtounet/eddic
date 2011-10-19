@@ -44,7 +44,6 @@ void VariableValue::assignTo(std::shared_ptr<Variable> variable, IntermediatePro
     } else {
         program.addInstruction(program.factory().createMove(m_var->toStringOperand().first, variable->toStringOperand().first));
         program.addInstruction(program.factory().createMove(m_var->toStringOperand().second, variable->toStringOperand().second));
-        
     }
 }
 

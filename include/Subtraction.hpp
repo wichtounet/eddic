@@ -24,6 +24,7 @@ class Subtraction : public BinaryOperator {
         
         void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
         void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic
