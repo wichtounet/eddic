@@ -12,6 +12,9 @@
 #include "Value.hpp"
 #include "Variable.hpp"
 
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
+
 using namespace eddic;
 
 Swap::Swap(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& lhs, const std::string& rhs) : ParseNode(context, token), m_lhs(lhs), m_rhs(rhs) {}
@@ -53,6 +56,43 @@ void Swap::write(AssemblyFileWriter& writer) {
             m_rhs_var->moveFromRegister(writer, "%eax", "%ebx"); 
 
             break;
+        default:
+            throw CompilerException("Variable of invalid type");
+    }
+}
+
+void Swap::writeIL(IntermediateProgram& program){
+    switch (m_type) {
+        case Type::INT:{
+            std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+            std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+       
+            program.addInstruction(program.factory().createMove(m_lhs_var->toIntegerOperand(), registerA));
+            program.addInstruction(program.factory().createMove(m_rhs_var->toIntegerOperand(), registerB));
+
+            program.addInstruction(program.factory().createMove(registerB, m_lhs_var->toIntegerOperand()));
+            program.addInstruction(program.factory().createMove(registerA, m_rhs_var->toIntegerOperand()));
+
+            break;
+        }
+        case Type::STRING:{
+            std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+            std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
+            std::shared_ptr<Operand> registerC = createRegisterOperand("ecx");
+            std::shared_ptr<Operand> registerD = createRegisterOperand("edx");
+            
+            program.addInstruction(program.factory().createMove(m_lhs_var->toStringOperand().first, registerA));
+            program.addInstruction(program.factory().createMove(m_lhs_var->toStringOperand().second, registerB));
+            program.addInstruction(program.factory().createMove(m_rhs_var->toStringOperand().first, registerC));
+            program.addInstruction(program.factory().createMove(m_rhs_var->toStringOperand().second, registerD));
+            
+            program.addInstruction(program.factory().createMove(registerC, m_lhs_var->toStringOperand().first));
+            program.addInstruction(program.factory().createMove(registerD, m_lhs_var->toStringOperand().first));
+            program.addInstruction(program.factory().createMove(registerA, m_rhs_var->toStringOperand().first));
+            program.addInstruction(program.factory().createMove(registerB, m_rhs_var->toStringOperand().first));
+
+            break;
+        }
         default:
             throw CompilerException("Variable of invalid type");
     }

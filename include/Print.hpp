@@ -28,6 +28,7 @@ class Print : public ParseNode {
         void checkStrings(StringPool& pool);
         void checkVariables();
         void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

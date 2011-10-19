@@ -30,6 +30,7 @@ class Swap : public ParseNode {
 
         void checkVariables();
         void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

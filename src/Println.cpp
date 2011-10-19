@@ -10,6 +10,9 @@
 #include "Println.hpp"
 #include "AssemblyFileWriter.hpp"
 
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
+
 using namespace eddic;
 
 Println::Println(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v) : Print(context, token, v) {}
@@ -18,4 +21,10 @@ void Println::write(AssemblyFileWriter& writer) {
     Print::write(writer);
 
     writer.stream() << "call print_line" << std::endl;
+}
+
+void Println::writeIL(IntermediateProgram& program){
+    Print::writeIL(program);
+
+    program.addInstruction(program.factory().createCall("print_line"));
 }
