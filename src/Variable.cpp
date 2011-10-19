@@ -155,8 +155,8 @@ void Variable::popFromStack(AssemblyFileWriter& writer){
 std::shared_ptr<Operand> Variable::toIntegerOperand(){
     //TODO Assert that type is int
     
-    if(m_position.isStack()){
-        return createBaseStackOperand(m_position.offset());
+    if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
+        return createBaseStackOperand(-1 * m_position.offset());
     } else if(m_position.isParameter()){
         return createBaseStackOperand(m_position.offset());
     } else if(m_position.isGlobal()){
