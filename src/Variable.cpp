@@ -46,7 +46,7 @@ std::shared_ptr<Operand> Variable::toIntegerOperand(){
     } else if(m_position.isParameter()){
         return createBaseStackOperand(m_position.offset());
     } else if(m_position.isGlobal()){
-        return createGlobalOperand(m_position.name());
+        return createGlobalOperand("VI" + m_position.name());
     }
 
     throw "ERROR";
@@ -68,8 +68,8 @@ std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
                 );
     } else if(m_position.isGlobal()){
         return make_pair(
-                    createGlobalOperand(m_position.name()), 
-                    createGlobalOperand(m_position.name(), 4)
+                    createGlobalOperand("VS" + m_position.name()), 
+                    createGlobalOperand("VS" + m_position.name(), 4)
                 );
     }
 
