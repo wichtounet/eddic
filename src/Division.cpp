@@ -20,7 +20,7 @@ int Division::compute(int left, int right) {
     return left / right;
 }
 
-void Division::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+std::shared_ptr<Operand> performDivision(std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs, IntermediateProgram& program){
     std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
     std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
 
@@ -29,7 +29,11 @@ void Division::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& p
 
     program.addInstruction(program.factory().createMath(Operation::DIV, registerA, registerB));
 
-    program.addInstruction(program.factory().createMove(registerB, operand));
+    return registerA;
+}
+
+void Division::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    program.addInstruction(program.factory().createMove(performDivision(lhs, rhs, program), operand));
 }
 
 void Division::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
@@ -37,13 +41,5 @@ void Division::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram&
 }
 
 void Division::push(IntermediateProgram& program){
-    std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
-    std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
-
-    lhs->assignTo(registerA, program);
-    rhs->assignTo(registerB, program);
-
-    program.addInstruction(program.factory().createMath(Operation::DIV, registerA, registerB));
-
-    program.addInstruction(program.factory().createPush(registerA));
+    program.addInstruction(program.factory().createPush(performDivision(lhs, rhs, program)));
 }

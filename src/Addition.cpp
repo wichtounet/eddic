@@ -30,11 +30,7 @@ Type Addition::checkTypes(Type left, Type right) {
     return left;
 }
 
-//TODO Remove similar code
-
-void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
-    //TODO //Warning string
-
+std::shared_ptr<Operand> performAddition(std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs, IntermediateProgram& program){
     std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
     std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
 
@@ -43,9 +39,16 @@ void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& p
 
     program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
 
-    program.addInstruction(program.factory().createMove(registerB, operand));
+    return registerB;
 }
 
+void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    //TODO //Warning string
+
+    program.addInstruction(program.factory().createMove(performAddition(lhs, rhs, program), operand));
+}
+
+//TODO Remove similar code for string addition
 void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
     if(lhs->type() == Type::INT){
         assignTo(variable->toIntegerOperand(), program);
@@ -67,15 +70,7 @@ void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram&
 
 void Addition::push(IntermediateProgram& program){
     if(lhs->type() == Type::INT){
-        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
-        std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
-
-        lhs->assignTo(registerA, program);
-        rhs->assignTo(registerB, program);
-
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
-
-        program.addInstruction(program.factory().createPush(registerB));
+        program.addInstruction(program.factory().createPush(performAddition(lhs, rhs, program)));
     } else {
         lhs->push(program);
         rhs->push(program);

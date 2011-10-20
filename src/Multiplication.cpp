@@ -20,7 +20,7 @@ int Multiplication::compute(int left, int right) {
     return left * right;
 }
 
-void Multiplication::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+std::shared_ptr<Operand> performMultiplication(std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs, IntermediateProgram& program){
     std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
     std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
 
@@ -29,7 +29,11 @@ void Multiplication::assignTo(std::shared_ptr<Operand> operand, IntermediateProg
 
     program.addInstruction(program.factory().createMath(Operation::MUL, registerA, registerB));
 
-    program.addInstruction(program.factory().createMove(registerB, operand));
+    return registerB;
+}
+
+void Multiplication::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    program.addInstruction(program.factory().createMove(performMultiplication(lhs, rhs, program), operand));
 }
 
 void Multiplication::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
@@ -37,13 +41,5 @@ void Multiplication::assignTo(std::shared_ptr<Variable> variable, IntermediatePr
 }
 
 void Multiplication::push(IntermediateProgram& program){
-    std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
-    std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
-
-    lhs->assignTo(registerA, program);
-    rhs->assignTo(registerB, program);
-
-    program.addInstruction(program.factory().createMath(Operation::MUL, registerA, registerB));
-
-    program.addInstruction(program.factory().createPush(registerA));
+    program.addInstruction(program.factory().createPush(performMultiplication(lhs, rhs, program)));
 }
