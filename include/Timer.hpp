@@ -8,7 +8,7 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <sys/time.h>
+#include <boost/chrono.hpp>
 
 namespace eddic {
 
@@ -18,8 +18,7 @@ class Timer {
         double elapsed();
 	
     private:
-        timeval startTime;
-        timeval endTime;
+        boost::chrono::system_clock::time_point startTime;
 };
 
 } //end of eddic
