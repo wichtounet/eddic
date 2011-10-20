@@ -85,7 +85,7 @@ int Compiler::compile(const string& file) {
     lexer.close();
     writer.close();
 
-    cout << "Compilation took " << timer.elapsed() << "ms" << endl;
+    cout << "Compilation took " << timer.elapsed() << "s" << endl;
 
     return code;
 }
