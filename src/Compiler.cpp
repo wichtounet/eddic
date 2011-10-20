@@ -55,18 +55,13 @@ int Compiler::compile(const string& file) {
         //Optimize the parse tree
         program->optimize();
 
-        //Compilation
-//        writer.open("output.asm");
-//        program->write(writer);
-
+        //Write Intermediate representation of the parse tree
         IntermediateProgram il;
         program->writeIL(il);
 
-        //Temporary test
-//        writer.close();
+        //Write assembly code
         writer.open("output.asm");
         il.writeAsm(writer);
-        //End of Temporary test
 
         if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
