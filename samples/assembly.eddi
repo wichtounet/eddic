@@ -1,7 +1,26 @@
+//Global Variables
+int ga = 1000;
+string gb = "Global Variable b"; 
+
+
 //Main method
 void main(){
     string x = "ED" + "DI";
     println(x);
+
+    print("Should print '1000' : ");
+    println(ga);
+
+    print("Should print 'Global Variable b' : ");
+    println(gb);
+
+    ga = 2000;
+    print("Should print '2000' : ");
+    println(ga);
+
+    gb = "New value";
+    print("Should print 'New value' : ");
+    println(gb);
 
     string a = "Variable a";
     print("Should print 'Variable a' : ");
@@ -49,6 +68,9 @@ void main(){
 
     print("122 / 2 = ");
     println(122 / 2);
+    
+    print("123 / 2 = ");
+    println(123 / 2);
 
     print("7 % 5 = ");
     println(7 % 5);
@@ -58,6 +80,9 @@ void main(){
 
     print("((444 - 333) * (2)) = ");
     println(((444 - 333) * (2)));
+    
+    print("((444 * 333) - (1222 / 7)) + (33 % 2 + 3 - 199) = ");
+    println(((444 * 333) - (1222 / 7)) + (33 % 2 + 3 - 199));
 
     if(4 > 3){
         string xa = "Cool";
