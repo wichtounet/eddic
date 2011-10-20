@@ -60,6 +60,12 @@ void main(){
     d = c;
     println(d);
 
+    print("2222 + 2222 = ");
+    println(c + d);
+
+    print("2000 * 5 = ");
+    println(ga * 5);
+
     print("666 + 333 = ");
     println(666 + 333);
 
