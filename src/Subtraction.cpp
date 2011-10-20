@@ -40,9 +40,9 @@ void Subtraction::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram
     lhs->assignTo(registerA, program);
     rhs->assignTo(registerB, program);
 
-    program.addInstruction(program.factory().createMath(Operation::SUB, registerA, registerB));
+    program.addInstruction(program.factory().createMath(Operation::SUB, registerB, registerA));
 
-    program.addInstruction(program.factory().createMove(registerB, operand));
+    program.addInstruction(program.factory().createMove(registerA, operand));
 }
 
 void Subtraction::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
@@ -56,7 +56,7 @@ void Subtraction::push(IntermediateProgram& program){
     lhs->assignTo(registerA, program);
     rhs->assignTo(registerB, program);
 
-    program.addInstruction(program.factory().createMath(Operation::SUB, registerA, registerB));
+    program.addInstruction(program.factory().createMath(Operation::SUB, registerB, registerA));
 
     program.addInstruction(program.factory().createPush(registerA));
 }
