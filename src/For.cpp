@@ -22,32 +22,6 @@ using namespace eddic;
 
 For::For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
 
-void For::write(AssemblyFileWriter& writer){
-    if(m_start){
-        m_start->write(writer);
-    }
-
-    static int labels = -1;
-
-    ++labels;
-
-    writer.stream() << "start_for" << labels << ":" << std::endl;
-
-    if(m_condition){
-        writeJumpIfNot(writer, m_condition, "end_for", labels);
-    }
-
-    ParseNode::write(writer);
-
-    if(m_iter){
-        m_iter->write(writer);
-    }
-
-    writer.stream() << "jmp start_for" << labels << std::endl;
-
-    writer.stream() << "end_for" << labels << ":" << std::endl;
-}
-
 void For::writeIL(IntermediateProgram& program){
     if(m_start){
         m_start->writeIL(program);

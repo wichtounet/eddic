@@ -16,17 +16,6 @@
 
 using namespace eddic;
 
-void Multiplication::write(AssemblyFileWriter& writer) {
-    lhs->write(writer);
-    rhs->write(writer);
-
-    writer.stream() << "movl (%esp), %eax" << std::endl;
-    writer.stream() << "movl 4(%esp), %ecx" << std::endl;
-    writer.stream() << "mull %ecx" << std::endl;
-    writer.stream() << "addl $8, %esp" << std::endl;
-    writer.stream() << "pushl %eax" << std::endl;
-}
-
 int Multiplication::compute(int left, int right) {
     return left * right;
 }

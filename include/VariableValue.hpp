@@ -26,7 +26,6 @@ class VariableValue : public Value {
         VariableValue(std::shared_ptr<Variable> var);
 
         void checkVariables();
-        void write(AssemblyFileWriter& writer);
         bool isConstant();
 
         virtual void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);

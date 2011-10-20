@@ -11,8 +11,6 @@
 #include "Context.hpp"
 #include "StringPool.hpp"
 
-#include "AssemblyFileWriter.hpp" //TODO Remove
-
 #include "il/IntermediateProgram.hpp"
 
 #include "Utils.hpp"
@@ -33,10 +31,6 @@ std::shared_ptr<Context> ParseNode::context() {
 
 const std::shared_ptr<Token> ParseNode::token(){
     return m_token;
-}
-
-void ParseNode::write(AssemblyFileWriter& writer) {
-    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
 }
 
 void ParseNode::writeIL(IntermediateProgram& program) {

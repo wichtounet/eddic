@@ -39,57 +39,6 @@ std::shared_ptr<Condition> If::condition() {
     return m_condition;
 }
 
-void writeConditionOperands(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition) {
-    condition->lhs()->write(writer);
-    condition->rhs()->write(writer);
-
-    writer.stream() << "movl 4(%esp), %eax" << std::endl;
-    writer.stream() << "movl (%esp), %ebx" << std::endl;
-    writer.stream() << "addl $8, %esp" << std::endl;
-}
-
-void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
-    if (!condition->isOperator()) {
-        //No need to jump if true
-        if (condition->condition() == FALSE_VALUE) {
-            writer.stream() << "jmp " << label << labelIndex << std::endl;
-        }
-    } else {
-        writeConditionOperands(writer, condition);
-
-        writer.stream() << "cmpl %ebx, %eax" << std::endl;
-
-        switch (condition->condition()) {
-            case GREATER_OPERATOR:
-                writer.stream() << "jle " << label << labelIndex << std::endl;
-
-                break;
-            case GREATER_EQUALS_OPERATOR:
-                writer.stream() << "jl " << label << labelIndex << std::endl;
-
-                break;
-            case LESS_OPERATOR:
-                writer.stream() << "jge " << label << labelIndex << std::endl;
-
-                break;
-            case LESS_EQUALS_OPERATOR:
-                writer.stream() << "jg " << label << labelIndex << std::endl;
-
-                break;
-            case EQUALS_OPERATOR:
-                writer.stream() << "jne " << label << labelIndex << std::endl;
-
-                break;
-            case NOT_EQUALS_OPERATOR:
-                writer.stream() << "je " << label << labelIndex << std::endl;
-
-                break;
-            default:
-                throw CompilerException("The condition must be managed using not-operator");
-        }
-    }
-}
-
 void eddic::writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
     if (!condition->isOperator()) {
         //No need to jump if true
@@ -130,73 +79,6 @@ void eddic::writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condi
             default:
                 throw CompilerException("The condition must be managed using not-operator");
         }
-    }
-}
-
-void If::write(AssemblyFileWriter& writer) {
-    //Make something accessible for others operations
-    static int labels = 0;
-
-    if (elseIfs.empty()) {
-        int a = labels++;
-
-        writeJumpIfNot(writer, m_condition, "L", a);
-
-        ParseNode::write(writer);
-
-        if (m_elseBlock) {
-            int b = labels++;
-
-            writer.stream() << "jmp L" << b << std::endl;
-
-            writer.stream() << "L" << a << ":" << std::endl;
-
-            m_elseBlock->write(writer);
-
-            writer.stream() << "L" << b << ":" << std::endl;
-        } else {
-            writer.stream() << "L" << a << ":" << std::endl;
-        }
-    } else {
-        int end = labels++;
-        int next = labels++;
-
-        writeJumpIfNot(writer, m_condition, "L", next);
-
-        ParseNode::write(writer);
-
-        writer.stream() << "jmp L" << end << std::endl;
-
-        for (std::vector<std::shared_ptr<ElseIf>>::size_type i = 0; i < elseIfs.size(); ++i) {
-            std::shared_ptr<ElseIf> elseIf = elseIfs[i];
-
-            writer.stream() << "L" << next << ":" << std::endl;
-
-            //Last elseif
-            if (i == elseIfs.size() - 1) {
-                if (m_elseBlock) {
-                    next = labels++;
-                } else {
-                    next = end;
-                }
-            } else {
-                next = labels++;
-            }
-
-            writeJumpIfNot(writer, elseIf->condition(), "L", next);
-
-            elseIf->write(writer);
-
-            writer.stream() << "jmp L" << end << std::endl;
-        }
-
-        if (m_elseBlock) {
-            writer.stream() << "L" << next << ":" << std::endl;
-
-            m_elseBlock->write(writer);
-        }
-
-        writer.stream() << "L" << end << ":" << std::endl;
     }
 }
 

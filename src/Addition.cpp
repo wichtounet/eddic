@@ -30,25 +30,6 @@ Type Addition::checkTypes(Type left, Type right) {
     return left;
 }
 
-void Addition::write(AssemblyFileWriter& writer) {
-    lhs->write(writer);
-    rhs->write(writer);
-
-    if (lhs->type() == Type::INT) {
-        writer.stream() << "movl (%esp), %eax" << std::endl;
-        writer.stream() << "movl 4(%esp), %ecx" << std::endl;
-        writer.stream() << "addl %ecx, %eax" << std::endl;
-        writer.stream() << "addl $8, %esp" << std::endl;
-        writer.stream() << "pushl %eax" << std::endl;
-    } else {
-        writer.stream() << "call concat" << std::endl;
-        writer.stream() << "addl $16, %esp" << std::endl;
-
-        writer.stream() << "pushl %eax" << std::endl;
-        writer.stream() << "pushl %edx" << std::endl;
-    }
-}
-
 //TODO Remove similar code
 
 void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){

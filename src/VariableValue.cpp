@@ -30,10 +30,6 @@ void VariableValue::checkVariables() {
     m_type = m_var->type();
 }
 
-void VariableValue::write(AssemblyFileWriter& writer) {
-    m_var->pushToStack(writer);
-}
-
 bool VariableValue::isConstant() {
     return false;
 }
