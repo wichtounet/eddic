@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "il/InstructionFactory.hpp"
+#include "il/InstructionFactory32.hpp"
 #include "il/Instruction.hpp"
 #include "il/Label.hpp"
 #include "il/Call.hpp"
@@ -27,70 +27,70 @@
 
 using namespace eddic;
 
-std::shared_ptr<Instruction> InstructionFactory::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
+std::shared_ptr<Instruction> InstructionFactory32::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
    return std::shared_ptr<Instruction>(new Move(lhs, rhs)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
+std::shared_ptr<Instruction> InstructionFactory32::createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
    return std::shared_ptr<Instruction>(new Compare(lhs, rhs)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createPush(std::shared_ptr<Operand> operand){
+std::shared_ptr<Instruction> InstructionFactory32::createPush(std::shared_ptr<Operand> operand) const {
    return std::shared_ptr<Instruction>(new Push(operand)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createLabel(const std::string& label){
+std::shared_ptr<Instruction> InstructionFactory32::createLabel(const std::string& label) const {
    return std::shared_ptr<Instruction>(new Label(label)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createJump(JumpCondition condition, const std::string& label){
+std::shared_ptr<Instruction> InstructionFactory32::createJump(JumpCondition condition, const std::string& label) const {
    return std::shared_ptr<Instruction>(new Jump(condition, label)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createCall(const std::string& function){
+std::shared_ptr<Instruction> InstructionFactory32::createCall(const std::string& function) const {
    return std::shared_ptr<Instruction>(new Call(function)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createFunctionDeclaration(const std::string& function, int size){
+std::shared_ptr<Instruction> InstructionFactory32::createFunctionDeclaration(const std::string& function, int size) const {
    return std::shared_ptr<Instruction>(new FunctionDeclaration(function, size)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createFunctionExit(int size){
+std::shared_ptr<Instruction> InstructionFactory32::createFunctionExit(int size) const {
    return std::shared_ptr<Instruction>(new FunctionExit(size)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
+std::shared_ptr<Instruction> InstructionFactory32::createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
    return std::shared_ptr<Instruction>(new Math(operation, lhs, rhs)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createGlobalIntVariable(std::string name, int value){
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalIntVariable(std::string name, int value) const {
    return std::shared_ptr<Instruction>(new GlobalIntVariable(name, value)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createGlobalStringVariable(std::string name, std::string label, int size){
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalStringVariable(std::string name, std::string label, int size) const {
     return std::shared_ptr<Instruction>(new GlobalStringVariable(name, label, size)); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createPrintStringFunction(){
+std::shared_ptr<Instruction> InstructionFactory32::createPrintStringFunction() const {
     return std::shared_ptr<Instruction>(new PrintStringFunction());
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createPrintIntegerFunction(){
+std::shared_ptr<Instruction> InstructionFactory32::createPrintIntegerFunction() const {
     return std::shared_ptr<Instruction>(new PrintIntegerFunction());
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createPrintLineFunction(){
+std::shared_ptr<Instruction> InstructionFactory32::createPrintLineFunction() const {
     return std::shared_ptr<Instruction>(new PrintLineFunction());
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createConcatFunction(){
+std::shared_ptr<Instruction> InstructionFactory32::createConcatFunction() const {
     return std::shared_ptr<Instruction>(new ConcatFunction());
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createMainDeclaration(){
+std::shared_ptr<Instruction> InstructionFactory32::createMainDeclaration() const {
     return std::shared_ptr<Instruction>(new Main());
 }
 
-std::shared_ptr<Instruction> InstructionFactory::createDataSection(std::unordered_map<std::string, std::string> pool){
+std::shared_ptr<Instruction> InstructionFactory32::createDataSection(std::unordered_map<std::string, std::string> pool) const {
     return std::shared_ptr<Instruction>(new DataSection(pool));
 }

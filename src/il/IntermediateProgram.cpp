@@ -10,10 +10,16 @@
 #include "il/IntermediateProgram.hpp"
 #include "il/Instruction.hpp"
 
+#include "il/InstructionFactory32.hpp"
+
 using namespace eddic;
 
-InstructionFactory IntermediateProgram::factory(){
-    return m_factory;
+IntermediateProgram::IntermediateProgram(){
+    m_factory = std::shared_ptr<InstructionFactory>(new InstructionFactory32());
+}
+
+const InstructionFactory& IntermediateProgram::factory(){
+    return *m_factory;
 }
 
 void IntermediateProgram::addInstruction(std::shared_ptr<Instruction> instruction){

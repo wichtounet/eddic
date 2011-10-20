@@ -21,10 +21,13 @@ class Instruction;
 class IntermediateProgram {
     private:
         std::vector<std::shared_ptr<Instruction>> m_instructions;
-        InstructionFactory m_factory;
+        std::shared_ptr<InstructionFactory> m_factory;
 
     public:
-        InstructionFactory factory();
+        IntermediateProgram();
+
+        const InstructionFactory& factory();
+
         void addInstruction(std::shared_ptr<Instruction> instruction);
         void writeAsm(AssemblyFileWriter& writer);
 };

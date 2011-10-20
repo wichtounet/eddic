@@ -22,25 +22,25 @@ class Operand;
 
 class InstructionFactory {
     public:
-        std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
-        std::shared_ptr<Instruction> createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
-        std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand);
-        std::shared_ptr<Instruction> createLabel(const std::string& label);
-        std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label);
-        std::shared_ptr<Instruction> createCall(const std::string& function);
-        std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0);
-        std::shared_ptr<Instruction> createFunctionExit(int size = 0);
-        std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
-        std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value);
-        std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size);
+        virtual std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const = 0;
+        virtual std::shared_ptr<Instruction> createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const = 0;
+        virtual std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand) const = 0;
+        virtual std::shared_ptr<Instruction> createLabel(const std::string& label) const = 0;
+        virtual std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label) const = 0;
+        virtual std::shared_ptr<Instruction> createCall(const std::string& function) const = 0;
+        virtual std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0) const = 0;
+        virtual std::shared_ptr<Instruction> createFunctionExit(int size = 0) const = 0;
+        virtual std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const = 0;
+        virtual std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value) const = 0;
+        virtual std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size) const = 0;
     
-        std::shared_ptr<Instruction> createPrintStringFunction();
-        std::shared_ptr<Instruction> createPrintIntegerFunction();
-        std::shared_ptr<Instruction> createPrintLineFunction();
-        std::shared_ptr<Instruction> createConcatFunction();
+        virtual std::shared_ptr<Instruction> createPrintStringFunction() const = 0;
+        virtual std::shared_ptr<Instruction> createPrintIntegerFunction() const = 0;
+        virtual std::shared_ptr<Instruction> createPrintLineFunction() const = 0;
+        virtual std::shared_ptr<Instruction> createConcatFunction() const = 0;
 
-        std::shared_ptr<Instruction> createMainDeclaration();
-        std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool);
+        virtual std::shared_ptr<Instruction> createMainDeclaration() const = 0;
+        virtual std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool) const = 0;
 };
 
 } //end of eddic
