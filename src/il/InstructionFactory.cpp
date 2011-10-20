@@ -18,6 +18,10 @@
 #include "il/Push.hpp"
 #include "il/GlobalStringVariable.hpp"
 #include "il/GlobalIntVariable.hpp"
+#include "il/PrintLineFunction.hpp"
+#include "il/PrintStringFunction.hpp"
+#include "il/PrintIntegerFunction.hpp"
+#include "il/ConcatFunction.hpp"
 
 using namespace eddic;
 
@@ -62,5 +66,21 @@ std::shared_ptr<Instruction> InstructionFactory::createGlobalIntVariable(std::st
 }
 
 std::shared_ptr<Instruction> InstructionFactory::createGlobalStringVariable(std::string name, std::string label, int size){
-   return std::shared_ptr<Instruction>(new GlobalStringVariable(name, label, size)); 
+    return std::shared_ptr<Instruction>(new GlobalStringVariable(name, label, size)); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createPrintStringFunction(){
+    return std::shared_ptr<Instruction>(new PrintStringFunction());
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createPrintIntegerFunction(){
+    return std::shared_ptr<Instruction>(new PrintIntegerFunction());
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createPrintLineFunction(){
+    return std::shared_ptr<Instruction>(new PrintLineFunction());
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createConcatFunction(){
+    return std::shared_ptr<Instruction>(new ConcatFunction());
 }

@@ -16,8 +16,8 @@
 using namespace eddic;
 
 void Methods::writeIL(IntermediateProgram& program){
-    program.addInstruction(std::shared_ptr<Instruction>(new PrintStringFunction()));
-    program.addInstruction(std::shared_ptr<Instruction>(new PrintIntegerFunction()));
-    program.addInstruction(std::shared_ptr<Instruction>(new PrintLineFunction()));
-    program.addInstruction(std::shared_ptr<Instruction>(new ConcatFunction()));
+    program.addInstruction(program.factory().createPrintStringFunction());
+    program.addInstruction(program.factory().createPrintIntegerFunction());
+    program.addInstruction(program.factory().createPrintLineFunction());
+    program.addInstruction(program.factory().createConcatFunction());
 }

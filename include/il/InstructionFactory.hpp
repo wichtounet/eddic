@@ -32,6 +32,11 @@ class InstructionFactory {
         std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
         std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value);
         std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size);
+    
+        std::shared_ptr<Instruction> createPrintStringFunction();
+        std::shared_ptr<Instruction> createPrintIntegerFunction();
+        std::shared_ptr<Instruction> createPrintLineFunction();
+        std::shared_ptr<Instruction> createConcatFunction();
 };
 
 } //end of eddic
