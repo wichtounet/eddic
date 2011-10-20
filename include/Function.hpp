@@ -30,7 +30,6 @@ class Function : public ParseNode {
 	public:
 		Function(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& name);
 		
-        void write(AssemblyFileWriter& writer);
         void writeIL(IntermediateProgram& program);
 
         const std::string& name() const;

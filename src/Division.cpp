@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "Division.hpp"
-#include "AssemblyFileWriter.hpp"
 
 #include "Variable.hpp"
 

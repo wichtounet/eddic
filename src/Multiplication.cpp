@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "Multiplication.hpp"
-#include "AssemblyFileWriter.hpp"
 
 #include "Variable.hpp"
 

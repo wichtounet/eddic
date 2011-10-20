@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "For.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
 
 #include "If.hpp"

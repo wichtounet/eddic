@@ -23,7 +23,6 @@ class Integer : public Value {
             m_type = Type::INT;
         };
         
-        void write(AssemblyFileWriter& writer);
         bool isConstant();
         int getIntValue();
         

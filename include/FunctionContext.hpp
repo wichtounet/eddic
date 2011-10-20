@@ -32,9 +32,6 @@ class FunctionContext : public Context {
     public:
         FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}
         
-        void write(AssemblyFileWriter& writer);
-        void release(AssemblyFileWriter& writer);
-
         int size();
 
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);

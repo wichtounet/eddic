@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "StringPool.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "ParseNode.hpp"
 
 #include "il/IntermediateProgram.hpp"
@@ -31,15 +30,6 @@ std::string StringPool::label(const std::string& value) {
     }
 
     return pool[value];
-}
-
-void StringPool::write(AssemblyFileWriter& writer) {
-    writer.stream() << ".data" << std::endl;
-
-    for (auto it : pool){
-        writer.stream() << it.second << ":" << std::endl;
-        writer.stream() << ".string " << it.first << std::endl;
-    }
 }
 
 void StringPool::writeIL(IntermediateProgram& program){

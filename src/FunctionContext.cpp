@@ -16,28 +16,6 @@ using std::endl;
 
 using namespace eddic;
 
-void FunctionContext::write(AssemblyFileWriter& writer){
-    int s = 0;
-    for(auto it : m_stored){
-        s += ::size(it.second->type());
-    }
-
-    if(s > 0){
-        writer.stream() << "subl $" << s << " , %esp" << std::endl;
-    }
-}
-
-void FunctionContext::release(AssemblyFileWriter& writer){
-    int s = 0;
-    for(auto it : m_stored){
-        s += ::size(it.second->type());
-    }
-
-    if(s > 0){
-        writer.stream() << "addl $" << s << " , %esp" << std::endl;
-    }
-}
-
 int FunctionContext::size(){
     int s = 0;
     for(auto it : m_stored){

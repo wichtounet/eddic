@@ -24,7 +24,7 @@ class StringPool : public ParseNode {
         StringPool(std::shared_ptr<Context> context);
 
         std::string label(const std::string& value);
-        void write(AssemblyFileWriter& writer);
+
         void writeIL(IntermediateProgram& program);
 };
 

@@ -7,17 +7,13 @@
 
 #include "Integer.hpp"
 
-#include "AssemblyFileWriter.hpp"
+#include "Variable.hpp"
+
 #include "il/Operand.hpp"
 #include "il/Operands.hpp"
 #include "il/IntermediateProgram.hpp"
-#include "Variable.hpp"
 
 using namespace eddic;
-
-void Integer::write(AssemblyFileWriter& writer) {
-    writer.stream() << "pushl $" << m_value << std::endl;
-}
 
 bool Integer::isConstant() {
     return true;

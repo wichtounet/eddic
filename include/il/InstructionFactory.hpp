@@ -30,6 +30,8 @@ class InstructionFactory {
         std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0);
         std::shared_ptr<Instruction> createFunctionExit(int size = 0);
         std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
+        std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value);
+        std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size);
 };
 
 } //end of eddic

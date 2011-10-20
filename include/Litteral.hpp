@@ -25,7 +25,6 @@ class Litteral : public Value {
         };
 		
         void checkStrings(StringPool& pool);
-        void write(AssemblyFileWriter& writer);
         bool isConstant();
         std::string getStringValue();
         std::string getStringLabel();

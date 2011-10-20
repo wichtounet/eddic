@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "Subtraction.hpp"
-#include "AssemblyFileWriter.hpp"
 
 #include "Variable.hpp"
 

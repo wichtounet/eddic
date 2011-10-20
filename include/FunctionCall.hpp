@@ -28,7 +28,6 @@ class FunctionCall : public ParseNode {
     public:
         FunctionCall(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& function);
 
-        void write(AssemblyFileWriter& writer);
         void writeIL(IntermediateProgram& program);
         
         void checkFunctions(Program& program);

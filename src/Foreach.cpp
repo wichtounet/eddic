@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "Foreach.hpp"
-#include "AssemblyFileWriter.hpp"
+#include "CompilerException.hpp"
 #include "Context.hpp"
 #include "Variable.hpp"
 

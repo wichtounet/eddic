@@ -7,19 +7,18 @@
 
 #include <algorithm>
 
-#include "AssemblyFileWriter.hpp"
-#include "il/IntermediateProgram.hpp"
-#include "il/Operands.hpp"
-#include "il/Labels.hpp"
 #include "Context.hpp"
+#include "CompilerException.hpp"
 #include "Utils.hpp"
-
 #include "If.hpp"
 #include "Else.hpp"
 #include "ElseIf.hpp"
 #include "Condition.hpp"
-
 #include "Value.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 

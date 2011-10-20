@@ -7,7 +7,7 @@
 
 #include "Swap.hpp"
 
-#include "AssemblyFileWriter.hpp"
+#include "CompilerException.hpp"
 #include "Context.hpp"
 #include "Value.hpp"
 #include "Variable.hpp"
@@ -36,29 +36,6 @@ void Swap::checkVariables() {
     }
 
     m_type = m_lhs_var->type();
-}
-
-void Swap::write(AssemblyFileWriter& writer) {
-    switch (m_type) {
-        case Type::INT:
-            m_lhs_var->moveToRegister(writer, "%eax"); 
-            m_rhs_var->moveToRegister(writer, "%ebx"); 
-            
-            m_lhs_var->moveFromRegister(writer, "%ebx"); 
-            m_rhs_var->moveFromRegister(writer, "%eax"); 
-
-            break;
-        case Type::STRING:
-            m_lhs_var->moveToRegister(writer, "%eax", "%ebx"); 
-            m_rhs_var->moveToRegister(writer, "%ecx", "%edx"); 
-            
-            m_lhs_var->moveFromRegister(writer, "%ecx", "%edx"); 
-            m_rhs_var->moveFromRegister(writer, "%eax", "%ebx"); 
-
-            break;
-        default:
-            throw CompilerException("Variable of invalid type");
-    }
 }
 
 void Swap::writeIL(IntermediateProgram& program){

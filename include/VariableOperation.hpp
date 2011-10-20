@@ -28,7 +28,6 @@ class VariableOperation : public ParseNode {
         VariableOperation(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v);
         
         void checkStrings(StringPool& pool);
-        void write(AssemblyFileWriter& writer);
         void writeIL(IntermediateProgram& program);
 };
 

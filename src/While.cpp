@@ -6,8 +6,8 @@
 //=======================================================================
 
 #include "While.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+#include "CompilerException.hpp"
 
 #include "If.hpp"
 #include "Condition.hpp"
@@ -23,24 +23,6 @@ While::While(std::shared_ptr<Context> context, const std::shared_ptr<Token> toke
 
 std::shared_ptr<Condition> While::condition() {
     return m_condition;
-}
-
-void While::write(AssemblyFileWriter& writer) {
-    //Make something accessible for others operations
-    static int labels = 0;
-
-    int startLabel = labels++;
-    int endLabel = labels++;
-
-    writer.stream() << "WL" << startLabel << ":" << std::endl;
-
-    writeJumpIfNot(writer, m_condition, "WL", endLabel);
-
-    ParseNode::write(writer);
-
-    writer.stream() << "jmp WL" << startLabel << std::endl;
-
-    writer.stream() << "WL" << endLabel << ":" << std::endl;
 }
 
 void While::writeIL(IntermediateProgram& program) {

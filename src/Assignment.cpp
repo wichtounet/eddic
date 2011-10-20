@@ -8,6 +8,7 @@
 #include "Assignment.hpp"
 
 #include "Context.hpp"
+#include "CompilerException.hpp"
 #include "Value.hpp"
 #include "Variable.hpp"
 

@@ -8,8 +8,7 @@
 #include <cassert>
 
 #include "VariableValue.hpp"
-
-#include "AssemblyFileWriter.hpp"
+#include "CompilerException.hpp"
 #include "Context.hpp"
 #include "Value.hpp"
 #include "Variable.hpp"

@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "Addition.hpp"
-#include "AssemblyFileWriter.hpp"
+#include "CompilerException.hpp"
 #include "Options.hpp"
 #include "Integer.hpp"
 #include "Value.hpp"

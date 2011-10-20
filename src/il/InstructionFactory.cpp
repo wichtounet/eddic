@@ -16,6 +16,8 @@
 #include "il/Move.hpp"
 #include "il/Compare.hpp"
 #include "il/Push.hpp"
+#include "il/GlobalStringVariable.hpp"
+#include "il/GlobalIntVariable.hpp"
 
 using namespace eddic;
 
@@ -53,4 +55,12 @@ std::shared_ptr<Instruction> InstructionFactory::createFunctionExit(int size){
 
 std::shared_ptr<Instruction> InstructionFactory::createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs){
    return std::shared_ptr<Instruction>(new Math(operation, lhs, rhs)); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createGlobalIntVariable(std::string name, int value){
+   return std::shared_ptr<Instruction>(new GlobalIntVariable(name, value)); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createGlobalStringVariable(std::string name, std::string label, int size){
+   return std::shared_ptr<Instruction>(new GlobalStringVariable(name, label, size)); 
 }

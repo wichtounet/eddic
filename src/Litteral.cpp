@@ -11,7 +11,6 @@
 #include "Litteral.hpp"
 
 #include "StringPool.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Variable.hpp"
 
 #include "il/IntermediateProgram.hpp"
@@ -21,11 +20,6 @@ using namespace eddic;
 
 void Litteral::checkStrings(StringPool& pool) {
     m_label = pool.label(m_litteral);
-}
-
-void Litteral::write(AssemblyFileWriter& writer) {
-    writer.stream() << "pushl $" << getStringLabel() << std::endl;
-    writer.stream() << "pushl $" << getStringSize() << std::endl;
 }
 
 bool Litteral::isConstant() {

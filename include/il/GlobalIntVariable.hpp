@@ -5,18 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef PRINTLN_H
-#define PRINTLN_H
+#ifndef GLOBAL_INT_VARIABLE_H
+#define GLOBAL_INT_VARIABLE_H
 
-#include "Print.hpp"
+#include <string>
+
+#include "Instruction.hpp"
 
 namespace eddic {
 
-class Println : public Print {
+class GlobalIntVariable : public Instruction {
+    private:
+        std::string m_name;
+        int m_value;
+
     public:
-        Println(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> v);
-        
-        void writeIL(IntermediateProgram& program);
+        GlobalIntVariable(std::string name, int value);
+
+        void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic

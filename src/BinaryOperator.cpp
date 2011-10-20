@@ -5,13 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
 #include "BinaryOperator.hpp"
+
+#include "CompilerException.hpp"
 #include "Options.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
 #include "Integer.hpp"
-
-#include <cassert>
 
 using std::string;
 

@@ -8,6 +8,7 @@
 #include "Declaration.hpp"
 #include "Context.hpp"
 #include "Value.hpp"
+#include "CompilerException.hpp"
 
 using namespace eddic;
 

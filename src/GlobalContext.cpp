@@ -9,9 +9,12 @@
 #include <functional>
 
 #include "GlobalContext.hpp"
+#include "CompilerException.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "Value.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using std::map;
 using std::string;
@@ -20,17 +23,12 @@ using std::vector;
 
 using namespace eddic;
 
-void GlobalContext::write(AssemblyFileWriter& writer){
+void GlobalContext::writeIL(IntermediateProgram& program){
     for(auto it : m_stored){
         if (it.second->type() == Type::INT) {
-            writer.stream() << ".size VI" << it.second->position().name() << ", 4" << endl;
-            writer.stream() << "VI" << it.second->position().name() << ":" << endl;
-            writer.stream() << ".long " << it.second->value()->getIntValue() << endl;
+            program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), it.second->value()->getIntValue()));
         } else if (it.second->type() == Type::STRING) {
-            writer.stream() << ".size VS" << it.second->position().name() << ", 8" << endl;
-            writer.stream() << "VS" << it.second->position().name() << ":" << endl;
-            writer.stream() << ".long " << it.second->value()->getStringLabel() << endl;
-            writer.stream() << ".long " << it.second->value()->getStringSize() << endl;
+            program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), it.second->value()->getStringLabel(), it.second->value()->getStringSize()));
         }
     }
 }
