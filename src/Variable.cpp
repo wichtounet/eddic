@@ -170,10 +170,10 @@ std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
     //TODO Assert that type is string
    
     //TODO Verify
-    if(m_position.isStack()){
+    if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
         return make_pair(
-                    createBaseStackOperand(m_position.offset()), 
-                    createBaseStackOperand(m_position.offset() + 4)
+                    createBaseStackOperand(-1 * m_position.offset()), 
+                    createBaseStackOperand(-1 * m_position.offset() - 4)
                 );
     } else if(m_position.isParameter()){
         return make_pair(
