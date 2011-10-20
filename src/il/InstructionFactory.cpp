@@ -22,6 +22,8 @@
 #include "il/PrintStringFunction.hpp"
 #include "il/PrintIntegerFunction.hpp"
 #include "il/ConcatFunction.hpp"
+#include "il/Main.hpp"
+#include "il/DataSection.hpp"
 
 using namespace eddic;
 
@@ -83,4 +85,12 @@ std::shared_ptr<Instruction> InstructionFactory::createPrintLineFunction(){
 
 std::shared_ptr<Instruction> InstructionFactory::createConcatFunction(){
     return std::shared_ptr<Instruction>(new ConcatFunction());
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createMainDeclaration(){
+    return std::shared_ptr<Instruction>(new Main());
+}
+
+std::shared_ptr<Instruction> InstructionFactory::createDataSection(std::unordered_map<std::string, std::string> pool){
+    return std::shared_ptr<Instruction>(new DataSection(pool));
 }

@@ -10,6 +10,7 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 #include "il/Instruction.hpp"
 #include "il/Math.hpp"
@@ -37,6 +38,9 @@ class InstructionFactory {
         std::shared_ptr<Instruction> createPrintIntegerFunction();
         std::shared_ptr<Instruction> createPrintLineFunction();
         std::shared_ptr<Instruction> createConcatFunction();
+
+        std::shared_ptr<Instruction> createMainDeclaration();
+        std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool);
 };
 
 } //end of eddic

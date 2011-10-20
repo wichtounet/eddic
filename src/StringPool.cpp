@@ -33,5 +33,5 @@ std::string StringPool::label(const std::string& value) {
 }
 
 void StringPool::writeIL(IntermediateProgram& program){
-    program.addInstruction(std::shared_ptr<Instruction>(new DataSection(pool)));
+    program.addInstruction(program.factory().createDataSection(pool));
 }
