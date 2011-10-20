@@ -87,9 +87,9 @@ void Swap::writeIL(IntermediateProgram& program){
             program.addInstruction(program.factory().createMove(m_rhs_var->toStringOperand().second, registerD));
             
             program.addInstruction(program.factory().createMove(registerC, m_lhs_var->toStringOperand().first));
-            program.addInstruction(program.factory().createMove(registerD, m_lhs_var->toStringOperand().first));
+            program.addInstruction(program.factory().createMove(registerD, m_lhs_var->toStringOperand().second));
             program.addInstruction(program.factory().createMove(registerA, m_rhs_var->toStringOperand().first));
-            program.addInstruction(program.factory().createMove(registerB, m_rhs_var->toStringOperand().first));
+            program.addInstruction(program.factory().createMove(registerB, m_rhs_var->toStringOperand().second));
 
             break;
         }
