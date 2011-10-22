@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
 #include "Addition.hpp"
 #include "CompilerException.hpp"
 #include "Options.hpp"
@@ -53,7 +55,7 @@ std::shared_ptr<Operand> performAddition(std::shared_ptr<Value> lhs, std::shared
 }
 
 void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
-    //TODO //Warning string
+    assert(lhs->type() == Type::INT); //Cannot be used for string additions
 
     program.addInstruction(program.factory().createMove(performAddition(lhs, rhs, program), operand));
 }

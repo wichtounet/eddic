@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
 #include <iostream>
 #include <cctype>
 #include <list>
@@ -456,8 +457,6 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     lexer.next();
 
-    //TODO Test for type
-
     std::shared_ptr<ParseNode> start = parseDeclaration();
 
     assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
@@ -589,7 +588,7 @@ int priority(Operator op) {
         case SUB:
             return 0;
         default:
-            return -1; //TODO should never happen
+            assert(false); //should never happen
     }
 }
 

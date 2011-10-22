@@ -38,7 +38,7 @@ std::shared_ptr<Operand> performDivision(std::shared_ptr<Value> lhs, std::shared
     
     program.addInstruction(program.factory().createMath(Operation::DIV, registerA, registerB));
 
-    return registerB;//TODO Is that correct ?
+    return registerB;
 }
 
 void Division::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){

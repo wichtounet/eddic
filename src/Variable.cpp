@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "Value.hpp"
@@ -39,7 +41,7 @@ std::shared_ptr<Value> Variable::value() const {
 }
 
 std::shared_ptr<Operand> Variable::toIntegerOperand(){
-    //TODO Assert that type is int
+    assert(m_type == Type::INT); 
     
     if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
         return createBaseStackOperand(-1 * m_position.offset());
@@ -53,9 +55,8 @@ std::shared_ptr<Operand> Variable::toIntegerOperand(){
 }
 
 std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
-    //TODO Assert that type is string
+    assert(m_type == Type::STRING); 
    
-    //TODO Verify
     if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
         return make_pair(
                     createBaseStackOperand(-1 * m_position.offset()), 

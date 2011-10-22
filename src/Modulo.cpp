@@ -40,7 +40,7 @@ std::shared_ptr<Operand> performModulo(std::shared_ptr<Value> lhs, std::shared_p
     
     program.addInstruction(program.factory().createMath(Operation::MOD, registerA, registerB));
 
-    return registerB;//TODO Is that correct ?
+    return registerB;
 }
 
 void Modulo::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
