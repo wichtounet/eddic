@@ -19,6 +19,10 @@ bool Integer::isConstant() {
     return true;
 }
 
+bool Integer::isImmediate() {
+    return true;
+}
+
 int Integer::getIntValue() {
     return m_value;
 } 

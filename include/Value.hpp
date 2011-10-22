@@ -30,6 +30,7 @@ class Value : public ParseNode {
         Type type() const ;
 
         virtual bool isConstant();
+        virtual bool isImmediate();
         
         virtual std::string getStringValue();
         virtual std::string getStringLabel();

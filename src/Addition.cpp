@@ -34,9 +34,19 @@ std::shared_ptr<Operand> performAddition(std::shared_ptr<Value> lhs, std::shared
     std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
     std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
 
-    lhs->assignTo(registerA, program);
-    rhs->assignTo(registerB, program);
+    if(lhs->isImmediate() && rhs->isImmediate()){
+        lhs->assignTo(registerA, program);
+        rhs->assignTo(registerB, program);
+    } else { //TODO Certainly a better way to manage this case (if only one is immediate ? )
+        lhs->push(program);
+        rhs->push(program);
 
+        program.addInstruction(program.factory().createMove(createStackOperand(4), registerA));
+        program.addInstruction(program.factory().createMove(createStackOperand(0), registerB));
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), createRegisterOperand("esp")));
+    }
+    
     program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
 
     return registerB;

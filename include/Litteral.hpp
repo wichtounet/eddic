@@ -25,7 +25,10 @@ class Litteral : public Value {
         };
 		
         void checkStrings(StringPool& pool);
+        
         bool isConstant();
+        bool isImmediate();
+        
         std::string getStringValue();
         std::string getStringLabel();
         int getStringSize();

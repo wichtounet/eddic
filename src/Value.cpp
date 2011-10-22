@@ -20,6 +20,10 @@ bool Value::isConstant() {
     return false;
 }
 
+bool Value::isImmediate() {
+    return false;
+}
+
 std::string Value::getStringValue() {
     throw "Not constant";
 }

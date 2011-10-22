@@ -14,7 +14,9 @@
 #include "Operand.hpp"
 
 namespace eddic {
-    
+
+//TODO Put default values for the offset
+
 std::shared_ptr<Operand> createImmediateOperand(int value);
 std::shared_ptr<Operand> createImmediateOperand(std::string value);
 std::shared_ptr<Operand> createRegisterOperand(std::string reg); 

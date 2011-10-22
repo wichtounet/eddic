@@ -24,6 +24,8 @@ class Integer : public Value {
         };
         
         bool isConstant();
+        bool isImmediate();
+        
         int getIntValue();
         
         void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);

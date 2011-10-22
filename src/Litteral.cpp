@@ -26,6 +26,10 @@ bool Litteral::isConstant() {
     return true;
 }
 
+bool Litteral::isImmediate() {
+    return true;
+}
+
 std::string Litteral::getStringValue() {
     return m_litteral;
 }  
