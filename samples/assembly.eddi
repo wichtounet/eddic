@@ -47,6 +47,11 @@ void main(){
     println(f);
     print("Should print 'Variable f' : ");
     println(e);
+    
+    string z = e + f;
+
+    print("Should print 'Variable fVariable e' : ");
+    println(z);
 
     int c = 1111;
     println(c);
