@@ -67,11 +67,15 @@ void ParseNode::addFirst(std::shared_ptr<ParseNode> node) {
 
 void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node) {
     node->parent = std::weak_ptr<ParseNode>(shared_from_this());
-
+    
     auto it = find(childs.begin(), childs.end(), old);
     if(it != childs.end()){
         *it = node;
     }
+}
+
+void ParseNode::setParent(std::shared_ptr<ParseNode> newParent){
+    parent = std::weak_ptr<ParseNode>(newParent);
 }
 
 void ParseNode::remove(std::shared_ptr<ParseNode> node) {

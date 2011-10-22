@@ -27,6 +27,7 @@ class Print : public ParseNode {
 
         void checkStrings(StringPool& pool);
         void checkVariables();
+        void optimize();
         void writeIL(IntermediateProgram& program);
 };
 

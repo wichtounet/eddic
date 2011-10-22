@@ -270,12 +270,17 @@ std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callTo
     auto value = parseValue();
 
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
-
+    
+    std::shared_ptr<ParseNode> print;
     if (call == "print") {
-        return std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
+        print = std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
     } else {
-        return std::shared_ptr<ParseNode>(new Println(currentContext, callToken, value));
+        print = std::shared_ptr<ParseNode>(new Println(currentContext, callToken, value));
     }
+
+    value->setParent(print);
+
+    return print;
 }
 
 std::shared_ptr<ParseNode> Parser::parseDeclaration() {
@@ -293,13 +298,21 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
 
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
+    std::shared_ptr<ParseNode> declaration(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
+
+    value->setParent(declaration);
+    
+    return declaration;
 }
 
 std::shared_ptr<ParseNode> Parser::parseAssignment(std::shared_ptr<Token> variableToken) {
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
+    std::shared_ptr<ParseNode> assignment(new Assignment(currentContext, variableToken, variableToken->value(), value));
+
+    value->setParent(assignment);
+    
+    return assignment;
 }
 
 std::shared_ptr<ParseNode> Parser::parseSwap(std::shared_ptr<Token> lhs) {
@@ -684,6 +697,9 @@ std::shared_ptr<Value> Parser::parseValue() {
         } else if (op == MOD) {
             value = std::shared_ptr<Value>(new Modulo(currentContext, lhs->token(), lhs, rhs));
         }
+
+        lhs->setParent(value);    
+        rhs->setParent(value);    
 
         parts.erase(first, ++max);
 

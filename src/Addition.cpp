@@ -112,11 +112,10 @@ void Addition::optimize() {
         if (type() == Type::INT) {
             if (Options::isSet(BooleanOption::OPTIMIZE_INTEGERS)) {
                 std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
-
                 parent.lock()->replace(shared_from_this(), value);
             }
         } else if (type() == Type::STRING) {
-            if (Options::isSet(BooleanOption::OPTIMIZE_STRINGS)) {
+             if (Options::isSet(BooleanOption::OPTIMIZE_STRINGS)) {
                 //No optimization at this time
             }
         }

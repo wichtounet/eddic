@@ -18,6 +18,14 @@ void VariableOperation::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
+void VariableOperation::checkVariables() {
+    value->checkVariables();
+}
+
+void VariableOperation::optimize() {
+    value->optimize();
+}
+
 void VariableOperation::writeIL(IntermediateProgram& program){
    value->assignTo(m_var, program); 
 }

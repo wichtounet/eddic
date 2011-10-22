@@ -27,6 +27,10 @@ void Print::checkVariables() {
     value->checkVariables();
 }
 
+void Print::optimize(){
+    value->optimize();
+}
+
 void Print::writeIL(IntermediateProgram& program){
     value->push(program);
 
