@@ -9,21 +9,17 @@
 #define CONTEXT_H
 
 #include <string>
-#include <map>
-#include <vector>
 #include <memory>
 
 #include <unordered_map>
-#include <unordered_set>
 
 #include "Types.hpp"
-
-#include "AssemblyFileWriter.hpp"
 
 namespace eddic {
 
 class Value;
 class Variable;
+class IntermediateProgram;
 
 class Context {
     private:
@@ -46,8 +42,10 @@ class Context {
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
         virtual std::shared_ptr<Variable> getVariable(int index) const;
 
-        virtual void write(AssemblyFileWriter& writer);
-        virtual void release(AssemblyFileWriter& writer);
+        virtual int size();
+
+        virtual void writeIL(IntermediateProgram& program);
+        
         std::shared_ptr<Context> parent() const ;
 
         void storeVariable(int index, std::shared_ptr<Variable> variable);

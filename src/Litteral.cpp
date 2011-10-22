@@ -6,11 +6,15 @@
 //=======================================================================
 
 #include <iostream>
+#include <cassert>
 
 #include "Litteral.hpp"
 
 #include "StringPool.hpp"
-#include "AssemblyFileWriter.hpp"
+#include "Variable.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
 
 using namespace eddic;
 
@@ -18,12 +22,11 @@ void Litteral::checkStrings(StringPool& pool) {
     m_label = pool.label(m_litteral);
 }
 
-void Litteral::write(AssemblyFileWriter& writer) {
-    writer.stream() << "pushl $" << getStringLabel() << std::endl;
-    writer.stream() << "pushl $" << getStringSize() << std::endl;
+bool Litteral::isConstant() {
+    return true;
 }
 
-bool Litteral::isConstant() {
+bool Litteral::isImmediate() {
     return true;
 }
 
@@ -37,4 +40,40 @@ std::string Litteral::getStringLabel(){
 
 int Litteral::getStringSize(){
     return m_litteral.size() - 2;
+}
+
+void Litteral::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> operands = variable->toStringOperand();
+
+    program.addInstruction(
+        program.factory().createMove(
+            createImmediateOperand(getStringLabel()),
+            operands.first
+        )
+    );
+    
+    program.addInstruction(
+        program.factory().createMove(
+            createImmediateOperand(getStringSize()),
+            operands.second
+        )
+    );
+}
+
+void Litteral::assignTo(std::shared_ptr<Operand>, IntermediateProgram&){
+    assert(false); //Cannot assign a string to a single operand
+}
+
+void Litteral::push(IntermediateProgram& program){
+    program.addInstruction(
+        program.factory().createPush(
+            createImmediateOperand(getStringLabel())
+        )
+    );
+    
+    program.addInstruction(
+        program.factory().createPush(
+            createImmediateOperand(getStringSize())
+        )
+    );
 }

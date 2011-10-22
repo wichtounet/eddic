@@ -31,7 +31,8 @@ class Foreach : public ParseNode {
     public:
         Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, std::string variable, std::shared_ptr<Value> from, std::shared_ptr<Value> to);
 
-        virtual void write(AssemblyFileWriter& writer);
+        virtual void writeIL(IntermediateProgram& program);
+        
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();

@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
 #include <iostream>
 #include <cctype>
 #include <list>
@@ -67,6 +68,8 @@ inline static void assertNextIsRightBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsLeftBrace(Lexer& lexer, const string& message);
 inline static void assertNextIsStop(Lexer& lexer, const string& message);
 inline static void assertNextIsWord(Lexer& lexer, const string& message);
+
+#include <iostream>
 
 //Move to some utility class
 bool isTokenType(const Lexer& lexer) {
@@ -267,12 +270,17 @@ std::shared_ptr<ParseNode> Parser::parseCall(const std::shared_ptr<Token> callTo
     auto value = parseValue();
 
     assertNextIsRightParenth(lexer, "The call must be closed with a right parenth");
-
+    
+    std::shared_ptr<ParseNode> print;
     if (call == "print") {
-        return std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
+        print = std::shared_ptr<ParseNode>(new Print(currentContext, callToken, value));
     } else {
-        return std::shared_ptr<ParseNode>(new Println(currentContext, callToken, value));
+        print = std::shared_ptr<ParseNode>(new Println(currentContext, callToken, value));
     }
+
+    value->setParent(print);
+
+    return print;
 }
 
 std::shared_ptr<ParseNode> Parser::parseDeclaration() {
@@ -290,16 +298,24 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
 
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
+    std::shared_ptr<ParseNode> declaration(new Declaration(currentContext, lexer.getCurrentToken(), type, variable, value));
+
+    value->setParent(declaration);
+    
+    return declaration;
 }
 
-std::shared_ptr<ParseNode> Parser::parseAssignment(const std::shared_ptr<Token> variableToken) {
+std::shared_ptr<ParseNode> Parser::parseAssignment(std::shared_ptr<Token> variableToken) {
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, variableToken->value(), value));
+    std::shared_ptr<ParseNode> assignment(new Assignment(currentContext, variableToken, variableToken->value(), value));
+
+    value->setParent(assignment);
+    
+    return assignment;
 }
 
-std::shared_ptr<ParseNode> Parser::parseSwap(const std::shared_ptr<Token> lhs) {
+std::shared_ptr<ParseNode> Parser::parseSwap(std::shared_ptr<Token> lhs) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
@@ -454,8 +470,6 @@ std::shared_ptr<ParseNode> Parser::parseFor() {
 
     lexer.next();
 
-    //TODO Test for type
-
     std::shared_ptr<ParseNode> start = parseDeclaration();
 
     assertNextIsStop(lexer, "The start instruction of the for loop must be closed by a semicolon");
@@ -587,7 +601,7 @@ int priority(Operator op) {
         case SUB:
             return 0;
         default:
-            return -1; //TODO should never happen
+            assert(false); //should never happen
     }
 }
 
@@ -614,8 +628,7 @@ std::shared_ptr<Value> Parser::parseValue() {
 
             node = std::shared_ptr<Value>(new VariableValue(currentContext, lexer.getCurrentToken(), variableRight));
         } else if (lexer.isInteger()) {
-            string integer = lexer.getCurrentToken()->value();
-            int value = toNumber<int>(integer);
+            int value = toNumber<int>(lexer.getCurrentToken()->value());
 
             node = std::shared_ptr<Value>(new Integer(currentContext, lexer.getCurrentToken(), value));
         } else {
@@ -684,6 +697,9 @@ std::shared_ptr<Value> Parser::parseValue() {
         } else if (op == MOD) {
             value = std::shared_ptr<Value>(new Modulo(currentContext, lhs->token(), lhs, rhs));
         }
+
+        lhs->setParent(value);    
+        rhs->setParent(value);    
 
         parts.erase(first, ++max);
 

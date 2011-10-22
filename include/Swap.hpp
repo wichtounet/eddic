@@ -29,7 +29,7 @@ class Swap : public ParseNode {
         Swap(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& lhs, const std::string& rhs);
 
         void checkVariables();
-        void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

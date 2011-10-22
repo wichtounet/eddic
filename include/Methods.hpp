@@ -16,7 +16,7 @@ class Methods : public ParseNode {
     public:
         Methods(std::shared_ptr<Context> context) : ParseNode(context) {}
 
-        void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

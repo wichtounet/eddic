@@ -16,6 +16,7 @@ namespace eddic {
 
 class Value;
 class Variable;
+class IntermediateProgram;
 
 class VariableOperation : public ParseNode {
     protected:
@@ -26,8 +27,10 @@ class VariableOperation : public ParseNode {
     public:
         VariableOperation(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, const std::string& variable, std::shared_ptr<Value> v);
         
+        void checkVariables();
         void checkStrings(StringPool& pool);
-        void write(AssemblyFileWriter& writer);
+        void optimize();
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

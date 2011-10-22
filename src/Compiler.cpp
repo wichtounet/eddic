@@ -16,6 +16,7 @@
 #include "Parser.hpp"
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
+#include "il/IntermediateProgram.hpp"
 
 using std::string;
 using std::cout;
@@ -54,9 +55,13 @@ int Compiler::compile(const string& file) {
         //Optimize the parse tree
         program->optimize();
 
-        //Compilation
+        //Write Intermediate representation of the parse tree
+        IntermediateProgram il;
+        program->writeIL(il);
+
+        //Write assembly code
         writer.open("output.asm");
-        program->write(writer);
+        il.writeAsm(writer);
 
         if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
@@ -80,7 +85,7 @@ int Compiler::compile(const string& file) {
     lexer.close();
     writer.close();
 
-    cout << "Compilation took " << timer.elapsed() << "ms" << endl;
+    cout << "Compilation took " << timer.elapsed() << "s" << endl;
 
     return code;
 }

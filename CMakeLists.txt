@@ -29,3 +29,6 @@ file(
 )
 
 add_executable(eddic ${source_files})
+
+target_link_libraries (eddic boost_chrono)
+target_link_libraries (eddic boost_system)

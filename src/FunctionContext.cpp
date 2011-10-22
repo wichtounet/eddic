@@ -16,32 +16,19 @@ using std::endl;
 
 using namespace eddic;
 
-void FunctionContext::write(AssemblyFileWriter& writer){
+int FunctionContext::size(){
     int s = 0;
     for(auto it : m_stored){
-        s += size(it.second->type());
+        s += ::size(it.second->type());
     }
 
-    if(s > 0){
-        writer.stream() << "subl $" << s << " , %esp" << std::endl;
-    }
-}
-
-void FunctionContext::release(AssemblyFileWriter& writer){
-    int s = 0;
-    for(auto it : m_stored){
-        s += size(it.second->type());
-    }
-
-    if(s > 0){
-        writer.stream() << "addl $" << s << " , %esp" << std::endl;
-    }
+    return s;
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
     Position position(PARAMETER, currentParameter);
     
-    currentParameter += size(type);
+    currentParameter += ::size(type);
 
     return std::shared_ptr<Variable>(new Variable(variable, type, position));
 }
@@ -49,7 +36,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, Type type){
     Position position(STACK, currentPosition);
     
-    currentPosition += size(type);
+    currentPosition += ::size(type);
 
     return std::shared_ptr<Variable>(new Variable(variable, type, position));
 }

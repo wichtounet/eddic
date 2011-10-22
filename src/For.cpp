@@ -6,42 +6,45 @@
 //=======================================================================
 
 #include "For.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
 
 #include "If.hpp"
 #include "Condition.hpp"
 
 #include "Value.hpp"
+#include "il/Labels.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 
 For::For(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<ParseNode> start, std::shared_ptr<Condition> condition, std::shared_ptr<ParseNode> iter) : ParseNode(context, token), m_start(start), m_iter(iter), m_condition(condition) {}
 
-void For::write(AssemblyFileWriter& writer){
+void For::writeIL(IntermediateProgram& program){
     if(m_start){
-        m_start->write(writer);
+        m_start->writeIL(program);
     }
 
     static int labels = -1;
 
     ++labels;
 
-    writer.stream() << "start_for" << labels << ":" << std::endl;
+    program.addInstruction(program.factory().createLabel(label("start_for", labels)));
 
     if(m_condition){
-        writeJumpIfNot(writer, m_condition, "end_for", labels);
+        writeILJumpIfNot(program, m_condition, "end_for", labels);
     }
 
-    ParseNode::write(writer);
+    ParseNode::writeIL(program);
 
     if(m_iter){
-        m_iter->write(writer);
+        m_iter->writeIL(program);
     }
 
-    writer.stream() << "jmp start_for" << labels << std::endl;
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_for", labels)));
 
-    writer.stream() << "end_for" << labels << ":" << std::endl;
+    program.addInstruction(program.factory().createLabel(label("end_for", labels)));
 }
 
 void For::checkVariables(){

@@ -8,12 +8,14 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <string>
+
 #include "Context.hpp"
 #include "CompilerException.hpp"
+#include "Lexer.hpp"
 
 namespace eddic {
 
-class Lexer;
 class Program;
 class Function;
 class ParseNode;
@@ -52,8 +54,11 @@ class Parser {
         std::shared_ptr<Value> parseValue();
 
     public:
-        Parser(Lexer& l);
+        Parser(Lexer& lexer);
+
         std::shared_ptr<Program> parse();
+
+        const Lexer& getLexer();
 };
 
 } //end of eddic

@@ -22,9 +22,15 @@ class Integer : public Value {
         Integer(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, int value) : Value(context, token), m_value(value) {
             m_type = Type::INT;
         };
-        void write(AssemblyFileWriter& writer);
+        
         bool isConstant();
+        bool isImmediate();
+        
         int getIntValue();
+        
+        void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

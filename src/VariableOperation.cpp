@@ -18,8 +18,14 @@ void VariableOperation::checkStrings(StringPool& pool) {
     value->checkStrings(pool);
 }
 
-void VariableOperation::write(AssemblyFileWriter& writer) {
-    value->write(writer);
+void VariableOperation::checkVariables() {
+    value->checkVariables();
+}
 
-    m_var->popFromStack(writer);
+void VariableOperation::optimize() {
+    value->optimize();
+}
+
+void VariableOperation::writeIL(IntermediateProgram& program){
+   value->assignTo(m_var, program); 
 }

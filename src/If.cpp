@@ -7,15 +7,18 @@
 
 #include <algorithm>
 
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
-
+#include "CompilerException.hpp"
+#include "Utils.hpp"
 #include "If.hpp"
 #include "Else.hpp"
 #include "ElseIf.hpp"
 #include "Condition.hpp"
-
 #include "Value.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Operands.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 
@@ -35,49 +38,41 @@ std::shared_ptr<Condition> If::condition() {
     return m_condition;
 }
 
-void writeConditionOperands(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition) {
-    condition->lhs()->write(writer);
-    condition->rhs()->write(writer);
-
-    writer.stream() << "movl 4(%esp), %eax" << std::endl;
-    writer.stream() << "movl (%esp), %ebx" << std::endl;
-    writer.stream() << "addl $8, %esp" << std::endl;
-}
-
-void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
+void eddic::writeILJumpIfNot(IntermediateProgram& program, std::shared_ptr<Condition> condition, const string& label, int labelIndex) {
     if (!condition->isOperator()) {
         //No need to jump if true
         if (condition->condition() == FALSE_VALUE) {
-            writer.stream() << "jmp " << label << labelIndex << std::endl;
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
         }
     } else {
-        writeConditionOperands(writer, condition);
+        condition->lhs()->assignTo(createRegisterOperand("eax"), program);
+        condition->rhs()->assignTo(createRegisterOperand("ebx"), program);
 
-        writer.stream() << "cmpl %ebx, %eax" << std::endl;
+        program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
 
         switch (condition->condition()) {
             case GREATER_OPERATOR:
-                writer.stream() << "jle " << label << labelIndex << std::endl;
+                program.addInstruction(program.factory().createJump(JumpCondition::LESS_EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             case GREATER_EQUALS_OPERATOR:
-                writer.stream() << "jl " << label << labelIndex << std::endl;
+                program.addInstruction(program.factory().createJump(JumpCondition::LESS, eddic::label(label, labelIndex)));
 
                 break;
             case LESS_OPERATOR:
-                writer.stream() << "jge " << label << labelIndex << std::endl;
+                program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             case LESS_EQUALS_OPERATOR:
-                writer.stream() << "jg " << label << labelIndex << std::endl;
+                program.addInstruction(program.factory().createJump(JumpCondition::GREATER, eddic::label(label, labelIndex)));
 
                 break;
             case EQUALS_OPERATOR:
-                writer.stream() << "jne " << label << labelIndex << std::endl;
+                program.addInstruction(program.factory().createJump(JumpCondition::NOT_EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             case NOT_EQUALS_OPERATOR:
-                writer.stream() << "je " << label << labelIndex << std::endl;
+                program.addInstruction(program.factory().createJump(JumpCondition::EQUALS, eddic::label(label, labelIndex)));
 
                 break;
             default:
@@ -86,44 +81,44 @@ void eddic::writeJumpIfNot(AssemblyFileWriter& writer, std::shared_ptr<Condition
     }
 }
 
-void If::write(AssemblyFileWriter& writer) {
+void If::writeIL(IntermediateProgram& program){
     //Make something accessible for others operations
     static int labels = 0;
 
     if (elseIfs.empty()) {
         int a = labels++;
 
-        writeJumpIfNot(writer, m_condition, "L", a);
+        writeILJumpIfNot(program, m_condition, "L", a);
 
-        ParseNode::write(writer);
+        ParseNode::writeIL(program);
 
         if (m_elseBlock) {
             int b = labels++;
 
-            writer.stream() << "jmp L" << b << std::endl;
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", b)));
 
-            writer.stream() << "L" << a << ":" << std::endl;
+            program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
 
-            m_elseBlock->write(writer);
+            m_elseBlock->writeIL(program);
 
-            writer.stream() << "L" << b << ":" << std::endl;
+            program.addInstruction(program.factory().createLabel(eddic::label("L", b)));
         } else {
-            writer.stream() << "L" << a << ":" << std::endl;
+            program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
         }
     } else {
         int end = labels++;
         int next = labels++;
 
-        writeJumpIfNot(writer, m_condition, "L", next);
+        writeILJumpIfNot(program, m_condition, "L", next);
 
-        ParseNode::write(writer);
+        ParseNode::writeIL(program);
 
-        writer.stream() << "jmp L" << end << std::endl;
+        program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
 
         for (std::vector<std::shared_ptr<ElseIf>>::size_type i = 0; i < elseIfs.size(); ++i) {
             std::shared_ptr<ElseIf> elseIf = elseIfs[i];
 
-            writer.stream() << "L" << next << ":" << std::endl;
+            program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
             //Last elseif
             if (i == elseIfs.size() - 1) {
@@ -136,20 +131,20 @@ void If::write(AssemblyFileWriter& writer) {
                 next = labels++;
             }
 
-            writeJumpIfNot(writer, elseIf->condition(), "L", next);
+            writeILJumpIfNot(program, elseIf->condition(), "L", next);
 
-            elseIf->write(writer);
+            elseIf->writeIL(program);
 
-            writer.stream() << "jmp L" << end << std::endl;
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
         }
 
         if (m_elseBlock) {
-            writer.stream() << "L" << next << ":" << std::endl;
+            program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
-            m_elseBlock->write(writer);
+            m_elseBlock->writeIL(program);
         }
 
-        writer.stream() << "L" << end << ":" << std::endl;
+        program.addInstruction(program.factory().createLabel(eddic::label("L", end)));
     }
 }
 

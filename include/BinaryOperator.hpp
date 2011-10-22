@@ -19,16 +19,19 @@ class BinaryOperator : public Value {
 
         BinaryOperator(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Value> l, std::shared_ptr<Value> r);
 
-        bool isConstant();
         void checkVariables();
         void checkStrings(StringPool& pool);
+        void optimize();
+
+        bool isConstant();
         std::string getStringValue();
         int getIntValue();
-        void optimize();
 
         virtual Type checkTypes(Type left, Type right);
         virtual std::string compute(const std::string& left, const std::string& right);
         virtual int compute(int left, int right);
+        
+        virtual void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
 };
 
 } //end of eddic

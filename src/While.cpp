@@ -6,13 +6,16 @@
 //=======================================================================
 
 #include "While.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
+#include "CompilerException.hpp"
 
 #include "If.hpp"
 #include "Condition.hpp"
 
 #include "Value.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Labels.hpp"
 
 using namespace eddic;
 
@@ -22,22 +25,22 @@ std::shared_ptr<Condition> While::condition() {
     return m_condition;
 }
 
-void While::write(AssemblyFileWriter& writer) {
+void While::writeIL(IntermediateProgram& program) {
     //Make something accessible for others operations
     static int labels = 0;
 
     int startLabel = labels++;
     int endLabel = labels++;
 
-    writer.stream() << "WL" << startLabel << ":" << std::endl;
+    program.addInstruction(program.factory().createLabel(label("WL", startLabel)));
 
-    writeJumpIfNot(writer, m_condition, "WL", endLabel);
+    writeILJumpIfNot(program, m_condition, "WL", endLabel);
 
-    ParseNode::write(writer);
+    ParseNode::writeIL(program);
 
-    writer.stream() << "jmp WL" << startLabel << std::endl;
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("WL", startLabel)));
 
-    writer.stream() << "WL" << endLabel << ":" << std::endl;
+    program.addInstruction(program.factory().createLabel(label("WL", endLabel)));
 }
 
 void While::checkVariables() {

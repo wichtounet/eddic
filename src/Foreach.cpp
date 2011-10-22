@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "Foreach.hpp"
-#include "AssemblyFileWriter.hpp"
+#include "CompilerException.hpp"
 #include "Context.hpp"
 #include "Variable.hpp"
 
@@ -18,40 +18,42 @@
 #include "VariableValue.hpp"
 #include "Integer.hpp"
 
+#include "il/IntermediateProgram.hpp"
+#include "il/Labels.hpp"
+
 using namespace eddic;
 
 Foreach::Foreach(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, Type type, std::string variable, std::shared_ptr<Value> from, std::shared_ptr<Value> to) : ParseNode(context, token), m_type(type), m_variable(variable), m_from(from), m_to(to) {}
 
 //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
-void Foreach::write(AssemblyFileWriter& writer){
+//TODO Do not use smart pointers here, can use directly stack based values
+void Foreach::writeIL(IntermediateProgram& program){
     //Assign the base value to the variable
-    m_from->write(writer);
-    m_var->popFromStack(writer);
+    m_from->assignTo(m_var, program);
     
     static int labels = -1;
 
     ++labels;
 
-    writer.stream() << "start_foreach" << labels << ":" << std::endl;
+    program.addInstruction(program.factory().createLabel(label("start_foreach", labels)));
 
     //Create a condition
     std::shared_ptr<Value> variableValue(new VariableValue(m_var));
     std::shared_ptr<Condition> condition(new Condition(LESS_EQUALS_OPERATOR, variableValue, m_to));
-    writeJumpIfNot(writer, condition, "end_foreach", labels);
+    writeILJumpIfNot(program, condition, "end_foreach", labels);
 
     //Write all the instructions
-    ParseNode::write(writer);
+    ParseNode::writeIL(program);
 
     //Increment the variable
     std::shared_ptr<Value> one(new Integer(context(), token(), 1));
-    std::shared_ptr<ParseNode> addition(new Addition(context(), token(), one, variableValue));
+    std::shared_ptr<Value> addition(new Addition(context(), token(), one, variableValue));
 
-    addition->write(writer);
-    m_var->popFromStack(writer);
+    addition->assignTo(m_var, program);
 
-    writer.stream() << "jmp start_foreach" << labels << std::endl;
+    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_foreach", labels)));
 
-    writer.stream() << "end_foreach" << labels << ":" << std::endl;
+    program.addInstruction(program.factory().createLabel(label("end_foreach", labels)));
 }
 
 void Foreach::checkVariables(){

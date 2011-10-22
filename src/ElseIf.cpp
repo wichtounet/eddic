@@ -5,12 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <algorithm>
-
-#include "AssemblyFileWriter.hpp"
-#include "Context.hpp"
-
 #include "ElseIf.hpp"
+#include "CompilerException.hpp"
+#include "Context.hpp"
 #include "Condition.hpp"
 
 #include "Value.hpp"

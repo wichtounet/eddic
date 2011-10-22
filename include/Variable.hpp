@@ -8,6 +8,7 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
+#include <utility>
 #include <string>
 #include <map>
 #include <vector>
@@ -18,12 +19,15 @@
 
 #include "Types.hpp"
 
-#include "AssemblyFileWriter.hpp"
 #include "Position.hpp"
 
 namespace eddic {
 
 class Value;
+class IntermediateProgram;
+class Operand;
+
+typedef std::shared_ptr<Operand> OperandPtr;
 
 class Variable {
     private:
@@ -36,14 +40,8 @@ class Variable {
         Variable(const std::string& name, Type type, Position position);
         Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value);
 
-        void moveToRegister(AssemblyFileWriter& writer, const std::string& reg);
-        void moveToRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2);
-
-        void moveFromRegister(AssemblyFileWriter& writer, const std::string& reg);
-        void moveFromRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2);
-
-        void pushToStack(AssemblyFileWriter& writer);
-        void popFromStack(AssemblyFileWriter& writer);
+        OperandPtr toIntegerOperand();
+        std::pair<OperandPtr, OperandPtr> toStringOperand();
 
         std::string name() const ;
         Type type() const ;

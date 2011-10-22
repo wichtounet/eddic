@@ -23,7 +23,8 @@ class While : public ParseNode {
     public:
         While(std::shared_ptr<Context> context, const std::shared_ptr<Token> token, std::shared_ptr<Condition> condition);
 
-        virtual void write(AssemblyFileWriter& writer);
+        virtual void writeIL(IntermediateProgram& program);
+        
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
         virtual void optimize();

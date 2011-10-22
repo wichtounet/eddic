@@ -5,21 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cstdlib>
-
 #include "Timer.hpp"
 
 using namespace eddic;
 
 Timer::Timer() {
-    gettimeofday(&startTime, NULL);
+    startTime = boost::chrono::system_clock::now();
 }
 
 double Timer::elapsed() {
-    gettimeofday(&endTime, NULL);
-
-    double elapsedTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0;
-    elapsedTime += (endTime.tv_usec - startTime.tv_usec) / 1000.0;
-
-    return elapsedTime;
+    boost::chrono::duration<double> sec = boost::chrono::system_clock::now() - startTime;
+    
+    return sec.count();
 }

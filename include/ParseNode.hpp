@@ -20,7 +20,7 @@ class Program;
 typedef std::list<std::shared_ptr<ParseNode>>::const_iterator NodeIterator;
 
 class Context;
-class AssemblyFileWriter;
+class IntermediateProgram;
 class StringPool;
 class Token;
 
@@ -38,7 +38,7 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         ParseNode(std::shared_ptr<Context> context);
         ParseNode(std::shared_ptr<Context> context, const std::shared_ptr<Token> token);
 
-        virtual void write(AssemblyFileWriter& writer);
+        virtual void writeIL(IntermediateProgram& program);
         virtual void checkFunctions(Program& program);
         virtual void checkVariables();
         virtual void checkStrings(StringPool& pool);
@@ -47,12 +47,14 @@ class ParseNode : public std::enable_shared_from_this<ParseNode> {
         NodeIterator begin();
         NodeIterator end();
 
+        void setParent(std::shared_ptr<ParseNode> parent);
+
         std::shared_ptr<Context> context();
         const std::shared_ptr<Token> token();
     
         void addFirst(std::shared_ptr<ParseNode> node);
         void addLast(std::shared_ptr<ParseNode> node);
-        void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
+        virtual void replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node);
         void remove(std::shared_ptr<ParseNode> node);
 };
 
