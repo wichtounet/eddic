@@ -28,7 +28,17 @@ file(
 	src/*
 )
 
+file(
+	GLOB_RECURSE
+	test_files
+	test/*
+)
+
 add_executable(eddic ${source_files})
 
 target_link_libraries (eddic boost_chrono)
 target_link_libraries (eddic boost_system)
+
+add_executable (test ${test_files})
+
+target_link_libraries (test boost_unit_test_framework)
