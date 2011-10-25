@@ -322,27 +322,17 @@ std::shared_ptr<ParseNode> Parser::parseDeclaration() {
     return declaration;
 }
 
-<<<<<<< HEAD
 std::shared_ptr<ParseNode> Parser::parseAssignment(const Tok variableToken) {
     auto value = parseValue();
 
-    return std::shared_ptr<ParseNode>(new Assignment(currentContext, variableToken, get<std::string>(variableToken), value));
-}
-
-std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
-=======
-std::shared_ptr<ParseNode> Parser::parseAssignment(std::shared_ptr<Token> variableToken) {
-    auto value = parseValue();
-
-    std::shared_ptr<ParseNode> assignment(new Assignment(currentContext, variableToken, variableToken->value(), value));
+    std::shared_ptr<ParseNode> assignment(new Assignment(currentContext, variableToken, get<std::string>(variableToken), value));
 
     value->setParent(assignment);
     
     return assignment;
 }
 
-std::shared_ptr<ParseNode> Parser::parseSwap(std::shared_ptr<Token> lhs) {
->>>>>>> develop
+std::shared_ptr<ParseNode> Parser::parseSwap(const Tok lhs) {
     if (!lexer.next() || !lexer.isWord()) {
         throw TokenException("Can only swap two variables", lexer.getCurrentToken());
     }
