@@ -24,7 +24,8 @@ class StringPool : public ParseNode {
         StringPool(std::shared_ptr<Context> context, const Tok& pool);
 
         std::string label(const std::string& value);
-        void write(AssemblyFileWriter& writer);
+
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

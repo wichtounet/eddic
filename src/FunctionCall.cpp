@@ -9,8 +9,9 @@
 #include <algorithm>
 
 #include "FunctionCall.hpp"
+#include "CompilerException.hpp"
 
-#include "AssemblyFileWriter.hpp"
+#include "il/IntermediateProgram.hpp"
 #include "Value.hpp"
 #include "Program.hpp"
 
@@ -35,8 +36,8 @@ void FunctionCall::checkFunctions(Program& program){
     }
 }
 
-void FunctionCall::write(AssemblyFileWriter& writer){
-    for_each(m_values.rbegin(), m_values.rend(), [&](std::shared_ptr<Value> v){ v->write(writer); });
+void FunctionCall::writeIL(IntermediateProgram& program){
+    for_each(m_values.rbegin(), m_values.rend(), [&](std::shared_ptr<Value> v){ v->push(program); });
 
-    writer.stream() << "call " << m_function_mangled << endl;
+   program.addInstruction(program.factory().createCall(m_function_mangled));
 }

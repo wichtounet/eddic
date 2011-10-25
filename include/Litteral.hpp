@@ -25,11 +25,17 @@ class Litteral : public Value {
         };
 		
         void checkStrings(StringPool& pool);
-        void write(AssemblyFileWriter& writer);
+        
         bool isConstant();
+        bool isImmediate();
+        
         std::string getStringValue();
         std::string getStringLabel();
         int getStringSize();
+
+        void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

@@ -9,9 +9,10 @@
 
 #include "Function.hpp"
 #include "Context.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Parameter.hpp"
 #include "mangling.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using namespace eddic;
 
@@ -38,18 +39,10 @@ void Function::addParameter(const std::string& name, Type type){
     m_currentPosition += size(type);
 }
 
-void Function::write(AssemblyFileWriter& writer){
-    writer.stream() << endl << mangledName() << ":" << endl;
-    
-    writer.stream() << "pushl %ebp" << std::endl;
-    writer.stream() << "movl %esp, %ebp" << std::endl;
+void Function::writeIL(IntermediateProgram& program){
+    program.addInstruction(program.factory().createFunctionDeclaration(mangledName(), context()->size()));
 
-    context()->write(writer);
+    ParseNode::writeIL(program);
 
-    ParseNode::write(writer);
-
-    context()->release(writer);
-
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    program.addInstruction(program.factory().createFunctionExit(context()->size()));
 }

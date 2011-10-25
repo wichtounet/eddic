@@ -5,12 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "VariableValue.hpp"
+#include <cassert>
 
-#include "AssemblyFileWriter.hpp"
+#include "VariableValue.hpp"
+#include "CompilerException.hpp"
 #include "Context.hpp"
 #include "Value.hpp"
 #include "Variable.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using namespace eddic;
 
@@ -26,10 +29,45 @@ void VariableValue::checkVariables() {
     m_type = m_var->type();
 }
 
-void VariableValue::write(AssemblyFileWriter& writer) {
-    m_var->pushToStack(writer);
-}
-
 bool VariableValue::isConstant() {
     return false;
+}
+
+void VariableValue::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    if(m_var->type() == Type::INT){
+        program.addInstruction(program.factory().createMove(m_var->toIntegerOperand(), variable->toIntegerOperand()));
+    } else {
+        program.addInstruction(program.factory().createMove(m_var->toStringOperand().first, variable->toStringOperand().first));
+        program.addInstruction(program.factory().createMove(m_var->toStringOperand().second, variable->toStringOperand().second));
+    }
+}
+
+void VariableValue::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    if(m_var->type() == Type::INT){
+        program.addInstruction(program.factory().createMove(m_var->toIntegerOperand(), operand));
+    } else {
+        assert(false); //Cannot assign a string to a single operand
+    }
+}
+
+void VariableValue::push(IntermediateProgram& program){
+    if(m_var->type() == Type::INT){
+        program.addInstruction(
+            program.factory().createPush(
+                m_var->toIntegerOperand()
+            )
+        );
+    } else {
+        program.addInstruction(
+            program.factory().createPush(
+                m_var->toStringOperand().first
+            )
+        );
+        
+        program.addInstruction(
+            program.factory().createPush(
+                m_var->toStringOperand().second
+            )
+        );
+    }
 }

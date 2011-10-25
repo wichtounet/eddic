@@ -8,14 +8,15 @@
 #include <iostream>
 
 #include "Println.hpp"
-#include "AssemblyFileWriter.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using namespace eddic;
 
 Println::Println(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> v) : Print(context, token, v) {}
 
-void Println::write(AssemblyFileWriter& writer) {
-    Print::write(writer);
+void Println::writeIL(IntermediateProgram& program){
+    Print::writeIL(program);
 
-    writer.stream() << "call print_line" << std::endl;
+    program.addInstruction(program.factory().createCall("print_line"));
 }

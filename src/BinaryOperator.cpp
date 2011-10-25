@@ -5,19 +5,31 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+#include <iostream>
+
 #include "BinaryOperator.hpp"
+
+#include "CompilerException.hpp"
 #include "Options.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Context.hpp"
 #include "Integer.hpp"
-
-#include <cassert>
 
 using std::string;
 
 using namespace eddic;
 
 BinaryOperator::BinaryOperator(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> l, std::shared_ptr<Value> r) : Value(context, token), lhs(l), rhs(r) {}
+
+void BinaryOperator::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node){
+    if(lhs == old){
+        lhs = std::static_pointer_cast<Value>(node);
+    } else if(rhs == old){
+        rhs = std::static_pointer_cast<Value>(node);
+    } else {
+        assert(false); //Should not be used when not a child
+    }
+}
 
 void BinaryOperator::checkVariables() {
     lhs->checkVariables();

@@ -24,7 +24,7 @@ class Program : public ParseNode {
     public:
         Program(std::shared_ptr<Context> context, const Tok& tok);
         
-        void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
         void addFunction(std::shared_ptr<Function> function);
         bool exists(const std::string& function);
 };

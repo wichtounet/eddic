@@ -6,9 +6,10 @@
 //=======================================================================
 
 #include "Program.hpp"
-#include "AssemblyFileWriter.hpp"
 #include "Function.hpp"
 #include "Context.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using namespace eddic;
 
@@ -24,9 +25,9 @@ bool Program::exists(const std::string& function){
     return functions.find(function) != functions.end();
 }
 
-void Program::write(AssemblyFileWriter& writer){
-    ParseNode::write(writer);
+void Program::writeIL(IntermediateProgram& program){
+    ParseNode::writeIL(program);
 
     //Write the global variables
-    context()->write(writer);
+    context()->writeIL(program);
 }

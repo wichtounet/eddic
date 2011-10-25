@@ -18,12 +18,15 @@ class Addition : public BinaryOperator {
     public:
         Addition(std::shared_ptr<Context> context, const Tok token, std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs);
 
-        void write(AssemblyFileWriter& writer);
         void optimize();
 
         Type checkTypes(Type left, Type right);
         std::string compute(const std::string& left, const std::string& right);
         int compute(int left, int right);
+        
+        void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

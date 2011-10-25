@@ -21,9 +21,14 @@ class Integer : public Value {
     public:
         Integer(std::shared_ptr<Context> context, const Tok token, int value);
 
-        void write(AssemblyFileWriter& writer);
         bool isConstant();
+        bool isImmediate();
+        
         int getIntValue();
+        
+        void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

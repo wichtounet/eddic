@@ -18,7 +18,7 @@ class MainDeclaration : public ParseNode {
    public:
         MainDeclaration(std::shared_ptr<Context> context, const Tok& token);
 
-        void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

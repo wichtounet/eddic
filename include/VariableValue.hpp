@@ -26,8 +26,11 @@ class VariableValue : public Value {
         VariableValue(std::shared_ptr<Context> context, const Tok& token, std::shared_ptr<Variable> var);
 
         void checkVariables();
-        void write(AssemblyFileWriter& writer);
         bool isConstant();
+
+        virtual void assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program);
+        virtual void assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program);
+        void push(IntermediateProgram& program);
 };
 
 } //end of eddic

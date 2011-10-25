@@ -5,11 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
 #include "Addition.hpp"
-#include "AssemblyFileWriter.hpp"
+#include "CompilerException.hpp"
 #include "Options.hpp"
 #include "Integer.hpp"
 #include "Value.hpp"
+#include "Variable.hpp"
+
+#include "il/Operand.hpp"
+#include "il/Operands.hpp"
+#include "il/IntermediateProgram.hpp"
 
 using std::string;
 
@@ -25,22 +32,70 @@ Type Addition::checkTypes(Type left, Type right) {
     return left;
 }
 
-void Addition::write(AssemblyFileWriter& writer) {
-    lhs->write(writer);
-    rhs->write(writer);
+std::shared_ptr<Operand> performAddition(std::shared_ptr<Value> lhs, std::shared_ptr<Value> rhs, IntermediateProgram& program){
+    std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+    std::shared_ptr<Operand> registerB = createRegisterOperand("ebx");
 
-    if (lhs->type() == Type::INT) {
-        writer.stream() << "movl (%esp), %eax" << std::endl;
-        writer.stream() << "movl 4(%esp), %ecx" << std::endl;
-        writer.stream() << "addl %ecx, %eax" << std::endl;
-        writer.stream() << "addl $8, %esp" << std::endl;
-        writer.stream() << "pushl %eax" << std::endl;
+    if(lhs->isImmediate() && rhs->isImmediate()){
+        lhs->assignTo(registerA, program);
+        rhs->assignTo(registerB, program);
+    } else { //TODO Certainly a better way to manage this case (if only one is immediate ? )
+        lhs->push(program);
+        rhs->push(program);
+
+        program.addInstruction(program.factory().createMove(createStackOperand(4), registerA));
+        program.addInstruction(program.factory().createMove(createStackOperand(0), registerB));
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), createRegisterOperand("esp")));
+    }
+    
+    program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+    return registerB;
+}
+
+void Addition::assignTo(std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    assert(lhs->type() == Type::INT); //Cannot be used for string additions
+
+    program.addInstruction(program.factory().createMove(performAddition(lhs, rhs, program), operand));
+}
+
+//TODO Remove similar code for string addition
+void Addition::assignTo(std::shared_ptr<Variable> variable, IntermediateProgram& program){
+    if(lhs->type() == Type::INT){
+        assignTo(variable->toIntegerOperand(), program);
     } else {
-        writer.stream() << "call concat" << std::endl;
-        writer.stream() << "addl $16, %esp" << std::endl;
+        lhs->push(program);
+        rhs->push(program);
 
-        writer.stream() << "pushl %eax" << std::endl;
-        writer.stream() << "pushl %edx" << std::endl;
+        program.addInstruction(program.factory().createCall("concat"));
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
+
+        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+        std::shared_ptr<Operand> registerB = createRegisterOperand("edx");
+        
+        program.addInstruction(program.factory().createMove(registerA, variable->toStringOperand().first));
+        program.addInstruction(program.factory().createMove(registerB, variable->toStringOperand().second));
+    }
+}
+
+void Addition::push(IntermediateProgram& program){
+    if(lhs->type() == Type::INT){
+        program.addInstruction(program.factory().createPush(performAddition(lhs, rhs, program)));
+    } else {
+        lhs->push(program);
+        rhs->push(program);
+
+        program.addInstruction(program.factory().createCall("concat"));
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
+
+        std::shared_ptr<Operand> registerA = createRegisterOperand("eax");
+        std::shared_ptr<Operand> registerB = createRegisterOperand("edx");
+        
+        program.addInstruction(program.factory().createPush(registerA));
+        program.addInstruction(program.factory().createPush(registerB));
     }
 }
 
@@ -57,11 +112,10 @@ void Addition::optimize() {
         if (type() == Type::INT) {
             if (Options::isSet(BooleanOption::OPTIMIZE_INTEGERS)) {
                 std::shared_ptr<Value> value(new Integer(context(), lhs->token(), getIntValue()));
-
                 parent.lock()->replace(shared_from_this(), value);
             }
         } else if (type() == Type::STRING) {
-            if (Options::isSet(BooleanOption::OPTIMIZE_STRINGS)) {
+             if (Options::isSet(BooleanOption::OPTIMIZE_STRINGS)) {
                 //No optimization at this time
             }
         }

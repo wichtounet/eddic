@@ -1,9 +1,26 @@
-//Main method
+//Global Variables
+int ga = 1000;
+string gb = "Global Variable b"; 
+
 void main(){
     string x = "ED" + "DI";
     println(x);
 
-    string a = "Variable a" + "EDDI";
+    print("Should print '1000' : ");
+    println(ga);
+
+    print("Should print 'Global Variable b' : ");
+    println(gb);
+
+    ga = 2000;
+    print("Should print '2000' : ");
+    println(ga);
+
+    gb = "New value";
+    print("Should print 'New value' : ");
+    println(gb);
+
+    string a = "Variable a";
     print("Should print 'Variable a' : ");
     println(a);
 
@@ -28,6 +45,11 @@ void main(){
     println(f);
     print("Should print 'Variable f' : ");
     println(e);
+    
+    string z = e + f;
+
+    print("Should print 'Variable fVariable e' : ");
+    println(z);
 
     int c = 1111;
     println(c);
@@ -41,23 +63,62 @@ void main(){
     d = c;
     println(d);
 
+    print("2222 + 2222 = ");
+    println(c + d);
+
+    print("2000 * 5 = ");
+    println(ga * 5);
+
     print("666 + 333 = ");
     println(666 + 333);
 
     print("10 * 33 = ");
-    println(330);
+    println(10 * 33);
+    
+    print("111 * 2 = ");
+    println(111 * 2);
+    
+    print("444 * 33 = ");
+    println(444 * 33);
+
+    print("444 * 333 = ");
+    println(444 * 333);
 
     print("122 / 2 = ");
     println(122 / 2);
 
+    print("2000 / 3 = ");
+    println(2000 / 3);
+    
+    print("123 / 2 = ");
+    println(123 / 2);
+    
+    print("1222 / 7 = ");
+    println(1222 / 7);
+
     print("7 % 5 = ");
     println(7 % 5);
+    
+    print("28 % 4 = ");
+    println(28 % 4);
 
     print("444 - 333 = ");
     println(444 - 333);
 
     print("((444 - 333) * (2)) = ");
     println(((444 - 333) * (2)));
+    
+    print("((444 - 333) * (2 + 3)) = ");
+    println(((444 - 333) * (2 + 3)));
+    
+    print("((4444 - 333) - (1222 / 7)) = ");
+    println(((4444 - 333) - (1222 / 7)));
+    
+    print("((444 * 333) - (1222 / 7)) + (33 % 2) = ");
+    println(((444 * 333) - (1222 / 7)) + (33 % 2));
+    
+    print("((444 * 333) - (1222 / 7)) + (33 % 2 + 300 - 199) = ");
+    println(((444 * 333) - (1222 / 7)) + (33 % 2 + 300 - 199));
 
     if(4 > 3){
         string xa = "Cool";

@@ -26,7 +26,7 @@ class GlobalContext : public Context {
     public:
         GlobalContext() : Context(NULL) {}
         
-        void write(AssemblyFileWriter& writer);
+        void writeIL(IntermediateProgram& writer);
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type, std::shared_ptr<Value> value);

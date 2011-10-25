@@ -10,7 +10,9 @@
 #include "ParseNode.hpp"
 #include "Context.hpp"
 #include "StringPool.hpp"
-#include "AssemblyFileWriter.hpp"
+
+#include "il/IntermediateProgram.hpp"
+
 #include "Utils.hpp"
 
 using std::list;
@@ -30,8 +32,8 @@ const Tok& ParseNode::token(){
     return m_token;
 }
 
-void ParseNode::write(AssemblyFileWriter& writer) {
-    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->write(writer); });
+void ParseNode::writeIL(IntermediateProgram& program) {
+    for_each(begin(), end(), [&](std::shared_ptr<ParseNode> p){ p->writeIL(program); });
 }
 
 void ParseNode::checkFunctions(Program& program){
@@ -64,11 +66,15 @@ void ParseNode::addFirst(std::shared_ptr<ParseNode> node) {
 
 void ParseNode::replace(std::shared_ptr<ParseNode> old, std::shared_ptr<ParseNode> node) {
     node->parent = std::weak_ptr<ParseNode>(shared_from_this());
-
+    
     auto it = find(childs.begin(), childs.end(), old);
     if(it != childs.end()){
         *it = node;
     }
+}
+
+void ParseNode::setParent(std::shared_ptr<ParseNode> newParent){
+    parent = std::weak_ptr<ParseNode>(newParent);
 }
 
 void ParseNode::remove(std::shared_ptr<ParseNode> node) {
