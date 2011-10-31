@@ -118,14 +118,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
         instruction = 
             ((assignment | declaration | functionCall | swap) >> tok.stop)
-            | if_ | while_ | for_ | foreach_;
-
-        function %= 
-            tok.word >> identifier >> tok.left_parenth  
-            >> -( arg >> *( tok.comma >> arg))
-            >> tok.right_parenth >> tok.left_brace
-            >> *(instruction)
-            >> tok.right_brace;*/
+            | if_ | while_ | for_ | foreach_;*/
 
         integer %= 
                 qi::eps 
