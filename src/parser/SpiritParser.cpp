@@ -70,10 +70,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
         primaryValue = constant | tok.word | (tok.left_parenth > value > tok.right_parenth);
 
-        globalDeclaration %= tok.word >> identifier >> tok.assign >> constant;
-        declaration = tok.word >> tok.word >> tok.assign >> value;
-        assignment = tok.word >> tok.assign >> value;
-
         binary_operator = tok.equals | tok.not_equals | tok.greater | tok.less | tok.greater_equals | tok.less_equals;
         condition = (value >> binary_operator >> value) | tok.true_ | tok.false_;
 
@@ -109,12 +105,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         >> *(elseif_)
         >> -(else_);
 
-        functionCall = 
-        tok.word >> tok.left_parenth 
-        >> -( value >> *( tok.comma >> value))
-            >> tok.right_parenth; 
-
-        repeatable_instruction = assignment | declaration | swap;
 
         instruction = 
             ((assignment | declaration | functionCall | swap) >> tok.stop)
@@ -136,6 +126,17 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
                 qi::eps 
             >>  (integer | litteral);
 
+        declaration %= 
+                lexer.word 
+            >>  lexer.word 
+            >>  lexer.assign 
+            >>  value;
+        
+        assignment %= 
+                lexer.word 
+            >>  lexer.assign 
+            >>  value;
+        
         globalDeclaration %= 
                 lexer.word 
             >>  lexer.word 
@@ -155,9 +156,11 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  lexer.word;
         
         instruction %= 
-                (functionCall | swap) 
+                (functionCall | swap | assignment | declaration) 
             >>  lexer.stop;
 
+        repeatable_instruction = assignment | declaration | swap;
+        
         arg %= 
                 lexer.word 
             >>  lexer.word;
@@ -188,8 +191,11 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, FunctionParameter()> arg;
    
    qi::rule<Iterator, ASTInstruction()> instruction;
+   qi::rule<Iterator, ASTInstruction()> repeatable_instruction;
    qi::rule<Iterator, ASTSwap()> swap;
    qi::rule<Iterator, ASTFunctionCall()> functionCall;
+   qi::rule<Iterator, ASTDeclaration()> declaration;
+   qi::rule<Iterator, ASTAssignment()> assignment;
    
    qi::rule<Iterator, ASTValue()> value;
    qi::rule<Iterator, ASTValue()> constant;
@@ -203,9 +209,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator> primaryValue;
    qi::rule<Iterator> constant;
 
-   qi::rule<Iterator> repeatable_instruction;
-   qi::rule<Iterator> declaration;
-   qi::rule<Iterator> assignment;
    qi::rule<Iterator> condition;
    qi::rule<Iterator> binary_operator;
 

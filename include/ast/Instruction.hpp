@@ -12,10 +12,17 @@
 
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
+#include "ast/Assignment.hpp"
+#include "ast/Declaration.hpp"
 
 namespace eddic {
 
-typedef boost::variant<ASTFunctionCall, ASTSwap> ASTInstruction;
+typedef boost::variant<
+            ASTFunctionCall, 
+            ASTSwap, 
+            ASTDeclaration,
+            ASTAssignment> 
+        ASTInstruction;
 
 } //end of eddic
 

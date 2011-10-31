@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_GLOBAL_VARIABLE_DECLARATION_H
-#define AST_GLOBAL_VARIABLE_DECLARATION_H
+#ifndef AST_ASSIGNMENT_H
+#define AST_ASSIGNMENT_H
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -14,8 +14,7 @@
 
 namespace eddic {
 
-struct GlobalVariableDeclaration {
-    std::string variableType;
+struct ASTAssignment {
     std::string variableName;
     ASTValue value;
 };
@@ -24,8 +23,7 @@ struct GlobalVariableDeclaration {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::GlobalVariableDeclaration, 
-    (std::string, variableType)
+    eddic::ASTAssignment, 
     (std::string, variableName)
     (eddic::ASTValue, value)
 )
