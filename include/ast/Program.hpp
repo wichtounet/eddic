@@ -18,6 +18,8 @@
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 
+#include "ast/While.hpp" //Only temporary
+
 namespace eddic {
 
 typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;

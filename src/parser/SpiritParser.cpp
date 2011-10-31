@@ -105,10 +105,21 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         >> *(elseif_)
         >> -(else_);
 
-
         instruction = 
             ((assignment | declaration | functionCall | swap) >> tok.stop)
             | if_ | while_ | for_ | foreach_;*/
+
+        true_ %= 
+            qi::eps
+            >> lexer.true_;
+        
+        false_ %= 
+            qi::eps
+            >> lexer.false_;
+
+        condition %= 
+                qi::eps
+            >>  (true_ | false_);
 
         integer %= 
                 qi::eps 
@@ -201,6 +212,10 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTValue()> constant;
    qi::rule<Iterator, ASTInteger()> integer;
    qi::rule<Iterator, ASTLitteral()> litteral;
+   
+   qi::rule<Iterator, ASTCondition> condition;
+   qi::rule<Iterator, ASTTrue> true_;
+   qi::rule<Iterator, ASTFalse> false_;
 
    /*qi::rule<Iterator> value;
    qi::rule<Iterator> additiveValue;
@@ -209,7 +224,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator> primaryValue;
    qi::rule<Iterator> constant;
 
-   qi::rule<Iterator> condition;
    qi::rule<Iterator> binary_operator;
 
    qi::rule<Iterator> while_;
