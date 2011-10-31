@@ -1,4 +1,6 @@
-{
-    int a;
-    void b()y{}
+int a = 1;
+void b(int y, int x){}
+void b(int y, int x){
+    a <=> b;
+    c(1, "asdf");    
 }

@@ -5,20 +5,25 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef SPIRIT_PARSER_H
-#define SPIRIT_PARSER_H
+#ifndef AST_SWAP_H
+#define AST_SWAP_H
 
-#include <string>
+#include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
 
-class ASTProgram;
-
-class SpiritParser {
-    public:
-        bool parse(const std::string& file, ASTProgram& program);
+struct ASTSwap {
+    std::string lhs;
+    std::string rhs;
 };
 
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ASTSwap, 
+    (std::string, lhs)
+    (std::string, rhs)
+)
 
 #endif

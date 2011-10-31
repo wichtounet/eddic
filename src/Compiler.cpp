@@ -42,7 +42,7 @@ int Compiler::compile(const string& file) {
         SpiritParser parser;
 
         //The program to build
-        Program program;
+        ASTProgram program;
 
         //Parse the file into the program
         if(parser.parse(file, program)){

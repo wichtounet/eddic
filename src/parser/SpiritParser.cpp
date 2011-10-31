@@ -46,12 +46,9 @@ std::string readI(const std::string& file){
 }
 
 template <typename Iterator, typename Lexer>
-struct EddiGrammar : qi::grammar<Iterator, Program()> {
+struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
         /*
-        //Define language rules
-        constant = tok.integer | tok.litteral;
-
         value = additiveValue.alias();
 
         additiveValue = 
@@ -76,7 +73,6 @@ struct EddiGrammar : qi::grammar<Iterator, Program()> {
         globalDeclaration %= tok.word >> identifier >> tok.assign >> constant;
         declaration = tok.word >> tok.word >> tok.assign >> value;
         assignment = tok.word >> tok.assign >> value;
-        swap = tok.word >> tok.swap >> tok.word;
 
         binary_operator = tok.equals | tok.not_equals | tok.greater | tok.less | tok.greater_equals | tok.less_equals;
         condition = (value >> binary_operator >> value) | tok.true_ | tok.false_;
@@ -113,8 +109,6 @@ struct EddiGrammar : qi::grammar<Iterator, Program()> {
         >> *(elseif_)
         >> -(else_);
 
-        arg = tok.word >> tok.word;
-
         functionCall = 
         tok.word >> tok.left_parenth 
         >> -( value >> *( tok.comma >> value))
@@ -131,23 +125,63 @@ struct EddiGrammar : qi::grammar<Iterator, Program()> {
             >> -( arg >> *( tok.comma >> arg))
             >> tok.right_parenth >> tok.left_brace
             >> *(instruction)
-            >> tok.right_brace;
-        program %= *( function | (globalDeclaration >> tok.stop)); */
+            >> tok.right_brace;*/
+
+        integer %= 
+                qi::eps 
+            >>  lexer.integer;
+        
+        litteral %= 
+                qi::eps 
+            >> lexer.litteral;
+
+        constant %= 
+                qi::eps 
+            >>  (integer | litteral);
+        
+        value %= 
+                qi::eps 
+            >>  (integer | litteral);
 
         globalDeclaration %= 
-            lexer.word 
-            >> lexer.word 
-            >> lexer.stop;
+                lexer.word 
+            >>  lexer.word 
+            >>  lexer.assign
+            >>  constant
+            >>  lexer.stop;
 
+        functionCall %=
+                lexer.word
+            >>  lexer.left_parenth
+            >>  -( value >> *( lexer.comma >> value))
+            >>  lexer.right_parenth;
+        
+        swap %= 
+                lexer.word 
+            >>  lexer.swap 
+            >>  lexer.word;
+        
+        instruction %= 
+                (functionCall | swap) 
+            >>  lexer.stop;
+
+        arg %= 
+                lexer.word 
+            >>  lexer.word;
+        
         function %= 
-            lexer.word >> 
-            lexer.word >> 
-            lexer.left_parenth > 
-            lexer.right_parenth > 
-            lexer.left_brace >
-            lexer.right_brace;
+                lexer.word 
+            >>  lexer.word
+            >>  lexer.left_parenth
+            >>  -( arg >> *( lexer.comma >> arg))
+            >>  lexer.right_parenth
+            >>  lexer.left_brace
+            >>  *(instruction)
+            >>  lexer.right_brace;
 
-        program %= lexer.left_brace >> *(globalDeclaration | function) >> lexer.right_brace;
+        program %=
+                qi::eps 
+            >>  *(globalDeclaration | function);
 
         //Name the rules
         globalDeclaration.name("EDDI global variable");
@@ -155,24 +189,30 @@ struct EddiGrammar : qi::grammar<Iterator, Program()> {
         program.name("EDDI program");
    }
 
-   qi::rule<Iterator, Program()> program;
+   qi::rule<Iterator, ASTProgram()> program;
    qi::rule<Iterator, GlobalVariableDeclaration()> globalDeclaration;
    qi::rule<Iterator, FunctionDeclaration()> function;
-   /*qi::rule<Iterator> arg;
+   qi::rule<Iterator, FunctionParameter()> arg;
+   
+   qi::rule<Iterator, ASTInstruction()> instruction;
+   qi::rule<Iterator, ASTSwap()> swap;
+   qi::rule<Iterator, ASTFunctionCall()> functionCall;
+   
+   qi::rule<Iterator, ASTValue()> value;
+   qi::rule<Iterator, ASTValue()> constant;
+   qi::rule<Iterator, ASTInteger()> integer;
+   qi::rule<Iterator, ASTLitteral()> litteral;
 
-   qi::rule<Iterator> value;
+   /*qi::rule<Iterator> value;
    qi::rule<Iterator> additiveValue;
    qi::rule<Iterator> multiplicativeValue;
    qi::rule<Iterator> unaryValue;
    qi::rule<Iterator> primaryValue;
    qi::rule<Iterator> constant;
 
-   qi::rule<Iterator> instruction;
    qi::rule<Iterator> repeatable_instruction;
    qi::rule<Iterator> declaration;
    qi::rule<Iterator> assignment;
-   qi::rule<Iterator> swap;
-   qi::rule<Iterator> functionCall;
    qi::rule<Iterator> condition;
    qi::rule<Iterator> binary_operator;
 
@@ -181,15 +221,12 @@ struct EddiGrammar : qi::grammar<Iterator, Program()> {
    qi::rule<Iterator> foreach_;
    qi::rule<Iterator> if_;
    qi::rule<Iterator> else_;
-   qi::rule<Iterator> elseif_;
-
-   //Utility rules to return values for tokens
-   qi::rule<Iterator, std::string()> identifier;*/
+   qi::rule<Iterator> elseif_;*/
 };
 
 #include <boost/exception/all.hpp>
 
-bool SpiritParser::parse(const std::string& file, Program& program){
+bool SpiritParser::parse(const std::string& file, ASTProgram& program){
     std::string contents = readI(file);
 
     pos_iterator_type position_begin(contents.begin(), contents.end(), file);
@@ -197,9 +234,6 @@ bool SpiritParser::parse(const std::string& file, Program& program){
 
     SimpleLexer<lexer_type> lexer;
     EddiGrammar<lexer_type::iterator_type, SimpleLexer<lexer_type>> grammar(lexer); 
-
-    //In order to avoid a seg fault....
-    Program p;
     
     try {
         bool r = lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);

@@ -5,19 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef SPIRIT_PARSER_H
-#define SPIRIT_PARSER_H
+#ifndef AST_VALUE_H
+#define AST_VALUE_H
 
-#include <string>
+#include <boost/variant/variant.hpp>
+
+#include "ast/Integer.hpp"
+#include "ast/Litteral.hpp"
 
 namespace eddic {
 
-class ASTProgram;
-
-class SpiritParser {
-    public:
-        bool parse(const std::string& file, ASTProgram& program);
-};
+typedef boost::variant<ASTInteger, ASTLitteral> ASTValue;
 
 } //end of eddic
 

@@ -5,30 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_GLOBAL_VARIABLE_DECLARATION_H
-#define AST_GLOBAL_VARIABLE_DECLARATION_H
+#ifndef AST_FUNCTION_CALL_H
+#define AST_FUNCTION_CALL_H
 
-#include <boost/variant/variant.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct GlobalVariableDeclaration {
-    std::string variableType;
-    std::string variableName;
-    ASTValue value;
+struct ASTFunctionCall {
+    std::string functionName;
+    std::vector<ASTValue> values;
 };
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::GlobalVariableDeclaration, 
-    (std::string, variableType)
-    (std::string, variableName)
-    (eddic::ASTValue, value)
+    eddic::ASTFunctionCall, 
+    (std::string, functionName)
+    (std::vector<eddic::ASTValue>, values)
 )
 
 #endif

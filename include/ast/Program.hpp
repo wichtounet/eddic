@@ -24,7 +24,7 @@ typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLeve
 typedef std::vector<FirstLevelBlock> ProgramEquivalence;
 
 //A source EDDI program
-struct Program {
+struct ASTProgram {
     std::vector<FirstLevelBlock> blocks;
 };
 
@@ -32,7 +32,7 @@ struct Program {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::Program, 
+    eddic::ASTProgram, 
     (std::vector<eddic::FirstLevelBlock>, blocks)
 )
 
