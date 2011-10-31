@@ -36,26 +36,4 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<eddic::FirstLevelBlock>, blocks)
 )
 
-//Enable the use as one-attribute
-namespace boost { namespace spirit { namespace traits {
-    /*
-    template <>
-    struct assign_to_attribute_from_value <eddic::Program, eddic::ProgramEquivalence, qi::domain> {
-        static void call(const eddic::ProgramEquivalence& val, eddic::Program& attr){
-            attr.blocks = val;
-        }
-    };
-    */
-
-    /*
-    template<>
-    struct transform_attribute<eddic::Program, std::vector<eddic::FirstLevelBlock>, qi::domain> {
-        typedef std::vector<eddic::FirstLevelBlock>& type;
-
-        static type pre(eddic::Program& program) { return program.blocks; }
-        static void post(eddic::Program&, const type) {}
-        static void fail(eddic::Program&) {}
-    };*/
-}}}
-
 #endif
