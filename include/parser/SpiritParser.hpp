@@ -5,21 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef COMPILER_H
-#define COMPILER_H
+#ifndef SPIRIT_PARSER_H
+#define SPIRIT_PARSER_H
 
 #include <string>
 
-#include "AssemblyFileWriter.hpp"
-
 namespace eddic {
 
-class Compiler {
-    private:
-        AssemblyFileWriter writer;
+class Program;
 
+class SpiritParser {
     public:
-        int compile (const std::string& file);
+        bool parse(const std::string& file, Program& program);
 };
 
 } //end of eddic

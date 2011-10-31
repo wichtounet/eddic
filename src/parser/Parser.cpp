@@ -105,7 +105,7 @@ std::shared_ptr<Program> Parser::parse(const std::string& file) {
     //Create the global context
     globalContext = std::shared_ptr<GlobalContext>(new GlobalContext());
     currentContext = globalContext;
-
+    
     std::shared_ptr<Program> program(new Program(currentContext, lexer.getDefaultToken()));
 
     /*while (lexer.next()) {

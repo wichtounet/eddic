@@ -8,17 +8,19 @@
 #include <iostream>
 #include <cstdio>
 
+#include "Compiler.hpp"
+
 #include "Timer.hpp"
 #include "Options.hpp"
-#include "StringPool.hpp"
-#include "Compiler.hpp"
+/*#include "StringPool.hpp"
 #include "Program.hpp"
-#include "parser/Parser.hpp"
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
-#include "il/IntermediateProgram.hpp"
+#include "il/IntermediateProgram.hpp"*/
 
-#include "lexer/SpiritLexer.hpp"
+#include "ast/Program.hpp"
+
+#include "parser/SpiritParser.hpp"
 
 using std::string;
 using std::cout;
@@ -37,35 +39,39 @@ int Compiler::compile(const string& file) {
 
     int code = 0;
     try {
-        Parser parser;
+        SpiritParser parser;
 
-        std::shared_ptr<Program> program = parser.parse(file);
+        //The program to build
+        Program program;
 
-        throw "Do not compile";
+        //Parse the file into the program
+        if(parser.parse(file, program)){
+            std::cout << program.blocks.size() << std::endl;
 
-        std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
+            /*        
+                      std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
 
-        program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
-        program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
-        program->addLast(pool);
+                      program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
+                      program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
+                      program->addLast(pool);
 
-        //Semantical analysis
-        program->checkVariables();
-        program->checkStrings(*pool);
-        program->checkFunctions(*program);
+            //Semantical analysis
+            program->checkVariables();
+            program->checkStrings(*pool);
+            program->checkFunctions(*program);
 
-        //Optimize the parse tree
-        program->optimize();
+            //Optimize the parse tree
+            program->optimize();
 
-        //Write Intermediate representation of the parse tree
-        IntermediateProgram il;
-        program->writeIL(il);
+            //Write Intermediate representation of the parse tree
+            IntermediateProgram il;
+            program->writeIL(il);
 
-        //Write assembly code
-        writer.open("output.asm");
-        il.writeAsm(writer);
+            //Write assembly code
+            writer.open("output.asm");
+            il.writeAsm(writer);
 
-        if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
+            if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
             execCommand("as --32 -o output.o output.asm");
 
             string ldCommand = "gcc -m32 -static -o ";
@@ -77,6 +83,8 @@ int Compiler::compile(const string& file) {
             //Remove temporary files
             remove("output.asm");
             remove("output.o");
+            }*/
+
         }
     } catch (const CompilerException& e) {
         cout << e.what() << endl;
@@ -84,7 +92,7 @@ int Compiler::compile(const string& file) {
     }
 
     //Close input and output
-    writer.close();
+    //writer.close();
 
     cout << "Compilation took " << timer.elapsed() << "s" << endl;
 
