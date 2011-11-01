@@ -70,14 +70,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
         primaryValue = constant | tok.word | (tok.left_parenth > value > tok.right_parenth);
 
-        binary_operator = tok.equals | tok.not_equals | tok.greater | tok.less | tok.greater_equals | tok.less_equals;
-        condition = (value >> binary_operator >> value) | tok.true_ | tok.false_;
-
-        for_ = 
-        tok.for_ >> tok.left_parenth >> -declaration >> tok.stop >> -condition >> tok.stop >> -repeatable_instruction >> tok.right_parenth >> tok.left_brace
-        >> (*instruction)
-        >> tok.right_brace;
-
         foreach_ = 
         tok.foreach_ >> tok.left_parenth >> tok.word >> tok.word >> tok.from_ >> tok.integer >> tok.to_ >> tok.integer >> tok.right_parenth >> tok.left_brace 
         >> *(instruction)
@@ -150,6 +142,19 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
                 qi::eps
             >>  (true_ | false_ | binary_condition);
         
+        for_ %= 
+                lexer.for_ 
+            >>  lexer.left_parenth 
+            >>  -declaration 
+            >>  lexer.stop 
+            >>  -condition 
+            >>  lexer.stop 
+            >>  -repeatable_instruction 
+            >>  lexer.right_parenth 
+            >>  lexer.left_brace
+            >>  (*instruction)
+            >>  lexer.right_brace;
+        
         while_ %=
                 lexer.while_ 
             >>  lexer.left_parenth 
@@ -210,7 +215,8 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         instruction %= 
                 ((functionCall | swap | assignment | declaration) >>  lexer.stop)
-            |   while_;
+            |   while_
+            |   for_;
 
         repeatable_instruction = assignment | declaration | swap;
         
@@ -250,6 +256,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTDeclaration()> declaration;
    qi::rule<Iterator, ASTAssignment()> assignment;
    qi::rule<Iterator, ASTWhile()> while_;
+   qi::rule<Iterator, ASTFor()> for_;
    
    qi::rule<Iterator, ASTValue()> value;
    qi::rule<Iterator, ASTValue()> constant;

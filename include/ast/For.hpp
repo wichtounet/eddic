@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_WHILE_H
-#define AST_WHILE_H
+#ifndef AST_FOR_H
+#define AST_FOR_H
 
 #include <vector>
 
@@ -16,8 +16,10 @@
 
 namespace eddic {
 
-struct ASTWhile {
+struct ASTFor {
+    ASTInstruction start;
     ASTCondition condition;
+    ASTInstruction repeat;
     std::vector<ASTInstruction> instructions;
 };
 
@@ -25,8 +27,10 @@ struct ASTWhile {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTWhile, 
+    eddic::ASTFor, 
+    (eddic::ASTInstruction, start)
     (eddic::ASTCondition, condition)
+    (eddic::ASTInstruction, repeat)
     (std::vector<eddic::ASTInstruction>, instructions)
 )
 

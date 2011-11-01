@@ -19,17 +19,20 @@
 namespace eddic {
 
 struct ASTWhile;
+struct ASTFor;
 
 typedef boost::variant<
             ASTFunctionCall, 
             ASTSwap, 
             ASTDeclaration,
             ASTAssignment, 
-            boost::recursive_wrapper<ASTWhile>> 
+            boost::recursive_wrapper<ASTWhile>,
+            boost::recursive_wrapper<ASTFor>>
         ASTInstruction;
 
 } //end of eddic
 
 #include "ast/While.hpp"
+#include "ast/For.hpp"
 
 #endif

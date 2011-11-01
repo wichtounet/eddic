@@ -1,4 +1,5 @@
 int a = 1;
+string c = "asdf";
 void b(int y, int x){}
 void b(int y, int x){
     a <=> b;
@@ -7,4 +8,12 @@ void b(int y, int x){
     while(a < b){
         b <=> a;
     }
+
+    for(int a = 0; i < 1; a = 4){
+        a = a;
+    }
+}
+
+void c(string b){
+    a <=> c;
 }
