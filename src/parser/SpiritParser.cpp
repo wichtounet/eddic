@@ -110,12 +110,17 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  value;
 
         binary_condition %=
-                qi::eps
-            >>  (equals | not_equals | greater | greater_equals | less | less_equals);
+                equals 
+            |   not_equals 
+            |   greater 
+            |   greater_equals 
+            |   less 
+            |   less_equals;
 
         condition %= 
-                qi::eps
-            >>  (true_ | false_ | binary_condition);
+                true_ 
+            |   false_ 
+            |   binary_condition;
         
         else_if_ %= 
                 lexer.else_ 
@@ -193,12 +198,13 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >> lexer.litteral;
 
         constant %= 
-                qi::eps 
-            >>  (integer | litteral);
+                integer 
+            |   litteral;
         
         value %= 
-                qi::eps 
-            >>  (integer | litteral | variable);
+                integer 
+            |   litteral 
+            |   variable;
 
         declaration %= 
                 lexer.word 
