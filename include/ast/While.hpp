@@ -10,7 +10,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Instruction.hpp"
 #include "ast/Condition.hpp"
 
 namespace eddic {

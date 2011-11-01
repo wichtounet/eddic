@@ -73,11 +73,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         binary_operator = tok.equals | tok.not_equals | tok.greater | tok.less | tok.greater_equals | tok.less_equals;
         condition = (value >> binary_operator >> value) | tok.true_ | tok.false_;
 
-        while_ = 
-        tok.while_ >> tok.left_parenth >> condition >> tok.right_parenth >> tok.left_brace 
-        >> *(instruction)
-        >> tok.right_brace; 
-
         for_ = 
         tok.for_ >> tok.left_parenth >> -declaration >> tok.stop >> -condition >> tok.stop >> -repeatable_instruction >> tok.right_parenth >> tok.left_brace
         >> (*instruction)
@@ -110,20 +105,67 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             | if_ | while_ | for_ | foreach_;*/
 
         true_ %= 
-            qi::eps
-            >> lexer.true_;
+                qi::eps
+            >>  lexer.true_;
         
         false_ %= 
+                qi::eps
+            >>  lexer.false_;
+
+        equals %=
+                value
+            >>  lexer.equals
+            >>  value;
+        
+        not_equals %=
+                value
+            >>  lexer.not_equals
+            >>  value;
+        
+        less %=
+                value
+            >>  lexer.less
+            >>  value;
+        
+        less_equals %=
+                value
+            >>  lexer.less_equals
+            >>  value;
+        
+        greater %=
+                value
+            >>  lexer.greater
+            >>  value;
+        
+        greater_equals %=
+                value
+            >>  lexer.greater_equals
+            >>  value;
+
+        binary_condition %=
             qi::eps
-            >> lexer.false_;
+            >> (equals | not_equals | greater | greater_equals | less | less_equals);
 
         condition %= 
                 qi::eps
-            >>  (true_ | false_);
+            >>  (true_ | false_ | binary_condition);
+        
+        while_ %=
+                lexer.while_ 
+            >>  lexer.left_parenth 
+            >>  condition 
+            >>  lexer.right_parenth 
+            >>  lexer.left_brace 
+            >>  *(instruction)
+            >>  lexer.right_brace;
 
         integer %= 
                 qi::eps 
             >>  lexer.integer;
+       
+        variable %= 
+                qi::eps
+            >>  lexer.word;
         
         litteral %= 
                 qi::eps 
@@ -135,7 +177,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         value %= 
                 qi::eps 
-            >>  (integer | litteral);
+            >>  (integer | litteral | variable);
 
         declaration %= 
                 lexer.word 
@@ -167,8 +209,8 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  lexer.word;
         
         instruction %= 
-                (functionCall | swap | assignment | declaration) 
-            >>  lexer.stop;
+                ((functionCall | swap | assignment | declaration) >>  lexer.stop)
+            |   while_;
 
         repeatable_instruction = assignment | declaration | swap;
         
@@ -207,15 +249,23 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTFunctionCall()> functionCall;
    qi::rule<Iterator, ASTDeclaration()> declaration;
    qi::rule<Iterator, ASTAssignment()> assignment;
+   qi::rule<Iterator, ASTWhile()> while_;
    
    qi::rule<Iterator, ASTValue()> value;
    qi::rule<Iterator, ASTValue()> constant;
    qi::rule<Iterator, ASTInteger()> integer;
    qi::rule<Iterator, ASTLitteral()> litteral;
    
-   qi::rule<Iterator, ASTCondition> condition;
-   qi::rule<Iterator, ASTTrue> true_;
-   qi::rule<Iterator, ASTFalse> false_;
+   qi::rule<Iterator, ASTCondition()> condition;
+   qi::rule<Iterator, ASTTrue()> true_;
+   qi::rule<Iterator, ASTFalse()> false_;
+   qi::rule<Iterator, ASTBinaryCondition()> binary_condition;
+   qi::rule<Iterator, ASTEquals()> equals;
+   qi::rule<Iterator, ASTNotEquals()> not_equals;
+   qi::rule<Iterator, ASTGreater()> greater;
+   qi::rule<Iterator, ASTGreaterEquals()> greater_equals;
+   qi::rule<Iterator, ASTLess()> less;
+   qi::rule<Iterator, ASTLessEquals()> less_equals;
 
    /*qi::rule<Iterator> value;
    qi::rule<Iterator> additiveValue;
@@ -224,9 +274,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator> primaryValue;
    qi::rule<Iterator> constant;
 
-   qi::rule<Iterator> binary_operator;
-
-   qi::rule<Iterator> while_;
    qi::rule<Iterator> for_;
    qi::rule<Iterator> foreach_;
    qi::rule<Iterator> if_;

@@ -3,4 +3,8 @@ void b(int y, int x){}
 void b(int y, int x){
     a <=> b;
     c(1, "asdf");    
+
+    while(5 < 10){
+        b <=> a;
+    }
 }

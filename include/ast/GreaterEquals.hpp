@@ -5,19 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_CONDITION_H
-#define AST_CONDITION_H
+#ifndef AST_GREATER_EQUALS_H
+#define AST_GREATER_EQUALS_H
 
-#include <boost/variant/variant.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/False.hpp"
-#include "ast/True.hpp"
-#include "ast/BinaryCondition.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
-typedef boost::variant<ASTTrue, ASTFalse, ASTBinaryCondition> ASTCondition;
+struct ASTGreaterEquals {
+    ASTValue lhs;
+    ASTValue rhs;
+};
 
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ASTGreaterEquals, 
+    (eddic::ASTValue, lhs)
+    (eddic::ASTValue, rhs)
+)
 
 #endif
