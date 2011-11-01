@@ -17,12 +17,12 @@
 #include "ast/Else.hpp"
 
 namespace eddic {
-//TODO View optional
+
 struct ASTIf {
     ASTCondition condition;
     std::vector<ASTInstruction> instructions;
     std::vector<ASTElseIf> elseIfs;
-    ASTElse elseIf;
+    boost::optional<ASTElse> else_;
 };
 
 } //end of eddic
@@ -33,7 +33,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ASTCondition, condition)
     (std::vector<eddic::ASTInstruction>, instructions)
     (std::vector<eddic::ASTElseIf>, elseIfs)
-    (eddic::ASTElse, elseIf)
+    (boost::optional<eddic::ASTElse>, else_)
 )
 
 #endif

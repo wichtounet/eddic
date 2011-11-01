@@ -17,9 +17,9 @@
 namespace eddic {
 
 struct ASTFor {
-    ASTInstruction start;
-    ASTCondition condition;
-    ASTInstruction repeat;
+    boost::optional<ASTInstruction> start;
+    boost::optional<ASTCondition> condition;
+    boost::optional<ASTInstruction> repeat;
     std::vector<ASTInstruction> instructions;
 };
 
@@ -28,9 +28,9 @@ struct ASTFor {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTFor, 
-    (eddic::ASTInstruction, start)
-    (eddic::ASTCondition, condition)
-    (eddic::ASTInstruction, repeat)
+    (boost::optional<eddic::ASTInstruction>, start)
+    (boost::optional<eddic::ASTCondition>, condition)
+    (boost::optional<eddic::ASTInstruction>, repeat)
     (std::vector<eddic::ASTInstruction>, instructions)
 )
 
