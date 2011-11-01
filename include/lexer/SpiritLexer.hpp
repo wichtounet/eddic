@@ -72,8 +72,9 @@ class SimpleLexer : public lex::lexer<L> {
             less_equals = "<=";
 
             whitespaces = "[ \\t\\n]+";
-            comments = "(\\/\\*([^*]|[\r\n]|(\\*+([^*\\/]|[\r\n])))*\\*+\\/)|(\\/\\/.*)";
-            
+            multiline_comment = "\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/";
+            singleline_comment = "\\/\\/[^\n]*";
+
             //Add keywords
             this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | foreach_;
             this->self += integer | word | litteral;
@@ -85,7 +86,8 @@ class SimpleLexer : public lex::lexer<L> {
 
             //Ignore whitespaces and comments
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
-            this->self += comments [lex::_pass = lex::pass_flags::pass_ignore]; 
+            this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
+            this->self += singleline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
         }
       
         typedef lex::token_def<lex::omit> ConsumedToken;
@@ -110,7 +112,7 @@ class SimpleLexer : public lex::lexer<L> {
         ConsumedToken true_, false_;
 
         //Ignored tokens
-        ConsumedToken whitespaces, comments;
+        ConsumedToken whitespaces, singleline_comment, multiline_comment;
 };
 
 class SpiritLexer {

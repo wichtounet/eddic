@@ -1,3 +1,4 @@
+//Global variables
 int a = 1;
 string c = "asdf";
 void b(int y, int x){}
