@@ -12,13 +12,12 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/While.hpp"
 #include "ast/Condition.hpp"
 
 namespace eddic {
 
-struct ASTWhile : public virtual Node {
+struct ASTWhile {
     ASTCondition condition;
     std::vector<ASTInstruction> instructions;
 };
