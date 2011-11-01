@@ -4,7 +4,7 @@ void b(int y, int x){
     a <=> b;
     c(1, "asdf");    
 
-    while(5 < 10){
+    while(a < b){
         b <=> a;
     }
 }

@@ -143,8 +143,8 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  value;
 
         binary_condition %=
-            qi::eps
-            >> (equals | not_equals | greater | greater_equals | less | less_equals);
+                qi::eps
+            >>  (equals | not_equals | greater | greater_equals | less | less_equals);
 
         condition %= 
                 qi::eps
@@ -255,6 +255,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTValue()> constant;
    qi::rule<Iterator, ASTInteger()> integer;
    qi::rule<Iterator, ASTLitteral()> litteral;
+   qi::rule<Iterator, ASTVariable()> variable;
    
    qi::rule<Iterator, ASTCondition()> condition;
    qi::rule<Iterator, ASTTrue()> true_;

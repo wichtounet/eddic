@@ -5,19 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_VALUE_H
-#define AST_VALUE_H
-
-#include <boost/variant/variant.hpp>
-
-#include "ast/Integer.hpp"
-#include "ast/Litteral.hpp"
-#include "ast/Variable.hpp"
+#ifndef AST_VARIABLE_H
+#define AST_VARIABLE_H
 
 namespace eddic {
 
-typedef boost::variant<ASTInteger, ASTLitteral, ASTVariable> ASTValue;
+struct ASTVariable {
+    std::string variableName;
+};
 
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ASTVariable, 
+    (std::string, variableName)
+)
 
 #endif
