@@ -69,27 +69,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         primaryValue.alias();
 
         primaryValue = constant | tok.word | (tok.left_parenth > value > tok.right_parenth);
-
-        elseif_ = 
-        tok.else_ >> tok.if_ >> tok.left_parenth >> condition >> tok.right_parenth >> tok.left_brace
-        >> *(instruction)
-        >> tok.right_brace;
-
-        else_ = 
-        tok.else_ >> tok.left_brace
-        >> *(instruction)
-        >> tok.right_brace;
-
-        if_ = 
-        tok.if_ >> tok.left_parenth >> condition >> tok.right_parenth >> tok.left_brace 
-        >> *(instruction) 
-        >> tok.right_brace
-        >> *(elseif_)
-        >> -(else_);
-
-        instruction = 
-            ((assignment | declaration | functionCall | swap) >> tok.stop)
-            | if_ | while_ | for_ | foreach_;*/
+            */
 
         true_ %= 
                 qi::eps
@@ -136,6 +116,33 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         condition %= 
                 qi::eps
             >>  (true_ | false_ | binary_condition);
+        
+        else_if_ %= 
+                lexer.else_ 
+            >>  lexer.if_ 
+            >>  lexer.left_parenth 
+            >>  condition 
+            >>  lexer.right_parenth 
+            >>  lexer.left_brace
+            >>  *(instruction)
+            >>  lexer.right_brace;
+
+        else_ %= 
+                lexer.else_ 
+            >>  lexer.left_brace
+            >>  *(instruction)
+            >>  lexer.right_brace;
+
+        if_ %= 
+                lexer.if_ 
+            >>  lexer.left_parenth 
+            >>  condition 
+            >>  lexer.right_parenth 
+            >>  lexer.left_brace 
+            >>  *(instruction) 
+            >>  lexer.right_brace
+            >>  *(else_if_)
+            >>  -(else_);
         
         for_ %= 
                 lexer.for_ 
@@ -223,9 +230,11 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  lexer.word;
         
         instruction %= 
-                ((functionCall | swap | assignment | declaration) >>  lexer.stop)
+                ((functionCall | swap | assignment | declaration) >> lexer.stop)
             |   while_
-            |   for_;
+            |   for_
+            |   foreach_
+            |   if_;
 
         repeatable_instruction = assignment | declaration | swap;
         
@@ -267,6 +276,9 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTWhile()> while_;
    qi::rule<Iterator, ASTFor()> for_;
    qi::rule<Iterator, ASTForeach()> foreach_;
+   qi::rule<Iterator, ASTIf()> if_;
+   qi::rule<Iterator, ASTElse()> else_;
+   qi::rule<Iterator, ASTElseIf()> else_if_;
    
    qi::rule<Iterator, ASTValue()> value;
    qi::rule<Iterator, ASTValue()> constant;
