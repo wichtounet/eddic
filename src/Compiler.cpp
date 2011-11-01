@@ -20,6 +20,8 @@
 
 #include "ast/Program.hpp"
 
+#include "ContextAnnotator.hpp"
+
 #include "parser/SpiritParser.hpp"
 
 using std::string;
@@ -28,6 +30,7 @@ using std::endl;
 
 using namespace eddic;
 
+void defineContexts(ASTProgram& program);
 void execCommand(const string& command);
 
 int Compiler::compile(const string& file) {
@@ -46,7 +49,7 @@ int Compiler::compile(const string& file) {
 
         //Parse the file into the program
         if(parser.parse(file, program)){
-            std::cout << program.blocks.size() << std::endl;
+            defineContexts(program);
 
             //TODO Add the contexts to the program
 
@@ -103,6 +106,11 @@ int Compiler::compile(const string& file) {
     cout << "Compilation took " << timer.elapsed() << "s" << endl;
 
     return code;
+}
+
+void defineContexts(ASTProgram& program){
+    ContextAnnotator annotator;
+    annotator.annotate(program);
 }
 
 void execCommand(const string& command) {
