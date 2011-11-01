@@ -11,20 +11,22 @@
 #include <vector>
 
 #include <boost/variant/variant.hpp>
+#include <boost/variant/recursive_variant.hpp>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include <boost/spirit/home/support/attributes.hpp>
 
+#include "ast/Node.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 
 namespace eddic {
 
 typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
-typedef std::vector<FirstLevelBlock> ProgramEquivalence;
 
 //A source EDDI program
-struct ASTProgram {
+struct ASTProgram : public virtual Node {
     std::vector<FirstLevelBlock> blocks;
 };
 

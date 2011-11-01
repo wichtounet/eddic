@@ -12,9 +12,11 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Node.hpp"
+
 namespace eddic {
 
-struct ASTForeach {
+struct ASTForeach : public virtual Node {
     std::string variableType;
     std::string variableName;
     int from;

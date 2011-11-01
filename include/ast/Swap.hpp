@@ -10,9 +10,11 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Node.hpp"
+
 namespace eddic {
 
-struct ASTSwap {
+struct ASTSwap : public virtual Node {
     std::string lhs;
     std::string rhs;
 };

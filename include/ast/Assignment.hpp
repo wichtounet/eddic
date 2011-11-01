@@ -10,11 +10,12 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTAssignment {
+struct ASTAssignment : public virtual Node {
     std::string variableName;
     ASTValue value;
 };

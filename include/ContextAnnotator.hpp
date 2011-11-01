@@ -8,22 +8,11 @@
 #ifndef CONTEXT_ANNOTATOR_H
 #define CONTEXT_ANNOTATOR_H
 
-#include <memory>
-
 namespace eddic {
 
 class ASTProgram;
 
-class Context;
-class GlobalContext;
-class FunctionContext;
-
 class ContextAnnotator {
-    private:
-        std::shared_ptr<GlobalContext> globalContext;
-        std::shared_ptr<FunctionContext> functionContext;
-        std::shared_ptr<Context> currentContext;
-
     public:
         void annotate(ASTProgram& program);
 };

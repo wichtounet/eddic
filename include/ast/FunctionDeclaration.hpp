@@ -10,12 +10,13 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Node.hpp"
 #include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
 
 namespace eddic {
 
-struct FunctionDeclaration {
+struct FunctionDeclaration : public virtual Node { 
     std::string returnType;
     std::string functionName;
     std::vector<FunctionParameter> parameters;

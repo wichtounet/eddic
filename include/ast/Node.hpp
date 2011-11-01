@@ -5,28 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_LESS_EQUALS_H
-#define AST_LESS_EQUALS_H
+#ifndef AST_NODE_H
+#define AST_NODE_H
 
-#include <boost/fusion/include/adapt_struct.hpp>
-
-#include "ast/Node.hpp"
-#include "ast/Value.hpp"
+#include <memory>
 
 namespace eddic {
 
-struct ASTLessEquals : public virtual Node {
-    ASTValue lhs;
-    ASTValue rhs;
+class Context;
+
+struct Node {
+    std::shared_ptr<Context> context;
 };
 
 } //end of eddic
-
-//Adapt the struct for the AST
-BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTLessEquals, 
-    (eddic::ASTValue, lhs)
-    (eddic::ASTValue, rhs)
-)
 
 #endif

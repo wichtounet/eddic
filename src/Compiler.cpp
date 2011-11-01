@@ -5,6 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#define TIMER_START(name) Timer name_timer; 
+#define TIMER_END(name) std::cout << #name << " took " << name_timer.elapsed() << std::endl;
+
 #include <iostream>
 #include <cstdio>
 
@@ -42,16 +45,22 @@ int Compiler::compile(const string& file) {
 
     int code = 0;
     try {
+        TIMER_START(parsing)
+
         SpiritParser parser;
 
         //The program to build
         ASTProgram program;
 
         //Parse the file into the program
-        if(parser.parse(file, program)){
-            defineContexts(program);
+        bool parsing = parser.parse(file, program); 
 
-            //TODO Add the contexts to the program
+        TIMER_END(parsing)
+
+        if(parsing){
+            TIMER_START(contexts)
+            defineContexts(program);
+            TIMER_END(contexts);
 
             //TODO Add things to the program (pool, main, methods)
 
