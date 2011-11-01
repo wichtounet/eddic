@@ -20,6 +20,7 @@ namespace eddic {
 
 struct ASTWhile;
 struct ASTFor;
+struct ASTForeach;
 
 typedef boost::variant<
             ASTFunctionCall, 
@@ -27,6 +28,7 @@ typedef boost::variant<
             ASTDeclaration,
             ASTAssignment, 
             boost::recursive_wrapper<ASTWhile>,
+            boost::recursive_wrapper<ASTForeach>,
             boost::recursive_wrapper<ASTFor>>
         ASTInstruction;
 
@@ -34,5 +36,6 @@ typedef boost::variant<
 
 #include "ast/While.hpp"
 #include "ast/For.hpp"
+#include "ast/Foreach.hpp"
 
 #endif

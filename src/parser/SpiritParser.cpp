@@ -70,11 +70,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
         primaryValue = constant | tok.word | (tok.left_parenth > value > tok.right_parenth);
 
-        foreach_ = 
-        tok.foreach_ >> tok.left_parenth >> tok.word >> tok.word >> tok.from_ >> tok.integer >> tok.to_ >> tok.integer >> tok.right_parenth >> tok.left_brace 
-        >> *(instruction)
-        >> tok.right_brace;
-
         elseif_ = 
         tok.else_ >> tok.if_ >> tok.left_parenth >> condition >> tok.right_parenth >> tok.left_brace
         >> *(instruction)
@@ -153,6 +148,20 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  lexer.right_parenth 
             >>  lexer.left_brace
             >>  (*instruction)
+            >>  lexer.right_brace;
+        
+        foreach_ = 
+                lexer.foreach_ 
+            >>  lexer.left_parenth 
+            >>  lexer.word 
+            >>  lexer.word 
+            >>  lexer.from_ 
+            >>  lexer.integer 
+            >>  lexer.to_ 
+            >>  lexer.integer 
+            >>  lexer.right_parenth 
+            >>  lexer.left_brace 
+            >>  *(instruction)
             >>  lexer.right_brace;
         
         while_ %=
@@ -257,6 +266,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTAssignment()> assignment;
    qi::rule<Iterator, ASTWhile()> while_;
    qi::rule<Iterator, ASTFor()> for_;
+   qi::rule<Iterator, ASTForeach()> foreach_;
    
    qi::rule<Iterator, ASTValue()> value;
    qi::rule<Iterator, ASTValue()> constant;
