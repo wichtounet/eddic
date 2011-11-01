@@ -48,6 +48,12 @@ int Compiler::compile(const string& file) {
         if(parser.parse(file, program)){
             std::cout << program.blocks.size() << std::endl;
 
+            //TODO Add the contexts to the program
+
+            //TODO Add things to the program (pool, main, methods)
+
+            //TODO Semantical analysis
+
             /*        
                       std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
 
