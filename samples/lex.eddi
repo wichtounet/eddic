@@ -12,6 +12,8 @@ void b(int y, int x){
     for(int a = 0; i < 1; a = 4){
         a = a;
     }
+
+    int a = 5 + 4;
 }
 
 void c(string b){

@@ -48,28 +48,46 @@ std::string readI(const std::string& file){
 template <typename Iterator, typename Lexer>
 struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
-        /*
         value = additiveValue.alias();
-
-        additiveValue = 
-        multiplicativeValue 
-        >> *(   (tok.addition > multiplicativeValue)
-        |   (tok.subtraction > multiplicativeValue)
-        );
-
-        multiplicativeValue = 
-        unaryValue
-        >> *(   (tok.multiplication > unaryValue)
-        |   (tok.division > unaryValue)
-        |   (tok.modulo > unaryValue)
-        );
-
+        
+        additiveValue %=
+                multiplicativeValue
+            >>  *(
+                    (lexer.addition >> multiplicativeValue)
+                |   (lexer.subtraction >> multiplicativeValue)
+                );
+       
+        multiplicativeValue %=
+                unaryValue
+            >>  *(
+                    (lexer.multiplication >> unaryValue)
+                |   (lexer.division >> unaryValue)
+                |   (lexer.modulo >> unaryValue)
+                );
+        
         //TODO Support + - primaryValue
-        unaryValue = 
-        primaryValue.alias();
+        unaryValue = primaryValue.alias();
+        
+        primaryValue = 
+                constant 
+            |   variable 
+            |   (lexer.left_parenth >> value >> lexer.right_parenth);
 
-        primaryValue = constant | tok.word | (tok.left_parenth > value > tok.right_parenth);
-            */
+        integer %= 
+                qi::eps 
+            >>  lexer.integer;
+       
+        variable %= 
+                qi::eps
+            >>  lexer.word;
+        
+        litteral %= 
+                qi::eps 
+            >> lexer.litteral;
+
+        constant %= 
+                integer 
+            |   litteral;
 
         true_ %= 
                 qi::eps
@@ -185,27 +203,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  *(instruction)
             >>  lexer.right_brace;
 
-        integer %= 
-                qi::eps 
-            >>  lexer.integer;
-       
-        variable %= 
-                qi::eps
-            >>  lexer.word;
-        
-        litteral %= 
-                qi::eps 
-            >> lexer.litteral;
-
-        constant %= 
-                integer 
-            |   litteral;
-        
-        value %= 
-                integer 
-            |   litteral 
-            |   variable;
-
         declaration %= 
                 lexer.word 
             >>  lexer.word 
@@ -287,6 +284,10 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTElseIf()> else_if_;
    
    qi::rule<Iterator, ASTValue()> value;
+   qi::rule<Iterator, ASTValue()> primaryValue;
+   qi::rule<Iterator, ASTValue()> unaryValue;
+   qi::rule<Iterator, ASTComposedValue()> additiveValue;
+   qi::rule<Iterator, ASTComposedValue()> multiplicativeValue;
    qi::rule<Iterator, ASTValue()> constant;
    qi::rule<Iterator, ASTInteger()> integer;
    qi::rule<Iterator, ASTLitteral()> litteral;
@@ -302,22 +303,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTGreaterEquals()> greater_equals;
    qi::rule<Iterator, ASTLess()> less;
    qi::rule<Iterator, ASTLessEquals()> less_equals;
-
-   /*qi::rule<Iterator> value;
-   qi::rule<Iterator> additiveValue;
-   qi::rule<Iterator> multiplicativeValue;
-   qi::rule<Iterator> unaryValue;
-   qi::rule<Iterator> primaryValue;
-   qi::rule<Iterator> constant;
-
-   qi::rule<Iterator> for_;
-   qi::rule<Iterator> foreach_;
-   qi::rule<Iterator> if_;
-   qi::rule<Iterator> else_;
-   qi::rule<Iterator> elseif_;*/
 };
-
-#include <boost/exception/all.hpp>
 
 bool SpiritParser::parse(const std::string& file, ASTProgram& program){
     std::string contents = readI(file);

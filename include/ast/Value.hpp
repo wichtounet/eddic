@@ -9,6 +9,7 @@
 #define AST_VALUE_H
 
 #include <boost/variant/variant.hpp>
+#include <boost/variant/recursive_variant.hpp>
 
 #include "ast/Integer.hpp"
 #include "ast/Litteral.hpp"
@@ -16,8 +17,17 @@
 
 namespace eddic {
 
-typedef boost::variant<ASTInteger, ASTLitteral, ASTVariable> ASTValue;
+struct ASTComposedValue;
+
+typedef boost::variant<
+            ASTInteger, 
+            ASTLitteral, 
+            ASTVariable,
+            boost::recursive_wrapper<ASTComposedValue>
+        > ASTValue;
 
 } //end of eddic
+
+#include "ast/ComposedValue.hpp"
 
 #endif

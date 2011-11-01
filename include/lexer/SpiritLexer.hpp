@@ -91,15 +91,18 @@ class SimpleLexer : public lex::lexer<L> {
         typedef lex::token_def<lex::omit> ConsumedToken;
         typedef lex::token_def<std::string> StringToken;
         typedef lex::token_def<int> IntegerToken;
+        typedef lex::token_def<char> CharToken;
 
         StringToken word, litteral;
         IntegerToken integer;
+        
+        CharToken addition, subtraction, multiplication, division, modulo;
 
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace;
         
         ConsumedToken stop, comma;
         
-        ConsumedToken assign, swap, addition, subtraction, multiplication, division, modulo;
+        ConsumedToken assign, swap;
         ConsumedToken equals, not_equals, greater, less, greater_equals, less_equals;
         
         //Keywords
