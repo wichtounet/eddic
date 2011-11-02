@@ -19,6 +19,8 @@
 #include "FunctionContext.hpp"
 #include "BlockContext.hpp"
 
+#include "VisitorUtils.hpp"
+
 using namespace eddic;
 
 class AnnotateVisitor : public boost::static_visitor<> {
@@ -31,15 +33,13 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTProgram& program){
             currentContext = globalContext = std::make_shared<GlobalContext>();
 
-            for_each(program.blocks.begin(), program.blocks.end(), 
-                [&](FirstLevelBlock& block){ boost::apply_visitor(*this, block); });
+            visit_each(*this, program.blocks);
         }
 
         void operator()(ASTFunctionDeclaration& function){
             function.context = currentContext = functionContext = std::make_shared<FunctionContext>(currentContext);
 
-            for_each(function.instructions.begin(), function.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+            visit_each(*this, function.instructions);
     
             currentContext = currentContext->parent();
         }
@@ -47,10 +47,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTWhile& while_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
             
-            boost::apply_visitor(*this, while_.condition);
-            
-            for_each(while_.instructions.begin(), while_.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+            visit(*this, while_.condition);
+
+            visit_each(*this, while_.instructions);
             
             currentContext = currentContext->parent();
         }
@@ -58,12 +57,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTFor& for_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
           
-            visit(for_.start);
-            visit(for_.condition);
-            visit(for_.repeat);
+            visit_optional(*this, for_.start);
+            visit_optional(*this, for_.condition);
+            visit_optional(*this, for_.repeat);
             
-            for_each(for_.instructions.begin(), for_.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+            visit_each(*this, for_.instructions);
             
             currentContext = currentContext->parent();
         }
@@ -73,8 +71,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             foreach.context = currentContext;
             
-            for_each(foreach.instructions.begin(), foreach.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+            visit_each(*this, foreach.instructions);
              
             currentContext = currentContext->parent();
         }
@@ -82,18 +79,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTIf& if_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            boost::apply_visitor(*this, if_.condition);
+            visit(*this, if_.condition);
             
-            for_each(if_.instructions.begin(), if_.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
-            
-            for(auto& elseIf : if_.elseIfs){
-                (*this)(elseIf);
-            }
-
-            if(if_.else_){
-                (*this)(*if_.else_);
-            }
+            visit_each(*this, if_.instructions);
+            visit_each_non_variant(*this, if_.elseIfs);
+            visit_optional_non_variant(*this, if_.else_);
 
             currentContext = currentContext->parent();
         }
@@ -101,10 +91,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTElseIf& elseIf){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
            
-            boost::apply_visitor(*this, elseIf.condition);
+            visit(*this, elseIf.condition);
             
-            for_each(elseIf.instructions.begin(), elseIf.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+            visit_each(*this, elseIf.instructions);
             
             currentContext = currentContext->parent();
         }
@@ -112,69 +101,67 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTElse& else_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
            
-            for_each(else_.instructions.begin(), else_.instructions.end(), 
-                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+            visit_each(*this, else_.instructions);
             
             currentContext = currentContext->parent();
         }
 
         void operator()(ASTFunctionCall& functionCall){
-            for_each(functionCall.values.begin(), functionCall.values.end(), 
-                [&](ASTValue& value){ boost::apply_visitor(*this, value); });
+            visit_each(*this, functionCall.values);
         }
         
         void operator()(ASTDeclaration& declaration){
             declaration.context = currentContext;
 
-            boost::apply_visitor(*this, declaration.value);
+            visit(*this, declaration.value);
         }
         
         void operator()(ASTAssignment& assignment){
             assignment.context = currentContext;
 
-            boost::apply_visitor(*this, assignment.value);
+            visit(*this, assignment.value);
         }
         
         void operator()(ASTComposedValue& value){
-            boost::apply_visitor(*this, value.first);
+            visit(*this, value.first);
             
             for_each(value.operations.begin(), value.operations.end(), 
-                [&](boost::tuple<char, ASTValue>& operation){ boost::apply_visitor(*this, operation.get<1>()); });
+                [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });
         }
 
         void operator()(ASTBinaryCondition& binaryCondition){
-            boost::apply_visitor(*this, binaryCondition);
+            visit(*this, binaryCondition);
         }
 
         //Find a way to simplify the 6 following operators
         void operator()(ASTEquals& equals){
-            boost::apply_visitor(*this, equals.lhs);
-            boost::apply_visitor(*this, equals.rhs);
+            visit(*this, equals.lhs);
+            visit(*this, equals.rhs);
         }
 
         void operator()(ASTNotEquals& notEquals){
-            boost::apply_visitor(*this, notEquals.lhs);
-            boost::apply_visitor(*this, notEquals.rhs);
+            visit(*this, notEquals.lhs);
+            visit(*this, notEquals.rhs);
         }
 
         void operator()(ASTLess& less){
-            boost::apply_visitor(*this, less.lhs);
-            boost::apply_visitor(*this, less.rhs);
+            visit(*this, less.lhs);
+            visit(*this, less.rhs);
         }
 
         void operator()(ASTLessEquals& less){
-            boost::apply_visitor(*this, less.lhs);
-            boost::apply_visitor(*this, less.rhs);
+            visit(*this, less.lhs);
+            visit(*this, less.rhs);
         }
 
         void operator()(ASTGreater& greater){
-            boost::apply_visitor(*this, greater.lhs);
-            boost::apply_visitor(*this, greater.rhs);
+            visit(*this, greater.lhs);
+            visit(*this, greater.rhs);
         }
 
         void operator()(ASTGreaterEquals& greater){
-            boost::apply_visitor(*this, greater.lhs);
-            boost::apply_visitor(*this, greater.rhs);
+            visit(*this, greater.lhs);
+            visit(*this, greater.rhs);
         }
 
         void operator()(Node& node){
@@ -183,14 +170,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(TerminalNode&){
             //A terminal node has no context
-        }
-      
-        //Utility operators
-        template<typename T>
-        void visit(boost::optional<T> optional){
-            if(optional){
-                boost::apply_visitor(*this, *optional);
-            }
         }
 };
 
