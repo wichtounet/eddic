@@ -6,7 +6,7 @@
 //=======================================================================
 
 #define TIMER_START(name) Timer name_timer; 
-#define TIMER_END(name) std::cout << #name << " took " << name_timer.elapsed() << std::endl;
+#define TIMER_END(name) std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;
 
 #include <iostream>
 #include <cstdio>
@@ -34,6 +34,7 @@ using std::endl;
 using namespace eddic;
 
 void defineContexts(ASTProgram& program);
+void checkVariables(ASTProgram& program);
 void execCommand(const string& command);
 
 int Compiler::compile(const string& file) {
@@ -58,25 +59,21 @@ int Compiler::compile(const string& file) {
         TIMER_END(parsing)
 
         if(parsing){
-            TIMER_START(contexts)
             defineContexts(program);
-            TIMER_END(contexts);
+
+            //Semantical analysis
+            checkVariables(program);
+            //TODO program->checkStrings(*pool);
+            //TODO program->checkFunctions(*program);
 
             //TODO Add things to the program (pool, main, methods)
 
-            //TODO Semantical analysis
-
             /*        
-                      std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
+              std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
 
-                      program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
-                      program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
-                      program->addLast(pool);
-
-            //Semantical analysis
-            program->checkVariables();
-            program->checkStrings(*pool);
-            program->checkFunctions(*program);
+              program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
+              program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
+              program->addLast(pool);
 
             //Optimize the parse tree
             program->optimize();
@@ -118,8 +115,16 @@ int Compiler::compile(const string& file) {
 }
 
 void defineContexts(ASTProgram& program){
+    TIMER_START(contexts)
     ContextAnnotator annotator;
     annotator.annotate(program);
+    TIMER_END(contexts);
+}
+
+void checkVariables(ASTProgram& program){
+    TIMER_START(check_variables)
+    //TODO
+    TIMER_END(check_variables)
 }
 
 void execCommand(const string& command) {
