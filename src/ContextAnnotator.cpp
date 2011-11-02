@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <memory>
+
 #include <boost/variant/variant.hpp>
 
 #include "ContextAnnotator.hpp"

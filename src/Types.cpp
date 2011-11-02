@@ -31,5 +31,5 @@ Type eddic::stringToType(const std::string& type){
         return Type::VOID;
     }
 
-    //TODO throw CompilerException("Invalid type");
+    throw CompilerException("Invalid type");
 }

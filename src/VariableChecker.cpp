@@ -12,25 +12,46 @@
 
 #include "VariableChecker.hpp"
 
+#include "IsConstantVisitor.hpp"
+#include "GetTypeVisitor.hpp"
+#include "SemanticalException.hpp"
+#include "Context.hpp"
+#include "Types.hpp"
+#include "VisitorUtils.hpp"
+
 #include "ast/Program.hpp"
 
 using namespace eddic;
 
-class CheckerVisitor : public boost::static_visitor<> {
-    public:
-        void operator()(ASTProgram& program){
-            for_each(program.blocks.begin(), program.blocks.end(), 
-                [&](FirstLevelBlock& block){ boost::apply_visitor(*this, block); });
+struct CheckerVisitor : public boost::static_visitor<> {
+    void operator()(ASTProgram& program){
+        visit_each(*this, program.blocks);
+    }
+
+    void operator()(ASTFunctionDeclaration& function){
+        //TODO visit_each(*this, function.instructions);
+    }
+
+    void operator()(GlobalVariableDeclaration& declaration){
+        if (declaration.context->exists(declaration.variableName)) {
+            throw SemanticalException("Variable has already been declared");
         }
-   
-        void operator()(ASTFunctionDeclaration& function){
-//            for_each(function.instructions.begin(), function.instructions.end(), 
-//                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
+    
+        //TODO visit(*this, value);
+         
+        if(!boost::apply_visitor(IsConstantVisitor(), declaration.value)){
+            throw SemanticalException("The value must be constant");
         }
 
-        void operator()(GlobalVariableDeclaration& function){
-            
-        } 
+        Type type = stringToType(declaration.variableType); 
+
+        declaration.context->addVariable(declaration.variableName, type, declaration.value);
+
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.value);
+        if (valueType != type) {
+            throw SemanticalException("Incompatible type");
+        }
+    } 
 };
 
 void VariableChecker::check(ASTProgram& program){

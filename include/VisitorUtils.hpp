@@ -8,6 +8,9 @@
 #ifndef VISITOR_UTILS_H
 #define VISITOR_UTILS_H
 
+#include <boost/variant/variant.hpp>
+#include <boost/optional/optional.hpp>
+
 namespace eddic {
 
 template<typename Visitor, typename Visitable>
