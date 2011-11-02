@@ -16,7 +16,7 @@
 
 namespace eddic {
 
-struct ASTForeach : public virtual Node {
+struct ASTForeach : public Node {
     std::string variableType;
     std::string variableName;
     int from;

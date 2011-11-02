@@ -16,7 +16,7 @@
 
 namespace eddic {
 
-struct FunctionDeclaration : public virtual Node { 
+struct ASTFunctionDeclaration : public Node { 
     std::string returnType;
     std::string functionName;
     std::vector<FunctionParameter> parameters;
@@ -27,7 +27,7 @@ struct FunctionDeclaration : public virtual Node {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::FunctionDeclaration, 
+    eddic::ASTFunctionDeclaration, 
     (std::string, returnType)
     (std::string, functionName)
     (std::vector<eddic::FunctionParameter>, parameters)

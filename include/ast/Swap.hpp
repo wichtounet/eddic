@@ -14,7 +14,7 @@
 
 namespace eddic {
 
-struct ASTSwap : public virtual Node {
+struct ASTSwap : public Node {
     std::string lhs;
     std::string rhs;
 };

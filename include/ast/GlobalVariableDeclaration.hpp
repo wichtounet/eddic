@@ -15,7 +15,7 @@
 
 namespace eddic {
 
-struct GlobalVariableDeclaration : public virtual Node {
+struct GlobalVariableDeclaration : public Node {
     std::string variableType;
     std::string variableName;
     ASTValue value;

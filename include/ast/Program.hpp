@@ -23,10 +23,10 @@
 
 namespace eddic {
 
-typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
+typedef boost::variant<ASTFunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
 
 //A source EDDI program
-struct ASTProgram : public virtual Node {
+struct ASTProgram : public Node {
     std::vector<FirstLevelBlock> blocks;
 };
 

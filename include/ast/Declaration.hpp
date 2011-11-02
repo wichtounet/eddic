@@ -15,7 +15,7 @@
 
 namespace eddic {
 
-struct ASTDeclaration : public virtual Node {
+struct ASTDeclaration : public Node {
     std::string variableType;
     std::string variableName;
     ASTValue value;

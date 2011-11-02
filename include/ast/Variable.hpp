@@ -12,7 +12,7 @@
 
 namespace eddic {
 
-struct ASTVariable : public virtual Node {
+struct ASTVariable : public Node {
     std::string variableName;
 };
 

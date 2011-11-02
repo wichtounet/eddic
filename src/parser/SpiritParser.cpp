@@ -267,7 +267,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
    qi::rule<Iterator, ASTProgram()> program;
    qi::rule<Iterator, GlobalVariableDeclaration()> globalDeclaration;
-   qi::rule<Iterator, FunctionDeclaration()> function;
+   qi::rule<Iterator, ASTFunctionDeclaration()> function;
    qi::rule<Iterator, FunctionParameter()> arg;
    
    qi::rule<Iterator, ASTInstruction()> instruction;

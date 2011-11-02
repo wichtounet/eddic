@@ -16,6 +16,8 @@ class Context;
 
 struct Node {
     std::shared_ptr<Context> context;
+
+    virtual ~Node(){};
 };
 
 } //end of eddic

@@ -15,7 +15,7 @@
 
 namespace eddic {
 
-struct ASTAssignment : public virtual Node {
+struct ASTAssignment : public Node {
     std::string variableName;
     ASTValue value;
 };
