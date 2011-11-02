@@ -15,15 +15,18 @@
 
 #include "Timer.hpp"
 #include "Options.hpp"
-/*#include "StringPool.hpp"
-#include "Program.hpp"
+
+/*
+#include "StringPool.hpp"
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
-#include "il/IntermediateProgram.hpp"*/
+#include "il/IntermediateProgram.hpp"
+*/
 
 #include "ast/Program.hpp"
 
 #include "ContextAnnotator.hpp"
+#include "VariableChecker.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -123,7 +126,8 @@ void defineContexts(ASTProgram& program){
 
 void checkVariables(ASTProgram& program){
     TIMER_START(check_variables)
-    //TODO
+    VariableChecker checker;
+    checker.check(program);
     TIMER_END(check_variables)
 }
 
