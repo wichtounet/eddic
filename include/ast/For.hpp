@@ -12,12 +12,11 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/Condition.hpp"
 
 namespace eddic {
 
-struct ASTFor : public virtual Node {
+struct ASTFor {
     boost::optional<ASTInstruction> start;
     boost::optional<ASTCondition> condition;
     boost::optional<ASTInstruction> repeat;

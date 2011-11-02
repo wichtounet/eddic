@@ -60,6 +60,32 @@ class AnnotateVisitor : public boost::static_visitor<> {
             currentContext = currentContext->parent();
         }
 
+        void operator()(ASTFor& for_){
+            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+          
+            visit(for_.start);
+            visit(for_.condition);
+            visit(for_.repeat);
+            
+            for(auto& instruction : for_.instructions){
+                boost::apply_visitor(*this, instruction);
+            }
+            
+            currentContext = currentContext->parent();
+        }
+
+        void operator()(ASTForeach& foreach){
+            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+
+            foreach.context = currentContext;
+            
+            for(auto& instruction : foreach.instructions){
+                boost::apply_visitor(*this, instruction);
+            }
+             
+            currentContext = currentContext->parent();
+        }
+
         void operator()(ASTIf& if_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
@@ -102,21 +128,81 @@ class AnnotateVisitor : public boost::static_visitor<> {
             currentContext = currentContext->parent();
         }
 
+        void operator()(ASTFunctionCall& functionCall){
+            for(auto& value : functionCall.values){
+                boost::apply_visitor(*this, value);
+            }
+        }
+        
+        void operator()(ASTDeclaration& declaration){
+            declaration.context = currentContext;
+
+            boost::apply_visitor(*this, declaration.value);
+        }
+        
+        void operator()(ASTAssignment& assignment){
+            assignment.context = currentContext;
+
+            boost::apply_visitor(*this, assignment.value);
+        }
+        
+        void operator()(ASTComposedValue& value){
+            boost::apply_visitor(*this, value.first);
+            
+            for(auto& operation : value.operations){
+                boost::apply_visitor(*this, operation.get<1>());
+            }
+        }
+
         void operator()(ASTBinaryCondition& binaryCondition){
             boost::apply_visitor(*this, binaryCondition);
+        }
+
+        //Find a way to simplify the 6 following operators
+        void operator()(ASTEquals& equals){
+            boost::apply_visitor(*this, equals.lhs);
+            boost::apply_visitor(*this, equals.rhs);
+        }
+
+        void operator()(ASTNotEquals& notEquals){
+            boost::apply_visitor(*this, notEquals.lhs);
+            boost::apply_visitor(*this, notEquals.rhs);
+        }
+
+        void operator()(ASTLess& less){
+            boost::apply_visitor(*this, less.lhs);
+            boost::apply_visitor(*this, less.rhs);
+        }
+
+        void operator()(ASTLessEquals& less){
+            boost::apply_visitor(*this, less.lhs);
+            boost::apply_visitor(*this, less.rhs);
+        }
+
+        void operator()(ASTGreater& greater){
+            boost::apply_visitor(*this, greater.lhs);
+            boost::apply_visitor(*this, greater.rhs);
+        }
+
+        void operator()(ASTGreaterEquals& greater){
+            boost::apply_visitor(*this, greater.lhs);
+            boost::apply_visitor(*this, greater.rhs);
         }
 
         void operator()(Node& node){
             node.context = currentContext;
         }
         
-        //TODO : Make some AST Nodes a ConstantNode with no context
-        void operator()(ASTFalse& false_){
-            //Nothing
+        void operator()(TerminalNode&){
+            //A terminal node has no context
         }
-
-        void operator()(ASTTrue& true_){
-            //Nothing
+       
+        //Utility operators
+        template<typename T>
+        void visit(boost::optional<T> optional){
+            if(optional){
+                boost::apply_visitor(*this, *optional);
+            }
         }
 };
 

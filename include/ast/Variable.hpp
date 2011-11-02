@@ -8,9 +8,11 @@
 #ifndef AST_VARIABLE_H
 #define AST_VARIABLE_H
 
+#include "ast/Node.hpp"
+
 namespace eddic {
 
-struct ASTVariable {
+struct ASTVariable : public virtual Node {
     std::string variableName;
 };
 

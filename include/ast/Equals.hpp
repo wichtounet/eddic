@@ -10,12 +10,11 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTEquals : public virtual Node {
+struct ASTEquals {
     ASTValue lhs;
     ASTValue rhs;
 };

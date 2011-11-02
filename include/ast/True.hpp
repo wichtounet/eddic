@@ -10,17 +10,14 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/TerminalNode.hpp"
+
 namespace eddic {
 
-struct ASTTrue {
-
+struct ASTTrue : public TerminalNode {
+    
 };
 
 } //end of eddic
-
-//Adapt the struct for the AST
-/*BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTTrue 
-)*/
 
 #endif

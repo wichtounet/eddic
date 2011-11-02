@@ -10,9 +10,11 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/TerminalNode.hpp"
+
 namespace eddic {
 
-struct ASTInteger {
+struct ASTInteger : public TerminalNode {
     int value;
 };
 
