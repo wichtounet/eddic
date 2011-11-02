@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+
 #include <memory>
 #include <boost/variant/variant.hpp>
 
@@ -31,9 +33,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             program.context = currentContext;
 
-            for(auto& block : program.blocks){
-                boost::apply_visitor(*this, block);
-            }
+            for_each(program.blocks.begin(), program.blocks.end(), 
+                [&](FirstLevelBlock& block){ boost::apply_visitor(*this, block); });
         }
 
         void operator()(FunctionDeclaration& function){
@@ -41,9 +42,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             function.context = currentContext;
 
-            for(auto& instruction : function.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(function.instructions.begin(), function.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
     
             currentContext = currentContext->parent();
         }
@@ -53,9 +53,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
             
             boost::apply_visitor(*this, while_.condition);
             
-            for(auto& instruction : while_.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(while_.instructions.begin(), while_.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
             
             currentContext = currentContext->parent();
         }
@@ -67,9 +66,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(for_.condition);
             visit(for_.repeat);
             
-            for(auto& instruction : for_.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(for_.instructions.begin(), for_.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
             
             currentContext = currentContext->parent();
         }
@@ -79,9 +77,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             foreach.context = currentContext;
             
-            for(auto& instruction : foreach.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(foreach.instructions.begin(), foreach.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
              
             currentContext = currentContext->parent();
         }
@@ -91,9 +88,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             boost::apply_visitor(*this, if_.condition);
             
-            for(auto& instruction : if_.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(if_.instructions.begin(), if_.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
             
             for(auto& elseIf : if_.elseIfs){
                 (*this)(elseIf);
@@ -111,9 +107,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
            
             boost::apply_visitor(*this, elseIf.condition);
             
-            for(auto& instruction : elseIf.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(elseIf.instructions.begin(), elseIf.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
             
             currentContext = currentContext->parent();
         }
@@ -121,17 +116,15 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTElse& else_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
            
-            for(auto& instruction : else_.instructions){
-                boost::apply_visitor(*this, instruction);
-            }
+            for_each(else_.instructions.begin(), else_.instructions.end(), 
+                [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });
             
             currentContext = currentContext->parent();
         }
 
         void operator()(ASTFunctionCall& functionCall){
-            for(auto& value : functionCall.values){
-                boost::apply_visitor(*this, value);
-            }
+            for_each(functionCall.values.begin(), functionCall.values.end(), 
+                [&](ASTValue& value){ boost::apply_visitor(*this, value); });
         }
         
         void operator()(ASTDeclaration& declaration){
@@ -149,9 +142,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTComposedValue& value){
             boost::apply_visitor(*this, value.first);
             
-            for(auto& operation : value.operations){
-                boost::apply_visitor(*this, operation.get<1>());
-            }
+            for_each(value.operations.begin(), value.operations.end(), 
+                [&](boost::tuple<char, ASTValue>& operation){ boost::apply_visitor(*this, operation.get<1>()); });
         }
 
         void operator()(ASTBinaryCondition& binaryCondition){
