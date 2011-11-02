@@ -31,16 +31,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTProgram& program){
             currentContext = globalContext = std::make_shared<GlobalContext>();
 
-            program.context = currentContext;
-
             for_each(program.blocks.begin(), program.blocks.end(), 
                 [&](FirstLevelBlock& block){ boost::apply_visitor(*this, block); });
         }
 
         void operator()(ASTFunctionDeclaration& function){
-            currentContext = functionContext = std::make_shared<FunctionContext>(currentContext);
-
-            function.context = currentContext;
+            function.context = currentContext = functionContext = std::make_shared<FunctionContext>(currentContext);
 
             for_each(function.instructions.begin(), function.instructions.end(), 
                 [&](ASTInstruction& instruction){ boost::apply_visitor(*this, instruction); });

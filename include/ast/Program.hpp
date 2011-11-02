@@ -17,7 +17,6 @@
 
 #include <boost/spirit/home/support/attributes.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 
@@ -26,7 +25,7 @@ namespace eddic {
 typedef boost::variant<ASTFunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
 
 //A source EDDI program
-struct ASTProgram : public Node {
+struct ASTProgram {
     std::vector<FirstLevelBlock> blocks;
 };
 
