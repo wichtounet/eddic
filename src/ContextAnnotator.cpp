@@ -188,7 +188,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(TerminalNode&){
             //A terminal node has no context
         }
-       
+      
         //Utility operators
         template<typename T>
         void visit(boost::optional<T> optional){
