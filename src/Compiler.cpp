@@ -16,8 +16,8 @@
 #include "Timer.hpp"
 #include "Options.hpp"
 
-/*
 #include "StringPool.hpp"
+/*
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
 #include "il/IntermediateProgram.hpp"
@@ -37,7 +37,10 @@ using std::endl;
 using namespace eddic;
 
 void defineContexts(ASTProgram& program);
+
 void checkVariables(ASTProgram& program);
+void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool);
+
 void execCommand(const string& command);
 
 int Compiler::compile(const string& file) {
@@ -63,16 +66,19 @@ int Compiler::compile(const string& file) {
 
         if(parsing){
             defineContexts(program);
+              
+            auto pool = std::make_shared<StringPool>();
 
             //Semantical analysis
             checkVariables(program);
+            checkStrings(program, pool);
+
             //TODO program->checkStrings(*pool);
             //TODO program->checkFunctions(*program);
 
             //TODO Add things to the program (pool, main, methods)
 
             /*        
-              std::shared_ptr<StringPool> pool(new StringPool(program->context(), parser.getLexer().getDefaultToken()));
 
               program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
               program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
@@ -129,6 +135,12 @@ void checkVariables(ASTProgram& program){
     VariableChecker checker;
     checker.check(program);
     TIMER_END(check_variables)
+}
+
+void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool){
+    TIMER_START(check_strings)
+    //TODO Check strings
+    TIMER_END(check_strings)
 }
 
 void execCommand(const string& command) {

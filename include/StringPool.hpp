@@ -15,13 +15,13 @@
 
 namespace eddic {
 
-class StringPool : public ParseNode {
+class StringPool /*: public ParseNode*/ {
     private:
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
 	
     public:
-        StringPool(std::shared_ptr<Context> context, const Tok& pool);
+        StringPool();
 
         std::string label(const std::string& value);
 
