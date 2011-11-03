@@ -8,6 +8,8 @@
 #ifndef GET_TYPE_VISITOR_H
 #define GET_TYPE_VISITOR_H
 
+#include <boost/variant/static_visitor.hpp>
+
 #include "Types.hpp"
 
 namespace eddic {

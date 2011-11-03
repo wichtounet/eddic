@@ -8,6 +8,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <string>
+
 namespace eddic {
 
 enum class Type : unsigned int {

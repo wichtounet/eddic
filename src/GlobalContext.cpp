@@ -34,14 +34,29 @@ void GlobalContext::writeIL(IntermediateProgram& program){
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
-    //TODO throw CompilerException("A global variable must have a value");
-    throw "Test";
+    //A global variable must have a value
+    assert(false);
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, std::shared_ptr<Value> value){
     Position position(GLOBAL, variable);
 
     std::shared_ptr<Variable> v(new Variable(variable, type, position, value));
+
+    m_visibles[variable] = currentVariable;
+
+    storeVariable(currentVariable, v);
+    
+    currentVariable++;
+
+    return v;
+}
+
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ASTValue& value){
+    Position position(GLOBAL, variable);
+
+    //TODO Add a value
+    std::shared_ptr<Variable> v(new Variable(variable, type, position/*, value*/));
 
     m_visibles[variable] = currentVariable;
 

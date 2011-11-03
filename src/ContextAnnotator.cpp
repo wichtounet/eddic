@@ -21,6 +21,7 @@
 #include "BlockContext.hpp"
 
 #include "VisitorUtils.hpp"
+#include "ASTVisitor.hpp"
 
 using namespace eddic;
 
@@ -31,6 +32,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Context> currentContext;
 
     public:
+        AUTO_RECURSE_BINARY_CONDITION()
+        AUTO_RECURSE_FUNCTION_CALLS()
+        AUTO_RECURSE_COMPOSED_VALUES()
+        
         void operator()(ASTProgram& program){
             currentContext = globalContext = std::make_shared<GlobalContext>();
 
@@ -106,10 +111,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
             
             currentContext = currentContext->parent();
         }
-
-        void operator()(ASTFunctionCall& functionCall){
-            visit_each(*this, functionCall.values);
-        }
         
         void operator()(ASTDeclaration& declaration){
             declaration.context = currentContext;
@@ -123,48 +124,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.value);
         }
         
-        void operator()(ASTComposedValue& value){
-            visit(*this, value.first);
-            
-            for_each(value.operations.begin(), value.operations.end(), 
-                [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });
-        }
-
-        void operator()(ASTBinaryCondition& binaryCondition){
-            visit(*this, binaryCondition);
-        }
-
-        //Find a way to simplify the 6 following operators
-        void operator()(ASTEquals& equals){
-            visit(*this, equals.lhs);
-            visit(*this, equals.rhs);
-        }
-
-        void operator()(ASTNotEquals& notEquals){
-            visit(*this, notEquals.lhs);
-            visit(*this, notEquals.rhs);
-        }
-
-        void operator()(ASTLess& less){
-            visit(*this, less.lhs);
-            visit(*this, less.rhs);
-        }
-
-        void operator()(ASTLessEquals& less){
-            visit(*this, less.lhs);
-            visit(*this, less.rhs);
-        }
-
-        void operator()(ASTGreater& greater){
-            visit(*this, greater.lhs);
-            visit(*this, greater.rhs);
-        }
-
-        void operator()(ASTGreaterEquals& greater){
-            visit(*this, greater.lhs);
-            visit(*this, greater.rhs);
-        }
-
         void operator()(Node& node){
             node.context = currentContext;
         }

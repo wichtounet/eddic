@@ -8,8 +8,7 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
-//TODO See if it is necessary to include whole variant
-#include <boost/variant/variant.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 namespace eddic {
 

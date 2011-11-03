@@ -15,10 +15,11 @@
 
 #include "Types.hpp"
 
+#include "ast/Value.hpp"
+
 namespace eddic {
 
 class Value;
-class ASTValue;
 class Variable;
 class IntermediateProgram;
 
