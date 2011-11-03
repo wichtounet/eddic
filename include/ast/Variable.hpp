@@ -12,8 +12,11 @@
 
 namespace eddic {
 
+class Variable;
+
 struct ASTVariable : public Node {
     std::string variableName;
+    std::shared_ptr<Variable> var;
 };
 
 } //end of eddic

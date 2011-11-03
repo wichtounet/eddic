@@ -5,26 +5,30 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/variant/apply_visitor.hpp>
+
 #include "GetTypeVisitor.hpp"
 
 #include "ast/Value.hpp"
 
+#include "Context.hpp"
+#include "Variable.hpp"
+
 using namespace eddic;
 
-Type GetTypeVisitor::operator()(ASTLitteral& litteral) const {
+Type GetTypeVisitor::operator()(ASTLitteral&) const {
     return Type::STRING;
 }
 
-Type GetTypeVisitor::operator()(ASTInteger& litteral) const {
+Type GetTypeVisitor::operator()(ASTInteger&) const {
     return Type::INT;
 }
 
 Type GetTypeVisitor::operator()(ASTVariable& variable) const {
-    //TODO RETURN 
-    return Type::INT;
+    return variable.context->getVariable(variable.variableName)->type();
 }
 
 Type GetTypeVisitor::operator()(ASTComposedValue& value) const {
-    //TODO RETURN
-    return Type::INT;
+    //No need to recurse into operations because type are enforced in the check variables phase
+    return boost::apply_visitor(*this, value.first);
 }

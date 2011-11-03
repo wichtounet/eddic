@@ -88,10 +88,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, if_.condition);
             
             visit_each(*this, if_.instructions);
+            
+            currentContext = currentContext->parent();
+            
             visit_each_non_variant(*this, if_.elseIfs);
             visit_optional_non_variant(*this, if_.else_);
-
-            currentContext = currentContext->parent();
         }
 
         void operator()(ASTElseIf& elseIf){
@@ -106,7 +107,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ASTElse& else_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
-           
+            
             visit_each(*this, else_.instructions);
             
             currentContext = currentContext->parent();
@@ -114,7 +115,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ASTDeclaration& declaration){
             declaration.context = currentContext;
-
+            
             visit(*this, declaration.value);
         }
         
