@@ -5,6 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#define DEBUG
+
+#ifdef DEBUG
+static const bool debug = true;
+#else
+static const bool debug = false;
+#endif
+
 #define TIMER_START(name) Timer name_timer; 
 #define TIMER_END(name) std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;
 
@@ -14,6 +22,7 @@
 #include "Compiler.hpp"
 
 #include "Timer.hpp"
+#include "DebugTimer.hpp"
 #include "Options.hpp"
 
 #include "StringPool.hpp"
@@ -129,37 +138,32 @@ int Compiler::compile(const string& file) {
 }
 
 void defineContexts(ASTProgram& program){
-    TIMER_START(contexts)
+    DebugTimer<debug> timer("Annotate contexts");
     ContextAnnotator annotator;
     annotator.annotate(program);
-    TIMER_END(contexts);
 }
 
 void checkVariables(ASTProgram& program){
-    TIMER_START(check_variables)
+    DebugTimer<debug> timer("Variable checking");
     VariableChecker checker;
     checker.check(program);
-    TIMER_END(check_variables)
 }
 
 void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool){
-    TIMER_START(check_strings)
+    DebugTimer<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);
-    TIMER_END(check_strings)
 }
 
 void checkFunctions(ASTProgram& program, FunctionTable& functionTable){
-    TIMER_START(check_functions)
+    DebugTimer<debug> timer("Functions checking");
     FunctionChecker checker;
     checker.check(program, functionTable); 
-    TIMER_END(check_functions)
 }
 
 void optimize(ASTProgram& program){
-    TIMER_START(optimization)
+    DebugTimer<debug> timer("Optimization");
     //TODO
-    TIMER_END(optimization)
 }
 
 void execCommand(const string& command) {
