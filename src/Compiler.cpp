@@ -27,6 +27,7 @@
 
 #include "ContextAnnotator.hpp"
 #include "VariableChecker.hpp"
+#include "StringChecker.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -139,7 +140,8 @@ void checkVariables(ASTProgram& program){
 
 void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool){
     TIMER_START(check_strings)
-    //TODO Check strings
+    StringChecker checker;
+    checker.check(program, pool);
     TIMER_END(check_strings)
 }
 

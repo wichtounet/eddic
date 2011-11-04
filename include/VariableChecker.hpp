@@ -12,9 +12,8 @@ namespace eddic {
 
 class ASTProgram;
 
-class VariableChecker {
-    public:
-        void check(ASTProgram& program);
+struct VariableChecker {
+    void check(ASTProgram& program);
 };
 
 } //end of eddic

@@ -68,6 +68,19 @@ void operator()(ASTWhile& while_){\
     visit_each(*this, while_.instructions);\
 }
 
+#define AUTO_RECURSE_FOREACH()\
+void operator()(ASTForeach& foreach_){\
+    visit_each(*this, foreach_.instructions);\
+}
+
+#define AUTO_RECURSE_VARIABLE_OPERATIONS()\
+void operator()(ASTAssignment& assignment){\
+    visit(*this, assignment.value);\
+}\
+void operator()(ASTDeclaration& declaration){\
+    visit(*this, declaration.value);\
+}
+
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ASTFunctionCall& functionCall){\
     visit_each(*this, functionCall.values);\
@@ -88,6 +101,11 @@ void operator()(ASTProgram& program){\
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
 void operator()(ASTFunctionDeclaration& function){\
     visit_each(*this, function.instructions);\
+}
+
+#define AUTO_RECURSE_GLOBAL_DECLARATION()\
+void operator()(GlobalVariableDeclaration& declaration){\
+    visit(*this, declaration.value);\
 }
 
 #endif
