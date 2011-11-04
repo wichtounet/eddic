@@ -44,6 +44,7 @@ void defineContexts(ASTProgram& program);
 void checkVariables(ASTProgram& program);
 void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool);
 void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
+void optimize(ASTProgram& program);
 
 void execCommand(const string& command);
 
@@ -78,8 +79,9 @@ int Compiler::compile(const string& file) {
             checkVariables(program);
             checkStrings(program, pool);
             checkFunctions(program, functionTable);
-
-            //TODO program->checkFunctions(*program);
+            
+            //Optimize the AST
+            optimize(program);
 
             //TODO Add things to the program (pool, main, methods)
 
@@ -89,8 +91,6 @@ int Compiler::compile(const string& file) {
               program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
               program->addLast(pool);
 
-            //Optimize the parse tree
-            program->optimize();
 
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
@@ -154,6 +154,12 @@ void checkFunctions(ASTProgram& program, FunctionTable& functionTable){
     FunctionChecker checker;
     checker.check(program, functionTable); 
     TIMER_END(check_functions)
+}
+
+void optimize(ASTProgram& program){
+    TIMER_START(optimization)
+    //TODO
+    TIMER_END(optimization)
 }
 
 void execCommand(const string& command) {
