@@ -13,15 +13,15 @@
 
 using namespace eddic;
 
-bool IsConstantVisitor::operator()(ASTLitteral& litteral) const {
+bool IsConstantVisitor::operator()(ASTLitteral&) const {
     return true;
 }
 
-bool IsConstantVisitor::operator()(ASTInteger& litteral) const {
+bool IsConstantVisitor::operator()(ASTInteger&) const {
     return true;
 }
 
-bool IsConstantVisitor::operator()(ASTVariable& variable) const {
+bool IsConstantVisitor::operator()(ASTVariable&) const {
     return false;
 }
 
