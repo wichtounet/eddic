@@ -74,7 +74,6 @@ int Compiler::compile(const string& file) {
             checkVariables(program);
             checkStrings(program, pool);
 
-            //TODO program->checkStrings(*pool);
             //TODO program->checkFunctions(*program);
 
             //TODO Add things to the program (pool, main, methods)
