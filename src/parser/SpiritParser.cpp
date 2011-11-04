@@ -32,19 +32,6 @@ namespace qi = boost::spirit::qi;
 
 using namespace eddic;
 
-std::string readI(const std::string& file){
-    std::ifstream in(file.c_str());
-    in.unsetf(std::ios::skipws);
-    std::string storage;
-    
-    std::copy(
-            std::istream_iterator<char>(in),
-            std::istream_iterator<char>(),
-            std::back_inserter(storage));
-
-    return storage;
-}
-
 template <typename Iterator, typename Lexer>
 struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
@@ -306,7 +293,14 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 };
 
 bool SpiritParser::parse(const std::string& file, ASTProgram& program){
-    std::string contents = readI(file);
+    std::ifstream in(file.c_str());
+    in.unsetf(std::ios::skipws);
+    
+    std::string contents;
+    std::copy(
+            std::istream_iterator<char>(in),
+            std::istream_iterator<char>(),
+            std::back_inserter(contents));
 
     pos_iterator_type position_begin(contents.begin(), contents.end(), file);
     pos_iterator_type position_end;
