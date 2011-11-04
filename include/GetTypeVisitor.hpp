@@ -20,10 +20,10 @@ class ASTVariable;
 class ASTComposedValue;
 
 struct GetTypeVisitor : public boost::static_visitor<Type> {
-    Type operator()(ASTLitteral& litteral) const;
-    Type operator()(ASTInteger& litteral) const;
-    Type operator()(ASTVariable& variable) const;
-    Type operator()(ASTComposedValue& value) const; 
+    Type operator()(const ASTLitteral& litteral) const;
+    Type operator()(const ASTInteger& litteral) const;
+    Type operator()(const ASTVariable& variable) const;
+    Type operator()(const ASTComposedValue& value) const; 
 };
 
 } //end of eddic

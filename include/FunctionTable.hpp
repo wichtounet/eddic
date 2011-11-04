@@ -17,15 +17,20 @@
 
 namespace eddic {
 
-struct FunctionParameter {
+struct ParameterType {
     std::string name;
-    Type type;
+    Type paramType;
+
+    //To be compliant with mangling
+    Type type(){
+        return paramType;
+    }
 };
 
 struct FunctionSignature {
     std::string name;
     std::string mangledName;
-    std::vector<FunctionParameter> parameters;
+    std::vector<std::shared_ptr<ParameterType>> parameters;
 };
 
 class FunctionTable {

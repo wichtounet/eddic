@@ -16,3 +16,24 @@ std::string eddic::mangle(Type type){
         return "S";
     }
 }
+
+std::string eddic::mangle(const std::string& functionName, const std::vector<ASTValue>& values){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
+
+    GetTypeVisitor visitor;
+
+    for(auto& value : values){
+        Type type = boost::apply_visitor(visitor, value);
+        ss << mangle(type);
+    }
+
+    return ss.str();
+}

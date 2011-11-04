@@ -17,6 +17,7 @@
 #include "Options.hpp"
 
 #include "StringPool.hpp"
+#include "FunctionTable.hpp"
 /*
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
@@ -28,6 +29,7 @@
 #include "ContextAnnotator.hpp"
 #include "VariableChecker.hpp"
 #include "StringChecker.hpp"
+#include "FunctionChecker.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -41,6 +43,7 @@ void defineContexts(ASTProgram& program);
 
 void checkVariables(ASTProgram& program);
 void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool);
+void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
 
 void execCommand(const string& command);
 
@@ -69,10 +72,12 @@ int Compiler::compile(const string& file) {
             defineContexts(program);
               
             auto pool = std::make_shared<StringPool>();
+            FunctionTable functionTable;
 
             //Semantical analysis
             checkVariables(program);
             checkStrings(program, pool);
+            checkFunctions(program, functionTable);
 
             //TODO program->checkFunctions(*program);
 
@@ -142,6 +147,13 @@ void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool){
     StringChecker checker;
     checker.check(program, pool);
     TIMER_END(check_strings)
+}
+
+void checkFunctions(ASTProgram& program, FunctionTable& functionTable){
+    TIMER_START(check_functions)
+    FunctionChecker checker;
+    checker.check(program, functionTable); 
+    TIMER_END(check_functions)
 }
 
 void execCommand(const string& command) {
