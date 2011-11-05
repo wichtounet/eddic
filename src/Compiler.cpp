@@ -39,6 +39,7 @@ static const bool debug = false;
 #include "VariableChecker.hpp"
 #include "StringChecker.hpp"
 #include "FunctionChecker.hpp"
+#include "OptimizationEngine.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -163,7 +164,8 @@ void checkFunctions(ASTProgram& program, FunctionTable& functionTable){
 
 void optimize(ASTProgram& program){
     DebugTimer<debug> timer("Optimization");
-    //TODO
+    OptimizationEngine engine;
+    engine.optimize(program);
 }
 
 void execCommand(const string& command) {
