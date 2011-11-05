@@ -19,13 +19,14 @@
 
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
+#include "ast/Node.hpp"
 
 namespace eddic {
 
 typedef boost::variant<ASTFunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
 
 //A source EDDI program
-struct ASTProgram {
+struct ASTProgram : public Node {
     std::vector<FirstLevelBlock> blocks;
 };
 

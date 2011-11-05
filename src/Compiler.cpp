@@ -91,14 +91,7 @@ int Compiler::compile(const string& file) {
             IntermediateProgram il;
             writeIL(program, pool, il);
 
-            //TODO Add things to the program (pool, main, methods)
-
-            /*        
-
-              program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
-              program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
-            
-            AssemblyFileWriter writer;
+            /*AssemblyFileWriter writer;
 
             //Write assembly code
             writer.open("output.asm");
