@@ -31,13 +31,25 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ASTProgram& p){
             MainDeclaration().writeIL(program);
 
-            //visit_each(*this, p.blocks);
+            visit_each(*this, p.blocks);
 
             Methods().writeIL(program);
 
             pool.writeIL(program);
 
             p.context->writeIL(program);
+        }
+
+        void operator()(ASTFunctionDeclaration& function){
+            program.addInstruction(program.factory().createFunctionDeclaration(function.mangledName, function.context->size()));
+
+            //visit_each(*this, function.instructions);
+
+            program.addInstruction(program.factory().createFunctionExit(function.context->size()));
+        }
+
+        void operator()(GlobalVariableDeclaration& variable){
+            //Nothing to compile, the global variable values are written using global contexts
         }
 };
 

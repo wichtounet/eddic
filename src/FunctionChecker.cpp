@@ -40,7 +40,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 signature->parameters.push_back(parameter);
             }
             
-            signature->mangledName = mangle(declaration.functionName, signature->parameters);
+            declaration.mangledName = signature->mangledName = mangle(declaration.functionName, signature->parameters);
 
             //TODO Verifiy that the function has not been previously defined
 

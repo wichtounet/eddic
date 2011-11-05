@@ -19,6 +19,7 @@ namespace eddic {
 struct ASTFunctionDeclaration : public Node { 
     std::string returnType;
     std::string functionName;
+    std::string mangledName;
     std::vector<FunctionParameter> parameters;
     std::vector<ASTInstruction> instructions;
 };
