@@ -39,6 +39,7 @@ static const bool debug = false;
 #include "StringChecker.hpp"
 #include "FunctionChecker.hpp"
 #include "OptimizationEngine.hpp"
+#include "IntermediateCompiler.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -170,6 +171,8 @@ void optimize(ASTProgram& program){
 
 void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
     DebugTimer<debug> timer("Compile into intermediate level");
+    IntermediateCompiler compiler;
+    compiler.compile(program, pool, intermediateProgram);
 }
 
 void execCommand(const string& command) {
