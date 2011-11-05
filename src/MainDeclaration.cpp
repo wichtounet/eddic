@@ -12,10 +12,6 @@
 
 using namespace eddic;
 
-using std::endl;
-        
-MainDeclaration::MainDeclaration(std::shared_ptr<Context> context, const Tok& token) : ParseNode(context, token) {}
-
 void MainDeclaration::writeIL(IntermediateProgram& program){
     program.addInstruction(program.factory().createMainDeclaration());
 }

@@ -7,6 +7,8 @@
 
 #include "IntermediateCompiler.hpp"
 
+#include "MainDeclaration.hpp"
+#include "Methods.hpp"
 #include "StringPool.hpp"
 #include "VisitorUtils.hpp"
 
@@ -18,25 +20,25 @@
 
 using namespace eddic;
 
-struct CompilerVisitor : public boost::static_visitor<> {
-    void operator()(ASTProgram& p){
-        //TODO main
-
-        //visit_each(*this, p.blocks);
-              //program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
-              //program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
-
-        //TODO methods
-        //TODO pool
-
-        p.context->writeIL(program);
-    }
-
-    CompilerVisitor(StringPool& p, IntermediateProgram& intermediateProgram) : pool(p), program(intermediateProgram) {}
-
+class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
         IntermediateProgram& program;
+    
+    public:
+        CompilerVisitor(StringPool& p, IntermediateProgram& intermediateProgram) : pool(p), program(intermediateProgram) {}
+        
+        void operator()(ASTProgram& p){
+            MainDeclaration().writeIL(program);
+
+            //visit_each(*this, p.blocks);
+
+            Methods().writeIL(program);
+
+            pool.writeIL(program);
+
+            p.context->writeIL(program);
+        }
 };
 
 void IntermediateCompiler::compile(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){

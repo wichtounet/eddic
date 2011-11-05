@@ -27,10 +27,6 @@ static const bool debug = false;
 
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
-/*
-#include "MainDeclaration.hpp"
-#include "Methods.hpp"
-*/
 
 #include "ast/Program.hpp"
 

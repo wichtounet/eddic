@@ -8,17 +8,12 @@
 #ifndef MAIN_DECLARATION_H
 #define MAIN_DECLARATION_H
 
-#include <memory>
-
-#include "ParseNode.hpp"
-
 namespace eddic {
 
-class MainDeclaration : public ParseNode {
-   public:
-        MainDeclaration(std::shared_ptr<Context> context, const Tok& token);
+class IntermediateProgram;
 
-        void writeIL(IntermediateProgram& program);
+struct MainDeclaration {
+    void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic
