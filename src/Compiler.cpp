@@ -53,7 +53,7 @@ using namespace eddic;
 void defineContexts(ASTProgram& program);
 
 void checkVariables(ASTProgram& program);
-void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool);
+void checkStrings(ASTProgram& program, StringPool& pool);
 void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
 void optimize(ASTProgram& program);
 void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
@@ -84,7 +84,7 @@ int Compiler::compile(const string& file) {
         if(parsing){
             defineContexts(program);
               
-            auto pool = std::make_shared<StringPool>();
+            StringPool pool;
             FunctionTable functionTable;
 
             //Semantical analysis
@@ -97,7 +97,7 @@ int Compiler::compile(const string& file) {
 
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
-            writeIL(program, *pool, il);
+            writeIL(program, pool, il);
 
             //TODO Add things to the program (pool, main, methods)
 
@@ -150,7 +150,7 @@ void checkVariables(ASTProgram& program){
     checker.check(program);
 }
 
-void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool){
+void checkStrings(ASTProgram& program, StringPool& pool){
     DebugTimer<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);

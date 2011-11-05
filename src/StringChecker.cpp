@@ -19,10 +19,10 @@ using namespace eddic;
 
 class StringCheckerVisitor : public boost::static_visitor<> {
     private:
-        std::shared_ptr<StringPool> pool;
+        StringPool& pool;
 
     public:
-        StringCheckerVisitor(std::shared_ptr<StringPool> p) : pool(p) {}
+        StringCheckerVisitor(StringPool& p) : pool(p) {}
 
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_FUNCTION_DECLARATION() 
@@ -36,7 +36,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ASTLitteral& litteral){
-            litteral.label = pool->label(litteral.value);
+            litteral.label = pool.label(litteral.value);
         }
         
         void operator()(ASTSwap&){
@@ -60,7 +60,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void StringChecker::check(ASTProgram& program, std::shared_ptr<StringPool> pool){
+void StringChecker::check(ASTProgram& program, StringPool& pool){
    StringCheckerVisitor visitor(pool);
    visitor(program); 
 }

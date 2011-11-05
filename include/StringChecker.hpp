@@ -8,15 +8,13 @@
 #ifndef STRING_CHECKER_H
 #define STRING_CHECKER_H
 
-#include <memory>
-
 namespace eddic {
 
 class StringPool;
 class ASTProgram;
 
 struct StringChecker {
-   void check(ASTProgram& program, std::shared_ptr<StringPool> pool);
+   void check(ASTProgram& program, StringPool& pool);
 };
 
 } //end of eddic
