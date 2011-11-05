@@ -30,7 +30,6 @@ static const bool debug = false;
 /*
 #include "MainDeclaration.hpp"
 #include "Methods.hpp"
-#include "il/IntermediateProgram.hpp"
 */
 
 #include "ast/Program.hpp"
@@ -42,6 +41,8 @@ static const bool debug = false;
 #include "OptimizationEngine.hpp"
 
 #include "parser/SpiritParser.hpp"
+
+#include "il/IntermediateProgram.hpp"
 
 using std::string;
 using std::cout;
@@ -55,6 +56,7 @@ void checkVariables(ASTProgram& program);
 void checkStrings(ASTProgram& program, std::shared_ptr<StringPool> pool);
 void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
 void optimize(ASTProgram& program);
+void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
 
 void execCommand(const string& command);
 
@@ -93,18 +95,16 @@ int Compiler::compile(const string& file) {
             //Optimize the AST
             optimize(program);
 
+            //Write Intermediate representation of the parse tree
+            IntermediateProgram il;
+            writeIL(program, *pool, il);
+
             //TODO Add things to the program (pool, main, methods)
 
             /*        
 
               program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
               program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
-              program->addLast(pool);
-
-
-            //Write Intermediate representation of the parse tree
-            IntermediateProgram il;
-            program->writeIL(il);
 
             //Write assembly code
             writer.open("output.asm");
@@ -166,6 +166,10 @@ void optimize(ASTProgram& program){
     DebugTimer<debug> timer("Optimization");
     OptimizationEngine engine;
     engine.optimize(program);
+}
+
+void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+    DebugTimer<debug> timer("Compile into intermediate level");
 }
 
 void execCommand(const string& command) {
