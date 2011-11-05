@@ -34,6 +34,7 @@ static const bool debug = false;
 
 #include "ast/Program.hpp"
 
+#include "AssemblyFileWriter.hpp"
 #include "ContextAnnotator.hpp"
 #include "VariableChecker.hpp"
 #include "StringChecker.hpp"
@@ -50,16 +51,6 @@ using std::cout;
 using std::endl;
 
 using namespace eddic;
-
-void defineContexts(ASTProgram& program);
-
-void checkVariables(ASTProgram& program);
-void checkStrings(ASTProgram& program, StringPool& pool);
-void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
-void optimize(ASTProgram& program);
-void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
-
-void execCommand(const string& command);
 
 int Compiler::compile(const string& file) {
     cout << "Compile " << file << endl;
@@ -106,6 +97,8 @@ int Compiler::compile(const string& file) {
 
               program->addFirst(std::shared_ptr<ParseNode>(new MainDeclaration(program->context(), parser.getLexer().getDefaultToken())));
               program->addLast(std::shared_ptr<ParseNode>(new Methods(program->context(), parser.getLexer().getDefaultToken())));
+            
+            AssemblyFileWriter writer;
 
             //Write assembly code
             writer.open("output.asm");
@@ -131,51 +124,48 @@ int Compiler::compile(const string& file) {
         code = 1;
     }
 
-    //Close input and output
-    //writer.close();
-
     cout << "Compilation took " << timer.elapsed() << "s" << endl;
 
     return code;
 }
 
-void defineContexts(ASTProgram& program){
+void eddic::defineContexts(ASTProgram& program){
     DebugTimer<debug> timer("Annotate contexts");
     ContextAnnotator annotator;
     annotator.annotate(program);
 }
 
-void checkVariables(ASTProgram& program){
+void eddic::checkVariables(ASTProgram& program){
     DebugTimer<debug> timer("Variable checking");
     VariableChecker checker;
     checker.check(program);
 }
 
-void checkStrings(ASTProgram& program, StringPool& pool){
+void eddic::checkStrings(ASTProgram& program, StringPool& pool){
     DebugTimer<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);
 }
 
-void checkFunctions(ASTProgram& program, FunctionTable& functionTable){
+void eddic::checkFunctions(ASTProgram& program, FunctionTable& functionTable){
     DebugTimer<debug> timer("Functions checking");
     FunctionChecker checker;
     checker.check(program, functionTable); 
 }
 
-void optimize(ASTProgram& program){
+void eddic::optimize(ASTProgram& program){
     DebugTimer<debug> timer("Optimization");
     OptimizationEngine engine;
     engine.optimize(program);
 }
 
-void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+void eddic::writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
     DebugTimer<debug> timer("Compile into intermediate level");
     IntermediateCompiler compiler;
     compiler.compile(program, pool, intermediateProgram);
 }
 
-void execCommand(const string& command) {
+void eddic::execCommand(const string& command) {
     cout << "eddic : exec command : " << command << endl;
 
     char buffer[1024];

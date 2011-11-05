@@ -10,16 +10,25 @@
 
 #include <string>
 
-#include "AssemblyFileWriter.hpp"
-
 namespace eddic {
 
-class Compiler {
-    private:
-        AssemblyFileWriter writer;
+class ASTProgram;
+class StringPool;
+class FunctionTable;
+class IntermediateProgram;
 
-    public:
-        int compile (const std::string& file);
+void defineContexts(ASTProgram& program);
+
+void checkVariables(ASTProgram& program);
+void checkStrings(ASTProgram& program, StringPool& pool);
+void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
+void optimize(ASTProgram& program);
+void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
+
+void execCommand(const std::string& command);
+
+struct Compiler {
+    int compile (const std::string& file);
 };
 
 } //end of eddic
