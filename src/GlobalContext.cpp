@@ -7,6 +7,9 @@
 
 #include <algorithm>
 #include <functional>
+#include <utility>
+
+#include <boost/variant/get.hpp>
 
 #include "GlobalContext.hpp"
 #include "CompilerException.hpp"
@@ -15,6 +18,8 @@
 #include "Value.hpp"
 
 #include "il/IntermediateProgram.hpp"
+
+#include "GetConstantValue.hpp"
 
 using std::map;
 using std::string;
@@ -26,9 +31,10 @@ using namespace eddic;
 void GlobalContext::writeIL(IntermediateProgram& program){
     for(auto it : m_stored){
         if (it.second->type() == Type::INT) {
-            program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), it.second->value()->getIntValue()));
+            program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
         } else if (it.second->type() == Type::STRING) {
-            program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), it.second->value()->getStringLabel(), it.second->value()->getStringSize()));
+            auto value = boost::get<std::pair<std::string, int>>(it.second->val());
+            program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
         }
     }
 }
@@ -39,6 +45,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, std::shared_ptr<Value> value){
+    assert(false); //Should not be called //TODO Remove
     Position position(GLOBAL, variable);
 
     std::shared_ptr<Variable> v(new Variable(variable, type, position, value));
@@ -55,8 +62,9 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ASTValue& value){
     Position position(GLOBAL, variable);
 
-    //TODO Add a value
-    std::shared_ptr<Variable> v(new Variable(variable, type, position/*, value*/));
+    auto val = boost::apply_visitor(GetConstantValue(), value);
+
+    auto v = std::make_shared<Variable>(variable, type, position, val);
 
     m_visibles[variable] = currentVariable;
 

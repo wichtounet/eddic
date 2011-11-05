@@ -23,6 +23,7 @@ using namespace eddic;
 
 Variable::Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
 Variable::Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value) : m_name(name), m_type(type), m_position(position), m_value(value) {}
+Variable::Variable(const std::string& name, Type type, Position position, Val value) : m_name(name), m_type(type), m_position(position), v_value(value) {}
 
 std::string Variable::name() const  {
     return m_name;
@@ -38,6 +39,10 @@ Position Variable::position() const {
 
 std::shared_ptr<Value> Variable::value() const {
     return m_value;
+}
+
+Val Variable::val() const {
+    return v_value;
 }
 
 std::shared_ptr<Operand> Variable::toIntegerOperand(){
