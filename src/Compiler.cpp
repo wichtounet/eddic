@@ -156,6 +156,7 @@ void eddic::writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& 
 }
 
 void eddic::execCommand(const string& command) {
+    DebugTimer<debug> timer("Exec " + command);
     cout << "eddic : exec command : " << command << endl;
 
     char buffer[1024];
