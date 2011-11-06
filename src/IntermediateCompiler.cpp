@@ -597,8 +597,34 @@ class CompilerVisitor : public boost::static_visitor<> {
                 boost::apply_visitor(visitor, value);
             }
 
-            std::string mangled = mangle(functionCall.functionName, functionCall.values);
-            program.addInstruction(program.factory().createCall(mangled));
+            if(functionCall.functionName == "print" || functionCall.functionName == "println"){
+                Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.values[0]);
+
+                switch (type) {
+                    case Type::INT:
+                        program.addInstruction(program.factory().createCall("print_integer"));
+                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), createRegisterOperand("esp")));
+
+                        break;
+                    case Type::STRING:
+                        program.addInstruction(program.factory().createCall("print_string"));
+                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), createRegisterOperand("esp")));
+
+                        break;
+                    default:
+                        throw SemanticalException("Variable of invalid type");
+                }
+    
+                if(functionCall.functionName == "println"){
+                    program.addInstruction(program.factory().createCall("print_line"));
+                }
+            } else {
+                std::string mangled = mangle(functionCall.functionName, functionCall.values);
+
+                program.addInstruction(program.factory().createCall(mangled));
+
+                //TODO Dec esp
+            }
         }
 };
 
