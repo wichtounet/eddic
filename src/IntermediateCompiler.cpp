@@ -40,32 +40,11 @@ class PushValue : public boost::static_visitor<> {
         }
 
         void operator()(ASTInteger& integer){
-            //TODO
-        }
-
-        void operator()(ASTVariable& variable){
-            //TODO
-        }
-
-        void operator()(ASTComposedValue& value){
-            //TODO
-        } 
-};
-
-class AssignValueToVariable : public boost::static_visitor<> {
-    private:
-        std::shared_ptr<Variable> var;
-        IntermediateProgram& program;
-    
-    public:
-        AssignValueToVariable(std::shared_ptr<Variable> v, IntermediateProgram& p) : var(v), program(p) {}
-
-        void operator()(ASTLitteral& litteral){
-            //TODO
-        }
-
-        void operator()(ASTInteger& integer){
-            //TODO
+            program.addInstruction(
+                program.factory().createPush(
+                    createImmediateOperand(integer.value)
+                )
+            );
         }
 
         void operator()(ASTVariable& variable){
@@ -90,7 +69,42 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTInteger& integer){
+            program.addInstruction(
+                program.factory().createMove(
+                    createImmediateOperand(integer.value),
+                    operand
+                )
+            ); 
+        }
+
+        void operator()(ASTVariable& variable){
             //TODO
+        }
+
+        void operator()(ASTComposedValue& value){
+            //TODO
+        } 
+};
+
+class AssignValueToVariable : public boost::static_visitor<> {
+    private:
+        std::shared_ptr<Variable> variable;
+        IntermediateProgram& program;
+    
+    public:
+        AssignValueToVariable(std::shared_ptr<Variable> v, IntermediateProgram& p) : variable(v), program(p) {}
+
+        void operator()(ASTLitteral& litteral){
+            //TODO
+        }
+
+        void operator()(ASTInteger& integer){
+            program.addInstruction(
+                program.factory().createMove(
+                    createImmediateOperand(integer.value),
+                    variable->toIntegerOperand()
+                )
+            ); 
         }
 
         void operator()(ASTVariable& variable){
