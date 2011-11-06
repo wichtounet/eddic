@@ -17,16 +17,60 @@
 #include "Context.hpp"
 #include "Variable.hpp"
 #include "SemanticalException.hpp"
+#include "IsImmediateVisitor.hpp"
 
 #include "mangling.hpp"
 
 #include "il/IntermediateProgram.hpp"
 #include "il/Operands.hpp"
 #include "il/Labels.hpp"
+#include "il/Math.hpp"
 
 #include "ast/Program.hpp"
 
 using namespace eddic;
+
+inline bool isImmediate(ASTValue& value){
+   return boost::apply_visitor(IsImmediateVisitor(), value); 
+}
+
+inline Operation toOperation(char op){
+    switch(op){
+        case '+':
+            return Operation::ADD;
+        case '-':
+            return Operation::SUB;
+        case '/':
+            return Operation::DIV;
+        case '*':
+            return Operation::MUL;
+        case '%':
+            return Operation::MOD;
+        default:
+            assert(false);
+    }
+}
+
+inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
+
+inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, IntermediateProgram& program){
+    auto registerA = createRegisterOperand("eax");
+    auto registerB = createRegisterOperand("ebx");
+
+    putInRegister(value.first, registerA, program);
+
+    //Apply all the operations in chain
+    for(auto& operation : value.operations){
+        putInRegister(operation.get<1>(), registerB, program);
+
+        //Perform the operation 
+        program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerB, registerA));
+    }
+
+    return registerA;
+}
+
+inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program);
 
 class PushValue : public boost::static_visitor<> {
     private:
@@ -84,7 +128,16 @@ class PushValue : public boost::static_visitor<> {
         }
 
         void operator()(ASTComposedValue& value){
-            //TODO
+            Type type = GetTypeVisitor()(value);
+
+            if(type == Type::INT){
+                program.addInstruction(program.factory().createPush(performIntOperation(value, program)));
+            } else if(type == Type::STRING){
+                auto pair = performStringOperation(value, program);
+
+                program.addInstruction(program.factory().createPush(pair.first));
+                program.addInstruction(program.factory().createPush(pair.second));
+            }
         } 
 };
 
@@ -118,7 +171,9 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTComposedValue& value){
-            //TODO
+            assert(GetTypeVisitor()(value) == Type::INT); //Cannot be used for string operations
+
+            program.addInstruction(program.factory().createMove(performIntOperation(value, program), operand));
         } 
 };
 
@@ -163,13 +218,26 @@ class AssignValueToVariable : public boost::static_visitor<> {
             if(var->type() == Type::INT){
                 program.addInstruction(program.factory().createMove(var->toIntegerOperand(), variable->toIntegerOperand()));
             } else {
-                program.addInstruction(program.factory().createMove(var->toStringOperand().first, variable->toStringOperand().first));
-                program.addInstruction(program.factory().createMove(var->toStringOperand().second, variable->toStringOperand().second));
+                auto source = var->toStringOperand();
+                auto destination = variable->toStringOperand();
+
+                program.addInstruction(program.factory().createMove(source.first, destination.first));
+                program.addInstruction(program.factory().createMove(source.second, destination.second));
             }
         }
 
         void operator()(ASTComposedValue& value){
-            //TODO
+            Type type = GetTypeVisitor()(value);
+
+            if(type == Type::INT){
+                program.addInstruction(program.factory().createMove(performIntOperation(value, program), variable->toIntegerOperand()));
+            } else if(type == Type::STRING){
+                auto source = performStringOperation(value, program);
+                auto destination = variable->toStringOperand();
+
+                program.addInstruction(program.factory().createMove(source.first, destination.first));
+                program.addInstruction(program.factory().createMove(source.second, destination.second));
+            }
         } 
 };
 
@@ -229,13 +297,56 @@ class JumpIfNot : public boost::static_visitor<> {
         }
 };
 
-void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& condition, const std::string& label, int labelIndex) {
+inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& condition, const std::string& label, int labelIndex) {
     //No need to jump for a true boolean value 
     if(boost::get<ASTFalse>(&condition)){
         program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
     } else if(auto* ptr = boost::get<ASTBinaryCondition>(&condition)){
         JumpIfNot visitor(program, eddic::label(label, labelIndex));
         boost::apply_visitor(visitor, *ptr);
+    }
+}
+
+inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program){
+    auto registerA = createRegisterOperand("eax");
+    auto registerB = createRegisterOperand("edx");
+   
+    PushValue pusher(program); 
+    boost::apply_visitor(pusher, value.first);
+
+    unsigned int iter = 0;
+
+    //Perfom all the additions
+    for(auto& operation : value.operations){
+        boost::apply_visitor(pusher, operation.get<1>());
+
+        program.addInstruction(program.factory().createCall("concat"));
+        
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
+
+        //If there is more operation, push the answer
+        if(iter < value.operations.size()){
+           program.addInstruction(program.factory().createPush(registerA)); 
+           program.addInstruction(program.factory().createPush(registerB)); 
+        }
+
+        ++iter;
+    }
+    
+    return make_pair(registerA, registerB); 
+}
+
+inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    if(isImmediate(value)){
+        AssignValueToOperand visitor(operand, program);
+        boost::apply_visitor(visitor, value);
+    } else {
+        PushValue visitor(program);
+        boost::apply_visitor(visitor, value);
+
+        program.addInstruction(program.factory().createMove(createStackOperand(0), operand));
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), createRegisterOperand("esp")));
     }
 }
 
