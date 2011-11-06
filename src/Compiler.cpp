@@ -38,6 +38,8 @@ static const bool debug = false;
 #include "OptimizationEngine.hpp"
 #include "IntermediateCompiler.hpp"
 
+#include "SemanticalException.hpp"
+
 #include "parser/SpiritParser.hpp"
 
 #include "il/IntermediateProgram.hpp"
@@ -87,10 +89,9 @@ int Compiler::compile(const string& file) {
             IntermediateProgram il;
             writeIL(program, pool, il);
 
-            AssemblyFileWriter writer;
+            AssemblyFileWriter writer("output.asm");
 
             //Write assembly code
-            writer.open("output.asm");
             il.writeAsm(writer);
 
             if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
@@ -108,7 +109,7 @@ int Compiler::compile(const string& file) {
             }
 
         }
-    } catch (const CompilerException& e) {
+    } catch (const SemanticalException& e) {
         cout << e.what() << endl;
         code = 1;
     }

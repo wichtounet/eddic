@@ -10,8 +10,6 @@
 
 #include <fstream>
 
-#include "CompilerException.hpp"
-
 namespace eddic {
 
 class AssemblyFileWriter {
@@ -19,8 +17,9 @@ class AssemblyFileWriter {
         std::ofstream m_stream;
 	
     public:		
-        void open(const std::string& path) ;
-        void close();
+        AssemblyFileWriter(const std::string& path);
+        ~AssemblyFileWriter();
+        
         std::ofstream& stream();
 };
 
