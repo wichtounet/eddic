@@ -36,7 +36,17 @@ class PushValue : public boost::static_visitor<> {
         PushValue(IntermediateProgram& p) : program(p) {}
 
         void operator()(ASTLitteral& litteral){
-            //TODO
+            program.addInstruction(
+                program.factory().createPush(
+                    createImmediateOperand(litteral.label)
+                )
+            );
+            
+            program.addInstruction(
+                program.factory().createPush(
+                    createImmediateOperand(litteral.value.size() - 2)
+                )
+            );
         }
 
         void operator()(ASTInteger& integer){
@@ -64,8 +74,8 @@ class AssignValueToOperand : public boost::static_visitor<> {
     public:
         AssignValueToOperand(std::shared_ptr<Operand> op, IntermediateProgram& p) : operand(op), program(p) {}
 
-        void operator()(ASTLitteral& litteral){
-            //TODO
+        void operator()(ASTLitteral&){
+            assert(false); //Cannot assign a string to a single operand
         }
 
         void operator()(ASTInteger& integer){
@@ -95,7 +105,21 @@ class AssignValueToVariable : public boost::static_visitor<> {
         AssignValueToVariable(std::shared_ptr<Variable> v, IntermediateProgram& p) : variable(v), program(p) {}
 
         void operator()(ASTLitteral& litteral){
-            //TODO
+            auto operands = variable->toStringOperand();
+
+            program.addInstruction(
+                program.factory().createMove(
+                    createImmediateOperand(litteral.label),
+                    operands.first
+                )
+            );
+            
+            program.addInstruction(
+                program.factory().createMove(
+                    createImmediateOperand(litteral.value.size() - 2),
+                    operands.second
+                )
+            );
         }
 
         void operator()(ASTInteger& integer){
