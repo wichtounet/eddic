@@ -58,7 +58,29 @@ class PushValue : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            //TODO
+            auto var = variable.var;
+
+            if(var->type() == Type::INT){
+                program.addInstruction(
+                    program.factory().createPush(
+                        var->toIntegerOperand()
+                    )
+                );
+            } else {
+                auto operands = var->toStringOperand();
+
+                program.addInstruction(
+                    program.factory().createPush(
+                        operands.first
+                    )
+                );
+                
+                program.addInstruction(
+                    program.factory().createPush(
+                        operands.second
+                    )
+                );
+            }
         }
 
         void operator()(ASTComposedValue& value){
@@ -88,7 +110,11 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            //TODO
+            if(variable.var->type() == Type::INT){
+                program.addInstruction(program.factory().createMove(variable.var->toIntegerOperand(), operand));
+            } else {
+                assert(false); //Cannot assign a string to a single operand
+            }
         }
 
         void operator()(ASTComposedValue& value){
@@ -131,8 +157,15 @@ class AssignValueToVariable : public boost::static_visitor<> {
             ); 
         }
 
-        void operator()(ASTVariable& variable){
-            //TODO
+        void operator()(ASTVariable& variableSource){
+            auto var = variableSource.var;
+
+            if(var->type() == Type::INT){
+                program.addInstruction(program.factory().createMove(var->toIntegerOperand(), variable->toIntegerOperand()));
+            } else {
+                program.addInstruction(program.factory().createMove(var->toStringOperand().first, variable->toStringOperand().first));
+                program.addInstruction(program.factory().createMove(var->toStringOperand().second, variable->toStringOperand().second));
+            }
         }
 
         void operator()(ASTComposedValue& value){
@@ -234,7 +267,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createFunctionExit(function.context->size()));
         }
 
-        void operator()(GlobalVariableDeclaration& variable){
+        void operator()(GlobalVariableDeclaration&){
             //Nothing to compile, the global variable values are written using global contexts
         }
 
