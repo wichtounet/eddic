@@ -13,30 +13,30 @@
 #include "ast/Program.hpp"
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
-virtual void operator()(ASTBinaryCondition& binaryCondition){\
+void operator()(ASTBinaryCondition& binaryCondition){\
     visit(*this, binaryCondition);\
 }\
-virtual void operator()(ASTEquals& equals){\
+void operator()(ASTEquals& equals){\
     visit(*this, equals.lhs);\
     visit(*this, equals.rhs);\
 }\
-virtual void operator()(ASTNotEquals& notEquals){\
+void operator()(ASTNotEquals& notEquals){\
     visit(*this, notEquals.lhs);\
     visit(*this, notEquals.rhs);\
 }\
-virtual void operator()(ASTLess& less){\
+void operator()(ASTLess& less){\
     visit(*this, less.lhs);\
     visit(*this, less.rhs);\
 }\
-virtual void operator()(ASTLessEquals& less){\
+void operator()(ASTLessEquals& less){\
     visit(*this, less.lhs);\
     visit(*this, less.rhs);\
 }\
-virtual void operator()(ASTGreater& greater){\
+void operator()(ASTGreater& greater){\
     visit(*this, greater.lhs);\
     visit(*this, greater.rhs);\
 }\
-virtual void operator()(ASTGreaterEquals& greater){\
+void operator()(ASTGreaterEquals& greater){\
     visit(*this, greater.lhs);\
     visit(*this, greater.rhs);\
 }
