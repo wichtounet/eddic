@@ -87,25 +87,25 @@ int Compiler::compile(const string& file) {
             IntermediateProgram il;
             writeIL(program, pool, il);
 
-            /*AssemblyFileWriter writer;
+            AssemblyFileWriter writer;
 
             //Write assembly code
             writer.open("output.asm");
             il.writeAsm(writer);
 
             if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
-            execCommand("as --32 -o output.o output.asm");
+                execCommand("as --32 -o output.o output.asm");
 
-            string ldCommand = "gcc -m32 -static -o ";
-            ldCommand += output;
-            ldCommand += " output.o -lc";
+                string ldCommand = "gcc -m32 -static -o ";
+                ldCommand += output;
+                ldCommand += " output.o -lc";
 
-            execCommand(ldCommand);
+                execCommand(ldCommand);
 
-            //Remove temporary files
-            remove("output.asm");
-            remove("output.o");
-            }*/
+                //Remove temporary files
+                remove("output.asm");
+                remove("output.o");
+            }
 
         }
     } catch (const CompilerException& e) {
