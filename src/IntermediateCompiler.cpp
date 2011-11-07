@@ -164,7 +164,6 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            std::cout << "Assign variable " << variable.variableName << std::endl;
             if(variable.var->type() == Type::INT){
                 program.addInstruction(program.factory().createMove(variable.var->toIntegerOperand(), operand));
             } else {
