@@ -8,9 +8,9 @@
 #ifndef OPTIMIZATION_ENGINE_H
 #define OPTIMIZATION_ENGINE_H
 
-namespace eddic {
+#include "ast/Program.hpp"
 
-class ASTProgram;
+namespace eddic {
 
 struct OptimizationEngine {
     void optimize(ASTProgram& program);

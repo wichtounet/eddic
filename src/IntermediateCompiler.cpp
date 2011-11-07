@@ -366,21 +366,21 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ASTProgram& p){
             MainDeclaration().writeIL(program);
 
-            visit_each(*this, p.blocks);
+            visit_each(*this, p.Content->blocks);
 
             Methods().writeIL(program);
 
             pool.writeIL(program);
 
-            p.context->writeIL(program);
+            p.Content->context->writeIL(program);
         }
 
         void operator()(ASTFunctionDeclaration& function){
-            program.addInstruction(program.factory().createFunctionDeclaration(function.mangledName, function.context->size()));
+            program.addInstruction(program.factory().createFunctionDeclaration(function.Content->mangledName, function.Content->context->size()));
 
-            visit_each(*this, function.instructions);
+            visit_each(*this, function.Content->instructions);
 
-            program.addInstruction(program.factory().createFunctionExit(function.context->size()));
+            program.addInstruction(program.factory().createFunctionExit(function.Content->context->size()));
         }
 
         void operator()(GlobalVariableDeclaration&){

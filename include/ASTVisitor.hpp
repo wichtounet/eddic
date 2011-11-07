@@ -95,17 +95,17 @@ void operator()(ASTComposedValue& value){\
 
 #define AUTO_RECURSE_PROGRAM()\
 void operator()(ASTProgram& program){\
-    visit_each(*this, program.blocks);\
+    visit_each(*this, program.Content->blocks);\
 }
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
 void operator()(ASTFunctionDeclaration& function){\
-    visit_each(*this, function.instructions);\
+    visit_each(*this, function.Content->instructions);\
 }
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(GlobalVariableDeclaration& declaration){\
-    visit(*this, declaration.value);\
+    visit(*this, declaration.Content->value);\
 }
 
 #endif

@@ -10,9 +10,10 @@
 
 #include <string>
 
+#include "ast/Program.hpp"
+
 namespace eddic {
 
-class ASTProgram;
 class StringPool;
 class FunctionTable;
 class IntermediateProgram;

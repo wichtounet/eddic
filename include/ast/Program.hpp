@@ -17,25 +17,31 @@
 
 #include <boost/spirit/home/support/attributes.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/Node.hpp"
+
+#include "Context.hpp"
 
 namespace eddic {
 
 typedef boost::variant<ASTFunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
 
 //A source EDDI program
-struct ASTProgram : public Node {
+struct Program : public Node {
+    std::shared_ptr<Context> context;
     std::vector<FirstLevelBlock> blocks;
 };
+
+typedef Deferred<Program> ASTProgram;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTProgram, 
-    (std::vector<eddic::FirstLevelBlock>, blocks)
+    (std::vector<eddic::FirstLevelBlock>, Content->blocks)
 )
 
 #endif

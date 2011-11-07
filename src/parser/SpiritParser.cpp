@@ -32,6 +32,11 @@ namespace qi = boost::spirit::qi;
 
 using namespace eddic;
 
+template <typename Iterator, typename AttributeT>
+struct Rule {
+    typedef typename boost::spirit::qi::rule<Iterator, AttributeT> type;
+};
+
 template <typename Iterator, typename Lexer>
 struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
@@ -251,6 +256,8 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         function.name("EDDI function declaration");
         program.name("EDDI program");
    }
+
+   //Rule<Iterator, Deferred<ASTProgram>()>::type program;
 
    qi::rule<Iterator, ASTProgram()> program;
    qi::rule<Iterator, GlobalVariableDeclaration()> globalDeclaration;

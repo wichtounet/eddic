@@ -36,31 +36,31 @@ struct CheckerVisitor : public boost::static_visitor<> {
    
     void operator()(ASTFunctionDeclaration& declaration){
         //Add all the parameters to the function context
-        for(auto& parameter : declaration.parameters){
+        for(auto& parameter : declaration.Content->parameters){
             Type type = stringToType(parameter.parameterType);
             
-            declaration.context->addParameter(parameter.parameterName, type);    
+            declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
 
-        visit_each(*this, declaration.instructions);
+        visit_each(*this, declaration.Content->instructions);
     }
     
     void operator()(GlobalVariableDeclaration& declaration){
-        if (declaration.context->exists(declaration.variableName)) {
-            throw SemanticalException("The global Variable " + declaration.variableName + " has already been declared");
+        if (declaration.Content->context->exists(declaration.Content->variableName)) {
+            throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!boost::apply_visitor(IsConstantVisitor(), declaration.value)){
+        if(!boost::apply_visitor(IsConstantVisitor(), declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
-        Type type = stringToType(declaration.variableType); 
+        Type type = stringToType(declaration.Content->variableType); 
 
-        declaration.context->addVariable(declaration.variableName, type, declaration.value);
+        declaration.Content->context->addVariable(declaration.Content->variableName, type, declaration.Content->value);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.Content->value);
         if (valueType != type) {
-            throw SemanticalException("Incompatible type for global variable " + declaration.variableName);
+            throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }
     }
     
