@@ -27,6 +27,8 @@
 
 using namespace eddic;
 
+#include <iostream>
+
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
@@ -128,6 +130,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
 
         variable.var = variable.context->getVariable(variable.variableName);
+
+        if(!variable.var){
+            std::cout << "var is invalid for variable " << variable.variableName << std::endl;
+        }
     }
 
     void operator()(ASTComposedValue& value){

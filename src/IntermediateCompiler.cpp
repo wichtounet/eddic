@@ -164,6 +164,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
+            std::cout << "Assign variable " << variable.variableName << std::endl;
             if(variable.var->type() == Type::INT){
                 program.addInstruction(program.factory().createMove(variable.var->toIntegerOperand(), operand));
             } else {
@@ -561,6 +562,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             ASTVariable v;
             v.variableName = foreach.variableName;
             v.context = foreach.context;
+            v.var = v.context->getVariable(foreach.variableName);
         
             //Avoid doing all that conversion stuff...  
             ASTCondition condition; 
