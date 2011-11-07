@@ -11,7 +11,21 @@
 #include <map>
 #include <string>
 
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/variables_map.hpp>
+
+namespace po = boost::program_options;
+
 namespace eddic {
+
+extern po::variables_map options;
+
+void parseOptions(int argc, const char* argv[]);
+void printHelp();
+void printVersion();
+
+
 
 enum class BooleanOption : unsigned int {
     OPTIMIZE_INTEGERS,
