@@ -8,6 +8,7 @@
 #ifndef ASSEMBLY_FILE_READER_H
 #define ASSEMBLY_FILE_READER_H
 
+#include <sstream>
 #include <fstream>
 
 namespace eddic {
@@ -15,12 +16,14 @@ namespace eddic {
 class AssemblyFileWriter {
     private:
         std::ofstream m_stream;
+        std::stringstream buffer;
 	
     public:		
         AssemblyFileWriter(const std::string& path);
         ~AssemblyFileWriter();
         
-        std::ofstream& stream();
+        std::stringstream& stream();
+        void write();
 };
 
 } //end of eddic

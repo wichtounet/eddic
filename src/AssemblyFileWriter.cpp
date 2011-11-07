@@ -23,6 +23,10 @@ AssemblyFileWriter::~AssemblyFileWriter() {
     m_stream.close();
 }
 
-std::ofstream& AssemblyFileWriter::stream() {
-    return m_stream;
+std::stringstream& AssemblyFileWriter::stream() {
+    return buffer;
+}
+
+void AssemblyFileWriter::write(){
+    m_stream.write(buffer.str().c_str(), buffer.str().length());
 }

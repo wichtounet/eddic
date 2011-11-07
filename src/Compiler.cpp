@@ -89,12 +89,11 @@ int Compiler::compile(const string& file) {
             IntermediateProgram il;
             writeIL(program, pool, il);
 
-            TIMER_START(write_asm)
             AssemblyFileWriter writer("output.asm");
 
             //Write assembly code
             il.writeAsm(writer);
-            TIMER_END(write_asm)
+            writer.write();
 
             if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
                 execCommand("as --32 -o output.o output.asm");
