@@ -623,7 +623,15 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                 program.addInstruction(program.factory().createCall(mangled));
 
-                //TODO Dec esp
+                int total = 0;
+
+                for(auto& value : functionCall.values){
+                    Type type = boost::apply_visitor(GetTypeVisitor(), value);   
+
+                    total += size(type);
+                }
+
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), createRegisterOperand("esp")));
             }
         }
 };
