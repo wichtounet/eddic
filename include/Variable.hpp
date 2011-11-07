@@ -36,11 +36,9 @@ class Variable {
         const Type m_type;
         Position m_position;
         Val v_value;
-        std::shared_ptr<Value> m_value;//TODO Remove
 
     public:
         Variable(const std::string& name, Type type, Position position);
-        Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value);
         Variable(const std::string& name, Type type, Position position, Val value);
 
         OperandPtr toIntegerOperand();
@@ -49,7 +47,6 @@ class Variable {
         std::string name() const ;
         Type type() const ;
         Position position() const ;
-        std::shared_ptr<Value> value() const ; //TODO REMOVE
 
         Val val() const ;
 };

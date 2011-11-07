@@ -11,11 +11,11 @@
 #include <string>
 #include <unordered_map>
 
-#include "ParseNode.hpp"
-
 namespace eddic {
 
-class StringPool /*: public ParseNode*/ {
+class IntermediateProgram;
+
+class StringPool {
     private:
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;

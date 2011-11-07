@@ -9,13 +9,12 @@
 #include <functional>
 #include <utility>
 
+#include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/get.hpp>
 
 #include "GlobalContext.hpp"
-#include "CompilerException.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
-#include "Value.hpp"
 
 #include "il/IntermediateProgram.hpp"
 
@@ -42,21 +41,6 @@ void GlobalContext::writeIL(IntermediateProgram& program){
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
     //A global variable must have a value
     assert(false);
-}
-
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, std::shared_ptr<Value> value){
-    assert(false); //Should not be called //TODO Remove
-    Position position(GLOBAL, variable);
-
-    std::shared_ptr<Variable> v(new Variable(variable, type, position, value));
-
-    m_visibles[variable] = currentVariable;
-
-    storeVariable(currentVariable, v);
-    
-    currentVariable++;
-
-    return v;
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ASTValue& value){

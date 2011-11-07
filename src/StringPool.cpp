@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "StringPool.hpp"
-#include "ParseNode.hpp"
 
 #include "il/IntermediateProgram.hpp"
 #include "il/DataSection.hpp"
