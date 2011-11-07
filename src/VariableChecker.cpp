@@ -18,6 +18,7 @@
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
+#include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
 
@@ -28,11 +29,21 @@ using namespace eddic;
 
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_FUNCTION_DECLARATION() 
     AUTO_RECURSE_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
+   
+    void operator()(ASTFunctionDeclaration& declaration){
+        //Add all the parameters to the function context
+        for(auto& parameter : declaration.parameters){
+            Type type = stringToType(parameter.parameterType);
+            
+            declaration.context->addParameter(parameter.parameterName, type);    
+        }
+
+        visit_each(*this, declaration.instructions);
+    }
     
     void operator()(GlobalVariableDeclaration& declaration){
         if (declaration.context->exists(declaration.variableName)) {

@@ -16,7 +16,11 @@
 
 namespace eddic {
 
-struct ASTFunctionDeclaration : public Node { 
+class FunctionContext;
+
+struct ASTFunctionDeclaration { 
+    std::shared_ptr<FunctionContext> context;
+    
     std::string returnType;
     std::string functionName;
     std::string mangledName;

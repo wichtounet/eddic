@@ -43,7 +43,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTFunctionDeclaration& function){
-            function.context = currentContext = functionContext = std::make_shared<FunctionContext>(currentContext);
+            currentContext = function.context = functionContext = std::make_shared<FunctionContext>(currentContext);
 
             visit_each(*this, function.instructions);
     
