@@ -78,8 +78,8 @@ int Compiler::compile(const string& file) {
             FunctionTable functionTable;
 
             //Semantical analysis
-            checkVariables(program);
             checkStrings(program, pool);
+            checkVariables(program);
             checkFunctions(program, functionTable);
             
             //Optimize the AST
