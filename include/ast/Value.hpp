@@ -11,13 +11,15 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/Integer.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/Variable.hpp"
 
 namespace eddic {
 
-struct ASTComposedValue;
+struct ComposedValue;
+typedef Deferred<ComposedValue> ASTComposedValue;
 
 typedef boost::variant<
             ASTInteger, 

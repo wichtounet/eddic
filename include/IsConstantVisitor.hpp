@@ -8,6 +8,8 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
+#include "ast/Deferred.hpp"
+
 #include <boost/variant/static_visitor.hpp>
 
 namespace eddic {
@@ -15,7 +17,9 @@ namespace eddic {
 class ASTLitteral;
 class ASTInteger;
 class ASTVariable;
-class ASTComposedValue;
+
+struct ComposedValue;
+typedef Deferred<ComposedValue> ASTComposedValue;
 
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ASTLitteral& litteral) const;

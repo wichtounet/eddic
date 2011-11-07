@@ -12,12 +12,16 @@
 
 #include "Types.hpp"
 
+#include "ast/Deferred.hpp"
+
 namespace eddic {
 
 class ASTLitteral;
 class ASTInteger;
 class ASTVariable;
-class ASTComposedValue;
+
+struct ComposedValue;
+typedef Deferred<ComposedValue> ASTComposedValue;
 
 struct GetTypeVisitor : public boost::static_visitor<Type> {
     Type operator()(const ASTLitteral& litteral) const;

@@ -12,23 +12,26 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/While.hpp"
 #include "ast/Condition.hpp"
 
 namespace eddic {
 
-struct ASTWhile {
+struct While {
     ASTCondition condition;
     std::vector<ASTInstruction> instructions;
 };
+
+typedef Deferred<While> ASTWhile;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTWhile, 
-    (eddic::ASTCondition, condition)
-    (std::vector<eddic::ASTInstruction>, instructions)
+    (eddic::ASTCondition, Content->condition)
+    (std::vector<eddic::ASTInstruction>, Content->instructions)
 )
 
 #endif

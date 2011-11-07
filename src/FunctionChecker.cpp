@@ -72,16 +72,16 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ASTFunctionCall& functionCall){
-            std::string name = functionCall.functionName;
+            std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
                 return;
             }
 
-            std::string mangled = mangle(name, functionCall.values);
+            std::string mangled = mangle(name, functionCall.Content->values);
 
             if(!functionTable.exists(mangled)){
-                throw SemanticalException("The function \"" + functionCall.functionName + "()\" does not exists");
+                throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
             }
             //TODO
         }

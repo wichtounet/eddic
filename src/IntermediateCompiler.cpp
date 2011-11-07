@@ -55,15 +55,15 @@ inline Operation toOperation(char op){
 inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
 inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, IntermediateProgram& program){
-    assert(value.operations.size() > 0); //This has been enforced by previous phases
+    assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     auto registerA = createRegisterOperand("eax");
     auto registerB = createRegisterOperand("ebx");
 
-    putInRegister(value.first, registerA, program);
+    putInRegister(value.Content->first, registerA, program);
 
     //Apply all the operations in chain
-    for(auto& operation : value.operations){
+    for(auto& operation : value.Content->operations){
         putInRegister(operation.get<1>(), registerB, program);
 
         //Perform the operation 
@@ -311,18 +311,18 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
 }
 
 inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program){
-    assert(value.operations.size() > 0); //Other values must be transformed before that phase
+    assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
     auto registerA = createRegisterOperand("eax");
     auto registerB = createRegisterOperand("edx");
 
     PushValue pusher(program); 
-    boost::apply_visitor(pusher, value.first);
+    boost::apply_visitor(pusher, value.Content->first);
 
     unsigned int iter = 0;
 
     //Perfom all the additions
-    for(auto& operation : value.operations){
+    for(auto& operation : value.Content->operations){
         boost::apply_visitor(pusher, operation.get<1>());
 
         program.addInstruction(program.factory().createCall("concat"));
@@ -332,7 +332,7 @@ inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStri
         ++iter;
 
         //If there is more operation, push the answer
-        if(iter < value.operations.size()){
+        if(iter < value.Content->operations.size()){
            program.addInstruction(program.factory().createPush(registerA)); 
            program.addInstruction(program.factory().createPush(registerB)); 
         }
@@ -455,13 +455,13 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTAssignment& assignment){
-            AssignValueToVariable visitor(assignment.context->getVariable(assignment.variableName), program);
-            boost::apply_visitor(visitor, assignment.value);
+            AssignValueToVariable visitor(assignment.Content->context->getVariable(assignment.Content->variableName), program);
+            boost::apply_visitor(visitor, assignment.Content->value);
         }
 
         void operator()(ASTDeclaration& declaration){
-            AssignValueToVariable visitor(declaration.context->getVariable(declaration.variableName), program);
-            boost::apply_visitor(visitor, declaration.value);
+            AssignValueToVariable visitor(declaration.Content->context->getVariable(declaration.Content->variableName), program);
+            boost::apply_visitor(visitor, declaration.Content->value);
         }
 
         void operator()(ASTSwap& swap){
@@ -511,9 +511,9 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             program.addInstruction(program.factory().createLabel(label("WL", startLabel)));
 
-            writeILJumpIfNot(program, while_.condition, "WL", endLabel);
+            writeILJumpIfNot(program, while_.Content->condition, "WL", endLabel);
 
-            visit_each(*this, while_.instructions);
+            visit_each(*this, while_.Content->instructions);
 
             program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("WL", startLabel)));
 
@@ -587,8 +587,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             inc.value = 1;
            
             ASTComposedValue addition;
-            addition.first = v;
-            addition.operations.push_back(boost::tuples::tuple<char, ASTValue>('+', inc));
+            addition.Content->first = v;
+            addition.Content->operations.push_back(boost::tuples::tuple<char, ASTValue>('+', inc));
            
             visit_non_variant(visitor, addition);
             
@@ -599,12 +599,12 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ASTFunctionCall& functionCall){
             PushValue visitor(program);
-            for(auto& value : functionCall.values){
+            for(auto& value : functionCall.Content->values){
                 boost::apply_visitor(visitor, value);
             }
 
-            if(functionCall.functionName == "print" || functionCall.functionName == "println"){
-                Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.values[0]);
+            if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
+                Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
 
                 switch (type) {
                     case Type::INT:
@@ -621,17 +621,17 @@ class CompilerVisitor : public boost::static_visitor<> {
                         throw SemanticalException("Variable of invalid type");
                 }
     
-                if(functionCall.functionName == "println"){
+                if(functionCall.Content->functionName == "println"){
                     program.addInstruction(program.factory().createCall("print_line"));
                 }
             } else {
-                std::string mangled = mangle(functionCall.functionName, functionCall.values);
+                std::string mangled = mangle(functionCall.Content->functionName, functionCall.Content->values);
 
                 program.addInstruction(program.factory().createCall(mangled));
 
                 int total = 0;
 
-                for(auto& value : functionCall.values){
+                for(auto& value : functionCall.Content->values){
                     Type type = boost::apply_visitor(GetTypeVisitor(), value);   
 
                     total += size(type);

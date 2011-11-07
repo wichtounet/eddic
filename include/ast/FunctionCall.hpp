@@ -10,22 +10,25 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTFunctionCall {
+struct FunctionCall {
     std::string functionName;
     std::vector<ASTValue> values;
 };
+
+typedef Deferred<FunctionCall> ASTFunctionCall;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTFunctionCall, 
-    (std::string, functionName)
-    (std::vector<eddic::ASTValue>, values)
+    (std::string, Content->functionName)
+    (std::vector<eddic::ASTValue>, Content->values)
 )
 
 #endif

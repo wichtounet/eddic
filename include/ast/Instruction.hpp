@@ -11,6 +11,7 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"
@@ -18,7 +19,9 @@
 
 namespace eddic {
 
-struct ASTWhile;
+struct While;
+typedef Deferred<While> ASTWhile; 
+
 struct ASTFor;
 struct ASTForeach;
 struct ASTIf;

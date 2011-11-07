@@ -57,9 +57,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTWhile& while_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
             
-            visit(*this, while_.condition);
+            visit(*this, while_.Content->condition);
 
-            visit_each(*this, while_.instructions);
+            visit_each(*this, while_.Content->instructions);
             
             currentContext = currentContext->parent();
         }
@@ -118,15 +118,15 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ASTDeclaration& declaration){
-            declaration.context = currentContext;
+            declaration.Content->context = currentContext;
             
-            visit(*this, declaration.value);
+            visit(*this, declaration.Content->value);
         }
         
         void operator()(ASTAssignment& assignment){
-            assignment.context = currentContext;
+            assignment.Content->context = currentContext;
 
-            visit(*this, assignment.value);
+            visit(*this, assignment.Content->value);
         }
         
         void operator()(Node& node){

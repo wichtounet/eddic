@@ -10,23 +10,26 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTAssignment : public Node {
+struct Assignment : public Node {
     std::string variableName;
     ASTValue value;
 };
+
+typedef Deferred<Assignment> ASTAssignment;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTAssignment, 
-    (std::string, variableName)
-    (eddic::ASTValue, value)
+    (std::string, Content->variableName)
+    (eddic::ASTValue, Content->value)
 )
 
 #endif

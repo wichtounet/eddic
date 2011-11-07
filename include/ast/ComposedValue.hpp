@@ -12,24 +12,27 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/adapted/boost_tuple.hpp>
-#include <boost/fusion/include/boost_tuple.hpp>
+
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
 typedef std::vector<boost::tuple<char, ASTValue>> Operations;
 
-struct ASTComposedValue {
+struct ComposedValue {
     ASTValue first;
     Operations operations;
 };
+
+typedef Deferred<ComposedValue> ASTComposedValue;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTComposedValue, 
-    (eddic::ASTValue, first)
-    (eddic::Operations, operations)
+    (eddic::ASTValue, Content->first)
+    (eddic::Operations, Content->operations)
 )
 
 #endif

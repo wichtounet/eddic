@@ -75,33 +75,33 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTAssignment& assignment){
-        if (!assignment.context->exists(assignment.variableName)) {
-            throw SemanticalException("Variable " + assignment.variableName + " has not  been declared");
+        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
+            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
         }
 
-        visit(*this, assignment.value);
+        visit(*this, assignment.Content->value);
 
-        std::shared_ptr<Variable> var = assignment.context->getVariable(assignment.variableName);
+        std::shared_ptr<Variable> var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
-            throw SemanticalException("Incompatible type in assignment of variable " + assignment.variableName);
+            throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
         }
     }
     
     void operator()(ASTDeclaration& declaration){
-        if (declaration.context->exists(declaration.variableName)) {
-            throw SemanticalException("Variable " + declaration.variableName + " has already been declared");
+        if (declaration.Content->context->exists(declaration.Content->variableName)) {
+            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
 
-        Type variableType = stringToType(declaration.variableType);
-        declaration.context->addVariable(declaration.variableName, variableType);
+        Type variableType = stringToType(declaration.Content->variableType);
+        declaration.Content->context->addVariable(declaration.Content->variableName, variableType);
 
-        visit(*this, declaration.value);
+        visit(*this, declaration.Content->value);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.Content->value);
         if (valueType != variableType) {
-            throw SemanticalException("Incompatible type in declaration of variable " + declaration.variableName);
+            throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName);
         }
     }
     
@@ -131,16 +131,16 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTComposedValue& value){
-        visit(*this, value.first);
+        visit(*this, value.Content->first);
         
-        for_each(value.operations.begin(), value.operations.end(), 
+        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
             [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });
 
         GetTypeVisitor visitor;
 
-        Type type = boost::apply_visitor(visitor, value.first);
+        Type type = boost::apply_visitor(visitor, value.Content->first);
 
-        for(auto& operation : value.operations){
+        for(auto& operation : value.Content->operations){
             Type operationType = boost::apply_visitor(visitor, operation.get<1>());
 
             if(type != operationType){

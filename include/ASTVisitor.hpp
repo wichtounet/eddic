@@ -64,8 +64,8 @@ void operator()(ASTFor& for_){\
     visit_each(*this, for_.instructions);\
 }\
 void operator()(ASTWhile& while_){\
-    visit(*this, while_.condition);\
-    visit_each(*this, while_.instructions);\
+    visit(*this, while_.Content->condition);\
+    visit_each(*this, while_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_FOREACH()\
@@ -75,21 +75,21 @@ void operator()(ASTForeach& foreach_){\
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ASTAssignment& assignment){\
-    visit(*this, assignment.value);\
+    visit(*this, assignment.Content->value);\
 }\
 void operator()(ASTDeclaration& declaration){\
-    visit(*this, declaration.value);\
+    visit(*this, declaration.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ASTFunctionCall& functionCall){\
-    visit_each(*this, functionCall.values);\
+    visit_each(*this, functionCall.Content->values);\
 }
 
 #define AUTO_RECURSE_COMPOSED_VALUES()\
 void operator()(ASTComposedValue& value){\
-    visit(*this, value.first);\
-    for_each(value.operations.begin(), value.operations.end(), \
+    visit(*this, value.Content->first);\
+    for_each(value.Content->operations.begin(), value.Content->operations.end(), \
         [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });\
 }
 

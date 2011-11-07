@@ -26,8 +26,8 @@ bool IsConstantVisitor::operator()(ASTVariable&) const {
 }
 
 bool IsConstantVisitor::operator()(ASTComposedValue& value) const {
-    if(boost::apply_visitor(*this, value.first)){
-        for(auto& op : value.operations){
+    if(boost::apply_visitor(*this, value.Content->first)){
+        for(auto& op : value.Content->operations){
             if(!boost::apply_visitor(*this, op.get<1>())){
                 return false;
             }
