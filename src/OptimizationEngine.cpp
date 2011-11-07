@@ -89,7 +89,22 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
             }
         }
 
-        //If we get there, that means that no addition has been (or can be) performed
+        //Optimize the first value
+        value.first = boost::apply_visitor(*this, value.first);
+
+        //We can try to optimize every part of the composed value
+        auto start = value.operations.begin();
+        auto end = value.operations.end();
+
+        while(start != end){
+            start->get<1>() = boost::apply_visitor(*this, start->get<1>());
+            
+            ++start;
+        }
+
+        assert(value.operations.size() > 0); //Once here, there is no more empty composed value 
+
+        //If we get there, that means that no optimization has been (or can be) performed
         return value;
     }
 
