@@ -11,17 +11,17 @@
 #include <string>
 #include <unordered_map>
 
-#include "ParseNode.hpp"
-
 namespace eddic {
 
-class StringPool : public ParseNode {
+class IntermediateProgram;
+
+class StringPool {
     private:
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
 	
     public:
-        StringPool(std::shared_ptr<Context> context);
+        StringPool();
 
         std::string label(const std::string& value);
 

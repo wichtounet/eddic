@@ -8,7 +8,6 @@
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
-#include "Value.hpp"
 
 using std::map;
 using std::string;
@@ -16,6 +15,7 @@ using std::endl;
 
 using namespace eddic;
 
+//TODO Do not take parameters into account for counting (result into useless stack allocations in the function)
 int FunctionContext::size(){
     int s = 0;
     for(auto it : m_stored){

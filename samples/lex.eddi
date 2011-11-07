@@ -1,0 +1,22 @@
+//Global variables
+int a = 1;
+string c = "asdf";
+void b(int y, int x){}
+void b(int y, int x){
+    a <=> b;
+    c(1, "asdf");    
+
+    while(a < b){
+        b <=> a;
+    }
+
+    for(int a = 0; i < 1; a = 4){
+        a = a;
+    }
+
+    int a = 5 + 4;
+}
+
+void c(string b){
+    a <=> c;
+}

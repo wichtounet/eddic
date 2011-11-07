@@ -8,7 +8,7 @@
 #include <string>
 
 #include "Types.hpp"
-#include "CompilerException.hpp"
+#include "SemanticalException.hpp"
 
 using namespace eddic;
 
@@ -31,5 +31,5 @@ Type eddic::stringToType(const std::string& type){
         return Type::VOID;
     }
 
-    throw CompilerException("Invalid type");
+    throw SemanticalException("Invalid type");
 }

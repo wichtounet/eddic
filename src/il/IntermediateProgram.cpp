@@ -15,7 +15,7 @@
 using namespace eddic;
 
 IntermediateProgram::IntermediateProgram(){
-    m_factory = std::shared_ptr<InstructionFactory>(new InstructionFactory32());
+    m_factory = std::make_shared<InstructionFactory32>();
 }
 
 const InstructionFactory& IntermediateProgram::factory(){

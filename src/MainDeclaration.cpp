@@ -12,8 +12,6 @@
 
 using namespace eddic;
 
-MainDeclaration::MainDeclaration(std::shared_ptr<Context> context) : ParseNode(context) {}
-
 void MainDeclaration::writeIL(IntermediateProgram& program){
     program.addInstruction(program.factory().createMainDeclaration());
 }

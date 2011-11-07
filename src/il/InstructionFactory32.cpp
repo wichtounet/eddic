@@ -28,69 +28,69 @@
 using namespace eddic;
 
 std::shared_ptr<Instruction> InstructionFactory32::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
-   return std::shared_ptr<Instruction>(new Move(lhs, rhs)); 
+   return std::make_shared<Move>(lhs, rhs); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
-   return std::shared_ptr<Instruction>(new Compare(lhs, rhs)); 
+   return std::make_shared<Compare>(lhs, rhs); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createPush(std::shared_ptr<Operand> operand) const {
-   return std::shared_ptr<Instruction>(new Push(operand)); 
+   return std::make_shared<Push>(operand); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createLabel(const std::string& label) const {
-   return std::shared_ptr<Instruction>(new Label(label)); 
+   return std::make_shared<Label>(label); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createJump(JumpCondition condition, const std::string& label) const {
-   return std::shared_ptr<Instruction>(new Jump(condition, label)); 
+   return std::make_shared<Jump>(condition, label); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createCall(const std::string& function) const {
-   return std::shared_ptr<Instruction>(new Call(function)); 
+   return std::make_shared<Call>(function); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createFunctionDeclaration(const std::string& function, int size) const {
-   return std::shared_ptr<Instruction>(new FunctionDeclaration(function, size)); 
+   return std::make_shared<FunctionDeclaration>(function, size); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createFunctionExit(int size) const {
-   return std::shared_ptr<Instruction>(new FunctionExit(size)); 
+   return std::make_shared<FunctionExit>(size); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
-   return std::shared_ptr<Instruction>(new Math(operation, lhs, rhs)); 
+   return std::make_shared<Math>(operation, lhs, rhs); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createGlobalIntVariable(std::string name, int value) const {
-   return std::shared_ptr<Instruction>(new GlobalIntVariable(name, value)); 
+   return std::make_shared<GlobalIntVariable>(name, value); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createGlobalStringVariable(std::string name, std::string label, int size) const {
-    return std::shared_ptr<Instruction>(new GlobalStringVariable(name, label, size)); 
+    return std::make_shared<GlobalStringVariable>(name, label, size); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createPrintStringFunction() const {
-    return std::shared_ptr<Instruction>(new PrintStringFunction());
+    return std::make_shared<PrintStringFunction>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createPrintIntegerFunction() const {
-    return std::shared_ptr<Instruction>(new PrintIntegerFunction());
+    return std::make_shared<PrintIntegerFunction>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createPrintLineFunction() const {
-    return std::shared_ptr<Instruction>(new PrintLineFunction());
+    return std::make_shared<PrintLineFunction>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createConcatFunction() const {
-    return std::shared_ptr<Instruction>(new ConcatFunction());
+    return std::make_shared<ConcatFunction>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createMainDeclaration() const {
-    return std::shared_ptr<Instruction>(new Main());
+    return std::make_shared<Main>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createDataSection(std::unordered_map<std::string, std::string> pool) const {
-    return std::shared_ptr<Instruction>(new DataSection(pool));
+    return std::make_shared<DataSection>(pool);
 }

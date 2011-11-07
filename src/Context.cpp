@@ -10,7 +10,6 @@
 
 #include "Context.hpp"
 #include "Utils.hpp"
-#include "Value.hpp"
 
 using std::string;
 using std::endl;
@@ -49,6 +48,11 @@ bool Context::exists(const std::string& variable) const {
     }
 
     return found;
+}
+
+std::shared_ptr<Variable> Context::addVariable(const std::string& a, Type type, ASTValue& value){
+    //By default this method is not implemented for a context
+    assert(false);
 }
 
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {

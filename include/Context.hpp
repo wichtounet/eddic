@@ -15,6 +15,8 @@
 
 #include "Types.hpp"
 
+#include "ast/Value.hpp"
+
 namespace eddic {
 
 class Value;
@@ -38,6 +40,8 @@ class Context {
         Context(std::shared_ptr<Context> parent);
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ASTValue& value);
+
         virtual bool exists(const std::string& a) const;
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
         virtual std::shared_ptr<Variable> getVariable(int index) const;

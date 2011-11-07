@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "StringPool.hpp"
-#include "ParseNode.hpp"
 
 #include "il/IntermediateProgram.hpp"
 #include "il/DataSection.hpp"
@@ -17,7 +16,7 @@ using std::string;
 
 using namespace eddic;
 
-StringPool::StringPool(std::shared_ptr<Context> context) : ParseNode(context), currentString(0) {
+StringPool::StringPool() : currentString(0) {
     label("\"\\n\"");
 }
 
