@@ -32,6 +32,8 @@ class Position {
         bool isParameter();
         bool isGlobal();
         int offset();
+
+        PositionType type();
 		
         const std::string& name();
 };

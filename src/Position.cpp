@@ -28,6 +28,10 @@ int Position::offset(){
     return m_offset;
 }
 
+PositionType Position::type(){
+    return m_type;
+}
+
 const std::string& Position::name(){
     return m_name;
 }
