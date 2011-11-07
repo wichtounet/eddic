@@ -74,18 +74,18 @@ class SimpleLexer : public lex::lexer<L> {
             whitespaces = "[ \\t\\n]+";
             multiline_comment = "\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/";
             singleline_comment = "\\/\\/[^\n]*";
+            
+            //Ignore whitespaces
+            this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
 
-            //Add keywords
-            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | foreach_;
             this->self += integer | word | litteral;
-
-            this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += left_parenth | right_parenth | left_brace | right_brace;
             this->self += comma | stop;
             this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
+            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | foreach_;
+            this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
 
-            //Ignore whitespaces and comments
-            this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
+            //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
             this->self += singleline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
         }
