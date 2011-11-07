@@ -65,7 +65,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
     void operator()(ASTAssignment& assignment){
         if (!assignment.context->exists(assignment.variableName)) {
-            throw SemanticalException("Variable has not  been declared");
+            throw SemanticalException("Variable " + assignment.variableName + " has not  been declared");
         }
 
         visit(*this, assignment.value);
@@ -113,7 +113,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
     void operator()(ASTVariable& variable){
         if (!variable.context->exists(variable.variableName)) {
-            throw SemanticalException("Variable has not been declared");
+            throw SemanticalException("Variable " + variable.variableName + " has not been declared");
         }
 
         variable.var = variable.context->getVariable(variable.variableName);
