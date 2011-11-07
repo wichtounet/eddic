@@ -55,6 +55,8 @@ inline Operation toOperation(char op){
 inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
 inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, IntermediateProgram& program){
+    assert(value.operations.size() > 0); //This has been enforced by previous phases
+
     auto registerA = createRegisterOperand("eax");
     auto registerB = createRegisterOperand("ebx");
 
@@ -309,9 +311,11 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
 }
 
 inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program){
+    assert(value.operations.size() > 0); //Other values must be transformed before that phase
+
     auto registerA = createRegisterOperand("eax");
     auto registerB = createRegisterOperand("edx");
-   
+
     PushValue pusher(program); 
     boost::apply_visitor(pusher, value.first);
 
@@ -325,13 +329,13 @@ inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStri
         
         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
 
+        ++iter;
+
         //If there is more operation, push the answer
         if(iter < value.operations.size()){
            program.addInstruction(program.factory().createPush(registerA)); 
            program.addInstruction(program.factory().createPush(registerB)); 
         }
-
-        ++iter;
     }
     
     return make_pair(registerA, registerB); 
@@ -583,8 +587,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             inc.value = 1;
            
             ASTComposedValue addition;
-            addition.first = inc;
-            addition.operations.push_back(boost::tuples::tuple<char, ASTValue>('+', v));
+            addition.first = v;
+            addition.operations.push_back(boost::tuples::tuple<char, ASTValue>('+', inc));
            
             visit_non_variant(visitor, addition);
             
