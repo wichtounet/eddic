@@ -55,7 +55,7 @@ int Compiler::compile(const string& file) {
 
     Timer timer;
 
-    string output = Options::get(ValueOption::OUTPUT);
+    string output = options["output"].as<std::string>();
 
     int code = 0;
     try {
@@ -95,7 +95,7 @@ int Compiler::compile(const string& file) {
             il.writeAsm(writer);
             writer.write();
 
-            if(!Options::isSet(BooleanOption::ASSEMBLY_ONLY)){
+            if(!options.count("assembly")){
                 execCommand("as --32 -o output.o output.asm");
 
                 string ldCommand = "gcc -m32 -static -o ";

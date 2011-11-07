@@ -77,13 +77,13 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
             Type type = GetTypeVisitor()(value);
 
             if(type == Type::INT){
-                if (Options::isSet(BooleanOption::OPTIMIZE_INTEGERS)) {
+                if (options.count("optimize-integers")) {
                     ASTInteger integer;
                     integer.value = GetIntValue()(value);
                     return integer; 
                 }
             } else if(type == Type::STRING){
-                if (Options::isSet(BooleanOption::OPTIMIZE_STRINGS)) {
+                if (options.count("optimize-strings")) {
                     //No optimizations for now
                 }
             }
