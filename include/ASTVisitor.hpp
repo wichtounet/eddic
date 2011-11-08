@@ -14,32 +14,9 @@
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ASTBinaryCondition& binaryCondition){\
-    visit(*this, binaryCondition);\
+    visit(*this, binaryCondition.Content->lhs);\
+    visit(*this, binaryCondition.Content->rhs);\
 }\
-void operator()(ASTEquals& equals){\
-    visit(*this, equals.lhs);\
-    visit(*this, equals.rhs);\
-}\
-void operator()(ASTNotEquals& notEquals){\
-    visit(*this, notEquals.lhs);\
-    visit(*this, notEquals.rhs);\
-}\
-void operator()(ASTLess& less){\
-    visit(*this, less.lhs);\
-    visit(*this, less.rhs);\
-}\
-void operator()(ASTLessEquals& less){\
-    visit(*this, less.lhs);\
-    visit(*this, less.rhs);\
-}\
-void operator()(ASTGreater& greater){\
-    visit(*this, greater.lhs);\
-    visit(*this, greater.rhs);\
-}\
-void operator()(ASTGreaterEquals& greater){\
-    visit(*this, greater.lhs);\
-    visit(*this, greater.rhs);\
-}
 
 #define AUTO_RECURSE_BRANCHES()\
 void operator()(ASTIf& if_){\

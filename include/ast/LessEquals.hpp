@@ -10,22 +10,25 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTLessEquals {
+struct LessEquals {
     ASTValue lhs;
     ASTValue rhs;
 };
+
+typedef Deferred<LessEquals> ASTLessEquals;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTLessEquals, 
-    (eddic::ASTValue, lhs)
-    (eddic::ASTValue, rhs)
+    (eddic::ASTValue, Content->lhs)
+    (eddic::ASTValue, Content->rhs)
 )
 
 #endif

@@ -158,37 +158,8 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTBinaryCondition& binaryCondition){
-        visit(*this, binaryCondition);
-    }
-
-    void operator()(ASTEquals& equals){
-        equals.lhs = boost::apply_visitor(ValueOptimizer(), equals.lhs); 
-        equals.rhs = boost::apply_visitor(ValueOptimizer(), equals.rhs); 
-    }
-
-    void operator()(ASTNotEquals& notEquals){
-        notEquals.lhs = boost::apply_visitor(ValueOptimizer(), notEquals.lhs); 
-        notEquals.rhs = boost::apply_visitor(ValueOptimizer(), notEquals.rhs); 
-    }
-
-    void operator()(ASTLess& less){
-        less.lhs = boost::apply_visitor(ValueOptimizer(), less.lhs); 
-        less.rhs = boost::apply_visitor(ValueOptimizer(), less.rhs); 
-    }
-
-    void operator()(ASTLessEquals& less){
-        less.lhs = boost::apply_visitor(ValueOptimizer(), less.lhs); 
-        less.rhs = boost::apply_visitor(ValueOptimizer(), less.rhs); 
-    }
-
-    void operator()(ASTGreater& greater){
-        greater.lhs = boost::apply_visitor(ValueOptimizer(), greater.lhs); 
-        greater.rhs = boost::apply_visitor(ValueOptimizer(), greater.rhs); 
-    }
-
-    void operator()(ASTGreaterEquals& greater){
-        greater.lhs = boost::apply_visitor(ValueOptimizer(), greater.lhs); 
-        greater.rhs = boost::apply_visitor(ValueOptimizer(), greater.rhs); 
+        binaryCondition.Content->lhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->lhs); 
+        binaryCondition.Content->rhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->rhs); 
     }
 
     void operator()(ASTFalse&){

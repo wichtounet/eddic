@@ -244,69 +244,41 @@ class AssignValueToVariable : public boost::static_visitor<> {
         } 
 };
 
-class JumpIfNot : public boost::static_visitor<> {
-    private:
-        IntermediateProgram& program;
-        std::string label;
-    
-    public:
-        JumpIfNot(IntermediateProgram& p, const std::string& l) : program(p), label(l) {}
+inline JumpCondition toJumpCondition(std::string op){
+    if(op == "!="){
+        return JumpCondition::NOT_EQUALS;
+    } else if(op == "=="){
+        return JumpCondition::EQUALS;
+    } else if(op == ">="){
+        return JumpCondition::GREATER_EQUALS;
+    } else if(op == ">"){
+        return JumpCondition::GREATER;
+    } else if(op == "<="){
+        return JumpCondition::LESS_EQUALS;
+    } else if(op == "<"){
+        return JumpCondition::LESS;
+    }
 
-        template<typename T>
-        void common(T& condition){
-            AssignValueToOperand leftVisitor(createRegisterOperand("eax"), program);
-            boost::apply_visitor(leftVisitor, condition.lhs);
-            
-            AssignValueToOperand rightVisitor(createRegisterOperand("ebx"), program);
-            boost::apply_visitor(rightVisitor, condition.rhs);
-
-            program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
-        }
-        
-        void operator()(ASTEquals& equals){
-            common(equals);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::NOT_EQUALS, label));
-        }
-        
-        void operator()(ASTNotEquals& notEquals){
-            common(notEquals);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::EQUALS, label));
-        }
-        
-        void operator()(ASTLess& less){
-            common(less);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, label));
-        }
-        
-        void operator()(ASTLessEquals& less){
-            common(less);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::GREATER, label));
-        }
-        
-        void operator()(ASTGreater& greater){
-            common(greater);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::LESS_EQUALS, label));
-        }
-        
-        void operator()(ASTGreaterEquals& greater){
-            common(greater);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::LESS, label));
-        }
-};
+    assert(false); //Not handled
+}
 
 inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& condition, const std::string& label, int labelIndex) {
     //No need to jump for a true boolean value 
     if(boost::get<ASTFalse>(&condition)){
         program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
     } else if(auto* ptr = boost::get<ASTBinaryCondition>(&condition)){
-        JumpIfNot visitor(program, eddic::label(label, labelIndex));
-        boost::apply_visitor(visitor, *ptr);
+        ASTBinaryCondition& binaryCondition = *ptr;
+        
+        AssignValueToOperand leftVisitor(createRegisterOperand("eax"), program);
+
+        boost::apply_visitor(leftVisitor, binaryCondition.Content->lhs);
+        
+        AssignValueToOperand rightVisitor(createRegisterOperand("ebx"), program);
+        boost::apply_visitor(rightVisitor, binaryCondition.Content->rhs);
+
+        program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
+
+        program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), label));
     }
 }
 
@@ -570,11 +542,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             //Avoid doing all that conversion stuff...  
             ASTCondition condition; 
             ASTBinaryCondition binaryCondition; 
-            ASTLessEquals lessEquals;
-            lessEquals.lhs = v;
-            lessEquals.rhs = toValue;
+            binaryCondition.Content->lhs = v;
+            binaryCondition.Content->rhs = toValue;
+            binaryCondition.Content->op = "<=";
 
-            binaryCondition = lessEquals;
             condition = binaryCondition;
 
             writeILJumpIfNot(program, condition, "end_foreach", labels);

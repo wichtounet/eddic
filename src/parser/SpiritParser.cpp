@@ -89,43 +89,17 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
                 qi::eps
             >>  lexer.false_;
 
-        equals %=
-                value
-            >>  lexer.equals
-            >>  value;
-        
-        not_equals %=
-                value
-            >>  lexer.not_equals
-            >>  value;
-        
-        less %=
-                value
-            >>  lexer.less
-            >>  value;
-        
-        less_equals %=
-                value
-            >>  lexer.less_equals
-            >>  value;
-        
-        greater %=
-                value
-            >>  lexer.greater
-            >>  value;
-        
-        greater_equals %=
-                value
-            >>  lexer.greater_equals
-            >>  value;
-
         binary_condition %=
-                equals 
-            |   not_equals 
-            |   greater 
-            |   greater_equals 
-            |   less 
-            |   less_equals;
+                value
+            >>  (
+                    lexer.greater_equals
+                |   lexer.greater
+                |   lexer.less_equals
+                |   lexer.less
+                |   lexer.not_equals
+                |   lexer.equals
+                )
+            >>  value;
 
         condition %= 
                 true_ 
@@ -291,12 +265,6 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTTrue()> true_;
    qi::rule<Iterator, ASTFalse()> false_;
    qi::rule<Iterator, ASTBinaryCondition()> binary_condition;
-   qi::rule<Iterator, ASTEquals()> equals;
-   qi::rule<Iterator, ASTNotEquals()> not_equals;
-   qi::rule<Iterator, ASTGreater()> greater;
-   qi::rule<Iterator, ASTGreaterEquals()> greater_equals;
-   qi::rule<Iterator, ASTLess()> less;
-   qi::rule<Iterator, ASTLessEquals()> less_equals;
 };
 
 bool SpiritParser::parse(const std::string& file, ASTProgram& program){

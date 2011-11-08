@@ -99,13 +99,11 @@ class SimpleLexer : public lex::lexer<L> {
         IntegerToken integer;
         
         CharToken addition, subtraction, multiplication, division, modulo;
+        StringToken equals, not_equals, greater, less, greater_equals, less_equals;
 
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace;
-        
         ConsumedToken stop, comma;
-        
         ConsumedToken assign, swap;
-        ConsumedToken equals, not_equals, greater, less, greater_equals, less_equals;
         
         //Keywords
         ConsumedToken if_, else_, for_, while_, from_, to_, foreach_;
