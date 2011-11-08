@@ -15,9 +15,5 @@ ImmediateOperand::ImmediateOperand(int value) : Operand(OperandType::IMMEDIATE),
 ImmediateOperand::ImmediateOperand(std::string value) : Operand(OperandType::IMMEDIATE), string(true), m_string(value) {}
 
 std::string ImmediateOperand::getValue(){
-    if(string){
-        return "$" + m_string;
-    } else {
-        return "$" + toString(m_int);
-    }
+    return "$" + (string ? m_string : toString(m_int));
 }
