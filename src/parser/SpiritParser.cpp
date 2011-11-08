@@ -199,7 +199,10 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  lexer.word;
         
         instruction %= 
-                ((functionCall | swap | assignment | declaration) >> lexer.stop)
+                (functionCall > lexer.stop)
+            |   (swap > lexer.stop)
+            |   (assignment > lexer.stop)
+            |   (declaration > lexer.stop)
             |   while_
             |   for_
             |   foreach_
