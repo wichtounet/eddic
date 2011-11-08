@@ -212,7 +212,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         arg %= 
                 lexer.word 
-            >>  lexer.word;
+            >   lexer.word;
         
         function %= 
                 lexer.word 
