@@ -17,11 +17,10 @@
 namespace eddic {
 
 struct FunctionCall {
-    long RefCount;
-
     std::string functionName;
     std::vector<ASTValue> values;
 
+    long RefCount;
     FunctionCall() : RefCount(0) {}
 };
 
