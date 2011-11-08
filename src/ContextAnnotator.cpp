@@ -79,9 +79,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTForeach& foreach){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            foreach.context = currentContext;
+            foreach.Content->context = currentContext;
             
-            visit_each(*this, foreach.instructions);
+            visit_each(*this, foreach.Content->instructions);
              
             currentContext = currentContext->parent();
         }
@@ -127,6 +127,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
             assignment.Content->context = currentContext;
 
             visit(*this, assignment.Content->value);
+        }
+        
+        void operator()(ASTSwap& swap){
+            swap.Content->context = currentContext;
         }
         
         void operator()(Node& node){

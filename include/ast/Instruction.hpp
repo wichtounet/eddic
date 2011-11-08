@@ -28,7 +28,8 @@ typedef Deferred<For> ASTFor;
 struct If;
 typedef Deferred<If> ASTIf;
 
-struct ASTForeach;
+struct Foreach;
+typedef Deferred<Foreach> ASTForeach;
 
 typedef boost::variant<
             ASTFunctionCall, 

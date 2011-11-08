@@ -437,17 +437,24 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTSwap& swap){
+            auto lhs_var = swap.Content->lhs_var;
+            auto rhs_var = swap.Content->rhs_var;
+
             //We have the guarantee here that both variables are of the same type
-            switch (swap.lhs_var->type()) {
+            switch (lhs_var->type()) {
                 case Type::INT:{
                     auto registerA = createRegisterOperand("eax");
                     auto registerB = createRegisterOperand("ebx");
-               
-                    program.addInstruction(program.factory().createMove(swap.lhs_var->toIntegerOperand(), registerA));
-                    program.addInstruction(program.factory().createMove(swap.rhs_var->toIntegerOperand(), registerB));
+              
+                    auto left = lhs_var->toIntegerOperand();
+                    auto right = rhs_var->toIntegerOperand();
+              
+                    //TODO Optimize, using only one register as temp 
+                    program.addInstruction(program.factory().createMove(left, registerA));
+                    program.addInstruction(program.factory().createMove(right, registerB));
 
-                    program.addInstruction(program.factory().createMove(registerB, swap.lhs_var->toIntegerOperand()));
-                    program.addInstruction(program.factory().createMove(registerA, swap.rhs_var->toIntegerOperand()));
+                    program.addInstruction(program.factory().createMove(registerB, left));
+                    program.addInstruction(program.factory().createMove(registerA, right));
 
                     break;
                 }
@@ -456,16 +463,19 @@ class CompilerVisitor : public boost::static_visitor<> {
                     auto registerB = createRegisterOperand("ebx");
                     auto registerC = createRegisterOperand("ecx");
                     auto registerD = createRegisterOperand("edx");
+                   
+                    auto left = lhs_var->toStringOperand();
+                    auto right = rhs_var->toStringOperand();
                     
-                    program.addInstruction(program.factory().createMove(swap.lhs_var->toStringOperand().first, registerA));
-                    program.addInstruction(program.factory().createMove(swap.lhs_var->toStringOperand().second, registerB));
-                    program.addInstruction(program.factory().createMove(swap.rhs_var->toStringOperand().first, registerC));
-                    program.addInstruction(program.factory().createMove(swap.rhs_var->toStringOperand().second, registerD));
+                    program.addInstruction(program.factory().createMove(left.first, registerA));
+                    program.addInstruction(program.factory().createMove(left.second, registerB));
+                    program.addInstruction(program.factory().createMove(right.first, registerC));
+                    program.addInstruction(program.factory().createMove(right.second, registerD));
                     
-                    program.addInstruction(program.factory().createMove(registerC, swap.lhs_var->toStringOperand().first));
-                    program.addInstruction(program.factory().createMove(registerD, swap.lhs_var->toStringOperand().second));
-                    program.addInstruction(program.factory().createMove(registerA, swap.rhs_var->toStringOperand().first));
-                    program.addInstruction(program.factory().createMove(registerB, swap.rhs_var->toStringOperand().second));
+                    program.addInstruction(program.factory().createMove(registerC, left.first));
+                    program.addInstruction(program.factory().createMove(registerD, left.second));
+                    program.addInstruction(program.factory().createMove(registerA, right.first));
+                    program.addInstruction(program.factory().createMove(registerB, right.second));
 
                     break;
                 }
@@ -517,12 +527,12 @@ class CompilerVisitor : public boost::static_visitor<> {
         //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
         void operator()(ASTForeach& foreach){
             ASTInteger fromValue;
-            fromValue.value = foreach.from;
+            fromValue.value = foreach.Content->from;
             
             ASTInteger toValue;
-            toValue.value = foreach.to;
+            toValue.value = foreach.Content->to;
 
-            AssignValueToVariable visitor(foreach.context->getVariable(foreach.variableName), program);
+            AssignValueToVariable visitor(foreach.Content->context->getVariable(foreach.Content->variableName), program);
             
             //Assign the base value to the variable
             visit_non_variant(visitor, fromValue);
@@ -535,9 +545,9 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             //Create a condition
             ASTVariable v;
-            v.variableName = foreach.variableName;
-            v.context = foreach.context;
-            v.var = v.context->getVariable(foreach.variableName);
+            v.variableName = foreach.Content->variableName;
+            v.context = foreach.Content->context;
+            v.var = v.context->getVariable(foreach.Content->variableName);
         
             //Avoid doing all that conversion stuff...  
             ASTCondition condition; 
@@ -551,7 +561,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             writeILJumpIfNot(program, condition, "end_foreach", labels);
 
             //Write all the instructions
-            visit_each(*this, foreach.instructions);
+            visit_each(*this, foreach.Content->instructions);
 
             //Increment the variable
             ASTInteger inc;

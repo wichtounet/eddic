@@ -65,13 +65,13 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ASTForeach& foreach){
-        if(foreach.context->exists(foreach.variableName)){
-            throw SemanticalException("The foreach variable " + foreach.variableName  + " has already been declared");
+        if(foreach.Content->context->exists(foreach.Content->variableName)){
+            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared");
         }
 
-        foreach.context->addVariable(foreach.variableName, stringToType(foreach.variableType));
+        foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
 
-        visit_each(*this, foreach.instructions);
+        visit_each(*this, foreach.Content->instructions);
     }
 
     void operator()(ASTAssignment& assignment){
@@ -106,18 +106,18 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ASTSwap& swap){
-        if (swap.lhs == swap.rhs) {
+        if (swap.Content->lhs == swap.Content->rhs) {
             throw SemanticalException("Cannot swap a variable with itself");
         }
 
-        if (!swap.context->exists(swap.lhs) || !swap.context->exists(swap.rhs)) {
+        if (!swap.Content->context->exists(swap.Content->lhs) || !swap.Content->context->exists(swap.Content->rhs)) {
             throw SemanticalException("Variable has not been declared in the swap");
         }
 
-        swap.lhs_var = swap.context->getVariable(swap.lhs);
-        swap.rhs_var = swap.context->getVariable(swap.rhs);
+        swap.Content->lhs_var = swap.Content->context->getVariable(swap.Content->lhs);
+        swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
 
-        if (swap.lhs_var->type() != swap.rhs_var->type()) {
+        if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
             throw SemanticalException("Swap of variables of incompatible type");
         }
     }

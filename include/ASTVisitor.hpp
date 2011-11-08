@@ -47,7 +47,7 @@ void operator()(ASTWhile& while_){\
 
 #define AUTO_RECURSE_FOREACH()\
 void operator()(ASTForeach& foreach_){\
-    visit_each(*this, foreach_.instructions);\
+    visit_each(*this, foreach_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\

@@ -12,26 +12,30 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
+class Context;
 class Variable;
 
-struct ASTSwap : public Node {
+struct Swap {
+    std::shared_ptr<Context> context;
     std::string lhs;
     std::string rhs;
     std::shared_ptr<Variable> lhs_var;
     std::shared_ptr<Variable> rhs_var;
 };
 
+typedef Deferred<Swap> ASTSwap;
+
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTSwap, 
-    (std::string, lhs)
-    (std::string, rhs)
+    (std::string, Content->lhs)
+    (std::string, Content->rhs)
 )
 
 #endif
