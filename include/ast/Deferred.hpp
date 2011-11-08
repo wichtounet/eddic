@@ -24,12 +24,12 @@ inline void Deallocate(T* ptr){
 
 template<typename T>
 inline void intrusive_ptr_add_ref(T* expr){
-    ++expr->RefCount;
+    ++expr->references;
 }
 
 template<typename T>
 inline void intrusive_ptr_release(T* expr){
-    if(--expr->RefCount == 0)
+    if(--expr->references == 0)
         Deallocate(expr);
 }
 

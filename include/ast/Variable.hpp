@@ -25,8 +25,8 @@ struct TmpVariable {
     std::string variableName;
     std::shared_ptr<Variable> var;
 
-    long RefCount;
-    TmpVariable() : RefCount(0) {}
+    mutable long references;
+    TmpVariable() : references(0) {}
 };
 
 typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;

@@ -27,8 +27,8 @@ struct Declaration {
     std::string variableName;
     ASTValue value;
 
-    long RefCount;
-    Declaration() : RefCount(0) {}
+    mutable long references;
+    Declaration() : references(0) {}
 };
 
 typedef Deferred<Declaration, boost::intrusive_ptr<Declaration>> ASTDeclaration;

@@ -24,8 +24,8 @@ struct ComposedValue {
     ASTValue first;
     Operations operations;
 
-    long RefCount;
-    ComposedValue() : RefCount(0) {}
+    mutable long references;
+    ComposedValue() : references(0) {}
 };
 
 typedef Deferred<ComposedValue, boost::intrusive_ptr<ComposedValue>> ASTComposedValue;

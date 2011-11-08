@@ -26,8 +26,8 @@ struct Assignment {
     std::string variableName;
     ASTValue value;
 
-    long RefCount;
-    Assignment() : RefCount(0) {}
+    mutable long references;
+    Assignment() : references(0) {}
 };
 
 typedef Deferred<Assignment, boost::intrusive_ptr<Assignment>> ASTAssignment;

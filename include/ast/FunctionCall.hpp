@@ -20,8 +20,8 @@ struct FunctionCall {
     std::string functionName;
     std::vector<ASTValue> values;
 
-    long RefCount;
-    FunctionCall() : RefCount(0) {}
+    mutable long references;
+    FunctionCall() : references(0) {}
 };
 
 typedef Deferred<FunctionCall, boost::intrusive_ptr<FunctionCall>> ASTFunctionCall;
