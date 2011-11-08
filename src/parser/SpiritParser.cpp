@@ -200,13 +200,13 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         instruction %= 
                 (functionCall > lexer.stop)
-            |   (swap > lexer.stop)
             |   (assignment > lexer.stop)
             |   (declaration > lexer.stop)
-            |   while_
+            |   if_
             |   for_
+            |   while_
             |   foreach_
-            |   if_;
+            |   (swap > lexer.stop);
 
         repeatable_instruction = assignment | declaration | swap;
         
@@ -226,7 +226,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
         program %=
                 qi::eps 
-            >>  *(globalDeclaration | function);
+            >>  *(function | globalDeclaration);
 
         //Name the rules
         globalDeclaration.name("EDDI global variable");
