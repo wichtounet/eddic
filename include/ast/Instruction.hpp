@@ -22,9 +22,13 @@ namespace eddic {
 struct While;
 typedef Deferred<While> ASTWhile; 
 
-struct ASTFor;
+struct For;
+typedef Deferred<For> ASTFor; 
+
+struct If;
+typedef Deferred<If> ASTIf;
+
 struct ASTForeach;
-struct ASTIf;
 
 typedef boost::variant<
             ASTFunctionCall, 

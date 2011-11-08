@@ -391,21 +391,21 @@ class CompilerVisitor : public boost::static_visitor<> {
             //TODO Make something accessible for others operations
             static int labels = 0;
 
-            if (if_.elseIfs.empty()) {
+            if (if_.Content->elseIfs.empty()) {
                 int a = labels++;
 
-                writeILJumpIfNot(program, if_.condition, "L", a);
+                writeILJumpIfNot(program, if_.Content->condition, "L", a);
 
-                visit_each(*this, if_.instructions);
+                visit_each(*this, if_.Content->instructions);
 
-                if (if_.else_) {
+                if (if_.Content->else_) {
                     int b = labels++;
 
                     program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", b)));
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
 
-                    visit_each(*this, (*if_.else_).instructions);
+                    visit_each(*this, (*if_.Content->else_).instructions);
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", b)));
                 } else {
@@ -415,20 +415,20 @@ class CompilerVisitor : public boost::static_visitor<> {
                 int end = labels++;
                 int next = labels++;
 
-                writeILJumpIfNot(program, if_.condition, "L", next);
+                writeILJumpIfNot(program, if_.Content->condition, "L", next);
 
-                visit_each(*this, if_.instructions);
+                visit_each(*this, if_.Content->instructions);
 
                 program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
 
-                for (std::vector<ASTElseIf>::size_type i = 0; i < if_.elseIfs.size(); ++i) {
-                    ASTElseIf& elseIf = if_.elseIfs[i];
+                for (std::vector<ASTElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
+                    ASTElseIf& elseIf = if_.Content->elseIfs[i];
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
                     //Last elseif
-                    if (i == if_.elseIfs.size() - 1) {
-                        if (if_.else_) {
+                    if (i == if_.Content->elseIfs.size() - 1) {
+                        if (if_.Content->else_) {
                             next = labels++;
                         } else {
                             next = end;
@@ -444,10 +444,10 @@ class CompilerVisitor : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
                 }
 
-                if (if_.else_) {
+                if (if_.Content->else_) {
                     program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
-                    visit_each(*this, (*if_.else_).instructions);
+                    visit_each(*this, (*if_.Content->else_).instructions);
                 }
 
                 program.addInstruction(program.factory().createLabel(eddic::label("L", end)));
@@ -521,7 +521,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTFor for_){
-            visit_optional(*this, for_.start);
+            visit_optional(*this, for_.Content->start);
 
             static int labels = -1;
 
@@ -529,13 +529,13 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             program.addInstruction(program.factory().createLabel(label("start_for", labels)));
 
-            if(for_.condition){
-                writeILJumpIfNot(program, *for_.condition, "end_for", labels);
+            if(for_.Content->condition){
+                writeILJumpIfNot(program, *for_.Content->condition, "end_for", labels);
             }
 
-            visit_each(*this, for_.instructions);
+            visit_each(*this, for_.Content->instructions);
 
-            visit_optional(*this, for_.repeat);
+            visit_optional(*this, for_.Content->repeat);
 
             program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_for", labels)));
 

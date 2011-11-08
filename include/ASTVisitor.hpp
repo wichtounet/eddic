@@ -43,10 +43,10 @@ void operator()(ASTGreaterEquals& greater){\
 
 #define AUTO_RECURSE_BRANCHES()\
 void operator()(ASTIf& if_){\
-    visit(*this, if_.condition);\
-    visit_each(*this, if_.instructions);\
-    visit_each_non_variant(*this, if_.elseIfs);\
-    visit_optional_non_variant(*this, if_.else_);\
+    visit(*this, if_.Content->condition);\
+    visit_each(*this, if_.Content->instructions);\
+    visit_each_non_variant(*this, if_.Content->elseIfs);\
+    visit_optional_non_variant(*this, if_.Content->else_);\
 }\
 void operator()(ASTElseIf& elseIf){\
     visit(*this, elseIf.condition);\
@@ -58,10 +58,10 @@ void operator()(ASTElse& else_){\
 
 #define AUTO_RECURSE_SIMPLE_LOOPS()\
 void operator()(ASTFor& for_){\
-    visit_optional(*this, for_.start);\
-    visit_optional(*this, for_.condition);\
-    visit_optional(*this, for_.repeat);\
-    visit_each(*this, for_.instructions);\
+    visit_optional(*this, for_.Content->start);\
+    visit_optional(*this, for_.Content->condition);\
+    visit_optional(*this, for_.Content->repeat);\
+    visit_each(*this, for_.Content->instructions);\
 }\
 void operator()(ASTWhile& while_){\
     visit(*this, while_.Content->condition);\
