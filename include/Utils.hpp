@@ -8,23 +8,29 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <boost/lexical_cast.hpp>
+
+#include <cstdlib>
 #include <sstream>
 
 namespace eddic {
 
 template <typename T>
-T toNumber (const std::string& text) {
+inline T toNumber (const std::string& text) {
     std::stringstream ss(text);
     T result;
     ss >> result;
     return result;
 }
 
+template<>
+inline int toNumber (const std::string& text) {
+    return strtol(text.c_str(), 0, 10); //TODO Use hand-written loop (faster) if necesary
+}
+
 template <typename T>
-std::string toString(T number) {
-    std::stringstream out;
-    out << number;
-    return out.str();
+inline std::string toString(T number) {
+    return boost::lexical_cast<std::string>(number); //TODO Use karma for higher effiency
 }
 
 } //end of eddic
