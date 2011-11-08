@@ -45,16 +45,16 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         additiveValue %=
                 multiplicativeValue
             >>  *(
-                    (lexer.addition >> multiplicativeValue)
-                |   (lexer.subtraction >> multiplicativeValue)
+                    (lexer.addition > multiplicativeValue)
+                |   (lexer.subtraction > multiplicativeValue)
                 );
        
         multiplicativeValue %=
                 unaryValue
             >>  *(
-                    (lexer.multiplication >> unaryValue)
-                |   (lexer.division >> unaryValue)
-                |   (lexer.modulo >> unaryValue)
+                    (lexer.multiplication > unaryValue)
+                |   (lexer.division > unaryValue)
+                |   (lexer.modulo > unaryValue)
                 );
         
         //TODO Support + - primaryValue
@@ -63,7 +63,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         primaryValue = 
                 constant 
             |   variable 
-            |   (lexer.left_parenth >> value >> lexer.right_parenth);
+            |   (lexer.left_parenth >> value > lexer.right_parenth);
 
         integer %= 
                 qi::eps 
@@ -99,7 +99,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
                 |   lexer.not_equals
                 |   lexer.equals
                 )
-            >>  value;
+            >>   value;
 
         condition %= 
                 true_ 
@@ -135,39 +135,39 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         for_ %= 
                 lexer.for_ 
-            >>  lexer.left_parenth 
-            >>  -declaration 
-            >>  lexer.stop 
-            >>  -condition 
-            >>  lexer.stop 
-            >>  -repeatable_instruction 
-            >>  lexer.right_parenth 
-            >>  lexer.left_brace
-            >>  (*instruction)
-            >>  lexer.right_brace;
+            >   lexer.left_parenth 
+            >   -declaration 
+            >   lexer.stop 
+            >   -condition 
+            >   lexer.stop 
+            >   -repeatable_instruction 
+            >   lexer.right_parenth 
+            >   lexer.left_brace
+            >   (*instruction)
+            >   lexer.right_brace;
         
         foreach_ = 
                 lexer.foreach_ 
-            >>  lexer.left_parenth 
-            >>  lexer.word 
-            >>  lexer.word 
-            >>  lexer.from_ 
-            >>  lexer.integer 
-            >>  lexer.to_ 
-            >>  lexer.integer 
-            >>  lexer.right_parenth 
-            >>  lexer.left_brace 
-            >>  *(instruction)
-            >>  lexer.right_brace;
+            >   lexer.left_parenth 
+            >   lexer.word 
+            >   lexer.word 
+            >   lexer.from_ 
+            >   lexer.integer 
+            >   lexer.to_ 
+            >   lexer.integer 
+            >   lexer.right_parenth 
+            >   lexer.left_brace 
+            >   *(instruction)
+            >   lexer.right_brace;
         
         while_ %=
                 lexer.while_ 
-            >>  lexer.left_parenth 
-            >>  condition 
-            >>  lexer.right_parenth 
-            >>  lexer.left_brace 
-            >>  *(instruction)
-            >>  lexer.right_brace;
+            >   lexer.left_parenth 
+            >   condition 
+            >   lexer.right_parenth 
+            >   lexer.left_brace 
+            >   *(instruction)
+            >   lexer.right_brace;
 
         declaration %= 
                 lexer.word 
@@ -190,7 +190,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         functionCall %=
                 lexer.word
             >>  lexer.left_parenth
-            >>  -( value >> *( lexer.comma >> value))
+            >>  -( value >> *( lexer.comma > value))
             >>  lexer.right_parenth;
         
         swap %= 
@@ -212,13 +212,13 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         arg %= 
                 lexer.word 
-            >   lexer.word;
+            >>  lexer.word;
         
         function %= 
                 lexer.word 
             >>  lexer.word
             >>  lexer.left_parenth
-            >>  -( arg >> *( lexer.comma >> arg))
+            >>  -( arg >> *( lexer.comma > arg))
             >>  lexer.right_parenth
             >>  lexer.left_brace
             >>  *(instruction)
