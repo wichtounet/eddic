@@ -8,8 +8,6 @@
 #ifndef AST_TRUE_H
 #define AST_TRUE_H
 
-#include <boost/fusion/include/adapt_struct.hpp>
-
 #include "ast/TerminalNode.hpp"
 
 namespace eddic {

@@ -66,8 +66,8 @@ class SimpleLexer : public lex::lexer<L> {
 
             equals = "==";
             not_equals = "!=";
-            greater = '>';
-            less = '<';
+            greater = ">";
+            less = "<";
             greater_equals = ">=";
             less_equals = "<=";
 
@@ -78,12 +78,12 @@ class SimpleLexer : public lex::lexer<L> {
             //Ignore whitespaces
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
 
-            this->self += integer | word | litteral;
             this->self += left_parenth | right_parenth | left_brace | right_brace;
             this->self += comma | stop;
             this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
             this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | foreach_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
+            this->self += integer | word | litteral;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
