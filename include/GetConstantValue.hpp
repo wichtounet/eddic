@@ -11,21 +11,12 @@
 #include <string>
 #include <utility>
 
-#include "ast/Deferred.hpp"
-
 #include <boost/variant/variant.hpp>
 #include <boost/variant/static_visitor.hpp>
 
+#include "ast/values_def.hpp"
+
 namespace eddic {
-
-class ASTLitteral;
-class ASTInteger;
-
-struct TmpVariable;
-typedef Deferred<TmpVariable> ASTVariable;
-
-struct ComposedValue;
-typedef Deferred<ComposedValue> ASTComposedValue;
 
 typedef boost::variant<int, std::pair<std::string, int>> Val;
 

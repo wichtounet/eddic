@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/adapted/boost_tuple.hpp>
 
@@ -22,9 +23,12 @@ typedef std::vector<boost::tuple<char, ASTValue>> Operations;
 struct ComposedValue {
     ASTValue first;
     Operations operations;
+
+    long RefCount;
+    ComposedValue() : RefCount(0) {}
 };
 
-typedef Deferred<ComposedValue> ASTComposedValue;
+typedef Deferred<ComposedValue, boost::intrusive_ptr<ComposedValue>> ASTComposedValue;
 
 } //end of eddic
 
