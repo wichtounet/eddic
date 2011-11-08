@@ -278,7 +278,7 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
 
         program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
 
-        program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), label));
+        program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
     }
 }
 
