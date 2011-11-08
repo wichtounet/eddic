@@ -273,12 +273,14 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 bool SpiritParser::parse(const std::string& file, ASTProgram& program){
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
-    
-    std::string contents;
-    std::copy(
-            std::istream_iterator<char>(in),
-            std::istream_iterator<char>(),
-            std::back_inserter(contents));
+   
+    in.seekg(0, std::istream::end);
+    std::size_t size(static_cast<size_t>(in.tellg()));
+
+    in.seekg(0, std::istream::beg);
+
+    std::string contents(size, 0);
+    in.read(&contents[0], size);    
 
     pos_iterator_type position_begin(contents.begin(), contents.end(), file);
     pos_iterator_type position_end;
