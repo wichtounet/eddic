@@ -17,7 +17,7 @@ struct ASTInteger;
 struct ASTLitteral;
 
 struct TmpVariable;
-typedef Deferred<TmpVariable> ASTVariable;
+typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;
 
 struct ComposedValue;
 typedef Deferred<ComposedValue, boost::intrusive_ptr<ComposedValue>> ASTComposedValue;

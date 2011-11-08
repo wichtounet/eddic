@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include <boost/intrusive_ptr.hpp>
+
 #include "ast/Deferred.hpp"
 
 namespace eddic {
@@ -22,9 +24,12 @@ struct TmpVariable {
 
     std::string variableName;
     std::shared_ptr<Variable> var;
+
+    long RefCount;
+    TmpVariable() : RefCount(0) {}
 };
 
-typedef Deferred<TmpVariable> ASTVariable;
+typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;
 
 } //end of eddic
 

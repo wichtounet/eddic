@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
@@ -24,9 +25,12 @@ struct Assignment {
 
     std::string variableName;
     ASTValue value;
+
+    long RefCount;
+    Assignment() : RefCount(0) {}
 };
 
-typedef Deferred<Assignment> ASTAssignment;
+typedef Deferred<Assignment, boost::intrusive_ptr<Assignment>> ASTAssignment;
 
 } //end of eddic
 
