@@ -134,7 +134,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ASTVariable& variable){
-            variable.context = currentContext;
+            variable.Content->context = currentContext;
         }
         
         void operator()(TerminalNode&){

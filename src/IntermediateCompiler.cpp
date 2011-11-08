@@ -105,7 +105,7 @@ class PushValue : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            auto var = variable.var;
+            auto var = variable.Content->var;
 
             if(var->type() == Type::INT){
                 program.addInstruction(
@@ -166,8 +166,8 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            if(variable.var->type() == Type::INT){
-                program.addInstruction(program.factory().createMove(variable.var->toIntegerOperand(), operand));
+            if(variable.Content->var->type() == Type::INT){
+                program.addInstruction(program.factory().createMove(variable.Content->var->toIntegerOperand(), operand));
             } else {
                 assert(false); //Cannot assign a string to a single operand
             }
@@ -216,7 +216,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variableSource){
-            auto var = variableSource.var;
+            auto var = variableSource.Content->var;
 
             if(var->type() == Type::INT){
                 program.addInstruction(program.factory().createMove(var->toIntegerOperand(), variable->toIntegerOperand()));
@@ -545,9 +545,9 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             //Create a condition
             ASTVariable v;
-            v.variableName = foreach.Content->variableName;
-            v.context = foreach.Content->context;
-            v.var = v.context->getVariable(foreach.Content->variableName);
+            v.Content->variableName = foreach.Content->variableName;
+            v.Content->context = foreach.Content->context;
+            v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
         
             //Avoid doing all that conversion stuff...  
             ASTCondition condition; 

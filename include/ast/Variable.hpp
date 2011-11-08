@@ -10,24 +10,28 @@
 
 #include <memory>
 
+#include "ast/Deferred.hpp"
+
 namespace eddic {
 
 class Context;
 class Variable;
 
-struct ASTVariable {
+struct TmpVariable {
     std::shared_ptr<Context> context;
 
     std::string variableName;
     std::shared_ptr<Variable> var;
 };
 
+typedef Deferred<TmpVariable> ASTVariable;
+
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTVariable, 
-    (std::string, variableName)
+    (std::string, Content->variableName)
 )
 
 #endif

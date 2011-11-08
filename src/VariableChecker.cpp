@@ -123,11 +123,11 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTVariable& variable){
-        if (!variable.context->exists(variable.variableName)) {
-            throw SemanticalException("Variable " + variable.variableName + " has not been declared");
+        if (!variable.Content->context->exists(variable.Content->variableName)) {
+            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared");
         }
 
-        variable.var = variable.context->getVariable(variable.variableName);
+        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
     }
 
     void operator()(ASTComposedValue& value){

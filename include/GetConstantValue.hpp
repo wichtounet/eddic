@@ -20,7 +20,9 @@ namespace eddic {
 
 class ASTLitteral;
 class ASTInteger;
-class ASTVariable;
+
+struct TmpVariable;
+typedef Deferred<TmpVariable> ASTVariable;
 
 struct ComposedValue;
 typedef Deferred<ComposedValue> ASTComposedValue;
