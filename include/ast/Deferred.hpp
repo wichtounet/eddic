@@ -18,8 +18,19 @@ inline T* Allocate(){
 }
 
 template <typename T>
-void Deallocate(T* ptr){
+inline void Deallocate(T* ptr){
     delete ptr;
+}
+
+template<typename T>
+inline void intrusive_ptr_add_ref(T* expr){
+    ++expr->RefCount;
+}
+
+template<typename T>
+inline void intrusive_ptr_release(T* expr){
+    if(--expr->RefCount == 0)
+        Deallocate(expr);
 }
 
 template <typename T, typename PointerType = std::shared_ptr<T>>
