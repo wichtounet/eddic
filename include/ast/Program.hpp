@@ -20,7 +20,6 @@
 #include "ast/Deferred.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
-#include "ast/Node.hpp"
 
 #include "Context.hpp"
 
@@ -29,7 +28,7 @@ namespace eddic {
 typedef boost::variant<ASTFunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
 
 //A source EDDI program
-struct Program : public Node {
+struct Program {
     std::shared_ptr<Context> context;
     std::vector<FirstLevelBlock> blocks;
 };

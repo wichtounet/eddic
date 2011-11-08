@@ -133,8 +133,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
             swap.Content->context = currentContext;
         }
         
-        void operator()(Node& node){
-            node.context = currentContext;
+        void operator()(ASTVariable& variable){
+            variable.context = currentContext;
         }
         
         void operator()(TerminalNode&){

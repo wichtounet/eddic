@@ -8,14 +8,17 @@
 #ifndef AST_GLOBAL_VARIABLE_DECLARATION_H
 #define AST_GLOBAL_VARIABLE_DECLARATION_H
 
+#include <memory>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct TempGlobalVariableDeclaration : public Node {
+struct TempGlobalVariableDeclaration {
+    std::shared_ptr<Context> context;
+    
     std::string variableType;
     std::string variableName;
     ASTValue value;

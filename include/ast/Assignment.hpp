@@ -8,15 +8,20 @@
 #ifndef AST_ASSIGNMENT_H
 #define AST_ASSIGNMENT_H
 
+#include <memory>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct Assignment : public Node {
+class Context;
+
+struct Assignment {
+    std::shared_ptr<Context> context;
+
     std::string variableName;
     ASTValue value;
 };

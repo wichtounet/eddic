@@ -10,7 +10,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
 

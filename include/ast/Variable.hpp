@@ -8,13 +8,16 @@
 #ifndef AST_VARIABLE_H
 #define AST_VARIABLE_H
 
-#include "ast/Node.hpp"
+#include <memory>
 
 namespace eddic {
 
+class Context;
 class Variable;
 
-struct ASTVariable : public Node {
+struct ASTVariable {
+    std::shared_ptr<Context> context;
+
     std::string variableName;
     std::shared_ptr<Variable> var;
 };

@@ -8,15 +8,20 @@
 #ifndef AST_DECLARATION_H
 #define AST_DECLARATION_H
 
+#include <memory>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct Declaration : public Node {
+class Context;
+
+struct Declaration {
+    std::shared_ptr<Context> context;
+
     std::string variableType;
     std::string variableName;
     ASTValue value;
