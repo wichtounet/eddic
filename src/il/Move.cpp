@@ -26,6 +26,4 @@ void Move::write(AssemblyFileWriter& writer){
         //We can always put an immediate value everywhere
         writer.stream() << "movl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
     }
-
-    //TODO Improve ?
 }
