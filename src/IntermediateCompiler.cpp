@@ -336,6 +336,8 @@ inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, Int
     }
 }
 
+#include <iostream>
+
 class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
@@ -453,39 +455,30 @@ class CompilerVisitor : public boost::static_visitor<> {
             switch (lhs_var->type()) {
                 case Type::INT:{
                     auto registerA = program.registers(EAX);
-                    auto registerB = program.registers(EBX);
-              
+             
                     auto left = lhs_var->toIntegerOperand();
                     auto right = rhs_var->toIntegerOperand();
-              
-                    //TODO Optimize, using only one register as temp 
-                    program.addInstruction(program.factory().createMove(left, registerA));
-                    program.addInstruction(program.factory().createMove(right, registerB));
 
-                    program.addInstruction(program.factory().createMove(registerB, left));
+                    program.addInstruction(program.factory().createMove(left, registerA));
+                    program.addInstruction(program.factory().createMove(right, left));
                     program.addInstruction(program.factory().createMove(registerA, right));
 
                     break;
                 }
                 case Type::STRING:{
                     auto registerA = program.registers(EAX);
-                    auto registerB = program.registers(EBX);
-                    auto registerC = program.registers(ECX);
-                    auto registerD = program.registers(EDX);
                    
                     auto left = lhs_var->toStringOperand();
                     auto right = rhs_var->toStringOperand();
                     
                     program.addInstruction(program.factory().createMove(left.first, registerA));
-                    program.addInstruction(program.factory().createMove(left.second, registerB));
-                    program.addInstruction(program.factory().createMove(right.first, registerC));
-                    program.addInstruction(program.factory().createMove(right.second, registerD));
-                    
-                    program.addInstruction(program.factory().createMove(registerC, left.first));
-                    program.addInstruction(program.factory().createMove(registerD, left.second));
+                    program.addInstruction(program.factory().createMove(right.first, left.first));
                     program.addInstruction(program.factory().createMove(registerA, right.first));
-                    program.addInstruction(program.factory().createMove(registerB, right.second));
-
+                    
+                    program.addInstruction(program.factory().createMove(left.second, registerA));
+                    program.addInstruction(program.factory().createMove(right.second, left.second));
+                    program.addInstruction(program.factory().createMove(registerA, right.second));
+                    
                     break;
                 }
                 default:
