@@ -16,6 +16,8 @@ namespace po = boost::program_options;
 
 namespace eddic {
 
+extern bool OptimizeIntegers;
+extern bool OptimizeStrings;
 extern po::variables_map options;
 
 void parseOptions(int argc, const char* argv[]);

@@ -12,6 +12,9 @@
 
 using namespace eddic;
 
+bool eddic::OptimizeIntegers;
+bool eddic::OptimizeStrings;
+
 po::variables_map eddic::options;
 
 po::options_description desc("Usage : edic [options]");
@@ -23,8 +26,8 @@ void eddic::parseOptions(int argc, const char* argv[]) {
         ("version", "Print the version of eddic")
         ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
         ("optimize-all", "Enable all optimizations")
-        ("optimize-strings", "Enable the optimizations on strings")
-        ("optimize-integers", "Enable the optimizations on integers")
+        ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
+        ("optimize-integers", po::bool_switch(&OptimizeIntegers), "Enable the optimizations on integers")
         ("input", po::value<std::string>(), "Input file");
 
     po::positional_options_description p;
@@ -32,6 +35,10 @@ void eddic::parseOptions(int argc, const char* argv[]) {
 
     po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), options);
     po::notify(options);
+
+    if(options.count("optimize-all")){
+        OptimizeStrings = OptimizeIntegers = true;
+    }
 }
 
 void eddic::printHelp(){
