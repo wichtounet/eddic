@@ -19,6 +19,4 @@ Compare::Compare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) : m
 void Compare::write(AssemblyFileWriter& writer){
     //We can always put an immediate value everywhere
     writer.stream() << "cmpl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
-
-    //TODO Improve ?
 }
