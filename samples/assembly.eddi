@@ -183,6 +183,10 @@ void test(){
     println("Hello from test");
 }
 
+void empty(int i){
+    //Empty function
+}
+
 /* Multiline comment 2  */
 
 /* 
