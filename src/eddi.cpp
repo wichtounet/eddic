@@ -19,7 +19,9 @@ using namespace eddic;
 void printUsage();
 
 int main(int argc, const char* argv[]) {
-    parseOptions(argc, argv);
+    if(!parseOptions(argc, argv)){
+        return -1;
+    }
 
     if(options.count("help")){
         printHelp();
