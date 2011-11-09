@@ -23,10 +23,6 @@ std::shared_ptr<Operand> eddic::createImmediateOperand(std::string value){
     return std::make_shared<ImmediateStringOperand>(value);
 }
 
-std::shared_ptr<Operand> eddic::createRegisterOperand(std::string reg){
-    return std::make_shared<RegisterOperand>(reg);
-}
-
 std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label){
     return std::make_shared<GlobalOperand>(label);
 }

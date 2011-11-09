@@ -5,12 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "il/RegisterOperand.hpp"
+#ifndef REGISTER_H
+#define REGISTER_H
 
-using namespace eddic;
+namespace eddic {
 
-RegisterOperand::RegisterOperand(std::string reg) : Operand(OperandType::REGISTER), m_register(reg) {}
+enum Register {
+    EAX,
+    EBX,
+    ECX,
+    EDX,
 
-std::string RegisterOperand::getValue(){
-    return m_register;
-}
+    ESP,
+    
+    REGISTER_COUNT  
+};
+
+} //end of eddic
+
+#endif

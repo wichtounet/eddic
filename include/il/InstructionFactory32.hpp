@@ -15,7 +15,12 @@ namespace eddic {
 class Operand;
 
 class InstructionFactory32 : public InstructionFactory {
+    private:
+        std::shared_ptr<Operand> registerOperands[REGISTER_COUNT];
+
     public:
+        InstructionFactory32();
+
         std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         std::shared_ptr<Instruction> createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand) const;
@@ -35,6 +40,8 @@ class InstructionFactory32 : public InstructionFactory {
 
         std::shared_ptr<Instruction> createMainDeclaration() const;
         std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool) const;
+        
+        std::shared_ptr<Operand> registers(Register reg) const;
 };
 
 } //end of eddic

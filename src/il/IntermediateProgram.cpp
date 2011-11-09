@@ -22,6 +22,10 @@ const InstructionFactory& IntermediateProgram::factory(){
     return *m_factory;
 }
 
+std::shared_ptr<Operand> IntermediateProgram::registers(Register reg){
+    return m_factory->registers(reg);
+}
+
 void IntermediateProgram::addInstruction(std::shared_ptr<Instruction> instruction){
     m_instructions.push_back(instruction);
 }

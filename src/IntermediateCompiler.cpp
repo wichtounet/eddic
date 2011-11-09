@@ -57,8 +57,8 @@ inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, Int
 inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, IntermediateProgram& program){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
-    auto registerA = createRegisterOperand("eax");
-    auto registerB = createRegisterOperand("ebx");
+    auto registerA = program.registers(EAX);
+    auto registerB = program.registers(EBX);
 
     putInRegister(value.Content->first, registerA, program);
 
@@ -269,14 +269,14 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
     } else if(auto* ptr = boost::get<ASTBinaryCondition>(&condition)){
         ASTBinaryCondition& binaryCondition = *ptr;
         
-        AssignValueToOperand leftVisitor(createRegisterOperand("eax"), program);
+        AssignValueToOperand leftVisitor(program.registers(EAX), program);
 
         boost::apply_visitor(leftVisitor, binaryCondition.Content->lhs);
         
-        AssignValueToOperand rightVisitor(createRegisterOperand("ebx"), program);
+        AssignValueToOperand rightVisitor(program.registers(EBX), program);
         boost::apply_visitor(rightVisitor, binaryCondition.Content->rhs);
 
-        program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
+        program.addInstruction(program.factory().createCompare(program.registers(EBX), program.registers(EAX)));
 
         program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
     }
@@ -285,8 +285,8 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
 inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program){
     assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
-    auto registerA = createRegisterOperand("eax");
-    auto registerB = createRegisterOperand("edx");
+    auto registerA = program.registers(EAX);
+    auto registerB = program.registers(EDX);
 
     PushValue pusher(program); 
     boost::apply_visitor(pusher, value.Content->first);
@@ -299,7 +299,7 @@ inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStri
 
         program.addInstruction(program.factory().createCall("concat"));
         
-        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), program.registers(ESP)));
 
         ++iter;
 
@@ -323,7 +323,7 @@ inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, Int
 
         program.addInstruction(program.factory().createMove(createStackOperand(0), operand));
 
-        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), createRegisterOperand("esp")));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
     }
 }
 
@@ -443,8 +443,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             //We have the guarantee here that both variables are of the same type
             switch (lhs_var->type()) {
                 case Type::INT:{
-                    auto registerA = createRegisterOperand("eax");
-                    auto registerB = createRegisterOperand("ebx");
+                    auto registerA = program.registers(EAX);
+                    auto registerB = program.registers(EBX);
               
                     auto left = lhs_var->toIntegerOperand();
                     auto right = rhs_var->toIntegerOperand();
@@ -459,10 +459,10 @@ class CompilerVisitor : public boost::static_visitor<> {
                     break;
                 }
                 case Type::STRING:{
-                    auto registerA = createRegisterOperand("eax");
-                    auto registerB = createRegisterOperand("ebx");
-                    auto registerC = createRegisterOperand("ecx");
-                    auto registerD = createRegisterOperand("edx");
+                    auto registerA = program.registers(EAX);
+                    auto registerB = program.registers(EBX);
+                    auto registerC = program.registers(ECX);
+                    auto registerD = program.registers(EDX);
                    
                     auto left = lhs_var->toStringOperand();
                     auto right = rhs_var->toStringOperand();
@@ -590,12 +590,12 @@ class CompilerVisitor : public boost::static_visitor<> {
                 switch (type) {
                     case Type::INT:
                         program.addInstruction(program.factory().createCall("print_integer"));
-                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), createRegisterOperand("esp")));
+                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
 
                         break;
                     case Type::STRING:
                         program.addInstruction(program.factory().createCall("print_string"));
-                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), createRegisterOperand("esp")));
+                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
 
                         break;
                     default:
@@ -618,7 +618,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                     total += size(type);
                 }
 
-                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), createRegisterOperand("esp")));
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), program.registers(ESP)));
             }
         }
 };

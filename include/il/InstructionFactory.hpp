@@ -15,6 +15,7 @@
 #include "il/Instruction.hpp"
 #include "il/Math.hpp"
 #include "il/Jump.hpp"
+#include "il/Register.hpp"
 
 namespace eddic {
 
@@ -41,6 +42,8 @@ class InstructionFactory {
 
         virtual std::shared_ptr<Instruction> createMainDeclaration() const = 0;
         virtual std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool) const = 0;
+
+        virtual std::shared_ptr<Operand> registers(Register reg) const = 0;
 };
 
 } //end of eddic
