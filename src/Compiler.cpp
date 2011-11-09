@@ -86,8 +86,6 @@ int Compiler::compile(const string& file) {
             //Optimize the AST
             optimize(program);
 
-            DebugVisitor()(program);
-
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
             writeIL(program, pool, il);
