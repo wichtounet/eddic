@@ -253,19 +253,19 @@ class AssignValueToVariable : public boost::static_visitor<> {
         } 
 };
 
-inline JumpCondition toJumpCondition(std::string op){
+inline JumpCondition toJumpNotCondition(std::string op){
     if(op == "!="){
-        return JumpCondition::NOT_EQUALS;
-    } else if(op == "=="){
         return JumpCondition::EQUALS;
+    } else if(op == "=="){
+        return JumpCondition::NOT_EQUALS;
     } else if(op == ">="){
-        return JumpCondition::GREATER_EQUALS;
-    } else if(op == ">"){
-        return JumpCondition::GREATER;
-    } else if(op == "<="){
-        return JumpCondition::LESS_EQUALS;
-    } else if(op == "<"){
         return JumpCondition::LESS;
+    } else if(op == ">"){
+        return JumpCondition::LESS_EQUALS;
+    } else if(op == "<="){
+        return JumpCondition::GREATER;
+    } else if(op == "<"){
+        return JumpCondition::GREATER_EQUALS;
     }
 
     assert(false); //Not handled
@@ -287,7 +287,7 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
 
         program.addInstruction(program.factory().createCompare(program.registers(EBX), program.registers(EAX)));
 
-        program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
+        program.addInstruction(program.factory().createJump(toJumpNotCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
     }
 }
 
