@@ -64,13 +64,22 @@ inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, Int
 
     //Apply all the operations in chain
     for(auto& operation : value.Content->operations){
-        putInRegister(operation.get<1>(), registerB, program);
+        if(isImmediate(operation.get<1>())){
+            putInRegister(operation.get<1>(), registerB, program);
 
-        //Perform the operation 
-        program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerB, registerA));
+            //Perform the operation 
+            program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
+        } else { //The right value is composed
+            program.addInstruction(program.factory().createPush(registerA)); //To be sure that the right operation does not override our register 
+            
+            putInRegister(operation.get<1>(), registerB, program);
+            program.addInstruction(program.factory().createMove(createStackOperand(0), registerA));
+            
+            program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
+        }
     }
 
-    return registerA;
+    return registerB;
 }
 
 inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program);

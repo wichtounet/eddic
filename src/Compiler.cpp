@@ -30,6 +30,7 @@ static const bool debug = false;
 
 #include "ast/Program.hpp"
 
+#include "DebugVisitor.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "ContextAnnotator.hpp"
 #include "VariableChecker.hpp"
@@ -84,6 +85,8 @@ int Compiler::compile(const string& file) {
             
             //Optimize the AST
             optimize(program);
+
+            DebugVisitor()(program);
 
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
