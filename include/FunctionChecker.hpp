@@ -8,9 +8,10 @@
 #ifndef FUNCTION_CHECKER_H
 #define FUNCTION_CHECKER_H
 
+#include "ast/Program.hpp"
+
 namespace eddic {
 
-class ASTProgram;
 class FunctionTable;
 
 struct FunctionChecker {

@@ -12,15 +12,22 @@
 
 namespace eddic {
 
-class ImmediateOperand : public Operand {
+class ImmediateIntegerOperand : public Operand {
     private:
-        bool string;
         int m_int;
+
+    public:
+        ImmediateIntegerOperand(int value);
+
+        std::string getValue();
+};
+
+class ImmediateStringOperand : public Operand {
+    private:
         std::string m_string;
 
     public:
-        ImmediateOperand(int value);
-        ImmediateOperand(std::string value);
+        ImmediateStringOperand(std::string value);
 
         std::string getValue();
 };

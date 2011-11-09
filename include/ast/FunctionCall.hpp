@@ -8,24 +8,31 @@
 #ifndef AST_FUNCTION_CALL_H
 #define AST_FUNCTION_CALL_H
 
+#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTFunctionCall {
+struct FunctionCall {
     std::string functionName;
     std::vector<ASTValue> values;
+
+    mutable long references;
+    FunctionCall() : references(0) {}
 };
+
+typedef Deferred<FunctionCall, boost::intrusive_ptr<FunctionCall>> ASTFunctionCall;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTFunctionCall, 
-    (std::string, functionName)
-    (std::vector<eddic::ASTValue>, values)
+    (std::string, Content->functionName)
+    (std::vector<eddic::ASTValue>, Content->values)
 )
 
 #endif

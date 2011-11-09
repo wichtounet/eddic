@@ -14,12 +14,9 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/static_visitor.hpp>
 
-namespace eddic {
+#include "ast/values_def.hpp"
 
-class ASTLitteral;
-class ASTInteger;
-class ASTVariable;
-class ASTComposedValue;
+namespace eddic {
 
 typedef boost::variant<int, std::pair<std::string, int>> Val;
 

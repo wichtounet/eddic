@@ -12,12 +12,9 @@
 
 #include "Types.hpp"
 
-namespace eddic {
+#include "ast/values_def.hpp"
 
-class ASTLitteral;
-class ASTInteger;
-class ASTVariable;
-class ASTComposedValue;
+namespace eddic {
 
 struct GetTypeVisitor : public boost::static_visitor<Type> {
     Type operator()(const ASTLitteral& litteral) const;

@@ -25,7 +25,17 @@
 #include "il/Main.hpp"
 #include "il/DataSection.hpp"
 
+#include "il/RegisterOperand.hpp"
+
 using namespace eddic;
+
+InstructionFactory32::InstructionFactory32(){
+    registerOperands[EAX] = std::make_shared<RegisterOperand>("%eax");
+    registerOperands[EBX] = std::make_shared<RegisterOperand>("%ebx");
+    registerOperands[ECX] = std::make_shared<RegisterOperand>("%ecx");
+    registerOperands[EDX] = std::make_shared<RegisterOperand>("%edx");
+    registerOperands[ESP] = std::make_shared<RegisterOperand>("%esp");
+}
 
 std::shared_ptr<Instruction> InstructionFactory32::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
    return std::make_shared<Move>(lhs, rhs); 
@@ -93,4 +103,8 @@ std::shared_ptr<Instruction> InstructionFactory32::createMainDeclaration() const
 
 std::shared_ptr<Instruction> InstructionFactory32::createDataSection(std::unordered_map<std::string, std::string> pool) const {
     return std::make_shared<DataSection>(pool);
+}
+
+std::shared_ptr<Operand> InstructionFactory32::registers(Register reg) const {
+   return registerOperands[reg]; 
 }

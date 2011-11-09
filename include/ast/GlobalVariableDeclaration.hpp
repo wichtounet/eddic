@@ -8,27 +8,32 @@
 #ifndef AST_GLOBAL_VARIABLE_DECLARATION_H
 #define AST_GLOBAL_VARIABLE_DECLARATION_H
 
+#include <memory>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct GlobalVariableDeclaration : public Node {
+struct TempGlobalVariableDeclaration {
+    std::shared_ptr<Context> context;
+    
     std::string variableType;
     std::string variableName;
     ASTValue value;
 };
+
+typedef Deferred<TempGlobalVariableDeclaration> GlobalVariableDeclaration;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::GlobalVariableDeclaration, 
-    (std::string, variableType)
-    (std::string, variableName)
-    (eddic::ASTValue, value)
+    (std::string, Content->variableType)
+    (std::string, Content->variableName)
+    (eddic::ASTValue, Content->value)
 )
 
 #endif

@@ -8,9 +8,9 @@
 #ifndef CONTEXT_ANNOTATOR_H
 #define CONTEXT_ANNOTATOR_H
 
-namespace eddic {
+#include "ast/Program.hpp"
 
-class ASTProgram;
+namespace eddic {
 
 class ContextAnnotator {
     public:

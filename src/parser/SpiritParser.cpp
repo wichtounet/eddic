@@ -32,6 +32,11 @@ namespace qi = boost::spirit::qi;
 
 using namespace eddic;
 
+template <typename Iterator, typename AttributeT>
+struct Rule {
+    typedef typename boost::spirit::qi::rule<Iterator, AttributeT> type;
+};
+
 template <typename Iterator, typename Lexer>
 struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
@@ -40,16 +45,16 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         additiveValue %=
                 multiplicativeValue
             >>  *(
-                    (lexer.addition >> multiplicativeValue)
-                |   (lexer.subtraction >> multiplicativeValue)
+                    (lexer.addition > multiplicativeValue)
+                |   (lexer.subtraction > multiplicativeValue)
                 );
        
         multiplicativeValue %=
                 unaryValue
             >>  *(
-                    (lexer.multiplication >> unaryValue)
-                |   (lexer.division >> unaryValue)
-                |   (lexer.modulo >> unaryValue)
+                    (lexer.multiplication > unaryValue)
+                |   (lexer.division > unaryValue)
+                |   (lexer.modulo > unaryValue)
                 );
         
         //TODO Support + - primaryValue
@@ -58,7 +63,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         primaryValue = 
                 constant 
             |   variable 
-            |   (lexer.left_parenth >> value >> lexer.right_parenth);
+            |   (lexer.left_parenth >> value > lexer.right_parenth);
 
         integer %= 
                 qi::eps 
@@ -84,43 +89,17 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
                 qi::eps
             >>  lexer.false_;
 
-        equals %=
-                value
-            >>  lexer.equals
-            >>  value;
-        
-        not_equals %=
-                value
-            >>  lexer.not_equals
-            >>  value;
-        
-        less %=
-                value
-            >>  lexer.less
-            >>  value;
-        
-        less_equals %=
-                value
-            >>  lexer.less_equals
-            >>  value;
-        
-        greater %=
-                value
-            >>  lexer.greater
-            >>  value;
-        
-        greater_equals %=
-                value
-            >>  lexer.greater_equals
-            >>  value;
-
         binary_condition %=
-                equals 
-            |   not_equals 
-            |   greater 
-            |   greater_equals 
-            |   less 
-            |   less_equals;
+                value
+            >>  (
+                    lexer.greater_equals
+                |   lexer.greater
+                |   lexer.less_equals
+                |   lexer.less
+                |   lexer.not_equals
+                |   lexer.equals
+                )
+            >>   value;
 
         condition %= 
                 true_ 
@@ -156,39 +135,39 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         
         for_ %= 
                 lexer.for_ 
-            >>  lexer.left_parenth 
-            >>  -declaration 
-            >>  lexer.stop 
-            >>  -condition 
-            >>  lexer.stop 
-            >>  -repeatable_instruction 
-            >>  lexer.right_parenth 
-            >>  lexer.left_brace
-            >>  (*instruction)
-            >>  lexer.right_brace;
+            >   lexer.left_parenth 
+            >   -declaration 
+            >   lexer.stop 
+            >   -condition 
+            >   lexer.stop 
+            >   -repeatable_instruction 
+            >   lexer.right_parenth 
+            >   lexer.left_brace
+            >   (*instruction)
+            >   lexer.right_brace;
         
         foreach_ = 
                 lexer.foreach_ 
-            >>  lexer.left_parenth 
-            >>  lexer.word 
-            >>  lexer.word 
-            >>  lexer.from_ 
-            >>  lexer.integer 
-            >>  lexer.to_ 
-            >>  lexer.integer 
-            >>  lexer.right_parenth 
-            >>  lexer.left_brace 
-            >>  *(instruction)
-            >>  lexer.right_brace;
+            >   lexer.left_parenth 
+            >   lexer.word 
+            >   lexer.word 
+            >   lexer.from_ 
+            >   lexer.integer 
+            >   lexer.to_ 
+            >   lexer.integer 
+            >   lexer.right_parenth 
+            >   lexer.left_brace 
+            >   *(instruction)
+            >   lexer.right_brace;
         
         while_ %=
                 lexer.while_ 
-            >>  lexer.left_parenth 
-            >>  condition 
-            >>  lexer.right_parenth 
-            >>  lexer.left_brace 
-            >>  *(instruction)
-            >>  lexer.right_brace;
+            >   lexer.left_parenth 
+            >   condition 
+            >   lexer.right_parenth 
+            >   lexer.left_brace 
+            >   *(instruction)
+            >   lexer.right_brace;
 
         declaration %= 
                 lexer.word 
@@ -211,7 +190,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         functionCall %=
                 lexer.word
             >>  lexer.left_parenth
-            >>  -( value >> *( lexer.comma >> value))
+            >>  -( value >> *( lexer.comma > value))
             >>  lexer.right_parenth;
         
         swap %= 
@@ -220,11 +199,14 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
             >>  lexer.word;
         
         instruction %= 
-                ((functionCall | swap | assignment | declaration) >> lexer.stop)
-            |   while_
+                (functionCall > lexer.stop)
+            |   (assignment > lexer.stop)
+            |   (declaration > lexer.stop)
+            |   if_
             |   for_
+            |   while_
             |   foreach_
-            |   if_;
+            |   (swap > lexer.stop);
 
         repeatable_instruction = assignment | declaration | swap;
         
@@ -236,7 +218,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
                 lexer.word 
             >>  lexer.word
             >>  lexer.left_parenth
-            >>  -( arg >> *( lexer.comma >> arg))
+            >>  -( arg >> *( lexer.comma > arg))
             >>  lexer.right_parenth
             >>  lexer.left_brace
             >>  *(instruction)
@@ -244,13 +226,15 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
 
         program %=
                 qi::eps 
-            >>  *(globalDeclaration | function);
+            >>  *(function | globalDeclaration);
 
         //Name the rules
         globalDeclaration.name("EDDI global variable");
         function.name("EDDI function declaration");
         program.name("EDDI program");
    }
+
+   //Rule<Iterator, Deferred<ASTProgram>()>::type program;
 
    qi::rule<Iterator, ASTProgram()> program;
    qi::rule<Iterator, GlobalVariableDeclaration()> globalDeclaration;
@@ -284,23 +268,19 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTTrue()> true_;
    qi::rule<Iterator, ASTFalse()> false_;
    qi::rule<Iterator, ASTBinaryCondition()> binary_condition;
-   qi::rule<Iterator, ASTEquals()> equals;
-   qi::rule<Iterator, ASTNotEquals()> not_equals;
-   qi::rule<Iterator, ASTGreater()> greater;
-   qi::rule<Iterator, ASTGreaterEquals()> greater_equals;
-   qi::rule<Iterator, ASTLess()> less;
-   qi::rule<Iterator, ASTLessEquals()> less_equals;
 };
 
 bool SpiritParser::parse(const std::string& file, ASTProgram& program){
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
-    
-    std::string contents;
-    std::copy(
-            std::istream_iterator<char>(in),
-            std::istream_iterator<char>(),
-            std::back_inserter(contents));
+   
+    in.seekg(0, std::istream::end);
+    std::size_t size(static_cast<size_t>(in.tellg()));
+
+    in.seekg(0, std::istream::beg);
+
+    std::string contents(size, 0);
+    in.read(&contents[0], size);    
 
     pos_iterator_type position_begin(contents.begin(), contents.end(), file);
     pos_iterator_type position_end;

@@ -21,9 +21,9 @@ using namespace eddic;
 
 struct GetIntValue : public boost::static_visitor<int> {
     int operator()(ASTComposedValue& value) const {
-        int acc = boost::apply_visitor(*this, value.first);
+        int acc = boost::apply_visitor(*this, value.Content->first);
 
-        for(auto& operation : value.operations){
+        for(auto& operation : value.Content->operations){
             int v = boost::apply_visitor(*this, operation.get<1>());
             char op = operation.get<0>();
 
@@ -68,8 +68,8 @@ struct GetIntValue : public boost::static_visitor<int> {
 
 struct ValueOptimizer : public boost::static_visitor<ASTValue> {
     ASTValue operator()(ASTComposedValue& value) const {
-        if(value.operations.empty()){
-            return boost::apply_visitor(*this, value.first);   
+        if(value.Content->operations.empty()){
+            return boost::apply_visitor(*this, value.Content->first);   
         }
 
         //If the value is constant, we can replace it with the results of the computation
@@ -90,11 +90,11 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
         }
 
         //Optimize the first value
-        value.first = boost::apply_visitor(*this, value.first);
+        value.Content->first = boost::apply_visitor(*this, value.Content->first);
 
         //We can try to optimize every part of the composed value
-        auto start = value.operations.begin();
-        auto end = value.operations.end();
+        auto start = value.Content->operations.begin();
+        auto end = value.Content->operations.end();
 
         while(start != end){
             start->get<1>() = boost::apply_visitor(*this, start->get<1>());
@@ -102,7 +102,7 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
             ++start;
         }
 
-        assert(value.operations.size() > 0); //Once here, there is no more empty composed value 
+        assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
 
         //If we get there, that means that no optimization has been (or can be) performed
         return value;
@@ -133,8 +133,8 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTFunctionCall& functionCall){
-        auto start = functionCall.values.begin();
-        auto end = functionCall.values.end();
+        auto start = functionCall.Content->values.begin();
+        auto end = functionCall.Content->values.end();
 
         ValueOptimizer optimizer;
 
@@ -146,11 +146,11 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTAssignment& assignment){
-        assignment.value = boost::apply_visitor(ValueOptimizer(), assignment.value); 
+        assignment.Content->value = boost::apply_visitor(ValueOptimizer(), assignment.Content->value); 
     }
 
     void operator()(ASTDeclaration& declaration){
-        declaration.value = boost::apply_visitor(ValueOptimizer(), declaration.value); 
+        declaration.Content->value = boost::apply_visitor(ValueOptimizer(), declaration.Content->value); 
     }
 
     void operator()(ASTSwap&){
@@ -158,37 +158,8 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTBinaryCondition& binaryCondition){
-        visit(*this, binaryCondition);
-    }
-
-    void operator()(ASTEquals& equals){
-        equals.lhs = boost::apply_visitor(ValueOptimizer(), equals.lhs); 
-        equals.rhs = boost::apply_visitor(ValueOptimizer(), equals.rhs); 
-    }
-
-    void operator()(ASTNotEquals& notEquals){
-        notEquals.lhs = boost::apply_visitor(ValueOptimizer(), notEquals.lhs); 
-        notEquals.rhs = boost::apply_visitor(ValueOptimizer(), notEquals.rhs); 
-    }
-
-    void operator()(ASTLess& less){
-        less.lhs = boost::apply_visitor(ValueOptimizer(), less.lhs); 
-        less.rhs = boost::apply_visitor(ValueOptimizer(), less.rhs); 
-    }
-
-    void operator()(ASTLessEquals& less){
-        less.lhs = boost::apply_visitor(ValueOptimizer(), less.lhs); 
-        less.rhs = boost::apply_visitor(ValueOptimizer(), less.rhs); 
-    }
-
-    void operator()(ASTGreater& greater){
-        greater.lhs = boost::apply_visitor(ValueOptimizer(), greater.lhs); 
-        greater.rhs = boost::apply_visitor(ValueOptimizer(), greater.rhs); 
-    }
-
-    void operator()(ASTGreaterEquals& greater){
-        greater.lhs = boost::apply_visitor(ValueOptimizer(), greater.lhs); 
-        greater.rhs = boost::apply_visitor(ValueOptimizer(), greater.rhs); 
+        binaryCondition.Content->lhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->lhs); 
+        binaryCondition.Content->rhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->rhs); 
     }
 
     void operator()(ASTFalse&){

@@ -8,25 +8,37 @@
 #ifndef AST_ASSIGNMENT_H
 #define AST_ASSIGNMENT_H
 
+#include <memory>
+
+#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
+#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
 
-struct ASTAssignment : public Node {
+class Context;
+
+struct Assignment {
+    std::shared_ptr<Context> context;
+
     std::string variableName;
     ASTValue value;
+
+    mutable long references;
+    Assignment() : references(0) {}
 };
+
+typedef Deferred<Assignment, boost::intrusive_ptr<Assignment>> ASTAssignment;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTAssignment, 
-    (std::string, variableName)
-    (eddic::ASTValue, value)
+    (std::string, Content->variableName)
+    (eddic::ASTValue, Content->value)
 )
 
 #endif

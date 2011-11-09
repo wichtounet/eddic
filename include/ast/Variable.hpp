@@ -8,23 +8,35 @@
 #ifndef AST_VARIABLE_H
 #define AST_VARIABLE_H
 
-#include "ast/Node.hpp"
+#include <memory>
+
+#include <boost/intrusive_ptr.hpp>
+
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
+class Context;
 class Variable;
 
-struct ASTVariable : public Node {
+struct TmpVariable {
+    std::shared_ptr<Context> context;
+
     std::string variableName;
     std::shared_ptr<Variable> var;
+
+    mutable long references;
+    TmpVariable() : references(0) {}
 };
+
+typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTVariable, 
-    (std::string, variableName)
+    (std::string, Content->variableName)
 )
 
 #endif

@@ -5,27 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_GREATER_EQUALS_H
-#define AST_GREATER_EQUALS_H
-
-#include <boost/fusion/include/adapt_struct.hpp>
-
-#include "ast/Value.hpp"
+#ifndef REGISTER_H
+#define REGISTER_H
 
 namespace eddic {
 
-struct ASTGreaterEquals {
-    ASTValue lhs;
-    ASTValue rhs;
+enum Register {
+    EAX,
+    EBX,
+    ECX,
+    EDX,
+
+    ESP,
+    
+    REGISTER_COUNT  
 };
 
 } //end of eddic
-
-//Adapt the struct for the AST
-BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTGreaterEquals, 
-    (eddic::ASTValue, lhs)
-    (eddic::ASTValue, rhs)
-)
 
 #endif

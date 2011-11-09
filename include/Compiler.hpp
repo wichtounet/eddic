@@ -10,9 +10,10 @@
 
 #include <string>
 
+#include "ast/Program.hpp"
+
 namespace eddic {
 
-class ASTProgram;
 class StringPool;
 class FunctionTable;
 class IntermediateProgram;
@@ -24,6 +25,7 @@ void checkStrings(ASTProgram& program, StringPool& pool);
 void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
 void optimize(ASTProgram& program);
 void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
+void writeAsm(IntermediateProgram& il, const std::string& file);
 
 void execCommand(const std::string& command);
 

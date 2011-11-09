@@ -10,12 +10,9 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-namespace eddic {
+#include "ast/values_def.hpp"
 
-class ASTLitteral;
-class ASTInteger;
-class ASTVariable;
-class ASTComposedValue;
+namespace eddic {
 
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ASTLitteral& litteral) const;

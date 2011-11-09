@@ -8,9 +8,10 @@
 #ifndef INTERMEDIATE_COMPILER_H
 #define INTERMEDIATE_COMPILER_H
 
+#include "ast/Program.hpp"
+
 namespace eddic {
 
-class ASTProgram;
 class StringPool;
 class IntermediateProgram;
 

@@ -55,15 +55,15 @@ inline Operation toOperation(char op){
 inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
 inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, IntermediateProgram& program){
-    assert(value.operations.size() > 0); //This has been enforced by previous phases
+    assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
-    auto registerA = createRegisterOperand("eax");
-    auto registerB = createRegisterOperand("ebx");
+    auto registerA = program.registers(EAX);
+    auto registerB = program.registers(EBX);
 
-    putInRegister(value.first, registerA, program);
+    putInRegister(value.Content->first, registerA, program);
 
     //Apply all the operations in chain
-    for(auto& operation : value.operations){
+    for(auto& operation : value.Content->operations){
         putInRegister(operation.get<1>(), registerB, program);
 
         //Perform the operation 
@@ -105,7 +105,7 @@ class PushValue : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            auto var = variable.var;
+            auto var = variable.Content->var;
 
             if(var->type() == Type::INT){
                 program.addInstruction(
@@ -166,8 +166,8 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variable){
-            if(variable.var->type() == Type::INT){
-                program.addInstruction(program.factory().createMove(variable.var->toIntegerOperand(), operand));
+            if(variable.Content->var->type() == Type::INT){
+                program.addInstruction(program.factory().createMove(variable.Content->var->toIntegerOperand(), operand));
             } else {
                 assert(false); //Cannot assign a string to a single operand
             }
@@ -216,7 +216,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
         }
 
         void operator()(ASTVariable& variableSource){
-            auto var = variableSource.var;
+            auto var = variableSource.Content->var;
 
             if(var->type() == Type::INT){
                 program.addInstruction(program.factory().createMove(var->toIntegerOperand(), variable->toIntegerOperand()));
@@ -244,95 +244,67 @@ class AssignValueToVariable : public boost::static_visitor<> {
         } 
 };
 
-class JumpIfNot : public boost::static_visitor<> {
-    private:
-        IntermediateProgram& program;
-        std::string label;
-    
-    public:
-        JumpIfNot(IntermediateProgram& p, const std::string& l) : program(p), label(l) {}
+inline JumpCondition toJumpCondition(std::string op){
+    if(op == "!="){
+        return JumpCondition::NOT_EQUALS;
+    } else if(op == "=="){
+        return JumpCondition::EQUALS;
+    } else if(op == ">="){
+        return JumpCondition::GREATER_EQUALS;
+    } else if(op == ">"){
+        return JumpCondition::GREATER;
+    } else if(op == "<="){
+        return JumpCondition::LESS_EQUALS;
+    } else if(op == "<"){
+        return JumpCondition::LESS;
+    }
 
-        template<typename T>
-        void common(T& condition){
-            AssignValueToOperand leftVisitor(createRegisterOperand("eax"), program);
-            boost::apply_visitor(leftVisitor, condition.lhs);
-            
-            AssignValueToOperand rightVisitor(createRegisterOperand("ebx"), program);
-            boost::apply_visitor(rightVisitor, condition.rhs);
-
-            program.addInstruction(program.factory().createCompare(createRegisterOperand("ebx"), createRegisterOperand("eax")));
-        }
-        
-        void operator()(ASTEquals& equals){
-            common(equals);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::NOT_EQUALS, label));
-        }
-        
-        void operator()(ASTNotEquals& notEquals){
-            common(notEquals);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::EQUALS, label));
-        }
-        
-        void operator()(ASTLess& less){
-            common(less);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, label));
-        }
-        
-        void operator()(ASTLessEquals& less){
-            common(less);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::GREATER, label));
-        }
-        
-        void operator()(ASTGreater& greater){
-            common(greater);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::LESS_EQUALS, label));
-        }
-        
-        void operator()(ASTGreaterEquals& greater){
-            common(greater);
-
-            program.addInstruction(program.factory().createJump(JumpCondition::LESS, label));
-        }
-};
+    assert(false); //Not handled
+}
 
 inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& condition, const std::string& label, int labelIndex) {
     //No need to jump for a true boolean value 
     if(boost::get<ASTFalse>(&condition)){
         program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
     } else if(auto* ptr = boost::get<ASTBinaryCondition>(&condition)){
-        JumpIfNot visitor(program, eddic::label(label, labelIndex));
-        boost::apply_visitor(visitor, *ptr);
+        ASTBinaryCondition& binaryCondition = *ptr;
+        
+        AssignValueToOperand leftVisitor(program.registers(EAX), program);
+
+        boost::apply_visitor(leftVisitor, binaryCondition.Content->lhs);
+        
+        AssignValueToOperand rightVisitor(program.registers(EBX), program);
+        boost::apply_visitor(rightVisitor, binaryCondition.Content->rhs);
+
+        program.addInstruction(program.factory().createCompare(program.registers(EBX), program.registers(EAX)));
+
+        program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
     }
 }
 
 inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program){
-    assert(value.operations.size() > 0); //Other values must be transformed before that phase
+    assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
-    auto registerA = createRegisterOperand("eax");
-    auto registerB = createRegisterOperand("edx");
+    auto registerA = program.registers(EAX);
+    auto registerB = program.registers(EDX);
 
     PushValue pusher(program); 
-    boost::apply_visitor(pusher, value.first);
+    boost::apply_visitor(pusher, value.Content->first);
 
     unsigned int iter = 0;
 
     //Perfom all the additions
-    for(auto& operation : value.operations){
+    for(auto& operation : value.Content->operations){
         boost::apply_visitor(pusher, operation.get<1>());
 
         program.addInstruction(program.factory().createCall("concat"));
         
-        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), createRegisterOperand("esp")));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(16), program.registers(ESP)));
 
         ++iter;
 
         //If there is more operation, push the answer
-        if(iter < value.operations.size()){
+        if(iter < value.Content->operations.size()){
            program.addInstruction(program.factory().createPush(registerA)); 
            program.addInstruction(program.factory().createPush(registerB)); 
         }
@@ -351,7 +323,7 @@ inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, Int
 
         program.addInstruction(program.factory().createMove(createStackOperand(0), operand));
 
-        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), createRegisterOperand("esp")));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
     }
 }
 
@@ -366,21 +338,21 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ASTProgram& p){
             MainDeclaration().writeIL(program);
 
-            visit_each(*this, p.blocks);
+            visit_each(*this, p.Content->blocks);
 
             Methods().writeIL(program);
 
             pool.writeIL(program);
 
-            p.context->writeIL(program);
+            p.Content->context->writeIL(program);
         }
 
         void operator()(ASTFunctionDeclaration& function){
-            program.addInstruction(program.factory().createFunctionDeclaration(function.mangledName, function.context->size()));
+            program.addInstruction(program.factory().createFunctionDeclaration(function.Content->mangledName, function.Content->context->size()));
 
-            visit_each(*this, function.instructions);
+            visit_each(*this, function.Content->instructions);
 
-            program.addInstruction(program.factory().createFunctionExit(function.context->size()));
+            program.addInstruction(program.factory().createFunctionExit(function.Content->context->size()));
         }
 
         void operator()(GlobalVariableDeclaration&){
@@ -391,21 +363,21 @@ class CompilerVisitor : public boost::static_visitor<> {
             //TODO Make something accessible for others operations
             static int labels = 0;
 
-            if (if_.elseIfs.empty()) {
+            if (if_.Content->elseIfs.empty()) {
                 int a = labels++;
 
-                writeILJumpIfNot(program, if_.condition, "L", a);
+                writeILJumpIfNot(program, if_.Content->condition, "L", a);
 
-                visit_each(*this, if_.instructions);
+                visit_each(*this, if_.Content->instructions);
 
-                if (if_.else_) {
+                if (if_.Content->else_) {
                     int b = labels++;
 
                     program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", b)));
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
 
-                    visit_each(*this, (*if_.else_).instructions);
+                    visit_each(*this, (*if_.Content->else_).instructions);
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", b)));
                 } else {
@@ -415,20 +387,20 @@ class CompilerVisitor : public boost::static_visitor<> {
                 int end = labels++;
                 int next = labels++;
 
-                writeILJumpIfNot(program, if_.condition, "L", next);
+                writeILJumpIfNot(program, if_.Content->condition, "L", next);
 
-                visit_each(*this, if_.instructions);
+                visit_each(*this, if_.Content->instructions);
 
                 program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
 
-                for (std::vector<ASTElseIf>::size_type i = 0; i < if_.elseIfs.size(); ++i) {
-                    ASTElseIf& elseIf = if_.elseIfs[i];
+                for (std::vector<ASTElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
+                    ASTElseIf& elseIf = if_.Content->elseIfs[i];
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
                     //Last elseif
-                    if (i == if_.elseIfs.size() - 1) {
-                        if (if_.else_) {
+                    if (i == if_.Content->elseIfs.size() - 1) {
+                        if (if_.Content->else_) {
                             next = labels++;
                         } else {
                             next = end;
@@ -444,10 +416,10 @@ class CompilerVisitor : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
                 }
 
-                if (if_.else_) {
+                if (if_.Content->else_) {
                     program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
-                    visit_each(*this, (*if_.else_).instructions);
+                    visit_each(*this, (*if_.Content->else_).instructions);
                 }
 
                 program.addInstruction(program.factory().createLabel(eddic::label("L", end)));
@@ -455,45 +427,55 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTAssignment& assignment){
-            AssignValueToVariable visitor(assignment.context->getVariable(assignment.variableName), program);
-            boost::apply_visitor(visitor, assignment.value);
+            AssignValueToVariable visitor(assignment.Content->context->getVariable(assignment.Content->variableName), program);
+            boost::apply_visitor(visitor, assignment.Content->value);
         }
 
         void operator()(ASTDeclaration& declaration){
-            AssignValueToVariable visitor(declaration.context->getVariable(declaration.variableName), program);
-            boost::apply_visitor(visitor, declaration.value);
+            AssignValueToVariable visitor(declaration.Content->context->getVariable(declaration.Content->variableName), program);
+            boost::apply_visitor(visitor, declaration.Content->value);
         }
 
         void operator()(ASTSwap& swap){
-            //We have the guarantee here that both variables are of the same type
-            switch (swap.lhs_var->type()) {
-                case Type::INT:{
-                    auto registerA = createRegisterOperand("eax");
-                    auto registerB = createRegisterOperand("ebx");
-               
-                    program.addInstruction(program.factory().createMove(swap.lhs_var->toIntegerOperand(), registerA));
-                    program.addInstruction(program.factory().createMove(swap.rhs_var->toIntegerOperand(), registerB));
+            auto lhs_var = swap.Content->lhs_var;
+            auto rhs_var = swap.Content->rhs_var;
 
-                    program.addInstruction(program.factory().createMove(registerB, swap.lhs_var->toIntegerOperand()));
-                    program.addInstruction(program.factory().createMove(registerA, swap.rhs_var->toIntegerOperand()));
+            //We have the guarantee here that both variables are of the same type
+            switch (lhs_var->type()) {
+                case Type::INT:{
+                    auto registerA = program.registers(EAX);
+                    auto registerB = program.registers(EBX);
+              
+                    auto left = lhs_var->toIntegerOperand();
+                    auto right = rhs_var->toIntegerOperand();
+              
+                    //TODO Optimize, using only one register as temp 
+                    program.addInstruction(program.factory().createMove(left, registerA));
+                    program.addInstruction(program.factory().createMove(right, registerB));
+
+                    program.addInstruction(program.factory().createMove(registerB, left));
+                    program.addInstruction(program.factory().createMove(registerA, right));
 
                     break;
                 }
                 case Type::STRING:{
-                    auto registerA = createRegisterOperand("eax");
-                    auto registerB = createRegisterOperand("ebx");
-                    auto registerC = createRegisterOperand("ecx");
-                    auto registerD = createRegisterOperand("edx");
+                    auto registerA = program.registers(EAX);
+                    auto registerB = program.registers(EBX);
+                    auto registerC = program.registers(ECX);
+                    auto registerD = program.registers(EDX);
+                   
+                    auto left = lhs_var->toStringOperand();
+                    auto right = rhs_var->toStringOperand();
                     
-                    program.addInstruction(program.factory().createMove(swap.lhs_var->toStringOperand().first, registerA));
-                    program.addInstruction(program.factory().createMove(swap.lhs_var->toStringOperand().second, registerB));
-                    program.addInstruction(program.factory().createMove(swap.rhs_var->toStringOperand().first, registerC));
-                    program.addInstruction(program.factory().createMove(swap.rhs_var->toStringOperand().second, registerD));
+                    program.addInstruction(program.factory().createMove(left.first, registerA));
+                    program.addInstruction(program.factory().createMove(left.second, registerB));
+                    program.addInstruction(program.factory().createMove(right.first, registerC));
+                    program.addInstruction(program.factory().createMove(right.second, registerD));
                     
-                    program.addInstruction(program.factory().createMove(registerC, swap.lhs_var->toStringOperand().first));
-                    program.addInstruction(program.factory().createMove(registerD, swap.lhs_var->toStringOperand().second));
-                    program.addInstruction(program.factory().createMove(registerA, swap.rhs_var->toStringOperand().first));
-                    program.addInstruction(program.factory().createMove(registerB, swap.rhs_var->toStringOperand().second));
+                    program.addInstruction(program.factory().createMove(registerC, left.first));
+                    program.addInstruction(program.factory().createMove(registerD, left.second));
+                    program.addInstruction(program.factory().createMove(registerA, right.first));
+                    program.addInstruction(program.factory().createMove(registerB, right.second));
 
                     break;
                 }
@@ -511,9 +493,9 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             program.addInstruction(program.factory().createLabel(label("WL", startLabel)));
 
-            writeILJumpIfNot(program, while_.condition, "WL", endLabel);
+            writeILJumpIfNot(program, while_.Content->condition, "WL", endLabel);
 
-            visit_each(*this, while_.instructions);
+            visit_each(*this, while_.Content->instructions);
 
             program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("WL", startLabel)));
 
@@ -521,7 +503,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTFor for_){
-            visit_optional(*this, for_.start);
+            visit_optional(*this, for_.Content->start);
 
             static int labels = -1;
 
@@ -529,13 +511,13 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             program.addInstruction(program.factory().createLabel(label("start_for", labels)));
 
-            if(for_.condition){
-                writeILJumpIfNot(program, *for_.condition, "end_for", labels);
+            if(for_.Content->condition){
+                writeILJumpIfNot(program, *for_.Content->condition, "end_for", labels);
             }
 
-            visit_each(*this, for_.instructions);
+            visit_each(*this, for_.Content->instructions);
 
-            visit_optional(*this, for_.repeat);
+            visit_optional(*this, for_.Content->repeat);
 
             program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_for", labels)));
 
@@ -545,12 +527,12 @@ class CompilerVisitor : public boost::static_visitor<> {
         //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
         void operator()(ASTForeach& foreach){
             ASTInteger fromValue;
-            fromValue.value = foreach.from;
+            fromValue.value = foreach.Content->from;
             
             ASTInteger toValue;
-            toValue.value = foreach.to;
+            toValue.value = foreach.Content->to;
 
-            AssignValueToVariable visitor(foreach.context->getVariable(foreach.variableName), program);
+            AssignValueToVariable visitor(foreach.Content->context->getVariable(foreach.Content->variableName), program);
             
             //Assign the base value to the variable
             visit_non_variant(visitor, fromValue);
@@ -563,32 +545,31 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             //Create a condition
             ASTVariable v;
-            v.variableName = foreach.variableName;
-            v.context = foreach.context;
-            v.var = v.context->getVariable(foreach.variableName);
+            v.Content->variableName = foreach.Content->variableName;
+            v.Content->context = foreach.Content->context;
+            v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
         
             //Avoid doing all that conversion stuff...  
             ASTCondition condition; 
             ASTBinaryCondition binaryCondition; 
-            ASTLessEquals lessEquals;
-            lessEquals.lhs = v;
-            lessEquals.rhs = toValue;
+            binaryCondition.Content->lhs = v;
+            binaryCondition.Content->rhs = toValue;
+            binaryCondition.Content->op = "<=";
 
-            binaryCondition = lessEquals;
             condition = binaryCondition;
 
             writeILJumpIfNot(program, condition, "end_foreach", labels);
 
             //Write all the instructions
-            visit_each(*this, foreach.instructions);
+            visit_each(*this, foreach.Content->instructions);
 
             //Increment the variable
             ASTInteger inc;
             inc.value = 1;
            
             ASTComposedValue addition;
-            addition.first = v;
-            addition.operations.push_back(boost::tuples::tuple<char, ASTValue>('+', inc));
+            addition.Content->first = v;
+            addition.Content->operations.push_back(boost::tuples::tuple<char, ASTValue>('+', inc));
            
             visit_non_variant(visitor, addition);
             
@@ -599,45 +580,45 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ASTFunctionCall& functionCall){
             PushValue visitor(program);
-            for(auto& value : functionCall.values){
+            for(auto& value : functionCall.Content->values){
                 boost::apply_visitor(visitor, value);
             }
 
-            if(functionCall.functionName == "print" || functionCall.functionName == "println"){
-                Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.values[0]);
+            if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
+                Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
 
                 switch (type) {
                     case Type::INT:
                         program.addInstruction(program.factory().createCall("print_integer"));
-                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), createRegisterOperand("esp")));
+                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
 
                         break;
                     case Type::STRING:
                         program.addInstruction(program.factory().createCall("print_string"));
-                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), createRegisterOperand("esp")));
+                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
 
                         break;
                     default:
                         throw SemanticalException("Variable of invalid type");
                 }
     
-                if(functionCall.functionName == "println"){
+                if(functionCall.Content->functionName == "println"){
                     program.addInstruction(program.factory().createCall("print_line"));
                 }
             } else {
-                std::string mangled = mangle(functionCall.functionName, functionCall.values);
+                std::string mangled = mangle(functionCall.Content->functionName, functionCall.Content->values);
 
                 program.addInstruction(program.factory().createCall(mangled));
 
                 int total = 0;
 
-                for(auto& value : functionCall.values){
+                for(auto& value : functionCall.Content->values){
                     Type type = boost::apply_visitor(GetTypeVisitor(), value);   
 
                     total += size(type);
                 }
 
-                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), createRegisterOperand("esp")));
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), program.registers(ESP)));
             }
         }
 };

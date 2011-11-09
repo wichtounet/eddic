@@ -12,11 +12,14 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Node.hpp"
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
-struct ASTForeach : public Node {
+class Context;
+
+struct Foreach {
+    std::shared_ptr<Context> context;
     std::string variableType;
     std::string variableName;
     int from;
@@ -24,16 +27,18 @@ struct ASTForeach : public Node {
     std::vector<ASTInstruction> instructions;
 };
 
+typedef Deferred<Foreach> ASTForeach;
+
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ASTForeach, 
-    (std::string, variableType)
-    (std::string, variableName)
-    (int, from)
-    (int, to)
-    (std::vector<eddic::ASTInstruction>, instructions)
+    (std::string, Content->variableType)
+    (std::string, Content->variableName)
+    (int, Content->from)
+    (int, Content->to)
+    (std::vector<eddic::ASTInstruction>, Content->instructions)
 )
 
 #endif

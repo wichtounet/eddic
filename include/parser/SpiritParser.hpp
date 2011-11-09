@@ -10,9 +10,9 @@
 
 #include <string>
 
-namespace eddic {
+#include "ast/Program.hpp"
 
-class ASTProgram;
+namespace eddic {
 
 class SpiritParser {
     public:

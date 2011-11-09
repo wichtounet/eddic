@@ -11,13 +11,13 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_variant.hpp>
 
+#include "ast/values_def.hpp"
+
 #include "ast/Integer.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/Variable.hpp"
 
 namespace eddic {
-
-struct ASTComposedValue;
 
 typedef boost::variant<
             ASTInteger, 

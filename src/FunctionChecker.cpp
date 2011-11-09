@@ -30,9 +30,9 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         void operator()(ASTFunctionDeclaration& declaration){
             auto signature = std::make_shared<FunctionSignature>();
 
-            signature->name = declaration.functionName;
+            signature->name = declaration.Content->functionName;
 
-            for(auto& param : declaration.parameters){
+            for(auto& param : declaration.Content->parameters){
                 auto parameter = std::make_shared<ParameterType>();
                 parameter->name = param.parameterName;
                 parameter->paramType = stringToType(param.parameterType);
@@ -40,7 +40,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 signature->parameters.push_back(parameter);
             }
             
-            declaration.mangledName = signature->mangledName = mangle(declaration.functionName, signature->parameters);
+            declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
             //TODO Verifiy that the function has not been previously defined
 
@@ -72,16 +72,16 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ASTFunctionCall& functionCall){
-            std::string name = functionCall.functionName;
+            std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
                 return;
             }
 
-            std::string mangled = mangle(name, functionCall.values);
+            std::string mangled = mangle(name, functionCall.Content->values);
 
             if(!functionTable.exists(mangled)){
-                throw SemanticalException("The function \"" + functionCall.functionName + "()\" does not exists");
+                throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
             }
             //TODO
         }

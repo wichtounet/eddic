@@ -12,5 +12,5 @@ using namespace eddic;
 RegisterOperand::RegisterOperand(std::string reg) : Operand(OperandType::REGISTER), m_register(reg) {}
 
 std::string RegisterOperand::getValue(){
-    return "%" + m_register;
+    return m_register;
 }

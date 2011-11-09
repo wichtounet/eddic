@@ -25,10 +25,10 @@ Type GetTypeVisitor::operator()(const ASTInteger&) const {
 }
 
 Type GetTypeVisitor::operator()(const ASTVariable& variable) const {
-    return variable.context->getVariable(variable.variableName)->type();
+    return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
 
 Type GetTypeVisitor::operator()(const ASTComposedValue& value) const {
     //No need to recurse into operations because type are enforced in the check variables phase
-    return boost::apply_visitor(*this, value.first);
+    return boost::apply_visitor(*this, value.Content->first);
 }

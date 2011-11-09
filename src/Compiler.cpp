@@ -89,11 +89,8 @@ int Compiler::compile(const string& file) {
             IntermediateProgram il;
             writeIL(program, pool, il);
 
-            AssemblyFileWriter writer("output.asm");
-
-            //Write assembly code
-            il.writeAsm(writer);
-            writer.write();
+            //Write assembly to file
+            writeAsm(il, "output.asm");
 
             if(!options.count("assembly")){
                 execCommand("as --32 -o output.o output.asm");
@@ -154,6 +151,14 @@ void eddic::writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& 
     DebugTimer<debug> timer("Compile into intermediate level");
     IntermediateCompiler compiler;
     compiler.compile(program, pool, intermediateProgram);
+}
+            
+void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
+    DebugTimer<debug> timer("Write assembly");
+    AssemblyFileWriter writer(file);
+
+    il.writeAsm(writer);
+    writer.write();
 }
 
 void eddic::execCommand(const string& command) {

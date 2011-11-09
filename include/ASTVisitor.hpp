@@ -14,39 +14,16 @@
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ASTBinaryCondition& binaryCondition){\
-    visit(*this, binaryCondition);\
+    visit(*this, binaryCondition.Content->lhs);\
+    visit(*this, binaryCondition.Content->rhs);\
 }\
-void operator()(ASTEquals& equals){\
-    visit(*this, equals.lhs);\
-    visit(*this, equals.rhs);\
-}\
-void operator()(ASTNotEquals& notEquals){\
-    visit(*this, notEquals.lhs);\
-    visit(*this, notEquals.rhs);\
-}\
-void operator()(ASTLess& less){\
-    visit(*this, less.lhs);\
-    visit(*this, less.rhs);\
-}\
-void operator()(ASTLessEquals& less){\
-    visit(*this, less.lhs);\
-    visit(*this, less.rhs);\
-}\
-void operator()(ASTGreater& greater){\
-    visit(*this, greater.lhs);\
-    visit(*this, greater.rhs);\
-}\
-void operator()(ASTGreaterEquals& greater){\
-    visit(*this, greater.lhs);\
-    visit(*this, greater.rhs);\
-}
 
 #define AUTO_RECURSE_BRANCHES()\
 void operator()(ASTIf& if_){\
-    visit(*this, if_.condition);\
-    visit_each(*this, if_.instructions);\
-    visit_each_non_variant(*this, if_.elseIfs);\
-    visit_optional_non_variant(*this, if_.else_);\
+    visit(*this, if_.Content->condition);\
+    visit_each(*this, if_.Content->instructions);\
+    visit_each_non_variant(*this, if_.Content->elseIfs);\
+    visit_optional_non_variant(*this, if_.Content->else_);\
 }\
 void operator()(ASTElseIf& elseIf){\
     visit(*this, elseIf.condition);\
@@ -58,54 +35,54 @@ void operator()(ASTElse& else_){\
 
 #define AUTO_RECURSE_SIMPLE_LOOPS()\
 void operator()(ASTFor& for_){\
-    visit_optional(*this, for_.start);\
-    visit_optional(*this, for_.condition);\
-    visit_optional(*this, for_.repeat);\
-    visit_each(*this, for_.instructions);\
+    visit_optional(*this, for_.Content->start);\
+    visit_optional(*this, for_.Content->condition);\
+    visit_optional(*this, for_.Content->repeat);\
+    visit_each(*this, for_.Content->instructions);\
 }\
 void operator()(ASTWhile& while_){\
-    visit(*this, while_.condition);\
-    visit_each(*this, while_.instructions);\
+    visit(*this, while_.Content->condition);\
+    visit_each(*this, while_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_FOREACH()\
 void operator()(ASTForeach& foreach_){\
-    visit_each(*this, foreach_.instructions);\
+    visit_each(*this, foreach_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ASTAssignment& assignment){\
-    visit(*this, assignment.value);\
+    visit(*this, assignment.Content->value);\
 }\
 void operator()(ASTDeclaration& declaration){\
-    visit(*this, declaration.value);\
+    visit(*this, declaration.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ASTFunctionCall& functionCall){\
-    visit_each(*this, functionCall.values);\
+    visit_each(*this, functionCall.Content->values);\
 }
 
 #define AUTO_RECURSE_COMPOSED_VALUES()\
 void operator()(ASTComposedValue& value){\
-    visit(*this, value.first);\
-    for_each(value.operations.begin(), value.operations.end(), \
+    visit(*this, value.Content->first);\
+    for_each(value.Content->operations.begin(), value.Content->operations.end(), \
         [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });\
 }
 
 #define AUTO_RECURSE_PROGRAM()\
 void operator()(ASTProgram& program){\
-    visit_each(*this, program.blocks);\
+    visit_each(*this, program.Content->blocks);\
 }
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
 void operator()(ASTFunctionDeclaration& function){\
-    visit_each(*this, function.instructions);\
+    visit_each(*this, function.Content->instructions);\
 }
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(GlobalVariableDeclaration& declaration){\
-    visit(*this, declaration.value);\
+    visit(*this, declaration.Content->value);\
 }
 
 #endif

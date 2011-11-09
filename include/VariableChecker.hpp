@@ -8,9 +8,9 @@
 #ifndef VARIABLE_CHECKER_H
 #define VARIABLE_CHECKER_H
 
-namespace eddic {
+#include "ast/Program.hpp"
 
-class ASTProgram;
+namespace eddic {
 
 struct VariableChecker {
     void check(ASTProgram& program);

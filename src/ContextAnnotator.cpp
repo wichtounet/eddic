@@ -37,15 +37,19 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         
         void operator()(ASTProgram& program){
-            program.context = currentContext = globalContext = std::make_shared<GlobalContext>();
+            program.Content->context = currentContext = globalContext = std::make_shared<GlobalContext>();
 
-            visit_each(*this, program.blocks);
+            visit_each(*this, program.Content->blocks);
+        }
+
+        void operator()(GlobalVariableDeclaration& declaration){
+            declaration.Content->context = currentContext;
         }
 
         void operator()(ASTFunctionDeclaration& function){
-            currentContext = function.context = functionContext = std::make_shared<FunctionContext>(currentContext);
+            currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
 
-            visit_each(*this, function.instructions);
+            visit_each(*this, function.Content->instructions);
     
             currentContext = currentContext->parent();
         }
@@ -53,9 +57,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTWhile& while_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
             
-            visit(*this, while_.condition);
+            visit(*this, while_.Content->condition);
 
-            visit_each(*this, while_.instructions);
+            visit_each(*this, while_.Content->instructions);
             
             currentContext = currentContext->parent();
         }
@@ -63,11 +67,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTFor& for_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
           
-            visit_optional(*this, for_.start);
-            visit_optional(*this, for_.condition);
-            visit_optional(*this, for_.repeat);
+            visit_optional(*this, for_.Content->start);
+            visit_optional(*this, for_.Content->condition);
+            visit_optional(*this, for_.Content->repeat);
             
-            visit_each(*this, for_.instructions);
+            visit_each(*this, for_.Content->instructions);
             
             currentContext = currentContext->parent();
         }
@@ -75,9 +79,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTForeach& foreach){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            foreach.context = currentContext;
+            foreach.Content->context = currentContext;
             
-            visit_each(*this, foreach.instructions);
+            visit_each(*this, foreach.Content->instructions);
              
             currentContext = currentContext->parent();
         }
@@ -85,14 +89,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ASTIf& if_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            visit(*this, if_.condition);
+            visit(*this, if_.Content->condition);
             
-            visit_each(*this, if_.instructions);
+            visit_each(*this, if_.Content->instructions);
             
             currentContext = currentContext->parent();
             
-            visit_each_non_variant(*this, if_.elseIfs);
-            visit_optional_non_variant(*this, if_.else_);
+            visit_each_non_variant(*this, if_.Content->elseIfs);
+            visit_optional_non_variant(*this, if_.Content->else_);
         }
 
         void operator()(ASTElseIf& elseIf){
@@ -114,19 +118,23 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ASTDeclaration& declaration){
-            declaration.context = currentContext;
+            declaration.Content->context = currentContext;
             
-            visit(*this, declaration.value);
+            visit(*this, declaration.Content->value);
         }
         
         void operator()(ASTAssignment& assignment){
-            assignment.context = currentContext;
+            assignment.Content->context = currentContext;
 
-            visit(*this, assignment.value);
+            visit(*this, assignment.Content->value);
         }
         
-        void operator()(Node& node){
-            node.context = currentContext;
+        void operator()(ASTSwap& swap){
+            swap.Content->context = currentContext;
+        }
+        
+        void operator()(ASTVariable& variable){
+            variable.Content->context = currentContext;
         }
         
         void operator()(TerminalNode&){

@@ -12,6 +12,8 @@
 #include <memory>
 
 #include "il/InstructionFactory.hpp"
+#include "il/Operands.hpp"
+#include "il/Register.hpp"
 
 namespace eddic {
 
@@ -27,6 +29,7 @@ class IntermediateProgram {
         IntermediateProgram();
 
         const InstructionFactory& factory();
+        std::shared_ptr<Operand> registers(Register reg);
 
         void addInstruction(std::shared_ptr<Instruction> instruction);
         void writeAsm(AssemblyFileWriter& writer);

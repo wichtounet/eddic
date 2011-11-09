@@ -36,111 +36,111 @@ struct CheckerVisitor : public boost::static_visitor<> {
    
     void operator()(ASTFunctionDeclaration& declaration){
         //Add all the parameters to the function context
-        for(auto& parameter : declaration.parameters){
+        for(auto& parameter : declaration.Content->parameters){
             Type type = stringToType(parameter.parameterType);
             
-            declaration.context->addParameter(parameter.parameterName, type);    
+            declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
 
-        visit_each(*this, declaration.instructions);
+        visit_each(*this, declaration.Content->instructions);
     }
     
     void operator()(GlobalVariableDeclaration& declaration){
-        if (declaration.context->exists(declaration.variableName)) {
-            throw SemanticalException("The global Variable " + declaration.variableName + " has already been declared");
+        if (declaration.Content->context->exists(declaration.Content->variableName)) {
+            throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!boost::apply_visitor(IsConstantVisitor(), declaration.value)){
+        if(!boost::apply_visitor(IsConstantVisitor(), declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
-        Type type = stringToType(declaration.variableType); 
+        Type type = stringToType(declaration.Content->variableType); 
 
-        declaration.context->addVariable(declaration.variableName, type, declaration.value);
+        declaration.Content->context->addVariable(declaration.Content->variableName, type, declaration.Content->value);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.Content->value);
         if (valueType != type) {
-            throw SemanticalException("Incompatible type for global variable " + declaration.variableName);
+            throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }
     }
     
     void operator()(ASTForeach& foreach){
-        if(foreach.context->exists(foreach.variableName)){
-            throw SemanticalException("The foreach variable " + foreach.variableName  + " has already been declared");
+        if(foreach.Content->context->exists(foreach.Content->variableName)){
+            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared");
         }
 
-        foreach.context->addVariable(foreach.variableName, stringToType(foreach.variableType));
+        foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
 
-        visit_each(*this, foreach.instructions);
+        visit_each(*this, foreach.Content->instructions);
     }
 
     void operator()(ASTAssignment& assignment){
-        if (!assignment.context->exists(assignment.variableName)) {
-            throw SemanticalException("Variable " + assignment.variableName + " has not  been declared");
+        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
+            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
         }
 
-        visit(*this, assignment.value);
+        visit(*this, assignment.Content->value);
 
-        std::shared_ptr<Variable> var = assignment.context->getVariable(assignment.variableName);
+        std::shared_ptr<Variable> var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
-            throw SemanticalException("Incompatible type in assignment of variable " + assignment.variableName);
+            throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
         }
     }
     
     void operator()(ASTDeclaration& declaration){
-        if (declaration.context->exists(declaration.variableName)) {
-            throw SemanticalException("Variable " + declaration.variableName + " has already been declared");
+        if (declaration.Content->context->exists(declaration.Content->variableName)) {
+            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
 
-        Type variableType = stringToType(declaration.variableType);
-        declaration.context->addVariable(declaration.variableName, variableType);
+        Type variableType = stringToType(declaration.Content->variableType);
+        declaration.Content->context->addVariable(declaration.Content->variableName, variableType);
 
-        visit(*this, declaration.value);
+        visit(*this, declaration.Content->value);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.Content->value);
         if (valueType != variableType) {
-            throw SemanticalException("Incompatible type in declaration of variable " + declaration.variableName);
+            throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName);
         }
     }
     
     void operator()(ASTSwap& swap){
-        if (swap.lhs == swap.rhs) {
+        if (swap.Content->lhs == swap.Content->rhs) {
             throw SemanticalException("Cannot swap a variable with itself");
         }
 
-        if (!swap.context->exists(swap.lhs) || !swap.context->exists(swap.rhs)) {
+        if (!swap.Content->context->exists(swap.Content->lhs) || !swap.Content->context->exists(swap.Content->rhs)) {
             throw SemanticalException("Variable has not been declared in the swap");
         }
 
-        swap.lhs_var = swap.context->getVariable(swap.lhs);
-        swap.rhs_var = swap.context->getVariable(swap.rhs);
+        swap.Content->lhs_var = swap.Content->context->getVariable(swap.Content->lhs);
+        swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
 
-        if (swap.lhs_var->type() != swap.rhs_var->type()) {
+        if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
             throw SemanticalException("Swap of variables of incompatible type");
         }
     }
 
     void operator()(ASTVariable& variable){
-        if (!variable.context->exists(variable.variableName)) {
-            throw SemanticalException("Variable " + variable.variableName + " has not been declared");
+        if (!variable.Content->context->exists(variable.Content->variableName)) {
+            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared");
         }
 
-        variable.var = variable.context->getVariable(variable.variableName);
+        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
     }
 
     void operator()(ASTComposedValue& value){
-        visit(*this, value.first);
+        visit(*this, value.Content->first);
         
-        for_each(value.operations.begin(), value.operations.end(), 
+        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
             [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });
 
         GetTypeVisitor visitor;
 
-        Type type = boost::apply_visitor(visitor, value.first);
+        Type type = boost::apply_visitor(visitor, value.Content->first);
 
-        for(auto& operation : value.operations){
+        for(auto& operation : value.Content->operations){
             Type operationType = boost::apply_visitor(visitor, operation.get<1>());
 
             if(type != operationType){

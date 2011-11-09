@@ -5,27 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_GREATER_H
-#define AST_GREATER_H
+#ifndef VALUES_DEF_H
+#define VALUES_DEF_H
 
-#include <boost/fusion/include/adapt_struct.hpp>
-
-#include "ast/Value.hpp"
+#include <boost/intrusive_ptr.hpp>
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
-struct ASTGreater {
-    ASTValue lhs;
-    ASTValue rhs;
-};
+struct ASTInteger;
+struct ASTLitteral;
+
+struct TmpVariable;
+typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;
+
+struct ComposedValue;
+typedef Deferred<ComposedValue, boost::intrusive_ptr<ComposedValue>> ASTComposedValue;
 
 } //end of eddic
-
-//Adapt the struct for the AST
-BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTGreater, 
-    (eddic::ASTValue, lhs)
-    (eddic::ASTValue, rhs)
-)
 
 #endif

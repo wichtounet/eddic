@@ -16,15 +16,11 @@
 using namespace eddic;
 
 std::shared_ptr<Operand> eddic::createImmediateOperand(int value){
-    return std::make_shared<ImmediateOperand>(value);
+    return std::make_shared<ImmediateIntegerOperand>(value);
 }
 
 std::shared_ptr<Operand> eddic::createImmediateOperand(std::string value){
-    return std::make_shared<ImmediateOperand>(value);
-}
-
-std::shared_ptr<Operand> eddic::createRegisterOperand(std::string reg){
-    return std::make_shared<RegisterOperand>(reg);
+    return std::make_shared<ImmediateStringOperand>(value);
 }
 
 std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label){
