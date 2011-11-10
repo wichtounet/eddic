@@ -27,19 +27,23 @@ struct ParameterType {
     }
 };
 
-struct FunctionSignature {
+struct Function {
     std::string name;
     std::string mangledName;
     std::vector<std::shared_ptr<ParameterType>> parameters;
+    int references;
 };
 
 class FunctionTable {
     private:
-        std::unordered_map<std::string, std::shared_ptr<FunctionSignature>> functions;
+        std::unordered_map<std::string, std::shared_ptr<Function>> functions;
 
     public:
-        void addFunction(std::shared_ptr<FunctionSignature> function);
+        void addFunction(std::shared_ptr<Function> function);
         bool exists(const std::string& function);
+
+        void addReference(const std::string& function);
+        int referenceCount(const std::string& function);
 };
 
 } //end of eddic

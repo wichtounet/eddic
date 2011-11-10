@@ -28,7 +28,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ASTFunctionDeclaration& declaration){
-            auto signature = std::make_shared<FunctionSignature>();
+            auto signature = std::make_shared<Function>();
 
             signature->name = declaration.Content->functionName;
 
