@@ -2,10 +2,10 @@
 int ga = 1000;
 string gb = "Global Variable b"; 
 
-int global_unused = 2222;
+int globalUnused = 2222;
 
 void main(){
-    int local_unused = 8989;
+    int localUnused = 8989;
 
     string x = "ED" + "DI";
     println(x);
