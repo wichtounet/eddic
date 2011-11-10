@@ -39,6 +39,9 @@ class FunctionTable {
         std::unordered_map<std::string, std::shared_ptr<Function>> functions;
 
     public:
+        FunctionTable();
+        FunctionTable(const FunctionTable& rhs) = delete;
+
         void addFunction(std::shared_ptr<Function> function);
         bool exists(const std::string& function);
 

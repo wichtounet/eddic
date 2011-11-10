@@ -37,7 +37,8 @@ class Context {
         static int currentVariable;
 
     public:
-        Context(std::shared_ptr<Context> parent);
+        explicit Context(std::shared_ptr<Context> parent);
+        Context(const Context& rhs) = delete;
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ASTValue& value);

@@ -9,6 +9,8 @@
 
 using namespace eddic;
 
+FunctionTable::FunctionTable(){}
+
 void FunctionTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;
     function->references = 0;
