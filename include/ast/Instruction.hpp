@@ -9,7 +9,6 @@
 #define AST_INSTRUCTION_H
 
 #include <boost/variant/variant.hpp>
-#include <boost/variant/recursive_variant.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
@@ -36,10 +35,10 @@ typedef boost::variant<
             ASTSwap, 
             ASTDeclaration,
             ASTAssignment, 
-            boost::recursive_wrapper<ASTIf>,
-            boost::recursive_wrapper<ASTWhile>,
-            boost::recursive_wrapper<ASTForeach>,
-            boost::recursive_wrapper<ASTFor>>
+            ASTIf, 
+            ASTWhile, 
+            ASTForeach, 
+            ASTFor>
         ASTInstruction;
 
 } //end of eddic
