@@ -16,6 +16,9 @@
 
 #include "mangling.hpp"
 
+#include "Options.hpp"
+#include "Compiler.hpp"
+
 using namespace eddic;
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
@@ -82,6 +85,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             if(!functionTable.exists(mangled)){
                 throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
+            } else {
+                functionTable.addReference(mangled);
             }
         }
         
@@ -98,6 +103,30 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
+class FunctionInspector : public boost::static_visitor<> {
+    private:
+        FunctionTable& functionTable;
+
+    public:
+        FunctionInspector(FunctionTable& table) : functionTable(table) {}
+
+        void operator()(ASTProgram& program){
+            visit_each(*this, program.Content->blocks);
+        }
+
+        void operator()(ASTFunctionDeclaration& declaration){
+            int references = functionTable.referenceCount(declaration.Content->mangledName);
+
+            if(declaration.Content->functionName != "main" && references == 0){
+                warn("unused function '" + declaration.Content->functionName + "'");
+            }
+        }
+
+        void operator()(GlobalVariableDeclaration&){
+            //Nothing to warn about there
+        }
+};
+
 void FunctionChecker::check(ASTProgram& program, FunctionTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
@@ -106,4 +135,10 @@ void FunctionChecker::check(ASTProgram& program, FunctionTable& functionTable){
     //Second phase : Verify calls
     FunctionCheckerVisitor checkerVisitor(functionTable);
     checkerVisitor(program);
+
+    if(WarningUnused){
+        //Third phase, warnings
+        FunctionInspector inspector(functionTable);
+        inspector(program);
+    }
 }
