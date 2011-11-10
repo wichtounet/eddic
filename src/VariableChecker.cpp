@@ -23,6 +23,7 @@
 #include "Variable.hpp"
 
 #include "Compiler.hpp"
+#include "Options.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
@@ -201,9 +202,11 @@ struct UnusedInspector : public boost::static_visitor<> {
 };
 
 void VariableChecker::check(ASTProgram& program){
-   CheckerVisitor visitor;
-   visit_non_variant(visitor, program);
+    CheckerVisitor visitor;
+    visit_non_variant(visitor, program);
 
-   UnusedInspector inspector;
-   visit_non_variant(inspector, program);
+    if(WarningUnused){
+        UnusedInspector inspector;
+        visit_non_variant(inspector, program);
+    }
 }
