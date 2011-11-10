@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#define DEBUG
-
 #ifdef DEBUG
 static const bool debug = true;
 #else
