@@ -74,3 +74,11 @@ std::shared_ptr<Variable> Context::getVariable(int index) const {
 
     return iter->second;
 }
+        
+Context::StoredVariables::const_iterator Context::begin(){
+    return m_stored.cbegin();
+}
+
+Context::StoredVariables::const_iterator Context::end(){
+    return m_stored.cend();
+}

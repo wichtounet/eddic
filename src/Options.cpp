@@ -15,6 +15,8 @@ using namespace eddic;
 bool eddic::OptimizeIntegers;
 bool eddic::OptimizeStrings;
 
+bool eddic::WarningUnused;
+
 po::variables_map eddic::options;
 
 po::options_description desc("Usage : edic [options]");
@@ -26,9 +28,14 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("assembly,S", "Generate only the assembly")
             ("version", "Print the version of eddic")
             ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
+            
             ("optimize-all", "Enable all optimizations")
             ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
             ("optimize-integers", po::bool_switch(&OptimizeIntegers), "Enable the optimizations on integers")
+            
+            ("warning-all", "Enable all the warnings")
+            ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
+           
             ("input", po::value<std::string>(), "Input file");
 
         po::positional_options_description p;
@@ -39,6 +46,10 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         if(options.count("optimize-all")){
             OptimizeStrings = OptimizeIntegers = true;
+        }
+
+        if(options.count("warning-all")){
+            WarningUnused = true;
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;

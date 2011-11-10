@@ -33,6 +33,9 @@ struct Compiler {
     int compile (const std::string& file);
 };
 
+//Utility for other classes
+void warn(const std::string& warning);
+
 } //end of eddic
 
 #endif

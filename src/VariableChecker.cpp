@@ -22,6 +22,9 @@
 #include "Types.hpp"
 #include "Variable.hpp"
 
+#include "Compiler.hpp"
+#include "Options.hpp"
+
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
@@ -81,12 +84,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         visit(*this, assignment.Content->value);
 
-        std::shared_ptr<Variable> var = assignment.Content->context->getVariable(assignment.Content->variableName);
+        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
         }
+
+        var->addReference();
     }
     
     void operator()(ASTDeclaration& declaration){
@@ -120,6 +125,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
             throw SemanticalException("Swap of variables of incompatible type");
         }
+
+        //Reference both variables
+        swap.Content->lhs_var->addReference();
+        swap.Content->rhs_var->addReference();
     }
 
     void operator()(ASTVariable& variable){
@@ -128,6 +137,9 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
 
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
+
+        //Reference the variable
+        variable.Content->var->addReference();
     }
 
     void operator()(ASTComposedValue& value){
@@ -154,7 +166,47 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
+struct UnusedInspector : public boost::static_visitor<> {
+    void check(std::shared_ptr<Context> context){
+        auto iter = context->begin();
+        auto end = context->end();
+
+        for(; iter != end; iter++){
+            auto var = iter->second;
+
+            if(var->referenceCount() == 0){
+                if(var->position().isStack()){
+                    warn("unused variable '" + var->name() + "'");
+                } else if(var->position().isGlobal()){
+                    warn("unused global variable '" + var->name() + "'");
+                } else if(var->position().isParameter()){
+                    warn("unused parameter '" + var->name() + "'");
+                }
+            }
+        }
+    }
+
+    void operator()(ASTProgram& program){
+        check(program.Content->context);
+        
+        visit_each(*this, program.Content->blocks);
+    }
+
+    void operator()(ASTFunctionDeclaration& function){
+        check(function.Content->context);
+    }
+
+    void operator()(GlobalVariableDeclaration&){
+        //Nothing to check there
+    }
+};
+
 void VariableChecker::check(ASTProgram& program){
-   CheckerVisitor visitor;
-   visitor(program); 
+    CheckerVisitor visitor;
+    visit_non_variant(visitor, program);
+
+    if(WarningUnused){
+        UnusedInspector inspector;
+        visit_non_variant(inspector, program);
+    }
 }
