@@ -39,6 +39,10 @@ Val Variable::val() const {
     return v_value;
 }
 
+void Variable::addReference(){
+    ++references;
+}
+
 std::shared_ptr<Operand> Variable::toIntegerOperand(){
     assert(m_type == Type::INT); 
     
