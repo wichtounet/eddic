@@ -33,8 +33,8 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
             ("optimize-integers", po::bool_switch(&OptimizeIntegers), "Enable the optimizations on integers")
             
-            ("warning-all,Wall", "Enable all the warnings")
-            ("warning-unused,Wunused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
+            ("warning-all", "Enable all the warnings")
+            ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
            
             ("input", po::value<std::string>(), "Input file");
 
