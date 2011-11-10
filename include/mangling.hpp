@@ -13,9 +13,16 @@
 #include <sstream>
 #include <memory>
 
+#include "ast/Program.hpp"
+
+#include <boost/variant/apply_visitor.hpp>
+#include "GetTypeVisitor.hpp"
+
 #include "Types.hpp"
 
 namespace eddic {
+
+std::string mangle(Type type);
 
 template<typename T>
 std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<T>>& typed){
@@ -36,7 +43,7 @@ std::string mangle(const std::string& functionName, const std::vector<std::share
     return ss.str();
 }
 
-std::string mangle(Type type);
+std::string mangle(const std::string& functionName, const std::vector<ASTValue>& values);
 
 } //end of eddic
 

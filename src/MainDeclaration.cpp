@@ -5,19 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-
 #include "MainDeclaration.hpp"
-#include "AssemblyFileWriter.hpp"
+
+#include "il/IntermediateProgram.hpp"
+#include "il/Main.hpp"
 
 using namespace eddic;
 
-using std::endl;
-        
-MainDeclaration::MainDeclaration(std::shared_ptr<Context> context) : ParseNode(context) {}
-
-void MainDeclaration::write(AssemblyFileWriter& writer){
-    writer.stream() << ".text" << endl
-                    << ".globl main" << endl
-                    << "\t.type main, @function" << endl;
+void MainDeclaration::writeIL(IntermediateProgram& program){
+    program.addInstruction(program.factory().createMainDeclaration());
 }

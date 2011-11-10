@@ -8,20 +8,22 @@
 #ifndef ASSEMBLY_FILE_READER_H
 #define ASSEMBLY_FILE_READER_H
 
+#include <sstream>
 #include <fstream>
-
-#include "CompilerException.hpp"
 
 namespace eddic {
 
 class AssemblyFileWriter {
     private:
         std::ofstream m_stream;
+        std::stringstream buffer;
 	
     public:		
-        void open(const std::string& path) ;
-        void close();
-        std::ofstream& stream();
+        AssemblyFileWriter(const std::string& path);
+        ~AssemblyFileWriter();
+        
+        std::stringstream& stream();
+        void write();
 };
 
 } //end of eddic

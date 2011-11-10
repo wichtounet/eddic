@@ -8,47 +8,47 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
+#include <utility>
 #include <string>
 #include <map>
 #include <vector>
 #include <memory>
 
-#include <unordered_map>
-#include <unordered_set>
+#include <boost/variant/variant.hpp>
 
 #include "Types.hpp"
 
-#include "AssemblyFileWriter.hpp"
 #include "Position.hpp"
 
 namespace eddic {
 
 class Value;
+class IntermediateProgram;
+class Operand;
+
+typedef std::shared_ptr<Operand> OperandPtr;
+
+typedef boost::variant<int, std::pair<std::string, int>> Val;
 
 class Variable {
     private:
         const std::string m_name;
         const Type m_type;
         Position m_position;
-        std::shared_ptr<Value> m_value;
+        Val v_value;
 
     public:
         Variable(const std::string& name, Type type, Position position);
-        Variable(const std::string& name, Type type, Position position, std::shared_ptr<Value> value);
+        Variable(const std::string& name, Type type, Position position, Val value);
 
-        void moveToRegister(AssemblyFileWriter& writer, const std::string& reg);
-        void moveToRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2);
-
-        void moveFromRegister(AssemblyFileWriter& writer, const std::string& reg);
-        void moveFromRegister(AssemblyFileWriter& writer, const std::string& reg1, const std::string& reg2);
-
-        void pushToStack(AssemblyFileWriter& writer);
-        void popFromStack(AssemblyFileWriter& writer);
+        OperandPtr toIntegerOperand();
+        std::pair<OperandPtr, OperandPtr> toStringOperand();
 
         std::string name() const ;
         Type type() const ;
         Position position() const ;
-        std::shared_ptr<Value> value() const ;
+
+        Val val() const ;
 };
 
 } //end of eddic

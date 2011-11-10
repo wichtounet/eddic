@@ -8,15 +8,13 @@
 #ifndef METHODS_H
 #define METHODS_H
 
-#include "ParseNode.hpp"
-
 namespace eddic {
 
-class Methods : public ParseNode {
-    public:
-        Methods(std::shared_ptr<Context> context) : ParseNode(context) {}
+class IntermediateProgram;
 
-        void write(AssemblyFileWriter& writer);
+class Methods {
+    public:
+        void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

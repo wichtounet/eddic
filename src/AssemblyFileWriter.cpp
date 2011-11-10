@@ -7,24 +7,26 @@
 
 #include "AssemblyFileWriter.hpp"
 
-using std::string;
-using std::ios;
-using std::endl;
+#include "SemanticalException.hpp"
 
 using namespace eddic;
 
-void AssemblyFileWriter::open(const std::string& path) {
+AssemblyFileWriter::AssemblyFileWriter(const std::string& path) {
     m_stream.open(path.c_str());
 
     if (!m_stream) {
-        throw CompilerException("Unable to open the output file");
+        throw SemanticalException("Unable to open the output file");
     }
 }
 
-void AssemblyFileWriter::close() {
+AssemblyFileWriter::~AssemblyFileWriter() {
     m_stream.close();
 }
 
-std::ofstream& AssemblyFileWriter::stream() {
-    return m_stream;
+std::stringstream& AssemblyFileWriter::stream() {
+    return buffer;
+}
+
+void AssemblyFileWriter::write(){
+    m_stream.write(buffer.str().c_str(), buffer.str().length());
 }

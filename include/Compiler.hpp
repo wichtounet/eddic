@@ -10,18 +10,27 @@
 
 #include <string>
 
-#include "Lexer.hpp"
-#include "AssemblyFileWriter.hpp"
+#include "ast/Program.hpp"
 
 namespace eddic {
 
-class Compiler {
-    private:
-        Lexer lexer;
-        AssemblyFileWriter writer;
+class StringPool;
+class FunctionTable;
+class IntermediateProgram;
 
-    public:
-        int compile (const std::string& file);
+void defineContexts(ASTProgram& program);
+
+void checkVariables(ASTProgram& program);
+void checkStrings(ASTProgram& program, StringPool& pool);
+void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
+void optimize(ASTProgram& program);
+void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
+void writeAsm(IntermediateProgram& il, const std::string& file);
+
+void execCommand(const std::string& command);
+
+struct Compiler {
+    int compile (const std::string& file);
 };
 
 } //end of eddic

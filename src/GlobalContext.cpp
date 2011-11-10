@@ -7,11 +7,18 @@
 
 #include <algorithm>
 #include <functional>
+#include <utility>
+
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/get.hpp>
 
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
-#include "Value.hpp"
+
+#include "il/IntermediateProgram.hpp"
+
+#include "GetConstantValue.hpp"
 
 using std::map;
 using std::string;
@@ -20,29 +27,28 @@ using std::vector;
 
 using namespace eddic;
 
-void GlobalContext::write(AssemblyFileWriter& writer){
+void GlobalContext::writeIL(IntermediateProgram& program){
     for(auto it : m_stored){
         if (it.second->type() == Type::INT) {
-            writer.stream() << ".size VI" << it.second->position().name() << ", 4" << endl;
-            writer.stream() << "VI" << it.second->position().name() << ":" << endl;
-            writer.stream() << ".long " << it.second->value()->getIntValue() << endl;
+            program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
         } else if (it.second->type() == Type::STRING) {
-            writer.stream() << ".size VS" << it.second->position().name() << ", 8" << endl;
-            writer.stream() << "VS" << it.second->position().name() << ":" << endl;
-            writer.stream() << ".long " << it.second->value()->getStringLabel() << endl;
-            writer.stream() << ".long " << it.second->value()->getStringSize() << endl;
+            auto value = boost::get<std::pair<std::string, int>>(it.second->val());
+            program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
         }
     }
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
-    throw CompilerException("A global variable must have a value");
+    //A global variable must have a value
+    assert(false);
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, std::shared_ptr<Value> value){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ASTValue& value){
     Position position(GLOBAL, variable);
 
-    std::shared_ptr<Variable> v(new Variable(variable, type, position, value));
+    auto val = boost::apply_visitor(GetConstantValue(), value);
+
+    auto v = std::make_shared<Variable>(variable, type, position, val);
 
     m_visibles[variable] = currentVariable;
 
