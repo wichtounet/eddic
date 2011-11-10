@@ -12,7 +12,7 @@ static const bool debug = false;
 #endif
 
 #define TIMER_START(name) Timer name_timer; 
-#define TIMER_END(name) std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;
+#define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
 
 #include <iostream>
 #include <cstdio>
