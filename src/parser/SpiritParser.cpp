@@ -292,8 +292,6 @@ bool SpiritParser::parse(const std::string& file, ASTProgram& program){
         bool r = lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);
 
         if(r && position_begin == position_end) {
-            std::cout << "Parsing passed" << std::endl;
-            
             return true;
         } else {
             std::cout << "Parsing failed" << std::endl;

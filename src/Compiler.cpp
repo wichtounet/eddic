@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#define DEBUG
-
 #ifdef DEBUG
 static const bool debug = true;
 #else
@@ -14,7 +12,7 @@ static const bool debug = false;
 #endif
 
 #define TIMER_START(name) Timer name_timer; 
-#define TIMER_END(name) std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;
+#define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
 
 #include <iostream>
 #include <cstdio>
@@ -164,7 +162,10 @@ void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
 
 void eddic::execCommand(const string& command) {
     DebugTimer<debug> timer("Exec " + command);
-    cout << "eddic : exec command : " << command << endl;
+    
+    if(debug){
+        cout << "eddic : exec command : " << command << endl;
+    }
 
     char buffer[1024];
 
