@@ -30,6 +30,7 @@ static const bool debug = false;
 
 #include "ast/Program.hpp"
 
+#include "DebugVisitor.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "ContextAnnotator.hpp"
 #include "VariableChecker.hpp"

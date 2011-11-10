@@ -15,11 +15,12 @@ using std::endl;
 
 using namespace eddic;
 
-//TODO Do not take parameters into account for counting (result into useless stack allocations in the function)
 int FunctionContext::size(){
     int s = 0;
     for(auto it : m_stored){
-        s += ::size(it.second->type());
+        if(it.second->position().type() != PARAMETER){
+            s += ::size(it.second->type());
+        }
     }
 
     return s;

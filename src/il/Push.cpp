@@ -17,6 +17,4 @@ Push::Push(std::shared_ptr<Operand> operand) : m_operand(operand) {}
 void Push::write(AssemblyFileWriter& writer){
     //We can always put an immediate value everywhere
     writer.stream() << "pushl " << m_operand->getValue() << std::endl;
-
-    //TODO Improve ?
 }

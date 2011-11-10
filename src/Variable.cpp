@@ -50,7 +50,7 @@ std::shared_ptr<Operand> Variable::toIntegerOperand(){
         return createGlobalOperand("VI" + m_position.name());
     }
 
-    throw "ERROR";
+    assert(false); //Position not managed
 }
 
 std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
@@ -73,5 +73,5 @@ std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
                 );
     }
 
-    throw "ERROR";
+    assert(false); //Position not managed
 }

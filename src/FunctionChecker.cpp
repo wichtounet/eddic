@@ -83,7 +83,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(!functionTable.exists(mangled)){
                 throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
             }
-            //TODO
         }
         
         void operator()(ASTVariable&){

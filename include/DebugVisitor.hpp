@@ -36,14 +36,14 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         ++level;
 
-        visit_each(*this, program.blocks);
+        visit_each(*this, program.Content->blocks);
     }
 
     void operator()(ASTFunctionDeclaration& declaration) const {
-        std::cout << indent() << "Function " << declaration.functionName << std::endl; 
+        std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
    
         ++level;
-        visit_each(*this, declaration.instructions);    
+        visit_each(*this, declaration.Content->instructions);    
         --level;
     }
 
@@ -55,7 +55,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "For" << std::endl; 
    
         ++level;
-        visit_each(*this, for_.instructions);    
+        visit_each(*this, for_.Content->instructions);    
         --level;
     }
 
@@ -63,7 +63,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Foreach" << std::endl; 
    
         ++level;
-        visit_each(*this, for_.instructions);    
+        visit_each(*this, for_.Content->instructions);    
         --level;
     }
 
@@ -71,7 +71,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "While" << std::endl; 
    
         ++level;
-        visit_each(*this, while_.instructions);    
+        visit_each(*this, while_.Content->instructions);    
         --level;
     }
 
@@ -82,15 +82,15 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ASTIf& if_) const {
         std::cout << indent() << "If" << std::endl; 
         ++level;
-        visit_each(*this, if_.instructions);    
+        visit_each(*this, if_.Content->instructions);    
         --level;
     }
 
     void operator()(ASTFunctionCall& call) const {
-        std::cout << indent() << "FunctionCall " << call.functionName << std::endl; 
+        std::cout << indent() << "FunctionCall " << call.Content->functionName << std::endl; 
         
         ++level;
-        visit_each(*this, call.values);
+        visit_each(*this, call.Content->values);
         --level;
     }
 
@@ -98,7 +98,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Variable declaration" << std::endl; 
 
         ++level;
-        visit(*this, declaration.value);
+        visit(*this, declaration.Content->value);
         --level;
     }
 
@@ -106,7 +106,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Variable assignment" << std::endl; 
 
         ++level;
-        visit(*this, assign.value);
+        visit(*this, assign.Content->value);
         --level;
     }
 
@@ -115,7 +115,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTInteger& integer) const {
-        std::cout << indent() << "Integer" << std::endl; 
+        std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
     }
 
     void operator()(ASTVariable& variable) const {
@@ -123,10 +123,10 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ASTComposedValue& value) const {
-        std::cout << indent() << "Composed value [" << value.operations.size() << "]" << std::endl; 
+        std::cout << indent() << "Composed value [" << value.Content->operations.size() << "]" << std::endl; 
         ++level;
-        visit(*this, value.first);
-        for(auto& operation : value.operations){
+        visit(*this, value.Content->first);
+        for(auto& operation : value.Content->operations){
             std::cout << indent() << operation.get<0>() << std::endl;
             visit(*this, operation.get<1>());
         }

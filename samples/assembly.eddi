@@ -51,6 +51,17 @@ void main(){
     print("Should print 'Variable fVariable e' : ");
     println(z);
 
+    int zaz = 111;
+    int zbz = 222;
+
+    zaz <=> zbz;
+
+    print("Should print '111' : ");
+    println(zbz);
+
+    print("Should print '222' : ");
+    println(zaz);
+
     int c = 1111;
     println(c);
 
@@ -170,6 +181,10 @@ void test(){
     println(x);
 
     println("Hello from test");
+}
+
+void empty(int i){
+    //Empty function
 }
 
 /* Multiline comment 2  */

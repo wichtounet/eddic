@@ -64,13 +64,22 @@ inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, Int
 
     //Apply all the operations in chain
     for(auto& operation : value.Content->operations){
-        putInRegister(operation.get<1>(), registerB, program);
+        if(isImmediate(operation.get<1>())){
+            putInRegister(operation.get<1>(), registerB, program);
 
-        //Perform the operation 
-        program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerB, registerA));
+            //Perform the operation 
+            program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
+        } else { //The right value is composed
+            program.addInstruction(program.factory().createPush(registerA)); //To be sure that the right operation does not override our register 
+            
+            putInRegister(operation.get<1>(), registerB, program);
+            program.addInstruction(program.factory().createMove(createStackOperand(0), registerA));
+            
+            program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
+        }
     }
 
-    return registerA;
+    return registerB;
 }
 
 inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program);
@@ -244,19 +253,19 @@ class AssignValueToVariable : public boost::static_visitor<> {
         } 
 };
 
-inline JumpCondition toJumpCondition(std::string op){
+inline JumpCondition toJumpNotCondition(std::string op){
     if(op == "!="){
-        return JumpCondition::NOT_EQUALS;
-    } else if(op == "=="){
         return JumpCondition::EQUALS;
+    } else if(op == "=="){
+        return JumpCondition::NOT_EQUALS;
     } else if(op == ">="){
-        return JumpCondition::GREATER_EQUALS;
-    } else if(op == ">"){
-        return JumpCondition::GREATER;
-    } else if(op == "<="){
-        return JumpCondition::LESS_EQUALS;
-    } else if(op == "<"){
         return JumpCondition::LESS;
+    } else if(op == ">"){
+        return JumpCondition::LESS_EQUALS;
+    } else if(op == "<="){
+        return JumpCondition::GREATER;
+    } else if(op == "<"){
+        return JumpCondition::GREATER_EQUALS;
     }
 
     assert(false); //Not handled
@@ -278,7 +287,7 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
 
         program.addInstruction(program.factory().createCompare(program.registers(EBX), program.registers(EAX)));
 
-        program.addInstruction(program.factory().createJump(toJumpCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
+        program.addInstruction(program.factory().createJump(toJumpNotCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
     }
 }
 
@@ -326,6 +335,8 @@ inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, Int
         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
     }
 }
+
+#include <iostream>
 
 class CompilerVisitor : public boost::static_visitor<> {
     private:
@@ -444,39 +455,30 @@ class CompilerVisitor : public boost::static_visitor<> {
             switch (lhs_var->type()) {
                 case Type::INT:{
                     auto registerA = program.registers(EAX);
-                    auto registerB = program.registers(EBX);
-              
+             
                     auto left = lhs_var->toIntegerOperand();
                     auto right = rhs_var->toIntegerOperand();
-              
-                    //TODO Optimize, using only one register as temp 
-                    program.addInstruction(program.factory().createMove(left, registerA));
-                    program.addInstruction(program.factory().createMove(right, registerB));
 
-                    program.addInstruction(program.factory().createMove(registerB, left));
+                    program.addInstruction(program.factory().createMove(left, registerA));
+                    program.addInstruction(program.factory().createMove(right, left));
                     program.addInstruction(program.factory().createMove(registerA, right));
 
                     break;
                 }
                 case Type::STRING:{
                     auto registerA = program.registers(EAX);
-                    auto registerB = program.registers(EBX);
-                    auto registerC = program.registers(ECX);
-                    auto registerD = program.registers(EDX);
                    
                     auto left = lhs_var->toStringOperand();
                     auto right = rhs_var->toStringOperand();
                     
                     program.addInstruction(program.factory().createMove(left.first, registerA));
-                    program.addInstruction(program.factory().createMove(left.second, registerB));
-                    program.addInstruction(program.factory().createMove(right.first, registerC));
-                    program.addInstruction(program.factory().createMove(right.second, registerD));
-                    
-                    program.addInstruction(program.factory().createMove(registerC, left.first));
-                    program.addInstruction(program.factory().createMove(registerD, left.second));
+                    program.addInstruction(program.factory().createMove(right.first, left.first));
                     program.addInstruction(program.factory().createMove(registerA, right.first));
-                    program.addInstruction(program.factory().createMove(registerB, right.second));
-
+                    
+                    program.addInstruction(program.factory().createMove(left.second, registerA));
+                    program.addInstruction(program.factory().createMove(right.second, left.second));
+                    program.addInstruction(program.factory().createMove(registerA, right.second));
+                    
                     break;
                 }
                 default:
