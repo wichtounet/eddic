@@ -5,7 +5,7 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 5)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 #Activate warnings
 if(MSVC)

@@ -62,5 +62,5 @@ void eddic::printHelp(){
 }
 
 void eddic::printVersion(){
-    std::cout << "eddic version 0.5.0" << std::endl;
+    std::cout << "eddic version 0.5.1" << std::endl;
 }
