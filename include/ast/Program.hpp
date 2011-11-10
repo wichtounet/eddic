@@ -11,7 +11,6 @@
 #include <vector>
 
 #include <boost/variant/variant.hpp>
-#include <boost/variant/recursive_variant.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 

@@ -17,7 +17,7 @@
 
 namespace eddic {
 
-struct FunctionDeclaration { 
+struct TmpFunctionDeclaration { 
     std::shared_ptr<FunctionContext> context;
     std::string returnType;
     std::string functionName;
@@ -26,7 +26,7 @@ struct FunctionDeclaration {
     std::vector<ASTInstruction> instructions;
 };
 
-typedef Deferred<FunctionDeclaration> ASTFunctionDeclaration; 
+typedef Deferred<TmpFunctionDeclaration> ASTFunctionDeclaration; 
 
 } //end of eddic
 

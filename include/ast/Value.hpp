@@ -9,7 +9,6 @@
 #define AST_VALUE_H
 
 #include <boost/variant/variant.hpp>
-#include <boost/variant/recursive_variant.hpp>
 
 #include "ast/values_def.hpp"
 
@@ -23,7 +22,7 @@ typedef boost::variant<
             ASTInteger, 
             ASTLitteral, 
             ASTVariable,
-            boost::recursive_wrapper<ASTComposedValue>
+            ASTComposedValue
         > ASTValue;
 
 } //end of eddic
