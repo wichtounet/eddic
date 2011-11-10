@@ -162,7 +162,10 @@ void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
 
 void eddic::execCommand(const string& command) {
     DebugTimer<debug> timer("Exec " + command);
-    cout << "eddic : exec command : " << command << endl;
+    
+    if(debug){
+        cout << "eddic : exec command : " << command << endl;
+    }
 
     char buffer[1024];
 
