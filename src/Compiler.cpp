@@ -177,6 +177,6 @@ void eddic::execCommand(const string& command) {
     pclose(stream);
 }
 
-void warn(const std::string& warning){
+void eddic::warn(const std::string& warning){
     std::cout << "warning: " << warning << std::endl;
 }
