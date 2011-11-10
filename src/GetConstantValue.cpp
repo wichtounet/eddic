@@ -21,10 +21,10 @@ Val GetConstantValue::operator()(const ASTInteger& integer) const {
     return integer.value;
 }
 
-Val GetConstantValue::operator()(const ASTVariable& variable) const {
+Val GetConstantValue::operator()(const ASTVariable&) const {
     assert(false); //Variable is not constant
 }
 
-Val GetConstantValue::operator()(const ASTComposedValue& value) const {
+Val GetConstantValue::operator()(const ASTComposedValue&) const {
     assert(false); //Should not be used as constant
 }

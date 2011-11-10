@@ -47,7 +47,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         --level;
     }
 
-    void operator()(GlobalVariableDeclaration& declaration) const {
+    void operator()(GlobalVariableDeclaration&) const {
         std::cout << indent() << "GlobalVariable" << std::endl; 
     }
 
@@ -75,7 +75,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         --level;
     }
 
-    void operator()(ASTSwap& swap) const {
+    void operator()(ASTSwap&) const {
         std::cout << indent() << "Swap" << std::endl; 
     }
 
@@ -110,7 +110,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         --level;
     }
 
-    void operator()(ASTLitteral& litteral) const {
+    void operator()(ASTLitteral&) const {
         std::cout << indent() << "Litteral" << std::endl; 
     }
 
@@ -118,7 +118,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
     }
 
-    void operator()(ASTVariable& variable) const {
+    void operator()(ASTVariable&) const {
         std::cout << indent() << "Variable" << std::endl; 
     }
 
