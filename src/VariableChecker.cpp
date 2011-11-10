@@ -167,10 +167,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
 struct UnusedInspector : public boost::static_visitor<> {
     void check(std::shared_ptr<Context> context){
-       auto iter = context->begin();
-       auto end = context->end();
+        auto iter = context->begin();
+        auto end = context->end();
 
-       for(; iter != end; iter++){
+        for(; iter != end; iter++){
             auto var = iter->second;
 
             if(var->referenceCount() == 0){
@@ -182,7 +182,7 @@ struct UnusedInspector : public boost::static_visitor<> {
                     warn("unused parameter '" + var->name() + "'");
                 }
             }
-       }
+        }
     }
 
     void operator()(ASTProgram& program){
