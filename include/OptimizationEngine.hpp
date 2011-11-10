@@ -12,8 +12,11 @@
 
 namespace eddic {
 
+class FunctionTable;
+class StringPool;
+
 struct OptimizationEngine {
-    void optimize(ASTProgram& program);
+    void optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool);
 };
 
 } //end of eddic

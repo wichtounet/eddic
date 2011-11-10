@@ -12,6 +12,9 @@
 #include "Types.hpp"
 #include "Options.hpp"
 
+#include "StringPool.hpp"
+#include "FunctionTable.hpp"
+
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "VisitorUtils.hpp"
@@ -122,56 +125,63 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
 };
 
 struct OptimizationVisitor : public boost::static_visitor<> {
-    AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_FUNCTION_DECLARATION()  
-    AUTO_RECURSE_BRANCHES()
-    AUTO_RECURSE_SIMPLE_LOOPS()
-    AUTO_RECURSE_FOREACH()
+    private:
+        FunctionTable& functionTable;
+        StringPool& pool;
 
-    void operator()(GlobalVariableDeclaration&){
-        //As the constantness of the value of a global variable is enforced, there is no need to optimize it
-    }
+    public:
+        OptimizationVisitor(FunctionTable& t, StringPool p) : functionTable(t), pool(p) {}
 
-    void operator()(ASTFunctionCall& functionCall){
-        auto start = functionCall.Content->values.begin();
-        auto end = functionCall.Content->values.end();
+        AUTO_RECURSE_PROGRAM()
+        AUTO_RECURSE_FUNCTION_DECLARATION()  
+        AUTO_RECURSE_BRANCHES()
+        AUTO_RECURSE_SIMPLE_LOOPS()
+        AUTO_RECURSE_FOREACH()
 
-        ValueOptimizer optimizer;
-
-        while(start != end){
-            *start = boost::apply_visitor(optimizer, *start);
-            
-            ++start;
+        void operator()(GlobalVariableDeclaration&){
+            //As the constantness of the value of a global variable is enforced, there is no need to optimize it
         }
-    }
 
-    void operator()(ASTAssignment& assignment){
-        assignment.Content->value = boost::apply_visitor(ValueOptimizer(), assignment.Content->value); 
-    }
+        void operator()(ASTFunctionCall& functionCall){
+            auto start = functionCall.Content->values.begin();
+            auto end = functionCall.Content->values.end();
 
-    void operator()(ASTDeclaration& declaration){
-        declaration.Content->value = boost::apply_visitor(ValueOptimizer(), declaration.Content->value); 
-    }
+            ValueOptimizer optimizer;
 
-    void operator()(ASTSwap&){
-        //Nothing to optimize in a swap
-    }
+            while(start != end){
+                *start = boost::apply_visitor(optimizer, *start);
+                
+                ++start;
+            }
+        }
 
-    void operator()(ASTBinaryCondition& binaryCondition){
-        binaryCondition.Content->lhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->lhs); 
-        binaryCondition.Content->rhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->rhs); 
-    }
+        void operator()(ASTAssignment& assignment){
+            assignment.Content->value = boost::apply_visitor(ValueOptimizer(), assignment.Content->value); 
+        }
 
-    void operator()(ASTFalse&){
-        //Nothing to optimize
-    }
+        void operator()(ASTDeclaration& declaration){
+            declaration.Content->value = boost::apply_visitor(ValueOptimizer(), declaration.Content->value); 
+        }
 
-    void operator()(ASTTrue&){
-        //Nothing to optimize
-    }
+        void operator()(ASTSwap&){
+            //Nothing to optimize in a swap
+        }
+
+        void operator()(ASTBinaryCondition& binaryCondition){
+            binaryCondition.Content->lhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->lhs); 
+            binaryCondition.Content->rhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->rhs); 
+        }
+
+        void operator()(ASTFalse&){
+            //Nothing to optimize
+        }
+
+        void operator()(ASTTrue&){
+            //Nothing to optimize
+        }
 };
 
-void OptimizationEngine::optimize(ASTProgram& program){
-    OptimizationVisitor visitor;
+void OptimizationEngine::optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool){
+    OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

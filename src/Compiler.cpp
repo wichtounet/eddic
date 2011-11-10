@@ -84,7 +84,7 @@ int Compiler::compile(const string& file) {
             checkFunctions(program, functionTable);
             
             //Optimize the AST
-            optimize(program);
+            optimize(program, functionTable, pool);
 
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
@@ -142,10 +142,10 @@ void eddic::checkFunctions(ASTProgram& program, FunctionTable& functionTable){
     checker.check(program, functionTable); 
 }
 
-void eddic::optimize(ASTProgram& program){
+void eddic::optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool){
     DebugTimer<debug> timer("Optimization");
     OptimizationEngine engine;
-    engine.optimize(program);
+    engine.optimize(program, functionTable, pool);
 }
 
 void eddic::writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){

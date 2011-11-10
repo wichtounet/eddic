@@ -23,7 +23,7 @@ void defineContexts(ASTProgram& program);
 void checkVariables(ASTProgram& program);
 void checkStrings(ASTProgram& program, StringPool& pool);
 void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
-void optimize(ASTProgram& program);
+void optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool);
 void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
 void writeAsm(IntermediateProgram& il, const std::string& file);
 
