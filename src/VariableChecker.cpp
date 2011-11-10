@@ -22,6 +22,8 @@
 #include "Types.hpp"
 #include "Variable.hpp"
 
+#include "Compiler.hpp"
+
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
@@ -164,14 +166,44 @@ struct CheckerVisitor : public boost::static_visitor<> {
 };
 
 struct UnusedInspector : public boost::static_visitor<> {
+    void check(std::shared_ptr<Context> context){
+       auto iter = context->begin();
+       auto end = context->end();
+
+       for(; iter != end; iter++){
+            auto var = iter->second;
+
+            if(var->referenceCount() == 0){
+                if(var->position().isStack()){
+                    warn("unused variable '" + var->name() + "'");
+                } else if(var->position().isGlobal()){
+                    warn("unused global variable '" + var->name() + "'");
+                } else if(var->position().isParameter()){
+                    warn("unused parameter '" + var->name() + "'");
+                }
+            }
+       }
+    }
+
     void operator()(ASTProgram& program){
-       //visit_each
+        check(program.Content->context);
+        
+        visit_each(*this, program.Content->blocks);
+    }
 
+    void operator()(ASTFunctionDeclaration& function){
+        check(function.Content->context);
+    }
 
+    void operator()(GlobalVariableDeclaration&){
+        //Nothing to check there
     }
 };
 
 void VariableChecker::check(ASTProgram& program){
    CheckerVisitor visitor;
-   visitor(program); 
+   visit_non_variant(visitor, program);
+
+   UnusedInspector inspector;
+   visit_non_variant(inspector, program);
 }
