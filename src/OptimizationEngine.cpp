@@ -69,68 +69,107 @@ struct GetIntValue : public boost::static_visitor<int> {
     }
 };
 
-struct ValueOptimizer : public boost::static_visitor<ASTValue> {
-    ASTValue operator()(ASTComposedValue& value) const {
-        if(value.Content->operations.empty()){
-            return boost::apply_visitor(*this, value.Content->first);   
+struct GetStringValue : public boost::static_visitor<std::string> {
+    std::string operator()(ASTComposedValue& value) const {
+        std::string acc = boost::apply_visitor(*this, value.Content->first);
+
+        for(auto& operation : value.Content->operations){
+            std::string v = boost::apply_visitor(*this, operation.get<1>());
+            acc = acc.substr(0, acc.size() - 1).append(v.substr(1, acc.size() - 1));
         }
 
-        //If the value is constant, we can replace it with the results of the computation
-        if(IsConstantVisitor()(value)){
-            Type type = GetTypeVisitor()(value);
+        return acc;
+    }
 
-            if(type == Type::INT){
-                if (OptimizeIntegers) {
-                    ASTInteger integer;
-                    integer.value = GetIntValue()(value);
-                    return integer; 
-                }
-            } else if(type == Type::STRING){
-                if (OptimizeStrings) {
-                    //No optimizations for now
+    std::string operator()(ASTInteger&) const {
+        assert(false); //An integer is not a string
+
+        return "";
+    }
+
+    std::string operator()(ASTVariable&) const {
+        assert(false); //A variable is not constant
+
+        return "";
+    }
+
+    std::string operator()(ASTLitteral& litteral) const {
+        return litteral.value;
+    }
+};
+
+struct ValueOptimizer : public boost::static_visitor<ASTValue> {
+    private:
+        StringPool& pool;
+
+    public:
+        ValueOptimizer(StringPool& p) : pool(p) {}
+
+        ASTValue operator()(ASTComposedValue& value) const {
+            if(value.Content->operations.empty()){
+                return boost::apply_visitor(*this, value.Content->first);   
+            }
+
+            //If the value is constant, we can replace it with the results of the computation
+            if(IsConstantVisitor()(value)){
+                Type type = GetTypeVisitor()(value);
+
+                if(type == Type::INT){
+                    if (OptimizeIntegers) {
+                        ASTInteger integer;
+                        integer.value = GetIntValue()(value);
+                        return integer; 
+                    }
+                } else if(type == Type::STRING){
+                    if (OptimizeStrings) {
+                        ASTLitteral litteral;
+                        litteral.value = GetStringValue()(value);
+                        litteral.label = pool.label(litteral.value);
+                        return litteral;
+                    }
                 }
             }
+
+            //Optimize the first value
+            value.Content->first = boost::apply_visitor(*this, value.Content->first);
+
+            //We can try to optimize every part of the composed value
+            auto start = value.Content->operations.begin();
+            auto end = value.Content->operations.end();
+
+            while(start != end){
+                start->get<1>() = boost::apply_visitor(*this, start->get<1>());
+
+                ++start;
+            }
+
+            assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
+
+            //If we get there, that means that no optimization has been (or can be) performed
+            return value;
         }
 
-        //Optimize the first value
-        value.Content->first = boost::apply_visitor(*this, value.Content->first);
-
-        //We can try to optimize every part of the composed value
-        auto start = value.Content->operations.begin();
-        auto end = value.Content->operations.end();
-
-        while(start != end){
-            start->get<1>() = boost::apply_visitor(*this, start->get<1>());
-            
-            ++start;
+        ASTValue operator()(ASTVariable& variable) const {
+            return variable; //A variable is not optimizable
         }
 
-        assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
+        ASTValue operator()(ASTInteger& integer) const {
+            return integer; //A variable is not optimizable
+        }
 
-        //If we get there, that means that no optimization has been (or can be) performed
-        return value;
-    }
-
-    ASTValue operator()(ASTVariable& variable) const {
-        return variable; //A variable is not optimizable
-    }
-    
-    ASTValue operator()(ASTInteger& integer) const {
-        return integer; //A variable is not optimizable
-    }
-    
-    ASTValue operator()(ASTLitteral& litteral) const {
-        return litteral; //A variable is not optimizable
-    }
+        ASTValue operator()(ASTLitteral& litteral) const {
+            return litteral; //A variable is not optimizable
+        }
 };
 
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
         FunctionTable& functionTable;
         StringPool& pool;
+        ValueOptimizer optimizer;
 
     public:
-        OptimizationVisitor(FunctionTable& t, StringPool p) : functionTable(t), pool(p) {}
+        OptimizationVisitor(FunctionTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
 
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_FUNCTION_DECLARATION()  
@@ -146,8 +185,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             auto start = functionCall.Content->values.begin();
             auto end = functionCall.Content->values.end();
 
-            ValueOptimizer optimizer;
-
             while(start != end){
                 *start = boost::apply_visitor(optimizer, *start);
                 
@@ -156,11 +193,11 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTAssignment& assignment){
-            assignment.Content->value = boost::apply_visitor(ValueOptimizer(), assignment.Content->value); 
+            assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
         }
 
         void operator()(ASTDeclaration& declaration){
-            declaration.Content->value = boost::apply_visitor(ValueOptimizer(), declaration.Content->value); 
+            declaration.Content->value = boost::apply_visitor(optimizer, declaration.Content->value); 
         }
 
         void operator()(ASTSwap&){
@@ -168,8 +205,8 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ASTBinaryCondition& binaryCondition){
-            binaryCondition.Content->lhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->lhs); 
-            binaryCondition.Content->rhs = boost::apply_visitor(ValueOptimizer(), binaryCondition.Content->rhs); 
+            binaryCondition.Content->lhs = boost::apply_visitor(optimizer, binaryCondition.Content->lhs); 
+            binaryCondition.Content->rhs = boost::apply_visitor(optimizer, binaryCondition.Content->rhs); 
         }
 
         void operator()(ASTFalse&){
