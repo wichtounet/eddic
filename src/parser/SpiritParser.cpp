@@ -19,7 +19,6 @@
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/variant/recursive_variant.hpp>
 
 #include <boost/spirit/include/classic_position_iterator.hpp>
 
@@ -251,6 +250,7 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
    qi::rule<Iterator, ASTFor()> for_;
    qi::rule<Iterator, ASTForeach()> foreach_;
    qi::rule<Iterator, ASTIf()> if_;
+
    qi::rule<Iterator, ASTElse()> else_;
    qi::rule<Iterator, ASTElseIf()> else_if_;
    
