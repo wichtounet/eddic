@@ -52,6 +52,7 @@ class Variable {
         Val val() const ;
 
         void addReference();
+        int referenceCount();
 };
 
 } //end of eddic

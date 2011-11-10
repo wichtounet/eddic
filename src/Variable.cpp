@@ -43,6 +43,10 @@ void Variable::addReference(){
     ++references;
 }
 
+int Variable::referenceCount(){
+    return references;
+}
+
 std::shared_ptr<Operand> Variable::toIntegerOperand(){
     assert(m_type == Type::INT); 
     
