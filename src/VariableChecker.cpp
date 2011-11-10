@@ -163,6 +163,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
+struct UnusedInspector : public boost::static_visitor<> {
+    void operator()(ASTProgram& program){
+       //visit_each
+
+
+    }
+};
+
 void VariableChecker::check(ASTProgram& program){
    CheckerVisitor visitor;
    visitor(program); 

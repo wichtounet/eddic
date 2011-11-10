@@ -46,6 +46,9 @@ class Context {
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
         virtual std::shared_ptr<Variable> getVariable(int index) const;
 
+        StoredVariables::const_iterator begin();
+        StoredVariables::const_iterator end();
+
         virtual int size();
 
         virtual void writeIL(IntermediateProgram& program);
