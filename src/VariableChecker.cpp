@@ -81,12 +81,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         visit(*this, assignment.Content->value);
 
-        std::shared_ptr<Variable> var = assignment.Content->context->getVariable(assignment.Content->variableName);
+        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
         }
+
+        var->addReference();
     }
     
     void operator()(ASTDeclaration& declaration){
@@ -120,6 +122,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
             throw SemanticalException("Swap of variables of incompatible type");
         }
+
+        //Reference both variables
+        swap.Content->lhs_var->addReference();
+        swap.Content->rhs_var->addReference();
     }
 
     void operator()(ASTVariable& variable){
@@ -128,6 +134,9 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
 
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
+
+        //Reference the variable
+        variable.Content->var->addReference();
     }
 
     void operator()(ASTComposedValue& value){
