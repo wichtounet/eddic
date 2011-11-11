@@ -37,7 +37,7 @@ struct Rule {
 };
 
 template <typename Iterator, typename Lexer>
-struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
+struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
         value = additiveValue.alias();
         
@@ -233,44 +233,42 @@ struct EddiGrammar : qi::grammar<Iterator, ASTProgram()> {
         program.name("EDDI program");
    }
 
-   //Rule<Iterator, Deferred<ASTProgram>()>::type program;
+   qi::rule<Iterator, ast::Program()> program;
+   qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
+   qi::rule<Iterator, ast::FunctionDeclaration()> function;
+   qi::rule<Iterator, ast::FunctionParameter()> arg;
+   
+   qi::rule<Iterator, ast::Instruction()> instruction;
+   qi::rule<Iterator, ast::Instruction()> repeatable_instruction;
+   qi::rule<Iterator, ast::Swap()> swap;
+   qi::rule<Iterator, ast::FunctionCall()> functionCall;
+   qi::rule<Iterator, ast::Declaration()> declaration;
+   qi::rule<Iterator, ast::Assignment()> assignment;
+   qi::rule<Iterator, ast::While()> while_;
+   qi::rule<Iterator, ast::For()> for_;
+   qi::rule<Iterator, ast::Foreach()> foreach_;
+   qi::rule<Iterator, ast::If()> if_;
 
-   qi::rule<Iterator, ASTProgram()> program;
-   qi::rule<Iterator, GlobalVariableDeclaration()> globalDeclaration;
-   qi::rule<Iterator, ASTFunctionDeclaration()> function;
-   qi::rule<Iterator, FunctionParameter()> arg;
+   qi::rule<Iterator, ast::Else()> else_;
+   qi::rule<Iterator, ast::ElseIf()> else_if_;
    
-   qi::rule<Iterator, ASTInstruction()> instruction;
-   qi::rule<Iterator, ASTInstruction()> repeatable_instruction;
-   qi::rule<Iterator, ASTSwap()> swap;
-   qi::rule<Iterator, ASTFunctionCall()> functionCall;
-   qi::rule<Iterator, ASTDeclaration()> declaration;
-   qi::rule<Iterator, ASTAssignment()> assignment;
-   qi::rule<Iterator, ASTWhile()> while_;
-   qi::rule<Iterator, ASTFor()> for_;
-   qi::rule<Iterator, ASTForeach()> foreach_;
-   qi::rule<Iterator, ASTIf()> if_;
-
-   qi::rule<Iterator, ASTElse()> else_;
-   qi::rule<Iterator, ASTElseIf()> else_if_;
+   qi::rule<Iterator, ast::Value()> value;
+   qi::rule<Iterator, ast::Value()> primaryValue;
+   qi::rule<Iterator, ast::Value()> unaryValue;
+   qi::rule<Iterator, ast::ComposedValue()> additiveValue;
+   qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
+   qi::rule<Iterator, ast::Value()> constant;
+   qi::rule<Iterator, ast::Integer()> integer;
+   qi::rule<Iterator, ast::Litteral()> litteral;
+   qi::rule<Iterator, ast::Variable()> variable;
    
-   qi::rule<Iterator, ASTValue()> value;
-   qi::rule<Iterator, ASTValue()> primaryValue;
-   qi::rule<Iterator, ASTValue()> unaryValue;
-   qi::rule<Iterator, ASTComposedValue()> additiveValue;
-   qi::rule<Iterator, ASTComposedValue()> multiplicativeValue;
-   qi::rule<Iterator, ASTValue()> constant;
-   qi::rule<Iterator, ASTInteger()> integer;
-   qi::rule<Iterator, ASTLitteral()> litteral;
-   qi::rule<Iterator, ASTVariable()> variable;
-   
-   qi::rule<Iterator, ASTCondition()> condition;
-   qi::rule<Iterator, ASTTrue()> true_;
-   qi::rule<Iterator, ASTFalse()> false_;
-   qi::rule<Iterator, ASTBinaryCondition()> binary_condition;
+   qi::rule<Iterator, ast::Condition()> condition;
+   qi::rule<Iterator, ast::True()> true_;
+   qi::rule<Iterator, ast::False()> false_;
+   qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
 };
 
-bool SpiritParser::parse(const std::string& file, ASTProgram& program){
+bool SpiritParser::parse(const std::string& file, ast::Program& program){
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
    
