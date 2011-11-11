@@ -12,9 +12,13 @@
 
 namespace eddic {
 
-struct ASTFalse : public TerminalNode {
+namespace ast {
+
+struct False : public TerminalNode {
 
 };
+
+} //end of ast
 
 } //end of eddic
 

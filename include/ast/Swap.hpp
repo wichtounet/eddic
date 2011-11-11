@@ -19,7 +19,9 @@ namespace eddic {
 class Context;
 class Variable;
 
-struct Swap {
+namespace ast {
+
+struct ASTSwap {
     std::shared_ptr<Context> context;
     std::string lhs;
     std::string rhs;
@@ -27,13 +29,15 @@ struct Swap {
     std::shared_ptr<Variable> rhs_var;
 };
 
-typedef Deferred<Swap> ASTSwap;
+typedef Deferred<ASTSwap> Swap;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTSwap, 
+    eddic::ast::Swap, 
     (std::string, Content->lhs)
     (std::string, Content->rhs)
 )

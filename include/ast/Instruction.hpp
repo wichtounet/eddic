@@ -18,28 +18,32 @@
 
 namespace eddic {
 
-struct While;
-typedef Deferred<While> ASTWhile; 
+namespace ast {
 
-struct For;
-typedef Deferred<For> ASTFor; 
+struct ASTWhile;
+typedef Deferred<ASTWhile> While; 
 
-struct If;
-typedef Deferred<If> ASTIf;
+struct ASTFor;
+typedef Deferred<ASTFor> For; 
 
-struct Foreach;
-typedef Deferred<Foreach> ASTForeach;
+struct ASTIf;
+typedef Deferred<ASTIf> If;
+
+struct ASTForeach;
+typedef Deferred<ASTForeach> Foreach;
 
 typedef boost::variant<
-            ASTFunctionCall, 
-            ASTSwap, 
-            ASTDeclaration,
-            ASTAssignment, 
-            ASTIf, 
-            ASTWhile, 
-            ASTForeach, 
-            ASTFor>
-        ASTInstruction;
+            FunctionCall, 
+            Swap, 
+            Declaration,
+            Assignment, 
+            If, 
+            While, 
+            Foreach, 
+            For>
+        Instruction;
+
+} //end of ast
 
 } //end of eddic
 

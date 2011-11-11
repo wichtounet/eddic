@@ -13,30 +13,34 @@
 #include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
 
-#include "FunctionContext.hpp"
-
 namespace eddic {
 
-struct TmpFunctionDeclaration { 
+class FunctionContext;
+
+namespace ast {
+
+struct ASTFunctionDeclaration { 
     std::shared_ptr<FunctionContext> context;
     std::string returnType;
     std::string functionName;
     std::string mangledName;
     std::vector<FunctionParameter> parameters;
-    std::vector<ASTInstruction> instructions;
+    std::vector<Instruction> instructions;
 };
 
-typedef Deferred<TmpFunctionDeclaration> ASTFunctionDeclaration; 
+typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration; 
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTFunctionDeclaration, 
+    eddic::ast::FunctionDeclaration, 
     (std::string, Content->returnType)
     (std::string, Content->functionName)
-    (std::vector<eddic::FunctionParameter>, Content->parameters)
-    (std::vector<eddic::ASTInstruction>, Content->instructions)
+    (std::vector<eddic::ast::FunctionParameter>, Content->parameters)
+    (std::vector<eddic::ast::Instruction>, Content->instructions)
 )
 
 #endif

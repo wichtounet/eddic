@@ -20,27 +20,31 @@ namespace eddic {
 
 class Context;
 
-struct Declaration {
+namespace ast {
+
+struct ASTDeclaration {
     std::shared_ptr<Context> context;
 
     std::string variableType;
     std::string variableName;
-    ASTValue value;
+    Value value;
 
     mutable long references;
-    Declaration() : references(0) {}
+    ASTDeclaration() : references(0) {}
 };
 
-typedef Deferred<Declaration, boost::intrusive_ptr<Declaration>> ASTDeclaration;
+typedef Deferred<ASTDeclaration, boost::intrusive_ptr<ASTDeclaration>> Declaration;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTDeclaration, 
+    eddic::ast::Declaration, 
     (std::string, Content->variableType)
     (std::string, Content->variableName)
-    (eddic::ASTValue, Content->value)
+    (eddic::ast::Value, Content->value)
 )
 
 #endif

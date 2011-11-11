@@ -24,22 +24,28 @@
 
 namespace eddic {
 
-typedef boost::variant<ASTFunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
+class Context;
+
+namespace ast {
+
+typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
 
 //A source EDDI program
-struct Program {
+struct ASTProgram {
     std::shared_ptr<Context> context;
     std::vector<FirstLevelBlock> blocks;
 };
 
-typedef Deferred<Program> ASTProgram;
+typedef Deferred<ASTProgram> Program;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTProgram, 
-    (std::vector<eddic::FirstLevelBlock>, Content->blocks)
+    eddic::ast::Program, 
+    (std::vector<eddic::ast::FirstLevelBlock>, Content->blocks)
 )
 
 #endif

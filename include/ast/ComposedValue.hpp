@@ -18,25 +18,29 @@
 
 namespace eddic {
 
-typedef std::vector<boost::tuple<char, ASTValue>> Operations;
+namespace ast {
 
-struct ComposedValue {
-    ASTValue first;
+typedef std::vector<boost::tuple<char, Value>> Operations;
+
+struct ASTComposedValue {
+    Value first;
     Operations operations;
 
     mutable long references;
-    ComposedValue() : references(0) {}
+    ASTComposedValue() : references(0) {}
 };
 
-typedef Deferred<ComposedValue, boost::intrusive_ptr<ComposedValue>> ASTComposedValue;
+typedef Deferred<ASTComposedValue, boost::intrusive_ptr<ASTComposedValue>> ComposedValue;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTComposedValue, 
-    (eddic::ASTValue, Content->first)
-    (eddic::Operations, Content->operations)
+    eddic::ast::ComposedValue, 
+    (eddic::ast::Value, Content->first)
+    (eddic::ast::Operations, Content->operations)
 )
 
 #endif

@@ -14,22 +14,26 @@
 
 namespace eddic {
 
-struct BinaryCondition {
+namespace ast {
+
+struct ASTBinaryCondition {
     std::string op;
-    ASTValue lhs;
-    ASTValue rhs;
+    Value lhs;
+    Value rhs;
 };
 
-typedef Deferred<BinaryCondition> ASTBinaryCondition;
+typedef Deferred<ASTBinaryCondition> BinaryCondition;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTBinaryCondition, 
-    (eddic::ASTValue, Content->lhs)
+    eddic::ast::BinaryCondition, 
+    (eddic::ast::Value, Content->lhs)
     (std::string, Content->op)
-    (eddic::ASTValue, Content->rhs)
+    (eddic::ast::Value, Content->rhs)
 )
 
 #endif

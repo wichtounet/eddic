@@ -13,14 +13,18 @@
 
 namespace eddic {
 
-struct ASTInteger;
-struct ASTLitteral;
+namespace ast {
 
-struct TmpVariable;
-typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;
+struct Integer;
+struct Litteral;
 
-struct ComposedValue;
-typedef Deferred<ComposedValue, boost::intrusive_ptr<ComposedValue>> ASTComposedValue;
+struct ASTVariableValue;
+typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
+
+struct ASTComposedValue;
+typedef Deferred<ASTComposedValue, boost::intrusive_ptr<ASTComposedValue>> ComposedValue;
+
+} //end of ast
 
 } //end of eddic
 

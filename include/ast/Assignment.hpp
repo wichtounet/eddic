@@ -20,25 +20,29 @@ namespace eddic {
 
 class Context;
 
-struct Assignment {
+namespace ast {
+
+struct ASTAssignment {
     std::shared_ptr<Context> context;
 
     std::string variableName;
-    ASTValue value;
+    Value value;
 
     mutable long references;
-    Assignment() : references(0) {}
+    ASTAssignment() : references(0) {}
 };
 
-typedef Deferred<Assignment, boost::intrusive_ptr<Assignment>> ASTAssignment;
+typedef Deferred<ASTAssignment, boost::intrusive_ptr<ASTAssignment>> Assignment;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTAssignment, 
+    eddic::ast::Assignment, 
     (std::string, Content->variableName)
-    (eddic::ASTValue, Content->value)
+    (eddic::ast::Value, Content->value)
 )
 
 #endif

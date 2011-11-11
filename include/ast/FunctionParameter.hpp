@@ -12,16 +12,20 @@
 
 namespace eddic {
 
+namespace ast {
+
 struct FunctionParameter {
     std::string parameterType;
     std::string parameterName;
 };
 
+} //end of ast
+
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::FunctionParameter, 
+    eddic::ast::FunctionParameter, 
     (std::string, parameterType)
     (std::string, parameterName)
 )
