@@ -63,7 +63,7 @@ int Compiler::compile(const string& file) {
         SpiritParser parser;
 
         //The program to build
-        ASTProgram program;
+        ast::Program program;
 
         //Parse the file into the program
         bool parsing = parser.parse(file, program); 
@@ -116,37 +116,37 @@ int Compiler::compile(const string& file) {
     return code;
 }
 
-void eddic::defineContexts(ASTProgram& program){
+void eddic::defineContexts(ast::Program& program){
     DebugTimer<debug> timer("Annotate contexts");
     ContextAnnotator annotator;
     annotator.annotate(program);
 }
 
-void eddic::checkVariables(ASTProgram& program){
+void eddic::checkVariables(ast::Program& program){
     DebugTimer<debug> timer("Variable checking");
     VariableChecker checker;
     checker.check(program);
 }
 
-void eddic::checkStrings(ASTProgram& program, StringPool& pool){
+void eddic::checkStrings(ast::Program& program, StringPool& pool){
     DebugTimer<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);
 }
 
-void eddic::checkFunctions(ASTProgram& program, FunctionTable& functionTable){
+void eddic::checkFunctions(ast::Program& program, FunctionTable& functionTable){
     DebugTimer<debug> timer("Functions checking");
     FunctionChecker checker;
     checker.check(program, functionTable); 
 }
 
-void eddic::optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool){
+void eddic::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool){
     DebugTimer<debug> timer("Optimization");
     OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
 }
 
-void eddic::writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+void eddic::writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
     DebugTimer<debug> timer("Compile into intermediate level");
     IntermediateCompiler compiler;
     compiler.compile(program, pool, intermediateProgram);

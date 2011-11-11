@@ -18,13 +18,13 @@ class StringPool;
 class FunctionTable;
 class IntermediateProgram;
 
-void defineContexts(ASTProgram& program);
+void defineContexts(ast::Program& program);
 
-void checkVariables(ASTProgram& program);
-void checkStrings(ASTProgram& program, StringPool& pool);
-void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
-void optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool);
-void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
+void checkVariables(ast::Program& program);
+void checkStrings(ast::Program& program, StringPool& pool);
+void checkFunctions(ast::Program& program, FunctionTable& functionTable);
+void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool);
+void writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram);
 void writeAsm(IntermediateProgram& il, const std::string& file);
 
 void execCommand(const std::string& command);
