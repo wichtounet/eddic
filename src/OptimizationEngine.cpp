@@ -211,10 +211,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     public:
         OptimizationVisitor(FunctionTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
 
-        AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_SIMPLE_LOOPS()
-        AUTO_RECURSE_FOREACH()
-
         template<typename T>
         void removeUnused(std::vector<T>& vector){
             auto iter = vector.begin();
@@ -234,6 +230,38 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         
         void operator()(ast::FunctionDeclaration& function){
             removeUnused(function.Content->instructions);
+        }
+
+        void operator()(ast::If& if_){
+            visit(*this, if_.Content->condition);
+            removeUnused(if_.Content->instructions);
+            visit_each_non_variant(*this, if_.Content->elseIfs);
+            visit_optional_non_variant(*this, if_.Content->else_);
+        }
+
+        void operator()(ast::ElseIf& elseIf){
+            visit(*this, elseIf.condition);
+            removeUnused(elseIf.instructions);
+        }
+
+        void operator()(ast::Else& else_){
+            removeUnused(else_.instructions);
+        }
+
+        void operator()(ast::For& for_){
+            visit_optional(*this, for_.Content->start);
+            visit_optional(*this, for_.Content->condition);
+            visit_optional(*this, for_.Content->repeat);
+            removeUnused(for_.Content->instructions);
+        }
+
+        void operator()(ast::While& while_){
+            visit(*this, while_.Content->condition);
+            removeUnused(while_.Content->instructions);
+        }
+
+        void operator()(ast::Foreach& foreach_){
+            removeUnused(foreach_.Content->instructions);
         }
 
         void operator()(ast::FunctionCall& functionCall){
