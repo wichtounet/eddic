@@ -18,6 +18,7 @@ namespace eddic {
 
 extern bool OptimizeIntegers;
 extern bool OptimizeStrings;
+extern bool OptimizeUnused;
 
 extern bool WarningUnused;
 

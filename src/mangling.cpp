@@ -17,7 +17,7 @@ std::string eddic::mangle(Type type){
     }
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ASTValue>& values){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){
     if(functionName == "main"){
         return functionName;
     }

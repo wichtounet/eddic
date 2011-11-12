@@ -17,24 +17,28 @@
 
 namespace eddic {
 
-struct For {
-    boost::optional<ASTInstruction> start;
-    boost::optional<ASTCondition> condition;
-    boost::optional<ASTInstruction> repeat;
-    std::vector<ASTInstruction> instructions;
+namespace ast {
+
+struct ASTFor {
+    boost::optional<Instruction> start;
+    boost::optional<Condition> condition;
+    boost::optional<Instruction> repeat;
+    std::vector<Instruction> instructions;
 };
 
-typedef Deferred<For> ASTFor;
+typedef Deferred<ASTFor> For;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTFor, 
-    (boost::optional<eddic::ASTInstruction>, Content->start)
-    (boost::optional<eddic::ASTCondition>, Content->condition)
-    (boost::optional<eddic::ASTInstruction>, Content->repeat)
-    (std::vector<eddic::ASTInstruction>, Content->instructions)
+    eddic::ast::For, 
+    (boost::optional<eddic::ast::Instruction>, Content->start)
+    (boost::optional<eddic::ast::Condition>, Content->condition)
+    (boost::optional<eddic::ast::Instruction>, Content->repeat)
+    (std::vector<eddic::ast::Instruction>, Content->instructions)
 )
 
 #endif

@@ -15,7 +15,7 @@ namespace eddic {
 class FunctionTable;
 
 struct FunctionChecker {
-   void check(ASTProgram& program, FunctionTable& functionTable);
+   void check(ast::Program& program, FunctionTable& functionTable);
 };
 
 } //end of eddic

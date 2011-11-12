@@ -18,12 +18,16 @@
 
 namespace eddic {
 
+namespace ast {
+
 typedef boost::variant<
-            ASTInteger, 
-            ASTLitteral, 
-            ASTVariable,
-            ASTComposedValue
-        > ASTValue;
+            Integer, 
+            Litteral, 
+            VariableValue,
+            ComposedValue
+        > Value;
+
+} //end of ast
 
 } //end of eddic
 

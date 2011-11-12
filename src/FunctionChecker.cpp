@@ -30,7 +30,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
         AUTO_RECURSE_PROGRAM()
          
-        void operator()(ASTFunctionDeclaration& declaration){
+        void operator()(ast::FunctionDeclaration& declaration){
             auto signature = std::make_shared<Function>();
 
             signature->name = declaration.Content->functionName;
@@ -52,7 +52,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             //Stop recursion here
         }
 
-        void operator()(GlobalVariableDeclaration&){
+        void operator()(ast::GlobalVariableDeclaration&){
             //Stop recursion here
         }
 };
@@ -74,7 +74,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
-        void operator()(ASTFunctionCall& functionCall){
+        void operator()(ast::FunctionCall& functionCall){
             std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
@@ -89,16 +89,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 functionTable.addReference(mangled);
             }
         }
-        
-        void operator()(ASTVariable&){
-            //No function calls there
-        }
 
-        void operator()(ASTSwap&){
-            //No function calls there
-        }
-        
-        void operator()(TerminalNode&){
+        template<typename T>        
+        void operator()(T&){
             //No function calls there
         }
 };
@@ -110,11 +103,11 @@ class FunctionInspector : public boost::static_visitor<> {
     public:
         FunctionInspector(FunctionTable& table) : functionTable(table) {}
 
-        void operator()(ASTProgram& program){
+        void operator()(ast::Program& program){
             visit_each(*this, program.Content->blocks);
         }
 
-        void operator()(ASTFunctionDeclaration& declaration){
+        void operator()(ast::FunctionDeclaration& declaration){
             int references = functionTable.referenceCount(declaration.Content->mangledName);
 
             if(declaration.Content->functionName != "main" && references == 0){
@@ -122,12 +115,12 @@ class FunctionInspector : public boost::static_visitor<> {
             }
         }
 
-        void operator()(GlobalVariableDeclaration&){
+        void operator()(ast::GlobalVariableDeclaration&){
             //Nothing to warn about there
         }
 };
 
-void FunctionChecker::check(ASTProgram& program, FunctionTable& functionTable){
+void FunctionChecker::check(ast::Program& program, FunctionTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

@@ -19,23 +19,27 @@ namespace eddic {
 class Context;
 class Variable;
 
-struct TmpVariable {
+namespace ast {
+
+struct ASTVariableValue {
     std::shared_ptr<Context> context;
 
     std::string variableName;
     std::shared_ptr<Variable> var;
 
     mutable long references;
-    TmpVariable() : references(0) {}
+    ASTVariableValue() : references(0) {}
 };
 
-typedef Deferred<TmpVariable, boost::intrusive_ptr<TmpVariable>> ASTVariable;
+typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTVariable, 
+    eddic::ast::VariableValue, 
     (std::string, Content->variableName)
 )
 

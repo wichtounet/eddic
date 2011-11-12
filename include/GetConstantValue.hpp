@@ -21,10 +21,10 @@ namespace eddic {
 typedef boost::variant<int, std::pair<std::string, int>> Val;
 
 struct GetConstantValue : public boost::static_visitor<Val> {
-    Val operator()(const ASTLitteral& litteral) const;
-    Val operator()(const ASTInteger& litteral) const;
-    Val operator()(const ASTVariable& variable) const;
-    Val operator()(const ASTComposedValue& value) const; 
+    Val operator()(const ast::Litteral& litteral) const;
+    Val operator()(const ast::Integer& litteral) const;
+    Val operator()(const ast::VariableValue& variable) const;
+    Val operator()(const ast::ComposedValue& value) const; 
 };
 
 } //end of eddic

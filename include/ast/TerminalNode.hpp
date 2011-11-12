@@ -10,10 +10,14 @@
 
 namespace eddic {
 
+namespace ast {
+
 //Tag to speficy a terminal value node
 struct TerminalNode {
 
 };
+
+} //end of ast
 
 } //end of eddic
 

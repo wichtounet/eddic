@@ -43,7 +43,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
     assert(false);
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ASTValue& value){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
     Position position(GLOBAL, variable);
 
     auto val = boost::apply_visitor(GetConstantValue(), value);

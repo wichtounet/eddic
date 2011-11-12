@@ -16,18 +16,22 @@
 
 namespace eddic {
 
-struct ASTElseIf {
-    ASTCondition condition;
-    std::vector<ASTInstruction> instructions;
+namespace ast {
+
+struct ElseIf {
+    Condition condition;
+    std::vector<Instruction> instructions;
 };
+
+} //end of eddic
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTElseIf, 
-    (eddic::ASTCondition, condition)
-    (std::vector<eddic::ASTInstruction>, instructions)
+    eddic::ast::ElseIf, 
+    (eddic::ast::Condition, condition)
+    (std::vector<eddic::ast::Instruction>, instructions)
 )
 
 #endif

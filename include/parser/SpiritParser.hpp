@@ -16,7 +16,7 @@ namespace eddic {
 
 class SpiritParser {
     public:
-        bool parse(const std::string& file, ASTProgram& program);
+        bool parse(const std::string& file, ast::Program& program);
 };
 
 } //end of eddic

@@ -37,7 +37,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
    
-    void operator()(ASTFunctionDeclaration& declaration){
+    void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
             Type type = stringToType(parameter.parameterType);
@@ -48,7 +48,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit_each(*this, declaration.Content->instructions);
     }
     
-    void operator()(GlobalVariableDeclaration& declaration){
+    void operator()(ast::GlobalVariableDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
@@ -67,7 +67,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(ASTForeach& foreach){
+    void operator()(ast::Foreach& foreach){
         if(foreach.Content->context->exists(foreach.Content->variableName)){
             throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared");
         }
@@ -77,7 +77,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    void operator()(ASTAssignment& assignment){
+    void operator()(ast::Assignment& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {
             throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
         }
@@ -94,7 +94,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         var->addReference();
     }
     
-    void operator()(ASTDeclaration& declaration){
+    void operator()(ast::Declaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
@@ -110,7 +110,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(ASTSwap& swap){
+    void operator()(ast::Swap& swap){
         if (swap.Content->lhs == swap.Content->rhs) {
             throw SemanticalException("Cannot swap a variable with itself");
         }
@@ -131,7 +131,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         swap.Content->rhs_var->addReference();
     }
 
-    void operator()(ASTVariable& variable){
+    void operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared");
         }
@@ -142,11 +142,11 @@ struct CheckerVisitor : public boost::static_visitor<> {
         variable.Content->var->addReference();
     }
 
-    void operator()(ASTComposedValue& value){
+    void operator()(ast::ComposedValue& value){
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });
+            [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
 
         GetTypeVisitor visitor;
 
@@ -161,7 +161,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(TerminalNode&){
+    void operator()(ast::TerminalNode&){
         //Terminal nodes have no need for variable checking    
     }
 };
@@ -186,22 +186,22 @@ struct UnusedInspector : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ASTProgram& program){
+    void operator()(ast::Program& program){
         check(program.Content->context);
         
         visit_each(*this, program.Content->blocks);
     }
 
-    void operator()(ASTFunctionDeclaration& function){
+    void operator()(ast::FunctionDeclaration& function){
         check(function.Content->context);
     }
 
-    void operator()(GlobalVariableDeclaration&){
+    void operator()(ast::GlobalVariableDeclaration&){
         //Nothing to check there
     }
 };
 
-void VariableChecker::check(ASTProgram& program){
+void VariableChecker::check(ast::Program& program){
     CheckerVisitor visitor;
     visit_non_variant(visitor, program);
 

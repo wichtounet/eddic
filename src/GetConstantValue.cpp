@@ -13,18 +13,18 @@
 
 using namespace eddic;
 
-Val GetConstantValue::operator()(const ASTLitteral& litteral) const {
+Val GetConstantValue::operator()(const ast::Litteral& litteral) const {
     return make_pair(litteral.label, litteral.value.size() - 2);
 }
 
-Val GetConstantValue::operator()(const ASTInteger& integer) const {
+Val GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
-Val GetConstantValue::operator()(const ASTVariable&) const {
+Val GetConstantValue::operator()(const ast::VariableValue&) const {
     assert(false); //Variable is not constant
 }
 
-Val GetConstantValue::operator()(const ASTComposedValue&) const {
+Val GetConstantValue::operator()(const ast::ComposedValue&) const {
     assert(false); //Should not be used as constant
 }
