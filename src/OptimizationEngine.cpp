@@ -174,17 +174,25 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
             return boost::apply_visitor(*this, block);
         }
 
-        bool operator()(ast::GlobalVariableDeclaration& declaration){
+        bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
             if(OptimizeUnused){
-                if(declaration.Content->context->getVariable(declaration.Content->variableName)->referenceCount() <= 0){
+                if(context->getVariable(variable)->referenceCount() <= 0){
                     //Removing from the AST is not enough, because it is stored in the context now
-                    declaration.Content->context->removeVariable(declaration.Content->variableName);
+                    context->removeVariable(variable);
                     
                     return true;   
                 }
             }
 
             return false;
+        }
+
+        bool operator()(ast::GlobalVariableDeclaration& declaration){
+            return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
+        }
+
+        bool operator()(ast::Declaration& declaration){
+            return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
         }
 
         bool operator()(ast::FunctionDeclaration& declaration){
@@ -194,6 +202,16 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
                 }
             }
 
+            return false;
+        }
+
+        bool operator()(ast::Instruction& instruction){
+           return boost::apply_visitor(*this, instruction); 
+        }
+
+        //Nothing to optimize for the other types
+        template<typename T>
+        bool operator()(T&) {
             return false;
         }
 };
@@ -207,21 +225,29 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     public:
         OptimizationVisitor(FunctionTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
 
-        AUTO_RECURSE_FUNCTION_DECLARATION()  
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
 
-        void operator()(ast::Program& program){\
-            auto iter = program.Content->blocks.begin();
-            auto end = program.Content->blocks.end();
+        template<typename T>
+        void removeUnused(std::vector<T>& vector){
+            auto iter = vector.begin();
+            auto end = vector.end();
 
             CanBeRemoved visitor(functionTable);
             auto newEnd = remove_if(iter, end, visitor);
 
-            program.Content->blocks.erase(newEnd, end);
+            vector.erase(newEnd, end);
 
-            visit_each(*this, program.Content->blocks);
+            visit_each(*this, vector);
+        }
+
+        void operator()(ast::Program& program){\
+            removeUnused(program.Content->blocks);
+        }
+        
+        void operator()(ast::FunctionDeclaration& function){
+            removeUnused(function.Content->instructions);
         }
 
         void operator()(ast::GlobalVariableDeclaration&){
