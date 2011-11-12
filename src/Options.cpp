@@ -14,6 +14,7 @@ using namespace eddic;
 
 bool eddic::OptimizeIntegers;
 bool eddic::OptimizeStrings;
+bool eddic::OptimizeUnused;
 
 bool eddic::WarningUnused;
 
@@ -32,6 +33,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("optimize-all", "Enable all optimizations")
             ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
             ("optimize-integers", po::bool_switch(&OptimizeIntegers), "Enable the optimizations on integers")
+            ("optimize-unused", po::bool_switch(&OptimizeUnused), "Enable the removal of unused variables and functions")
             
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
@@ -45,7 +47,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         po::notify(options);
 
         if(options.count("optimize-all")){
-            OptimizeStrings = OptimizeIntegers = true;
+            OptimizeStrings = OptimizeIntegers = OptimizeUnused = true;
         }
 
         if(options.count("warning-all")){
