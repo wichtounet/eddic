@@ -56,17 +56,13 @@ struct GetIntValue : public boost::static_visitor<int> {
     int operator()(ast::Integer& integer) const {
         return integer.value; 
     }
-    
-    int operator()(ast::VariableValue&) const {
-        assert(false); //A variable is not constant
+   
+    //Other values are not integers
+    template<typename T> 
+    int operator()(T&) const {
+        assert(false);
 
         return -1; 
-    }
-    
-    int operator()(ast::Litteral&) const {
-        assert(false); //A litteral is not integer
-
-        return -1;
     }
 };
 
@@ -81,21 +77,17 @@ struct GetStringValue : public boost::static_visitor<std::string> {
 
         return acc;
     }
-
-    std::string operator()(ast::Integer&) const {
-        assert(false); //An integer is not a string
-
-        return "";
-    }
-
-    std::string operator()(ast::VariableValue&) const {
-        assert(false); //A variable is not constant
-
-        return "";
-    }
-
+    
     std::string operator()(ast::Litteral& litteral) const {
         return litteral.value;
+    }
+    
+    //Other values are not strings
+    template<typename T> 
+    std::string operator()(T&) const {
+        assert(false);
+
+        return ""; 
     }
 };
 
@@ -150,16 +142,10 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             return value;
         }
 
-        ast::Value operator()(ast::VariableValue& variable) const {
-            return variable; //A variable is not optimizable
-        }
-
-        ast::Value operator()(ast::Integer& integer) const {
-            return integer; //A variable is not optimizable
-        }
-
-        ast::Value operator()(ast::Litteral& litteral) const {
-            return litteral; //A variable is not optimizable
+        //No optimizations for other kind of values
+        template<typename T>
+        ast::Value operator()(T& value) const {
+            return value;
         }
 };
 
@@ -250,10 +236,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             removeUnused(function.Content->instructions);
         }
 
-        void operator()(ast::GlobalVariableDeclaration&){
-            //As the constantness of the value of a global variable is enforced, there is no need to optimize it
-        }
-
         void operator()(ast::FunctionCall& functionCall){
             auto start = functionCall.Content->values.begin();
             auto end = functionCall.Content->values.end();
@@ -273,21 +255,14 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             declaration.Content->value = boost::apply_visitor(optimizer, declaration.Content->value); 
         }
 
-        void operator()(ast::Swap&){
-            //Nothing to optimize in a swap
-        }
-
         void operator()(ast::BinaryCondition& binaryCondition){
             binaryCondition.Content->lhs = boost::apply_visitor(optimizer, binaryCondition.Content->lhs); 
             binaryCondition.Content->rhs = boost::apply_visitor(optimizer, binaryCondition.Content->rhs); 
         }
 
-        void operator()(ast::False&){
-            //Nothing to optimize
-        }
-
-        void operator()(ast::True&){
-            //Nothing to optimize
+        template<typename T>
+        void operator()(T&){
+            //Nothing to optimize for other types        
         }
 };
 
