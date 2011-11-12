@@ -89,16 +89,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 functionTable.addReference(mangled);
             }
         }
-        
-        void operator()(ast::VariableValue&){
-            //No function calls there
-        }
 
-        void operator()(ast::Swap&){
-            //No function calls there
-        }
-        
-        void operator()(ast::TerminalNode&){
+        template<typename T>        
+        void operator()(T&){
             //No function calls there
         }
 };

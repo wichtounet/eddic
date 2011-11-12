@@ -38,25 +38,10 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::Litteral& litteral){
             litteral.label = pool.label(litteral.value);
         }
-        
-        void operator()(ast::Swap&){
-            //No need for string checking in a swap
-        }
 
-        void operator()(ast::VariableValue&){
-            //No need for string checking in a variable reference
-        }
-        
-        void operator()(ast::False&){
-            //No need for string checking in a boolean
-        }
-        
-        void operator()(ast::True&){
-            //No need for string checking in a boolean
-        }
-        
-        void operator()(ast::Integer&){
-            //No need for string checking in a integer
+        template<typename T>        
+        void operator()(T&){
+            //No need for string checking in other types
         }
 };
 
