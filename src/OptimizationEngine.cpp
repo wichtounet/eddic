@@ -23,7 +23,7 @@
 using namespace eddic;
 
 struct GetIntValue : public boost::static_visitor<int> {
-    int operator()(ASTComposedValue& value) const {
+    int operator()(ast::ComposedValue& value) const {
         int acc = boost::apply_visitor(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
@@ -52,17 +52,17 @@ struct GetIntValue : public boost::static_visitor<int> {
         return acc;
     }
 
-    int operator()(ASTInteger& integer) const {
+    int operator()(ast::Integer& integer) const {
         return integer.value; 
     }
     
-    int operator()(ASTVariable&) const {
+    int operator()(ast::VariableValue&) const {
         assert(false); //A variable is not constant
 
         return -1; 
     }
     
-    int operator()(ASTLitteral&) const {
+    int operator()(ast::Litteral&) const {
         assert(false); //A litteral is not integer
 
         return -1;
@@ -70,7 +70,7 @@ struct GetIntValue : public boost::static_visitor<int> {
 };
 
 struct GetStringValue : public boost::static_visitor<std::string> {
-    std::string operator()(ASTComposedValue& value) const {
+    std::string operator()(ast::ComposedValue& value) const {
         std::string acc = boost::apply_visitor(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
@@ -81,31 +81,31 @@ struct GetStringValue : public boost::static_visitor<std::string> {
         return acc;
     }
 
-    std::string operator()(ASTInteger&) const {
+    std::string operator()(ast::Integer&) const {
         assert(false); //An integer is not a string
 
         return "";
     }
 
-    std::string operator()(ASTVariable&) const {
+    std::string operator()(ast::VariableValue&) const {
         assert(false); //A variable is not constant
 
         return "";
     }
 
-    std::string operator()(ASTLitteral& litteral) const {
+    std::string operator()(ast::Litteral& litteral) const {
         return litteral.value;
     }
 };
 
-struct ValueOptimizer : public boost::static_visitor<ASTValue> {
+struct ValueOptimizer : public boost::static_visitor<ast::Value> {
     private:
         StringPool& pool;
 
     public:
         ValueOptimizer(StringPool& p) : pool(p) {}
 
-        ASTValue operator()(ASTComposedValue& value) const {
+        ast::Value operator()(ast::ComposedValue& value) const {
             if(value.Content->operations.empty()){
                 return boost::apply_visitor(*this, value.Content->first);   
             }
@@ -116,13 +116,13 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
 
                 if(type == Type::INT){
                     if (OptimizeIntegers) {
-                        ASTInteger integer;
+                        ast::Integer integer;
                         integer.value = GetIntValue()(value);
                         return integer; 
                     }
                 } else if(type == Type::STRING){
                     if (OptimizeStrings) {
-                        ASTLitteral litteral;
+                        ast::Litteral litteral;
                         litteral.value = GetStringValue()(value);
                         litteral.label = pool.label(litteral.value);
                         return litteral;
@@ -149,15 +149,15 @@ struct ValueOptimizer : public boost::static_visitor<ASTValue> {
             return value;
         }
 
-        ASTValue operator()(ASTVariable& variable) const {
+        ast::Value operator()(ast::VariableValue& variable) const {
             return variable; //A variable is not optimizable
         }
 
-        ASTValue operator()(ASTInteger& integer) const {
+        ast::Value operator()(ast::Integer& integer) const {
             return integer; //A variable is not optimizable
         }
 
-        ASTValue operator()(ASTLitteral& litteral) const {
+        ast::Value operator()(ast::Litteral& litteral) const {
             return litteral; //A variable is not optimizable
         }
 };
@@ -177,11 +177,11 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
 
-        void operator()(GlobalVariableDeclaration&){
+        void operator()(ast::GlobalVariableDeclaration&){
             //As the constantness of the value of a global variable is enforced, there is no need to optimize it
         }
 
-        void operator()(ASTFunctionCall& functionCall){
+        void operator()(ast::FunctionCall& functionCall){
             auto start = functionCall.Content->values.begin();
             auto end = functionCall.Content->values.end();
 
@@ -192,33 +192,33 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ASTAssignment& assignment){
+        void operator()(ast::Assignment& assignment){
             assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
         }
 
-        void operator()(ASTDeclaration& declaration){
+        void operator()(ast::Declaration& declaration){
             declaration.Content->value = boost::apply_visitor(optimizer, declaration.Content->value); 
         }
 
-        void operator()(ASTSwap&){
+        void operator()(ast::Swap&){
             //Nothing to optimize in a swap
         }
 
-        void operator()(ASTBinaryCondition& binaryCondition){
+        void operator()(ast::BinaryCondition& binaryCondition){
             binaryCondition.Content->lhs = boost::apply_visitor(optimizer, binaryCondition.Content->lhs); 
             binaryCondition.Content->rhs = boost::apply_visitor(optimizer, binaryCondition.Content->rhs); 
         }
 
-        void operator()(ASTFalse&){
+        void operator()(ast::False&){
             //Nothing to optimize
         }
 
-        void operator()(ASTTrue&){
+        void operator()(ast::True&){
             //Nothing to optimize
         }
 };
 
-void OptimizationEngine::optimize(ASTProgram& program, FunctionTable& functionTable, StringPool& pool){
+void OptimizationEngine::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool){
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

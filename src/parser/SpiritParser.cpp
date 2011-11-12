@@ -260,7 +260,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
    qi::rule<Iterator, ast::Value()> constant;
    qi::rule<Iterator, ast::Integer()> integer;
    qi::rule<Iterator, ast::Litteral()> litteral;
-   qi::rule<Iterator, ast::Variable()> variable;
+   qi::rule<Iterator, ast::VariableValue()> variable;
    
    qi::rule<Iterator, ast::Condition()> condition;
    qi::rule<Iterator, ast::True()> true_;

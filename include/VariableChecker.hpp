@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct VariableChecker {
-    void check(ASTProgram& program);
+    void check(ast::Program& program);
 };
 
 } //end of eddic

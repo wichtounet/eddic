@@ -15,7 +15,7 @@ namespace eddic {
 class StringPool;
 
 struct StringChecker {
-   void check(ASTProgram& program, StringPool& pool);
+   void check(ast::Program& program, StringPool& pool);
 };
 
 } //end of eddic

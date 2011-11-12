@@ -19,7 +19,6 @@
 
 namespace eddic {
 
-class Value;
 class Variable;
 class IntermediateProgram;
 
@@ -41,7 +40,7 @@ class Context {
         Context(const Context& rhs) = delete;
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
-        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ASTValue& value);
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
 
         virtual bool exists(const std::string& a) const;
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;

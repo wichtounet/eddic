@@ -35,32 +35,32 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
-        void operator()(ASTLitteral& litteral){
+        void operator()(ast::Litteral& litteral){
             litteral.label = pool.label(litteral.value);
         }
         
-        void operator()(ASTSwap&){
+        void operator()(ast::Swap&){
             //No need for string checking in a swap
         }
 
-        void operator()(ASTVariable&){
+        void operator()(ast::VariableValue&){
             //No need for string checking in a variable reference
         }
         
-        void operator()(ASTFalse&){
+        void operator()(ast::False&){
             //No need for string checking in a boolean
         }
         
-        void operator()(ASTTrue&){
+        void operator()(ast::True&){
             //No need for string checking in a boolean
         }
         
-        void operator()(ASTInteger&){
+        void operator()(ast::Integer&){
             //No need for string checking in a integer
         }
 };
 
-void StringChecker::check(ASTProgram& program, StringPool& pool){
+void StringChecker::check(ast::Program& program, StringPool& pool){
    StringCheckerVisitor visitor(pool);
    visitor(program); 
 }

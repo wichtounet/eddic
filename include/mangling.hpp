@@ -43,7 +43,7 @@ std::string mangle(const std::string& functionName, const std::vector<std::share
     return ss.str();
 }
 
-std::string mangle(const std::string& functionName, const std::vector<ASTValue>& values);
+std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values);
 
 } //end of eddic
 

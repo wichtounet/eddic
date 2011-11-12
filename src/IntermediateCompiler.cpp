@@ -31,7 +31,7 @@
 
 using namespace eddic;
 
-inline bool isImmediate(ASTValue& value){
+inline bool isImmediate(ast::Value& value){
    return boost::apply_visitor(IsImmediateVisitor(), value); 
 }
 
@@ -52,9 +52,9 @@ inline Operation toOperation(char op){
     }
 }
 
-inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
+inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
-inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, IntermediateProgram& program){
+inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, IntermediateProgram& program){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     auto registerA = program.registers(EAX);
@@ -82,7 +82,7 @@ inline std::shared_ptr<Operand> performIntOperation(ASTComposedValue& value, Int
     return registerB;
 }
 
-inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program);
+inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ast::ComposedValue& value, IntermediateProgram& program);
 
 class PushValue : public boost::static_visitor<> {
     private:
@@ -91,7 +91,7 @@ class PushValue : public boost::static_visitor<> {
     public:
         PushValue(IntermediateProgram& p) : program(p) {}
 
-        void operator()(ASTLitteral& litteral){
+        void operator()(ast::Litteral& litteral){
             program.addInstruction(
                 program.factory().createPush(
                     createImmediateOperand(litteral.label)
@@ -105,7 +105,7 @@ class PushValue : public boost::static_visitor<> {
             );
         }
 
-        void operator()(ASTInteger& integer){
+        void operator()(ast::Integer& integer){
             program.addInstruction(
                 program.factory().createPush(
                     createImmediateOperand(integer.value)
@@ -113,7 +113,7 @@ class PushValue : public boost::static_visitor<> {
             );
         }
 
-        void operator()(ASTVariable& variable){
+        void operator()(ast::VariableValue& variable){
             auto var = variable.Content->var;
 
             if(var->type() == Type::INT){
@@ -139,7 +139,7 @@ class PushValue : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ASTComposedValue& value){
+        void operator()(ast::ComposedValue& value){
             Type type = GetTypeVisitor()(value);
 
             if(type == Type::INT){
@@ -161,11 +161,11 @@ class AssignValueToOperand : public boost::static_visitor<> {
     public:
         AssignValueToOperand(std::shared_ptr<Operand> op, IntermediateProgram& p) : operand(op), program(p) {}
 
-        void operator()(ASTLitteral&){
+        void operator()(ast::Litteral&){
             assert(false); //Cannot assign a string to a single operand
         }
 
-        void operator()(ASTInteger& integer){
+        void operator()(ast::Integer& integer){
             program.addInstruction(
                 program.factory().createMove(
                     createImmediateOperand(integer.value),
@@ -174,7 +174,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
             ); 
         }
 
-        void operator()(ASTVariable& variable){
+        void operator()(ast::VariableValue& variable){
             if(variable.Content->var->type() == Type::INT){
                 program.addInstruction(program.factory().createMove(variable.Content->var->toIntegerOperand(), operand));
             } else {
@@ -182,7 +182,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ASTComposedValue& value){
+        void operator()(ast::ComposedValue& value){
             assert(GetTypeVisitor()(value) == Type::INT); //Cannot be used for string operations
 
             program.addInstruction(program.factory().createMove(performIntOperation(value, program), operand));
@@ -197,7 +197,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
     public:
         AssignValueToVariable(std::shared_ptr<Variable> v, IntermediateProgram& p) : variable(v), program(p) {}
 
-        void operator()(ASTLitteral& litteral){
+        void operator()(ast::Litteral& litteral){
             auto operands = variable->toStringOperand();
 
             program.addInstruction(
@@ -215,7 +215,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
             );
         }
 
-        void operator()(ASTInteger& integer){
+        void operator()(ast::Integer& integer){
             program.addInstruction(
                 program.factory().createMove(
                     createImmediateOperand(integer.value),
@@ -224,7 +224,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
             ); 
         }
 
-        void operator()(ASTVariable& variableSource){
+        void operator()(ast::VariableValue& variableSource){
             auto var = variableSource.Content->var;
 
             if(var->type() == Type::INT){
@@ -238,7 +238,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ASTComposedValue& value){
+        void operator()(ast::ComposedValue& value){
             Type type = GetTypeVisitor()(value);
 
             if(type == Type::INT){
@@ -271,12 +271,12 @@ inline JumpCondition toJumpNotCondition(std::string op){
     assert(false); //Not handled
 }
 
-inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& condition, const std::string& label, int labelIndex) {
+inline void writeILJumpIfNot(IntermediateProgram& program, ast::Condition& condition, const std::string& label, int labelIndex) {
     //No need to jump for a true boolean value 
-    if(boost::get<ASTFalse>(&condition)){
+    if(boost::get<ast::False>(&condition)){
         program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
-    } else if(auto* ptr = boost::get<ASTBinaryCondition>(&condition)){
-        ASTBinaryCondition& binaryCondition = *ptr;
+    } else if(auto* ptr = boost::get<ast::BinaryCondition>(&condition)){
+        ast::BinaryCondition& binaryCondition = *ptr;
         
         AssignValueToOperand leftVisitor(program.registers(EAX), program);
 
@@ -291,7 +291,7 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ASTCondition& conditi
     }
 }
 
-inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ASTComposedValue& value, IntermediateProgram& program){
+inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStringOperation(ast::ComposedValue& value, IntermediateProgram& program){
     assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
     auto registerA = program.registers(EAX);
@@ -322,7 +322,7 @@ inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStri
     return make_pair(registerA, registerB); 
 }
 
-inline void putInRegister(ASTValue& value, std::shared_ptr<Operand> operand, IntermediateProgram& program){
+inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program){
     if(isImmediate(value)){
         AssignValueToOperand visitor(operand, program);
         boost::apply_visitor(visitor, value);
@@ -346,7 +346,7 @@ class CompilerVisitor : public boost::static_visitor<> {
     public:
         CompilerVisitor(StringPool& p, IntermediateProgram& intermediateProgram) : pool(p), program(intermediateProgram) {}
         
-        void operator()(ASTProgram& p){
+        void operator()(ast::Program& p){
             MainDeclaration().writeIL(program);
 
             visit_each(*this, p.Content->blocks);
@@ -358,7 +358,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             p.Content->context->writeIL(program);
         }
 
-        void operator()(ASTFunctionDeclaration& function){
+        void operator()(ast::FunctionDeclaration& function){
             program.addInstruction(program.factory().createFunctionDeclaration(function.Content->mangledName, function.Content->context->size()));
 
             visit_each(*this, function.Content->instructions);
@@ -366,11 +366,11 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createFunctionExit(function.Content->context->size()));
         }
 
-        void operator()(GlobalVariableDeclaration&){
+        void operator()(ast::GlobalVariableDeclaration&){
             //Nothing to compile, the global variable values are written using global contexts
         }
 
-        void operator()(ASTIf& if_){
+        void operator()(ast::If& if_){
             //TODO Make something accessible for others operations
             static int labels = 0;
 
@@ -404,8 +404,8 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                 program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
 
-                for (std::vector<ASTElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
-                    ASTElseIf& elseIf = if_.Content->elseIfs[i];
+                for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
+                    ast::ElseIf& elseIf = if_.Content->elseIfs[i];
 
                     program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
 
@@ -437,17 +437,17 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ASTAssignment& assignment){
+        void operator()(ast::Assignment& assignment){
             AssignValueToVariable visitor(assignment.Content->context->getVariable(assignment.Content->variableName), program);
             boost::apply_visitor(visitor, assignment.Content->value);
         }
 
-        void operator()(ASTDeclaration& declaration){
+        void operator()(ast::Declaration& declaration){
             AssignValueToVariable visitor(declaration.Content->context->getVariable(declaration.Content->variableName), program);
             boost::apply_visitor(visitor, declaration.Content->value);
         }
 
-        void operator()(ASTSwap& swap){
+        void operator()(ast::Swap& swap){
             auto lhs_var = swap.Content->lhs_var;
             auto rhs_var = swap.Content->rhs_var;
 
@@ -486,7 +486,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ASTWhile& while_){
+        void operator()(ast::While& while_){
             //TODO Make something accessible for others operations
             static int labels = 0;
 
@@ -504,7 +504,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createLabel(label("WL", endLabel)));
         }
 
-        void operator()(ASTFor for_){
+        void operator()(ast::For for_){
             visit_optional(*this, for_.Content->start);
 
             static int labels = -1;
@@ -527,11 +527,11 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
-        void operator()(ASTForeach& foreach){
-            ASTInteger fromValue;
+        void operator()(ast::Foreach& foreach){
+            ast::Integer fromValue;
             fromValue.value = foreach.Content->from;
             
-            ASTInteger toValue;
+            ast::Integer toValue;
             toValue.value = foreach.Content->to;
 
             AssignValueToVariable visitor(foreach.Content->context->getVariable(foreach.Content->variableName), program);
@@ -546,14 +546,14 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createLabel(label("start_foreach", labels)));
 
             //Create a condition
-            ASTVariable v;
+            ast::VariableValue v;
             v.Content->variableName = foreach.Content->variableName;
             v.Content->context = foreach.Content->context;
             v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
         
             //Avoid doing all that conversion stuff...  
-            ASTCondition condition; 
-            ASTBinaryCondition binaryCondition; 
+            ast::Condition condition; 
+            ast::BinaryCondition binaryCondition; 
             binaryCondition.Content->lhs = v;
             binaryCondition.Content->rhs = toValue;
             binaryCondition.Content->op = "<=";
@@ -566,12 +566,12 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit_each(*this, foreach.Content->instructions);
 
             //Increment the variable
-            ASTInteger inc;
+            ast::Integer inc;
             inc.value = 1;
            
-            ASTComposedValue addition;
+            ast::ComposedValue addition;
             addition.Content->first = v;
-            addition.Content->operations.push_back(boost::tuples::tuple<char, ASTValue>('+', inc));
+            addition.Content->operations.push_back(boost::tuples::tuple<char, ast::Value>('+', inc));
            
             visit_non_variant(visitor, addition);
             
@@ -580,7 +580,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createLabel(label("end_foreach", labels)));
         }
 
-        void operator()(ASTFunctionCall& functionCall){
+        void operator()(ast::FunctionCall& functionCall){
             PushValue visitor(program);
             for(auto& value : functionCall.Content->values){
                 boost::apply_visitor(visitor, value);
@@ -625,7 +625,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 };
 
-void IntermediateCompiler::compile(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+void IntermediateCompiler::compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
     CompilerVisitor visitor(pool, intermediateProgram);
     visitor(program);
 }
