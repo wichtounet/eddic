@@ -55,6 +55,16 @@ std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Va
     assert(false);
 }
 
+int Context::getIndex(const std::string& variable) const {
+    auto iter = m_visibles.find(variable);
+
+    if(iter == m_visibles.end()){
+        return m_parent->getIndex(variable);
+    }
+    
+    return iter->second;
+}
+
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
     auto iter = m_visibles.find(variable);
 
@@ -63,6 +73,19 @@ std::shared_ptr<Variable> Context::getVariable(const std::string& variable) cons
     }
     
     return getVariable(iter->second);
+}
+
+//TODO Could be more efficient 
+void Context::removeVariable(const std::string& variable){
+    int index = getIndex(variable); 
+
+    auto iter = m_stored.find(index);
+
+    if(iter == m_stored.end()){
+        return m_parent->removeVariable(variable);
+    }
+
+    m_stored.erase(iter);
 }
 
 std::shared_ptr<Variable> Context::getVariable(int index) const {

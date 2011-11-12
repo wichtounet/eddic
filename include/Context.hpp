@@ -41,10 +41,13 @@ class Context {
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        virtual void removeVariable(const std::string& variable);
 
         virtual bool exists(const std::string& a) const;
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
         virtual std::shared_ptr<Variable> getVariable(int index) const;
+        
+        virtual int getIndex(const std::string& variable) const ;
 
         StoredVariables::const_iterator begin();
         StoredVariables::const_iterator end();

@@ -19,6 +19,7 @@
 #include "GetTypeVisitor.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
+#include "Variable.hpp"
 
 using namespace eddic;
 
@@ -162,6 +163,41 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         }
 };
 
+struct CanBeRemoved : public boost::static_visitor<bool> {
+    private:
+        FunctionTable& functionTable;
+
+    public:
+        CanBeRemoved(FunctionTable& table) : functionTable(table) {}
+
+        bool operator()(ast::FirstLevelBlock block){
+            return boost::apply_visitor(*this, block);
+        }
+
+        bool operator()(ast::GlobalVariableDeclaration& declaration){
+            if(OptimizeUnused){
+                if(declaration.Content->context->getVariable(declaration.Content->variableName)->referenceCount() <= 0){
+                    //Removing from the AST is not enough, because it is stored in the context now
+                    declaration.Content->context->removeVariable(declaration.Content->variableName);
+                    
+                    return true;   
+                }
+            }
+
+            return false;
+        }
+
+        bool operator()(ast::FunctionDeclaration& declaration){
+            if(OptimizeUnused){
+                if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
+                    return true;
+                }
+            }
+
+            return false;
+        }
+};
+
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
         FunctionTable& functionTable;
@@ -171,11 +207,22 @@ struct OptimizationVisitor : public boost::static_visitor<> {
     public:
         OptimizationVisitor(FunctionTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
 
-        AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_FUNCTION_DECLARATION()  
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
+
+        void operator()(ast::Program& program){\
+            auto iter = program.Content->blocks.begin();
+            auto end = program.Content->blocks.end();
+
+            CanBeRemoved visitor(functionTable);
+            auto newEnd = remove_if(iter, end, visitor);
+
+            program.Content->blocks.erase(newEnd, end);
+
+            visit_each(*this, program.Content->blocks);
+        }
 
         void operator()(ast::GlobalVariableDeclaration&){
             //As the constantness of the value of a global variable is enforced, there is no need to optimize it
