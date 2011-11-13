@@ -7,7 +7,8 @@ int defaultA;
 string defaultB;
 
 //Global array
-int globalArray[5];
+int globalArrayA[10];
+string globalArrayB[10];
 
 //Global unused variable
 int globalUnused = 2222;
