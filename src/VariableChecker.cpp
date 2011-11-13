@@ -73,7 +73,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, true, declaration.Content->arraySize);
+        Type type(baseType, declaration.Content->arraySize);
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }

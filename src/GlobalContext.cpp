@@ -29,18 +29,36 @@ using namespace eddic;
 
 void GlobalContext::writeIL(IntermediateProgram& program){
     for(auto it : m_stored){
-        if (it.second->type().base() == BaseType::INT) {
-            program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
-        } else if (it.second->type().base() == BaseType::STRING) {
-            auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-            program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
+        Type type = it.second->type();
+
+        if(type.isArray()){
+            program.addInstruction(program.factory().createGlobalArray(it.second->position().name(), type.base(), type.size()));
+        } else {
+            if (type.base() == BaseType::INT) {
+                program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
+            } else if (type.base() == BaseType::STRING) {
+                auto value = boost::get<std::pair<std::string, int>>(it.second->val());
+                program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
+            }
         }
     }
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
     //A global variable must have a value
-    assert(false);
+    assert(type.isArray());
+    
+    Position position(GLOBAL, variable);
+
+    auto v = std::make_shared<Variable>(variable, type, position);
+
+    m_visibles[variable] = currentVariable;
+
+    storeVariable(currentVariable, v);
+    
+    currentVariable++;
+
+    return v;
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){

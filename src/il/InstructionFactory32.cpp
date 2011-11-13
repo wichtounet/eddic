@@ -18,6 +18,7 @@
 #include "il/Push.hpp"
 #include "il/GlobalStringVariable.hpp"
 #include "il/GlobalIntVariable.hpp"
+#include "il/GlobalArray.hpp"
 #include "il/PrintLineFunction.hpp"
 #include "il/PrintStringFunction.hpp"
 #include "il/PrintIntegerFunction.hpp"
@@ -79,6 +80,10 @@ std::shared_ptr<Instruction> InstructionFactory32::createGlobalIntVariable(std::
 
 std::shared_ptr<Instruction> InstructionFactory32::createGlobalStringVariable(std::string name, std::string label, int size) const {
     return std::make_shared<GlobalStringVariable>(name, label, size); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalArray(std::string name, BaseType type, int size) const {
+    return std::make_shared<GlobalArray>(name, type, size);
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createPrintStringFunction() const {
