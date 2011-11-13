@@ -55,6 +55,18 @@ bool eddic::isType(const std::string& type){
     return type == "int" || type == "void" || type == "string";
 }
 
+BaseType eddic::stringToBaseType(const std::string& type){
+    if (type == "int") {
+        return BaseType::INT;
+    } else if (type == "string"){
+        return BaseType::STRING;
+    } else if(type == "void") {
+        return BaseType::VOID;
+    }
+
+    throw SemanticalException("Invalid type");
+}
+
 Type eddic::stringToType(const std::string& type){
     if (type == "int") {
         return Type(BaseType::INT);
