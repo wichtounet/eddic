@@ -21,7 +21,7 @@ enum class BaseType : unsigned int {
 
 class Type {
     private:
-        BaseType base;
+        BaseType type;
         bool array;
         unsigned int m_size;
     
@@ -29,7 +29,7 @@ class Type {
         Type(BaseType base);
         Type(BaseType base, unsigned int size);
         
-        BaseType type();
+        BaseType base();
         bool isArray();
         unsigned int size();
 };

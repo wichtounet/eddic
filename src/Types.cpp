@@ -12,6 +12,21 @@
 
 using namespace eddic;
 
+Type::Type(BaseType base) : type(base), array(false), m_size(0) {}
+Type::Type(BaseType base, unsigned int size) : type(base), array(true), m_size(size)
+
+BaseType Type::base(){
+    return type;
+}
+
+bool Type::isArray(){
+    return array;
+}
+
+unsigned int Type::size(){
+    return m_size;
+}
+
 const int typeSizes[(int) Type::COUNT] = { 8, 4, 0 };
 
 int eddic::size(BaseType type){
