@@ -14,7 +14,7 @@
 
 #include "ast/Integer.hpp"
 #include "ast/Litteral.hpp"
-#include "ast/Variable.hpp"
+#include "ast/VariableValue.hpp"
 
 namespace eddic {
 
