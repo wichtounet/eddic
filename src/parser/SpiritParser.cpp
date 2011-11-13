@@ -171,8 +171,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
         declaration %= 
                 lexer.word 
             >>  lexer.word 
-            >>  lexer.assign 
-            >>  value;
+            >>  -(lexer.assign >> value);
         
         assignment %= 
                 lexer.word 
