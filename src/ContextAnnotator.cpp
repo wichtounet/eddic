@@ -45,6 +45,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::GlobalVariableDeclaration& declaration){
             declaration.Content->context = currentContext;
         }
+        
+        void operator()(ast::GlobalArrayDeclaration& declaration){
+            declaration.Content->context = currentContext;
+        }
 
         void operator()(ast::FunctionDeclaration& function){
             currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);

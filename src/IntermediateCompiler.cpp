@@ -369,6 +369,10 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::GlobalVariableDeclaration&){
             //Nothing to compile, the global variable values are written using global contexts
         }
+        
+        void operator()(ast::GlobalArrayDeclaration&){
+            //Nothing to compile, the global arrays are written using global contexts
+        }
 
         void operator()(ast::If& if_){
             //TODO Make something accessible for others operations

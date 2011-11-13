@@ -48,7 +48,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::GlobalVariableDeclaration&) const {
-        std::cout << indent() << "GlobalVariable" << std::endl; 
+        std::cout << indent() << "Global Variable" << std::endl; 
+    }
+    
+    void operator()(ast::GlobalArrayDeclaration&) const {
+        std::cout << indent() << "Global Array" << std::endl; 
     }
 
     void operator()(ast::For& for_) const {

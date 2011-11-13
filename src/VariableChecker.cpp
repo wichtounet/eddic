@@ -66,6 +66,16 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }
     }
+
+    void operator()(ast::GlobalArrayDeclaration& declaration){
+        if (declaration.Content->context->exists(declaration.Content->arrayName)) {
+            throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared");
+        }
+
+        Type type = stringToType(declaration.Content->arrayType); 
+
+        //TODO Add global array to the context 
+    }
     
     void operator()(ast::Foreach& foreach){
         if(foreach.Content->context->exists(foreach.Content->variableName)){
@@ -197,6 +207,10 @@ struct UnusedInspector : public boost::static_visitor<> {
     }
 
     void operator()(ast::GlobalVariableDeclaration&){
+        //Nothing to check there
+    }
+
+    void operator()(ast::GlobalArrayDeclaration&){
         //Nothing to check there
     }
 };

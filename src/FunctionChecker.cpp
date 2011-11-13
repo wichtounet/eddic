@@ -55,6 +55,10 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         void operator()(ast::GlobalVariableDeclaration&){
             //Stop recursion here
         }
+        
+        void operator()(ast::GlobalArrayDeclaration&){
+            //Stop recursion here
+        }
 };
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
@@ -116,6 +120,10 @@ class FunctionInspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalVariableDeclaration&){
+            //Nothing to warn about there
+        }
+
+        void operator()(ast::GlobalArrayDeclaration&){
             //Nothing to warn about there
         }
 };
