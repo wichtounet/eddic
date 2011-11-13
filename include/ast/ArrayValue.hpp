@@ -5,30 +5,44 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VALUES_DEF_H
-#define VALUES_DEF_H
+#ifndef AST_ARRAY_VALUE_H
+#define AST_ARRAY_VALUE_H
+
+#include <memory>
 
 #include <boost/intrusive_ptr.hpp>
+
 #include "ast/Deferred.hpp"
 
 namespace eddic {
 
+class Context;
+class Variable;
+
 namespace ast {
 
-struct Integer;
-struct Litteral;
+struct ASTArrayValue {
+    std::shared_ptr<Context> context;
 
-struct ASTVariableValue;
-typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
+    std::string arrayName;
+    std::shared_ptr<Variable> var;
+    Value indexValue;
 
-struct ASTComposedValue;
-typedef Deferred<ASTComposedValue, boost::intrusive_ptr<ASTComposedValue>> ComposedValue;
+    mutable long references;
+    ASTArrayValue() : references(0) {}
+};
 
-struct ASTArrayValue;
 typedef Deferred<ASTArrayValue, boost::intrusive_ptr<ASTArrayValue>> ArrayValue;
 
 } //end of ast
 
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ast::ArrayValue, 
+    (std::string, Content->arrayName)
+    (eddic::ast::Value, Content->indexValue)
+)
 
 #endif

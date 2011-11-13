@@ -24,7 +24,8 @@ typedef boost::variant<
             Integer, 
             Litteral, 
             VariableValue,
-            ComposedValue
+            ComposedValue,
+            ArrayValue
         > Value;
 
 } //end of ast
@@ -32,5 +33,6 @@ typedef boost::variant<
 } //end of eddic
 
 #include "ast/ComposedValue.hpp"
+#include "ast/ArrayValue.hpp"
 
 #endif
