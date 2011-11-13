@@ -183,6 +183,14 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
             >>  lexer.word 
             >>  -(lexer.assign >> constant)
             >>  lexer.stop;
+        
+        globalArrayDeclaration %= 
+                lexer.word 
+            >>  lexer.word 
+            >>  lexer.left_bracket
+            >>  lexer.integer
+            >>  lexer.right_bracket
+            >>  lexer.stop;
 
         functionCall %=
                 lexer.word
@@ -223,47 +231,48 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
 
         program %=
                 qi::eps 
-            >>  *(function | globalDeclaration);
+            >>  *(function | globalDeclaration | globalArrayDeclaration);
 
         //Name the rules
         globalDeclaration.name("EDDI global variable");
         function.name("EDDI function declaration");
         program.name("EDDI program");
-   }
+    }
 
-   qi::rule<Iterator, ast::Program()> program;
-   qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
-   qi::rule<Iterator, ast::FunctionDeclaration()> function;
-   qi::rule<Iterator, ast::FunctionParameter()> arg;
-   
-   qi::rule<Iterator, ast::Instruction()> instruction;
-   qi::rule<Iterator, ast::Instruction()> repeatable_instruction;
-   qi::rule<Iterator, ast::Swap()> swap;
-   qi::rule<Iterator, ast::FunctionCall()> functionCall;
-   qi::rule<Iterator, ast::Declaration()> declaration;
-   qi::rule<Iterator, ast::Assignment()> assignment;
-   qi::rule<Iterator, ast::While()> while_;
-   qi::rule<Iterator, ast::For()> for_;
-   qi::rule<Iterator, ast::Foreach()> foreach_;
-   qi::rule<Iterator, ast::If()> if_;
+    qi::rule<Iterator, ast::Program()> program;
+    qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
+    qi::rule<Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
+    qi::rule<Iterator, ast::FunctionDeclaration()> function;
+    qi::rule<Iterator, ast::FunctionParameter()> arg;
 
-   qi::rule<Iterator, ast::Else()> else_;
-   qi::rule<Iterator, ast::ElseIf()> else_if_;
-   
-   qi::rule<Iterator, ast::Value()> value;
-   qi::rule<Iterator, ast::Value()> primaryValue;
-   qi::rule<Iterator, ast::Value()> unaryValue;
-   qi::rule<Iterator, ast::ComposedValue()> additiveValue;
-   qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
-   qi::rule<Iterator, ast::Value()> constant;
-   qi::rule<Iterator, ast::Integer()> integer;
-   qi::rule<Iterator, ast::Litteral()> litteral;
-   qi::rule<Iterator, ast::VariableValue()> variable;
-   
-   qi::rule<Iterator, ast::Condition()> condition;
-   qi::rule<Iterator, ast::True()> true_;
-   qi::rule<Iterator, ast::False()> false_;
-   qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
+    qi::rule<Iterator, ast::Instruction()> instruction;
+    qi::rule<Iterator, ast::Instruction()> repeatable_instruction;
+    qi::rule<Iterator, ast::Swap()> swap;
+    qi::rule<Iterator, ast::FunctionCall()> functionCall;
+    qi::rule<Iterator, ast::Declaration()> declaration;
+    qi::rule<Iterator, ast::Assignment()> assignment;
+    qi::rule<Iterator, ast::While()> while_;
+    qi::rule<Iterator, ast::For()> for_;
+    qi::rule<Iterator, ast::Foreach()> foreach_;
+    qi::rule<Iterator, ast::If()> if_;
+
+    qi::rule<Iterator, ast::Else()> else_;
+    qi::rule<Iterator, ast::ElseIf()> else_if_;
+
+    qi::rule<Iterator, ast::Value()> value;
+    qi::rule<Iterator, ast::Value()> primaryValue;
+    qi::rule<Iterator, ast::Value()> unaryValue;
+    qi::rule<Iterator, ast::ComposedValue()> additiveValue;
+    qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
+    qi::rule<Iterator, ast::Value()> constant;
+    qi::rule<Iterator, ast::Integer()> integer;
+    qi::rule<Iterator, ast::Litteral()> litteral;
+    qi::rule<Iterator, ast::VariableValue()> variable;
+
+    qi::rule<Iterator, ast::Condition()> condition;
+    qi::rule<Iterator, ast::True()> true_;
+    qi::rule<Iterator, ast::False()> false_;
+    qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
 };
 
 bool SpiritParser::parse(const std::string& file, ast::Program& program){

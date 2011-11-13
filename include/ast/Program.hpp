@@ -19,6 +19,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
+#include "ast/GlobalArrayDeclaration.hpp"
 
 #include "Context.hpp"
 
@@ -28,7 +29,11 @@ class Context;
 
 namespace ast {
 
-typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
+typedef boost::variant<
+            FunctionDeclaration, 
+            GlobalVariableDeclaration,
+            GlobalArrayDeclaration
+        > FirstLevelBlock;
 
 //A source EDDI program
 struct ASTProgram {
