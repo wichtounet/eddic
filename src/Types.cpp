@@ -15,15 +15,15 @@ using namespace eddic;
 Type::Type(BaseType base) : type(base), array(false), m_size(0) {}
 Type::Type(BaseType base, unsigned int size) : type(base), array(true), m_size(size)
 
-BaseType Type::base(){
+BaseType Type::base() const {
     return type;
 }
 
-bool Type::isArray(){
+bool Type::isArray() const {
     return array;
 }
 
-unsigned int Type::size(){
+unsigned int Type::size() const {
     return m_size;
 }
 
@@ -35,9 +35,9 @@ int eddic::size(BaseType type){
 
 int eddic::size(Type type){
     if(type.isArray()){
-        return size(type.type()) * type.size() + size(BaseType::INT); 
+        return size(type.base()) * type.size() + size(BaseType::INT); 
     } else {
-        return size(type.type());
+        return size(type.base());
     }
 }
 

@@ -29,9 +29,9 @@ class Type {
         Type(BaseType base);
         Type(BaseType base, unsigned int size);
         
-        BaseType base();
-        bool isArray();
-        unsigned int size();
+        BaseType base() const;
+        bool isArray() const;
+        unsigned int size() const;
 };
 
 int size(BaseType type);
