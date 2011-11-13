@@ -182,8 +182,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
         globalDeclaration %= 
                 lexer.word 
             >>  lexer.word 
-            >>  lexer.assign
-            >>  constant
+            >>  -(lexer.assign >> constant)
             >>  lexer.stop;
 
         functionCall %=
