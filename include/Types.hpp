@@ -11,6 +11,7 @@
 #include <string>
 
 namespace eddic {
+
 enum class BaseType : unsigned int {
     STRING,
     INT,
@@ -32,7 +33,13 @@ class Type {
         BaseType base() const;
         bool isArray() const;
         unsigned int size() const;
+
+        friend bool operator==(const Type& lhs, const Type& rhs);
+        friend bool operator!=(const Type& lhs, const Type& rhs);
 };
+        
+bool operator==(const Type& lhs, const Type& rhs);
+bool operator!=(const Type& lhs, const Type& rhs);
 
 int size(BaseType type);
 int size(Type type);

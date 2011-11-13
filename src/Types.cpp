@@ -13,7 +13,7 @@
 using namespace eddic;
 
 Type::Type(BaseType base) : type(base), array(false), m_size(0) {}
-Type::Type(BaseType base, unsigned int size) : type(base), array(true), m_size(size)
+Type::Type(BaseType base, unsigned int size) : type(base), array(true), m_size(size) {}
 
 BaseType Type::base() const {
     return type;
@@ -27,7 +27,17 @@ unsigned int Type::size() const {
     return m_size;
 }
 
-const int typeSizes[(int) Type::COUNT] = { 8, 4, 0 };
+bool eddic::operator==(const Type& lhs, const Type& rhs){
+    return lhs.type == rhs.type && 
+           lhs.array == rhs.array &&
+           lhs.m_size == rhs.m_size; 
+}
+
+bool eddic::operator!=(const Type& lhs, const Type& rhs){
+    return !(lhs == rhs); 
+}
+
+const int typeSizes[(int) BaseType::COUNT] = { 8, 4, 0 };
 
 int eddic::size(BaseType type){
     return typeSizes[(unsigned int) type];
@@ -47,11 +57,11 @@ bool eddic::isType(const std::string& type){
 
 Type eddic::stringToType(const std::string& type){
     if (type == "int") {
-        return BaseType(Type::INT);
+        return Type(BaseType::INT);
     } else if (type == "string"){
-        return BaseType(Type::STRING);
+        return Type(BaseType::STRING);
     } else if(type == "void") {
-        return BaseType(Type::VOID);
+        return Type(BaseType::VOID);
     }
 
     throw SemanticalException("Invalid type");
