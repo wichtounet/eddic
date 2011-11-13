@@ -27,7 +27,7 @@ struct ASTDeclaration {
 
     std::string variableType;
     std::string variableName;
-    Value value;
+    boost::optional<Value> value;
 
     mutable long references;
     ASTDeclaration() : references(0) {}
@@ -44,7 +44,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Declaration, 
     (std::string, Content->variableType)
     (std::string, Content->variableName)
-    (eddic::ast::Value, Content->value)
+    (boost::optional<eddic::ast::Value>, Content->value)
 )
 
 #endif

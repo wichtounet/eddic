@@ -97,9 +97,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::Declaration& declaration) const {
         std::cout << indent() << "Variable declaration" << std::endl; 
 
-        ++level;
-        visit(*this, declaration.Content->value);
-        --level;
+        if(declaration.Content->value){
+            ++level;
+            visit(*this, *declaration.Content->value);
+            --level;
+        }
     }
 
     void operator()(ast::Assignment& assign) const {

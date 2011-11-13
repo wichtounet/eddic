@@ -18,6 +18,7 @@ class StringPool;
 class FunctionTable;
 class IntermediateProgram;
 
+void defineDefaultValues(ast::Program& program);
 void defineContexts(ast::Program& program);
 
 void checkVariables(ast::Program& program);

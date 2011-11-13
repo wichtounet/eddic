@@ -55,7 +55,7 @@ void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
 void operator()(ast::Declaration& declaration){\
-    visit(*this, declaration.Content->value);\
+    visit(*this, *declaration.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
@@ -82,7 +82,7 @@ void operator()(ast::FunctionDeclaration& function){\
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(ast::GlobalVariableDeclaration& declaration){\
-    visit(*this, declaration.Content->value);\
+    visit(*this, *declaration.Content->value);\
 }
 
 #endif

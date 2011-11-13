@@ -120,7 +120,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::Declaration& declaration){
             declaration.Content->context = currentContext;
             
-            visit(*this, declaration.Content->value);
+            visit(*this, *declaration.Content->value);
         }
         
         void operator()(ast::Assignment& assignment){

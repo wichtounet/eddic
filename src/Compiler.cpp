@@ -28,6 +28,7 @@ static const bool debug = false;
 
 #include "ast/Program.hpp"
 
+#include "DefaultValues.hpp"
 #include "DebugVisitor.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "ContextAnnotator.hpp"
@@ -71,6 +72,7 @@ int Compiler::compile(const string& file) {
         TIMER_END(parsing)
 
         if(parsing){
+            defineDefaultValues(program);
             defineContexts(program);
               
             StringPool pool;
@@ -114,6 +116,12 @@ int Compiler::compile(const string& file) {
     cout << "Compilation took " << timer.elapsed() << "s" << endl;
 
     return code;
+}
+
+void eddic::defineDefaultValues(ast::Program& program){
+    DebugTimer<debug> timer("Define default values");
+    DefaultValues values;
+    values.fill(program);
 }
 
 void eddic::defineContexts(ast::Program& program){
