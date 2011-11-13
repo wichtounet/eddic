@@ -25,7 +25,7 @@ struct ASTGlobalVariableDeclaration {
     
     std::string variableType;
     std::string variableName;
-    Value value;
+    boost::optional<Value> value;
 };
 
 typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
@@ -39,7 +39,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalVariableDeclaration, 
     (std::string, Content->variableType)
     (std::string, Content->variableName)
-    (eddic::ast::Value, Content->value)
+    (boost::optional<eddic::ast::Value>, Content->value)
 )
 
 #endif
