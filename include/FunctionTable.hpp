@@ -21,6 +21,8 @@ struct ParameterType {
     std::string name;
     Type paramType;
 
+    ParameterType(const std::string& n, Type t) : name(n), paramType(t) {}
+
     //To be compliant with mangling
     Type type(){
         return paramType;

@@ -116,7 +116,7 @@ class PushValue : public boost::static_visitor<> {
         void operator()(ast::VariableValue& variable){
             auto var = variable.Content->var;
 
-            if(var->type() == Type::INT){
+            if(var->type().base() == BaseType::INT){
                 program.addInstruction(
                     program.factory().createPush(
                         var->toIntegerOperand()
@@ -142,9 +142,9 @@ class PushValue : public boost::static_visitor<> {
         void operator()(ast::ComposedValue& value){
             Type type = GetTypeVisitor()(value);
 
-            if(type == Type::INT){
+            if(type.base() == BaseType::INT){
                 program.addInstruction(program.factory().createPush(performIntOperation(value, program)));
-            } else if(type == Type::STRING){
+            } else if(type.base() == BaseType::STRING){
                 auto pair = performStringOperation(value, program);
 
                 program.addInstruction(program.factory().createPush(pair.first));
@@ -175,7 +175,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableValue& variable){
-            if(variable.Content->var->type() == Type::INT){
+            if(variable.Content->var->type().base() == BaseType::INT){
                 program.addInstruction(program.factory().createMove(variable.Content->var->toIntegerOperand(), operand));
             } else {
                 assert(false); //Cannot assign a string to a single operand
@@ -183,7 +183,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ast::ComposedValue& value){
-            assert(GetTypeVisitor()(value) == Type::INT); //Cannot be used for string operations
+            assert(GetTypeVisitor()(value).base() == BaseType::INT); //Cannot be used for string operations
 
             program.addInstruction(program.factory().createMove(performIntOperation(value, program), operand));
         } 
@@ -227,7 +227,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
         void operator()(ast::VariableValue& variableSource){
             auto var = variableSource.Content->var;
 
-            if(var->type() == Type::INT){
+            if(var->type().base() == BaseType::INT){
                 program.addInstruction(program.factory().createMove(var->toIntegerOperand(), variable->toIntegerOperand()));
             } else {
                 auto source = var->toStringOperand();
@@ -241,9 +241,9 @@ class AssignValueToVariable : public boost::static_visitor<> {
         void operator()(ast::ComposedValue& value){
             Type type = GetTypeVisitor()(value);
 
-            if(type == Type::INT){
+            if(type.base() == BaseType::INT){
                 program.addInstruction(program.factory().createMove(performIntOperation(value, program), variable->toIntegerOperand()));
-            } else if(type == Type::STRING){
+            } else if(type.base() == BaseType::STRING){
                 auto source = performStringOperation(value, program);
                 auto destination = variable->toStringOperand();
 
@@ -456,8 +456,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto rhs_var = swap.Content->rhs_var;
 
             //We have the guarantee here that both variables are of the same type
-            switch (lhs_var->type()) {
-                case Type::INT:{
+            switch (lhs_var->type().base()) {
+                case BaseType::INT:{
                     auto registerA = program.registers(EAX);
              
                     auto left = lhs_var->toIntegerOperand();
@@ -469,7 +469,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                     break;
                 }
-                case Type::STRING:{
+                case BaseType::STRING:{
                     auto registerA = program.registers(EAX);
                    
                     auto left = lhs_var->toStringOperand();
@@ -593,13 +593,13 @@ class CompilerVisitor : public boost::static_visitor<> {
             if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
                 Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
 
-                switch (type) {
-                    case Type::INT:
+                switch (type.base()) {
+                    case BaseType::INT:
                         program.addInstruction(program.factory().createCall("print_integer"));
                         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
 
                         break;
-                    case Type::STRING:
+                    case BaseType::STRING:
                         program.addInstruction(program.factory().createCall("print_string"));
                         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
 

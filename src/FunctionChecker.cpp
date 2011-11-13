@@ -36,11 +36,8 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             signature->name = declaration.Content->functionName;
 
             for(auto& param : declaration.Content->parameters){
-                auto parameter = std::make_shared<ParameterType>();
-                parameter->name = param.parameterName;
-                parameter->paramType = stringToType(param.parameterType);
-
-                signature->parameters.push_back(parameter);
+                signature->parameters.push_back(
+                    std::make_shared<ParameterType>(param.parameterName, stringToType(param.parameterType)));
             }
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);

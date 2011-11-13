@@ -107,13 +107,13 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             if(IsConstantVisitor()(value)){
                 Type type = GetTypeVisitor()(value);
 
-                if(type == Type::INT){
+                if(type.base() == BaseType::INT){
                     if (OptimizeIntegers) {
                         ast::Integer integer;
                         integer.value = GetIntValue()(value);
                         return integer; 
                     }
-                } else if(type == Type::STRING){
+                } else if(type.base() == BaseType::STRING){
                     if (OptimizeStrings) {
                         ast::Litteral litteral;
                         litteral.value = GetStringValue()(value);

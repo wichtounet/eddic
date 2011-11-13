@@ -17,11 +17,11 @@
 using namespace eddic;
 
 Type GetTypeVisitor::operator()(const ast::Litteral&) const {
-    return Type::STRING;
+    return Type(BaseType::STRING);
 }
 
 Type GetTypeVisitor::operator()(const ast::Integer&) const {
-    return Type::INT;
+    return Type(BaseType::INT);
 }
 
 Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {

@@ -48,7 +48,7 @@ int Variable::referenceCount(){
 }
 
 std::shared_ptr<Operand> Variable::toIntegerOperand(){
-    assert(m_type == Type::INT); 
+    assert(m_type.base() == BaseType::INT); 
     
     if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
         return createBaseStackOperand(-1 * m_position.offset());
@@ -62,7 +62,7 @@ std::shared_ptr<Operand> Variable::toIntegerOperand(){
 }
 
 std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
-    assert(m_type == Type::STRING); 
+    assert(m_type.base() == BaseType::STRING); 
    
     if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
         return make_pair(

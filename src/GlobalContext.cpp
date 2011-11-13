@@ -29,9 +29,9 @@ using namespace eddic;
 
 void GlobalContext::writeIL(IntermediateProgram& program){
     for(auto it : m_stored){
-        if (it.second->type() == Type::INT) {
+        if (it.second->type().base() == BaseType::INT) {
             program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
-        } else if (it.second->type() == Type::STRING) {
+        } else if (it.second->type().base() == BaseType::STRING) {
             auto value = boost::get<std::pair<std::string, int>>(it.second->val());
             program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
         }

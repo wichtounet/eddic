@@ -28,8 +28,8 @@ struct SetDefaultValues : public boost::static_visitor<> {
         if(!declaration.Content->value){
             Type type = stringToType(declaration.Content->variableType);
 
-            switch(type){
-                case Type::INT:{
+            switch(type.base()){
+                case BaseType::INT:{
                     ast::Integer integer;
                     integer.value = 0;
 
@@ -37,7 +37,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                     break;
                 }
-                case Type::STRING:{
+                case BaseType::STRING:{
                     ast::Litteral litteral;
                     litteral.value = "\"\"";
                     litteral.label = "S3";
