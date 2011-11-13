@@ -19,6 +19,15 @@ void main(){
     print("Should print '' : ");
     println(defaultB);
 
+    int defaultLA;
+    string defaultLB;
+
+    print("Should print '0' : ");
+    println(defaultLA);
+
+    print("Should print '' : ");
+    println(defaultLB);
+
     print("Should print '1000' : ");
     println(ga);
 

@@ -23,7 +23,8 @@ struct SetDefaultValues : public boost::static_visitor<> {
     AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_BRANCHES()
 
-    void operator()(ast::GlobalVariableDeclaration& declaration){
+    template<typename T>
+    void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
             Type type = stringToType(declaration.Content->variableType);
 
@@ -52,8 +53,12 @@ struct SetDefaultValues : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::GlobalVariableDeclaration& declaration){
+        setDefaultValue(declaration);
+    }
+
     void operator()(ast::Declaration& declaration){
-       //Test 
+        setDefaultValue(declaration);
     }
 
     template<typename T>
