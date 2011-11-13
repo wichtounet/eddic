@@ -14,8 +14,16 @@ using namespace eddic;
 
 const int typeSizes[(int) Type::COUNT] = { 8, 4, 0 };
 
+int eddic::size(BaseType type){
+    return typeSizes[(unsigned int) type];
+}
+
 int eddic::size(Type type){
-    return typeSizes[(int) type];
+    if(type.isArray()){
+        return size(type.type()) * type.size() + size(BaseType::INT); 
+    } else {
+        return size(type.type());
+    }
 }
 
 bool eddic::isType(const std::string& type){
@@ -24,11 +32,11 @@ bool eddic::isType(const std::string& type){
 
 Type eddic::stringToType(const std::string& type){
     if (type == "int") {
-        return Type::INT;
+        return BaseType(Type::INT);
     } else if (type == "string"){
-        return Type::STRING;
+        return BaseType(Type::STRING);
     } else if(type == "void") {
-        return Type::VOID;
+        return BaseType(Type::VOID);
     }
 
     throw SemanticalException("Invalid type");

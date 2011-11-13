@@ -11,8 +11,7 @@
 #include <string>
 
 namespace eddic {
-
-enum class Type : unsigned int {
+enum class BaseType : unsigned int {
     STRING,
     INT,
     VOID, 
@@ -20,6 +19,22 @@ enum class Type : unsigned int {
     COUNT
 };
 
+class Type {
+    private:
+        BaseType base;
+        bool array;
+        unsigned int m_size;
+    
+    public:
+        Type(BaseType base);
+        Type(BaseType base, unsigned int size);
+        
+        BaseType type();
+        bool isArray();
+        unsigned int size();
+};
+
+int size(BaseType type);
 int size(Type type);
 
 bool isType(const std::string& type);
