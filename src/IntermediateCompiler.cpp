@@ -444,7 +444,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Declaration& declaration){
             AssignValueToVariable visitor(declaration.Content->context->getVariable(declaration.Content->variableName), program);
-            boost::apply_visitor(visitor, declaration.Content->value);
+            boost::apply_visitor(visitor, *declaration.Content->value);
         }
 
         void operator()(ast::Swap& swap){
