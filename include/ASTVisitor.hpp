@@ -82,7 +82,7 @@ void operator()(ast::FunctionDeclaration& function){\
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(ast::GlobalVariableDeclaration& declaration){\
-    visit(*this, declaration.Content->value);\
+    visit(*this, *declaration.Content->value);\
 }
 
 #endif

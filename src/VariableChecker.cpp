@@ -53,15 +53,15 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!boost::apply_visitor(IsConstantVisitor(), declaration.Content->value)){
+        if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
         Type type = stringToType(declaration.Content->variableType); 
 
-        declaration.Content->context->addVariable(declaration.Content->variableName, type, declaration.Content->value);
+        declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), declaration.Content->value);
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), *declaration.Content->value);
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }

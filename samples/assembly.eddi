@@ -2,6 +2,9 @@
 int ga = 1000;
 string gb = "Global Variable b"; 
 
+int defaultA;
+string defaultB;
+
 int globalUnused = 2222;
 
 void main(){
@@ -9,6 +12,12 @@ void main(){
 
     string x = "ED" + "DI";
     println(x);
+
+    print("Should print '0' : ");
+    println(defaultA);
+
+    print("Should print '' : ");
+    println(defaultB);
 
     print("Should print '1000' : ");
     println(ga);
