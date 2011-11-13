@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_VARIABLE_H
-#define AST_VARIABLE_H
+#ifndef AST_VARIABLE_VALUE_H
+#define AST_VARIABLE_VALUE_H
 
 #include <memory>
 
