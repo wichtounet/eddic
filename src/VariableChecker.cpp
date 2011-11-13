@@ -72,9 +72,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared");
         }
 
-        Type type = stringToType(declaration.Content->arrayType); 
+        BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
+        Type type(baseType, true, declaration.Content->arraySize);
 
-        //TODO Add global array to the context 
+        declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     
     void operator()(ast::Foreach& foreach){
