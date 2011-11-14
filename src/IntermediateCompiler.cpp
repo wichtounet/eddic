@@ -340,11 +340,44 @@ struct AssignValueToArray : public boost::static_visitor<> {
         AssignValueToArray(std::shared_ptr<Variable> v, ast::Value i, IntermediateProgram& p) : variable(v), indexValue(i), program(p) {}
 
         void operator()(ast::Litteral& litteral){
+            assert(variable->type().base() == BaseType::STRING);
 
+            auto registerA = program.registers(EAX);
+            auto registerB = program.registers(EBX);
+
+            putInRegister(indexValue, registerA, program);//TODO Verify that we can use this function there
+            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(variable->type().base())), registerA));
+
+            auto position = variable->position();
+            if(position.isGlobal()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(registerB->getValue())));
+                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(registerB->getValue(), 4)));
+            } else {
+                //TODO Manage the other types of array
+            }
         }
         
         void operator()(ast::Integer& integer){
+            assert(variable->type().base() == BaseType::INT);
 
+            auto registerA = program.registers(EAX);
+            auto registerB = program.registers(EBX);
+
+            putInRegister(indexValue, registerA, program);//TODO Verify that we can use this function there
+            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(variable->type().base())), registerA));
+
+            auto position = variable->position();
+            if(position.isGlobal()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                program.addInstruction(program.factory().createMove(createImmediateOperand(integer.value), createValueOfOperand(registerB->getValue())));
+            } else {
+                //TODO Manage the other types of array
+            }
         }
         
         void operator()(ast::VariableValue& variable){
