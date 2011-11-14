@@ -12,6 +12,7 @@
 #include <string>
 
 #include "Operand.hpp"
+#include "il/ValueOfOperand.hpp"
 
 namespace eddic {
 

@@ -140,7 +140,29 @@ class PushValue : public boost::static_visitor<> {
         }
 
         void operator()(ast::ArrayValue& array){
-            //TODO Implement
+            auto var = array.Content->var;
+            auto position = var->position();
+
+            auto registerA = program.registers(EAX);
+            auto registerB = program.registers(EBX);
+
+            putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+           
+            if(position.isGlobal()){
+                if(var->type().base() == BaseType::INT){
+                    program.addInstruction(program.factory().createMove(createImmediateOperand(position.name()), registerB));
+                    program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                    auto addressOperand = std::make_shared<ValueOfOperand>(registerB->getValue());
+                    program.addInstruction(program.factory().createPush(addressOperand));
+
+                    //TODO        
+                } else {
+                    //TODO
+                }
+            } else {
+                //TODO Manage the other types of array
+            }
         }
 
         void operator()(ast::ComposedValue& value){

@@ -16,6 +16,8 @@ int globalUnused = 2222;
 void main(){
     int localUnused = 8989;
 
+    println(globalArrayA[3]);
+
     string x = "ED" + "DI";
     println(x);
 
