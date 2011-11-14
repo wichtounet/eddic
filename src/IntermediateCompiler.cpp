@@ -289,6 +289,30 @@ class AssignValueToVariable : public boost::static_visitor<> {
         }
 
         void operator()(ast::ArrayValue& array){
+            auto var = array.Content->var;
+            auto position = var->position();
+
+            auto registerA = program.registers(EAX);
+            auto registerB = program.registers(EBX);
+
+            putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(var->type().base())), registerA));
+           
+            if(position.isGlobal()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+                
+                if(var->type().base() == BaseType::INT){
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), variable->toIntegerOperand()));
+                } else {
+                    auto destination = variable->toStringOperand();
+                   
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), destination.first));
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue(), 4), destination.second));
+                }
+            } else {
+                //TODO Manage the other types of array
+            }
             //TODO Implement
         }
 
