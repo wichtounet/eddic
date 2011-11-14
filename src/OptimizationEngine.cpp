@@ -285,6 +285,11 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
         }
 
+        void operator()(ast::ArrayAssignment& assignment){
+            assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
+            assignment.Content->indexValue = boost::apply_visitor(optimizer, assignment.Content->indexValue); 
+        }
+
         void operator()(ast::Declaration& declaration){
             declaration.Content->value = boost::apply_visitor(optimizer, *declaration.Content->value); 
         }

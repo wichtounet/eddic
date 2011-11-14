@@ -58,6 +58,12 @@ void operator()(ast::Declaration& declaration){\
     visit(*this, *declaration.Content->value);\
 }
 
+#define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
+void operator()(ast::ArrayAssignment& assignment){\
+    visit(*this, assignment.Content->indexValue);\
+    visit(*this, assignment.Content->value);\
+}
+
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\

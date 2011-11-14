@@ -520,6 +520,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             AssignValueToVariable visitor(assignment.Content->context->getVariable(assignment.Content->variableName), program);
             boost::apply_visitor(visitor, assignment.Content->value);
         }
+        
+        void operator()(ast::ArrayAssignment& assignment){
+            //TODO
+        }
 
         void operator()(ast::Declaration& declaration){
             AssignValueToVariable visitor(declaration.Content->context->getVariable(declaration.Content->variableName), program);

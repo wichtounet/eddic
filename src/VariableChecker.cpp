@@ -104,6 +104,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         var->addReference();
     }
+
+    void operator()(ast::ArrayAssignment& assignment){
+        //TODO
+    }
     
     void operator()(ast::Declaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
