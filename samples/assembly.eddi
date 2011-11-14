@@ -19,6 +19,12 @@ void main(){
     println(globalArrayA[3]);
     println(globalArrayB[3]);
 
+    globalArrayA[3] = 4;
+    println(globalArrayA[3]);
+
+    globalArrayB[3] = "asdf";
+    println(globalArrayB[3]);
+
     string x = "ED" + "DI";
     println(x);
 
