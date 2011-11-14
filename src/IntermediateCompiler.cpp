@@ -147,16 +147,17 @@ class PushValue : public boost::static_visitor<> {
             auto registerB = program.registers(EBX);
 
             putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(sizeOf(var->type().base()), registerA)));
            
             if(position.isGlobal()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+                
                 if(var->type().base() == BaseType::INT){
-                    program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
-                    program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
-
-                    auto addressOperand = createValueOfOperand(registerB->getValue());
-                    program.addInstruction(program.factory().createPush(addressOperand));
+                    program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue())));
                 } else {
-                    //TODO
+                    program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue())));
+                    program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue(), 4)));
                 }
             } else {
                 //TODO Manage the other types of array
