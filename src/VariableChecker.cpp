@@ -106,7 +106,26 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::ArrayAssignment& assignment){
-        //TODO
+        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
+            throw SemanticalException("Array " + assignment.Content->variableName + " has not  been declared");
+        }
+
+        visit(*this, assignment.Content->indexValue);
+        visit(*this, assignment.Content->value);
+
+        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
+
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
+        if (valueType.base() != var->type().base()) {
+            throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName);
+        }
+        
+        Type indexType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->indexValue);
+        if (indexType.base() != BaseType::INT) {
+            throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName);
+        }
+
+        var->addReference();
     }
     
     void operator()(ast::Declaration& declaration){
