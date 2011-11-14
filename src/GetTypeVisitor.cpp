@@ -28,6 +28,10 @@ Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
 
+Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+    return array.Content->context->getVariable(array.Content->arrayName)->type();
+}
+
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     //No need to recurse into operations because type are enforced in the check variables phase
     return boost::apply_visitor(*this, value.Content->first);

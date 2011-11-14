@@ -282,6 +282,10 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         void operator()(ast::Declaration& declaration){
             declaration.Content->value = boost::apply_visitor(optimizer, *declaration.Content->value); 
         }
+        
+        void operator()(ast::ArrayValue& value){
+            value.Content->indexValue = boost::apply_visitor(optimizer, value.Content->indexValue); 
+        }
 
         void operator()(ast::BinaryCondition& binaryCondition){
             binaryCondition.Content->lhs = boost::apply_visitor(optimizer, binaryCondition.Content->lhs); 

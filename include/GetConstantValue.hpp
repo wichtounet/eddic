@@ -23,8 +23,11 @@ typedef boost::variant<int, std::pair<std::string, int>> Val;
 struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const ast::Litteral& litteral) const;
     Val operator()(const ast::Integer& litteral) const;
-    Val operator()(const ast::VariableValue& variable) const;
-    Val operator()(const ast::ComposedValue& value) const; 
+
+    template<typename T>
+    Val operator()(const T&) const {
+        assert(false); //Everything else is not constant
+    }
 };
 
 } //end of eddic

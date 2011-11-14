@@ -139,6 +139,10 @@ class PushValue : public boost::static_visitor<> {
             }
         }
 
+        void operator()(ast::ArrayValue& array){
+            //TODO Implement
+        }
+
         void operator()(ast::ComposedValue& value){
             Type type = GetTypeVisitor()(value);
 
@@ -180,6 +184,10 @@ class AssignValueToOperand : public boost::static_visitor<> {
             } else {
                 assert(false); //Cannot assign a string to a single operand
             }
+        }
+
+        void operator()(ast::ArrayValue& array){
+            //TODO Implement
         }
 
         void operator()(ast::ComposedValue& value){
@@ -236,6 +244,10 @@ class AssignValueToVariable : public boost::static_visitor<> {
                 program.addInstruction(program.factory().createMove(source.first, destination.first));
                 program.addInstruction(program.factory().createMove(source.second, destination.second));
             }
+        }
+
+        void operator()(ast::ArrayValue& array){
+            //TODO Implement
         }
 
         void operator()(ast::ComposedValue& value){
@@ -335,8 +347,6 @@ inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, I
         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
     }
 }
-
-#include <iostream>
 
 class CompilerVisitor : public boost::static_visitor<> {
     private:

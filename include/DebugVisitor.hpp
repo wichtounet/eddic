@@ -128,6 +128,10 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Variable" << std::endl; 
     }
 
+    void operator()(ast::ArrayValue&) const {
+        std::cout << indent() << "Array value" << std::endl; 
+    }
+
     void operator()(ast::ComposedValue& value) const {
         std::cout << indent() << "Composed value [" << value.Content->operations.size() << "]" << std::endl; 
         ++level;

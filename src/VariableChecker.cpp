@@ -153,6 +153,24 @@ struct CheckerVisitor : public boost::static_visitor<> {
         variable.Content->var->addReference();
     }
 
+    void operator()(ast::ArrayValue& array){
+        if (!array.Content->context->exists(array.Content->arrayName)) {
+            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared");
+        }
+        
+        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
+
+        //Reference the variable
+        array.Content->var->addReference();
+
+        visit(*this, array.Content->indexValue);
+
+        Type valueType = boost::apply_visitor(GetTypeVisitor(), array.Content->indexValue);
+        if (valueType.base() != BaseType::INT || valueType.isArray()) {
+            throw SemanticalException("Invalid index for the array " + array.Content->arrayName);
+        }
+    }
+
     void operator()(ast::ComposedValue& value){
         visit(*this, value.Content->first);
         

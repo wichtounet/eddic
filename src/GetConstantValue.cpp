@@ -20,11 +20,3 @@ Val GetConstantValue::operator()(const ast::Litteral& litteral) const {
 Val GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
-
-Val GetConstantValue::operator()(const ast::VariableValue&) const {
-    assert(false); //Variable is not constant
-}
-
-Val GetConstantValue::operator()(const ast::ComposedValue&) const {
-    assert(false); //Should not be used as constant
-}
