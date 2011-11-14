@@ -61,8 +61,8 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
         
         primaryValue = 
                 constant 
-            |   variable 
             |   arrayValue
+            |   variable 
             |   (lexer.left_parenth >> value > lexer.right_parenth);
 
         integer %= 
@@ -75,9 +75,9 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
        
         arrayValue %=
                 lexer.word
-            >>  lexer.left_brace
+            >>  lexer.left_bracket
             >>  value
-            >>  lexer.right_brace;
+            >>  lexer.right_bracket;
         
         litteral %= 
                 qi::eps 
