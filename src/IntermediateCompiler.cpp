@@ -147,7 +147,7 @@ class PushValue : public boost::static_visitor<> {
             auto registerB = program.registers(EBX);
 
             putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
-            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(sizeOf(var->type().base()), registerA)));
+            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(var->type().base())), registerA));
            
             if(position.isGlobal()){
                 program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
@@ -208,6 +208,27 @@ class AssignValueToOperand : public boost::static_visitor<> {
         }
 
         void operator()(ast::ArrayValue& array){
+            if(array.Content->var->type().base() == BaseType::INT){
+                auto var = array.Content->var;
+                auto position = var->position();
+
+                auto registerA = program.registers(EAX);
+                auto registerB = program.registers(EBX);
+
+                putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+                program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(var->type().base())), registerA));
+
+                if(position.isGlobal()){
+                    program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
+                    program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), operand));
+                } else {
+                    //TODO Manage the other types of array
+                }
+            } else {
+                assert(false); //Cannot assign a string to a single operand
+            }
             //TODO Implement
         }
 

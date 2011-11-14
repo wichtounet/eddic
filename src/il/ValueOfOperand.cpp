@@ -14,7 +14,7 @@ ValueOfOperand::ValueOfOperand(std::string l, int o) : Operand(OperandType::GLOB
 
 std::string ValueOfOperand::getValue(){
     if(offset > 0){
-        return "(" + location + "+" + toString(offset) + ")";
+        return toString(offset) + "(" + location + ")";
     }
 
     return "(" + location + ")";
