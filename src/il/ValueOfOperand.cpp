@@ -6,11 +6,16 @@
 //=======================================================================
 
 #include "il/ValueOfOperand.hpp"
+#include "Utils.hpp"
 
 using namespace eddic;
 
-ValueOfOperand::ValueOfOperand(std::string l) : Operand(OperandType::GLOBAL), location(l) {}
+ValueOfOperand::ValueOfOperand(std::string l, int o) : Operand(OperandType::GLOBAL), location(l), offset(o) {}
 
 std::string ValueOfOperand::getValue(){
+    if(offset > 0){
+        return "(" + location + "+" + toString(offset) + ")";
+    }
+
     return "(" + location + ")";
 }

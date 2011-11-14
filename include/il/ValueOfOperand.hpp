@@ -15,9 +15,10 @@ namespace eddic {
 class ValueOfOperand : public Operand {
     private:
         std::string location;
+        int offset;
 
     public:
-        ValueOfOperand(std::string location);
+        ValueOfOperand(std::string location, int offset);
 
         std::string getValue();
 };

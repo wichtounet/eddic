@@ -153,7 +153,7 @@ class PushValue : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
                     program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
 
-                    auto addressOperand = std::make_shared<ValueOfOperand>(registerB->getValue());
+                    auto addressOperand = createValueOfOperand(registerB->getValue());
                     program.addInstruction(program.factory().createPush(addressOperand));
                 } else {
                     //TODO

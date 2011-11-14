@@ -12,6 +12,7 @@
 #include "il/GlobalOperand.hpp"
 #include "il/StackOperand.hpp"
 #include "il/BaseStackOperand.hpp"
+#include "il/ValueOfOperand.hpp"
 
 using namespace eddic;
 
@@ -37,4 +38,8 @@ std::shared_ptr<Operand> eddic::createStackOperand(int offset){
 
 std::shared_ptr<Operand> eddic::createBaseStackOperand(int offset){
     return std::make_shared<BaseStackOperand>(offset);
+}
+
+std::shared_ptr<Operand> eddic::createValueOfOperand(std::string location, int offset){
+    return std::make_shared<ValueOfOperand>(location, offset);
 }
