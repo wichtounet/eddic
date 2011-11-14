@@ -313,7 +313,6 @@ class AssignValueToVariable : public boost::static_visitor<> {
             } else {
                 //TODO Manage the other types of array
             }
-            //TODO Implement
         }
 
         void operator()(ast::ComposedValue& value){

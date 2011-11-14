@@ -14,6 +14,7 @@
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"
+#include "ast/ArrayAssignment.hpp"
 #include "ast/Declaration.hpp"
 
 namespace eddic {
@@ -37,6 +38,7 @@ typedef boost::variant<
             Swap, 
             Declaration,
             Assignment, 
+            ArrayAssignment, 
             If, 
             While, 
             Foreach, 
