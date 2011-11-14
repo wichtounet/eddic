@@ -24,10 +24,6 @@ std::shared_ptr<Operand> eddic::createImmediateOperand(std::string value){
     return std::make_shared<ImmediateStringOperand>(value);
 }
 
-std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label){
-    return std::make_shared<GlobalOperand>(label);
-}
-
 std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label, int offset){
     return std::make_shared<GlobalOperand>(label, offset);
 }
