@@ -330,6 +330,36 @@ class AssignValueToVariable : public boost::static_visitor<> {
         } 
 };
 
+struct AssignValueToArray : public boost::static_visitor<> {
+    private:
+        std::shared_ptr<Variable> variable;
+        ast::Value indexValue;
+        IntermediateProgram& program;
+
+    public:
+        AssignValueToArray(std::shared_ptr<Variable> v, ast::Value i, IntermediateProgram& p) : variable(v), indexValue(i), program(p) {}
+
+        void operator()(ast::Litteral& litteral){
+
+        }
+        
+        void operator()(ast::Integer& integer){
+
+        }
+        
+        void operator()(ast::VariableValue& variable){
+
+        }
+        
+        void operator()(ast::ArrayValue& array){
+
+        }
+        
+        void operator()(ast::ComposedValue& value){
+
+        }
+};
+
 inline JumpCondition toJumpNotCondition(std::string op){
     if(op == "!="){
         return JumpCondition::EQUALS;
@@ -522,7 +552,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayAssignment& assignment){
-            //TODO
+            AssignValueToArray visitor(assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue, program);
+            boost::apply_visitor(visitor, assignment.Content->value);
         }
 
         void operator()(ast::Declaration& declaration){
