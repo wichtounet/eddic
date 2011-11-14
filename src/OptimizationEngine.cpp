@@ -141,6 +141,12 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             //If we get there, that means that no optimization has been (or can be) performed
             return value;
         }
+        
+        ast::Value operator()(ast::ArrayValue& value) const {
+            value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
+
+            return value;
+        }
 
         //No optimizations for other kind of values
         template<typename T>
@@ -281,10 +287,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Declaration& declaration){
             declaration.Content->value = boost::apply_visitor(optimizer, *declaration.Content->value); 
-        }
-        
-        void operator()(ast::ArrayValue& value){
-            value.Content->indexValue = boost::apply_visitor(optimizer, value.Content->indexValue); 
         }
 
         void operator()(ast::BinaryCondition& binaryCondition){
