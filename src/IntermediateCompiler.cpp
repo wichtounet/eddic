@@ -150,13 +150,11 @@ class PushValue : public boost::static_visitor<> {
            
             if(position.isGlobal()){
                 if(var->type().base() == BaseType::INT){
-                    program.addInstruction(program.factory().createMove(createImmediateOperand(position.name()), registerB));
+                    program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
                     program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
 
                     auto addressOperand = std::make_shared<ValueOfOperand>(registerB->getValue());
                     program.addInstruction(program.factory().createPush(addressOperand));
-
-                    //TODO        
                 } else {
                     //TODO
                 }
