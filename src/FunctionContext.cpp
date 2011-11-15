@@ -16,19 +16,12 @@ using std::endl;
 using namespace eddic;
 
 int FunctionContext::size(){
-    int s = 0;
-    for(auto it : m_stored){
-        if(it.second->position().type() != PARAMETER){
-            s += ::size(it.second->type());
-        }
-    }
-
-    return s;
+    return currentPosition - 4;
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
     Position position(PARAMETER, currentParameter);
-    
+
     currentParameter += ::size(type);
 
     return std::make_shared<Variable>(variable, type, position);
@@ -36,7 +29,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, Type type){
     Position position(STACK, currentPosition);
-    
+
     currentPosition += ::size(type);
 
     return std::make_shared<Variable>(variable, type, position);
@@ -45,23 +38,15 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type){
     std::shared_ptr<Variable> v = newVariable(variable, type);
 
-    m_visibles[variable] = currentVariable;
-
-    storeVariable(currentVariable, v);
-    
-    currentVariable++;
+    variables[variable] = v;
 
     return v;
 }
 
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, Type type){
-   std::shared_ptr<Variable> v = newParameter(parameter, type);
+    std::shared_ptr<Variable> v = newParameter(parameter, type);
 
-   m_visibles[parameter] = currentVariable;
+    variables[parameter] = v;
 
-   storeVariable(currentVariable, v);
-
-   currentVariable++;
-
-   return v;
+    return v;
 }

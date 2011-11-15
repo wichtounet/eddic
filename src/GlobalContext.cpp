@@ -26,9 +26,9 @@ using std::endl;
 using std::vector;
 
 using namespace eddic;
-
+        
 void GlobalContext::writeIL(IntermediateProgram& program){
-    for(auto it : m_stored){
+    for(auto it : variables){
         Type type = it.second->type();
 
         if(type.isArray()){
@@ -52,11 +52,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 
     auto v = std::make_shared<Variable>(variable, type, position);
 
-    m_visibles[variable] = currentVariable;
-
-    storeVariable(currentVariable, v);
-    
-    currentVariable++;
+    variables[variable] = v;
 
     return v;
 }
@@ -68,11 +64,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 
     auto v = std::make_shared<Variable>(variable, type, position, val);
 
-    m_visibles[variable] = currentVariable;
-
-    storeVariable(currentVariable, v);
-    
-    currentVariable++;
+    variables[variable] = v;
 
     return v;
 }

@@ -18,8 +18,6 @@ using std::unordered_map;
 
 using namespace eddic;
 
-int Context::currentVariable = 0;
-
 Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
 
 void Context::writeIL(IntermediateProgram&){
@@ -34,12 +32,8 @@ int Context::size(){
     return 0;
 }
 
-void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
-    m_stored[index] = variable;
-}
-
 bool Context::exists(const std::string& variable) const {
-    bool found = m_visibles.find(variable) != m_visibles.end();
+    bool found = variables.find(variable) != variables.end();
 
     if(!found){
         if(m_parent){
@@ -55,53 +49,30 @@ std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Va
     assert(false);
 }
 
-int Context::getIndex(const std::string& variable) const {
-    auto iter = m_visibles.find(variable);
-
-    if(iter == m_visibles.end()){
-        return m_parent->getIndex(variable);
-    }
-    
-    return iter->second;
-}
-
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
-    auto iter = m_visibles.find(variable);
+    auto iter = variables.find(variable);
 
-    if(iter == m_visibles.end()){
+    if(iter == variables.end()){
         return m_parent->getVariable(variable);
     }
     
-    return getVariable(iter->second);
+    return iter->second;
 }
 
-//TODO Could be more efficient 
 void Context::removeVariable(const std::string& variable){
-    int index = getIndex(variable); 
+    auto iter = variables.find(variable);
 
-    auto iter = m_stored.find(index);
-
-    if(iter == m_stored.end()){
+    if(iter == variables.end()){
         return m_parent->removeVariable(variable);
     }
 
-    m_stored.erase(iter);
+    variables.erase(iter);
+}
+ 
+Context::Variables::const_iterator Context::begin(){
+    return variables.cbegin();
 }
 
-std::shared_ptr<Variable> Context::getVariable(int index) const {
-    auto iter = m_stored.find(index);
-
-    if(iter == m_stored.end()){
-        return m_parent->getVariable(index);
-    }
-
-    return iter->second;
-}
-        
-Context::StoredVariables::const_iterator Context::begin(){
-    return m_stored.cbegin();
-}
-
-Context::StoredVariables::const_iterator Context::end(){
-    return m_stored.cend();
+Context::Variables::const_iterator Context::end(){
+    return variables.cend();
 }
