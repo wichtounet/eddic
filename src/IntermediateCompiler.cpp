@@ -500,6 +500,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& function){
             program.addInstruction(program.factory().createFunctionDeclaration(function.Content->mangledName, function.Content->context->size()));
 
+            //TODO Init arrays
+
             visit_each(*this, function.Content->instructions);
 
             program.addInstruction(program.factory().createFunctionExit(function.Content->context->size()));
