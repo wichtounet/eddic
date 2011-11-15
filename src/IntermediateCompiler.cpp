@@ -147,7 +147,7 @@ class PushValue : public boost::static_visitor<> {
             auto registerA = program.registers(EAX);
             auto registerB = program.registers(EBX);
 
-            putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+            putInRegister(array.Content->indexValue, registerA, program);
             program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(var->type().base())), registerA));
            
             if(position.isGlobal()){
@@ -229,7 +229,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
                 auto registerA = program.registers(EAX);
                 auto registerB = program.registers(EBX);
 
-                putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+                putInRegister(array.Content->indexValue, registerA, program);
                 program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(var->type().base())), registerA));
 
                 if(position.isGlobal()){
@@ -237,13 +237,20 @@ class AssignValueToOperand : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
 
                     program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), operand));
-                } else {
-                    //TODO Manage the other types of array
+                } else if(position.isStack()) {
+                    program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
+                    program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+                
+                    auto registerEBP = program.registers(EBP);
+                    program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
+                    
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), operand));
+                } else if(position.isParameter()){
+                    //TODO Implement
                 }
             } else {
                 assert(false); //Cannot assign a string to a single operand
             }
-            //TODO Implement
         }
 
         void operator()(ast::ComposedValue& value){
@@ -309,7 +316,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
             auto registerA = program.registers(EAX);
             auto registerB = program.registers(EBX);
 
-            putInRegister(array.Content->indexValue, registerA, program);//TODO Verify that we can use this function there
+            putInRegister(array.Content->indexValue, registerA, program);
             program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(var->type().base())), registerA));
            
             if(position.isGlobal()){
@@ -324,8 +331,23 @@ class AssignValueToVariable : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), destination.first));
                     program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue(), 4), destination.second));
                 }
-            } else {
-                //TODO Manage the other types of array
+            } else if(position.isStack()) {
+                program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                auto registerEBP = program.registers(EBP);
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
+                
+                if(var->type().base() == BaseType::INT){
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), variable->toIntegerOperand()));
+                } else {
+                    auto destination = variable->toStringOperand();
+                   
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue()), destination.first));
+                    program.addInstruction(program.factory().createMove(createValueOfOperand(registerB->getValue(), 4), destination.second));
+                }
+            } else if(position.isParameter()) {
+                //TODO Implement
             }
         }
 
@@ -359,7 +381,7 @@ struct AssignValueToArray : public boost::static_visitor<> {
             auto registerA = program.registers(EAX);
             auto registerB = program.registers(EBX);
 
-            putInRegister(indexValue, registerA, program);//TODO Verify that we can use this function there
+            putInRegister(indexValue, registerA, program);
             program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(variable->type().base())), registerA));
 
             auto position = variable->position();
@@ -369,8 +391,17 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
                 program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(registerB->getValue())));
                 program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(registerB->getValue(), 4)));
-            } else {
-                //TODO Manage the other types of array
+            } else if(position.isStack()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                auto registerEBP = program.registers(EBP);
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
+
+                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(registerB->getValue())));
+                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(registerB->getValue(), 4)));
+            } else if(position.isParameter()){
+                //TODO Implement
             }
         }
         
@@ -380,7 +411,7 @@ struct AssignValueToArray : public boost::static_visitor<> {
             auto registerA = program.registers(EAX);
             auto registerB = program.registers(EBX);
 
-            putInRegister(indexValue, registerA, program);//TODO Verify that we can use this function there
+            putInRegister(indexValue, registerA, program);
             program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(variable->type().base())), registerA));
 
             auto position = variable->position();
@@ -389,21 +420,29 @@ struct AssignValueToArray : public boost::static_visitor<> {
                 program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
 
                 program.addInstruction(program.factory().createMove(createImmediateOperand(integer.value), createValueOfOperand(registerB->getValue())));
-            } else {
-                //TODO Manage the other types of array
+            } else if(position.isStack()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                auto registerEBP = program.registers(EBP);
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
+
+                program.addInstruction(program.factory().createMove(createImmediateOperand(integer.value), createValueOfOperand(registerB->getValue())));
+            } else if(position.isParameter()){
+                //TODO Implement
             }
         }
         
         void operator()(ast::VariableValue& variable){
-
+            //TODO Implement
         }
         
         void operator()(ast::ArrayValue& array){
-
+            //TODO Implement
         }
         
         void operator()(ast::ComposedValue& value){
-
+            //TODO Implement
         }
 };
 

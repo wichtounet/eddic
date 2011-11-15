@@ -231,8 +231,12 @@ void test(){
 //Test function with arrays
 void testArray(){
     int array[12];
-
+    array[3] = 0;
     println(array[3]);
+
+    string second[10];
+    second[3] = "asdf";
+    println(second[3]);
 }
 
 void empty(int i){
