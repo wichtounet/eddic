@@ -9,6 +9,7 @@
 #define OPERAND_H
 
 #include <string>
+#include <memory>
 
 namespace eddic {
 
@@ -27,6 +28,9 @@ class Operand {
         Operand(OperandType type);
 
         virtual std::string getValue() = 0;
+
+        std::shared_ptr<Operand> valueOf(int offset = 0);
+
         bool isImmediate();
         bool isRegister();
         bool isStack();
