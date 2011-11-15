@@ -433,8 +433,35 @@ struct AssignValueToArray : public boost::static_visitor<> {
             }
         }
         
-        void operator()(ast::VariableValue& variable){
-            //TODO Implement
+        void operator()(ast::VariableValue& destination){
+            auto registerA = program.registers(EAX);
+            auto registerB = program.registers(EBX);
+
+            putInRegister(indexValue, registerA, program);
+            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(variable->type().base())), registerA));
+
+            auto position = variable->position();
+            if(position.isGlobal()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+            } else if(position.isStack()){
+                program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+
+                auto registerEBP = program.registers(EBP);
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
+            } else if(position.isParameter()){
+                //TODO Implement
+            }
+            
+            if(variable->type().base() == BaseType::INT){
+                program.addInstruction(program.factory().createMove(destination.Content->var->toIntegerOperand(), createValueOfOperand(registerB->getValue())));
+            } else if(variable->type().base() == BaseType::STRING){
+                auto operands = destination.Content->var->toStringOperand();
+
+                program.addInstruction(program.factory().createMove(operands.first, createValueOfOperand(registerB->getValue())));
+                program.addInstruction(program.factory().createMove(operands.second, createValueOfOperand(registerB->getValue(), 4)));
+            }
         }
         
         void operator()(ast::ArrayValue& array){
