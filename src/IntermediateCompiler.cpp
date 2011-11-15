@@ -366,6 +366,29 @@ class AssignValueToVariable : public boost::static_visitor<> {
         } 
 };
 
+void computeAddressOfElement(std::shared_ptr<Variable> array, ast::Value indexValue, IntermediateProgram& program, std::shared_ptr<Operand> operand){
+    assert(operand->isRegister());
+
+    auto registerA = program.registers(EAX);
+
+    putInRegister(indexValue, registerA, program);
+    program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array->type().base())), registerA));
+
+    auto position = array->position();
+    if(position.isGlobal()){
+        program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, operand));
+    } else if(position.isStack()){
+        program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, operand));
+
+        auto registerEBP = program.registers(EBP);
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
+    } else if(position.isParameter()){
+        //TODO Implement
+    }
+}
+
 struct AssignValueToArray : public boost::static_visitor<> {
     private:
         std::shared_ptr<Variable> variable;
@@ -378,31 +401,12 @@ struct AssignValueToArray : public boost::static_visitor<> {
         void operator()(ast::Litteral& litteral){
             assert(variable->type().base() == BaseType::STRING);
 
-            auto registerA = program.registers(EAX);
-            auto registerB = program.registers(EBX);
+            auto edi = program.registers(EDI);
 
-            putInRegister(indexValue, registerA, program);
-            program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(variable->type().base())), registerA));
-
-            auto position = variable->position();
-            if(position.isGlobal()){
-                program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerB));
-                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
-
-                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(registerB->getValue())));
-                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(registerB->getValue(), 4)));
-            } else if(position.isStack()){
-                program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
-                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
-
-                auto registerEBP = program.registers(EBP);
-                program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
-
-                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(registerB->getValue())));
-                program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(registerB->getValue(), 4)));
-            } else if(position.isParameter()){
-                //TODO Implement
-            }
+            computeAddressOfElement(variable, indexValue, program, edi);
+                
+            program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(edi->getValue())));
+            program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(edi->getValue(), 4)));
         }
         
         void operator()(ast::Integer& integer){
