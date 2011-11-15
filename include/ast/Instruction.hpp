@@ -15,7 +15,7 @@
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"
 #include "ast/ArrayAssignment.hpp"
-#include "ast/Declaration.hpp"
+#include "ast/VariableDeclaration.hpp"
 
 namespace eddic {
 
