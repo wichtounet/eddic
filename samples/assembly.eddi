@@ -207,6 +207,9 @@ void main(){
 
     testGlobalArrays();
     testArrays();
+
+    int arrayTest[22];
+    testArray(arrayTest);
 }
 
 /* Multiline comment 1  */
@@ -243,6 +246,10 @@ void testArrays(){
     string second[10];
     second[3] = "asdf";
     println(second[3]);
+}
+
+void testArray(int[] array){
+    //Empty
 }
 
 void empty(int i){

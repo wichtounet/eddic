@@ -51,7 +51,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
 
         type %=
                 arrayType
-            >>  simpleType;
+            |   simpleType;
 
         value = additiveValue.alias();
         
