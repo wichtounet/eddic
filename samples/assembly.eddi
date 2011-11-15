@@ -16,15 +16,6 @@ int globalUnused = 2222;
 void main(){
     int localUnused = 8989;
 
-    println(globalArrayA[3]);
-    println(globalArrayB[3]);
-
-    globalArrayA[3] = 4;
-    println(globalArrayA[5]);
-
-    globalArrayB[3] = "asdf";
-    println(globalArrayB[3]);
-
     string x = "ED" + "DI";
     println(x);
 
@@ -214,8 +205,8 @@ void main(){
         test();
     }
 
-    testGlobalArray();
-    testArray();
+    testGlobalArrays();
+    testArrays();
 }
 
 /* Multiline comment 1  */
@@ -229,13 +220,22 @@ void test(){
     println("Hello from test");
 }
 
-void testGlobalArray(){
-    globalArrayA[5] = globalArrayA[3];
+void testGlobalArrays(){
+    println(globalArrayA[3]);
+    println(globalArrayB[3]);
+
+    globalArrayA[5] = 998;
     println(globalArrayA[5]);
+
+    globalArrayB[3] = "asdf";
+    println(globalArrayB[3]);
+
+    globalArrayA[3] = globalArrayA[5];
+    println(globalArrayA[3]);
 }
 
 //Test function with arrays
-void testArray(){
+void testArrays(){
     int array[12];
     array[3] = 0;
     println(array[3]);
