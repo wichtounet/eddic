@@ -228,8 +228,8 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
         instruction %= 
                 (functionCall > lexer.stop)
             |   (assignment > lexer.stop)
-            |   (declaration > lexer.stop)
-            |   (arrayDeclaration > lexer.stop)
+            |   (declaration >> lexer.stop)
+            |   (arrayDeclaration >> lexer.stop)
             |   (arrayAssignment > lexer.stop)
             |   if_
             |   for_
