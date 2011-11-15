@@ -107,6 +107,10 @@ struct DebugVisitor : public boost::static_visitor<> {
             --level;
         }
     }
+    
+    void operator()(ast::ArrayDeclaration&) const {
+        std::cout << indent() << "Array declaration" << std::endl; 
+    }
 
     void operator()(ast::Assignment& assign) const {
         std::cout << indent() << "Variable assignment" << std::endl; 

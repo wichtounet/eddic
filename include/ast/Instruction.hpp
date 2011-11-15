@@ -16,6 +16,7 @@
 #include "ast/Assignment.hpp"
 #include "ast/ArrayAssignment.hpp"
 #include "ast/VariableDeclaration.hpp"
+#include "ast/ArrayDeclaration.hpp"
 
 namespace eddic {
 
@@ -37,6 +38,7 @@ typedef boost::variant<
             FunctionCall, 
             Swap, 
             VariableDeclaration,
+            ArrayDeclaration,
             Assignment, 
             ArrayAssignment, 
             If, 

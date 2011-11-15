@@ -180,6 +180,13 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
             >>  lexer.word 
             >>  -(lexer.assign >> value);
         
+        arrayDeclaration %= 
+                lexer.word 
+            >>  lexer.word 
+            >>  lexer.left_bracket
+            >>  lexer.integer
+            >>  lexer.right_bracket;
+        
         assignment %= 
                 lexer.word 
             >>  lexer.assign 
@@ -222,6 +229,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
                 (functionCall > lexer.stop)
             |   (assignment > lexer.stop)
             |   (declaration > lexer.stop)
+            |   (arrayDeclaration > lexer.stop)
             |   (arrayAssignment > lexer.stop)
             |   if_
             |   for_
@@ -266,8 +274,9 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     qi::rule<Iterator, ast::Swap()> swap;
     qi::rule<Iterator, ast::FunctionCall()> functionCall;
     qi::rule<Iterator, ast::VariableDeclaration()> declaration;
-    qi::rule<Iterator, ast::ArrayAssignment()> arrayAssignment;
+    qi::rule<Iterator, ast::ArrayDeclaration()> arrayDeclaration;
     qi::rule<Iterator, ast::Assignment()> assignment;
+    qi::rule<Iterator, ast::ArrayAssignment()> arrayAssignment;
     qi::rule<Iterator, ast::While()> while_;
     qi::rule<Iterator, ast::For()> for_;
     qi::rule<Iterator, ast::Foreach()> foreach_;

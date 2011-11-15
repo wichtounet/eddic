@@ -186,6 +186,10 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         bool operator()(ast::VariableDeclaration& declaration){
             return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
         }
+        
+        bool operator()(ast::ArrayDeclaration& declaration){
+            return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
+        }
 
         bool operator()(ast::FunctionDeclaration& declaration){
             if(OptimizeUnused){

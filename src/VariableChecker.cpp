@@ -145,6 +145,17 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
     
+    void operator()(ast::ArrayDeclaration& declaration){
+        if (declaration.Content->context->exists(declaration.Content->arrayName)) {
+            throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared");
+        }
+
+        BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
+        Type type(baseType, declaration.Content->arraySize);
+
+        declaration.Content->context->addVariable(declaration.Content->arrayName, type);
+    }
+    
     void operator()(ast::Swap& swap){
         if (swap.Content->lhs == swap.Content->rhs) {
             throw SemanticalException("Cannot swap a variable with itself");

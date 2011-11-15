@@ -513,6 +513,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             //Nothing to compile, the global arrays are written using global contexts
         }
 
+        void operator()(ast::ArrayDeclaration&){
+            //Nothing to compile there, everything is done by the function context
+        }
+
         void operator()(ast::If& if_){
             //TODO Make something accessible for others operations
             static int labels = 0;
