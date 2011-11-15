@@ -36,17 +36,9 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
 }
 
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type){
-    std::shared_ptr<Variable> v = newVariable(variable, type);
-
-    variables[variable] = v;
-
-    return v;
+    return variables[variable] = newVariable(variable, type);
 }
 
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, Type type){
-    std::shared_ptr<Variable> v = newParameter(parameter, type);
-
-    variables[parameter] = v;
-
-    return v;
+    return variables[parameter] = newParameter(parameter, type);
 }

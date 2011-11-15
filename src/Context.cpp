@@ -35,13 +35,18 @@ int Context::size(){
 bool Context::exists(const std::string& variable) const {
     bool found = variables.find(variable) != variables.end();
 
-    if(!found){
-        if(m_parent){
-            return m_parent->exists(variable);
+    auto parent = m_parent;
+
+    while(!found){
+        if(parent){
+            found = parent->variables.find(variable) != parent->variables.end();
+            parent = parent->m_parent;
+        } else {
+            return false;
         }
     }
 
-    return found;
+    return true;
 }
 
 std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Value&){

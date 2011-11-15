@@ -49,12 +49,8 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
     assert(type.isArray());
     
     Position position(GLOBAL, variable);
-
-    auto v = std::make_shared<Variable>(variable, type, position);
-
-    variables[variable] = v;
-
-    return v;
+    
+    return variables[variable] = std::make_shared<Variable>(variable, type, position);
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
@@ -62,9 +58,5 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 
     auto val = boost::apply_visitor(GetConstantValue(), value);
 
-    auto v = std::make_shared<Variable>(variable, type, position, val);
-
-    variables[variable] = v;
-
-    return v;
+    return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }

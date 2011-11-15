@@ -13,9 +13,5 @@ using namespace eddic;
 BlockContext::BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext) : Context(parent), m_functionContext(functionContext){} 
 
 std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type){
-    std::shared_ptr<Variable> v = m_functionContext->newVariable(variable, type);
-
-    variables[variable] = v;
-
-    return v;
+    return variables[variable] = m_functionContext->newVariable(variable, type);
 }
