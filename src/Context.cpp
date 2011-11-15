@@ -24,10 +24,6 @@ std::shared_ptr<Context> Context::parent() const  {
     return m_parent;
 }
 
-int Context::size(){
-    return 0;
-}
-
 bool Context::exists(const std::string& variable) const {
     bool found = variables.find(variable) != variables.end();
 

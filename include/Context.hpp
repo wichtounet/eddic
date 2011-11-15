@@ -45,8 +45,6 @@ class Context {
         Variables::const_iterator begin();
         Variables::const_iterator end();
 
-        virtual int size();
-
         std::shared_ptr<Context> parent() const ;
 };
 
