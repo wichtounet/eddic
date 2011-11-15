@@ -183,7 +183,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
             return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
         }
 
-        bool operator()(ast::Declaration& declaration){
+        bool operator()(ast::VariableDeclaration& declaration){
             return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
         }
 
@@ -290,7 +290,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             assignment.Content->indexValue = boost::apply_visitor(optimizer, assignment.Content->indexValue); 
         }
 
-        void operator()(ast::Declaration& declaration){
+        void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->value = boost::apply_visitor(optimizer, *declaration.Content->value); 
         }
 

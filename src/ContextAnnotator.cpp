@@ -121,7 +121,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
             currentContext = currentContext->parent();
         }
         
-        void operator()(ast::Declaration& declaration){
+        void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->context = currentContext;
             
             visit(*this, *declaration.Content->value);

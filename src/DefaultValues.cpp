@@ -57,7 +57,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
         setDefaultValue(declaration);
     }
 
-    void operator()(ast::Declaration& declaration){
+    void operator()(ast::VariableDeclaration& declaration){
         setDefaultValue(declaration);
     }
 

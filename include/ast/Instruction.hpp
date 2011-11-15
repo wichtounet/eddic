@@ -36,7 +36,7 @@ typedef Deferred<ASTForeach> Foreach;
 typedef boost::variant<
             FunctionCall, 
             Swap, 
-            Declaration,
+            VariableDeclaration,
             Assignment, 
             ArrayAssignment, 
             If, 

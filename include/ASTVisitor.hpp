@@ -54,7 +54,7 @@ void operator()(ast::Foreach& foreach_){\
 void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
-void operator()(ast::Declaration& declaration){\
+void operator()(ast::VariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
 }
 

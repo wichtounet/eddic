@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_DECLARATION_H
-#define AST_DECLARATION_H
+#ifndef AST_VARIABLE_DECLARATION_H
+#define AST_VARIABLE_DECLARATION_H
 
 #include <memory>
 
@@ -22,7 +22,7 @@ class Context;
 
 namespace ast {
 
-struct ASTDeclaration {
+struct ASTVariableDeclaration {
     std::shared_ptr<Context> context;
 
     std::string variableType;
@@ -30,10 +30,10 @@ struct ASTDeclaration {
     boost::optional<Value> value;
 
     mutable long references;
-    ASTDeclaration() : references(0) {}
+    ASTVariableDeclaration() : references(0) {}
 };
 
-typedef Deferred<ASTDeclaration, boost::intrusive_ptr<ASTDeclaration>> Declaration;
+typedef Deferred<ASTVariableDeclaration, boost::intrusive_ptr<ASTVariableDeclaration>> VariableDeclaration;
 
 } //end of ast
 
@@ -41,7 +41,7 @@ typedef Deferred<ASTDeclaration, boost::intrusive_ptr<ASTDeclaration>> Declarati
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Declaration, 
+    eddic::ast::VariableDeclaration, 
     (std::string, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)

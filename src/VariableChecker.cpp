@@ -129,7 +129,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         var->addReference();
     }
     
-    void operator()(ast::Declaration& declaration){
+    void operator()(ast::VariableDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
