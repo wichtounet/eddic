@@ -160,8 +160,21 @@ class PushValue : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue())));
                     program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue(), 4)));
                 }
-            } else {
-                //TODO Manage the other types of array
+            } else if(position.isStack()) {
+                program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), registerB));
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerA, registerB));
+            
+                auto registerEBP = program.registers(EBP);
+                program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, registerB));
+                
+                if(var->type().base() == BaseType::INT){
+                    program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue())));
+                } else {
+                    program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue())));
+                    program.addInstruction(program.factory().createPush(createValueOfOperand(registerB->getValue(), 4)));
+                }
+            } else if(position.isParameter()) {
+                //TODO Implement
             }
         }
 
