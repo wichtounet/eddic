@@ -486,8 +486,8 @@ struct AssignValueToArray : public boost::static_visitor<> {
             }
            
             //Compute address of second array
-            auto registerC = program.registers(EAX);
-            auto registerD = program.registers(EBX);
+            auto registerC = program.registers(ECX);
+            auto registerD = program.registers(EDX);
 
             putInRegister(array.Content->indexValue, registerC, program);
             program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array.Content->var->type().base())), registerC));
@@ -507,12 +507,16 @@ struct AssignValueToArray : public boost::static_visitor<> {
             }
            
             //Assign one array value into the other using the base address 
-            
+            //TODO Let the responsability to move to make the operations in to distinct move when ESI/EDI will be used  
             if(variable->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(registerD->getValue()), createValueOfOperand(registerB->getValue())));
+                program.addInstruction(program.factory().createMove(createValueOfOperand(registerD->getValue()), registerA));
+                program.addInstruction(program.factory().createMove(registerA, createValueOfOperand(registerB->getValue())));
             } else if(variable->type().base() == BaseType::STRING){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(registerD->getValue()), createValueOfOperand(registerB->getValue())));
-                program.addInstruction(program.factory().createMove(createValueOfOperand(registerD->getValue(), 4), createValueOfOperand(registerB->getValue(), 4)));
+                program.addInstruction(program.factory().createMove(createValueOfOperand(registerD->getValue()), registerA));
+                program.addInstruction(program.factory().createMove(registerA, createValueOfOperand(registerB->getValue())));
+                
+                program.addInstruction(program.factory().createMove(createValueOfOperand(registerD->getValue(), 4), registerA));
+                program.addInstruction(program.factory().createMove(registerA, createValueOfOperand(registerB->getValue(), 4)));
             }
         }
         

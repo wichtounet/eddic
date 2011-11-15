@@ -20,7 +20,7 @@ void main(){
     println(globalArrayB[3]);
 
     globalArrayA[3] = 4;
-    println(globalArrayA[3]);
+    println(globalArrayA[5]);
 
     globalArrayB[3] = "asdf";
     println(globalArrayB[3]);
@@ -214,6 +214,7 @@ void main(){
         test();
     }
 
+    testGlobalArray();
     testArray();
 }
 
@@ -226,6 +227,11 @@ void test(){
     println(x);
 
     println("Hello from test");
+}
+
+void testGlobalArray(){
+    globalArrayA[5] = globalArrayA[3];
+    println(globalArrayA[5]);
 }
 
 //Test function with arrays
