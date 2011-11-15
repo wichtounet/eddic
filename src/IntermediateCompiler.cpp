@@ -169,10 +169,10 @@ class PushValue : public boost::static_visitor<> {
             computeAddressOfElement(array.Content->var, array.Content->indexValue, program, esi);
             
             if(array.Content->var->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createPush(createValueOfOperand(esi->getValue())));
+                program.addInstruction(program.factory().createPush(esi->valueOf()));
             } else {
-                program.addInstruction(program.factory().createPush(createValueOfOperand(esi->getValue())));
-                program.addInstruction(program.factory().createPush(createValueOfOperand(esi->getValue(), 4)));
+                program.addInstruction(program.factory().createPush(esi->valueOf()));
+                program.addInstruction(program.factory().createPush(esi->valueOf(4)));
             }
         }
 
@@ -224,7 +224,7 @@ class AssignValueToOperand : public boost::static_visitor<> {
 
             computeAddressOfElement(array.Content->var, array.Content->indexValue, program, esi);
 
-            program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), operand));
+            program.addInstruction(program.factory().createMove(esi->valueOf(), operand));
         }
 
         void operator()(ast::ComposedValue& value){
@@ -289,12 +289,12 @@ class AssignValueToVariable : public boost::static_visitor<> {
             computeAddressOfElement(array.Content->var, array.Content->indexValue, program, esi);
             
             if(array.Content->var->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), variable->toIntegerOperand()));
+                program.addInstruction(program.factory().createMove(esi->valueOf(), variable->toIntegerOperand()));
             } else {
                 auto destination = variable->toStringOperand();
 
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), destination.first));
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue(), 4), destination.second));
+                program.addInstruction(program.factory().createMove(esi->valueOf(), destination.first));
+                program.addInstruction(program.factory().createMove(esi->valueOf(4), destination.second));
             }
         }
 
@@ -329,8 +329,8 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
             computeAddressOfElement(variable, indexValue, program, edi);
                 
-            program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), createValueOfOperand(edi->getValue())));
-            program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), createValueOfOperand(edi->getValue(), 4)));
+            program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.label), edi->valueOf()));
+            program.addInstruction(program.factory().createMove(createImmediateOperand(litteral.value.size() -2), edi->valueOf(4)));
         }
         
         void operator()(ast::Integer& integer){
@@ -340,7 +340,7 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
             computeAddressOfElement(variable, indexValue, program, edi);
                 
-            program.addInstruction(program.factory().createMove(createImmediateOperand(integer.value), createValueOfOperand(edi->getValue())));
+            program.addInstruction(program.factory().createMove(createImmediateOperand(integer.value), edi->valueOf()));
         }
         
         void operator()(ast::VariableValue& source){
@@ -349,12 +349,12 @@ struct AssignValueToArray : public boost::static_visitor<> {
             computeAddressOfElement(variable, indexValue, program, edi);
             
             if(variable->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createMove(source.Content->var->toIntegerOperand(), createValueOfOperand(edi->getValue())));
+                program.addInstruction(program.factory().createMove(source.Content->var->toIntegerOperand(), edi->valueOf()));
             } else if(variable->type().base() == BaseType::STRING){
                 auto operands = source.Content->var->toStringOperand();
 
-                program.addInstruction(program.factory().createMove(operands.first, createValueOfOperand(edi->getValue())));
-                program.addInstruction(program.factory().createMove(operands.second, createValueOfOperand(edi->getValue(), 4)));
+                program.addInstruction(program.factory().createMove(operands.first, edi->valueOf()));
+                program.addInstruction(program.factory().createMove(operands.second, edi->valueOf(4)));
             }
         }
         
@@ -366,10 +366,10 @@ struct AssignValueToArray : public boost::static_visitor<> {
             computeAddressOfElement(variable, indexValue, program, edi);
           
             if(variable->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), createValueOfOperand(edi->getValue())));
+                program.addInstruction(program.factory().createMove(esi->valueOf(), edi->valueOf()));
             } else if(variable->type().base() == BaseType::STRING){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), createValueOfOperand(edi->getValue())));
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue(), 4), createValueOfOperand(edi->getValue(), 4)));
+                program.addInstruction(program.factory().createMove(esi->valueOf(), edi->valueOf()));
+                program.addInstruction(program.factory().createMove(esi->valueOf(4), edi->valueOf(4)));
             }
         }
         
@@ -379,12 +379,12 @@ struct AssignValueToArray : public boost::static_visitor<> {
             computeAddressOfElement(variable, indexValue, program, edi);
             
             if(variable->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createMove(performIntOperation(value, program), createValueOfOperand(edi->getValue())));
+                program.addInstruction(program.factory().createMove(performIntOperation(value, program), edi->valueOf()));
             } else if(variable->type().base() == BaseType::STRING){
                 auto operands = performStringOperation(value, program);
 
-                program.addInstruction(program.factory().createMove(operands.first, createValueOfOperand(edi->getValue())));
-                program.addInstruction(program.factory().createMove(operands.second, createValueOfOperand(edi->getValue(), 4)));
+                program.addInstruction(program.factory().createMove(operands.first, edi->valueOf()));
+                program.addInstruction(program.factory().createMove(operands.second, edi->valueOf(4)));
             }
         }
 };
