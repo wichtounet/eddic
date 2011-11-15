@@ -25,6 +25,7 @@
 
 #include "Compiler.hpp"
 #include "Options.hpp"
+#include "TypeTransformer.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
@@ -41,7 +42,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = stringToType(parameter.parameterType);
+            Type type = boost::apply_visitor(TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }

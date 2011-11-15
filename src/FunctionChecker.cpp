@@ -13,6 +13,7 @@
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
+#include "TypeTransformer.hpp"
 
 #include "mangling.hpp"
 
@@ -36,7 +37,8 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             signature->name = declaration.Content->functionName;
 
             for(auto& param : declaration.Content->parameters){
-                signature->parameters.push_back(ParameterType(param.parameterName, stringToType(param.parameterType)));
+                Type paramType = boost::apply_visitor(TypeTransformer(), param.parameterType);
+                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
