@@ -39,6 +39,20 @@ struct Rule {
 template <typename Iterator, typename Lexer>
 struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
+        arrayType %=
+                qi::eps
+            >>  lexer.word
+            >>  lexer.left_bracket
+            >>  lexer.right_bracket;
+
+        simpleType %=
+                qi::eps
+            >>  lexer.word;
+
+        type %=
+                arrayType
+            >>  simpleType;
+
         value = additiveValue.alias();
         
         additiveValue %=
@@ -240,7 +254,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
         repeatable_instruction = assignment | declaration | swap;
         
         arg %= 
-                lexer.word 
+                type 
             >>  lexer.word;
         
         function %= 
@@ -262,6 +276,10 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
         function.name("EDDI function declaration");
         program.name("EDDI program");
     }
+
+    qi::rule<Iterator, ast::Type()> type;
+    qi::rule<Iterator, ast::ArrayType()> arrayType;
+    qi::rule<Iterator, ast::SimpleType()> simpleType;
 
     qi::rule<Iterator, ast::Program()> program;
     qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
