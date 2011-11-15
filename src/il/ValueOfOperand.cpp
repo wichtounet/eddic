@@ -10,8 +10,8 @@
 
 using namespace eddic;
 
-//TODO It's not global, it's memory
-ValueOfOperand::ValueOfOperand(std::string l, int o) : Operand(OperandType::GLOBAL), location(l), offset(o) {}
+//TODO It's not stack, it's memory
+ValueOfOperand::ValueOfOperand(std::string l, int o) : Operand(OperandType::STACK), location(l), offset(o) {}
 
 std::string ValueOfOperand::getValue(){
     if(offset > 0){

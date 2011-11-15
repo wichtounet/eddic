@@ -365,17 +365,11 @@ struct AssignValueToArray : public boost::static_visitor<> {
             computeAddressOfElement(array.Content->var, array.Content->indexValue, program, esi);
             computeAddressOfElement(variable, indexValue, program, edi);
           
-            auto registerA = program.registers(EAX); 
-            //TODO Let the responsability to move to make the operations into two distinct move
             if(variable->type().base() == BaseType::INT){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), registerA));
-                program.addInstruction(program.factory().createMove(registerA, createValueOfOperand(edi->getValue())));
+                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), createValueOfOperand(edi->getValue())));
             } else if(variable->type().base() == BaseType::STRING){
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), registerA));
-                program.addInstruction(program.factory().createMove(registerA, createValueOfOperand(edi->getValue())));
-                
-                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue(), 4), registerA));
-                program.addInstruction(program.factory().createMove(registerA, createValueOfOperand(edi->getValue(), 4)));
+                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue()), createValueOfOperand(edi->getValue())));
+                program.addInstruction(program.factory().createMove(createValueOfOperand(esi->getValue(), 4), createValueOfOperand(edi->getValue(), 4)));
             }
         }
         
