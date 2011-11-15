@@ -72,6 +72,10 @@ Type eddic::stringToType(const std::string& type){
         return Type(BaseType::INT);
     } else if (type == "string"){
         return Type(BaseType::STRING);
+    } else if(type == "int[]") {
+        return Type(BaseType::INT, 0);//Use a more proper way to set that it's an array type
+    } else if(type == "string[]") {
+        return Type(BaseType::STRING, 0);//Use a more proper way to set that it's an array type
     } else if(type == "void") {
         return Type(BaseType::VOID);
     }
