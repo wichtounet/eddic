@@ -20,10 +20,6 @@ using namespace eddic;
 
 Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
 
-void Context::writeIL(IntermediateProgram&){
-    //Nothing by default    
-}
-
 std::shared_ptr<Context> Context::parent() const  {
     return m_parent;
 }
@@ -56,9 +52,13 @@ std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Va
 
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
     auto iter = variables.find(variable);
+    auto end = variables.end();
 
-    if(iter == variables.end()){
-        return m_parent->getVariable(variable);
+    auto parent = m_parent;
+
+    while(iter == end){
+        iter = parent->variables.find(variable);//TODO Check if it's necessary to update end
+        parent = parent->m_parent;
     }
     
     return iter->second;
@@ -66,9 +66,13 @@ std::shared_ptr<Variable> Context::getVariable(const std::string& variable) cons
 
 void Context::removeVariable(const std::string& variable){
     auto iter = variables.find(variable);
+    auto end = variables.end();
 
-    if(iter == variables.end()){
-        return m_parent->removeVariable(variable);
+    auto parent = m_parent;
+    
+    while(iter == end){
+        iter = parent->variables.find(variable);//TODO Check if it's necessary to update end
+        parent = parent->m_parent;
     }
 
     variables.erase(iter);
