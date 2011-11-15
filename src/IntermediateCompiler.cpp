@@ -15,6 +15,7 @@
 #include "VisitorUtils.hpp"
 
 #include "Context.hpp"
+#include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 #include "SemanticalException.hpp"

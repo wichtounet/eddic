@@ -25,7 +25,7 @@
 
 namespace eddic {
 
-class Context;
+class GlobalContext;
 
 namespace ast {
 
@@ -37,7 +37,8 @@ typedef boost::variant<
 
 //A source EDDI program
 struct ASTProgram {
-    std::shared_ptr<Context> context;
+    std::shared_ptr<GlobalContext> context;
+
     std::vector<FirstLevelBlock> blocks;
 };
 

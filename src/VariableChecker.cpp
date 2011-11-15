@@ -18,6 +18,7 @@
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
+#include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"

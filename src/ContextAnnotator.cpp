@@ -37,7 +37,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         
         void operator()(ast::Program& program){
-            program.Content->context = currentContext = globalContext = std::make_shared<GlobalContext>();
+            currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
 
             visit_each(*this, program.Content->blocks);
         }

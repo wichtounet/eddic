@@ -47,8 +47,6 @@ class Context {
 
         virtual int size();
 
-        virtual void writeIL(IntermediateProgram& program);
-        
         std::shared_ptr<Context> parent() const ;
 };
 
