@@ -464,10 +464,10 @@ inline JumpCondition toJumpNotCondition(std::string op){
     assert(false); //Not handled
 }
 
-inline void writeILJumpIfNot(IntermediateProgram& program, ast::Condition& condition, const std::string& label, int labelIndex) {
+inline void writeILJumpIfNot(IntermediateProgram& program, ast::Condition& condition, const std::string& label) {
     //No need to jump for a true boolean value 
     if(boost::get<ast::False>(&condition)){
-        program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label(label, labelIndex)));
+        program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label));
     } else if(auto* ptr = boost::get<ast::BinaryCondition>(&condition)){
         ast::BinaryCondition& binaryCondition = *ptr;
         
@@ -480,7 +480,7 @@ inline void writeILJumpIfNot(IntermediateProgram& program, ast::Condition& condi
 
         program.addInstruction(program.factory().createCompare(program.registers(EBX), program.registers(EAX)));
 
-        program.addInstruction(program.factory().createJump(toJumpNotCondition(binaryCondition.Content->op), eddic::label(label, labelIndex)));
+        program.addInstruction(program.factory().createJump(toJumpNotCondition(binaryCondition.Content->op), label));
     }
 }
 
@@ -572,69 +572,66 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            //TODO Make something accessible for others operations
-            static int labels = 0;
-
             if (if_.Content->elseIfs.empty()) {
-                int a = labels++;
+                std::string a = newLabel();
 
-                writeILJumpIfNot(program, if_.Content->condition, "L", a);
+                writeILJumpIfNot(program, if_.Content->condition, a);
 
                 visit_each(*this, if_.Content->instructions);
 
                 if (if_.Content->else_) {
-                    int b = labels++;
+                    std::string b = newLabel();
 
-                    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", b)));
+                    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, b));
 
-                    program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
+                    program.addInstruction(program.factory().createLabel(a));
 
                     visit_each(*this, (*if_.Content->else_).instructions);
 
-                    program.addInstruction(program.factory().createLabel(eddic::label("L", b)));
+                    program.addInstruction(program.factory().createLabel(b));
                 } else {
-                    program.addInstruction(program.factory().createLabel(eddic::label("L", a)));
+                    program.addInstruction(program.factory().createLabel(a));
                 }
             } else {
-                int end = labels++;
-                int next = labels++;
+                std::string end = newLabel();
+                std::string next = newLabel();
 
-                writeILJumpIfNot(program, if_.Content->condition, "L", next);
+                writeILJumpIfNot(program, if_.Content->condition, next);
 
                 visit_each(*this, if_.Content->instructions);
 
-                program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
+                program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, end));
 
                 for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
                     ast::ElseIf& elseIf = if_.Content->elseIfs[i];
 
-                    program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
+                    program.addInstruction(program.factory().createLabel(next));
 
                     //Last elseif
                     if (i == if_.Content->elseIfs.size() - 1) {
                         if (if_.Content->else_) {
-                            next = labels++;
+                            next = newLabel();
                         } else {
                             next = end;
                         }
                     } else {
-                        next = labels++;
+                        next = newLabel();
                     }
 
-                    writeILJumpIfNot(program, elseIf.condition, "L", next);
+                    writeILJumpIfNot(program, elseIf.condition, next);
 
                     visit_each(*this, elseIf.instructions);
 
-                    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, eddic::label("L", end)));
+                    program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, end));
                 }
 
                 if (if_.Content->else_) {
-                    program.addInstruction(program.factory().createLabel(eddic::label("L", next)));
+                    program.addInstruction(program.factory().createLabel(next));
 
                     visit_each(*this, (*if_.Content->else_).instructions);
                 }
 
-                program.addInstruction(program.factory().createLabel(eddic::label("L", end)));
+                program.addInstruction(program.factory().createLabel(end));
             }
         }
 
@@ -693,43 +690,39 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::While& while_){
-            //TODO Make something accessible for others operations
-            static int labels = 0;
+            std::string startLabel = newLabel();
+            std::string endLabel = newLabel();
 
-            int startLabel = labels++;
-            int endLabel = labels++;
+            program.addInstruction(program.factory().createLabel(startLabel));
 
-            program.addInstruction(program.factory().createLabel(label("WL", startLabel)));
-
-            writeILJumpIfNot(program, while_.Content->condition, "WL", endLabel);
+            writeILJumpIfNot(program, while_.Content->condition, endLabel);
 
             visit_each(*this, while_.Content->instructions);
 
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("WL", startLabel)));
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
 
-            program.addInstruction(program.factory().createLabel(label("WL", endLabel)));
+            program.addInstruction(program.factory().createLabel(endLabel));
         }
 
         void operator()(ast::For for_){
             visit_optional(*this, for_.Content->start);
 
-            static int labels = -1;
+            std::string startLabel = newLabel();
+            std::string endLabel = newLabel();
 
-            ++labels;
-
-            program.addInstruction(program.factory().createLabel(label("start_for", labels)));
+            program.addInstruction(program.factory().createLabel(startLabel));
 
             if(for_.Content->condition){
-                writeILJumpIfNot(program, *for_.Content->condition, "end_for", labels);
+                writeILJumpIfNot(program, *for_.Content->condition, endLabel);
             }
 
             visit_each(*this, for_.Content->instructions);
 
             visit_optional(*this, for_.Content->repeat);
 
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_for", labels)));
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
 
-            program.addInstruction(program.factory().createLabel(label("end_for", labels)));
+            program.addInstruction(program.factory().createLabel(endLabel));
         }
 
         //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
@@ -745,11 +738,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             //Assign the base value to the variable
             visit_non_variant(visitor, fromValue);
             
-            static int labels = -1;
+            std::string startLabel = newLabel();
+            std::string endLabel = newLabel();
 
-            ++labels;
-
-            program.addInstruction(program.factory().createLabel(label("start_foreach", labels)));
+            program.addInstruction(program.factory().createLabel(startLabel));
 
             //Create a condition
             ast::VariableValue v;
@@ -766,7 +758,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             condition = binaryCondition;
 
-            writeILJumpIfNot(program, condition, "end_foreach", labels);
+            writeILJumpIfNot(program, condition, endLabel);
 
             //Write all the instructions
             visit_each(*this, foreach.Content->instructions);
@@ -781,9 +773,9 @@ class CompilerVisitor : public boost::static_visitor<> {
            
             visit_non_variant(visitor, addition);
             
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, label("start_foreach", labels)));
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
 
-            program.addInstruction(program.factory().createLabel(label("end_foreach", labels)));
+            program.addInstruction(program.factory().createLabel(endLabel));
         }
 
         void operator()(ast::FunctionCall& functionCall){

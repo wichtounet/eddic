@@ -5,20 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef LABELS_H
-#define LABELS_H
+#include "il/Labels.hpp"
 
 #include "Utils.hpp"
 
-namespace eddic {
+static int currentLabel = 0;
 
-std::string newLabel();
-
-template<typename T>
-std::string label(std::string prefix, T value){
-    return prefix + toString(value);
+std::string eddic::newLabel(){
+   return "L" + toString(currentLabel++); 
 }
-
-} //end of eddic
-
-#endif
