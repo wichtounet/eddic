@@ -42,10 +42,10 @@ class Context {
         virtual bool exists(const std::string& a) const;
         virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
 
-        Variables::const_iterator begin();
-        Variables::const_iterator end();
+        Variables::const_iterator begin() const;
+        Variables::const_iterator end() const;
 
-        std::shared_ptr<Context> parent() const ;
+        std::shared_ptr<Context> parent() const;
 };
 
 } //end of eddic

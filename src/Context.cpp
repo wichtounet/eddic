@@ -74,10 +74,10 @@ void Context::removeVariable(const std::string& variable){
     variables.erase(iter);
 }
  
-Context::Variables::const_iterator Context::begin(){
+Context::Variables::const_iterator Context::begin() const {
     return variables.cbegin();
 }
 
-Context::Variables::const_iterator Context::end(){
+Context::Variables::const_iterator Context::end() const {
     return variables.cend();
 }
