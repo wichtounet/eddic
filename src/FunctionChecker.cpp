@@ -36,13 +36,14 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             signature->name = declaration.Content->functionName;
 
             for(auto& param : declaration.Content->parameters){
-                signature->parameters.push_back(
-                    std::make_shared<ParameterType>(param.parameterName, stringToType(param.parameterType)));
+                signature->parameters.push_back(ParameterType(param.parameterName, stringToType(param.parameterType)));
             }
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
-            //TODO Verifiy that the function has not been previously defined
+            if(functionTable.exists(signature->mangledName)){
+                throw SemanticalException("The function " + signature->name + " has already been defined");
+            }
 
             functionTable.addFunction(signature);
 

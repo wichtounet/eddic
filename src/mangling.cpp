@@ -19,6 +19,24 @@ std::string eddic::mangle(Type type){
     assert(false); //Type not handled
 }
 
+std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
+
+    for(const ParameterType& t : types){
+        ss << mangle(t.paramType);
+    }
+
+    return ss.str();
+}
+
 std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){
     if(functionName == "main"){
         return functionName;
