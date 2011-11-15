@@ -14,6 +14,8 @@ string globalArrayB[10];
 int globalUnused = 2222;
 
 void main(){
+    test(1234);
+
     int localUnused = 8989;
 
     string x = "ED" + "DI";
@@ -207,9 +209,27 @@ void main(){
 
     testGlobalArrays();
     testArrays();
+   
+    println("["); 
+    testArray(globalArrayA);
+    println("]");
 
     int arrayTest[22];
+    arrayTest[5] = 1235813;
+    
+    println("["); 
     testArray(arrayTest);
+    println("]");
+}
+
+void testArray(int[] array){
+    println(array[5]);
+
+    secondTest(array);
+}
+
+void secondTest(int[] array){
+    println(array[5]);
 }
 
 /* Multiline comment 1  */
@@ -221,6 +241,10 @@ void test(){
     println(x);
 
     println("Hello from test");
+}
+
+void test(int i){
+    println(i);
 }
 
 void testGlobalArrays(){
@@ -246,10 +270,6 @@ void testArrays(){
     string second[10];
     second[3] = "asdf";
     println(second[3]);
-}
-
-void testArray(int[] array){
-    //Empty
 }
 
 void empty(int i){

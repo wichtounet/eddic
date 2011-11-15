@@ -74,7 +74,8 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, ast::Value indexVa
         auto registerEBP = program.registers(EBP);
         program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
     } else if(position.isParameter()){
-        //TODO Implement
+        program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, operand));
     }
 }
 
@@ -140,26 +141,44 @@ class PushValue : public boost::static_visitor<> {
         void operator()(ast::VariableValue& variable){
             auto var = variable.Content->var;
 
-            if(var->type().base() == BaseType::INT){
-                program.addInstruction(
-                    program.factory().createPush(
-                        var->toIntegerOperand()
-                    )
-                );
-            } else {
-                auto operands = var->toStringOperand();
+            //If it's an array, we have to put the adress of the array, not a value
+            if(var->type().isArray()){
+                auto position = var->position();
 
-                program.addInstruction(
-                    program.factory().createPush(
-                        operands.first
-                    )
-                );
-                
-                program.addInstruction(
-                    program.factory().createPush(
-                        operands.second
-                    )
-                );
+                if(position.isGlobal()){
+                    program.addInstruction(program.factory().createPush(createImmediateOperand("VA" + position.name())));
+                } else if(position.isStack()){
+                    auto registerD = program.registers(EDX);
+                    auto registerE = program.registers(EBP);
+
+                    program.addInstruction(program.factory().createMove(registerE, registerD));
+                    program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(position.offset()), registerD));
+                    program.addInstruction(program.factory().createPush(registerD));
+                } else if(position.isParameter()){
+                    program.addInstruction(program.factory().createPush(createBaseStackOperand(position.offset())));
+                }
+            } else {
+                if(var->type().base() == BaseType::INT){
+                    program.addInstruction(
+                            program.factory().createPush(
+                                var->toIntegerOperand()
+                                )
+                            );
+                } else {
+                    auto operands = var->toStringOperand();
+
+                    program.addInstruction(
+                            program.factory().createPush(
+                                operands.first
+                                )
+                            );
+
+                    program.addInstruction(
+                            program.factory().createPush(
+                                operands.second
+                                )
+                            );
+                }
             }
         }
 
