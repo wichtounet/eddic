@@ -213,6 +213,8 @@ void main(){
         test();
         test();
     }
+
+    testArray();
 }
 
 /* Multiline comment 1  */
@@ -229,6 +231,8 @@ void test(){
 //Test function with arrays
 void testArray(){
     int array[12];
+
+    println(array[3]);
 }
 
 void empty(int i){

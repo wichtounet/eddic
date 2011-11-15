@@ -17,6 +17,7 @@ enum Register {
     EDX,
 
     ESP,
+    EBP,
     
     REGISTER_COUNT  
 };
