@@ -37,6 +37,8 @@ InstructionFactory32::InstructionFactory32(){
     registerOperands[EDX] = std::make_shared<RegisterOperand>("%edx");
     registerOperands[ESP] = std::make_shared<RegisterOperand>("%esp");
     registerOperands[EBP] = std::make_shared<RegisterOperand>("%ebp");
+    registerOperands[ESI] = std::make_shared<RegisterOperand>("%edi");
+    registerOperands[EDI] = std::make_shared<RegisterOperand>("%esi");
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
