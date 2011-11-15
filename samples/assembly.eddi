@@ -226,6 +226,11 @@ void test(){
     println("Hello from test");
 }
 
+//Test function with arrays
+void testArray(){
+    int array[12];
+}
+
 void empty(int i){
     //Empty function
 }
