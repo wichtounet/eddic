@@ -43,6 +43,7 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     qi::rule<Iterator, ast::While()> while_;
     qi::rule<Iterator, ast::For()> for_;
     qi::rule<Iterator, ast::Foreach()> foreach_;
+    qi::rule<Iterator, ast::ForeachIn()> foreachin_;
     qi::rule<Iterator, ast::If()> if_;
 
     qi::rule<Iterator, ast::Else()> else_;

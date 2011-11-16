@@ -71,6 +71,14 @@ struct DebugVisitor : public boost::static_visitor<> {
         --level;
     }
 
+    void operator()(ast::ForeachIn& for_) const {
+        std::cout << indent() << "Foreach in " << std::endl; 
+   
+        ++level;
+        visit_each(*this, for_.Content->instructions);    
+        --level;
+    }
+
     void operator()(ast::While& while_) const {
         std::cout << indent() << "While" << std::endl; 
    

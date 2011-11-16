@@ -739,6 +739,10 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             program.addInstruction(program.factory().createLabel(endLabel));
         }
+        
+        void operator()(ast::ForeachIn& foreach){
+            //TODO
+        }
 
         void operator()(ast::FunctionCall& functionCall){
             PushValue visitor(program);

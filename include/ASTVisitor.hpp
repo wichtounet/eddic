@@ -48,6 +48,9 @@ void operator()(ast::While& while_){\
 #define AUTO_RECURSE_FOREACH()\
 void operator()(ast::Foreach& foreach_){\
     visit_each(*this, foreach_.Content->instructions);\
+}\
+void operator()(ast::ForeachIn& foreach_){\
+    visit_each(*this, foreach_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\

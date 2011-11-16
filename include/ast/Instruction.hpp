@@ -34,6 +34,9 @@ typedef Deferred<ASTIf> If;
 struct ASTForeach;
 typedef Deferred<ASTForeach> Foreach;
 
+struct ASTForeachIn;
+typedef Deferred<ASTForeachIn> ForeachIn;
+
 typedef boost::variant<
             FunctionCall, 
             Swap, 
@@ -43,7 +46,8 @@ typedef boost::variant<
             ArrayAssignment, 
             If, 
             While, 
-            Foreach, 
+            Foreach,
+            ForeachIn, 
             For>
         Instruction;
 
@@ -55,5 +59,6 @@ typedef boost::variant<
 #include "ast/While.hpp"
 #include "ast/For.hpp"
 #include "ast/Foreach.hpp"
+#include "ast/ForeachIn.hpp"
 
 #endif

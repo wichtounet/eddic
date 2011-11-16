@@ -89,6 +89,23 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         visit_each(*this, foreach.Content->instructions);
     }
+    
+    void operator()(ast::ForeachIn& foreach){
+        if(foreach.Content->context->exists(foreach.Content->variableName)){
+            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared");
+        }
+        
+        if(!foreach.Content->context->exists(foreach.Content->arrayName)){
+            throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared");
+        }
+
+        //TODO Check types of array
+        //TODO Check type of varaible = base of array
+
+        foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
+
+        visit_each(*this, foreach.Content->instructions);
+    }
 
     void operator()(ast::Assignment& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {

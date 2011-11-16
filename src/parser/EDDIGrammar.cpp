@@ -69,6 +69,18 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >   *(instruction)
         >   lexer.right_brace;
     
+    foreachin_ = 
+            lexer.foreach_ 
+        >   lexer.left_parenth 
+        >   lexer.word 
+        >   lexer.word 
+        >   lexer.in_ 
+        >   lexer.word 
+        >   lexer.right_parenth 
+        >   lexer.left_brace 
+        >   *(instruction)
+        >   lexer.right_brace;
+    
     while_ %=
             lexer.while_ 
         >   lexer.left_parenth 
@@ -138,6 +150,7 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         |   for_
         |   while_
         |   foreach_
+        |   foreachin_
         |   (swap > lexer.stop);
 
     repeatable_instruction = assignment | declaration | swap;
