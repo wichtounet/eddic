@@ -17,14 +17,21 @@
 namespace eddic {
 
 class Context;
+class Variable;
 
 namespace ast {
 
 struct ASTForeachIn {
     std::shared_ptr<Context> context;
+
     std::string variableType;
     std::string variableName;
     std::string arrayName;
+
+    std::shared_ptr<Variable> var;
+    std::shared_ptr<Variable> arrayVar;
+    std::shared_ptr<Variable> iterVar;
+
     std::vector<Instruction> instructions;
 };
 

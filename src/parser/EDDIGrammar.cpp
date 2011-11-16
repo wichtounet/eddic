@@ -57,29 +57,29 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
     
     foreach_ = 
             lexer.foreach_ 
-        >   lexer.left_parenth 
-        >   lexer.word 
-        >   lexer.word 
-        >   lexer.from_ 
-        >   lexer.integer 
-        >   lexer.to_ 
-        >   lexer.integer 
-        >   lexer.right_parenth 
-        >   lexer.left_brace 
-        >   *(instruction)
-        >   lexer.right_brace;
+        >>  lexer.left_parenth 
+        >>  lexer.word 
+        >>  lexer.word 
+        >>  lexer.from_ 
+        >>  lexer.integer 
+        >>  lexer.to_ 
+        >>  lexer.integer 
+        >>  lexer.right_parenth 
+        >>  lexer.left_brace 
+        >>  *(instruction)
+        >>  lexer.right_brace;
     
     foreachin_ = 
             lexer.foreach_ 
-        >   lexer.left_parenth 
-        >   lexer.word 
-        >   lexer.word 
-        >   lexer.in_ 
-        >   lexer.word 
-        >   lexer.right_parenth 
-        >   lexer.left_brace 
-        >   *(instruction)
-        >   lexer.right_brace;
+        >>  lexer.left_parenth 
+        >>  lexer.word 
+        >>  lexer.word 
+        >>  lexer.in_ 
+        >>  lexer.word 
+        >>  lexer.right_parenth 
+        >>  lexer.left_brace 
+        >>  *(instruction)
+        >>  lexer.right_brace;
     
     while_ %=
             lexer.while_ 

@@ -81,20 +81,16 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach& foreach){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            foreach.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            foreach.Content->context = currentContext;
-            
             visit_each(*this, foreach.Content->instructions);
              
             currentContext = currentContext->parent();
         }
         
         void operator()(ast::ForeachIn& foreach){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            foreach.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            foreach.Content->context = currentContext;
-            
             visit_each(*this, foreach.Content->instructions);
              
             currentContext = currentContext->parent();

@@ -55,27 +55,53 @@ inline Operation toOperation(char op){
 
 inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
+void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Operand> indexOperand, IntermediateProgram& program, std::shared_ptr<Operand> operand){
+    program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array->type().base())), indexOperand));
+
+    auto position = array->position();
+    if(position.isGlobal()){
+        program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+    } else if(position.isStack()){
+        program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+
+        auto registerEBP = program.registers(EBP);
+        program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
+    } else if(position.isParameter()){
+        program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+    }
+}
+
 void computeAddressOfElement(std::shared_ptr<Variable> array, ast::Value indexValue, IntermediateProgram& program, std::shared_ptr<Operand> operand){
     assert(operand->isRegister());
 
     auto registerA = program.registers(EAX);
 
     putInRegister(indexValue, registerA, program);
-    program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array->type().base())), registerA));
+    computeAddressOfElement(array, registerA, program, operand);
+}
 
+void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Variable> indexVar, IntermediateProgram& program, std::shared_ptr<Operand> operand){
+    assert(operand->isRegister());
+
+    auto registerA = program.registers(EAX);
+
+    program.addInstruction(program.factory().createMove(indexVar->toIntegerOperand(), registerA));
+    computeAddressOfElement(array, registerA, program, operand);
+}
+
+void computeLenghtOfArray(std::shared_ptr<Variable> array, IntermediateProgram& program, std::shared_ptr<Operand> operand){
+    assert(operand->isRegister());
+    
     auto position = array->position();
     if(position.isGlobal()){
-        program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, operand));
-    } else if(position.isStack()){
+        program.addInstruction(program.factory().createMove(createGlobalOperand("VA" + position.name())->valueOf(), operand));
+    } else if(position.isStack()){//TODO Test
         program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), operand));
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, operand));
-
-        auto registerEBP = program.registers(EBP);
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
-    } else if(position.isParameter()){
+    } else if(position.isParameter()){//TODO Test
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerA, operand));
     }
 }
 
@@ -690,9 +716,39 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Foreach&){
             assert(false); //This node has been transformed into a for node
         }
-        
-        void operator()(ast::ForeachIn&){
-            assert(false); //This node has been transformed into a for node
+       
+        void operator()(ast::ForeachIn& foreach){
+            auto iterVar = foreach.Content->iterVar;
+            auto arrayVar = foreach.Content->arrayVar;
+            auto var = foreach.Content->var;
+
+            auto startLabel = newLabel();
+            auto endLabel = newLabel();
+
+            auto registerA = program.registers(EAX);
+            auto registerB = program.registers(EBX);
+            auto registerE = program.registers(ESI);
+
+            program.addInstruction(program.factory().createMove(createImmediateOperand(0), iterVar->toIntegerOperand()));
+
+            program.addInstruction(program.factory().createLabel(startLabel));
+
+            computeLenghtOfArray(arrayVar, program, registerA);
+            program.addInstruction(program.factory().createMove(iterVar->toIntegerOperand(), registerB));
+
+            program.addInstruction(program.factory().createCompare(program.registers(EAX), program.registers(EBX)));
+            program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, endLabel));
+
+            computeAddressOfElement(arrayVar, iterVar, program, registerE);
+            program.addInstruction(program.factory().createMove(registerE->valueOf(), var->toIntegerOperand())); 
+
+            visit_each(*this, foreach.Content->instructions);    
+
+            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(1), iterVar->toIntegerOperand()));
+
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
+            
+            program.addInstruction(program.factory().createLabel(endLabel));
         }
 
         void operator()(ast::FunctionCall& functionCall){

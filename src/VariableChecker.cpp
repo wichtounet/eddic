@@ -101,8 +101,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         //TODO Check types of array
         //TODO Check type of varaible = base of array
+        
+        static int generated = 0;
 
-        foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
+        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
+        foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter" + ++generated, stringToType("int"));
 
         visit_each(*this, foreach.Content->instructions);
     }

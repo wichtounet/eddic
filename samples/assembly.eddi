@@ -259,6 +259,12 @@ void testGlobalArrays(){
 
     globalArrayA[3] = globalArrayA[5];
     println(globalArrayA[3]);
+
+    println("start foreach");
+    foreach(int zuizui in globalArrayA){
+        println(zuizui);
+    }
+    println("end foreach");
 }
 
 //Test function with arrays

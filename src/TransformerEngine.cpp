@@ -105,12 +105,6 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         return for_;
     }
-
-    ast::Instruction operator()(ast::ForeachIn& foreach) const {
-        //TODO
-        
-        return foreach;   
-    }
      
     //No transformations
     template<typename T>
@@ -166,6 +160,10 @@ struct TransformerVisitor : public boost::static_visitor<> {
         visit_optional(*this, for_.Content->condition);
         visit_optional(*this, for_.Content->repeat);
         transform(for_.Content->instructions);
+    }
+
+    void operator()(ast::ForeachIn& foreach) const {
+        transform(foreach.Content->instructions);
     }
 
     void operator()(ast::While& while_) const {

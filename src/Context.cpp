@@ -53,7 +53,8 @@ std::shared_ptr<Variable> Context::getVariable(const std::string& variable) cons
     auto parent = m_parent;
 
     while(iter == end){
-        iter = parent->variables.find(variable);//TODO Check if it's necessary to update end
+        iter = parent->variables.find(variable);
+        end = parent->variables.end();
         parent = parent->m_parent;
     }
     
@@ -67,7 +68,8 @@ void Context::removeVariable(const std::string& variable){
     auto parent = m_parent;
     
     while(iter == end){
-        iter = parent->variables.find(variable);//TODO Check if it's necessary to update end
+        iter = parent->variables.find(variable);
+        end = parent->variables.end();
         parent = parent->m_parent;
     }
 

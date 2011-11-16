@@ -270,8 +270,8 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             assert(false); //Should have been removed in transformation phase
         }
 
-        void operator()(ast::ForeachIn&){
-            assert(false); //Should have been removed in transformation phase
+        void operator()(ast::ForeachIn& foreach){
+            removeUnused(foreach.Content->instructions);
         }
 
         void operator()(ast::FunctionCall& functionCall){
