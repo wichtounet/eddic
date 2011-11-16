@@ -99,9 +99,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         ValueOptimizer(StringPool& p) : pool(p) {}
 
         ast::Value operator()(ast::ComposedValue& value) const {
-            if(value.Content->operations.empty()){
-                return boost::apply_visitor(*this, value.Content->first);   
-            }
+            assert(value.Content->operations.size() > 0); //Should have been transformed before
 
             //If the value is constant, we can replace it with the results of the computation
             if(IsConstantVisitor()(value)){
@@ -135,8 +133,6 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 
                 ++start;
             }
-
-            assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
 
             //If we get there, that means that no optimization has been (or can be) performed
             return value;
@@ -270,8 +266,12 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             removeUnused(while_.Content->instructions);
         }
 
-        void operator()(ast::Foreach& foreach_){
-            removeUnused(foreach_.Content->instructions);
+        void operator()(ast::Foreach&){
+            assert(false); //Should have been removed in transformation phase
+        }
+
+        void operator()(ast::ForeachIn&){
+            assert(false); //Should have been removed in transformation phase
         }
 
         void operator()(ast::FunctionCall& functionCall){

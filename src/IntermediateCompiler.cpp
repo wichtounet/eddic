@@ -687,61 +687,12 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createLabel(endLabel));
         }
 
-        //TODO Rewrite that function, perhaps with a transformation into several element in a previous stage
-        void operator()(ast::Foreach& foreach){
-            ast::Integer fromValue;
-            fromValue.value = foreach.Content->from;
-            
-            ast::Integer toValue;
-            toValue.value = foreach.Content->to;
-
-            AssignValueToVariable visitor(foreach.Content->context->getVariable(foreach.Content->variableName), program);
-            
-            //Assign the base value to the variable
-            visit_non_variant(visitor, fromValue);
-            
-            std::string startLabel = newLabel();
-            std::string endLabel = newLabel();
-
-            program.addInstruction(program.factory().createLabel(startLabel));
-
-            //Create a condition
-            ast::VariableValue v;
-            v.Content->variableName = foreach.Content->variableName;
-            v.Content->context = foreach.Content->context;
-            v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
-        
-            //Avoid doing all that conversion stuff...  
-            ast::Condition condition; 
-            ast::BinaryCondition binaryCondition; 
-            binaryCondition.Content->lhs = v;
-            binaryCondition.Content->rhs = toValue;
-            binaryCondition.Content->op = "<=";
-
-            condition = binaryCondition;
-
-            writeILJumpIfNot(program, condition, endLabel);
-
-            //Write all the instructions
-            visit_each(*this, foreach.Content->instructions);
-
-            //Increment the variable
-            ast::Integer inc;
-            inc.value = 1;
-           
-            ast::ComposedValue addition;
-            addition.Content->first = v;
-            addition.Content->operations.push_back(boost::tuples::tuple<char, ast::Value>('+', inc));
-           
-            visit_non_variant(visitor, addition);
-            
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
-
-            program.addInstruction(program.factory().createLabel(endLabel));
+        void operator()(ast::Foreach&){
+            assert(false); //This node has been transformed into a for node
         }
         
-        void operator()(ast::ForeachIn& foreach){
-            //TODO
+        void operator()(ast::ForeachIn&){
+            assert(false); //This node has been transformed into a for node
         }
 
         void operator()(ast::FunctionCall& functionCall){
