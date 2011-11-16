@@ -10,7 +10,8 @@
 
 #include <boost/spirit/include/qi.hpp>
 #include "lexer/SpiritLexer.hpp"
-#include "ast/Program.hpp"
+
+#include "ast/Type.hpp"
 
 namespace qi = boost::spirit::qi;
 

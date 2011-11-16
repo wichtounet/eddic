@@ -10,9 +10,10 @@
 
 #include <boost/spirit/include/qi.hpp>
 #include "lexer/SpiritLexer.hpp"
-#include "ast/Program.hpp"
 
 #include "parser/ValueGrammar.hpp"
+
+#include "ast/Condition.hpp"
 
 namespace qi = boost::spirit::qi;
 
