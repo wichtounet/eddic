@@ -18,7 +18,6 @@ using namespace eddic;
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
     ast::Value operator()(ast::ComposedValue& value) const {
-        std::cout << "Transform composed value" << std::endl;
         if(value.Content->operations.empty()){
             return boost::apply_visitor(*this, value.Content->first);   
         }
