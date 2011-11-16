@@ -9,45 +9,11 @@
 
 using namespace eddic;
 
-EddiGrammar::EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar"), value(lexer) {
-    arrayType %=
-            qi::eps
-        >>  lexer.word
-        >>  lexer.left_bracket
-        >>  lexer.right_bracket;
-
-    simpleType %=
-            qi::eps
-        >>  lexer.word;
-
-    type %=
-            arrayType
-        |   simpleType;
-
-    true_ %= 
-            qi::eps
-        >>  lexer.true_;
-    
-    false_ %= 
-            qi::eps
-        >>  lexer.false_;
-
-    binary_condition %=
-            value
-        >>  (
-                lexer.greater_equals
-            |   lexer.greater
-            |   lexer.less_equals
-            |   lexer.less
-            |   lexer.not_equals
-            |   lexer.equals
-            )
-        >>   value;
-
-    condition %= 
-            true_ 
-        |   false_ 
-        |   binary_condition;
+EddiGrammar::EddiGrammar(const Lexer& lexer) : 
+        EddiGrammar::base_type(program, "EDDI Grammar"), 
+        value(lexer), 
+        condition(lexer),
+        type(lexer){
     
     else_if_ %= 
             lexer.else_ 

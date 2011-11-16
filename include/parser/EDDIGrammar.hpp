@@ -13,6 +13,8 @@
 #include "ast/Program.hpp"
 
 #include "parser/ValueGrammar.hpp"
+#include "parser/BooleanGrammar.hpp"
+#include "parser/TypeGrammar.hpp"
 
 namespace qi = boost::spirit::qi;
 
@@ -23,10 +25,6 @@ typedef SimpleLexer<lexer_type> Lexer;
 
 struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     EddiGrammar(const Lexer& lexer);
-
-    qi::rule<Iterator, ast::Type()> type;
-    qi::rule<Iterator, ast::ArrayType()> arrayType;
-    qi::rule<Iterator, ast::SimpleType()> simpleType;
 
     qi::rule<Iterator, ast::Program()> program;
     qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
@@ -50,12 +48,9 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     qi::rule<Iterator, ast::Else()> else_;
     qi::rule<Iterator, ast::ElseIf()> else_if_;
 
-    qi::rule<Iterator, ast::Condition()> condition;
-    qi::rule<Iterator, ast::True()> true_;
-    qi::rule<Iterator, ast::False()> false_;
-    qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
-
     ValueGrammar value;
+    BooleanGrammar condition;
+    TypeGrammar type;
 };
 
 } //end of eddic
