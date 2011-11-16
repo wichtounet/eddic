@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-EddiGrammar::EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar") {
+EddiGrammar::EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "EDDI Grammar"), value(lexer) {
     arrayType %=
             qi::eps
         >>  lexer.word
@@ -23,54 +23,6 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "
     type %=
             arrayType
         |   simpleType;
-
-    value = additiveValue.alias();
-    
-    additiveValue %=
-            multiplicativeValue
-        >>  *(
-                (lexer.addition > multiplicativeValue)
-            |   (lexer.subtraction > multiplicativeValue)
-            );
-   
-    multiplicativeValue %=
-            unaryValue
-        >>  *(
-                (lexer.multiplication > unaryValue)
-            |   (lexer.division > unaryValue)
-            |   (lexer.modulo > unaryValue)
-            );
-    
-    //TODO Support + - primaryValue
-    unaryValue = primaryValue.alias();
-    
-    primaryValue = 
-            constant 
-        |   arrayValue
-        |   variable 
-        |   (lexer.left_parenth >> value > lexer.right_parenth);
-
-    integer %= 
-            qi::eps 
-        >>  lexer.integer;
-   
-    variable %= 
-            qi::eps
-        >>  lexer.word;
-   
-    arrayValue %=
-            lexer.word
-        >>  lexer.left_bracket
-        >>  value
-        >>  lexer.right_bracket;
-    
-    litteral %= 
-            qi::eps 
-        >> lexer.litteral;
-
-    constant %= 
-            integer 
-        |   litteral;
 
     true_ %= 
             qi::eps
@@ -188,7 +140,7 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) : EddiGrammar::base_type(program, "
     globalDeclaration %= 
             lexer.word 
         >>  lexer.word 
-        >>  -(lexer.assign >> constant)
+        >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;
     
     globalArrayDeclaration %= 

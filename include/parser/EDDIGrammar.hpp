@@ -12,6 +12,8 @@
 #include "lexer/SpiritLexer.hpp"
 #include "ast/Program.hpp"
 
+#include "parser/ValueGrammar.hpp"
+
 namespace qi = boost::spirit::qi;
 
 namespace eddic {
@@ -48,21 +50,12 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     qi::rule<Iterator, ast::Else()> else_;
     qi::rule<Iterator, ast::ElseIf()> else_if_;
 
-    qi::rule<Iterator, ast::Value()> value;
-    qi::rule<Iterator, ast::Value()> primaryValue;
-    qi::rule<Iterator, ast::Value()> unaryValue;
-    qi::rule<Iterator, ast::ComposedValue()> additiveValue;
-    qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
-    qi::rule<Iterator, ast::Value()> constant;
-    qi::rule<Iterator, ast::Integer()> integer;
-    qi::rule<Iterator, ast::Litteral()> litteral;
-    qi::rule<Iterator, ast::VariableValue()> variable;
-    qi::rule<Iterator, ast::ArrayValue()> arrayValue;
-
     qi::rule<Iterator, ast::Condition()> condition;
     qi::rule<Iterator, ast::True()> true_;
     qi::rule<Iterator, ast::False()> false_;
     qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
+
+    ValueGrammar value;
 };
 
 } //end of eddic
