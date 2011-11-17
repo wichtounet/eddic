@@ -100,7 +100,7 @@ void computeLenghtOfArray(std::shared_ptr<Variable> array, IntermediateProgram& 
     if(position.isGlobal()){
         program.addInstruction(program.factory().createMove(createGlobalOperand("VA" + position.name())->valueOf(), operand));
     } else if(position.isStack()){//TODO Test
-        program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMove(createBaseStackOperand(-position.offset()), operand));
     } else if(position.isParameter()){//TODO Test
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
     }
