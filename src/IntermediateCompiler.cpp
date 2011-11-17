@@ -57,6 +57,7 @@ inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, I
 
 void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Operand> indexOperand, IntermediateProgram& program, std::shared_ptr<Operand> operand){
     program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array->type().base())), indexOperand));
+    program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(size(BaseType::INT)), indexOperand));
 
     auto position = array->position();
     if(position.isGlobal()){
