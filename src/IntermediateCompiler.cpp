@@ -72,6 +72,7 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
         auto registerEBP = program.registers(EBP);
         program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
     } else if(position.isParameter()){
+        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
     }
@@ -181,7 +182,7 @@ class PushValue : public boost::static_visitor<> {
                     auto registerE = program.registers(EBP);
 
                     program.addInstruction(program.factory().createMove(registerE, registerD));
-                    program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(position.offset()), registerD));
+                    program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(-position.offset()), registerD));
                     program.addInstruction(program.factory().createPush(registerD));
                 } else if(position.isParameter()){
                     program.addInstruction(program.factory().createPush(createBaseStackOperand(position.offset())));
