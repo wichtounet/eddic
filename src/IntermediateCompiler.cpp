@@ -66,6 +66,8 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
     } else if(position.isStack()){
         program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+        
+        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), operand));
 
         auto registerEBP = program.registers(EBP);
         program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
@@ -541,7 +543,26 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& function){
             program.addInstruction(program.factory().createFunctionDeclaration(function.Content->mangledName, function.Content->context->size()));
 
-            //TODO Init arrays
+            auto iter = function.Content->context->begin();
+            auto end = function.Content->context->end();
+
+            for(; iter != end; iter++){
+                auto var = iter->second;
+                if(var->type().isArray() && var->position().isStack()){
+                    int position = -var->position().offset();
+
+                    program.addInstruction(program.factory().createMove(createImmediateOperand(var->type().size()), createBaseStackOperand(position))); 
+
+                    if(var->type().base() == BaseType::INT){
+                        for(unsigned int i = 0; i < var->type().size(); ++i){
+                            position -= 4;
+                            program.addInstruction(program.factory().createMove(createImmediateOperand(0), createBaseStackOperand(position)));
+                        }
+                    } else if(var->type().base() == BaseType::STRING){
+                        //TODO
+                    }
+                }
+            }
 
             visit_each(*this, function.Content->instructions);
 
@@ -730,6 +751,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto registerB = program.registers(EBX);
             auto registerE = program.registers(ESI);
 
+            //Init the index to 0
             program.addInstruction(program.factory().createMove(createImmediateOperand(0), iterVar->toIntegerOperand()));
 
             program.addInstruction(program.factory().createLabel(startLabel));

@@ -260,10 +260,12 @@ void testGlobalArrays(){
     globalArrayA[3] = globalArrayA[5];
     println(globalArrayA[3]);
 
+    println("Start foreach int global");
     foreach(int zuizui in globalArrayA){
         println(zuizui);
     }
 
+    println("Start foreach string global");
     foreach(string zaizai in globalArrayB){
         println(zaizai);
     }
@@ -272,16 +274,24 @@ void testGlobalArrays(){
 //Test function with arrays
 void testArrays(){
     int array[12];
-    array[3] = 0;
+    array[3] = 5;
     println(array[3]);
 
+    println("Start foreach int local");
     foreach(int zuizui in array){
         println(zuizui);
     }
+    println("End foreach int local");
 
     string second[10];
     second[3] = "asdf";
     println(second[3]);
+    
+    println("Start foreach string local");
+    foreach(string youpee in second){
+        println(youpee);
+    }
+    println("End foreach string local");
 }
 
 void empty(int i){
