@@ -275,6 +275,10 @@ void testArrays(){
     array[3] = 0;
     println(array[3]);
 
+    foreach(int zuizui in array){
+        println(zuizui);
+    }
+
     string second[10];
     second[3] = "asdf";
     println(second[3]);
