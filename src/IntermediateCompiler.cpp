@@ -741,7 +741,15 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createJump(JumpCondition::GREATER_EQUALS, endLabel));
 
             computeAddressOfElement(arrayVar, iterVar, program, registerE);
-            program.addInstruction(program.factory().createMove(registerE->valueOf(), var->toIntegerOperand())); 
+
+            if(var->type().base() == BaseType::INT){
+                program.addInstruction(program.factory().createMove(registerE->valueOf(), var->toIntegerOperand())); 
+            } else {
+                auto operands = var->toStringOperand();
+
+                program.addInstruction(program.factory().createMove(registerE->valueOf(), operands.first)); 
+                program.addInstruction(program.factory().createMove(registerE->valueOf(4), operands.second)); 
+            }
 
             visit_each(*this, foreach.Content->instructions);    
 
