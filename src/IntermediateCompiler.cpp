@@ -59,6 +59,7 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
     program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array->type().base())), indexOperand));
     program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(size(BaseType::INT)), indexOperand));
 
+    //TODO We should certainly do way better
     auto position = array->position();
     if(position.isGlobal()){
         program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
@@ -102,10 +103,12 @@ void computeLenghtOfArray(std::shared_ptr<Variable> array, IntermediateProgram& 
     auto position = array->position();
     if(position.isGlobal()){
         program.addInstruction(program.factory().createMove(createGlobalOperand("VA" + position.name())->valueOf(), operand));
-    } else if(position.isStack()){//TODO Test
+    } else if(position.isStack()){
         program.addInstruction(program.factory().createMove(createBaseStackOperand(-position.offset()), operand));
     } else if(position.isParameter()){//TODO Test
-        program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
+        auto reg = program.registers(EDI);
+        program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), reg));
+        program.addInstruction(program.factory().createMove(reg->valueOf(), operand));
     }
 }
 

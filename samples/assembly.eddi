@@ -226,10 +226,18 @@ void testArray(int[] array){
     println(array[5]);
 
     secondTest(array);
+
+    foreach(int zuizui in array){
+        println(zuizui);
+    }
 }
 
 void secondTest(int[] array){
     println(array[5]);
+
+    foreach(int zuizui in array){
+        println(zuizui);
+    }
 }
 
 /* Multiline comment 1  */
