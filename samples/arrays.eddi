@@ -2,8 +2,8 @@ int globalArray[7];
 string globalArrayB[7];
 
 void main(){
-    //println("Test int");
-    //testInt();
+    println("Test int");
+    testInt();
 
     println("Test string");
     testString();
