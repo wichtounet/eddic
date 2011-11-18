@@ -66,15 +66,30 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
         program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(size(array->type().base()) * array->type().size()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+
+        //We have to go upper to point to the string
+        if(array->type().base() == BaseType::STRING){
+            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(-4), operand));
+        }
     } else if(position.isStack()){
         program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createImmediateOperand(-position.offset()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, program.registers(EBP), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+
+        //We have to go upper to point to the string
+        if(array->type().base() == BaseType::STRING){
+            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(-4), operand));
+        }
     } else if(position.isParameter()){
         program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
+
+        //We have to go upper to point to the string
+        if(array->type().base() == BaseType::STRING){
+            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(-4), operand));
+        }
     }
 }
 
@@ -563,11 +578,13 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                     if(var->type().base() == BaseType::INT){
                         for(unsigned int i = 0; i < var->type().size(); ++i){
-                            position -= 4;
-                            program.addInstruction(program.factory().createMove(createImmediateOperand(0), createBaseStackOperand(position)));
+                            program.addInstruction(program.factory().createMove(createImmediateOperand(0), createBaseStackOperand(position -= 4)));
                         }
                     } else if(var->type().base() == BaseType::STRING){
-                        //TODO
+                        for(unsigned int i = 0; i < var->type().size(); ++i){
+                            program.addInstruction(program.factory().createMove(createImmediateOperand(0), createBaseStackOperand(position -= 4)));
+                            program.addInstruction(program.factory().createMove(createImmediateOperand(0), createBaseStackOperand(position -= 4)));
+                        }
                     }
                 }
             }
@@ -828,7 +845,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                     Type type = boost::apply_visitor(GetTypeVisitor(), value);   
 
                     if(type.isArray()){
-                        total += size(type.base());
+                        //Passing an array is just passing an adress
+                        total += size(BaseType::INT);
                     } else {
                         total += size(type);
                     }

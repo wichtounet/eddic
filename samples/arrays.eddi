@@ -1,6 +1,15 @@
 int globalArray[7];
+string globalArrayB[7];
 
 void main(){
+    //println("Test int");
+    //testInt();
+
+    println("Test string");
+    testString();
+}
+
+void testInt(){
     globalArray[0] = 5;
     int array[7];
 
@@ -42,6 +51,68 @@ void test(int[] parameterArray){
    
     println("start_foreach parameter");
     foreach(int test in parameterArray){
+        println(test);
+    }
+    println("end_foreach parameter");
+}
+
+void testString(){
+    globalArrayB[0] = "5";
+    println(globalArrayB[0]);
+    globalArrayB[1] = "6";
+    println(globalArrayB[1]);
+    globalArrayB[2] = "7";
+    println(globalArrayB[2]);
+    globalArrayB[3] = globalArrayB[2];
+    println(globalArrayB[3]);
+    
+    println("start_foreach global");
+    foreach(string a in globalArrayB){
+        println(a);
+    }
+    println("end_foreach global");
+    
+    
+    string array[7];
+
+    array[0] = "a";
+    array[1] = array[0];
+    println(array[1]);
+
+    println("start_foreach local");
+    foreach(string a in array){
+        println(a);
+    }
+    println("end_foreach local");
+
+    globalArrayB[0] = "2";
+    globalArrayB[1] = globalArrayB[0];
+    println(globalArrayB[1]);
+    
+    println("start_foreach global");
+    foreach(string a in globalArrayB){
+        println(a);
+    }
+    println("end_foreach global");
+
+    println("pass local to test");
+    testString(array);
+    println("end");
+
+    println("pass global to test");
+    testString(globalArrayB);
+    println("end");
+}
+
+void testString(string[] parameterArray){
+    parameterArray[0] = "4";
+    parameterArray[2] = "9";
+    parameterArray[3] = parameterArray[2];
+    println(parameterArray[0]);
+    println(parameterArray[3]);
+   
+    println("start_foreach parameter");
+    foreach(string test in parameterArray){
         println(test);
     }
     println("end_foreach parameter");
