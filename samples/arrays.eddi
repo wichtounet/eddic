@@ -72,7 +72,6 @@ void testString(){
     }
     println("end_foreach global");
     
-    
     string array[7];
 
     array[0] = "a";

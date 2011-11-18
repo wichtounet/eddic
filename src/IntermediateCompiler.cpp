@@ -20,6 +20,8 @@
 #include "Variable.hpp"
 #include "SemanticalException.hpp"
 #include "IsImmediateVisitor.hpp"
+#include "IsConstantVisitor.hpp"
+#include "GetConstantValue.hpp"
 
 #include "mangling.hpp"
 
@@ -55,14 +57,39 @@ inline Operation toOperation(char op){
 
 inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
+void computeAddressOfElement(std::shared_ptr<Variable> array, int index, IntermediateProgram& program, std::shared_ptr<Operand> operand){
+    int offset = -1 * ((index * size(array->type().base())) + size(BaseType::INT));
+    
+    //We have to go upper to point to the string
+    if(array->type().base() == BaseType::STRING){
+        offset -= 4;
+    }
+    
+    auto position = array->position();
+    if(position.isGlobal()){
+        offset += size(array->type().base()) * array->type().size();
+
+        program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(offset), operand));
+    } else if(position.isStack()){
+        offset -= position.offset();
+
+        program.addInstruction(program.factory().createMove(program.registers(EBP), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(offset), operand));
+    } else if(position.isParameter()){
+        program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(offset), operand));
+    }
+}
+
 void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Operand> indexOperand, IntermediateProgram& program, std::shared_ptr<Operand> operand){
     program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(size(array->type().base())), indexOperand));
     program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(size(BaseType::INT)), indexOperand));
 
-    //TODO We should certainly do way better
+    program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
+    
     auto position = array->position();
     if(position.isGlobal()){
-        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(size(array->type().base()) * array->type().size()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
@@ -72,7 +99,6 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
             program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(-4), operand));
         }
     } else if(position.isStack()){
-        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createImmediateOperand(-position.offset()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, program.registers(EBP), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
@@ -82,7 +108,6 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
             program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(-4), operand));
         }
     } else if(position.isParameter()){
-        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
 
@@ -96,10 +121,16 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
 void computeAddressOfElement(std::shared_ptr<Variable> array, ast::Value indexValue, IntermediateProgram& program, std::shared_ptr<Operand> operand){
     assert(operand->isRegister());
 
-    auto registerA = program.registers(EAX);
+    if(boost::apply_visitor(IsConstantVisitor(), indexValue)){
+        int index = boost::get<int>(boost::apply_visitor(GetConstantValue(), indexValue));
 
-    putInRegister(indexValue, registerA, program);
-    computeAddressOfElement(array, registerA, program, operand);
+        computeAddressOfElement(array, index, program, operand);
+    } else {
+        auto registerA = program.registers(EAX);
+
+        putInRegister(indexValue, registerA, program);
+        computeAddressOfElement(array, registerA, program, operand);
+    }
 }
 
 void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Variable> indexVar, IntermediateProgram& program, std::shared_ptr<Operand> operand){
