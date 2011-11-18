@@ -12,7 +12,7 @@ using namespace eddic;
 std::string eddic::mangle(Type type){
     if(type.base() == BaseType::INT){
         return type.isArray() ? "AI" : "I";
-    } else if(type.base() == BaseType::INT){
+    } else if(type.base() == BaseType::STRING){
         return type.isArray() ? "AS" : "S";
     }
 
