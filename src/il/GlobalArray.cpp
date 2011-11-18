@@ -14,7 +14,6 @@ GlobalArray::GlobalArray(std::string n, BaseType t, int s) : name(n), type(t), s
 
 void GlobalArray::write(AssemblyFileWriter& writer){
     writer.stream() << "VA" << name << ":" <<std::endl;
-    writer.stream() << ".long " << size << std::endl;
     writer.stream() << ".rept " << size << std::endl;
 
     if(type == BaseType::INT){
@@ -25,4 +24,5 @@ void GlobalArray::write(AssemblyFileWriter& writer){
     }
 
     writer.stream() << ".endr" << std::endl;
+    writer.stream() << ".long " << size << std::endl;
 }

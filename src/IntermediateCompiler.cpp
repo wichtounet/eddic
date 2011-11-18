@@ -62,16 +62,15 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
     //TODO We should certainly do way better
     auto position = array->position();
     if(position.isGlobal()){
+        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(size(array->type().base()) * array->type().size()), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
     } else if(position.isStack()){
-        program.addInstruction(program.factory().createMove(createImmediateOperand(position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
+        program.addInstruction(program.factory().createMove(createImmediateOperand(-position.offset()), operand));
+        program.addInstruction(program.factory().createMath(Operation::ADD, program.registers(EBP), operand));
         program.addInstruction(program.factory().createMath(Operation::ADD, indexOperand, operand));
-        
-        program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), operand));
-
-        auto registerEBP = program.registers(EBP);
-        program.addInstruction(program.factory().createMath(Operation::ADD, registerEBP, operand));
     } else if(position.isParameter()){
         program.addInstruction(program.factory().createMath(Operation::MUL, createImmediateOperand(-1), indexOperand));
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), operand));
@@ -102,10 +101,10 @@ void computeLenghtOfArray(std::shared_ptr<Variable> array, IntermediateProgram& 
     
     auto position = array->position();
     if(position.isGlobal()){
-        program.addInstruction(program.factory().createMove(createGlobalOperand("VA" + position.name())->valueOf(), operand));
+        program.addInstruction(program.factory().createMove(createImmediateOperand(array->type().size()), operand));
     } else if(position.isStack()){
-        program.addInstruction(program.factory().createMove(createBaseStackOperand(-position.offset()), operand));
-    } else if(position.isParameter()){//TODO Test
+        program.addInstruction(program.factory().createMove(createImmediateOperand(array->type().size()), operand));
+    } else if(position.isParameter()){
         auto reg = program.registers(EDI);
         program.addInstruction(program.factory().createMove(createBaseStackOperand(position.offset()), reg));
         program.addInstruction(program.factory().createMove(reg->valueOf(), operand));
@@ -179,7 +178,12 @@ class PushValue : public boost::static_visitor<> {
                 auto position = var->position();
 
                 if(position.isGlobal()){
-                    program.addInstruction(program.factory().createPush(createImmediateOperand("VA" + position.name())));
+                    auto registerD = program.registers(EDX);
+                    auto offset = size(var->type().base()) * var->type().size();
+
+                    program.addInstruction(program.factory().createMove(createImmediateOperand("VA" + position.name()), registerD));
+                    program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(offset), registerD));
+                    program.addInstruction(program.factory().createPush(registerD));
                 } else if(position.isStack()){
                     auto registerD = program.registers(EDX);
                     auto registerE = program.registers(EBP);
@@ -823,7 +827,11 @@ class CompilerVisitor : public boost::static_visitor<> {
                 for(auto& value : functionCall.Content->values){
                     Type type = boost::apply_visitor(GetTypeVisitor(), value);   
 
-                    total += size(type);
+                    if(type.isArray()){
+                        total += size(type.base());
+                    } else {
+                        total += size(type);
+                    }
                 }
 
                 program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), program.registers(ESP)));

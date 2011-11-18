@@ -1,0 +1,48 @@
+int globalArray[7];
+
+void main(){
+    globalArray[0] = 5;
+    int array[7];
+
+    array[0] = 1;
+    array[1] = array[0];
+    println(array[1]);
+
+    println("start_foreach local");
+    foreach(int a in array){
+        println(a);
+    }
+    println("end_foreach local");
+
+    globalArray[0] = 2;
+    globalArray[1] = globalArray[0];
+    println(globalArray[1]);
+    
+    println("start_foreach global");
+    foreach(int a in globalArray){
+        println(a);
+    }
+    println("end_foreach global");
+
+    println("pass local to test");
+    test(array);
+    println("end");
+
+    println("pass global to test");
+    test(globalArray);
+    println("end");
+}
+
+void test(int[] parameterArray){
+    parameterArray[0] = 4;
+    parameterArray[2] = 9;
+    parameterArray[3] = parameterArray[2];
+    println(parameterArray[0]);
+    println(parameterArray[3]);
+   
+    println("start_foreach parameter");
+    foreach(int test in parameterArray){
+        println(test);
+    }
+    println("end_foreach parameter");
+}
