@@ -111,16 +111,16 @@ void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Op
 void computeAddressOfElement(std::shared_ptr<Variable> array, ast::Value indexValue, IntermediateProgram& program, std::shared_ptr<Operand> operand){
     assert(operand->isRegister());
 
-    //if(boost::apply_visitor(IsConstantVisitor(), indexValue)){
-    //    int index = boost::get<int>(boost::apply_visitor(GetConstantValue(), indexValue));
+    if(boost::apply_visitor(IsConstantVisitor(), indexValue)){
+        int index = boost::get<int>(boost::apply_visitor(GetConstantValue(), indexValue));
 
-    //    computeAddressOfElement(array, index, program, operand);
-    //} else {
+        computeAddressOfElement(array, index, program, operand);
+    } else {
         auto registerA = program.registers(EAX);
 
         putInRegister(indexValue, registerA, program);
         computeAddressOfElement(array, registerA, program, operand);
-    //}
+    }
 }
 
 void computeAddressOfElement(std::shared_ptr<Variable> array, std::shared_ptr<Variable> indexVar, IntermediateProgram& program, std::shared_ptr<Operand> operand){
