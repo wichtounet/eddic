@@ -48,7 +48,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::GlobalVariableDeclaration&) const {
-        std::cout << indent() << "GlobalVariable" << std::endl; 
+        std::cout << indent() << "Global Variable" << std::endl; 
+    }
+    
+    void operator()(ast::GlobalArrayDeclaration&) const {
+        std::cout << indent() << "Global Array" << std::endl; 
     }
 
     void operator()(ast::For& for_) const {
@@ -61,6 +65,14 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Foreach& for_) const {
         std::cout << indent() << "Foreach" << std::endl; 
+   
+        ++level;
+        visit_each(*this, for_.Content->instructions);    
+        --level;
+    }
+
+    void operator()(ast::ForeachIn& for_) const {
+        std::cout << indent() << "Foreach in " << std::endl; 
    
         ++level;
         visit_each(*this, for_.Content->instructions);    
@@ -94,7 +106,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         --level;
     }
 
-    void operator()(ast::Declaration& declaration) const {
+    void operator()(ast::VariableDeclaration& declaration) const {
         std::cout << indent() << "Variable declaration" << std::endl; 
 
         if(declaration.Content->value){
@@ -103,9 +115,21 @@ struct DebugVisitor : public boost::static_visitor<> {
             --level;
         }
     }
+    
+    void operator()(ast::ArrayDeclaration&) const {
+        std::cout << indent() << "Array declaration" << std::endl; 
+    }
 
     void operator()(ast::Assignment& assign) const {
         std::cout << indent() << "Variable assignment" << std::endl; 
+
+        ++level;
+        visit(*this, assign.Content->value);
+        --level;
+    }
+    
+    void operator()(ast::ArrayAssignment& assign) const {
+        std::cout << indent() << "Array assignment" << std::endl; 
 
         ++level;
         visit(*this, assign.Content->value);
@@ -122,6 +146,10 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::VariableValue&) const {
         std::cout << indent() << "Variable" << std::endl; 
+    }
+
+    void operator()(ast::ArrayValue&) const {
+        std::cout << indent() << "Array value" << std::endl; 
     }
 
     void operator()(ast::ComposedValue& value) const {

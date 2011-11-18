@@ -21,16 +21,13 @@ struct ParameterType {
     std::string name;
     Type paramType;
 
-    //To be compliant with mangling
-    Type type(){
-        return paramType;
-    }
+    ParameterType(const std::string& n, Type t) : name(n), paramType(t) {}
 };
 
 struct Function {
     std::string name;
     std::string mangledName;
-    std::vector<std::shared_ptr<ParameterType>> parameters;
+    std::vector<ParameterType> parameters;
     int references;
 };
 

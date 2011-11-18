@@ -28,6 +28,7 @@ class FunctionContext : public Context {
     private:
         int currentPosition;
         int currentParameter;
+        int m_size;
 
     public:
         FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}

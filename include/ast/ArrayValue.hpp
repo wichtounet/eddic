@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_VARIABLE_H
-#define AST_VARIABLE_H
+#ifndef AST_ARRAY_VALUE_H
+#define AST_ARRAY_VALUE_H
 
 #include <memory>
 
@@ -21,17 +21,18 @@ class Variable;
 
 namespace ast {
 
-struct ASTVariableValue {
+struct ASTArrayValue {
     std::shared_ptr<Context> context;
 
-    std::string variableName;
+    std::string arrayName;
     std::shared_ptr<Variable> var;
+    Value indexValue;
 
     mutable long references;
-    ASTVariableValue() : references(0) {}
+    ASTArrayValue() : references(0) {}
 };
 
-typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
+typedef Deferred<ASTArrayValue, boost::intrusive_ptr<ASTArrayValue>> ArrayValue;
 
 } //end of ast
 
@@ -39,8 +40,9 @@ typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> Varia
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::VariableValue, 
-    (std::string, Content->variableName)
+    eddic::ast::ArrayValue, 
+    (std::string, Content->arrayName)
+    (eddic::ast::Value, Content->indexValue)
 )
 
 #endif

@@ -2,12 +2,20 @@
 int ga = 1000;
 string gb = "Global Variable b"; 
 
+//Global variables with default values
 int defaultA;
 string defaultB;
 
+//Global array
+int globalArrayA[10];
+string globalArrayB[10];
+
+//Global unused variable
 int globalUnused = 2222;
 
 void main(){
+    test(1234);
+
     int localUnused = 8989;
 
     string x = "ED" + "DI";
@@ -198,6 +206,38 @@ void main(){
         test();
         test();
     }
+
+    testGlobalArrays();
+    testArrays();
+   
+    println("["); 
+    testArray(globalArrayA);
+    println("]");
+
+    int arrayTest[22];
+    arrayTest[5] = 1235813;
+    
+    println("["); 
+    testArray(arrayTest);
+    println("]");
+}
+
+void testArray(int[] array){
+    println(array[5]);
+
+    secondTest(array);
+
+    foreach(int zuizui in array){
+        println(zuizui);
+    }
+}
+
+void secondTest(int[] array){
+    println(array[5]);
+
+    foreach(int zuizui in array){
+        println(zuizui);
+    }
 }
 
 /* Multiline comment 1  */
@@ -209,6 +249,57 @@ void test(){
     println(x);
 
     println("Hello from test");
+}
+
+void test(int i){
+    println(i);
+}
+
+void testGlobalArrays(){
+    println(globalArrayA[3]);
+    println(globalArrayB[3]);
+
+    globalArrayA[5] = 998;
+    println(globalArrayA[5]);
+
+    globalArrayB[3] = "asdf";
+    println(globalArrayB[3]);
+
+    globalArrayA[3] = globalArrayA[5];
+    println(globalArrayA[3]);
+
+    println("Start foreach int global");
+    foreach(int zuizui in globalArrayA){
+        println(zuizui);
+    }
+
+    println("Start foreach string global");
+    foreach(string zaizai in globalArrayB){
+        println(zaizai);
+    }
+}
+
+//Test function with arrays
+void testArrays(){
+    int array[12];
+    array[3] = 5;
+    println(array[3]);
+
+    println("Start foreach int local");
+    foreach(int zuizui in array){
+        println(zuizui);
+    }
+    println("End foreach int local");
+
+    string second[10];
+    second[3] = "asdf";
+    println(second[3]);
+    
+    println("Start foreach string local");
+    foreach(string youpee in second){
+        println(youpee);
+    }
+    println("End foreach string local");
 }
 
 void empty(int i){

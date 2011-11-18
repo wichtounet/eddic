@@ -48,14 +48,23 @@ void operator()(ast::While& while_){\
 #define AUTO_RECURSE_FOREACH()\
 void operator()(ast::Foreach& foreach_){\
     visit_each(*this, foreach_.Content->instructions);\
+}\
+void operator()(ast::ForeachIn& foreach_){\
+    visit_each(*this, foreach_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
-void operator()(ast::Declaration& declaration){\
+void operator()(ast::VariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
+}
+
+#define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
+void operator()(ast::ArrayAssignment& assignment){\
+    visit(*this, assignment.Content->indexValue);\
+    visit(*this, assignment.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
@@ -68,6 +77,11 @@ void operator()(ast::ComposedValue& value){\
     visit(*this, value.Content->first);\
     for_each(value.Content->operations.begin(), value.Content->operations.end(), \
         [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });\
+}
+        
+#define AUTO_RECURSE_ARRAY_VALUES()\
+void operator()(ast::ArrayValue& array){\
+    visit(*this, array.Content->indexValue);\
 }
 
 #define AUTO_RECURSE_PROGRAM()\

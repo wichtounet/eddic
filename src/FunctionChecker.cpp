@@ -13,6 +13,7 @@
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
+#include "TypeTransformer.hpp"
 
 #include "mangling.hpp"
 
@@ -36,16 +37,15 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             signature->name = declaration.Content->functionName;
 
             for(auto& param : declaration.Content->parameters){
-                auto parameter = std::make_shared<ParameterType>();
-                parameter->name = param.parameterName;
-                parameter->paramType = stringToType(param.parameterType);
-
-                signature->parameters.push_back(parameter);
+                Type paramType = boost::apply_visitor(TypeTransformer(), param.parameterType);
+                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
-            //TODO Verifiy that the function has not been previously defined
+            if(functionTable.exists(signature->mangledName)){
+                throw SemanticalException("The function " + signature->name + " has already been defined");
+            }
 
             functionTable.addFunction(signature);
 
@@ -53,6 +53,10 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalVariableDeclaration&){
+            //Stop recursion here
+        }
+        
+        void operator()(ast::GlobalArrayDeclaration&){
             //Stop recursion here
         }
 };
@@ -116,6 +120,10 @@ class FunctionInspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalVariableDeclaration&){
+            //Nothing to warn about there
+        }
+
+        void operator()(ast::GlobalArrayDeclaration&){
             //Nothing to warn about there
         }
 };

@@ -10,11 +10,31 @@
 using namespace eddic;
 
 std::string eddic::mangle(Type type){
-    if(type == Type::INT){
-        return "I";
-    } else {
-        return "S";
+    if(type.base() == BaseType::INT){
+        return type.isArray() ? "AI" : "I";
+    } else if(type.base() == BaseType::STRING){
+        return type.isArray() ? "AS" : "S";
     }
+
+    assert(false); //Type not handled
+}
+
+std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
+
+    for(const ParameterType& t : types){
+        ss << mangle(t.paramType);
+    }
+
+    return ss.str();
 }
 
 std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){

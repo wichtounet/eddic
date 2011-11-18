@@ -37,12 +37,16 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         
         void operator()(ast::Program& program){
-            program.Content->context = currentContext = globalContext = std::make_shared<GlobalContext>();
+            currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
 
             visit_each(*this, program.Content->blocks);
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
+            declaration.Content->context = currentContext;
+        }
+        
+        void operator()(ast::GlobalArrayDeclaration& declaration){
             declaration.Content->context = currentContext;
         }
 
@@ -77,10 +81,16 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach& foreach){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            foreach.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            foreach.Content->context = currentContext;
-            
+            visit_each(*this, foreach.Content->instructions);
+             
+            currentContext = currentContext->parent();
+        }
+        
+        void operator()(ast::ForeachIn& foreach){
+            foreach.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+
             visit_each(*this, foreach.Content->instructions);
              
             currentContext = currentContext->parent();
@@ -117,15 +127,26 @@ class AnnotateVisitor : public boost::static_visitor<> {
             currentContext = currentContext->parent();
         }
         
-        void operator()(ast::Declaration& declaration){
+        void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->context = currentContext;
             
             visit(*this, *declaration.Content->value);
         }
         
+        void operator()(ast::ArrayDeclaration& declaration){
+            declaration.Content->context = currentContext;
+        }
+        
         void operator()(ast::Assignment& assignment){
             assignment.Content->context = currentContext;
 
+            visit(*this, assignment.Content->value);
+        }
+        
+        void operator()(ast::ArrayAssignment& assignment){
+            assignment.Content->context = currentContext;
+
+            visit(*this, assignment.Content->indexValue);
             visit(*this, assignment.Content->value);
         }
         
@@ -135,6 +156,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
+        }
+        
+        void operator()(ast::ArrayValue& array){
+            array.Content->context = currentContext;
+
+            visit(*this, array.Content->indexValue);
         }
         
         void operator()(ast::TerminalNode&){

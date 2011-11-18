@@ -17,15 +17,19 @@
 using namespace eddic;
 
 Type GetTypeVisitor::operator()(const ast::Litteral&) const {
-    return Type::STRING;
+    return Type(BaseType::STRING);
 }
 
 Type GetTypeVisitor::operator()(const ast::Integer&) const {
-    return Type::INT;
+    return Type(BaseType::INT);
 }
 
 Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
+}
+
+Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+    return array.Content->context->getVariable(array.Content->arrayName)->type();
 }
 
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {

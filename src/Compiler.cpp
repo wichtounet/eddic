@@ -36,6 +36,7 @@ static const bool debug = false;
 #include "StringChecker.hpp"
 #include "FunctionChecker.hpp"
 #include "OptimizationEngine.hpp"
+#include "TransformerEngine.hpp"
 #include "IntermediateCompiler.hpp"
 
 #include "SemanticalException.hpp"
@@ -82,6 +83,9 @@ int Compiler::compile(const string& file) {
             checkStrings(program, pool);
             checkVariables(program);
             checkFunctions(program, functionTable);
+
+            //Transform the AST
+            transform(program);
             
             //Optimize the AST
             optimize(program, functionTable, pool);
@@ -146,6 +150,12 @@ void eddic::checkFunctions(ast::Program& program, FunctionTable& functionTable){
     DebugTimer<debug> timer("Functions checking");
     FunctionChecker checker;
     checker.check(program, functionTable); 
+}
+
+void eddic::transform(ast::Program& program){
+    DebugTimer<debug> timer("Transformation");
+    TransformerEngine engine;
+    engine.transform(program);
 }
 
 void eddic::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool){

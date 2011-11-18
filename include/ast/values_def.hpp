@@ -24,6 +24,9 @@ typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> Varia
 struct ASTComposedValue;
 typedef Deferred<ASTComposedValue, boost::intrusive_ptr<ASTComposedValue>> ComposedValue;
 
+struct ASTArrayValue;
+typedef Deferred<ASTArrayValue, boost::intrusive_ptr<ASTArrayValue>> ArrayValue;
+
 } //end of ast
 
 } //end of eddic

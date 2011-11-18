@@ -99,21 +99,19 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         ValueOptimizer(StringPool& p) : pool(p) {}
 
         ast::Value operator()(ast::ComposedValue& value) const {
-            if(value.Content->operations.empty()){
-                return boost::apply_visitor(*this, value.Content->first);   
-            }
+            assert(value.Content->operations.size() > 0); //Should have been transformed before
 
             //If the value is constant, we can replace it with the results of the computation
             if(IsConstantVisitor()(value)){
                 Type type = GetTypeVisitor()(value);
 
-                if(type == Type::INT){
+                if(type.base() == BaseType::INT){
                     if (OptimizeIntegers) {
                         ast::Integer integer;
                         integer.value = GetIntValue()(value);
                         return integer; 
                     }
-                } else if(type == Type::STRING){
+                } else if(type.base() == BaseType::STRING){
                     if (OptimizeStrings) {
                         ast::Litteral litteral;
                         litteral.value = GetStringValue()(value);
@@ -136,9 +134,13 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
                 ++start;
             }
 
-            assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
-
             //If we get there, that means that no optimization has been (or can be) performed
+            return value;
+        }
+        
+        ast::Value operator()(ast::ArrayValue& value) const {
+            value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
+
             return value;
         }
 
@@ -177,8 +179,12 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
             return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
         }
 
-        bool operator()(ast::Declaration& declaration){
+        bool operator()(ast::VariableDeclaration& declaration){
             return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
+        }
+        
+        bool operator()(ast::ArrayDeclaration& declaration){
+            return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
         }
 
         bool operator()(ast::FunctionDeclaration& declaration){
@@ -260,8 +266,12 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             removeUnused(while_.Content->instructions);
         }
 
-        void operator()(ast::Foreach& foreach_){
-            removeUnused(foreach_.Content->instructions);
+        void operator()(ast::Foreach&){
+            assert(false); //Should have been removed in transformation phase
+        }
+
+        void operator()(ast::ForeachIn& foreach){
+            removeUnused(foreach.Content->instructions);
         }
 
         void operator()(ast::FunctionCall& functionCall){
@@ -279,7 +289,12 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
         }
 
-        void operator()(ast::Declaration& declaration){
+        void operator()(ast::ArrayAssignment& assignment){
+            assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
+            assignment.Content->indexValue = boost::apply_visitor(optimizer, assignment.Content->indexValue); 
+        }
+
+        void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->value = boost::apply_visitor(optimizer, *declaration.Content->value); 
         }
 

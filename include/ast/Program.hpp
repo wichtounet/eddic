@@ -19,20 +19,26 @@
 #include "ast/Deferred.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
+#include "ast/GlobalArrayDeclaration.hpp"
 
 #include "Context.hpp"
 
 namespace eddic {
 
-class Context;
+class GlobalContext;
 
 namespace ast {
 
-typedef boost::variant<FunctionDeclaration, GlobalVariableDeclaration> FirstLevelBlock;
+typedef boost::variant<
+            FunctionDeclaration, 
+            GlobalVariableDeclaration,
+            GlobalArrayDeclaration
+        > FirstLevelBlock;
 
 //A source EDDI program
 struct ASTProgram {
-    std::shared_ptr<Context> context;
+    std::shared_ptr<GlobalContext> context;
+
     std::vector<FirstLevelBlock> blocks;
 };
 

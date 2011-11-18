@@ -18,36 +18,27 @@ using std::unordered_map;
 
 using namespace eddic;
 
-int Context::currentVariable = 0;
-
 Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
-
-void Context::writeIL(IntermediateProgram&){
-    //Nothing by default    
-}
 
 std::shared_ptr<Context> Context::parent() const  {
     return m_parent;
 }
 
-int Context::size(){
-    return 0;
-}
-
-void Context::storeVariable(int index, std::shared_ptr<Variable> variable){
-    m_stored[index] = variable;
-}
-
 bool Context::exists(const std::string& variable) const {
-    bool found = m_visibles.find(variable) != m_visibles.end();
+    bool found = variables.find(variable) != variables.end();
 
-    if(!found){
-        if(m_parent){
-            return m_parent->exists(variable);
+    auto parent = m_parent;
+
+    while(!found){
+        if(parent){
+            found = parent->variables.find(variable) != parent->variables.end();
+            parent = parent->m_parent;
+        } else {
+            return false;
         }
     }
 
-    return found;
+    return true;
 }
 
 std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Value&){
@@ -55,53 +46,40 @@ std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Va
     assert(false);
 }
 
-int Context::getIndex(const std::string& variable) const {
-    auto iter = m_visibles.find(variable);
-
-    if(iter == m_visibles.end()){
-        return m_parent->getIndex(variable);
-    }
-    
-    return iter->second;
-}
-
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
-    auto iter = m_visibles.find(variable);
+    auto iter = variables.find(variable);
+    auto end = variables.end();
 
-    if(iter == m_visibles.end()){
-        return m_parent->getVariable(variable);
+    auto parent = m_parent;
+
+    while(iter == end){
+        iter = parent->variables.find(variable);
+        end = parent->variables.end();
+        parent = parent->m_parent;
     }
     
-    return getVariable(iter->second);
-}
-
-//TODO Could be more efficient 
-void Context::removeVariable(const std::string& variable){
-    int index = getIndex(variable); 
-
-    auto iter = m_stored.find(index);
-
-    if(iter == m_stored.end()){
-        return m_parent->removeVariable(variable);
-    }
-
-    m_stored.erase(iter);
-}
-
-std::shared_ptr<Variable> Context::getVariable(int index) const {
-    auto iter = m_stored.find(index);
-
-    if(iter == m_stored.end()){
-        return m_parent->getVariable(index);
-    }
-
     return iter->second;
 }
-        
-Context::StoredVariables::const_iterator Context::begin(){
-    return m_stored.cbegin();
+
+void Context::removeVariable(const std::string& variable){
+    auto iter = variables.find(variable);
+    auto end = variables.end();
+
+    auto parent = m_parent;
+    
+    while(iter == end){
+        iter = parent->variables.find(variable);
+        end = parent->variables.end();
+        parent = parent->m_parent;
+    }
+
+    variables.erase(iter);
+}
+ 
+Context::Variables::const_iterator Context::begin() const {
+    return variables.cbegin();
 }
 
-Context::StoredVariables::const_iterator Context::end(){
-    return m_stored.cend();
+Context::Variables::const_iterator Context::end() const {
+    return variables.cend();
 }

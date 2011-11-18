@@ -12,23 +12,72 @@
 
 using namespace eddic;
 
-const int typeSizes[(int) Type::COUNT] = { 8, 4, 0 };
+Type::Type(BaseType base) : type(base), array(false), m_size(0) {}
+Type::Type(BaseType base, unsigned int size) : type(base), array(true), m_size(size) {}
+
+BaseType Type::base() const {
+    return type;
+}
+
+bool Type::isArray() const {
+    return array;
+}
+
+unsigned int Type::size() const {
+    return m_size;
+}
+
+bool eddic::operator==(const Type& lhs, const Type& rhs){
+    return lhs.type == rhs.type && 
+           lhs.array == rhs.array &&
+           lhs.m_size == rhs.m_size; 
+}
+
+bool eddic::operator!=(const Type& lhs, const Type& rhs){
+    return !(lhs == rhs); 
+}
+
+const int typeSizes[(int) BaseType::COUNT] = { 8, 4, 0 };
+
+int eddic::size(BaseType type){
+    return typeSizes[(unsigned int) type];
+}
 
 int eddic::size(Type type){
-    return typeSizes[(int) type];
+    if(type.isArray()){
+        return size(type.base()) * type.size() + size(BaseType::INT); 
+    } else {
+        return size(type.base());
+    }
 }
 
 bool eddic::isType(const std::string& type){
     return type == "int" || type == "void" || type == "string";
 }
 
+BaseType eddic::stringToBaseType(const std::string& type){
+    if (type == "int") {
+        return BaseType::INT;
+    } else if (type == "string"){
+        return BaseType::STRING;
+    } else if(type == "void") {
+        return BaseType::VOID;
+    }
+
+    throw SemanticalException("Invalid type");
+}
+
 Type eddic::stringToType(const std::string& type){
     if (type == "int") {
-        return Type::INT;
+        return Type(BaseType::INT);
     } else if (type == "string"){
-        return Type::STRING;
+        return Type(BaseType::STRING);
+    } else if(type == "int[]") {
+        return Type(BaseType::INT, 0);//Use a more proper way to set that it's an array type
+    } else if(type == "string[]") {
+        return Type(BaseType::STRING, 0);//Use a more proper way to set that it's an array type
     } else if(type == "void") {
-        return Type::VOID;
+        return Type(BaseType::VOID);
     }
 
     throw SemanticalException("Invalid type");
