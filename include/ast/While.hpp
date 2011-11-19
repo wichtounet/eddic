@@ -18,20 +18,24 @@
 
 namespace eddic {
 
-struct While {
-    ASTCondition condition;
-    std::vector<ASTInstruction> instructions;
+namespace ast {
+
+struct ASTWhile {
+    Condition condition;
+    std::vector<Instruction> instructions;
 };
 
-typedef Deferred<While> ASTWhile;
+typedef Deferred<ASTWhile> While;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTWhile, 
-    (eddic::ASTCondition, Content->condition)
-    (std::vector<eddic::ASTInstruction>, Content->instructions)
+    eddic::ast::While, 
+    (eddic::ast::Condition, Content->condition)
+    (std::vector<eddic::ast::Instruction>, Content->instructions)
 )
 
 #endif

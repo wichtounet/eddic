@@ -27,7 +27,7 @@ void Math::write(AssemblyFileWriter& writer){
             writer.stream() << "addl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;
 
             break;
-        case Operation::SUB:
+        case Operation::SUB://TODO Fix this shit
             writer.stream() << "subl " << m_rhs->getValue() << ", " << m_lhs->getValue() << std::endl;
             move(m_lhs->getValue(), m_rhs->getValue(), writer);
 

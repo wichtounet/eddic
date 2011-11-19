@@ -20,6 +20,22 @@ void PrintIntegerFunction::write(AssemblyFileWriter& writer){
              << "movl 8(%ebp), %eax" << std::endl
              << "xorl %esi, %esi" << std::endl
 
+             //If the number is negative, we print the - and then the number
+             << "cmpl $0, %eax" << std::endl
+             << "jge loop" << std::endl
+
+             << "neg %eax" << std::endl
+             << "pushl %eax" << std::endl //We push eax to not loose it from print_string
+            
+             //Print "-" 
+             << "pushl $S2" << std::endl
+             << "pushl $1" << std::endl
+             << "call print_string" << std::endl
+             << "addl $8, %esp" << std::endl
+
+             //Get the the valueof eax again
+             << "popl %eax" << std::endl
+
              << "loop:" << std::endl
              << "movl $0, %edx" << std::endl
              << "movl $10, %ebx" << std::endl

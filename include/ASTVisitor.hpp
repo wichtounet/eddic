@@ -5,84 +5,98 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_VISITOR_H
-#define AST_VISITOR_H
+#ifndef ASTVISITOR_H
+#define ASTVISITOR_H
 
 #include <boost/variant/static_visitor.hpp>
 
 #include "ast/Program.hpp"
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
-void operator()(ASTBinaryCondition& binaryCondition){\
+void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->lhs);\
     visit(*this, binaryCondition.Content->rhs);\
 }\
 
 #define AUTO_RECURSE_BRANCHES()\
-void operator()(ASTIf& if_){\
+void operator()(ast::If& if_){\
     visit(*this, if_.Content->condition);\
     visit_each(*this, if_.Content->instructions);\
     visit_each_non_variant(*this, if_.Content->elseIfs);\
     visit_optional_non_variant(*this, if_.Content->else_);\
 }\
-void operator()(ASTElseIf& elseIf){\
+void operator()(ast::ElseIf& elseIf){\
     visit(*this, elseIf.condition);\
     visit_each(*this, elseIf.instructions);\
 }\
-void operator()(ASTElse& else_){\
+void operator()(ast::Else& else_){\
     visit_each(*this, else_.instructions);\
 }
 
 #define AUTO_RECURSE_SIMPLE_LOOPS()\
-void operator()(ASTFor& for_){\
+void operator()(ast::For& for_){\
     visit_optional(*this, for_.Content->start);\
     visit_optional(*this, for_.Content->condition);\
     visit_optional(*this, for_.Content->repeat);\
     visit_each(*this, for_.Content->instructions);\
 }\
-void operator()(ASTWhile& while_){\
+void operator()(ast::While& while_){\
     visit(*this, while_.Content->condition);\
     visit_each(*this, while_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_FOREACH()\
-void operator()(ASTForeach& foreach_){\
+void operator()(ast::Foreach& foreach_){\
+    visit_each(*this, foreach_.Content->instructions);\
+}\
+void operator()(ast::ForeachIn& foreach_){\
     visit_each(*this, foreach_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
-void operator()(ASTAssignment& assignment){\
+void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
-void operator()(ASTDeclaration& declaration){\
-    visit(*this, declaration.Content->value);\
+void operator()(ast::VariableDeclaration& declaration){\
+    visit(*this, *declaration.Content->value);\
+}
+
+#define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
+void operator()(ast::ArrayAssignment& assignment){\
+    visit(*this, assignment.Content->indexValue);\
+    visit(*this, assignment.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
-void operator()(ASTFunctionCall& functionCall){\
+void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
 }
 
 #define AUTO_RECURSE_COMPOSED_VALUES()\
-void operator()(ASTComposedValue& value){\
+void operator()(ast::ComposedValue& value){\
     visit(*this, value.Content->first);\
     for_each(value.Content->operations.begin(), value.Content->operations.end(), \
-        [&](boost::tuple<char, ASTValue>& operation){ visit(*this, operation.get<1>()); });\
+        [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });\
+}
+        
+#define AUTO_RECURSE_ARRAY_VALUES()\
+void operator()(ast::ArrayValue& array){\
+    visit(*this, array.Content->indexValue);\
 }
 
 #define AUTO_RECURSE_PROGRAM()\
-void operator()(ASTProgram& program){\
+void operator()(ast::Program& program){\
     visit_each(*this, program.Content->blocks);\
 }
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
-void operator()(ASTFunctionDeclaration& function){\
+void operator()(ast::FunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\
 }
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
-void operator()(GlobalVariableDeclaration& declaration){\
-    visit(*this, declaration.Content->value);\
+void operator()(ast::GlobalVariableDeclaration& declaration){\
+    visit(*this, *declaration.Content->value);\
 }
 
 #endif

@@ -16,7 +16,11 @@
 
 namespace eddic {
 
-typedef boost::variant<ASTTrue, ASTFalse, ASTBinaryCondition> ASTCondition;
+namespace ast {
+
+typedef boost::variant<True, False, BinaryCondition> Condition;
+
+} //end of ast
 
 } //end of eddic
 

@@ -14,7 +14,7 @@ namespace eddic {
 
 class ContextAnnotator {
     public:
-        void annotate(ASTProgram& program);
+        void annotate(ast::Program& program);
 };
 
 } //end of eddic

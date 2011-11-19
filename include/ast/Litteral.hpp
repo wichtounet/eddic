@@ -14,16 +14,20 @@
 
 namespace eddic {
 
-struct ASTLitteral : public TerminalNode {
+namespace ast {
+
+struct Litteral : public TerminalNode {
     std::string value;
     std::string label;
 };
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTLitteral, 
+    eddic::ast::Litteral, 
     (std::string, value)
 )
 

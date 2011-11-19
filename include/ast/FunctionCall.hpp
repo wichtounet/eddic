@@ -16,23 +16,27 @@
 
 namespace eddic {
 
-struct FunctionCall {
+namespace ast {
+
+struct ASTFunctionCall {
     std::string functionName;
-    std::vector<ASTValue> values;
+    std::vector<Value> values;
 
     mutable long references;
-    FunctionCall() : references(0) {}
+    ASTFunctionCall() : references(0) {}
 };
 
-typedef Deferred<FunctionCall, boost::intrusive_ptr<FunctionCall>> ASTFunctionCall;
+typedef Deferred<ASTFunctionCall, boost::intrusive_ptr<ASTFunctionCall>> FunctionCall;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTFunctionCall, 
+    eddic::ast::FunctionCall, 
     (std::string, Content->functionName)
-    (std::vector<eddic::ASTValue>, Content->values)
+    (std::vector<eddic::ast::Value>, Content->values)
 )
 
 #endif

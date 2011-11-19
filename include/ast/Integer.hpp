@@ -14,15 +14,19 @@
 
 namespace eddic {
 
-struct ASTInteger : public TerminalNode {
+namespace ast {
+
+struct Integer : public TerminalNode {
     int value;
 };
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTInteger, 
+    eddic::ast::Integer, 
     (int, value)
 )
 

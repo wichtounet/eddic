@@ -19,7 +19,6 @@
 
 namespace eddic {
 
-class Value;
 class Variable;
 class IntermediateProgram;
 
@@ -28,31 +27,25 @@ class Context {
         std::shared_ptr<Context> m_parent;
 
     protected:
-        typedef std::unordered_map<int, std::shared_ptr<Variable>> StoredVariables;
-        typedef std::unordered_map<std::string, int> VisibleVariables;
+        typedef std::unordered_map<std::string, std::shared_ptr<Variable>> Variables;
 
-        StoredVariables m_stored;
-        VisibleVariables m_visibles;
-
-        static int currentVariable;
+        Variables variables;
 
     public:
-        Context(std::shared_ptr<Context> parent);
+        explicit Context(std::shared_ptr<Context> parent);
+        Context(const Context& rhs) = delete;
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
-        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ASTValue& value);
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        virtual void removeVariable(const std::string& variable);
 
-        virtual bool exists(const std::string& a) const;
-        virtual std::shared_ptr<Variable> getVariable(const std::string& variable) const;
-        virtual std::shared_ptr<Variable> getVariable(int index) const;
+        bool exists(const std::string& a) const;
+        std::shared_ptr<Variable> getVariable(const std::string& variable) const;
 
-        virtual int size();
+        Variables::const_iterator begin() const;
+        Variables::const_iterator end() const;
 
-        virtual void writeIL(IntermediateProgram& program);
-        
-        std::shared_ptr<Context> parent() const ;
-
-        void storeVariable(int index, std::shared_ptr<Variable> variable);
+        std::shared_ptr<Context> parent() const;
 };
 
 } //end of eddic

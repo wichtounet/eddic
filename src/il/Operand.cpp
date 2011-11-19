@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "il/Operand.hpp"
+#include "il/ValueOfOperand.hpp"
 
 using namespace eddic;
 
@@ -25,4 +26,8 @@ bool Operand::isStack(){
 
 bool Operand::isGlobal(){
     return m_type == OperandType::GLOBAL;
+}
+        
+std::shared_ptr<Operand> Operand::valueOf(int offset){
+    return std::make_shared<ValueOfOperand>(getValue(), offset);
 }

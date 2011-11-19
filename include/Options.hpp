@@ -18,6 +18,10 @@ namespace eddic {
 
 extern bool OptimizeIntegers;
 extern bool OptimizeStrings;
+extern bool OptimizeUnused;
+
+extern bool WarningUnused;
+
 extern po::variables_map options;
 
 bool parseOptions(int argc, const char* argv[]);

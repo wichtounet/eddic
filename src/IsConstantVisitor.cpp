@@ -13,19 +13,23 @@
 
 using namespace eddic;
 
-bool IsConstantVisitor::operator()(ASTLitteral&) const {
+bool IsConstantVisitor::operator()(ast::Litteral&) const {
     return true;
 }
 
-bool IsConstantVisitor::operator()(ASTInteger&) const {
+bool IsConstantVisitor::operator()(ast::Integer&) const {
     return true;
 }
 
-bool IsConstantVisitor::operator()(ASTVariable&) const {
+bool IsConstantVisitor::operator()(ast::VariableValue&) const {
     return false;
 }
 
-bool IsConstantVisitor::operator()(ASTComposedValue& value) const {
+bool IsConstantVisitor::operator()(ast::ArrayValue&) const {
+    return false;
+}
+
+bool IsConstantVisitor::operator()(ast::ComposedValue& value) const {
     if(boost::apply_visitor(*this, value.Content->first)){
         for(auto& op : value.Content->operations){
             if(!boost::apply_visitor(*this, op.get<1>())){

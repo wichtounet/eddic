@@ -11,18 +11,16 @@
 #include <memory>
 #include <string>
 
-#include "Operand.hpp"
+#include "il/Operand.hpp"
 
 namespace eddic {
 
-//TODO Put default values for the offset
-
 std::shared_ptr<Operand> createImmediateOperand(int value);
 std::shared_ptr<Operand> createImmediateOperand(std::string value);
-std::shared_ptr<Operand> createGlobalOperand(std::string label);
-std::shared_ptr<Operand> createGlobalOperand(std::string label, int offset);
-std::shared_ptr<Operand> createStackOperand(int offset);
-std::shared_ptr<Operand> createBaseStackOperand(int offset);
+std::shared_ptr<Operand> createGlobalOperand(std::string label, int offset = 0);
+std::shared_ptr<Operand> createStackOperand(int offset = 0);
+std::shared_ptr<Operand> createBaseStackOperand(int offset = 0);
+std::shared_ptr<Operand> createValueOfOperand(std::string location, int offset = 0);
 
 } //end of eddic
 

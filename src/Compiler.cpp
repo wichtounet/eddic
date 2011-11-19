@@ -28,6 +28,7 @@ static const bool debug = false;
 
 #include "ast/Program.hpp"
 
+#include "DefaultValues.hpp"
 #include "DebugVisitor.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "ContextAnnotator.hpp"
@@ -35,6 +36,7 @@ static const bool debug = false;
 #include "StringChecker.hpp"
 #include "FunctionChecker.hpp"
 #include "OptimizationEngine.hpp"
+#include "TransformerEngine.hpp"
 #include "IntermediateCompiler.hpp"
 
 #include "SemanticalException.hpp"
@@ -63,7 +65,7 @@ int Compiler::compile(const string& file) {
         SpiritParser parser;
 
         //The program to build
-        ASTProgram program;
+        ast::Program program;
 
         //Parse the file into the program
         bool parsing = parser.parse(file, program); 
@@ -71,6 +73,7 @@ int Compiler::compile(const string& file) {
         TIMER_END(parsing)
 
         if(parsing){
+            defineDefaultValues(program);
             defineContexts(program);
               
             StringPool pool;
@@ -80,9 +83,12 @@ int Compiler::compile(const string& file) {
             checkStrings(program, pool);
             checkVariables(program);
             checkFunctions(program, functionTable);
+
+            //Transform the AST
+            transform(program);
             
             //Optimize the AST
-            optimize(program);
+            optimize(program, functionTable, pool);
 
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
@@ -116,37 +122,49 @@ int Compiler::compile(const string& file) {
     return code;
 }
 
-void eddic::defineContexts(ASTProgram& program){
+void eddic::defineDefaultValues(ast::Program& program){
+    DebugTimer<debug> timer("Define default values");
+    DefaultValues values;
+    values.fill(program);
+}
+
+void eddic::defineContexts(ast::Program& program){
     DebugTimer<debug> timer("Annotate contexts");
     ContextAnnotator annotator;
     annotator.annotate(program);
 }
 
-void eddic::checkVariables(ASTProgram& program){
+void eddic::checkVariables(ast::Program& program){
     DebugTimer<debug> timer("Variable checking");
     VariableChecker checker;
     checker.check(program);
 }
 
-void eddic::checkStrings(ASTProgram& program, StringPool& pool){
+void eddic::checkStrings(ast::Program& program, StringPool& pool){
     DebugTimer<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);
 }
 
-void eddic::checkFunctions(ASTProgram& program, FunctionTable& functionTable){
+void eddic::checkFunctions(ast::Program& program, FunctionTable& functionTable){
     DebugTimer<debug> timer("Functions checking");
     FunctionChecker checker;
     checker.check(program, functionTable); 
 }
 
-void eddic::optimize(ASTProgram& program){
-    DebugTimer<debug> timer("Optimization");
-    OptimizationEngine engine;
-    engine.optimize(program);
+void eddic::transform(ast::Program& program){
+    DebugTimer<debug> timer("Transformation");
+    TransformerEngine engine;
+    engine.transform(program);
 }
 
-void eddic::writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+void eddic::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool){
+    DebugTimer<debug> timer("Optimization");
+    OptimizationEngine engine;
+    engine.optimize(program, functionTable, pool);
+}
+
+void eddic::writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
     DebugTimer<debug> timer("Compile into intermediate level");
     IntermediateCompiler compiler;
     compiler.compile(program, pool, intermediateProgram);
@@ -176,4 +194,8 @@ void eddic::execCommand(const string& command) {
     }
 
     pclose(stream);
+}
+
+void eddic::warn(const std::string& warning){
+    std::cout << "warning: " << warning << std::endl;
 }

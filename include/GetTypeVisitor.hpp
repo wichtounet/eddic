@@ -17,10 +17,11 @@
 namespace eddic {
 
 struct GetTypeVisitor : public boost::static_visitor<Type> {
-    Type operator()(const ASTLitteral& litteral) const;
-    Type operator()(const ASTInteger& litteral) const;
-    Type operator()(const ASTVariable& variable) const;
-    Type operator()(const ASTComposedValue& value) const; 
+    Type operator()(const ast::Litteral& litteral) const;
+    Type operator()(const ast::Integer& litteral) const;
+    Type operator()(const ast::VariableValue& variable) const;
+    Type operator()(const ast::ArrayValue& variable) const;
+    Type operator()(const ast::ComposedValue& value) const; 
 };
 
 } //end of eddic
