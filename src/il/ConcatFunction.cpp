@@ -23,7 +23,7 @@ void ConcatFunction::write(AssemblyFileWriter& writer){
         << "addl %ecx, %edx" << std::endl
 
         << "pushl %edx" << std::endl
-        << "call malloc" << std::endl
+        << "call eddi_alloc" << std::endl
         << "addl $4, %esp" << std::endl
 
         << "movl %eax, -4(%ebp)" << std::endl
@@ -66,5 +66,4 @@ void ConcatFunction::write(AssemblyFileWriter& writer){
 
         << "leave" << std::endl
         << "ret" << std::endl;
-    
 }
