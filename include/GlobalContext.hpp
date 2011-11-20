@@ -24,7 +24,7 @@ namespace eddic {
 
 class GlobalContext : public Context {
     public:
-        GlobalContext() : Context(NULL) {}
+        GlobalContext();
         
         void writeIL(IntermediateProgram& writer);
         

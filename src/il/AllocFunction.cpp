@@ -18,7 +18,7 @@ void AllocFunction::write(AssemblyFileWriter& writer){
         << "pushl %ebp" << std::endl
         << "movl %esp, %ebp" << std::endl
 
-
+        << "movl 8(%ebp), %eax" << std::endl
 
         << "leave" << std::endl
         << "ret" << std::endl;
