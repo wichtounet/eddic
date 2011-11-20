@@ -14,6 +14,11 @@ using namespace eddic;
 
 void Main::write(AssemblyFileWriter& writer){
     writer.stream() << ".text" << std::endl
-                    << ".globl main" << std::endl
-                    << "\t.type main, @function" << std::endl;
+                    << ".globl _start" << std::endl
+                    
+                    << "_start:" << std::endl
+                    << "call main" << std::endl
+                    << "movl $1, %eax" << std::endl
+                    << "xorl %ebx, %ebx" << std::endl
+                    << "int $0x80" << std::endl;
 }
