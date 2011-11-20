@@ -99,12 +99,7 @@ int Compiler::compile(const string& file) {
 
             if(!options.count("assembly")){
                 execCommand("as --32 -o output.o output.asm");
-
-                string ldCommand = "gcc -m32 -static -o ";
-                ldCommand += output;
-                ldCommand += " output.o -lc";
-
-                execCommand(ldCommand);
+                execCommand("ld -m elf_i386 output.o -o " + output);
 
                 //Remove temporary files
                 remove("output.asm");
