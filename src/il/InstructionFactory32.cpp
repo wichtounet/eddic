@@ -23,6 +23,7 @@
 #include "il/PrintStringFunction.hpp"
 #include "il/PrintIntegerFunction.hpp"
 #include "il/ConcatFunction.hpp"
+#include "il/AllocFunction.hpp"
 #include "il/Main.hpp"
 #include "il/DataSection.hpp"
 
@@ -103,6 +104,10 @@ std::shared_ptr<Instruction> InstructionFactory32::createPrintLineFunction() con
 
 std::shared_ptr<Instruction> InstructionFactory32::createConcatFunction() const {
     return std::make_shared<ConcatFunction>();
+}
+
+std::shared_ptr<Instruction> InstructionFactory32::createAllocFunction() const {
+    return std::make_shared<AllocFunction>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createMainDeclaration() const {

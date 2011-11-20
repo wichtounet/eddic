@@ -43,6 +43,7 @@ class InstructionFactory {
         virtual std::shared_ptr<Instruction> createPrintIntegerFunction() const = 0;
         virtual std::shared_ptr<Instruction> createPrintLineFunction() const = 0;
         virtual std::shared_ptr<Instruction> createConcatFunction() const = 0;
+        virtual std::shared_ptr<Instruction> createAllocFunction() const = 0;
 
         virtual std::shared_ptr<Instruction> createMainDeclaration() const = 0;
         virtual std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool) const = 0;

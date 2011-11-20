@@ -39,6 +39,7 @@ class InstructionFactory32 : public InstructionFactory {
         std::shared_ptr<Instruction> createPrintIntegerFunction() const;
         std::shared_ptr<Instruction> createPrintLineFunction() const;
         std::shared_ptr<Instruction> createConcatFunction() const;
+        std::shared_ptr<Instruction> createAllocFunction() const;
 
         std::shared_ptr<Instruction> createMainDeclaration() const;
         std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool) const;

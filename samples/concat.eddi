@@ -1,0 +1,7 @@
+void main(){
+	string a = "asdf";
+	string b = "jklé";
+	string c = a + b;
+
+	println(c);
+}
