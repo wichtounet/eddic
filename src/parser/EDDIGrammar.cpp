@@ -106,6 +106,10 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
             lexer.word 
         >>  lexer.assign 
         >>  value;
+
+    return_ %=
+            lexer.return_
+        >>  value;
     
     arrayAssignment %= 
             lexer.word 
@@ -146,6 +150,7 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         |   (declaration >> lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (arrayAssignment > lexer.stop)
+        |   (return_ > lexer.stop)
         |   if_
         |   for_
         |   while_
