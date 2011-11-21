@@ -35,6 +35,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_COMPOSED_VALUES()
+        AUTO_RECURSE_RETURN_VALUES()
         
         void operator()(ast::Program& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();

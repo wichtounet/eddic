@@ -61,6 +61,11 @@ void operator()(ast::VariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
 }
 
+#define AUTO_RECURSE_RETURN_VALUES()\
+void operator()(ast::Return& return_){\
+    visit(*this, return_.Content->value);\
+}
+
 #define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
 void operator()(ast::ArrayAssignment& assignment){\
     visit(*this, assignment.Content->indexValue);\
