@@ -18,13 +18,15 @@ class StringPool;
 class FunctionTable;
 class IntermediateProgram;
 
-void defineContexts(ASTProgram& program);
+void defineDefaultValues(ast::Program& program);
+void defineContexts(ast::Program& program);
 
-void checkVariables(ASTProgram& program);
-void checkStrings(ASTProgram& program, StringPool& pool);
-void checkFunctions(ASTProgram& program, FunctionTable& functionTable);
-void optimize(ASTProgram& program);
-void writeIL(ASTProgram& program, StringPool& pool, IntermediateProgram& intermediateProgram);
+void checkVariables(ast::Program& program);
+void checkStrings(ast::Program& program, StringPool& pool);
+void checkFunctions(ast::Program& program, FunctionTable& functionTable);
+void transform(ast::Program& program);
+void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool);
+void writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram);
 void writeAsm(IntermediateProgram& il, const std::string& file);
 
 void execCommand(const std::string& command);
@@ -32,6 +34,9 @@ void execCommand(const std::string& command);
 struct Compiler {
     int compile (const std::string& file);
 };
+
+//Utility for other classes
+void warn(const std::string& warning);
 
 } //end of eddic
 

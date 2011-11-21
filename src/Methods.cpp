@@ -20,4 +20,5 @@ void Methods::writeIL(IntermediateProgram& program){
     program.addInstruction(program.factory().createPrintIntegerFunction());
     program.addInstruction(program.factory().createPrintLineFunction());
     program.addInstruction(program.factory().createConcatFunction());
+    program.addInstruction(program.factory().createAllocFunction());
 }

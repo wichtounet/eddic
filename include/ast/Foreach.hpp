@@ -18,27 +18,31 @@ namespace eddic {
 
 class Context;
 
-struct Foreach {
+namespace ast {
+
+struct ASTForeach {
     std::shared_ptr<Context> context;
     std::string variableType;
     std::string variableName;
     int from;
     int to;
-    std::vector<ASTInstruction> instructions;
+    std::vector<Instruction> instructions;
 };
 
-typedef Deferred<Foreach> ASTForeach;
+typedef Deferred<ASTForeach> Foreach;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTForeach, 
+    eddic::ast::Foreach, 
     (std::string, Content->variableType)
     (std::string, Content->variableName)
     (int, Content->from)
     (int, Content->to)
-    (std::vector<eddic::ASTInstruction>, Content->instructions)
+    (std::vector<eddic::ast::Instruction>, Content->instructions)
 )
 
 #endif

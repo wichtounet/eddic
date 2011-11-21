@@ -16,7 +16,11 @@ enum Register {
     ECX,
     EDX,
 
-    ESP,
+    ESP, //Extended stack pointer
+    EBP, //Extended base pointer
+
+    ESI, //Extended source index
+    EDI, //Extended destination index
     
     REGISTER_COUNT  
 };

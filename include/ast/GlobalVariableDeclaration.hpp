@@ -16,24 +16,30 @@
 
 namespace eddic {
 
-struct TempGlobalVariableDeclaration {
+class Context;
+
+namespace ast {
+
+struct ASTGlobalVariableDeclaration {
     std::shared_ptr<Context> context;
     
     std::string variableType;
     std::string variableName;
-    ASTValue value;
+    boost::optional<Value> value;
 };
 
-typedef Deferred<TempGlobalVariableDeclaration> GlobalVariableDeclaration;
+typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::GlobalVariableDeclaration, 
+    eddic::ast::GlobalVariableDeclaration, 
     (std::string, Content->variableType)
     (std::string, Content->variableName)
-    (eddic::ASTValue, Content->value)
+    (boost::optional<eddic::ast::Value>, Content->value)
 )
 
 #endif

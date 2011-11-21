@@ -16,19 +16,23 @@
 
 using namespace eddic;
 
-Type GetTypeVisitor::operator()(const ASTLitteral&) const {
-    return Type::STRING;
+Type GetTypeVisitor::operator()(const ast::Litteral&) const {
+    return Type(BaseType::STRING);
 }
 
-Type GetTypeVisitor::operator()(const ASTInteger&) const {
-    return Type::INT;
+Type GetTypeVisitor::operator()(const ast::Integer&) const {
+    return Type(BaseType::INT);
 }
 
-Type GetTypeVisitor::operator()(const ASTVariable& variable) const {
+Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
 
-Type GetTypeVisitor::operator()(const ASTComposedValue& value) const {
+Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+    return array.Content->context->getVariable(array.Content->arrayName)->type();
+}
+
+Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     //No need to recurse into operations because type are enforced in the check variables phase
     return boost::apply_visitor(*this, value.Content->first);
 }

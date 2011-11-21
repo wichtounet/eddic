@@ -13,18 +13,22 @@
 
 using namespace eddic;
 
-bool IsImmediateVisitor::operator()(ASTLitteral&) const {
+bool IsImmediateVisitor::operator()(ast::Litteral&) const {
     return true;
 }
 
-bool IsImmediateVisitor::operator()(ASTInteger&) const {
+bool IsImmediateVisitor::operator()(ast::Integer&) const {
     return true;
 }
 
-bool IsImmediateVisitor::operator()(ASTVariable&) const {
+bool IsImmediateVisitor::operator()(ast::VariableValue&) const {
     return true;
 }
 
-bool IsImmediateVisitor::operator()(ASTComposedValue&) const {
+bool IsImmediateVisitor::operator()(ast::ArrayValue&) const {
+    return true;//TODO Perhaps check if the index value is immediate instead of returning true
+}
+
+bool IsImmediateVisitor::operator()(ast::ComposedValue&) const {
     return false;
 }

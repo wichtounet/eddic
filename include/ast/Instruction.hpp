@@ -14,32 +14,44 @@
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"
-#include "ast/Declaration.hpp"
+#include "ast/ArrayAssignment.hpp"
+#include "ast/VariableDeclaration.hpp"
+#include "ast/ArrayDeclaration.hpp"
 
 namespace eddic {
 
-struct While;
-typedef Deferred<While> ASTWhile; 
+namespace ast {
 
-struct For;
-typedef Deferred<For> ASTFor; 
+struct ASTWhile;
+typedef Deferred<ASTWhile> While; 
 
-struct If;
-typedef Deferred<If> ASTIf;
+struct ASTFor;
+typedef Deferred<ASTFor> For; 
 
-struct Foreach;
-typedef Deferred<Foreach> ASTForeach;
+struct ASTIf;
+typedef Deferred<ASTIf> If;
+
+struct ASTForeach;
+typedef Deferred<ASTForeach> Foreach;
+
+struct ASTForeachIn;
+typedef Deferred<ASTForeachIn> ForeachIn;
 
 typedef boost::variant<
-            ASTFunctionCall, 
-            ASTSwap, 
-            ASTDeclaration,
-            ASTAssignment, 
-            ASTIf, 
-            ASTWhile, 
-            ASTForeach, 
-            ASTFor>
-        ASTInstruction;
+            FunctionCall, 
+            Swap, 
+            VariableDeclaration,
+            ArrayDeclaration,
+            Assignment, 
+            ArrayAssignment, 
+            If, 
+            While, 
+            Foreach,
+            ForeachIn, 
+            For>
+        Instruction;
+
+} //end of ast
 
 } //end of eddic
 
@@ -47,5 +59,6 @@ typedef boost::variant<
 #include "ast/While.hpp"
 #include "ast/For.hpp"
 #include "ast/Foreach.hpp"
+#include "ast/ForeachIn.hpp"
 
 #endif

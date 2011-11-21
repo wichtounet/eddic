@@ -12,7 +12,7 @@
 
 namespace eddic {
 
-enum class Type : unsigned int {
+enum class BaseType : unsigned int {
     STRING,
     INT,
     VOID, 
@@ -20,10 +20,33 @@ enum class Type : unsigned int {
     COUNT
 };
 
+class Type {
+    private:
+        BaseType type;
+        bool array;
+        unsigned int m_size;
+    
+    public:
+        Type(BaseType base);
+        Type(BaseType base, unsigned int size);
+        
+        BaseType base() const;
+        bool isArray() const;
+        unsigned int size() const;
+
+        friend bool operator==(const Type& lhs, const Type& rhs);
+        friend bool operator!=(const Type& lhs, const Type& rhs);
+};
+        
+bool operator==(const Type& lhs, const Type& rhs);
+bool operator!=(const Type& lhs, const Type& rhs);
+
+int size(BaseType type);
 int size(Type type);
 
 bool isType(const std::string& type);
 
+BaseType stringToBaseType(const std::string& type);
 Type stringToType(const std::string& type);
 
 } //end of eddic

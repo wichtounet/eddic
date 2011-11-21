@@ -26,35 +26,44 @@ using std::endl;
 using std::vector;
 
 using namespace eddic;
-
+        
+GlobalContext::GlobalContext() : Context(NULL) {
+    Val zero = 0;
+    
+    variables["eddi_remaining"] = std::make_shared<Variable>("eddi_remaining", stringToType("int"), Position(GLOBAL, "eddi_remaining"), zero);
+    variables["eddi_current"] = std::make_shared<Variable>("eddi_current", stringToType("int"), Position(GLOBAL, "eddi_current"), zero);
+}
+        
 void GlobalContext::writeIL(IntermediateProgram& program){
-    for(auto it : m_stored){
-        if (it.second->type() == Type::INT) {
-            program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
-        } else if (it.second->type() == Type::STRING) {
-            auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-            program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
+    for(auto it : variables){
+        Type type = it.second->type();
+
+        if(type.isArray()){
+            program.addInstruction(program.factory().createGlobalArray(it.second->position().name(), type.base(), type.size()));
+        } else {
+            if (type.base() == BaseType::INT) {
+                program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
+            } else if (type.base() == BaseType::STRING) {
+                auto value = boost::get<std::pair<std::string, int>>(it.second->val());
+                program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
+            }
         }
     }
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string&, Type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
     //A global variable must have a value
-    assert(false);
+    assert(type.isArray());
+    
+    Position position(GLOBAL, variable);
+    
+    return variables[variable] = std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ASTValue& value){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
     Position position(GLOBAL, variable);
 
     auto val = boost::apply_visitor(GetConstantValue(), value);
 
-    auto v = std::make_shared<Variable>(variable, type, position, val);
-
-    m_visibles[variable] = currentVariable;
-
-    storeVariable(currentVariable, v);
-    
-    currentVariable++;
-
-    return v;
+    return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }

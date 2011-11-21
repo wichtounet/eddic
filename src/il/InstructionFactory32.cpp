@@ -18,10 +18,12 @@
 #include "il/Push.hpp"
 #include "il/GlobalStringVariable.hpp"
 #include "il/GlobalIntVariable.hpp"
+#include "il/GlobalArray.hpp"
 #include "il/PrintLineFunction.hpp"
 #include "il/PrintStringFunction.hpp"
 #include "il/PrintIntegerFunction.hpp"
 #include "il/ConcatFunction.hpp"
+#include "il/AllocFunction.hpp"
 #include "il/Main.hpp"
 #include "il/DataSection.hpp"
 
@@ -35,6 +37,9 @@ InstructionFactory32::InstructionFactory32(){
     registerOperands[ECX] = std::make_shared<RegisterOperand>("%ecx");
     registerOperands[EDX] = std::make_shared<RegisterOperand>("%edx");
     registerOperands[ESP] = std::make_shared<RegisterOperand>("%esp");
+    registerOperands[EBP] = std::make_shared<RegisterOperand>("%ebp");
+    registerOperands[ESI] = std::make_shared<RegisterOperand>("%edi");
+    registerOperands[EDI] = std::make_shared<RegisterOperand>("%esi");
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const {
@@ -81,6 +86,10 @@ std::shared_ptr<Instruction> InstructionFactory32::createGlobalStringVariable(st
     return std::make_shared<GlobalStringVariable>(name, label, size); 
 }
 
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalArray(std::string name, BaseType type, int size) const {
+    return std::make_shared<GlobalArray>(name, type, size);
+}
+
 std::shared_ptr<Instruction> InstructionFactory32::createPrintStringFunction() const {
     return std::make_shared<PrintStringFunction>();
 }
@@ -95,6 +104,10 @@ std::shared_ptr<Instruction> InstructionFactory32::createPrintLineFunction() con
 
 std::shared_ptr<Instruction> InstructionFactory32::createConcatFunction() const {
     return std::make_shared<ConcatFunction>();
+}
+
+std::shared_ptr<Instruction> InstructionFactory32::createAllocFunction() const {
+    return std::make_shared<AllocFunction>();
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createMainDeclaration() const {

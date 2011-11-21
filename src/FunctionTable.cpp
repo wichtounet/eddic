@@ -9,10 +9,21 @@
 
 using namespace eddic;
 
-void FunctionTable::addFunction(std::shared_ptr<FunctionSignature> function){
+FunctionTable::FunctionTable(){}
+
+void FunctionTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;
+    function->references = 0;
 }
 
 bool FunctionTable::exists(const std::string& function){
     return functions.find(function) != functions.end();
+}
+
+void FunctionTable::addReference(const std::string& function){
+    ++(functions[function]->references);
+}
+
+int FunctionTable::referenceCount(const std::string& function){
+    return functions[function]->references;
 }

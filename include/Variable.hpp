@@ -36,6 +36,7 @@ class Variable {
         const Type m_type;
         Position m_position;
         Val v_value;
+        int references;
 
     public:
         Variable(const std::string& name, Type type, Position position);
@@ -49,6 +50,9 @@ class Variable {
         Position position() const ;
 
         Val val() const ;
+
+        void addReference();
+        int referenceCount();
 };
 
 } //end of eddic

@@ -13,8 +13,12 @@
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
+#include "TypeTransformer.hpp"
 
 #include "mangling.hpp"
+
+#include "Options.hpp"
+#include "Compiler.hpp"
 
 using namespace eddic;
 
@@ -27,29 +31,32 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
         AUTO_RECURSE_PROGRAM()
          
-        void operator()(ASTFunctionDeclaration& declaration){
-            auto signature = std::make_shared<FunctionSignature>();
+        void operator()(ast::FunctionDeclaration& declaration){
+            auto signature = std::make_shared<Function>();
 
             signature->name = declaration.Content->functionName;
 
             for(auto& param : declaration.Content->parameters){
-                auto parameter = std::make_shared<ParameterType>();
-                parameter->name = param.parameterName;
-                parameter->paramType = stringToType(param.parameterType);
-
-                signature->parameters.push_back(parameter);
+                Type paramType = boost::apply_visitor(TypeTransformer(), param.parameterType);
+                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
-            //TODO Verifiy that the function has not been previously defined
+            if(functionTable.exists(signature->mangledName)){
+                throw SemanticalException("The function " + signature->name + " has already been defined");
+            }
 
             functionTable.addFunction(signature);
 
             //Stop recursion here
         }
 
-        void operator()(GlobalVariableDeclaration&){
+        void operator()(ast::GlobalVariableDeclaration&){
+            //Stop recursion here
+        }
+        
+        void operator()(ast::GlobalArrayDeclaration&){
             //Stop recursion here
         }
 };
@@ -71,7 +78,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
-        void operator()(ASTFunctionCall& functionCall){
+        void operator()(ast::FunctionCall& functionCall){
             std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
@@ -82,23 +89,46 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             if(!functionTable.exists(mangled)){
                 throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
+            } else {
+                functionTable.addReference(mangled);
             }
         }
-        
-        void operator()(ASTVariable&){
-            //No function calls there
-        }
 
-        void operator()(ASTSwap&){
-            //No function calls there
-        }
-        
-        void operator()(TerminalNode&){
+        template<typename T>        
+        void operator()(T&){
             //No function calls there
         }
 };
 
-void FunctionChecker::check(ASTProgram& program, FunctionTable& functionTable){
+class FunctionInspector : public boost::static_visitor<> {
+    private:
+        FunctionTable& functionTable;
+
+    public:
+        FunctionInspector(FunctionTable& table) : functionTable(table) {}
+
+        void operator()(ast::Program& program){
+            visit_each(*this, program.Content->blocks);
+        }
+
+        void operator()(ast::FunctionDeclaration& declaration){
+            int references = functionTable.referenceCount(declaration.Content->mangledName);
+
+            if(declaration.Content->functionName != "main" && references == 0){
+                warn("unused function '" + declaration.Content->functionName + "'");
+            }
+        }
+
+        void operator()(ast::GlobalVariableDeclaration&){
+            //Nothing to warn about there
+        }
+
+        void operator()(ast::GlobalArrayDeclaration&){
+            //Nothing to warn about there
+        }
+};
+
+void FunctionChecker::check(ast::Program& program, FunctionTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);
@@ -106,4 +136,10 @@ void FunctionChecker::check(ASTProgram& program, FunctionTable& functionTable){
     //Second phase : Verify calls
     FunctionCheckerVisitor checkerVisitor(functionTable);
     checkerVisitor(program);
+
+    if(WarningUnused){
+        //Third phase, warnings
+        FunctionInspector inspector(functionTable);
+        inspector(program);
+    }
 }

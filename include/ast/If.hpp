@@ -19,24 +19,28 @@
 
 namespace eddic {
 
-struct If {
-    ASTCondition condition;
-    std::vector<ASTInstruction> instructions;
-    std::vector<ASTElseIf> elseIfs;
-    boost::optional<ASTElse> else_;
+namespace ast {
+
+struct ASTIf {
+    Condition condition;
+    std::vector<Instruction> instructions;
+    std::vector<ElseIf> elseIfs;
+    boost::optional<Else> else_;
 };
 
-typedef Deferred<If> ASTIf;
+typedef Deferred<ASTIf> If;
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTIf, 
-    (eddic::ASTCondition, Content->condition)
-    (std::vector<eddic::ASTInstruction>, Content->instructions)
-    (std::vector<eddic::ASTElseIf>, Content->elseIfs)
-    (boost::optional<eddic::ASTElse>, Content->else_)
+    eddic::ast::If, 
+    (eddic::ast::Condition, Content->condition)
+    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    (std::vector<eddic::ast::ElseIf>, Content->elseIfs)
+    (boost::optional<eddic::ast::Else>, Content->else_)
 )
 
 #endif

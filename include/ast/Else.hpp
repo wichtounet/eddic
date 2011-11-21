@@ -16,16 +16,20 @@
 
 namespace eddic {
 
-struct ASTElse {
-    std::vector<ASTInstruction> instructions;
+namespace ast {
+
+struct Else {
+    std::vector<Instruction> instructions;
 };
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ASTElse, 
-    (std::vector<eddic::ASTInstruction>, instructions)
+    eddic::ast::Else, 
+    (std::vector<eddic::ast::Instruction>, instructions)
 )
 
 #endif

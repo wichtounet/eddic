@@ -1,0 +1,11 @@
+void main(){
+	string a = "asdf";
+	string b = "jklé";
+	string c = a + b;
+    string d = c + b;
+    string e = c + d;
+
+	println(c);
+	println(d);
+    println(e);
+}

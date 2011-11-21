@@ -19,9 +19,10 @@ class StringPool {
     private:
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
-	
+
     public:
         StringPool();
+        StringPool(const StringPool& rhs) = delete;
 
         std::string label(const std::string& value);
 

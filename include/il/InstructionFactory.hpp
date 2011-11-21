@@ -12,6 +12,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "Types.hpp"
+
 #include "il/Instruction.hpp"
 #include "il/Math.hpp"
 #include "il/Jump.hpp"
@@ -32,13 +34,16 @@ class InstructionFactory {
         virtual std::shared_ptr<Instruction> createFunctionDeclaration(const std::string& function, int size = 0) const = 0;
         virtual std::shared_ptr<Instruction> createFunctionExit(int size = 0) const = 0;
         virtual std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const = 0;
+        
         virtual std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value) const = 0;
         virtual std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size) const = 0;
-    
+        virtual std::shared_ptr<Instruction> createGlobalArray(std::string name, BaseType type, int size) const = 0;
+        
         virtual std::shared_ptr<Instruction> createPrintStringFunction() const = 0;
         virtual std::shared_ptr<Instruction> createPrintIntegerFunction() const = 0;
         virtual std::shared_ptr<Instruction> createPrintLineFunction() const = 0;
         virtual std::shared_ptr<Instruction> createConcatFunction() const = 0;
+        virtual std::shared_ptr<Instruction> createAllocFunction() const = 0;
 
         virtual std::shared_ptr<Instruction> createMainDeclaration() const = 0;
         virtual std::shared_ptr<Instruction> createDataSection(std::unordered_map<std::string, std::string> pool) const = 0;

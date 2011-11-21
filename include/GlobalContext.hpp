@@ -24,13 +24,12 @@ namespace eddic {
 
 class GlobalContext : public Context {
     public:
-        GlobalContext() : Context(NULL) {}
+        GlobalContext();
         
         void writeIL(IntermediateProgram& writer);
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, std::shared_ptr<Value> value);
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ASTValue& value);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
 };
 
 } //end of eddic

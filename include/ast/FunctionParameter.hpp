@@ -10,19 +10,25 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Type.hpp"
+
 namespace eddic {
 
+namespace ast {
+
 struct FunctionParameter {
-    std::string parameterType;
+    Type parameterType;
     std::string parameterName;
 };
+
+} //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::FunctionParameter, 
-    (std::string, parameterType)
+    eddic::ast::FunctionParameter, 
+    (eddic::ast::Type, parameterType)
     (std::string, parameterName)
 )
 

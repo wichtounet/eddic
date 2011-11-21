@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+namespace ast {
+
 template <typename T>
 inline T* Allocate(){
     return new T;
@@ -94,6 +96,8 @@ struct Deferred {
     protected:
     mutable PointerType Contents;
 };
+
+} //end of ast
 
 } //end of eddic
 

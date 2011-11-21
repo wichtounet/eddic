@@ -14,19 +14,25 @@
 
 #include "ast/Integer.hpp"
 #include "ast/Litteral.hpp"
-#include "ast/Variable.hpp"
+#include "ast/VariableValue.hpp"
 
 namespace eddic {
 
+namespace ast {
+
 typedef boost::variant<
-            ASTInteger, 
-            ASTLitteral, 
-            ASTVariable,
-            ASTComposedValue
-        > ASTValue;
+            Integer, 
+            Litteral, 
+            VariableValue,
+            ComposedValue,
+            ArrayValue
+        > Value;
+
+} //end of ast
 
 } //end of eddic
 
 #include "ast/ComposedValue.hpp"
+#include "ast/ArrayValue.hpp"
 
 #endif

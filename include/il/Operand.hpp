@@ -9,6 +9,7 @@
 #define OPERAND_H
 
 #include <string>
+#include <memory>
 
 namespace eddic {
 
@@ -19,6 +20,10 @@ enum class OperandType : unsigned int {
     GLOBAL
 };
 
+/*!
+ * \class Operand
+ * \brief Represent an assembly operand
+ */
 class Operand {
     private:
         OperandType m_type;
@@ -27,6 +32,14 @@ class Operand {
         Operand(OperandType type);
 
         virtual std::string getValue() = 0;
+
+        /*!
+         * \brief Return a new operand representing the value of the operand. Example: %eax becomes (%eax). 
+         * \param offset Address offset of the operand
+         * \return A new Operand reprenseting the address of the operand plus the offset
+         */
+        std::shared_ptr<Operand> valueOf(int offset = 0);
+
         bool isImmediate();
         bool isRegister();
         bool isStack();
