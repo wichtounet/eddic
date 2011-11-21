@@ -127,6 +127,14 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit(*this, assign.Content->value);
         --level;
     }
+
+    void operator()(ast::Return& return_) const {
+        std::cout << indent() << "Function return" << std::endl; 
+
+        ++level;
+        visit(*this, return_.Content->value);
+        --level;
+    }
     
     void operator()(ast::ArrayAssignment& assign) const {
         std::cout << indent() << "Array assignment" << std::endl; 
