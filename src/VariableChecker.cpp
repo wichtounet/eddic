@@ -128,6 +128,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
         var->addReference();
     }
 
+    void operator()(ast::Return& return_){
+        //TODO Check that the return type is coherent with the function signature
+
+        visit(*this, return_.Content->value);
+    }
+
     void operator()(ast::ArrayAssignment& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {
             throw SemanticalException("Array " + assignment.Content->variableName + " has not  been declared");
