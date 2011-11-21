@@ -186,6 +186,10 @@ struct TransformerVisitor : public boost::static_visitor<> {
         assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
     }
 
+    void operator()(ast::Return& return_) const {
+        return_.Content->value = boost::apply_visitor(transformer, return_.Content->value); 
+    }
+
     void operator()(ast::ArrayAssignment& assignment) const {
         assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
         assignment.Content->indexValue = boost::apply_visitor(transformer, assignment.Content->indexValue); 
