@@ -37,7 +37,7 @@ typedef Deferred<ASTReturn, boost::intrusive_ptr<ASTReturn>> Return;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Assignment, 
+    eddic::ast::Return, 
     (eddic::ast::Value, Content->value)
 )
 
