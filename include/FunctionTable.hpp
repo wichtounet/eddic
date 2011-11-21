@@ -25,10 +25,13 @@ struct ParameterType {
 };
 
 struct Function {
+    Type returnType;
     std::string name;
     std::string mangledName;
     std::vector<ParameterType> parameters;
     int references;
+
+    Function(Type ret, std::string n) : returnType(ret), name(n), references(0) {}
 };
 
 class FunctionTable {
