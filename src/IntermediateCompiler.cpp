@@ -876,6 +876,10 @@ class CompilerVisitor : public boost::static_visitor<> {
                 program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), program.registers(ESP)));
             }
         }
+
+        void operator()(ast::Return& return_){
+            //TODO If int move value to %eax, else string move value to %eax::%edx
+        }
 };
 
 void IntermediateCompiler::compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
