@@ -4,6 +4,8 @@ The compiler of the EDDI programming language.
 
 ## Building ##
 
+You need Boost 1.47.0 installed on your computer to build this project. 
+
 You juste have to use cmake to build the compiler : 
 
     $ git clone git://github.com/wichtounet/eddic.git
