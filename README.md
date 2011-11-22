@@ -26,9 +26,11 @@ That will create a "a.out" file in the current folder. You can then run this fil
 
 ## Contributors ##
 
-At this time, I'm the only contributor of the project : Baptiste Wicht, CH
+At this time, I'm the only contributor of the project : Baptiste Wicht, from Switzerland
 
 ## Contribute ##
+
+The project is open for any kind of contribution : new features, hotfixes, tests, ...
 
 If you want to contribute to this project, you can contact me by [email](baptiste.wicht@gmail.com) or via my [website](http://baptiste-wicht.com/).
 
