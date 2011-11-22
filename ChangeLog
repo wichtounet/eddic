@@ -1,0 +1,17 @@
+eddic 0.6.0 - 2011.11.21
+
+* Add arrays to the language
+* Fix print_integer to handle negative numbers
+* Add default values for global and local variables
+
+eddic 0.5.1
+
+eddic 0.5.0
+
+eddic 0.4
+
+eddic 0.3
+
+eddic 0.2
+
+eddic 0.1
