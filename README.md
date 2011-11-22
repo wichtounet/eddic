@@ -22,6 +22,14 @@ That will create a "a.out" file in the current folder. You can then run this fil
 
     $ ./a.out
 
+## Contributors ##
+
+At this time, I'm the only contributor of the project : Baptiste Wicht, CH
+
+## Contribute ##
+
+If you want to contribute to this project, you can contact me by [email](baptiste.wicht@gmail.com) or via my [website](http://baptiste-wicht.com/).
+
 ## Troubleshooting ##
 
 Please consider using [Github issues tracker](http://github.com/wichtounet/eddic/issues) to submit bug reports or feature requests. You can also contact me via my [website](http://baptiste-wicht.com/). 
