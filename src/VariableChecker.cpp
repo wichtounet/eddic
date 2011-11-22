@@ -129,8 +129,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Return& return_){
-        //TODO Check that the return type is coherent with the function signature
-
         visit(*this, return_.Content->value);
     }
 

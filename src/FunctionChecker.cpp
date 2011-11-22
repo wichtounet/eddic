@@ -10,6 +10,7 @@
 #include "ast/Program.hpp"
 #include "FunctionTable.hpp"
 
+#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
@@ -66,12 +67,12 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     private:
         FunctionTable& functionTable;
+        std::shared_ptr<Function> currentFunction;
 
     public:
         FunctionCheckerVisitor(FunctionTable& table) : functionTable(table) {}
 
         AUTO_RECURSE_PROGRAM()
-        AUTO_RECURSE_FUNCTION_DECLARATION() 
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
@@ -79,6 +80,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
+
+        void operator()(ast::FunctionDeclaration& declaration){
+            currentFunction = functionTable.getFunction(declaration.Content->functionName);
+
+            visit_each(*this, declaration.Content->instructions);
+        }
 
         void operator()(ast::FunctionCall& functionCall){
             std::string name = functionCall.Content->functionName;
@@ -94,6 +101,16 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             } else {
                 functionTable.addReference(mangled);
             }
+        }
+
+        void operator()(ast::Return& return_){
+            Type returnValueType = boost::apply_visitor(GetTypeVisitor(), return_.Content->value);
+
+            if(returnValueType != currentFunction->returnType){
+                throw SemanticalException("The return value is not of the good type in the function " + currentFunction->name);
+            }
+
+            visit(*this, return_.Content->value);
         }
 
         template<typename T>        

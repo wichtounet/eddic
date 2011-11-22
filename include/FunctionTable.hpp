@@ -43,6 +43,7 @@ class FunctionTable {
         FunctionTable(const FunctionTable& rhs) = delete;
 
         void addFunction(std::shared_ptr<Function> function);
+        std::shared_ptr<Function> getFunction(const std::string& function);
         bool exists(const std::string& function);
 
         void addReference(const std::string& function);
