@@ -4,7 +4,7 @@ The compiler of the EDDI programming language.
 
 ## Building ##
 
-You need Boost 1.47.0 installed on your computer to build this project. 
+A compiler supporting the new standard, C++11, is necessary to build the compiler. The compilation has been tested on GCC 4.6 and greater versions. You need Boost 1.47.0 installed on your computer to build this project. 
 
 You juste have to use cmake to build the compiler : 
 
