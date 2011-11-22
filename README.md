@@ -26,7 +26,11 @@ That will create a "a.out" file in the current folder. You can then run this fil
 
 ## Contributors ##
 
-At this time, I'm the only contributor of the project : Baptiste Wicht, from Switzerland
+Read `AUTHORS`
+
+## Release Notes ##
+
+Read `ChangeLog`
 
 ## Contribute ##
 
@@ -44,4 +48,4 @@ Please consider using [Github issues tracker](http://github.com/wichtounet/eddic
 
 ## License ##
 
-This project is distributed under the Boost Software License 1.0. See `LICENSE_1_0.txt` for details.
+This project is distributed under the Boost Software License 1.0. Read `LICENSE` for details.
