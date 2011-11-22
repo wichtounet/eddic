@@ -1,0 +1,59 @@
+eddic 0.6.0 - 2011.11.21
+
+* Add arrays to the language
+* New loop : foreach for arrays
+* Fix print_integer to handle negative numbers
+* Add default values for global and local variables
+* Add warnings
+* New optimizations for unused variables and functions
+* Improved compilation speed
+
+eddic 0.5.1 - 2011.11.10 
+
+* Use of Boost Spirit for lexer and parser
+* Lot of improvements in the assembly
+* Use of a simple intermediate representation : abstracted assembly
+* Reduced time for compile
+* Use of Boost Program Options
+
+eddic 0.5.0 - 2011.10.10
+
+* Function and functions calls
+* New loop : foreach loop
+* Global variables
+* Improve error reporting
+* Better code
+
+eddic 0.4.1 - 2011.07.28
+
+* Two loops : while and for
+* Support parenthesis in mathematical expressions
+* Variables are scoped
+* Assembly improvements
+
+eddic 0.4 - 2011.07.20
+
+* Switch to a compiled language
+* Swap operator <=>
+
+eddic 0.3 - 2011.07.07
+
+* Branches : if, else, else if
+* Boolean operators : ==, !=, <, >, <=, >=
+* Boolean litterals : true, false
+
+eddic 0.2 - 2011.06.20
+
+* New type : int
+* New operators (+-*/%)
+* String concatenations
+
+eddic 0.1.1 - 2011.06.16
+
+* Add string variables to the language
+
+eddic 0.1 - 2011.06.13
+
+* First version of EDDI. 
+* Contains only one instruction : Print
+* Is an interpreted language
