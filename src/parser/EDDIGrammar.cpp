@@ -134,19 +134,13 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  lexer.right_bracket
         >>  lexer.stop;
 
-    functionCall %=
-            lexer.word
-        >>  lexer.left_parenth
-        >>  -( value >> *( lexer.comma > value))
-        >>  lexer.right_parenth;
-    
     swap %= 
             lexer.word 
         >>  lexer.swap 
         >>  lexer.word;
     
     instruction %= 
-            (functionCall > lexer.stop)
+            (value.functionCall > lexer.stop)
         |   (assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (arrayDeclaration >> lexer.stop)

@@ -33,6 +33,7 @@ struct ValueGrammar : qi::grammar<Iterator, ast::Value()> {
     qi::rule<Iterator, ast::Litteral()> litteral;
     qi::rule<Iterator, ast::VariableValue()> variable;
     qi::rule<Iterator, ast::ArrayValue()> arrayValue;
+    qi::rule<Iterator, ast::FunctionCall()> functionCall;
 };
 
 } //end of eddic
