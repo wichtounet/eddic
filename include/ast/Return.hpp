@@ -18,8 +18,6 @@
 
 namespace eddic {
 
-class Context;
-
 namespace ast {
 
 struct ASTReturn {
