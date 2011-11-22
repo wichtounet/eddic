@@ -1,4 +1,4 @@
-# EDDI Compiler #
+# EDDI Compiler 0.6.0 #
 
 The compiler of the EDDI programming language. 
 
