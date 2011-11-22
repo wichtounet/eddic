@@ -109,7 +109,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
 
     return_ %=
             lexer.return_
-        >>  value;
+        >>  value
+        >>  lexer.stop;
     
     arrayAssignment %= 
             lexer.word 
@@ -150,12 +151,12 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         |   (declaration >> lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (arrayAssignment > lexer.stop)
-        |   (return_ > lexer.stop)
         |   if_
         |   for_
         |   while_
         |   foreach_
         |   foreachin_
+        |   return_
         |   (swap > lexer.stop);
 
     repeatable_instruction = assignment | declaration | swap;
