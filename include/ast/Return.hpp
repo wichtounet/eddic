@@ -16,11 +16,14 @@
 #include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 
+#include "FunctionTable.hpp"
+
 namespace eddic {
 
 namespace ast {
 
 struct ASTReturn {
+    std::shared_ptr<Function> function;
     Value value;
 
     mutable long references;

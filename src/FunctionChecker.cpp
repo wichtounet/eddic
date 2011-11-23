@@ -104,6 +104,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
+            return_.Content->function = currentFunction;
+
             Type returnValueType = boost::apply_visitor(GetTypeVisitor(), return_.Content->value);
 
             if(returnValueType != currentFunction->returnType){
