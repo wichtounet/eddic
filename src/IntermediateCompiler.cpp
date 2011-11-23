@@ -394,7 +394,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
             ); 
         }
 
-        void operator()(ast::FunctionCall& call){
+        void operator()(ast::FunctionCall&){
            switch(variable->type().base()){
                 case BaseType::INT:
                     program.addInstruction(program.factory().createMove(program.registers(EAX), variable->toIntegerOperand()));
@@ -503,7 +503,7 @@ struct AssignValueToArray : public boost::static_visitor<> {
             }
         }
         
-        void operator()(ast::FunctionCall& call){
+        void operator()(ast::FunctionCall&){
             auto edi = program.registers(EDI);
 
             computeAddressOfElement(variable, indexValue, program, edi);
@@ -956,7 +956,13 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            //TODO If int move value to %eax, else string move value to %eax::%edx
+            if(return_.Content->function->returnType.base() == BaseType::INT) {
+                AssignValueToOperand(program.registers(EAX), program);
+            } else if(return_.Content->function->returnType.base() == BaseType::STRING) {
+                //TODO Assign string to eax:ebx
+            }
+
+            program.addInstruction(program.factory().createFunctionExit(return_.Content->context->size()));
         }
 };
 
