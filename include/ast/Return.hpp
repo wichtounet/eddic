@@ -20,10 +20,14 @@
 
 namespace eddic {
 
+class FunctionContext;
+
 namespace ast {
 
 struct ASTReturn {
     std::shared_ptr<Function> function;
+    std::shared_ptr<FunctionContext> context;
+
     Value value;
 
     mutable long references;

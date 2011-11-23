@@ -35,7 +35,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_COMPOSED_VALUES()
-        AUTO_RECURSE_RETURN_VALUES()
         
         void operator()(ast::Program& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
@@ -164,7 +163,13 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             visit(*this, array.Content->indexValue);
         }
-        
+       
+        void operator()(ast::Return& return_){
+            return_.Content->context = functionContext;
+
+            visit(*this, return_.Content->value);
+        }
+         
         void operator()(ast::TerminalNode&){
             //A terminal node has no context
         }
