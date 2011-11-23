@@ -325,6 +325,17 @@ class AssignValueToOperand : public boost::static_visitor<> {
             ); 
         }
 
+        void operator()(ast::FunctionCall& call){
+            assert(call.Content->function->returnType.base() == BaseType::INT);
+            
+            program.addInstruction(
+                program.factory().createMove(
+                    program.registers(EAX),
+                    operand
+                )
+            ); 
+        }
+
         void operator()(ast::VariableValue& variable){
             assert(variable.Content->var->type().base() == BaseType::INT);
         
