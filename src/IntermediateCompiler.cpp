@@ -394,6 +394,25 @@ class AssignValueToVariable : public boost::static_visitor<> {
             ); 
         }
 
+        void operator()(ast::FunctionCall& call){
+           switch(variable->type().base()){
+                case BaseType::INT:
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), variable->toStringOperand()));
+
+                    break;
+                case BaseType::STRING:
+                    //TODO Verify the order of registers and if we should use other registers instead (ESI/EDI) ?
+                    auto destination = variable->toStringOperand();
+
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), destination.first));
+                    program.addInstruction(program.factory().createMove(program.registers(EBX), destination.second));
+
+                    break;
+                default:
+                    throw SemanticalException("This function doesn't return anything");   
+           }
+        }
+
         void operator()(ast::VariableValue& variableSource){
             auto var = variableSource.Content->var;
 
