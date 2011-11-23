@@ -36,3 +36,7 @@ Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     //No need to recurse into operations because type are enforced in the check variables phase
     return boost::apply_visitor(*this, value.Content->first);
 }
+
+Type GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
+    return call.Content->function->returnType;
+}
