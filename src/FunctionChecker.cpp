@@ -82,7 +82,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ast::FunctionDeclaration& declaration){
-            currentFunction = functionTable.getFunction(declaration.Content->functionName);
+            currentFunction = functionTable.getFunction(declaration.Content->mangledName);
 
             visit_each(*this, declaration.Content->instructions);
         }
@@ -100,6 +100,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
             } else {
                 functionTable.addReference(mangled);
+
+                functionCall.Content->function = functionTable.getFunction(mangled);
             }
         }
 

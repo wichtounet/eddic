@@ -8,16 +8,22 @@
 #ifndef AST_FUNCTION_CALL_H
 #define AST_FUNCTION_CALL_H
 
+#include <memory>
+
 #include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+
+#include "FunctionTable.hpp"
 
 namespace eddic {
 
 namespace ast {
 
 struct ASTFunctionCall {
+    std::shared_ptr<Function> function;
+
     std::string functionName;
     std::vector<Value> values;
 
