@@ -397,10 +397,10 @@ class AssignValueToVariable : public boost::static_visitor<> {
         void operator()(ast::FunctionCall& call){
            switch(variable->type().base()){
                 case BaseType::INT:
-                    program.addInstruction(program.factory().createMove(program.registers(EAX), variable->toStringOperand()));
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), variable->toIntegerOperand()));
 
                     break;
-                case BaseType::STRING:
+                case BaseType::STRING:{
                     //TODO Verify the order of registers and if we should use other registers instead (ESI/EDI) ?
                     auto destination = variable->toStringOperand();
 
@@ -408,6 +408,7 @@ class AssignValueToVariable : public boost::static_visitor<> {
                     program.addInstruction(program.factory().createMove(program.registers(EBX), destination.second));
 
                     break;
+                }
                 default:
                     throw SemanticalException("This function doesn't return anything");   
            }
@@ -499,6 +500,27 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
                 program.addInstruction(program.factory().createMove(operands.first, edi->valueOf()));
                 program.addInstruction(program.factory().createMove(operands.second, edi->valueOf(4)));
+            }
+        }
+        
+        void operator()(ast::FunctionCall& call){
+            auto edi = program.registers(EDI);
+
+            computeAddressOfElement(variable, indexValue, program, edi);
+            
+            switch(variable->type().base()){
+                case BaseType::INT:
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), edi->valueOf()));
+
+                    break;
+                case BaseType::STRING:
+                    //TODO Verify the order of registers and if we should use other registers instead (ESI/EDI) ?
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), edi->valueOf()));
+                    program.addInstruction(program.factory().createMove(program.registers(EBX), edi->valueOf(4)));
+
+                    break;
+                default:
+                    throw SemanticalException("This function doesn't return anything");   
             }
         }
         
