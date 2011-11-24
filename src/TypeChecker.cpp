@@ -53,7 +53,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::GlobalArrayDeclaration& declaration){
+    void operator()(ast::GlobalArrayDeclaration&){
         //Nothing to check here
     }
     
@@ -115,7 +115,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(ast::ArrayDeclaration& declaration){
+    void operator()(ast::ArrayDeclaration&){
         //No need for type checking here
     }
     
@@ -152,7 +152,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::VariableValue& variable){
+    void operator()(ast::VariableValue&){
         //Nothing to check here
     }
 
