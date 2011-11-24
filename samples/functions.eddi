@@ -2,18 +2,13 @@ int zz = 888;
 string yy = "trest";
 
 void main(){
-    println(test(2));
-    println(pow(2, 4));
+    println(count(4));
 }
 
-int test(int a){
-    return a + 2;
-}
-
-int pow(int a, int b){
-    if(b == 1){
-        return a;
+int count(int a){
+    if(a == 0){
+        return 1;
     }
 
-    return a * pow(a, b - 1);
+    return a + count(a - 1);
 }

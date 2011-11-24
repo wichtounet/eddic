@@ -167,7 +167,10 @@ inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, I
             program.addInstruction(program.factory().createPush(registerA)); //To be sure that the right operation does not override our register 
             
             putInRegister(operation.get<1>(), registerB, program);
+
+            //TODO Use a popl instead
             program.addInstruction(program.factory().createMove(createStackOperand(0), registerA));
+            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
             
             program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
         }
@@ -327,6 +330,8 @@ class AssignValueToOperand : public boost::static_visitor<> {
 
         void operator()(ast::FunctionCall& call){
             assert(call.Content->function->returnType.base() == BaseType::INT);
+      
+            executeCall(call, program);
             
             program.addInstruction(
                 program.factory().createMove(
@@ -394,7 +399,9 @@ class AssignValueToVariable : public boost::static_visitor<> {
             ); 
         }
 
-        void operator()(ast::FunctionCall&){
+        void operator()(ast::FunctionCall& call){
+            executeCall(call, program);
+            
            switch(variable->type().base()){
                 case BaseType::INT:
                     program.addInstruction(program.factory().createMove(program.registers(EAX), variable->toIntegerOperand()));
@@ -503,7 +510,9 @@ struct AssignValueToArray : public boost::static_visitor<> {
             }
         }
         
-        void operator()(ast::FunctionCall&){
+        void operator()(ast::FunctionCall& call){
+            executeCall(call, program);
+            
             auto edi = program.registers(EDI);
 
             computeAddressOfElement(variable, indexValue, program, edi);
