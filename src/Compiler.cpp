@@ -5,15 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifdef DEBUG
-static const bool debug = true;
-#else
-static const bool debug = false;
-#endif
-
-#define TIMER_START(name) Timer name_timer; 
-#define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
-
 #include <iostream>
 #include <cstdio>
 
@@ -39,7 +30,6 @@ static const bool debug = false;
 #include "TypeChecker.hpp"
 
 //Visitors
-#include "DebugVisitor.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
@@ -52,18 +42,23 @@ static const bool debug = false;
 
 #include "il/IntermediateProgram.hpp"
 
-using std::string;
-using std::cout;
-using std::endl;
+#ifdef DEBUG
+static const bool debug = true;
+#else
+static const bool debug = false;
+#endif
+
+#define TIMER_START(name) Timer name_timer; 
+#define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
 
 using namespace eddic;
 
-int Compiler::compile(const string& file) {
-    cout << "Compile " << file << endl;
+int Compiler::compile(const std::string& file) {
+    std::cout << "Compile " << file << std::endl;
 
     Timer timer;
 
-    string output = options["output"].as<std::string>();
+    std::string output = options["output"].as<std::string>();
 
     int code = 0;
     try {
@@ -122,11 +117,11 @@ int Compiler::compile(const string& file) {
 
         }
     } catch (const SemanticalException& e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
         code = 1;
     }
 
-    cout << "Compilation took " << timer.elapsed() << "s" << endl;
+    std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
 
     return code;
 }
@@ -199,11 +194,11 @@ void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
     writer.write();
 }
 
-void eddic::execCommand(const string& command) {
+void eddic::execCommand(const std::string& command) {
     DebugTimer<debug> timer("Exec " + command);
     
     if(debug){
-        cout << "eddic : exec command : " << command << endl;
+        std::cout << "eddic : exec command : " << command << std::endl;
     }
 
     char buffer[1024];
@@ -211,7 +206,7 @@ void eddic::execCommand(const string& command) {
     FILE* stream = popen(command.c_str(), "r");
 
     while (fgets(buffer, 1024, stream) != NULL) {
-        cout << buffer;
+        std::cout << buffer;
     }
 
     pclose(stream);

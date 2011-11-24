@@ -12,8 +12,6 @@
 
 #include "WarningsEngine.hpp"
 
-#include "ast/Program.hpp"
-
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
@@ -29,6 +27,8 @@
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
+
+#include "ast/Program.hpp"
 
 using namespace eddic;
 

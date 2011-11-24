@@ -14,6 +14,8 @@
 
 #include "Types.hpp"
 
+#include "ast/Program.hpp"
+
 using namespace eddic;
 
 struct SetDefaultValues : public boost::static_visitor<> {

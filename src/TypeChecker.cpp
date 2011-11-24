@@ -12,7 +12,7 @@
 
 #include "TypeChecker.hpp"
 
-#include "ast/Program.hpp"
+#include "Compiler.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -23,12 +23,13 @@
 #include "Types.hpp"
 #include "Variable.hpp"
 
-#include "Compiler.hpp"
 #include "Options.hpp"
 #include "TypeTransformer.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
+
+#include "ast/Program.hpp"
 
 using namespace eddic;
 

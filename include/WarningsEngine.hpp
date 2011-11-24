@@ -8,7 +8,7 @@
 #ifndef WARNINGS_ENGINE_H
 #define WARNINGS_ENGINE_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

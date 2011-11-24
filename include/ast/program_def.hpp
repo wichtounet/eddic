@@ -5,16 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TYPE_CHECKER_H
-#define TYPE_CHECKER_H
+#ifndef AST_PROGRAM_DEF_H
+#define AST_PROGRAM_DEF_H
 
-#include "ast/program_def.hpp"
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
-struct TypeChecker {
-    void check(ast::Program& program);
-};
+namespace ast {
+    struct ASTProgram;
+
+    typedef Deferred<ASTProgram> Program;
+} //end of ast
 
 } //end of eddic
 

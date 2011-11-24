@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 
