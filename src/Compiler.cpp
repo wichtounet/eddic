@@ -81,8 +81,8 @@ int Compiler::compile(const string& file) {
 
             //Semantical analysis
             checkStrings(program, pool);
-            checkVariables(program);
             checkFunctions(program, functionTable);
+            checkVariables(program);
 
             //Transform the AST
             transform(program);

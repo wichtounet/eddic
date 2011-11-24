@@ -129,6 +129,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Return& return_){
+        Type returnValueType = boost::apply_visitor(GetTypeVisitor(), return_.Content->value);
+
+        if(returnValueType != return_.Content->function->returnType){
+            throw SemanticalException("The return value is not of the good type in the function " + return_.Content->function->name);
+        }
+
         visit(*this, return_.Content->value);
     }
 

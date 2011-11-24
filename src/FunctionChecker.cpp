@@ -88,6 +88,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
+            visit_each(*this, functionCall.Content->values);
+
             std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
@@ -98,23 +100,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             if(!functionTable.exists(mangled)){
                 throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
-            } else {
-                functionTable.addReference(mangled);
+            } 
 
-                functionCall.Content->function = functionTable.getFunction(mangled);
-            }
+            functionTable.addReference(mangled);
+
+            functionCall.Content->function = functionTable.getFunction(mangled);
         }
 
         void operator()(ast::Return& return_){
             return_.Content->function = currentFunction;
-
-            Type returnValueType = boost::apply_visitor(GetTypeVisitor(), return_.Content->value);
-
-            if(returnValueType != currentFunction->returnType){
-                throw SemanticalException("The return value is not of the good type in the function " + currentFunction->name);
-            }
-
-            visit(*this, return_.Content->value);
         }
 
         template<typename T>        
