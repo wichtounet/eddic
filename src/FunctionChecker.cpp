@@ -88,11 +88,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
-            visit_each(*this, functionCall.Content->values);
-
             std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
+                visit_each(*this, functionCall.Content->values);
+                
                 return;
             }
 
@@ -105,10 +105,14 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             functionTable.addReference(mangled);
 
             functionCall.Content->function = functionTable.getFunction(mangled);
+            
+            visit_each(*this, functionCall.Content->values);
         }
 
         void operator()(ast::Return& return_){
             return_.Content->function = currentFunction;
+
+            visit(*this, return_.Content->value);
         }
 
         template<typename T>        
