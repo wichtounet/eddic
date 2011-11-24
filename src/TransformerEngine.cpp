@@ -44,6 +44,19 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return value;
     }
 
+    ast::Value operator()(ast::FunctionCall& functionCall) const {
+        auto start = functionCall.Content->values.begin();
+        auto end = functionCall.Content->values.end();
+
+        while(start != end){
+            *start = boost::apply_visitor(*this, *start);
+
+            ++start;
+        }
+
+        return functionCall;
+    }
+
     //No transformations
     template<typename T>
     ast::Value operator()(T& value) const {
