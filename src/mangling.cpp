@@ -5,7 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <sstream>
+
 #include "mangling.hpp"
+
+#include "ast/Program.hpp"
 
 using namespace eddic;
 

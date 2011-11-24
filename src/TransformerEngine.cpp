@@ -14,6 +14,8 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
+#include "ast/Program.hpp"
+
 using namespace eddic;
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {

@@ -30,7 +30,6 @@
 #include "TypeChecker.hpp"
 
 //Visitors
-#include "AssemblyFileWriter.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
 #include "IntermediateCompiler.hpp"
@@ -40,6 +39,7 @@
 
 #include "parser/SpiritParser.hpp"
 
+#include "AssemblyFileWriter.hpp"
 #include "il/IntermediateProgram.hpp"
 
 #ifdef DEBUG

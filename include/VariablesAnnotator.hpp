@@ -8,7 +8,7 @@
 #ifndef VARIABLES_ANNOTATOR_H
 #define VARIABLES_ANNOTATOR_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

@@ -8,7 +8,7 @@
 #ifndef INTERMEDIATE_COMPILER_H
 #define INTERMEDIATE_COMPILER_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

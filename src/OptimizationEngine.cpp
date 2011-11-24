@@ -21,6 +21,8 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
+#include "ast/Program.hpp"
+
 using namespace eddic;
 
 struct GetIntValue : public boost::static_visitor<int> {

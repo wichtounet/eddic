@@ -8,7 +8,7 @@
 #ifndef OPTIMIZATION_ENGINE_H
 #define OPTIMIZATION_ENGINE_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

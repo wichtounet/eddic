@@ -8,7 +8,7 @@
 #ifndef FUNCTIONS_ANNOTATOR_H
 #define FUNCTIONS_ANNOTATOR_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

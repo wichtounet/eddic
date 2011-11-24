@@ -8,7 +8,7 @@
 #ifndef CONTEXT_ANNOTATOR_H
 #define CONTEXT_ANNOTATOR_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 
