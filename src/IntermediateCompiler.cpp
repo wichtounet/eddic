@@ -151,7 +151,7 @@ void computeLenghtOfArray(std::shared_ptr<Variable> array, IntermediateProgram& 
 inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, IntermediateProgram& program){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
-    auto registerA = program.registers(EAX);
+    auto registerA = program.registers(ECX);
     auto registerB = program.registers(EBX);
 
     putInRegister(value.Content->first, registerA, program);

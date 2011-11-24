@@ -2,13 +2,25 @@ int zz = 888;
 string yy = "trest";
 
 void main(){
-    println(count(4));
+    println(sum(0));
+    println(sum(4));
+    println(sum(5));
+
+    println(factorial(9));
 }
 
-int count(int a){
+int sum(int a){
     if(a == 0){
+        return 0;
+    }
+
+    return a + sum(a - 1);
+}
+
+int factorial(int n){
+    if(n == 0){
         return 1;
     }
 
-    return a + count(a - 1);
+    return n * factorial(n - 1);
 }
