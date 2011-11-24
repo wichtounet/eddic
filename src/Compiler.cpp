@@ -28,16 +28,23 @@ static const bool debug = false;
 
 #include "ast/Program.hpp"
 
+//Annotators
 #include "DefaultValues.hpp"
+#include "ContextAnnotator.hpp"
+#include "FunctionsAnnotator.hpp"
+#include "VariablesAnnotator.hpp"
+
+//Checkers
+#include "StringChecker.hpp"
+#include "TypeChecker.hpp"
+
+//Visitors
 #include "DebugVisitor.hpp"
 #include "AssemblyFileWriter.hpp"
-#include "ContextAnnotator.hpp"
-#include "VariableChecker.hpp"
-#include "StringChecker.hpp"
-#include "FunctionChecker.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
 #include "IntermediateCompiler.hpp"
+#include "WarningsEngine.hpp"
 
 #include "SemanticalException.hpp"
 
@@ -73,19 +80,25 @@ int Compiler::compile(const string& file) {
         TIMER_END(parsing)
 
         if(parsing){
+            //Symbol tables
+            FunctionTable functionTable;
+            StringPool pool;
+            
+            //Annotate the AST with more informations
             defineDefaultValues(program);
             defineContexts(program);
-              
-            StringPool pool;
-            FunctionTable functionTable;
-
-            //Semantical analysis
-            checkStrings(program, pool);
-            checkFunctions(program, functionTable);
-            checkVariables(program);
+            defineVariables(program);
+            defineFunctions(program, functionTable);
 
             //Transform the AST
             transform(program);
+
+            //Static analysis
+            checkStrings(program, pool);
+            checkTypes(program);
+
+            //Check for warnings
+            checkForWarnings(program, functionTable);
             
             //Optimize the AST
             optimize(program, functionTable, pool);
@@ -97,6 +110,7 @@ int Compiler::compile(const string& file) {
             //Write assembly to file
             writeAsm(il, "output.asm");
 
+            //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
                 execCommand("as --32 -o output.o output.asm");
                 execCommand("ld -m elf_i386 output.o -o " + output);
@@ -118,7 +132,7 @@ int Compiler::compile(const string& file) {
 }
 
 void eddic::defineDefaultValues(ast::Program& program){
-    DebugTimer<debug> timer("Define default values");
+    DebugTimer<debug> timer("Annotate with default values");
     DefaultValues values;
     values.fill(program);
 }
@@ -129,10 +143,16 @@ void eddic::defineContexts(ast::Program& program){
     annotator.annotate(program);
 }
 
-void eddic::checkVariables(ast::Program& program){
-    DebugTimer<debug> timer("Variable checking");
-    VariableChecker checker;
-    checker.check(program);
+void eddic::defineVariables(ast::Program& program){
+    DebugTimer<debug> timer("Annotate variables");
+    VariablesAnnotator annotator;
+    annotator.annotate(program);
+}
+
+void eddic::defineFunctions(ast::Program& program, FunctionTable& functionTable){
+    DebugTimer<debug> timer("Annotate functions");
+    FunctionsAnnotator annotator;
+    annotator.annotate(program, functionTable);
 }
 
 void eddic::checkStrings(ast::Program& program, StringPool& pool){
@@ -141,10 +161,16 @@ void eddic::checkStrings(ast::Program& program, StringPool& pool){
     checker.check(program, pool);
 }
 
-void eddic::checkFunctions(ast::Program& program, FunctionTable& functionTable){
-    DebugTimer<debug> timer("Functions checking");
-    FunctionChecker checker;
-    checker.check(program, functionTable); 
+void eddic::checkTypes(ast::Program& program){
+    DebugTimer<debug> timer("Types checking");
+    TypeChecker checker;
+    checker.check(program); 
+}
+
+void eddic::checkForWarnings(ast::Program& program, FunctionTable& table){
+    DebugTimer<debug> timer("Check for warnings");
+    WarningsEngine engine;
+    engine.check(program, table);
 }
 
 void eddic::transform(ast::Program& program){

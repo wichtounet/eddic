@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FunctionChecker.hpp"
+#include "FunctionsAnnotator.hpp"
 
 #include "ast/Program.hpp"
 #include "FunctionTable.hpp"
@@ -51,15 +51,10 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             functionTable.addFunction(signature);
-
-            //Stop recursion here
         }
 
-        void operator()(ast::GlobalVariableDeclaration&){
-            //Stop recursion here
-        }
-        
-        void operator()(ast::GlobalArrayDeclaration&){
+        template<typename T>
+        void operator()(T&){
             //Stop recursion here
         }
 };
@@ -88,11 +83,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
+            visit_each(*this, functionCall.Content->values);
+            
             std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
-                visit_each(*this, functionCall.Content->values);
-                
                 return;
             }
 
@@ -121,35 +116,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-class FunctionInspector : public boost::static_visitor<> {
-    private:
-        FunctionTable& functionTable;
-
-    public:
-        FunctionInspector(FunctionTable& table) : functionTable(table) {}
-
-        void operator()(ast::Program& program){
-            visit_each(*this, program.Content->blocks);
-        }
-
-        void operator()(ast::FunctionDeclaration& declaration){
-            int references = functionTable.referenceCount(declaration.Content->mangledName);
-
-            if(declaration.Content->functionName != "main" && references == 0){
-                warn("unused function '" + declaration.Content->functionName + "'");
-            }
-        }
-
-        void operator()(ast::GlobalVariableDeclaration&){
-            //Nothing to warn about there
-        }
-
-        void operator()(ast::GlobalArrayDeclaration&){
-            //Nothing to warn about there
-        }
-};
-
-void FunctionChecker::check(ast::Program& program, FunctionTable& functionTable){
+void FunctionsAnnotator::annotate(ast::Program& program, FunctionTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);
@@ -157,10 +124,4 @@ void FunctionChecker::check(ast::Program& program, FunctionTable& functionTable)
     //Second phase : Verify calls
     FunctionCheckerVisitor checkerVisitor(functionTable);
     checkerVisitor(program);
-
-    if(WarningUnused){
-        //Third phase, warnings
-        FunctionInspector inspector(functionTable);
-        inspector(program);
-    }
 }

@@ -40,9 +40,7 @@ Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
 Type GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     std::string name = call.Content->functionName;
 
-    if(name == "println" || name == "print"){
-        assert(false);
-    }
+    assert(name != "println" && name != "print");
 
     return call.Content->function->returnType;
 }
