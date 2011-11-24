@@ -3,8 +3,17 @@ string yy = "trest";
 
 void main(){
     println(test(2));
+    println(pow(2, 4));
 }
 
 int test(int a){
     return a + 2;
+}
+
+int pow(int a, int b){
+    if(b == 1){
+        return a;
+    }
+
+    return a * pow(a, b - 1);
 }
