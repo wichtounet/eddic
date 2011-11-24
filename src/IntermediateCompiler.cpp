@@ -957,7 +957,8 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Return& return_){
             if(return_.Content->function->returnType.base() == BaseType::INT) {
-                AssignValueToOperand(program.registers(EAX), program);
+                AssignValueToOperand visitor(program.registers(EAX), program);
+                boost::apply_visitor(visitor, return_.Content->value);
             } else if(return_.Content->function->returnType.base() == BaseType::STRING) {
                 //TODO Assign string to eax:ebx
             }
