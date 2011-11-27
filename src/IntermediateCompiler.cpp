@@ -221,7 +221,6 @@ class PushValue : public boost::static_visitor<> {
 
                     break;
                 case BaseType::STRING:
-                    //TODO Verify the order of registers and if we should use other registers instead (ESI/EDI) ?
                     program.addInstruction(program.factory().createPush(program.registers(EAX)));
                     program.addInstruction(program.factory().createPush(program.registers(EBX)));
 
@@ -408,7 +407,6 @@ class AssignValueToVariable : public boost::static_visitor<> {
 
                     break;
                 case BaseType::STRING:{
-                    //TODO Verify the order of registers and if we should use other registers instead (ESI/EDI) ?
                     auto destination = variable->toStringOperand();
 
                     program.addInstruction(program.factory().createMove(program.registers(EAX), destination.first));
@@ -523,7 +521,6 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
                     break;
                 case BaseType::STRING:
-                    //TODO Verify the order of registers and if we should use other registers instead (ESI/EDI) ?
                     program.addInstruction(program.factory().createMove(program.registers(EAX), edi->valueOf()));
                     program.addInstruction(program.factory().createMove(program.registers(EBX), edi->valueOf(4)));
 
@@ -969,7 +966,12 @@ class CompilerVisitor : public boost::static_visitor<> {
                 AssignValueToOperand visitor(program.registers(EAX), program);
                 boost::apply_visitor(visitor, return_.Content->value);
             } else if(return_.Content->function->returnType.base() == BaseType::STRING) {
-                //TODO Assign string to eax:ebx
+                PushValue visitor(program);
+                boost::apply_visitor(visitor, return_.Content->value);
+           
+                program.addInstruction(program.factory().createMove(createStackOperand(4), program.registers(EAX)));
+                program.addInstruction(program.factory().createMove(createStackOperand(0), program.registers(EBX)));
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
             }
 
             program.addInstruction(program.factory().createFunctionExit(return_.Content->context->size()));
