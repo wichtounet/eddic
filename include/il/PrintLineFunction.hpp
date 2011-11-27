@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct PrintLineFunction : public Instruction {
-    void write(AssemblyFileWriter& writer);
+    void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

@@ -24,7 +24,7 @@ class FunctionDeclaration : public Instruction {
     public:
         FunctionDeclaration(const std::string& name, int size = 0);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

@@ -11,8 +11,9 @@
 #include "il/Instruction.hpp"
 
 namespace eddic {
+
 struct ConcatFunction : public Instruction {
-    void write(AssemblyFileWriter& writer);
+    void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

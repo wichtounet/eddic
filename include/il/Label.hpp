@@ -21,7 +21,7 @@ class Label : public Instruction {
     public:
         Label(const std::string& name);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

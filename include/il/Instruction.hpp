@@ -14,7 +14,7 @@ class AssemblyFileWriter;
 
 class Instruction {
     public:
-        virtual void write(AssemblyFileWriter& writer) = 0;
+        virtual void write(AssemblyFileWriter& writer) const = 0;
 };
 
 } //end of eddic

@@ -13,7 +13,7 @@ using namespace eddic;
 
 GlobalStringVariable::GlobalStringVariable(const std::string& name, const std::string& label, int size) : m_name(name), m_label(label), m_size(size) {}
 
-void GlobalStringVariable::write(AssemblyFileWriter& writer){
+void GlobalStringVariable::write(AssemblyFileWriter& writer) const {
     writer.stream() << ".size VS" << m_name << ", 8" << std::endl;
     writer.stream() << "VS" << m_name << ":" << std::endl;
     writer.stream() << ".long " << m_label << std::endl;

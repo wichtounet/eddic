@@ -12,6 +12,6 @@ using namespace eddic;
 
 Label::Label(const std::string& name) : m_name(name) {}
 
-void Label::write(AssemblyFileWriter& writer){
+void Label::write(AssemblyFileWriter& writer) const {
     writer.stream() << m_name << ":" << std::endl;
 }

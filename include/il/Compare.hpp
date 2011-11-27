@@ -24,7 +24,7 @@ class Compare : public Instruction {
     public:
         Compare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

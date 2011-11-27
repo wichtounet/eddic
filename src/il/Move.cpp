@@ -16,7 +16,7 @@ using namespace eddic;
 
 Move::Move(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) : m_lhs(lhs), m_rhs(rhs) {}
 
-void Move::write(AssemblyFileWriter& writer){
+void Move::write(AssemblyFileWriter& writer) const {
     //Cannot move stack to stack directly, must use a register
     if(m_lhs->isStack() && m_rhs->isStack()){
         //TODO Avoid using edx if not available

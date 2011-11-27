@@ -21,7 +21,7 @@ void move(const std::string& source, const std::string& destination, AssemblyFil
 }
 
 //TODO Improve before by putting directly the operand in the operation
-void Math::write(AssemblyFileWriter& writer){
+void Math::write(AssemblyFileWriter& writer) const {
     switch(m_operation){
         case Operation::ADD: 
             writer.stream() << "addl " << m_lhs->getValue() << ", " << m_rhs->getValue() << std::endl;

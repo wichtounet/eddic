@@ -23,7 +23,7 @@ class Push : public Instruction {
     public:
         Push(std::shared_ptr<Operand> operand);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

@@ -24,7 +24,7 @@ class GlobalArray : public Instruction {
     public:
         GlobalArray(const std::string& name, BaseType type, int size);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

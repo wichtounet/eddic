@@ -21,7 +21,7 @@ class FunctionExit : public Instruction {
     public:
         FunctionExit(int size = 0);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

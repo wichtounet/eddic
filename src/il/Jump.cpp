@@ -13,7 +13,7 @@ using namespace eddic;
 
 Jump::Jump(JumpCondition condition, const std::string& label) : m_condition(condition), m_label(label) {}
 
-void Jump::write(AssemblyFileWriter& writer){
+void Jump::write(AssemblyFileWriter& writer) const {
     switch(m_condition){
         case JumpCondition::ALWAYS:
             writer.stream() << "jmp " << m_label << std::endl;

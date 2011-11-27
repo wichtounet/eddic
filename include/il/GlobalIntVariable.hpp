@@ -22,7 +22,7 @@ class GlobalIntVariable : public Instruction {
     public:
         GlobalIntVariable(const std::string& name, int value);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic
