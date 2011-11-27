@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_FUNCTION_CALL_H
-#define AST_FUNCTION_CALL_H
+#ifndef AST_RETURN_H
+#define AST_RETURN_H
 
 #include <memory>
 
@@ -14,24 +14,27 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Value.hpp"
 
 #include "FunctionTable.hpp"
 
 namespace eddic {
 
+class FunctionContext;
+
 namespace ast {
 
-struct ASTFunctionCall {
+struct ASTReturn {
     std::shared_ptr<Function> function;
+    std::shared_ptr<FunctionContext> context;
 
-    std::string functionName;
-    std::vector<Value> values;
+    Value value;
 
     mutable long references;
-    ASTFunctionCall() : references(0) {}
+    ASTReturn() : references(0) {}
 };
 
-typedef Deferred<ASTFunctionCall, boost::intrusive_ptr<ASTFunctionCall>> FunctionCall;
+typedef Deferred<ASTReturn, boost::intrusive_ptr<ASTReturn>> Return;
 
 } //end of ast
 
@@ -39,9 +42,8 @@ typedef Deferred<ASTFunctionCall, boost::intrusive_ptr<ASTFunctionCall>> Functio
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::FunctionCall, 
-    (std::string, Content->functionName)
-    (std::vector<eddic::ast::Value>, Content->values)
+    eddic::ast::Return, 
+    (eddic::ast::Value, Content->value)
 )
 
 #endif

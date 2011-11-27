@@ -18,6 +18,9 @@ namespace ast {
 struct Integer;
 struct Litteral;
 
+struct ASTFunctionCall;
+typedef Deferred<ASTFunctionCall, boost::intrusive_ptr<ASTFunctionCall>> FunctionCall;
+
 struct ASTVariableValue;
 typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
 

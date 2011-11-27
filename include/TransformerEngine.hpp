@@ -8,7 +8,7 @@
 #ifndef TRANSFORMER_ENGINE_H
 #define TRANSFORMER_ENGINE_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

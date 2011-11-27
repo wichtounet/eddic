@@ -163,7 +163,13 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             visit(*this, array.Content->indexValue);
         }
-        
+       
+        void operator()(ast::Return& return_){
+            return_.Content->context = functionContext;
+
+            visit(*this, return_.Content->value);
+        }
+         
         void operator()(ast::TerminalNode&){
             //A terminal node has no context
         }

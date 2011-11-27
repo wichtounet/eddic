@@ -8,7 +8,7 @@
 #ifndef STRING_CHECKER_H
 #define STRING_CHECKER_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 

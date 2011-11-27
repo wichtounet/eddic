@@ -5,15 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VARIABLE_CHECKER_H
-#define VARIABLE_CHECKER_H
+#ifndef VARIABLES_ANNOTATOR_H
+#define VARIABLES_ANNOTATOR_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 
-struct VariableChecker {
-    void check(ast::Program& program);
+struct VariablesAnnotator {
+    void annotate(ast::Program& program);
 };
 
 } //end of eddic

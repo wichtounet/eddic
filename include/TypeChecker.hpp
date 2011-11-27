@@ -5,16 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef CONTEXT_ANNOTATOR_H
-#define CONTEXT_ANNOTATOR_H
+#ifndef TYPE_CHECKER_H
+#define TYPE_CHECKER_H
 
 #include "ast/program_def.hpp"
 
 namespace eddic {
 
-class ContextAnnotator {
-    public:
-        void annotate(ast::Program& program);
+struct TypeChecker {
+    void check(ast::Program& program);
 };
 
 } //end of eddic

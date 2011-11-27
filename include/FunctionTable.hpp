@@ -25,10 +25,13 @@ struct ParameterType {
 };
 
 struct Function {
+    Type returnType;
     std::string name;
     std::string mangledName;
     std::vector<ParameterType> parameters;
     int references;
+
+    Function(Type ret, std::string n) : returnType(ret), name(n), references(0) {}
 };
 
 class FunctionTable {
@@ -40,6 +43,7 @@ class FunctionTable {
         FunctionTable(const FunctionTable& rhs) = delete;
 
         void addFunction(std::shared_ptr<Function> function);
+        std::shared_ptr<Function> getFunction(const std::string& function);
         bool exists(const std::string& function);
 
         void addReference(const std::string& function);

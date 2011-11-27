@@ -5,18 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef FUNCTION_CHECKER_H
-#define FUNCTION_CHECKER_H
+#ifndef AST_PROGRAM_DEF_H
+#define AST_PROGRAM_DEF_H
 
-#include "ast/Program.hpp"
+#include "ast/Deferred.hpp"
 
 namespace eddic {
 
-class FunctionTable;
+namespace ast {
+    struct ASTProgram;
 
-struct FunctionChecker {
-   void check(ast::Program& program, FunctionTable& functionTable);
-};
+    typedef Deferred<ASTProgram> Program;
+} //end of ast
 
 } //end of eddic
 

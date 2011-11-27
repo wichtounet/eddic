@@ -5,11 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FunctionChecker.hpp"
+#include "FunctionsAnnotator.hpp"
 
 #include "ast/Program.hpp"
 #include "FunctionTable.hpp"
 
+#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
@@ -32,9 +33,11 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
-            auto signature = std::make_shared<Function>();
+            auto signature = std::make_shared<Function>(stringToType(declaration.Content->returnType), declaration.Content->functionName);
 
-            signature->name = declaration.Content->functionName;
+            if(signature->returnType.isArray()){
+                throw SemanticalException("Cannot return array from function");
+            }
 
             for(auto& param : declaration.Content->parameters){
                 Type paramType = boost::apply_visitor(TypeTransformer(), param.parameterType);
@@ -48,15 +51,10 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             functionTable.addFunction(signature);
-
-            //Stop recursion here
         }
 
-        void operator()(ast::GlobalVariableDeclaration&){
-            //Stop recursion here
-        }
-        
-        void operator()(ast::GlobalArrayDeclaration&){
+        template<typename T>
+        void operator()(T&){
             //Stop recursion here
         }
 };
@@ -64,12 +62,12 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     private:
         FunctionTable& functionTable;
+        std::shared_ptr<Function> currentFunction;
 
     public:
         FunctionCheckerVisitor(FunctionTable& table) : functionTable(table) {}
 
         AUTO_RECURSE_PROGRAM()
-        AUTO_RECURSE_FUNCTION_DECLARATION() 
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
@@ -78,7 +76,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
+        void operator()(ast::FunctionDeclaration& declaration){
+            currentFunction = functionTable.getFunction(declaration.Content->mangledName);
+
+            visit_each(*this, declaration.Content->instructions);
+        }
+
         void operator()(ast::FunctionCall& functionCall){
+            visit_each(*this, functionCall.Content->values);
+            
             std::string name = functionCall.Content->functionName;
             
             if(name == "println" || name == "print"){
@@ -89,9 +95,19 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             if(!functionTable.exists(mangled)){
                 throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
-            } else {
-                functionTable.addReference(mangled);
-            }
+            } 
+
+            functionTable.addReference(mangled);
+
+            functionCall.Content->function = functionTable.getFunction(mangled);
+            
+            visit_each(*this, functionCall.Content->values);
+        }
+
+        void operator()(ast::Return& return_){
+            return_.Content->function = currentFunction;
+
+            visit(*this, return_.Content->value);
         }
 
         template<typename T>        
@@ -100,35 +116,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-class FunctionInspector : public boost::static_visitor<> {
-    private:
-        FunctionTable& functionTable;
-
-    public:
-        FunctionInspector(FunctionTable& table) : functionTable(table) {}
-
-        void operator()(ast::Program& program){
-            visit_each(*this, program.Content->blocks);
-        }
-
-        void operator()(ast::FunctionDeclaration& declaration){
-            int references = functionTable.referenceCount(declaration.Content->mangledName);
-
-            if(declaration.Content->functionName != "main" && references == 0){
-                warn("unused function '" + declaration.Content->functionName + "'");
-            }
-        }
-
-        void operator()(ast::GlobalVariableDeclaration&){
-            //Nothing to warn about there
-        }
-
-        void operator()(ast::GlobalArrayDeclaration&){
-            //Nothing to warn about there
-        }
-};
-
-void FunctionChecker::check(ast::Program& program, FunctionTable& functionTable){
+void FunctionsAnnotator::annotate(ast::Program& program, FunctionTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);
@@ -136,10 +124,4 @@ void FunctionChecker::check(ast::Program& program, FunctionTable& functionTable)
     //Second phase : Verify calls
     FunctionCheckerVisitor checkerVisitor(functionTable);
     checkerVisitor(program);
-
-    if(WarningUnused){
-        //Third phase, warnings
-        FunctionInspector inspector(functionTable);
-        inspector(program);
-    }
 }

@@ -14,6 +14,8 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
+#include "ast/Program.hpp"
+
 using namespace eddic;
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
@@ -42,6 +44,19 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
 
         return value;
+    }
+
+    ast::Value operator()(ast::FunctionCall& functionCall) const {
+        auto start = functionCall.Content->values.begin();
+        auto end = functionCall.Content->values.end();
+
+        while(start != end){
+            *start = boost::apply_visitor(*this, *start);
+
+            ++start;
+        }
+
+        return functionCall;
     }
 
     //No transformations
@@ -184,6 +199,10 @@ struct TransformerVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Assignment& assignment) const {
         assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
+    }
+
+    void operator()(ast::Return& return_) const {
+        return_.Content->value = boost::apply_visitor(transformer, return_.Content->value); 
     }
 
     void operator()(ast::ArrayAssignment& assignment) const {

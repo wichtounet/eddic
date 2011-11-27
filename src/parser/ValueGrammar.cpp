@@ -32,6 +32,7 @@ ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type(value, 
     
     primaryValue = 
             constant 
+        |   functionCall
         |   arrayValue
         |   variable 
         |   (lexer.left_parenth >> value > lexer.right_parenth);
@@ -57,4 +58,10 @@ ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type(value, 
     constant %= 
             integer 
         |   litteral;
+    
+    functionCall %=
+            lexer.word
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >>  lexer.right_parenth;
 }

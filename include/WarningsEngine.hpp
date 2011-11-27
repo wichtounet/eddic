@@ -5,16 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef CONTEXT_ANNOTATOR_H
-#define CONTEXT_ANNOTATOR_H
+#ifndef WARNINGS_ENGINE_H
+#define WARNINGS_ENGINE_H
 
 #include "ast/program_def.hpp"
 
 namespace eddic {
 
-class ContextAnnotator {
-    public:
-        void annotate(ast::Program& program);
+class FunctionTable;
+
+struct WarningsEngine {
+    void check(ast::Program& program, FunctionTable& functionTable);
 };
 
 } //end of eddic

@@ -2,55 +2,36 @@ int zz = 888;
 string yy = "trest";
 
 void main(){
-    foreach(int a from 0 to 6){
-        print(a);
+    println(sum(0));
+    println(sum(4));
+    println(sum(5));
+
+    println(factorial(9));
+
+    println(hello());
+    println(hello());
+}
+
+int sum(int a){
+    if(a == 0){
+        return 0;
     }
 
-    test(4, 8, 9);
-
-    tester("hello", "adios", "hi");
-
-    print("Global variable zz=");
-    println(zz);
-
-    zz = 999;
-    
-    print("Global variable zz=");
-    println(zz);
-
-    print("Global variable yy=");
-    println(yy);
-    
-    yy = "test";
-
-    print("Global variable yy=");
-    println(yy);
+    return a + sum(a - 1);
 }
 
-void test(int a, int b){
-    //Nothing
+int factorial(int n){
+    if(n == 0){
+        return 1;
+    }
+
+    return n * factorial(n - 1);
 }
 
-void test(int x, int y, int z){
-    println("test()");
-
-    print("x=");
-    println(x);
-    
-    print("y=");
-    println(y);
-    
-    print("z=");
-    println(z);
-
-    x = 55;
-    
-    print("x=");
-    println(x);
+string hello(){
+    return "hello" + helloTwo();
 }
 
-void tester(string a, string b, string c){
-    println(a);
-    println(b);
-    println(c);
+string helloTwo(){
+    return "asfd";
 }

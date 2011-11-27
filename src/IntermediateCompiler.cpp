@@ -55,6 +55,7 @@ inline Operation toOperation(char op){
     }
 }
 
+void executeCall(ast::FunctionCall& functionCall, IntermediateProgram& program);
 inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program);
 
 void computeAddressOfElement(std::shared_ptr<Variable> array, int index, IntermediateProgram& program, std::shared_ptr<Operand> operand){
@@ -150,7 +151,7 @@ void computeLenghtOfArray(std::shared_ptr<Variable> array, IntermediateProgram& 
 inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, IntermediateProgram& program){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
-    auto registerA = program.registers(EAX);
+    auto registerA = program.registers(ECX);
     auto registerB = program.registers(EBX);
 
     putInRegister(value.Content->first, registerA, program);
@@ -166,7 +167,10 @@ inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, I
             program.addInstruction(program.factory().createPush(registerA)); //To be sure that the right operation does not override our register 
             
             putInRegister(operation.get<1>(), registerB, program);
+
+            //TODO Use a popl instead
             program.addInstruction(program.factory().createMove(createStackOperand(0), registerA));
+            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
             
             program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
         }
@@ -204,6 +208,26 @@ class PushValue : public boost::static_visitor<> {
                     createImmediateOperand(integer.value)
                 )
             );
+        }
+
+        void operator()(ast::FunctionCall& call){
+           executeCall(call, program);
+           
+           Type type = call.Content->function->returnType;
+           
+           switch(type.base()){
+                case BaseType::INT:
+                    program.addInstruction(program.factory().createPush(program.registers(EAX)));
+
+                    break;
+                case BaseType::STRING:
+                    program.addInstruction(program.factory().createPush(program.registers(EAX)));
+                    program.addInstruction(program.factory().createPush(program.registers(EBX)));
+
+                    break;
+                default:
+                    throw SemanticalException("This function doesn't return anything");   
+           }
         }
 
         void operator()(ast::VariableValue& variable){
@@ -303,6 +327,19 @@ class AssignValueToOperand : public boost::static_visitor<> {
             ); 
         }
 
+        void operator()(ast::FunctionCall& call){
+            assert(call.Content->function->returnType.base() == BaseType::INT);
+      
+            executeCall(call, program);
+            
+            program.addInstruction(
+                program.factory().createMove(
+                    program.registers(EAX),
+                    operand
+                )
+            ); 
+        }
+
         void operator()(ast::VariableValue& variable){
             assert(variable.Content->var->type().base() == BaseType::INT);
         
@@ -359,6 +396,27 @@ class AssignValueToVariable : public boost::static_visitor<> {
                     variable->toIntegerOperand()
                 )
             ); 
+        }
+
+        void operator()(ast::FunctionCall& call){
+            executeCall(call, program);
+            
+           switch(variable->type().base()){
+                case BaseType::INT:
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), variable->toIntegerOperand()));
+
+                    break;
+                case BaseType::STRING:{
+                    auto destination = variable->toStringOperand();
+
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), destination.first));
+                    program.addInstruction(program.factory().createMove(program.registers(EBX), destination.second));
+
+                    break;
+                }
+                default:
+                    throw SemanticalException("This function doesn't return anything");   
+           }
         }
 
         void operator()(ast::VariableValue& variableSource){
@@ -447,6 +505,28 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
                 program.addInstruction(program.factory().createMove(operands.first, edi->valueOf()));
                 program.addInstruction(program.factory().createMove(operands.second, edi->valueOf(4)));
+            }
+        }
+        
+        void operator()(ast::FunctionCall& call){
+            executeCall(call, program);
+            
+            auto edi = program.registers(EDI);
+
+            computeAddressOfElement(variable, indexValue, program, edi);
+            
+            switch(variable->type().base()){
+                case BaseType::INT:
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), edi->valueOf()));
+
+                    break;
+                case BaseType::STRING:
+                    program.addInstruction(program.factory().createMove(program.registers(EAX), edi->valueOf()));
+                    program.addInstruction(program.factory().createMove(program.registers(EBX), edi->valueOf(4)));
+
+                    break;
+                default:
+                    throw SemanticalException("This function doesn't return anything");   
             }
         }
         
@@ -561,6 +641,55 @@ inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, I
         program.addInstruction(program.factory().createMove(createStackOperand(0), operand));
 
         program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
+    }
+}
+
+void executeCall(ast::FunctionCall& functionCall, IntermediateProgram& program){
+    PushValue visitor(program);
+    for(auto& value : functionCall.Content->values){
+        boost::apply_visitor(visitor, value);
+    }
+
+    if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
+        Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
+
+        switch (type.base()) {
+            case BaseType::INT:
+                program.addInstruction(program.factory().createCall("print_integer"));
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
+
+                break;
+            case BaseType::STRING:
+                program.addInstruction(program.factory().createCall("print_string"));
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
+
+                break;
+            default:
+                throw SemanticalException("Variable of invalid type");
+        }
+
+        if(functionCall.Content->functionName == "println"){
+            program.addInstruction(program.factory().createCall("print_line"));
+        }
+    } else {
+        std::string mangled = mangle(functionCall.Content->functionName, functionCall.Content->values);
+
+        program.addInstruction(program.factory().createCall(mangled));
+
+        int total = 0;
+
+        for(auto& value : functionCall.Content->values){
+            Type type = boost::apply_visitor(GetTypeVisitor(), value);   
+
+            if(type.isArray()){
+                //Passing an array is just passing an adress
+                total += size(BaseType::INT);
+            } else {
+                total += size(type);
+            }
+        }
+
+        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), program.registers(ESP)));
     }
 }
 
@@ -829,52 +958,23 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
-            PushValue visitor(program);
-            for(auto& value : functionCall.Content->values){
-                boost::apply_visitor(visitor, value);
+            executeCall(functionCall, program);
+        }
+
+        void operator()(ast::Return& return_){
+            if(return_.Content->function->returnType.base() == BaseType::INT) {
+                AssignValueToOperand visitor(program.registers(EAX), program);
+                boost::apply_visitor(visitor, return_.Content->value);
+            } else if(return_.Content->function->returnType.base() == BaseType::STRING) {
+                PushValue visitor(program);
+                boost::apply_visitor(visitor, return_.Content->value);
+           
+                program.addInstruction(program.factory().createMove(createStackOperand(4), program.registers(EAX)));
+                program.addInstruction(program.factory().createMove(createStackOperand(0), program.registers(EBX)));
+                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
             }
 
-            if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
-                Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
-
-                switch (type.base()) {
-                    case BaseType::INT:
-                        program.addInstruction(program.factory().createCall("print_integer"));
-                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
-
-                        break;
-                    case BaseType::STRING:
-                        program.addInstruction(program.factory().createCall("print_string"));
-                        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
-
-                        break;
-                    default:
-                        throw SemanticalException("Variable of invalid type");
-                }
-    
-                if(functionCall.Content->functionName == "println"){
-                    program.addInstruction(program.factory().createCall("print_line"));
-                }
-            } else {
-                std::string mangled = mangle(functionCall.Content->functionName, functionCall.Content->values);
-
-                program.addInstruction(program.factory().createCall(mangled));
-
-                int total = 0;
-
-                for(auto& value : functionCall.Content->values){
-                    Type type = boost::apply_visitor(GetTypeVisitor(), value);   
-
-                    if(type.isArray()){
-                        //Passing an array is just passing an adress
-                        total += size(BaseType::INT);
-                    } else {
-                        total += size(type);
-                    }
-                }
-
-                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(total), program.registers(ESP)));
-            }
+            program.addInstruction(program.factory().createFunctionExit(return_.Content->context->size()));
         }
 };
 

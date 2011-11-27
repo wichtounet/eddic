@@ -29,6 +29,10 @@ bool IsConstantVisitor::operator()(ast::ArrayValue&) const {
     return false;
 }
 
+bool IsConstantVisitor::operator()(ast::FunctionCall&) const {
+    return false;
+}
+
 bool IsConstantVisitor::operator()(ast::ComposedValue& value) const {
     if(boost::apply_visitor(*this, value.Content->first)){
         for(auto& op : value.Content->operations){
