@@ -168,10 +168,8 @@ inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, I
             
             putInRegister(operation.get<1>(), registerB, program);
 
-            //TODO Use a popl instead
-            program.addInstruction(program.factory().createMove(createStackOperand(0), registerA));
-            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
-            
+            program.addInstruction(program.factory().createPop(registerA));
+
             program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
         }
     }
@@ -631,16 +629,16 @@ inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStri
 }
 
 inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    assert(operand->isRegister());
+
     if(isImmediate(value)){
         AssignValueToOperand visitor(operand, program);
         boost::apply_visitor(visitor, value);
     } else {
         PushValue visitor(program);
         boost::apply_visitor(visitor, value);
-
-        program.addInstruction(program.factory().createMove(createStackOperand(0), operand));
-
-        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
+        
+        program.addInstruction(program.factory().createPop(operand));
     }
 }
 
@@ -968,10 +966,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else if(return_.Content->function->returnType.base() == BaseType::STRING) {
                 PushValue visitor(program);
                 boost::apply_visitor(visitor, return_.Content->value);
-           
-                program.addInstruction(program.factory().createMove(createStackOperand(4), program.registers(EAX)));
-                program.addInstruction(program.factory().createMove(createStackOperand(0), program.registers(EBX)));
-                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
+          
+                program.addInstruction(program.factory().createPop(program.registers(EBX)));
+                program.addInstruction(program.factory().createPop(program.registers(EAX)));
             }
 
             program.addInstruction(program.factory().createFunctionExit(return_.Content->context->size()));
