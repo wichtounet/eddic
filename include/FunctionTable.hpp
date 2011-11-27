@@ -31,7 +31,7 @@ struct Function {
     std::vector<ParameterType> parameters;
     int references;
 
-    Function(Type ret, std::string n) : returnType(ret), name(n), references(0) {}
+    Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
 };
 
 class FunctionTable {

@@ -15,7 +15,7 @@ namespace eddic {
 std::string newLabel();
 
 template<typename T>
-std::string label(std::string prefix, T value){
+std::string label(const std::string& prefix, T value){
     return prefix + toString(value);
 }
 

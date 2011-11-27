@@ -12,7 +12,7 @@
 using namespace eddic;
 
 ImmediateIntegerOperand::ImmediateIntegerOperand(int value) : Operand(OperandType::IMMEDIATE), m_int(value) {}
-ImmediateStringOperand::ImmediateStringOperand(std::string value) : Operand(OperandType::IMMEDIATE), m_string(value) {}
+ImmediateStringOperand::ImmediateStringOperand(const std::string& value) : Operand(OperandType::IMMEDIATE), m_string(value) {}
 
 std::string ImmediateIntegerOperand::getValue(){
     return "$" + toString(m_int);

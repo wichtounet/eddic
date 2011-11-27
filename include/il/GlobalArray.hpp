@@ -22,7 +22,7 @@ class GlobalArray : public Instruction {
         int size;
 
     public:
-        GlobalArray(std::string name, BaseType type, int size);
+        GlobalArray(const std::string& name, BaseType type, int size);
 
         void write(AssemblyFileWriter& writer);
 };

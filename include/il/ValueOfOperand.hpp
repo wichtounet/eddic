@@ -18,7 +18,7 @@ class ValueOfOperand : public Operand {
         int offset;
 
     public:
-        ValueOfOperand(std::string location, int offset);
+        ValueOfOperand(const std::string& location, int offset);
 
         std::string getValue();
 };

@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-GlobalStringVariable::GlobalStringVariable(std::string name, std::string label, int size) : m_name(name), m_label(label), m_size(size) {}
+GlobalStringVariable::GlobalStringVariable(const std::string& name, const std::string& label, int size) : m_name(name), m_label(label), m_size(size) {}
 
 void GlobalStringVariable::write(AssemblyFileWriter& writer){
     writer.stream() << ".size VS" << m_name << ", 8" << std::endl;

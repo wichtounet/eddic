@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-Jump::Jump(JumpCondition condition, std::string label) : m_condition(condition), m_label(label) {}
+Jump::Jump(JumpCondition condition, const std::string& label) : m_condition(condition), m_label(label) {}
 
 void Jump::write(AssemblyFileWriter& writer){
     switch(m_condition){

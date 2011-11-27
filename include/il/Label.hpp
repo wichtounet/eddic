@@ -19,7 +19,7 @@ class Label : public Instruction {
         std::string m_name;
 
     public:
-        Label(std::string name);
+        Label(const std::string& name);
 
         void write(AssemblyFileWriter& writer);
 };

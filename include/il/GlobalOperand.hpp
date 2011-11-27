@@ -18,7 +18,7 @@ class GlobalOperand : public Operand {
         int m_offset;
 
     public:
-        GlobalOperand(std::string label, int offset = 0);
+        GlobalOperand(const std::string& label, int offset = 0);
 
         std::string getValue();
 };

@@ -32,9 +32,9 @@ class InstructionFactory32 : public InstructionFactory {
         std::shared_ptr<Instruction> createFunctionExit(int size = 0) const;
         std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         
-        std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value) const;
-        std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size) const;
-        std::shared_ptr<Instruction> createGlobalArray(std::string name, BaseType type, int size) const;
+        std::shared_ptr<Instruction> createGlobalIntVariable(const std::string& name, int value) const;
+        std::shared_ptr<Instruction> createGlobalStringVariable(const std::string& name, const std::string& label, int size) const;
+        std::shared_ptr<Instruction> createGlobalArray(const std::string& name, BaseType type, int size) const;
     
         std::shared_ptr<Instruction> createPrintStringFunction() const;
         std::shared_ptr<Instruction> createPrintIntegerFunction() const;

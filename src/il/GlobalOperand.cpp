@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-GlobalOperand::GlobalOperand(std::string label, int offset) : Operand(OperandType::GLOBAL), m_label(label), m_offset(offset) {}
+GlobalOperand::GlobalOperand(const std::string& label, int offset) : Operand(OperandType::GLOBAL), m_label(label), m_offset(offset) {}
 
 std::string GlobalOperand::getValue(){
     if(m_offset > 0){

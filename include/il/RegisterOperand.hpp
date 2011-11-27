@@ -17,7 +17,7 @@ class RegisterOperand : public Operand {
         std::string m_register;
 
     public:
-        RegisterOperand(std::string reg);
+        RegisterOperand(const std::string& reg);
 
         std::string getValue();
 };

@@ -27,7 +27,7 @@ class ImmediateStringOperand : public Operand {
         std::string m_string;
 
     public:
-        ImmediateStringOperand(std::string value);
+        ImmediateStringOperand(const std::string& value);
 
         std::string getValue();
 };

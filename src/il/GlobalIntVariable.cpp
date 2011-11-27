@@ -10,7 +10,7 @@
 
 using namespace eddic;
 
-GlobalIntVariable::GlobalIntVariable(std::string name, int value) : m_name(name), m_value(value) {}
+GlobalIntVariable::GlobalIntVariable(const std::string& name, int value) : m_name(name), m_value(value) {}
 
 void GlobalIntVariable::write(AssemblyFileWriter& writer){
     writer.stream() << ".size VI" << m_name << ", 4" << std::endl;

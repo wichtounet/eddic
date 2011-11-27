@@ -83,15 +83,15 @@ std::shared_ptr<Instruction> InstructionFactory32::createMath(Operation operatio
    return std::make_shared<Math>(operation, lhs, rhs); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory32::createGlobalIntVariable(std::string name, int value) const {
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalIntVariable(const std::string& name, int value) const {
    return std::make_shared<GlobalIntVariable>(name, value); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory32::createGlobalStringVariable(std::string name, std::string label, int size) const {
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalStringVariable(const std::string& name, const std::string& label, int size) const {
     return std::make_shared<GlobalStringVariable>(name, label, size); 
 }
 
-std::shared_ptr<Instruction> InstructionFactory32::createGlobalArray(std::string name, BaseType type, int size) const {
+std::shared_ptr<Instruction> InstructionFactory32::createGlobalArray(const std::string& name, BaseType type, int size) const {
     return std::make_shared<GlobalArray>(name, type, size);
 }
 

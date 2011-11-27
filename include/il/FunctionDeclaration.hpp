@@ -22,7 +22,7 @@ class FunctionDeclaration : public Instruction {
         int m_size;
 
     public:
-        FunctionDeclaration(std::string name, int size = 0);
+        FunctionDeclaration(const std::string& name, int size = 0);
 
         void write(AssemblyFileWriter& writer);
 };
