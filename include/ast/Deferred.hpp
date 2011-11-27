@@ -8,7 +8,7 @@
 #ifndef DEFERRED_H
 #define DEFERRED_H
 
-#include <memory>
+#include <boost/intrusive_ptr.hpp>
 
 namespace eddic {
 
