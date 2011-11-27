@@ -15,7 +15,7 @@ namespace eddic {
 class FunctionTable;
 
 struct FunctionsAnnotator {
-   void annotate(ast::Program& program, FunctionTable& functionTable);
+   void annotate(ast::Program& program, FunctionTable& functionTable) const ;
 };
 
 } //end of eddic

@@ -69,7 +69,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     }
 };
 
-void DefaultValues::fill(ast::Program& program){
+void DefaultValues::fill(ast::Program& program) const {
     SetDefaultValues visitor;
     visitor(program);
 }

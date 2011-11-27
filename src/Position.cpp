@@ -12,26 +12,26 @@ using namespace eddic;
 Position::Position(PositionType type, int offset) : m_type(type), m_offset(offset), m_name("") {}
 Position::Position(PositionType type, const std::string& name) : m_type(type), m_offset(0), m_name(name) {}
 
-bool Position::isStack(){
+bool Position::isStack() const {
     return m_type == STACK;
 }
 
-bool Position::isParameter(){
+bool Position::isParameter() const {
     return m_type == PARAMETER;
 }
 
-bool Position::isGlobal(){
+bool Position::isGlobal() const {
     return m_type == GLOBAL;
 }
 
-int Position::offset(){
+int Position::offset() const {
     return m_offset;
 }
 
-PositionType Position::type(){
+PositionType Position::type() const {
     return m_type;
 }
 
-const std::string& Position::name(){
+const std::string& Position::name() const {
     return m_name;
 }

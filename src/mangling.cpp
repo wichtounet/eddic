@@ -9,7 +9,8 @@
 
 #include "mangling.hpp"
 
-#include "ast/Program.hpp"
+#include <boost/variant/apply_visitor.hpp>
+#include "GetTypeVisitor.hpp"
 
 using namespace eddic;
 

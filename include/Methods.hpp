@@ -12,9 +12,8 @@ namespace eddic {
 
 class IntermediateProgram;
 
-class Methods {
-    public:
-        void writeIL(IntermediateProgram& program);
+struct Methods {
+    void writeIL(IntermediateProgram& program);
 };
 
 } //end of eddic

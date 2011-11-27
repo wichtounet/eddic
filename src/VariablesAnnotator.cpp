@@ -200,7 +200,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void VariablesAnnotator::annotate(ast::Program& program){
+void VariablesAnnotator::annotate(ast::Program& program) const {
     VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

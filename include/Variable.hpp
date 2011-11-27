@@ -10,8 +10,6 @@
 
 #include <utility>
 #include <string>
-#include <map>
-#include <vector>
 #include <memory>
 
 #include <boost/variant/variant.hpp>
@@ -42,8 +40,8 @@ class Variable {
         Variable(const std::string& name, Type type, Position position);
         Variable(const std::string& name, Type type, Position position, Val value);
 
-        OperandPtr toIntegerOperand();
-        std::pair<OperandPtr, OperandPtr> toStringOperand();
+        OperandPtr toIntegerOperand() const ;
+        std::pair<OperandPtr, OperandPtr> toStringOperand() const ;
 
         std::string name() const ;
         Type type() const ;
@@ -52,7 +50,7 @@ class Variable {
         Val val() const ;
 
         void addReference();
-        int referenceCount();
+        int referenceCount() const ;
 };
 
 } //end of eddic

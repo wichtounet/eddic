@@ -175,7 +175,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 };
 
-void ContextAnnotator::annotate(ast::Program& program){
+void ContextAnnotator::annotate(ast::Program& program) const {
     AnnotateVisitor visitor;
     visitor(program);
 }

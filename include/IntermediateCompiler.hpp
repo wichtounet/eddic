@@ -16,7 +16,7 @@ class StringPool;
 class IntermediateProgram;
 
 struct IntermediateCompiler {
-    void compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram);
+    void compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram) const ;
 };
 
 } //end of eddic

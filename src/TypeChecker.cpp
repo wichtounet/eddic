@@ -161,7 +161,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TypeChecker::check(ast::Program& program){
+void TypeChecker::check(ast::Program& program) const {
     CheckerVisitor visitor;
     visit_non_variant(visitor, program);
 }

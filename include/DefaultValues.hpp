@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct DefaultValues {
-    void fill(ast::Program& program);
+    void fill(ast::Program& program) const ;
 };
 
 } //end of eddic
