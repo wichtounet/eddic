@@ -35,7 +35,7 @@ inline void intrusive_ptr_release(T* expr){
         Deallocate(expr);
 }
 
-template <typename T, typename PointerType = std::shared_ptr<T>>
+template <typename T>
 struct Deferred {
     Deferred() : Contents(reinterpret_cast<T*>(NULL)){
         Content.Owner = this;
@@ -94,7 +94,7 @@ struct Deferred {
     } Content;
 
     protected:
-    mutable PointerType Contents;
+    mutable boost::intrusive_ptr<T> Contents;
 };
 
 } //end of ast
