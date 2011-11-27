@@ -26,6 +26,9 @@ struct ASTGlobalVariableDeclaration {
     std::string variableType;
     std::string variableName;
     boost::optional<Value> value;
+
+    mutable long references;
+    ASTGlobalVariableDeclaration() : references(0) {}
 };
 
 typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;

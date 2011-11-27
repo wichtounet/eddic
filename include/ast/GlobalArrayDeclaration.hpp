@@ -24,6 +24,9 @@ struct ASTGlobalArrayDeclaration {
     std::string arrayType;
     std::string arrayName;
     int arraySize;
+
+    mutable long references;
+    ASTGlobalArrayDeclaration() : references(0) {}
 };
 
 typedef Deferred<ASTGlobalArrayDeclaration> GlobalArrayDeclaration;

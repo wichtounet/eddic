@@ -24,6 +24,9 @@ struct ASTFor {
     boost::optional<Condition> condition;
     boost::optional<Instruction> repeat;
     std::vector<Instruction> instructions;
+
+    mutable long references;
+    ASTFor() : references(0) {}
 };
 
 typedef Deferred<ASTFor> For;

@@ -26,6 +26,9 @@ struct ASTIf {
     std::vector<Instruction> instructions;
     std::vector<ElseIf> elseIfs;
     boost::optional<Else> else_;
+
+    mutable long references;
+    ASTIf() : references(0) {}
 };
 
 typedef Deferred<ASTIf> If;

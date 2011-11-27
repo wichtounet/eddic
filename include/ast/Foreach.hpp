@@ -27,6 +27,9 @@ struct ASTForeach {
     int from;
     int to;
     std::vector<Instruction> instructions;
+
+    mutable long references;
+    ASTForeach() : references(0) {}
 };
 
 typedef Deferred<ASTForeach> Foreach;
