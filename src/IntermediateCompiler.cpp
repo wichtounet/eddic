@@ -168,10 +168,8 @@ inline std::shared_ptr<Operand> performIntOperation(ast::ComposedValue& value, I
             
             putInRegister(operation.get<1>(), registerB, program);
 
-            //TODO Use a popl instead
-            program.addInstruction(program.factory().createMove(createStackOperand(0), registerA));
-            program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
-            
+            program.addInstruction(program.factory().createPop(registerA));
+
             program.addInstruction(program.factory().createMath(toOperation(operation.get<0>()), registerA, registerB));
         }
     }
