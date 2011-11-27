@@ -24,6 +24,7 @@ class InstructionFactory32 : public InstructionFactory {
         std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         std::shared_ptr<Instruction> createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand) const;
+        std::shared_ptr<Instruction> createPop(std::shared_ptr<Operand> operand) const;
         std::shared_ptr<Instruction> createLabel(const std::string& label) const;
         std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label) const;
         std::shared_ptr<Instruction> createCall(const std::string& function) const;

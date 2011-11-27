@@ -28,6 +28,7 @@ class InstructionFactory {
         virtual std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const = 0;
         virtual std::shared_ptr<Instruction> createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const = 0;
         virtual std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand) const = 0;
+        virtual std::shared_ptr<Instruction> createPop(std::shared_ptr<Operand> operand) const = 0;
         virtual std::shared_ptr<Instruction> createLabel(const std::string& label) const = 0;
         virtual std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label) const = 0;
         virtual std::shared_ptr<Instruction> createCall(const std::string& function) const = 0;

@@ -14,6 +14,7 @@
 #include "il/FunctionExit.hpp"
 #include "il/Operand.hpp"
 #include "il/Move.hpp"
+#include "il/Pop.hpp"
 #include "il/Compare.hpp"
 #include "il/Push.hpp"
 #include "il/GlobalStringVariable.hpp"
@@ -52,6 +53,10 @@ std::shared_ptr<Instruction> InstructionFactory32::createCompare(std::shared_ptr
 
 std::shared_ptr<Instruction> InstructionFactory32::createPush(std::shared_ptr<Operand> operand) const {
    return std::make_shared<Push>(operand); 
+}
+
+std::shared_ptr<Instruction> InstructionFactory32::createPop(std::shared_ptr<Operand> operand) const {
+   return std::make_shared<Pop>(operand); 
 }
 
 std::shared_ptr<Instruction> InstructionFactory32::createLabel(const std::string& label) const {
