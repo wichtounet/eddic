@@ -26,6 +26,9 @@ struct ASTFunctionDeclaration {
     std::string mangledName;
     std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
+
+    mutable long references;
+    ASTFunctionDeclaration() : references(0) {}
 };
 
 typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration; 

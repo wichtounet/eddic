@@ -40,6 +40,9 @@ struct ASTProgram {
     std::shared_ptr<GlobalContext> context;
 
     std::vector<FirstLevelBlock> blocks;
+
+    mutable long references;
+    ASTProgram() : references(0) {}
 };
 
 typedef Deferred<ASTProgram> Program;

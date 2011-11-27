@@ -33,6 +33,9 @@ struct ASTForeachIn {
     std::shared_ptr<Variable> iterVar;
 
     std::vector<Instruction> instructions;
+
+    mutable long references;
+    ASTForeachIn() : references(0) {}
 };
 
 typedef Deferred<ASTForeachIn> ForeachIn;
