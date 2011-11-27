@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
@@ -33,7 +32,7 @@ struct ASTArrayAssignment {
     ASTArrayAssignment() : references(0) {}
 };
 
-typedef Deferred<ASTArrayAssignment, boost::intrusive_ptr<ASTArrayAssignment>> ArrayAssignment;
+typedef Deferred<ASTArrayAssignment> ArrayAssignment;
 
 } //end of ast
 

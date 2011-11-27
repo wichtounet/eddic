@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
@@ -33,7 +32,7 @@ struct ASTVariableDeclaration {
     ASTVariableDeclaration() : references(0) {}
 };
 
-typedef Deferred<ASTVariableDeclaration, boost::intrusive_ptr<ASTVariableDeclaration>> VariableDeclaration;
+typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 
 } //end of ast
 

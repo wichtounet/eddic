@@ -10,7 +10,6 @@
 
 #include <vector>
 
-#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/adapted/boost_tuple.hpp>
 
@@ -30,7 +29,7 @@ struct ASTComposedValue {
     ASTComposedValue() : references(0) {}
 };
 
-typedef Deferred<ASTComposedValue, boost::intrusive_ptr<ASTComposedValue>> ComposedValue;
+typedef Deferred<ASTComposedValue> ComposedValue;
 
 } //end of ast
 

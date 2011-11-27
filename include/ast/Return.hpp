@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include <boost/intrusive_ptr.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
@@ -34,7 +33,7 @@ struct ASTReturn {
     ASTReturn() : references(0) {}
 };
 
-typedef Deferred<ASTReturn, boost::intrusive_ptr<ASTReturn>> Return;
+typedef Deferred<ASTReturn> Return;
 
 } //end of ast
 
