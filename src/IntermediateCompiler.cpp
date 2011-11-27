@@ -629,16 +629,16 @@ inline std::pair<std::shared_ptr<Operand>, std::shared_ptr<Operand>> performStri
 }
 
 inline void putInRegister(ast::Value& value, std::shared_ptr<Operand> operand, IntermediateProgram& program){
+    assert(operand->isRegister());
+
     if(isImmediate(value)){
         AssignValueToOperand visitor(operand, program);
         boost::apply_visitor(visitor, value);
     } else {
         PushValue visitor(program);
         boost::apply_visitor(visitor, value);
-
-        program.addInstruction(program.factory().createMove(createStackOperand(0), operand));
-
-        program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(4), program.registers(ESP)));
+        
+        program.addInstruction(program.factory().createPop(operand));
     }
 }
 
