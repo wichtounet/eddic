@@ -13,6 +13,6 @@ using namespace eddic;
 
 BaseStackOperand::BaseStackOperand(int offset) : Operand(OperandType::STACK), m_offset(offset) {}
 
-std::string BaseStackOperand::getValue(){
+std::string BaseStackOperand::getValue() const {
     return toString(m_offset) + "(%ebp)";
 }

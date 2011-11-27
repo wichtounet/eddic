@@ -19,7 +19,7 @@ class RegisterOperand : public Operand {
     public:
         RegisterOperand(const std::string& reg);
 
-        std::string getValue();
+        std::string getValue() const;
 };
 
 } //end of eddic

@@ -19,7 +19,7 @@ class ImmediateIntegerOperand : public Operand {
     public:
         ImmediateIntegerOperand(int value);
 
-        std::string getValue();
+        std::string getValue() const ;
 };
 
 class ImmediateStringOperand : public Operand {
@@ -29,7 +29,7 @@ class ImmediateStringOperand : public Operand {
     public:
         ImmediateStringOperand(const std::string& value);
 
-        std::string getValue();
+        std::string getValue() const ;
 };
 
 } //end of eddic

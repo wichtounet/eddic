@@ -13,7 +13,7 @@ using namespace eddic;
 //TODO It's not stack, it's memory
 ValueOfOperand::ValueOfOperand(const std::string& l, int o) : Operand(OperandType::STACK), location(l), offset(o) {}
 
-std::string ValueOfOperand::getValue(){
+std::string ValueOfOperand::getValue() const {
     if(offset > 0){
         return toString(offset) + "(" + location + ")";
     }

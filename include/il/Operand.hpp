@@ -31,19 +31,19 @@ class Operand {
     public:
         Operand(OperandType type);
 
-        virtual std::string getValue() = 0;
+        virtual std::string getValue() const = 0;
 
         /*!
          * \brief Return a new operand the value of what is pointed by the operand. Example: %eax becomes (%eax). 
          * \param offset Address offset of the operand
          * \return A new Operand representing what is pointed by the operand plus the offset
          */
-        std::shared_ptr<Operand> valueOf(int offset = 0);
+        std::shared_ptr<Operand> valueOf(int offset = 0) const;
 
-        bool isImmediate();
-        bool isRegister();
-        bool isStack();
-        bool isGlobal();
+        bool isImmediate() const ;
+        bool isRegister() const ;
+        bool isStack() const ;
+        bool isGlobal() const;
 };
 
 } //end of eddic

@@ -11,6 +11,6 @@ using namespace eddic;
 
 RegisterOperand::RegisterOperand(const std::string& reg) : Operand(OperandType::REGISTER), m_register(reg) {}
 
-std::string RegisterOperand::getValue(){
+std::string RegisterOperand::getValue() const {
     return m_register;
 }

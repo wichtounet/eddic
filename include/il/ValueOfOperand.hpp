@@ -20,7 +20,7 @@ class ValueOfOperand : public Operand {
     public:
         ValueOfOperand(const std::string& location, int offset);
 
-        std::string getValue();
+        std::string getValue() const ;
 };
 
 } //end of eddic
