@@ -9,6 +9,7 @@
 #define GLOBAL_STRING_VARIABLE_H
 
 #include <string>
+
 #include "Instruction.hpp"
 
 namespace eddic {

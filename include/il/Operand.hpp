@@ -34,9 +34,9 @@ class Operand {
         virtual std::string getValue() = 0;
 
         /*!
-         * \brief Return a new operand representing the value of the operand. Example: %eax becomes (%eax). 
+         * \brief Return a new operand the value of what is pointed by the operand. Example: %eax becomes (%eax). 
          * \param offset Address offset of the operand
-         * \return A new Operand reprenseting the address of the operand plus the offset
+         * \return A new Operand representing what is pointed by the operand plus the offset
          */
         std::shared_ptr<Operand> valueOf(int offset = 0);
 

@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "il/InstructionFactory.hpp"
-#include "il/Operands.hpp"
 #include "il/Register.hpp"
 
 namespace eddic {

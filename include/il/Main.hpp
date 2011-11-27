@@ -12,9 +12,8 @@
 
 namespace eddic {
 
-class Main : public Instruction {
-    public:
-        void write(AssemblyFileWriter& writer);
+struct Main : public Instruction {
+    void write(AssemblyFileWriter& writer);
 };
 
 } //end of eddic
