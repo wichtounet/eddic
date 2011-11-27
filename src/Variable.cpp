@@ -13,9 +13,6 @@
 #include "il/Operands.hpp"
 #include "il/Operand.hpp"
 
-using std::string;
-using std::endl;
-
 using namespace eddic;
 
 Variable::Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}

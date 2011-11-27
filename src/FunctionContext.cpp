@@ -9,9 +9,6 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 
-using std::string;
-using std::endl;
-
 using namespace eddic;
 
 int FunctionContext::size() const {

@@ -10,10 +10,6 @@
 
 #include <iostream>
 
-using std::string;
-using std::cout;
-using std::endl;
-
 using namespace eddic;
 
 void printUsage();
@@ -34,7 +30,7 @@ int main(int argc, const char* argv[]) {
     }
 
     if (!options.count("input")) {
-        cout << "eddic: no input files" << endl;
+        std::cout << "eddic: no input files" << std::endl;
         printHelp();
         return -1;
     }
