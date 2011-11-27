@@ -83,7 +83,7 @@ struct Inspector : public boost::static_visitor<> {
         }
 };
 
-void WarningsEngine::check(ast::Program& program, FunctionTable& table){
+void WarningsEngine::check(ast::Program& program, FunctionTable& table) const {
     if(WarningUnused){
         Inspector inspector(table);
         visit_non_variant(inspector, program);

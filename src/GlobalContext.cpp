@@ -20,11 +20,6 @@
 
 #include "GetConstantValue.hpp"
 
-using std::map;
-using std::string;
-using std::endl;
-using std::vector;
-
 using namespace eddic;
         
 GlobalContext::GlobalContext() : Context(NULL) {

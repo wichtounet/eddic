@@ -11,9 +11,9 @@
 
 using namespace eddic;
 
-FunctionDeclaration::FunctionDeclaration(std::string name, int size) : m_name(name), m_size(size) {}
+FunctionDeclaration::FunctionDeclaration(const std::string& name, int size) : m_name(name), m_size(size) {}
 
-void FunctionDeclaration::write(AssemblyFileWriter& writer){
+void FunctionDeclaration::write(AssemblyFileWriter& writer) const {
     writer.stream() << std::endl << m_name << ":" << std::endl;
     
     writer.stream() << "pushl %ebp" << std::endl;

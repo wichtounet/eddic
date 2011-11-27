@@ -13,7 +13,7 @@ using namespace eddic;
 
 DataSection::DataSection(std::unordered_map<std::string, std::string> pool) : m_pool(pool) {}
 
-void DataSection::write(AssemblyFileWriter& writer){
+void DataSection::write(AssemblyFileWriter& writer) const {
     writer.stream() << std::endl;
     writer.stream() << ".data" << std::endl;
 

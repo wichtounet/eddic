@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct VariablesAnnotator {
-    void annotate(ast::Program& program);
+    void annotate(ast::Program& program) const ;
 };
 
 } //end of eddic

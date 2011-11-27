@@ -18,13 +18,13 @@ class Operand;
 
 class Compare : public Instruction {
     private:
-        std::shared_ptr<Operand> m_lhs;
-        std::shared_ptr<Operand> m_rhs;
+        const std::shared_ptr<const Operand> m_lhs;
+        const std::shared_ptr<const Operand> m_rhs;
 
     public:
         Compare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

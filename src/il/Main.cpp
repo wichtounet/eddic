@@ -12,7 +12,7 @@
 
 using namespace eddic;
 
-void Main::write(AssemblyFileWriter& writer){
+void Main::write(AssemblyFileWriter& writer) const {
     writer.stream() << ".text" << std::endl
                     << ".globl _start" << std::endl
                     

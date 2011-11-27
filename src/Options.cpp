@@ -10,6 +10,9 @@
 
 #include "Options.hpp"
 
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+
 using namespace eddic;
 
 bool eddic::OptimizeIntegers;

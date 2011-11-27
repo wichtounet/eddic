@@ -12,8 +12,6 @@
 
 #include <sstream>
 
-using std::string;
-
 using namespace eddic;
 
 StringPool::StringPool() : currentString(0) {

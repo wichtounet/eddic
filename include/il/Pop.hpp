@@ -23,7 +23,7 @@ class Pop : public Instruction {
     public:
         Pop(std::shared_ptr<Operand> operand);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

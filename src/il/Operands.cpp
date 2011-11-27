@@ -20,11 +20,11 @@ std::shared_ptr<Operand> eddic::createImmediateOperand(int value){
     return std::make_shared<ImmediateIntegerOperand>(value);
 }
 
-std::shared_ptr<Operand> eddic::createImmediateOperand(std::string value){
+std::shared_ptr<Operand> eddic::createImmediateOperand(const std::string& value){
     return std::make_shared<ImmediateStringOperand>(value);
 }
 
-std::shared_ptr<Operand> eddic::createGlobalOperand(std::string label, int offset){
+std::shared_ptr<Operand> eddic::createGlobalOperand(const std::string& label, int offset){
     return std::make_shared<GlobalOperand>(label, offset);
 }
 
@@ -36,6 +36,6 @@ std::shared_ptr<Operand> eddic::createBaseStackOperand(int offset){
     return std::make_shared<BaseStackOperand>(offset);
 }
 
-std::shared_ptr<Operand> eddic::createValueOfOperand(std::string location, int offset){
+std::shared_ptr<Operand> eddic::createValueOfOperand(const std::string& location, int offset){
     return std::make_shared<ValueOfOperand>(location, offset);
 }

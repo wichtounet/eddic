@@ -116,7 +116,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void FunctionsAnnotator::annotate(ast::Program& program, FunctionTable& functionTable){
+void FunctionsAnnotator::annotate(ast::Program& program, FunctionTable& functionTable) const {
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

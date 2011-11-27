@@ -12,9 +12,16 @@ namespace eddic {
 
 class AssemblyFileWriter;
 
-class Instruction {
-    public:
-        virtual void write(AssemblyFileWriter& writer) = 0;
+/*!
+ * \class Instruction
+ * \brief Represent an machine-independant instruction
+ */
+struct Instruction {
+    /*!
+     * \brief Write the instruction as assembly in the given writer. 
+     * \param writer The writer to use. 
+     */
+    virtual void write(AssemblyFileWriter& writer) const = 0;
 };
 
 } //end of eddic

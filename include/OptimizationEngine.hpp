@@ -16,7 +16,7 @@ class FunctionTable;
 class StringPool;
 
 struct OptimizationEngine {
-    void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool);
+    void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool) const ;
 };
 
 } //end of eddic

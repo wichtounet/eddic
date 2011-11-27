@@ -25,12 +25,14 @@ inline T toNumber (const std::string& text) {
 
 template<>
 inline int toNumber (const std::string& text) {
-    return strtol(text.c_str(), 0, 10); //TODO Use hand-written loop (faster) if necesary
+    //PERF: If necessary, use hand written loop
+    return strtol(text.c_str(), 0, 10); 
 }
 
 template <typename T>
 inline std::string toString(T number) {
-    return boost::lexical_cast<std::string>(number); //TODO Use karma for higher effiency
+    //PERF: If necessary, use karma
+    return boost::lexical_cast<std::string>(number); 
 }
 
 } //end of eddic

@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct TransformerEngine {
-    void transform(ast::Program& program);
+    void transform(ast::Program& program) const;
 };
 
 } //end of eddic

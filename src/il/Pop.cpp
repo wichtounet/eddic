@@ -17,7 +17,7 @@ using namespace eddic;
 
 Pop::Pop(std::shared_ptr<Operand> o) : operand(o) {}
 
-void Pop::write(AssemblyFileWriter& writer){
+void Pop::write(AssemblyFileWriter& writer) const {
     assert(operand->isRegister());
 
     writer.stream() << "popl " << operand->getValue() << std::endl;

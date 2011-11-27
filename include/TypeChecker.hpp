@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct TypeChecker {
-    void check(ast::Program& program);
+    void check(ast::Program& program) const ;
 };
 
 } //end of eddic

@@ -22,6 +22,7 @@
 #include "IsImmediateVisitor.hpp"
 #include "IsConstantVisitor.hpp"
 #include "GetConstantValue.hpp"
+#include "GetTypeVisitor.hpp"
 
 #include "mangling.hpp"
 
@@ -975,7 +976,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 };
 
-void IntermediateCompiler::compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+void IntermediateCompiler::compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram) const {
     CompilerVisitor visitor(pool, intermediateProgram);
     visitor(program);
 }

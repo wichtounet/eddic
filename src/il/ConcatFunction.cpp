@@ -12,7 +12,7 @@
 
 using namespace eddic;
 
-void ConcatFunction::write(AssemblyFileWriter& writer){
+void ConcatFunction::write(AssemblyFileWriter& writer) const {
     writer.stream() << std::endl;
     writer.stream() << "concat:" << std::endl
         << "pushl %ebp" << std::endl

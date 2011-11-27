@@ -22,7 +22,7 @@ class DataSection : public Instruction {
     public:
         DataSection(std::unordered_map<std::string, std::string> pool);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

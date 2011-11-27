@@ -20,9 +20,9 @@ class GlobalIntVariable : public Instruction {
         int m_value;
 
     public:
-        GlobalIntVariable(std::string name, int value);
+        GlobalIntVariable(const std::string& name, int value);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

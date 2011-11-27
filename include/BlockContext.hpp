@@ -9,8 +9,6 @@
 #define BLOCK_CONTEXT_H
 
 #include <string>
-#include <map>
-#include <vector>
 #include <memory>
 
 #include "Types.hpp"

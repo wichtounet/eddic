@@ -12,9 +12,8 @@
 
 namespace eddic {
 
-class AllocFunction : public Instruction {
-    public:
-        void write(AssemblyFileWriter& writer);
+struct AllocFunction : public Instruction {
+    void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

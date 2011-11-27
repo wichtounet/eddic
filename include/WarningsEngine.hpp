@@ -15,7 +15,7 @@ namespace eddic {
 class FunctionTable;
 
 struct WarningsEngine {
-    void check(ast::Program& program, FunctionTable& functionTable);
+    void check(ast::Program& program, FunctionTable& functionTable) const ;
 };
 
 } //end of eddic

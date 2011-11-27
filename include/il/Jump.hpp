@@ -30,9 +30,9 @@ class Jump : public Instruction {
         std::string m_label;
 
     public:
-        Jump(JumpCondition condition, std::string label);
+        Jump(JumpCondition condition, const std::string& label);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

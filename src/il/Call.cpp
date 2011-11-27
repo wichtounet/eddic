@@ -10,8 +10,8 @@
 
 using namespace eddic;
 
-Call::Call(std::string function) : m_function(function) {}
+Call::Call(const std::string& function) : m_function(function) {}
 
-void Call::write(AssemblyFileWriter& writer){
+void Call::write(AssemblyFileWriter& writer) const {
     writer.stream() << "call " << m_function << std::endl;
 }

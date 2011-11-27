@@ -226,7 +226,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TransformerEngine::transform(ast::Program& program){
+void TransformerEngine::transform(ast::Program& program) const {
     TransformerVisitor visitor;
     visitor(program);
 }

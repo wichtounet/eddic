@@ -19,7 +19,7 @@ class StackOperand : public Operand {
     public:
         StackOperand(int offset);
 
-        std::string getValue();
+        std::string getValue() const ;
 };
 
 } //end of eddic
