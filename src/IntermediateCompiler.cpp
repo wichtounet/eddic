@@ -966,10 +966,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else if(return_.Content->function->returnType.base() == BaseType::STRING) {
                 PushValue visitor(program);
                 boost::apply_visitor(visitor, return_.Content->value);
-           
-                program.addInstruction(program.factory().createMove(createStackOperand(4), program.registers(EAX)));
-                program.addInstruction(program.factory().createMove(createStackOperand(0), program.registers(EBX)));
-                program.addInstruction(program.factory().createMath(Operation::ADD, createImmediateOperand(8), program.registers(ESP)));
+          
+                program.addInstruction(program.factory().createPop(program.registers(EBX)));
+                program.addInstruction(program.factory().createPop(program.registers(EAX)));
             }
 
             program.addInstruction(program.factory().createFunctionExit(return_.Content->context->size()));
