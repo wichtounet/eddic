@@ -10,13 +10,8 @@
 
 #include <vector>
 #include <string>
-#include <sstream>
-#include <memory>
 
-#include "ast/Program.hpp"
-
-#include <boost/variant/apply_visitor.hpp>
-#include "GetTypeVisitor.hpp"
+#include "ast/Value.hpp"
 
 #include "Types.hpp"
 #include "FunctionTable.hpp"

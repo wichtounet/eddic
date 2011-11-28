@@ -13,11 +13,6 @@
 #include "il/Operands.hpp"
 #include "il/Operand.hpp"
 
-using std::map;
-using std::string;
-using std::endl;
-using std::vector;
-
 using namespace eddic;
 
 Variable::Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
@@ -43,11 +38,11 @@ void Variable::addReference(){
     ++references;
 }
 
-int Variable::referenceCount(){
+int Variable::referenceCount() const {
     return references;
 }
 
-std::shared_ptr<Operand> Variable::toIntegerOperand(){
+std::shared_ptr<Operand> Variable::toIntegerOperand() const {
     assert(m_type.base() == BaseType::INT); 
     
     if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
@@ -61,7 +56,7 @@ std::shared_ptr<Operand> Variable::toIntegerOperand(){
     assert(false); //Position not managed
 }
 
-std::pair<OperandPtr, OperandPtr> Variable::toStringOperand(){
+std::pair<OperandPtr, OperandPtr> Variable::toStringOperand() const {
     assert(m_type.base() == BaseType::STRING); 
    
     if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable

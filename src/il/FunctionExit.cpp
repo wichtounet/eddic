@@ -13,7 +13,7 @@ using namespace eddic;
 
 FunctionExit::FunctionExit(int size) : m_size(size) {}
 
-void FunctionExit::write(AssemblyFileWriter& writer){
+void FunctionExit::write(AssemblyFileWriter& writer) const {
     //Only if necessary, deallocates size on the stack for the local variables
     if(m_size > 0){
         writer.stream() << "addl $" << m_size << " , %esp" << std::endl;

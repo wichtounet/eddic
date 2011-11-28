@@ -20,6 +20,9 @@ struct ASTBinaryCondition {
     std::string op;
     Value lhs;
     Value rhs;
+
+    mutable long references;
+    ASTBinaryCondition() : references(0) {}
 };
 
 typedef Deferred<ASTBinaryCondition> BinaryCondition;

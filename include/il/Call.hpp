@@ -19,9 +19,9 @@ class Call : public Instruction {
         std::string m_function;
 
     public:
-        Call(std::string function);
+        Call(const std::string& function);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

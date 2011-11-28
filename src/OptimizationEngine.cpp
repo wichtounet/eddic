@@ -21,6 +21,8 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
+#include "ast/Program.hpp"
+
 using namespace eddic;
 
 struct GetIntValue : public boost::static_visitor<int> {
@@ -289,6 +291,10 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
         }
 
+        void operator()(ast::Return& return_){
+            return_.Content->value = boost::apply_visitor(optimizer, return_.Content->value); 
+        }
+
         void operator()(ast::ArrayAssignment& assignment){
             assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
             assignment.Content->indexValue = boost::apply_visitor(optimizer, assignment.Content->indexValue); 
@@ -309,7 +315,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void OptimizationEngine::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool){
+void OptimizationEngine::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool) const {
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

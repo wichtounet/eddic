@@ -5,17 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef FUNCTION_CHECKER_H
-#define FUNCTION_CHECKER_H
+#ifndef FUNCTIONS_ANNOTATOR_H
+#define FUNCTIONS_ANNOTATOR_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 
 class FunctionTable;
 
-struct FunctionChecker {
-   void check(ast::Program& program, FunctionTable& functionTable);
+struct FunctionsAnnotator {
+   void annotate(ast::Program& program, FunctionTable& functionTable) const ;
 };
 
 } //end of eddic

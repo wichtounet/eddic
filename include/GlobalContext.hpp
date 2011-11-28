@@ -9,12 +9,7 @@
 #define GLOBAL_CONTEXT_H
 
 #include <string>
-#include <map>
-#include <vector>
 #include <memory>
-
-#include <unordered_map>
-#include <unordered_set>
 
 #include "Types.hpp"
 

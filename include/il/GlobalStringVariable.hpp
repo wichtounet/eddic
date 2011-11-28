@@ -9,6 +9,7 @@
 #define GLOBAL_STRING_VARIABLE_H
 
 #include <string>
+
 #include "Instruction.hpp"
 
 namespace eddic {
@@ -20,9 +21,9 @@ class GlobalStringVariable : public Instruction {
         int m_size;
 
     public:
-        GlobalStringVariable(std::string name, std::string label, int size);
+        GlobalStringVariable(const std::string& name, const std::string& label, int size);
 
-        void write(AssemblyFileWriter& writer);
+        void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

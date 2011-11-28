@@ -8,7 +8,6 @@
 #ifndef VALUES_DEF_H
 #define VALUES_DEF_H
 
-#include <boost/intrusive_ptr.hpp>
 #include "ast/Deferred.hpp"
 
 namespace eddic {
@@ -18,14 +17,17 @@ namespace ast {
 struct Integer;
 struct Litteral;
 
+struct ASTFunctionCall;
+typedef Deferred<ASTFunctionCall> FunctionCall;
+
 struct ASTVariableValue;
-typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
+typedef Deferred<ASTVariableValue> VariableValue;
 
 struct ASTComposedValue;
-typedef Deferred<ASTComposedValue, boost::intrusive_ptr<ASTComposedValue>> ComposedValue;
+typedef Deferred<ASTComposedValue> ComposedValue;
 
 struct ASTArrayValue;
-typedef Deferred<ASTArrayValue, boost::intrusive_ptr<ASTArrayValue>> ArrayValue;
+typedef Deferred<ASTArrayValue> ArrayValue;
 
 } //end of ast
 

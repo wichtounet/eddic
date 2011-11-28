@@ -20,7 +20,7 @@ class DebugTimer {
         std::string name;
 
     public:
-        DebugTimer(std::string n) : name(n) {}
+        DebugTimer(const std::string& n) : name(n) {}
         
         ~DebugTimer(){
             std::cout << name << " took " << timer.elapsed() << "s" << std::endl;
@@ -29,7 +29,7 @@ class DebugTimer {
 
 template<>
 struct DebugTimer<false> {
-    DebugTimer(std::string) {}
+    DebugTimer(const std::string&) {}
 };
 
 } //end of eddic

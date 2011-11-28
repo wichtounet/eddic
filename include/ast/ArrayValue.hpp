@@ -10,8 +10,6 @@
 
 #include <memory>
 
-#include <boost/intrusive_ptr.hpp>
-
 #include "ast/Deferred.hpp"
 
 namespace eddic {
@@ -32,7 +30,7 @@ struct ASTArrayValue {
     ASTArrayValue() : references(0) {}
 };
 
-typedef Deferred<ASTArrayValue, boost::intrusive_ptr<ASTArrayValue>> ArrayValue;
+typedef Deferred<ASTArrayValue> ArrayValue;
 
 } //end of ast
 

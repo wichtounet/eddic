@@ -8,17 +8,21 @@
 #ifndef AST_FUNCTION_CALL_H
 #define AST_FUNCTION_CALL_H
 
-#include <boost/intrusive_ptr.hpp>
+#include <memory>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Value.hpp"
+
+#include "FunctionTable.hpp"
 
 namespace eddic {
 
 namespace ast {
 
 struct ASTFunctionCall {
+    std::shared_ptr<Function> function;
+
     std::string functionName;
     std::vector<Value> values;
 
@@ -26,7 +30,7 @@ struct ASTFunctionCall {
     ASTFunctionCall() : references(0) {}
 };
 
-typedef Deferred<ASTFunctionCall, boost::intrusive_ptr<ASTFunctionCall>> FunctionCall;
+typedef Deferred<ASTFunctionCall> FunctionCall;
 
 } //end of ast
 

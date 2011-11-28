@@ -12,22 +12,22 @@ using namespace eddic;
 
 Operand::Operand(OperandType type) : m_type(type) {}
 
-bool Operand::isImmediate(){
+bool Operand::isImmediate() const {
     return m_type == OperandType::IMMEDIATE;
 }
 
-bool Operand::isRegister(){
+bool Operand::isRegister() const {
     return m_type == OperandType::REGISTER;
 }
 
-bool Operand::isStack(){
+bool Operand::isStack() const {
     return m_type == OperandType::STACK;
 }
 
-bool Operand::isGlobal(){
+bool Operand::isGlobal() const {
     return m_type == OperandType::GLOBAL;
 }
         
-std::shared_ptr<Operand> Operand::valueOf(int offset){
+std::shared_ptr<Operand> Operand::valueOf(int offset) const {
     return std::make_shared<ValueOfOperand>(getValue(), offset);
 }

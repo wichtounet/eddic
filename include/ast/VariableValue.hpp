@@ -10,8 +10,6 @@
 
 #include <memory>
 
-#include <boost/intrusive_ptr.hpp>
-
 #include "ast/Deferred.hpp"
 
 namespace eddic {
@@ -31,7 +29,7 @@ struct ASTVariableValue {
     ASTVariableValue() : references(0) {}
 };
 
-typedef Deferred<ASTVariableValue, boost::intrusive_ptr<ASTVariableValue>> VariableValue;
+typedef Deferred<ASTVariableValue> VariableValue;
 
 } //end of ast
 

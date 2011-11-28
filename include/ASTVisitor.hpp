@@ -5,12 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ASTVISITOR_H
-#define ASTVISITOR_H
-
-#include <boost/variant/static_visitor.hpp>
-
-#include "ast/Program.hpp"
+#ifndef AST_VISITOR_H
+#define AST_VISITOR_H
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
@@ -59,6 +55,11 @@ void operator()(ast::Assignment& assignment){\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
+}
+
+#define AUTO_RECURSE_RETURN_VALUES()\
+void operator()(ast::Return& return_){\
+    visit(*this, return_.Content->value);\
 }
 
 #define AUTO_RECURSE_ARRAY_ASSIGNMENT()\

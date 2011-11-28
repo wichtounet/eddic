@@ -13,7 +13,10 @@ FunctionTable::FunctionTable(){}
 
 void FunctionTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;
-    function->references = 0;
+}
+
+std::shared_ptr<Function> FunctionTable::getFunction(const std::string& function){
+    return functions[function];
 }
 
 bool FunctionTable::exists(const std::string& function){

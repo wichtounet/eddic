@@ -12,7 +12,7 @@
 
 using namespace eddic;
 
-void AllocFunction::write(AssemblyFileWriter& writer){
+void AllocFunction::write(AssemblyFileWriter& writer) const {
     writer.stream() << std::endl;
     writer.stream() << "eddi_alloc:" << std::endl
         << "pushl %ebp" << std::endl

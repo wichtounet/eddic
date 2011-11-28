@@ -10,9 +10,9 @@
 
 using namespace eddic;
 
-GlobalArray::GlobalArray(std::string n, BaseType t, int s) : name(n), type(t), size(s) {}
+GlobalArray::GlobalArray(const std::string& n, BaseType t, int s) : name(n), type(t), size(s) {}
 
-void GlobalArray::write(AssemblyFileWriter& writer){
+void GlobalArray::write(AssemblyFileWriter& writer) const {
     writer.stream() << "VA" << name << ":" <<std::endl;
     writer.stream() << ".rept " << size << std::endl;
 

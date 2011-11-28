@@ -5,7 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <sstream>
+
 #include "mangling.hpp"
+
+#include <boost/variant/apply_visitor.hpp>
+#include "GetTypeVisitor.hpp"
 
 using namespace eddic;
 

@@ -12,9 +12,8 @@
 
 namespace eddic {
 
-class PrintStringFunction : public Instruction {
-    public:
-        void write(AssemblyFileWriter& writer);
+struct PrintStringFunction : public Instruction {
+    void write(AssemblyFileWriter& writer) const ;
 };
 
 } //end of eddic

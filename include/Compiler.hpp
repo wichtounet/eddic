@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 
@@ -20,10 +20,14 @@ class IntermediateProgram;
 
 void defineDefaultValues(ast::Program& program);
 void defineContexts(ast::Program& program);
+void defineVariables(ast::Program& program);
+void defineFunctions(ast::Program& program, FunctionTable& table);
 
-void checkVariables(ast::Program& program);
+void checkTypes(ast::Program& program);
 void checkStrings(ast::Program& program, StringPool& pool);
-void checkFunctions(ast::Program& program, FunctionTable& functionTable);
+
+void checkForWarnings(ast::Program& program, FunctionTable& table);
+
 void transform(ast::Program& program);
 void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool);
 void writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram);

@@ -27,6 +27,9 @@ struct ASTSwap {
     std::string rhs;
     std::shared_ptr<Variable> lhs_var;
     std::shared_ptr<Variable> rhs_var;
+
+    mutable long references;
+    ASTSwap() : references(0) {}
 };
 
 typedef Deferred<ASTSwap> Swap;

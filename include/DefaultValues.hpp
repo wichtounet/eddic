@@ -8,12 +8,12 @@
 #ifndef DEFAULT_VALUES_H
 #define DEFAULT_VALUES_H
 
-#include "ast/Program.hpp"
+#include "ast/program_def.hpp"
 
 namespace eddic {
 
 struct DefaultValues {
-    void fill(ast::Program& program);
+    void fill(ast::Program& program) const ;
 };
 
 } //end of eddic

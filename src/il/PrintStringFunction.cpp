@@ -12,7 +12,7 @@
 
 using namespace eddic;
 
-void PrintStringFunction::write(AssemblyFileWriter& writer){
+void PrintStringFunction::write(AssemblyFileWriter& writer) const {
     writer.stream() << std::endl;
     writer.stream() << "print_string:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;

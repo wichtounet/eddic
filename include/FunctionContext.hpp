@@ -9,12 +9,7 @@
 #define FUNCTION_CONTEXT_H
 
 #include <string>
-#include <map>
-#include <vector>
 #include <memory>
-
-#include <unordered_map>
-#include <unordered_set>
 
 #include "Types.hpp"
 
@@ -33,7 +28,7 @@ class FunctionContext : public Context {
     public:
         FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}
         
-        int size();
+        int size() const;
 
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
         std::shared_ptr<Variable> addParameter(const std::string& a, Type type);

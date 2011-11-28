@@ -35,10 +35,10 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     qi::rule<Iterator, ast::Instruction()> instruction;
     qi::rule<Iterator, ast::Instruction()> repeatable_instruction;
     qi::rule<Iterator, ast::Swap()> swap;
-    qi::rule<Iterator, ast::FunctionCall()> functionCall;
     qi::rule<Iterator, ast::VariableDeclaration()> declaration;
     qi::rule<Iterator, ast::ArrayDeclaration()> arrayDeclaration;
     qi::rule<Iterator, ast::Assignment()> assignment;
+    qi::rule<Iterator, ast::Return()> return_;
     qi::rule<Iterator, ast::ArrayAssignment()> arrayAssignment;
     qi::rule<Iterator, ast::While()> while_;
     qi::rule<Iterator, ast::For()> for_;

@@ -10,8 +10,8 @@
 
 using namespace eddic;
 
-Label::Label(std::string name) : m_name(name) {}
+Label::Label(const std::string& name) : m_name(name) {}
 
-void Label::write(AssemblyFileWriter& writer){
+void Label::write(AssemblyFileWriter& writer) const {
     writer.stream() << m_name << ":" << std::endl;
 }

@@ -11,11 +11,6 @@
 #include "Context.hpp"
 #include "Utils.hpp"
 
-using std::string;
-using std::endl;
-using std::vector;
-using std::unordered_map;
-
 using namespace eddic;
 
 Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}

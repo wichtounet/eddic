@@ -10,7 +10,7 @@
 #include <memory>
 #include <boost/variant/variant.hpp>
 
-#include "VariableChecker.hpp"
+#include "VariablesAnnotator.hpp"
 
 #include "ast/Program.hpp"
 
@@ -32,7 +32,7 @@
 
 using namespace eddic;
 
-struct CheckerVisitor : public boost::static_visitor<> {
+struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
@@ -60,13 +60,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
 
         Type type = stringToType(declaration.Content->variableType); 
-
         declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), *declaration.Content->value);
-        if (valueType != type) {
-            throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
-        }
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -99,9 +93,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared");
         }
 
-        //TODO Check types of array
-        //TODO Check type of varaible = base of array
-        
         static int generated = 0;
 
         foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
@@ -118,14 +109,11 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         visit(*this, assignment.Content->value);
 
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
+        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
+    }
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
-        if (valueType != var->type()) {
-            throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
-        }
-
-        var->addReference();
+    void operator()(ast::Return& return_){
+        visit(*this, return_.Content->value);
     }
 
     void operator()(ast::ArrayAssignment& assignment){
@@ -136,19 +124,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit(*this, assignment.Content->indexValue);
         visit(*this, assignment.Content->value);
 
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
-        if (valueType.base() != var->type().base()) {
-            throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName);
-        }
-        
-        Type indexType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->indexValue);
-        if (indexType.base() != BaseType::INT) {
-            throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName);
-        }
-
-        var->addReference();
+        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
     }
     
     void operator()(ast::VariableDeclaration& declaration){
@@ -160,11 +136,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         declaration.Content->context->addVariable(declaration.Content->variableName, variableType);
 
         visit(*this, *declaration.Content->value);
-
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), *declaration.Content->value);
-        if (valueType != variableType) {
-            throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName);
-        }
     }
     
     void operator()(ast::ArrayDeclaration& declaration){
@@ -190,10 +161,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         swap.Content->lhs_var = swap.Content->context->getVariable(swap.Content->lhs);
         swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
 
-        if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
-            throw SemanticalException("Swap of variables of incompatible type");
-        }
-
         //Reference both variables
         swap.Content->lhs_var->addReference();
         swap.Content->rhs_var->addReference();
@@ -204,9 +171,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared");
         }
 
-        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-
         //Reference the variable
+        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
         variable.Content->var->addReference();
     }
 
@@ -215,17 +181,11 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Array " + array.Content->arrayName + " has not been declared");
         }
         
-        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
-
         //Reference the variable
+        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
-
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), array.Content->indexValue);
-        if (valueType.base() != BaseType::INT || valueType.isArray()) {
-            throw SemanticalException("Invalid index for the array " + array.Content->arrayName);
-        }
     }
 
     void operator()(ast::ComposedValue& value){
@@ -233,18 +193,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
             [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
-
-        GetTypeVisitor visitor;
-
-        Type type = boost::apply_visitor(visitor, value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            Type operationType = boost::apply_visitor(visitor, operation.get<1>());
-
-            if(type != operationType){
-                throw SemanticalException("Incompatible type");
-            }
-        }
     }
 
     void operator()(ast::TerminalNode&){
@@ -252,51 +200,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-struct UnusedInspector : public boost::static_visitor<> {
-    void check(std::shared_ptr<Context> context){
-        auto iter = context->begin();
-        auto end = context->end();
-
-        for(; iter != end; iter++){
-            auto var = iter->second;
-
-            if(var->referenceCount() == 0){
-                if(var->position().isStack()){
-                    warn("unused variable '" + var->name() + "'");
-                } else if(var->position().isGlobal()){
-                    warn("unused global variable '" + var->name() + "'");
-                } else if(var->position().isParameter()){
-                    warn("unused parameter '" + var->name() + "'");
-                }
-            }
-        }
-    }
-
-    void operator()(ast::Program& program){
-        check(program.Content->context);
-        
-        visit_each(*this, program.Content->blocks);
-    }
-
-    void operator()(ast::FunctionDeclaration& function){
-        check(function.Content->context);
-    }
-
-    void operator()(ast::GlobalVariableDeclaration&){
-        //Nothing to check there
-    }
-
-    void operator()(ast::GlobalArrayDeclaration&){
-        //Nothing to check there
-    }
-};
-
-void VariableChecker::check(ast::Program& program){
-    CheckerVisitor visitor;
+void VariablesAnnotator::annotate(ast::Program& program) const {
+    VariablesVisitor visitor;
     visit_non_variant(visitor, program);
-
-    if(WarningUnused){
-        UnusedInspector inspector;
-        visit_non_variant(inspector, program);
-    }
 }

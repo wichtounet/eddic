@@ -24,6 +24,7 @@ class InstructionFactory32 : public InstructionFactory {
         std::shared_ptr<Instruction> createMove(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         std::shared_ptr<Instruction> createCompare(std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         std::shared_ptr<Instruction> createPush(std::shared_ptr<Operand> operand) const;
+        std::shared_ptr<Instruction> createPop(std::shared_ptr<Operand> operand) const;
         std::shared_ptr<Instruction> createLabel(const std::string& label) const;
         std::shared_ptr<Instruction> createJump(JumpCondition condition, const std::string& label) const;
         std::shared_ptr<Instruction> createCall(const std::string& function) const;
@@ -31,9 +32,9 @@ class InstructionFactory32 : public InstructionFactory {
         std::shared_ptr<Instruction> createFunctionExit(int size = 0) const;
         std::shared_ptr<Instruction> createMath(Operation operation, std::shared_ptr<Operand> lhs, std::shared_ptr<Operand> rhs) const;
         
-        std::shared_ptr<Instruction> createGlobalIntVariable(std::string name, int value) const;
-        std::shared_ptr<Instruction> createGlobalStringVariable(std::string name, std::string label, int size) const;
-        std::shared_ptr<Instruction> createGlobalArray(std::string name, BaseType type, int size) const;
+        std::shared_ptr<Instruction> createGlobalIntVariable(const std::string& name, int value) const;
+        std::shared_ptr<Instruction> createGlobalStringVariable(const std::string& name, const std::string& label, int size) const;
+        std::shared_ptr<Instruction> createGlobalArray(const std::string& name, BaseType type, int size) const;
     
         std::shared_ptr<Instruction> createPrintStringFunction() const;
         std::shared_ptr<Instruction> createPrintIntegerFunction() const;

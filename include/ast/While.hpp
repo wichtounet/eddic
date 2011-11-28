@@ -23,6 +23,9 @@ namespace ast {
 struct ASTWhile {
     Condition condition;
     std::vector<Instruction> instructions;
+
+    mutable long references;
+    ASTWhile() : references(0) {}
 };
 
 typedef Deferred<ASTWhile> While;
