@@ -1,3 +1,12 @@
+eddic 0.6.1 - 2011.11.21
+
+* The functions can now return int or strings
+* The pop instruction is now used to improve the generated assembly
+* Performances of the AST have been improved a little
+* The headers have been cleaned
+* The readme has been improved
+* The doxygen documentation can now be generated from CMake
+
 eddic 0.6.0 - 2011.11.21
 
 * Add arrays to the language
