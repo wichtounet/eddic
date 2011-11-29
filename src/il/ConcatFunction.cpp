@@ -18,6 +18,10 @@ void ConcatFunction::write(AssemblyFileWriter& writer) const {
         << "pushl %ebp" << std::endl
         << "movl %esp, %ebp" << std::endl
 
+        //Save registers
+        << "pushl %ebx" << std::endl
+        << "pushl %ecx" << std::endl
+
         << "movl 16(%ebp), %edx" << std::endl
         << "movl 8(%ebp), %ecx" << std::endl
         << "addl %ecx, %edx" << std::endl
@@ -63,6 +67,10 @@ void ConcatFunction::write(AssemblyFileWriter& writer) const {
         << "addl %ecx, %edx" << std::endl
 
         << "movl -4(%ebp), %eax" << std::endl
+
+        //Restore registers
+        << "popl %ecx" << std::endl
+        << "popl %ebx" << std::endl
 
         << "leave" << std::endl
         << "ret" << std::endl;
