@@ -125,7 +125,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  value;
     
     globalDeclaration %= 
-            lexer.word 
+            const_
+        >>  lexer.word 
         >>  lexer.word 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;
