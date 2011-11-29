@@ -48,7 +48,7 @@ class SimpleLexer : public lex::lexer<L> {
             foreach_ = "foreach";
             in_ = "in";
             return_ = "return";
-            return_ = "const";
+            const_ = "const";
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
