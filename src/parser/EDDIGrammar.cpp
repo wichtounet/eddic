@@ -14,6 +14,10 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         value(lexer), 
         condition(lexer),
         type(lexer){
+   
+    const_ %=
+            (lexer.const_ > spirit::attr(true))
+        |   spirit::attr(false);
     
     else_if_ %= 
             lexer.else_ 

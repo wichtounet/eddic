@@ -49,6 +49,8 @@ struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
     qi::rule<Iterator, ast::Else()> else_;
     qi::rule<Iterator, ast::ElseIf()> else_if_;
 
+    qi::rule<Iterator, bool()> const_;
+
     ValueGrammar value;
     BooleanGrammar condition;
     TypeGrammar type;
