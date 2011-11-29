@@ -1,4 +1,4 @@
-int zz = 888;
+const int zz = 888;
 string yy = "trest";
 
 void main(){
