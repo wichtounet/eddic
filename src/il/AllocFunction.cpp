@@ -18,6 +18,11 @@ void AllocFunction::write(AssemblyFileWriter& writer) const {
         << "pushl %ebp" << std::endl
         << "movl %esp, %ebp" << std::endl
 
+        //Save registers
+        << "pushl %ebx" << std::endl
+        << "pushl %ecx" << std::endl
+        << "pushl %edx" << std::endl
+
         << "movl 8(%ebp), %ecx" << std::endl
         << "movl VIeddi_remaining, %ebx" << std::endl
 
@@ -70,6 +75,11 @@ void AllocFunction::write(AssemblyFileWriter& writer) const {
         << "movl %ebx, VIeddi_remaining" << std::endl
        
         << "alloc_end:" << std::endl
+
+        //Restore registers
+        << "popl %edx" << std::endl
+        << "popl %ecx" << std::endl
+        << "popl %ebx" << std::endl
 
         << "leave" << std::endl
         << "ret" << std::endl;

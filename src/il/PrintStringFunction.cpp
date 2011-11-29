@@ -17,6 +17,13 @@ void PrintStringFunction::write(AssemblyFileWriter& writer) const {
     writer.stream() << "print_string:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
+    
+    //Save registers
+    writer.stream() << "pushl %eax" << std::endl;
+    writer.stream() << "pushl %ebx" << std::endl;
+    writer.stream() << "pushl %ecx" << std::endl;
+    writer.stream() << "pushl %edx" << std::endl;
+
     writer.stream() << "movl $0, %esi" << std::endl;
 
     writer.stream() << "movl $4, %eax" << std::endl;
@@ -24,6 +31,12 @@ void PrintStringFunction::write(AssemblyFileWriter& writer) const {
     writer.stream() << "movl 12(%ebp), %ecx" << std::endl;
     writer.stream() << "movl 8(%ebp), %edx" << std::endl;
     writer.stream() << "int $0x80" << std::endl;
+
+    //Restore registers
+    writer.stream() << "popl %edx" << std::endl;
+    writer.stream() << "popl %ecx" << std::endl;
+    writer.stream() << "popl %ebx" << std::endl;
+    writer.stream() << "popl %eax" << std::endl;
 
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;

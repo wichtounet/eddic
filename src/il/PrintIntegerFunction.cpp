@@ -17,6 +17,13 @@ void PrintIntegerFunction::write(AssemblyFileWriter& writer) const {
     writer.stream() << "print_integer:" << std::endl
              << "pushl %ebp" << std::endl
              << "movl %esp, %ebp" << std::endl
+
+            //Save registers
+            << "pushl %eax" << std::endl
+            << "pushl %ebx" << std::endl
+            << "pushl %ecx" << std::endl
+            << "pushl %edx" << std::endl
+
              << "movl 8(%ebp), %eax" << std::endl
              << "xorl %esi, %esi" << std::endl
 
@@ -63,6 +70,13 @@ void PrintIntegerFunction::write(AssemblyFileWriter& writer) const {
              << "jmp  next" << std::endl
 
              << "exit:" << std::endl
+
+            //Restore registers
+            << "popl %edx" << std::endl
+            << "popl %ecx" << std::endl
+            << "popl %ebx" << std::endl
+            << "popl %eax" << std::endl
+
              << "leave" << std::endl
              << "ret" << std::endl;
 }
