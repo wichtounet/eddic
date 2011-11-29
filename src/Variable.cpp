@@ -15,8 +15,8 @@
 
 using namespace eddic;
 
-Variable::Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
-Variable::Variable(const std::string& name, Type type, Position position, Val value) : m_name(name), m_type(type), m_position(position), v_value(value) {}
+Variable::Variable(const std::string& name, Type type, Position position, bool const_) : m_name(name), m_type(type), m_position(position), constant(const_) {}
+Variable::Variable(const std::string& name, Type type, Position position, Val value, bool const_) : m_name(name), m_type(type), m_position(position), v_value(value), constant(const_) {}
 
 std::string Variable::name() const  {
     return m_name;
@@ -40,6 +40,10 @@ void Variable::addReference(){
 
 int Variable::referenceCount() const {
     return references;
+}
+
+bool Variable::isConst() const {
+    return constant;
 }
 
 std::shared_ptr<Operand> Variable::toIntegerOperand() const {
