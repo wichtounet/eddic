@@ -77,6 +77,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (valueType != var->type()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
         }
+
+        if(var->type().isConst()){
+            throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it");
+        }
     }
 
     void operator()(ast::Return& return_){

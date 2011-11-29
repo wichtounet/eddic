@@ -59,7 +59,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The value must be constant");
         }
 
-        Type type = stringToType(declaration.Content->variableType); 
+        BaseType baseType = stringToBaseType(declaration.Content->variableType); 
+        Type type(baseType, declaration.Content->constant);
         declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 

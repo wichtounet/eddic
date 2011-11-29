@@ -38,8 +38,8 @@ class Variable {
         bool constant;
 
     public:
-        Variable(const std::string& name, Type type, Position position, bool constant = false);
-        Variable(const std::string& name, Type type, Position position, Val value, bool constant = false);
+        Variable(const std::string& name, Type type, Position position);
+        Variable(const std::string& name, Type type, Position position, Val value);
 
         OperandPtr toIntegerOperand() const ;
         std::pair<OperandPtr, OperandPtr> toStringOperand() const ;
@@ -47,7 +47,6 @@ class Variable {
         std::string name() const ;
         Type type() const ;
         Position position() const ;
-        bool isConst() const ;
 
         Val val() const ;
 
