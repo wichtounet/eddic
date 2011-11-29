@@ -5,24 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_FUNCTION_H
-#define TAC_FUNCTION_H
+#ifndef TAC_QUADRUPLE_H
+#define TAC_QUADRUPLE_H
 
-#include <memory>
 #include <vector>
-
-#include "tac/Statement.hpp"
 
 namespace eddic {
 
-struct FunctionContext;
+class Variable;
 
 namespace tac {
 
-struct Function {
-    std::shared_ptr<FunctionContext> context;
-
-    std::vector<Statement> statements;
+struct Quadruple {
+    std::shared_ptr<Variable> result;
+    Argument arg1;
+    Argument arg2;
+    Operator op;
 };
 
 } //end of tac

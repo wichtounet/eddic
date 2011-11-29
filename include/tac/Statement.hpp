@@ -5,4 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/Program.hpp"
+#ifndef TAC_STATEMENT_H
+#define TAC_STATEMENT_H
+
+#include <boost/variant/variant.hpp>
+
+#include "tac/Quadruple.hpp"
+#include "tac/ControlQuadruple.hpp"
+
+namespace eddic {
+
+namespace tac {
+
+boost::variant<Quadruple, ControlQuadruple> Statement;
+
+} //end of tac
+
+} //end of eddic
+
+#endif
