@@ -5,9 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
+#include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
 #include "GetConstantValue.hpp"
+#include "Variable.hpp"
 
 #include "ast/Value.hpp"
 
@@ -19,4 +23,20 @@ Val GetConstantValue::operator()(const ast::Litteral& litteral) const {
 
 Val GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
+}
+
+Val GetConstantValue::operator()(const ast::VariableValue& value) const {
+    Type type = value.Content->var->type();
+    assert(type.isConst());
+        
+    auto val = value.Content->var->val();
+
+    if(type.base() == BaseType::INT){
+        return boost::get<int>(val);
+    } else if(type.base() == BaseType::STRING){
+        return boost::get<std::pair<std::string, int>>(val);
+    }
+
+    //Type not managed
+    assert(false);
 }
