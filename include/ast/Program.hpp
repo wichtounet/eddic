@@ -20,6 +20,8 @@
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/GlobalArrayDeclaration.hpp"
+#include "ast/StandardImport.hpp"
+#include "ast/Import.hpp"
 
 #include "Context.hpp"
 
@@ -32,7 +34,9 @@ namespace ast {
 typedef boost::variant<
             FunctionDeclaration, 
             GlobalVariableDeclaration,
-            GlobalArrayDeclaration
+            GlobalArrayDeclaration,
+            StandardImport,
+            Import
         > FirstLevelBlock;
 
 //A source EDDI program
