@@ -13,11 +13,15 @@
 
 namespace eddic {
 
+/*!
+ * \enum OperandType
+ * \brief A type of operand. Represents the location of the operand.
+ */
 enum class OperandType : unsigned int {
-    IMMEDIATE,
-    REGISTER,
-    STACK,
-    GLOBAL
+    IMMEDIATE,          /**< An immediate operand */
+    REGISTER,           /**< An operand in a register */
+    STACK,              /**< An operand on the stack */
+    GLOBAL              /**< A global operand */
 };
 
 /*!

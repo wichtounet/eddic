@@ -12,11 +12,15 @@
 
 namespace eddic {
 
+/*!
+ * \enum PositionType
+ * \brief A type of position for a variable
+ */
 enum PositionType {
-    STACK, 
-    PARAMETER,
-    GLOBAL,
-    CONST       //Constants are not stored but replaced at their uses
+    STACK,          /**< A variable on the stack */ 
+    PARAMETER,      /**< A parameter */
+    GLOBAL,         /**< A global variable */
+    CONST           /**< A const variable. Not stored. Will be replaced in each usage */
 };
 
 class Position {
