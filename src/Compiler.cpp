@@ -78,15 +78,17 @@ int Compiler::compile(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
-            
+           
             //Annotate the AST with more informations
             defineDefaultValues(program);
             defineContexts(program);
-            defineVariables(program);
-            defineFunctions(program, functionTable);
 
             //Transform the AST
             transform(program);
+
+            //Annotate the AST
+            defineVariables(program);
+            defineFunctions(program, functionTable);
 
             //Static analysis
             checkStrings(program, pool);
@@ -94,10 +96,11 @@ int Compiler::compile(const std::string& file) {
 
             //Check for warnings
             checkForWarnings(program, functionTable);
+            DebugVisitor()(program);
             
             //Optimize the AST
             optimize(program, functionTable, pool);
-
+    
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
             writeIL(program, pool, il);
