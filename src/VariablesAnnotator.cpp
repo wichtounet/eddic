@@ -135,7 +135,12 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         BaseType baseType = stringToBaseType(declaration.Content->variableType);
         Type type(baseType, declaration.Content->const_);
-        declaration.Content->context->addVariable(declaration.Content->variableName, type);
+
+        if(type.isConst()){
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
+        } else {
+            declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+        }
 
         visit(*this, *declaration.Content->value);
     }
