@@ -59,7 +59,7 @@ bool SpiritParser::parse(const std::string& file, ast::Program& program){
             std::cout <<
                 "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl <<
                 "'" << position_begin.get_currentline() << "'" << std::endl <<
-                std::setw(pos.column) << " " << "^- here";
+                std::setw(pos.column) << " " << "^- here" << std::endl;
             
             return false;
         }

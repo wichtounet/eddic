@@ -22,6 +22,7 @@
 #include "Variable.hpp"
 
 #include "ast/Program.hpp"
+#include <iostream>
 
 using namespace eddic;
 
@@ -58,6 +59,13 @@ struct GetIntValue : public boost::static_visitor<int> {
     int operator()(ast::Integer& integer) const {
         return integer.value; 
     }
+
+    int operator()(ast::VariableValue& variable) const {
+        Type type = variable.Content->var->type();
+        assert(type.isConst() && type.base() == BaseType::INT);
+        
+        return boost::get<int>(variable.Content->var->val());
+    }
    
     //Other values are not integers
     template<typename T> 
@@ -67,6 +75,7 @@ struct GetIntValue : public boost::static_visitor<int> {
         return -1; 
     }
 };
+
 
 struct GetStringValue : public boost::static_visitor<std::string> {
     std::string operator()(ast::ComposedValue& value) const {
@@ -82,6 +91,15 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     
     std::string operator()(ast::Litteral& litteral) const {
         return litteral.value;
+    }
+
+    std::string operator()(ast::VariableValue& variable) const {
+        Type type = variable.Content->var->type();
+        assert(type.isConst() && type.base() == BaseType::STRING);
+
+        auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
+
+        return value.first;
     }
     
     //Other values are not strings
@@ -144,6 +162,28 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
 
             return value;
+        }
+
+        ast::Value operator()(ast::VariableValue& variable) const {
+            Type type = variable.Content->var->type();
+
+            if(type.isConst()){
+                if(type.base() == BaseType::INT){
+                    ast::Integer integer;
+                    integer.value = boost::get<int>(variable.Content->var->val());
+                    return integer; 
+                } else if(type.base() == BaseType::STRING){
+                    auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
+
+                    ast::Litteral litteral;
+                    litteral.value = value.first;
+                    litteral.label = pool.label(litteral.value);
+
+                    return litteral;
+                }
+            }
+
+            return variable;
         }
 
         //No optimizations for other kind of values

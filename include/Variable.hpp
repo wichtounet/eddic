@@ -35,6 +35,7 @@ class Variable {
         Position m_position;
         Val v_value;
         int references;
+        bool constant;
 
     public:
         Variable(const std::string& name, Type type, Position position);

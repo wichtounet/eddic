@@ -14,6 +14,10 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         value(lexer), 
         condition(lexer),
         type(lexer){
+   
+    const_ %=
+            (lexer.const_ > spirit::attr(true))
+        |   spirit::attr(false);
     
     else_if_ %= 
             lexer.else_ 
@@ -91,7 +95,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >   lexer.right_brace;
 
     declaration %= 
-            lexer.word 
+            const_
+        >>  lexer.word 
         >>  lexer.word 
         >>  -(lexer.assign >> value);
     
@@ -121,7 +126,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  value;
     
     globalDeclaration %= 
-            lexer.word 
+            const_
+        >>  lexer.word 
         >>  lexer.word 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;

@@ -12,8 +12,8 @@
 
 using namespace eddic;
 
-Type::Type(BaseType base) : type(base), array(false), m_size(0) {}
-Type::Type(BaseType base, unsigned int size) : type(base), array(true), m_size(size) {}
+Type::Type(BaseType base, bool constant) : type(base), array(false), m_size(0), const_(constant) {}
+Type::Type(BaseType base, unsigned int size, bool constant) : type(base), array(true), m_size(size), const_(constant) {}
 
 BaseType Type::base() const {
     return type;
@@ -21,6 +21,10 @@ BaseType Type::base() const {
 
 bool Type::isArray() const {
     return array;
+}
+
+bool Type::isConst() const {
+    return const_;
 }
 
 unsigned int Type::size() const {
@@ -69,15 +73,15 @@ BaseType eddic::stringToBaseType(const std::string& type){
 
 Type eddic::stringToType(const std::string& type){
     if (type == "int") {
-        return Type(BaseType::INT);
+        return Type(BaseType::INT, false);
     } else if (type == "string"){
-        return Type(BaseType::STRING);
+        return Type(BaseType::STRING, false);
     } else if(type == "int[]") {
-        return Type(BaseType::INT, 0);//Use a more proper way to set that it's an array type
+        return Type(BaseType::INT, 0, false);//Use a more proper way to set that it's an array type
     } else if(type == "string[]") {
-        return Type(BaseType::STRING, 0);//Use a more proper way to set that it's an array type
+        return Type(BaseType::STRING, 0, false);//Use a more proper way to set that it's an array type
     } else if(type == "void") {
-        return Type(BaseType::VOID);
+        return Type(BaseType::VOID, false);
     }
 
     throw SemanticalException("Invalid type");

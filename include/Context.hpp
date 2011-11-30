@@ -36,7 +36,7 @@ class Context {
         Context(const Context& rhs) = delete;
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
-        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value) = 0;
         virtual void removeVariable(const std::string& variable);
 
         bool exists(const std::string& a) const;
