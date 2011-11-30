@@ -58,6 +58,13 @@ struct GetIntValue : public boost::static_visitor<int> {
     int operator()(ast::Integer& integer) const {
         return integer.value; 
     }
+
+    int operator()(ast::VariableValue& variable) const {
+        Type type = variable.Content->var->type();
+        assert(type.isConst() && type.base() == BaseType::INT);
+        
+        return boost::get<int>(variable.Content->var->val());
+    }
    
     //Other values are not integers
     template<typename T> 
@@ -82,6 +89,15 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     
     std::string operator()(ast::Litteral& litteral) const {
         return litteral.value;
+    }
+
+    std::string operator()(ast::VariableValue& variable) const {
+        Type type = variable.Content->var->type();
+        assert(type.isConst() && type.base() == BaseType::STRING);
+
+        auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
+
+        return value.first;
     }
     
     //Other values are not strings
