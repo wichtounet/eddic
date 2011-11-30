@@ -146,6 +146,27 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             return value;
         }
 
+        ast::Value operator()(ast::VariableValue& variable) const {
+            Type type = variable.Content->var->type();
+
+            if(type.isConst()){
+                if(type.base() == BaseType::INT){
+                    ast::Integer integer;
+                    integer.value = boost::get<int>(variable.Content->var->val());
+                    return integer; 
+                } else {
+                    auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
+
+                    ast::Litteral litteral;
+                    litteral.value = value.first;
+                    litteral.label = pool.label(litteral.value);
+                    return litteral;
+                }
+            }
+
+            return variable;
+        }
+
         //No optimizations for other kind of values
         template<typename T>
         ast::Value operator()(T& value) const {
