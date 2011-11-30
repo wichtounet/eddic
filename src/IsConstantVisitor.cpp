@@ -7,6 +7,7 @@
 
 #include <boost/variant/apply_visitor.hpp>
 
+#include "Variable.hpp"
 #include "IsConstantVisitor.hpp"
 
 #include "ast/Value.hpp"
@@ -21,8 +22,8 @@ bool IsConstantVisitor::operator()(ast::Integer&) const {
     return true;
 }
 
-bool IsConstantVisitor::operator()(ast::VariableValue&) const {
-    return false;
+bool IsConstantVisitor::operator()(ast::VariableValue& variable) const {
+    return variable.Content->var->type().isConst();
 }
 
 bool IsConstantVisitor::operator()(ast::ArrayValue&) const {
