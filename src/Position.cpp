@@ -24,6 +24,10 @@ bool Position::isGlobal() const {
     return m_type == GLOBAL;
 }
 
+bool Position::isConst() const {
+    return m_type == CONST;
+}
+
 int Position::offset() const {
     return m_offset;
 }

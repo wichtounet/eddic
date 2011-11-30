@@ -15,7 +15,8 @@ namespace eddic {
 enum PositionType {
     STACK, 
     PARAMETER,
-    GLOBAL
+    GLOBAL,
+    CONST       //Constants are not stored but replaced at their uses
 };
 
 class Position {
@@ -31,6 +32,7 @@ class Position {
         bool isStack() const;
         bool isParameter() const;
         bool isGlobal() const;
+        bool isConst() const;
         int offset() const;
 
         PositionType type() const;
