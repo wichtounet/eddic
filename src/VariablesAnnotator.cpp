@@ -132,17 +132,22 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
+        
+        visit(*this, *declaration.Content->value);
 
         BaseType baseType = stringToBaseType(declaration.Content->variableType);
         Type type(baseType, declaration.Content->const_);
 
         if(type.isConst()){
+            if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
+                throw SemanticalException("The value must be constant");
+            }
+            
             declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
         } else {
             declaration.Content->context->addVariable(declaration.Content->variableName, type);
         }
 
-        visit(*this, *declaration.Content->value);
     }
     
     void operator()(ast::ArrayDeclaration& declaration){
