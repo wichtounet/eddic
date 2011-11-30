@@ -96,7 +96,6 @@ int Compiler::compile(const std::string& file) {
 
             //Check for warnings
             checkForWarnings(program, functionTable);
-            DebugVisitor()(program);
             
             //Optimize the AST
             optimize(program, functionTable, pool);
