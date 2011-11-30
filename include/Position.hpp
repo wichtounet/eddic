@@ -26,6 +26,7 @@ class Position {
         const std::string m_name;
 
     public:
+        Position(PositionType type);
         Position(PositionType type, int offset);
         Position(PositionType type, const std::string& name);
 
