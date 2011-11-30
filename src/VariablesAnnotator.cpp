@@ -133,8 +133,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
 
-        Type variableType = stringToType(declaration.Content->variableType);
-        declaration.Content->context->addVariable(declaration.Content->variableName, variableType);
+        BaseType baseType = stringToBaseType(declaration.Content->variableType);
+        Type type(baseType, declaration.Content->const_);
+        declaration.Content->context->addVariable(declaration.Content->variableName, type);
 
         visit(*this, *declaration.Content->value);
     }

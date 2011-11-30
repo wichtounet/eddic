@@ -95,7 +95,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >   lexer.right_brace;
 
     declaration %= 
-            lexer.word 
+            const_
+        >>  lexer.word 
         >>  lexer.word 
         >>  -(lexer.assign >> value);
     

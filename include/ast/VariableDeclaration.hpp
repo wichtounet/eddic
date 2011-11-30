@@ -24,6 +24,7 @@ namespace ast {
 struct ASTVariableDeclaration {
     std::shared_ptr<Context> context;
 
+    bool const_;
     std::string variableType;
     std::string variableName;
     boost::optional<Value> value;
@@ -41,6 +42,7 @@ typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableDeclaration, 
+    (bool, Content->const_)
     (std::string, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)
