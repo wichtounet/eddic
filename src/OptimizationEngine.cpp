@@ -22,6 +22,7 @@
 #include "Variable.hpp"
 
 #include "ast/Program.hpp"
+#include <iostream>
 
 using namespace eddic;
 
@@ -74,6 +75,7 @@ struct GetIntValue : public boost::static_visitor<int> {
         return -1; 
     }
 };
+
 
 struct GetStringValue : public boost::static_visitor<std::string> {
     std::string operator()(ast::ComposedValue& value) const {
@@ -170,12 +172,13 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
                     ast::Integer integer;
                     integer.value = boost::get<int>(variable.Content->var->val());
                     return integer; 
-                } else {
+                } else if(type.base() == BaseType::STRING){
                     auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
                     ast::Litteral litteral;
                     litteral.value = value.first;
                     litteral.label = pool.label(litteral.value);
+
                     return litteral;
                 }
             }
