@@ -8,6 +8,6 @@ void main(){
     const int a = 33;
     const string b = "33";
 
-    //println(a);
-    //println(b);
+    println(a);
+    println(b);
 }
