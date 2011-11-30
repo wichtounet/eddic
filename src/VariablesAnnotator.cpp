@@ -137,9 +137,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         Type type(baseType, declaration.Content->const_);
 
         if(type.isConst()){
-            declaration.Content->context->addVariable(declaration.Content->variableName, type);
-        } else {
             declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+        } else {
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
         }
 
         visit(*this, *declaration.Content->value);
