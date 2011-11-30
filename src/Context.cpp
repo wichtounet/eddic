@@ -36,11 +36,6 @@ bool Context::exists(const std::string& variable) const {
     return true;
 }
 
-std::shared_ptr<Variable> Context::addVariable(const std::string&, Type, ast::Value&){
-    //By default this method is not implemented for a context
-    assert(false);
-}
-
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
     auto iter = variables.find(variable);
     auto end = variables.end();
