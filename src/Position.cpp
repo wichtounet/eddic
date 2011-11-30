@@ -14,19 +14,19 @@ Position::Position(PositionType type, int offset) : m_type(type), m_offset(offse
 Position::Position(PositionType type, const std::string& name) : m_type(type), m_offset(0), m_name(name) {}
 
 bool Position::isStack() const {
-    return m_type == STACK;
+    return m_type == PositionType::STACK;
 }
 
 bool Position::isParameter() const {
-    return m_type == PARAMETER;
+    return m_type == PositionType::PARAMETER;
 }
 
 bool Position::isGlobal() const {
-    return m_type == GLOBAL;
+    return m_type == PositionType::GLOBAL;
 }
 
 bool Position::isConst() const {
-    return m_type == CONST;
+    return m_type == PositionType::CONST;
 }
 
 int Position::offset() const {
