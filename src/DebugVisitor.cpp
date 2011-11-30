@@ -138,8 +138,8 @@ void DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Litteral&) const {
-    std::cout << indent() << "Litteral" << std::endl; 
+void DebugVisitor::operator()(ast::Litteral& litteral) const {
+    std::cout << indent() << "Litteral [" << litteral.value << "]" << std::endl; 
 }
 
 void DebugVisitor::operator()(ast::Integer& integer) const {
