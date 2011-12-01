@@ -23,6 +23,10 @@ enum class PositionType : unsigned int {
     CONST           /**< A const variable. Not stored. Will be replaced in each usage */
 };
 
+/*!
+ * \class Position
+ * \brief The position of a variable
+ */
 class Position {
     private:
         const PositionType m_type;
