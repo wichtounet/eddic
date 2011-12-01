@@ -18,9 +18,27 @@
 
 namespace eddic {
 
+/*!
+ * \brief Return the mangled representation of the given type. 
+ * \param type The type to mangle. 
+ * \return The mangled type. 
+ */
 std::string mangle(Type type);
 
+/*!
+ * \brief Return the mangled representation of the given function. Used for function declarations.  
+ * \param functionName The name of the function
+ * \param types The types of parameters. 
+ * \return The mangled function name. 
+ */
 std::string mangle(const std::string& functionName, const std::vector<ParameterType>& types);
+
+/*!
+ * \brief Return the mangled representation of the given function. Used for function calls.  
+ * \param functionName The name of the function. 
+ * \param values The values used for the call. 
+ * \return The mangled function name. 
+ */
 std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values);
 
 } //end of eddic
