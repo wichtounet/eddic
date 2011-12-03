@@ -8,13 +8,15 @@
 #ifndef TAC_ARGUMENT_H
 #define TAC_ARGUMENT_H
 
+#include <boost/variant/variant.hpp>
+
 namespace eddic {
+
+class Variable;
 
 namespace tac {
 
-struct Argument {
-
-};
+typedef boost::variant<std::shared_ptr<Variable>> Argument;
 
 } //end of tac
 
