@@ -17,7 +17,11 @@ namespace eddic {
 
 namespace tac {
 
-typedef boost::variant<tac::Quadruple, tac::ControlQuadruple> Statement;
+typedef boost::variant<
+        tac::Quadruple,         //Basic quadruples
+        tac::ControlQuadruple,  //Jumping quadruples
+        std::string             //For labels
+    > Statement;
 
 } //end of tac
 

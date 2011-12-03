@@ -8,6 +8,7 @@
 #ifndef TAC_CONTROL_QUADRUPLE_H
 #define TAC_CONTROL_QUADRUPLE_H
 
+#include <string>
 #include <memory>
 
 #include "tac/BinaryOperator.hpp"
@@ -25,6 +26,9 @@ struct ControlQuadruple {
     Argument arg1;
     Argument arg2;
     BinaryOperator op;
+    std::string label;
+    
+    //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;
 };
 
