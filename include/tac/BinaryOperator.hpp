@@ -8,13 +8,22 @@
 #ifndef TAC_BINARY_OPERATOR_H
 #define TAC_BINARY_OPERATOR_H
 
+#include <string>
+
 namespace eddic {
 
 namespace tac {
 
 enum class BinaryOperator : unsigned int {
-    GREATER
+    EQUALS,
+    NOT_EQUALS,
+    LESS,
+    LESS_EQUALS,
+    GREATER,
+    GREATER_EQUALS
 };
+
+BinaryOperator toBinaryOperator(const std::string& op);
 
 } //end of tac
 

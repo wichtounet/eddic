@@ -10,6 +10,7 @@
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "SemanticalException.hpp"
+#include "FunctionContext.hpp"
 
 #include "tac/TacCompiler.hpp"
 #include "tac/Program.hpp"
@@ -20,6 +21,32 @@
 #include "il/Labels.hpp"
 
 using namespace eddic;
+ 
+struct JumpIfFalseVisitor : public boost::static_visitor<> {
+    JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {};
+    
+    mutable std::shared_ptr<tac::Function> function;
+    std::string label;
+   
+    void operator()(ast::True&) const {
+        //it is a no-op
+    }
+   
+    void operator()(ast::False&) const {
+        //we always jump
+        function->add(tac::Goto(label));
+    }
+   
+    void operator()(ast::BinaryCondition& binaryCondition) const {
+        auto t1 = function->context->newTemporary();
+        auto t2 = function->context->newTemporary();
+
+        //TODO assign left to t1
+        //TODO assign right to t2
+
+        function->add(tac::IfFalse(tac::toBinaryOperator(binaryCondition.Content->op), t1, t2, label));
+    }
+};
 
 class CompilerVisitor : public boost::static_visitor<> {
     private:
@@ -115,11 +142,11 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             function->add(startLabel);
 
-            writeILJumpIfNot(program, while_.Content->condition, endLabel);
+            boost::apply_visitor(JumpIfFalseVisitor(function, endLabel), while_.Content->condition);
 
             visit_each(*this, while_.Content->instructions);
 
-            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
+            function->add(tac::Goto(startLabel));
 
             function->add(endLabel);
         }

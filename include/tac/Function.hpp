@@ -22,6 +22,8 @@ namespace tac {
 class Function {
     public:
         Function(std::shared_ptr<FunctionContext> context);
+        
+        std::shared_ptr<FunctionContext> context;
 
         void add(tac::Statement statement);
 
@@ -29,8 +31,6 @@ class Function {
         std::shared_ptr<tac::BasicBlock> newBasicBlock();
 
     private:
-        std::shared_ptr<FunctionContext> context;
-
         //Before being partitioned, the function has only statement
         std::vector<tac::Statement> statements;
         
