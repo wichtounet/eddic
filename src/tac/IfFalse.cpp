@@ -5,10 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/Quadruple.hpp"
+#include "tac/IfFalse.hpp"
 
 using namespace eddic;
 
-tac::ControlQuadruple::ControlQuadruple(){}
-tac::ControlQuadruple::ControlQuadruple(BinaryOperator o, const std::string& l) : op(o), label(l) {}
-tac::ControlQuadruple::ControlQuadruple(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : op(o), arg1(a1), arg2(a2), label(l) {}
+tac::IfFalse::IfFalse(){}
+tac::IfFalse::IfFalse(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), arg2(a2), op(o), label(l) {}

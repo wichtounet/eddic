@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_CONTROL_QUADRUPLE_H
-#define TAC_CONTROL_QUADRUPLE_H
+#ifndef TAC_IF_FALSE_H
+#define TAC_IF_FALSE_H
 
 #include <string>
 #include <memory>
@@ -22,7 +22,7 @@ namespace tac {
 
 class BasicBlock;
 
-struct ControlQuadruple {
+struct IfFalse {
     Argument arg1;
     Argument arg2;
     BinaryOperator op;
@@ -31,9 +31,8 @@ struct ControlQuadruple {
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;
 
-    ControlQuadruple();
-    ControlQuadruple(BinaryOperator op, const std::string& label);
-    ControlQuadruple(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
+    IfFalse();
+    IfFalse(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 
 } //end of tac

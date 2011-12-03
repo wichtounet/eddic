@@ -11,7 +11,7 @@
 #include <boost/variant/variant.hpp>
 
 #include "tac/Quadruple.hpp"
-#include "tac/ControlQuadruple.hpp"
+#include "tac/IfFalse.hpp"
 
 namespace eddic {
 
@@ -19,7 +19,7 @@ namespace tac {
 
 typedef boost::variant<
         tac::Quadruple,         //Basic quadruples
-        tac::ControlQuadruple,  //Jumping quadruples
+        tac::IfFalse,           //Jumping quadruples
         std::string             //For labels
     > Statement;
 
