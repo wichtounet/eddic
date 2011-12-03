@@ -10,6 +10,10 @@
 using namespace eddic;
 
 tac::Function::Function(std::shared_ptr<FunctionContext> c) : context(c) {}
+        
+void tac::Function::add(tac::Statement statement){
+    statements.push_back(statement);
+}
 
 std::shared_ptr<tac::BasicBlock> tac::Function::currentBasicBlock(){
     assert(!blocks.empty());

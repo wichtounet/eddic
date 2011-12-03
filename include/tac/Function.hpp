@@ -23,12 +23,18 @@ class Function {
     public:
         Function(std::shared_ptr<FunctionContext> context);
 
+        void add(tac::Statement statement);
+
         std::shared_ptr<tac::BasicBlock> currentBasicBlock();
         std::shared_ptr<tac::BasicBlock> newBasicBlock();
 
     private:
         std::shared_ptr<FunctionContext> context;
 
+        //Before being partitioned, the function has only statement
+        std::vector<tac::Statement> statements;
+        
+        //There is no basic blocks at the beginning
         std::vector<std::shared_ptr<tac::BasicBlock>> blocks;
 };
 
