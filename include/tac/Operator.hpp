@@ -5,29 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_FUNCTION_H
-#define TAC_FUNCTION_H
-
-#include <memory>
-#include <vector>
-
-#include "tac/BasicBlock.hpp"
+#ifndef TAC_OPERATOR_H
+#define TAC_OPERATOR_H
 
 namespace eddic {
 
-class FunctionContext;
-
 namespace tac {
 
-class Function {
-    public:
-        tac::BasicBlock& currentBlock();
-        tac::BasicBlock& newBlock();
-
-    private:
-        std::shared_ptr<FunctionContext> context;
-
-        std::vector<tac::BasicBlock> blocks;
+enum class Operator : unsigned int {
+    ADD
 };
 
 } //end of tac

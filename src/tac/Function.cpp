@@ -5,22 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_STATEMENT_H
-#define TAC_STATEMENT_H
+#include "tac/Function.hpp"
 
-#include <boost/variant/variant.hpp>
+using namespace eddic;
 
-#include "tac/Quadruple.hpp"
-#include "tac/ControlQuadruple.hpp"
+tac::BasicBlock& tac::Function::currentBlock(){
+    if(blocks.empty()){
+        return newBlock();
+    }
 
-namespace eddic {
+    return blocks.back();
+}
 
-namespace tac {
-
-typedef boost::variant<tac::Quadruple, tac::ControlQuadruple> Statement;
-
-} //end of tac
-
-} //end of eddic
-
-#endif
+tac::BasicBlock& tac::Function::newBlock(){
+    tac::BasicBlock block;
+    blocks.push_back(block);
+    return blocks.back();
+}   

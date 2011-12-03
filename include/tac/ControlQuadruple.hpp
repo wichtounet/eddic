@@ -10,17 +10,22 @@
 
 #include <vector>
 
+#include "tac/BinaryOperator.hpp"
+#include "tac/Argument.hpp"
+
 namespace eddic {
 
 class Variable;
 
 namespace tac {
 
+class BasicBlock;
+
 struct ControlQuadruple {
-    std::string label;
     Argument arg1;
     Argument arg2;
     BinaryOperator op;
+    BasicBlock& block;
 };
 
 } //end of tac

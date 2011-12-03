@@ -10,6 +10,9 @@
 
 #include <vector>
 
+#include "tac/Operator.hpp"
+#include "tac/Argument.hpp"
+
 namespace eddic {
 
 class Variable;
@@ -18,9 +21,9 @@ namespace tac {
 
 struct Quadruple {
     std::shared_ptr<Variable> result;
-    Argument arg1;
-    Argument arg2;
-    Operator op;
+    tac::Argument arg1;
+    tac::Argument arg2;
+    tac::Operator op;
 };
 
 } //end of tac

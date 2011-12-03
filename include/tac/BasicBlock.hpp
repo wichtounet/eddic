@@ -14,14 +14,18 @@
 
 namespace eddic {
 
+class Context;
+
 namespace tac {
 
-struct BasicBlock {
-    std::shared_ptr<FunctionContext> context;
-    
-    std::vector<Statement> statements;
-    
-    void add(Statement statement);
+class BasicBlock {
+    public:
+        void add(tac::Statement statement);
+
+    private:
+        std::shared_ptr<Context> context;
+
+        std::vector<tac::Statement> statements;
 };
 
 } //end of tac
