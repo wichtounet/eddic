@@ -11,3 +11,4 @@ using namespace eddic;
 
 tac::Quadruple::Quadruple(){}
 tac::Quadruple::Quadruple(std::shared_ptr<Variable> r, tac::Argument arg) : result(r), arg1(arg) {}
+tac::Quadruple::Quadruple(std::shared_ptr<Variable> r, tac::Argument a1, Operator o, tac::Argument a2) : result(r), arg1(a1), arg2(a2), op(o) {}

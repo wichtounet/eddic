@@ -13,7 +13,8 @@ namespace eddic {
 namespace tac {
 
 enum class Operator : unsigned int {
-    ADD
+    ADD,
+    DOT
 };
 
 } //end of tac

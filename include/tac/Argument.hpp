@@ -18,7 +18,10 @@ class Variable;
 
 namespace tac {
 
-typedef boost::variant<std::shared_ptr<Variable>> Argument;
+typedef boost::variant<
+        std::shared_ptr<Variable>, 
+        int
+    > Argument;
 
 } //end of tac
 
