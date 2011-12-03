@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-tac::BasicBlock& tac::Function::currentBlock(){
+std::shared_ptr<tac::BasicBlock> tac::Function::currentBlock(){
     if(blocks.empty()){
         return newBlock();
     }
@@ -17,8 +17,7 @@ tac::BasicBlock& tac::Function::currentBlock(){
     return blocks.back();
 }
 
-tac::BasicBlock& tac::Function::newBlock(){
-    tac::BasicBlock block;
-    blocks.push_back(block);
+std::shared_ptr<tac::BasicBlock> tac::Function::newBlock(){
+    blocks.push_back(std::make_shared<BasicBlock>());
     return blocks.back();
 }   

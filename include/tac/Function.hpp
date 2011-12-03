@@ -21,13 +21,13 @@ namespace tac {
 
 class Function {
     public:
-        tac::BasicBlock& currentBlock();
-        tac::BasicBlock& newBlock();
+        std::shared_ptr<tac::BasicBlock> currentBlock();
+        std::shared_ptr<tac::BasicBlock> newBlock();
 
     private:
         std::shared_ptr<FunctionContext> context;
 
-        std::vector<tac::BasicBlock> blocks;
+        std::vector<std::shared_ptr<tac::BasicBlock>> blocks;
 };
 
 } //end of tac

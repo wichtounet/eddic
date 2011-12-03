@@ -8,7 +8,7 @@
 #ifndef TAC_CONTROL_QUADRUPLE_H
 #define TAC_CONTROL_QUADRUPLE_H
 
-#include <vector>
+#include <memory>
 
 #include "tac/BinaryOperator.hpp"
 #include "tac/Argument.hpp"
@@ -25,7 +25,7 @@ struct ControlQuadruple {
     Argument arg1;
     Argument arg2;
     BinaryOperator op;
-    BasicBlock& block;
+    std::shared_ptr<BasicBlock> block;
 };
 
 } //end of tac
