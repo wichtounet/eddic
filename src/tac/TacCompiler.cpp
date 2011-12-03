@@ -89,19 +89,16 @@ class CompilerVisitor : public boost::static_visitor<> {
                     break;
                 }
                 case BaseType::STRING:{
-  /*                  auto registerA = program.registers(EAX);
-                   
-                    auto left = lhs_var->toStringOperand();
-                    auto right = rhs_var->toStringOperand();
-                    
-                    program.addInstruction(program.factory().createMove(left.first, registerA));
-                    program.addInstruction(program.factory().createMove(right.first, left.first));
-                    program.addInstruction(program.factory().createMove(registerA, right.first));
-                    
-                    program.addInstruction(program.factory().createMove(left.second, registerA));
-                    program.addInstruction(program.factory().createMove(right.second, left.second));
-                    program.addInstruction(program.factory().createMove(registerA, right.second));
-    */                
+                    auto temp = swap.Content->context->newTemporary();
+
+                    function->currentBasicBlock()->add(tac::Quadruple(temp, rhs_var));  
+                    function->currentBasicBlock()->add(tac::Quadruple(rhs_var, lhs_var));  
+                    function->currentBasicBlock()->add(tac::Quadruple(lhs_var, temp));  
+
+                    function->currentBasicBlock()->add(tac::Quadruple(temp, rhs_var, tac::Operator::DOT, 4));  
+                    function->currentBasicBlock()->add(tac::Quadruple(rhs_var, lhs_var, tac::Operator::DOT, 4));  
+                    function->currentBasicBlock()->add(tac::Quadruple(lhs_var, temp));  
+
                     break;
                 }
                 default:
