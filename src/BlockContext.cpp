@@ -15,3 +15,7 @@ BlockContext::BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<Func
 std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type){
     return variables[variable] = m_functionContext->newVariable(variable, type);
 }
+
+std::shared_ptr<Variable> BlockContext::newTemporary(){
+    return m_functionContext->newTemporary();
+}

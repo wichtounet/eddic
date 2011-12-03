@@ -27,6 +27,8 @@ class BlockContext : public Context {
         BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext);
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
+        
+        std::shared_ptr<Variable> newTemporary();
 };
 
 } //end of eddic

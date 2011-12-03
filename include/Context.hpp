@@ -39,6 +39,8 @@ class Context {
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
         virtual void removeVariable(const std::string& variable);
 
+        virtual std::shared_ptr<Variable> newTemporary();
+
         bool exists(const std::string& a) const;
         std::shared_ptr<Variable> getVariable(const std::string& variable) const;
 
