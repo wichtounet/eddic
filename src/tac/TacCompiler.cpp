@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "VisitorUtils.hpp"
+
 #include "tac/TacCompiler.hpp"
 #include "tac/Program.hpp"
 
@@ -23,7 +25,9 @@ class CompilerVisitor : public boost::static_visitor<> {
         CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram) {}
         
         void operator()(ast::Program& p){
+            program.context = p.Content->context;
 
+            visit_each(*this, p.Content->blocks);
         }
 
         void operator()(ast::FunctionDeclaration& function){
