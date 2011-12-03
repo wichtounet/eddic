@@ -5,25 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_STATEMENT_H
-#define TAC_STATEMENT_H
+#ifndef TAC_GOTO_H
+#define TAC_GOTO_H
 
-#include <boost/variant/variant.hpp>
-
-#include "tac/Quadruple.hpp"
-#include "tac/IfFalse.hpp"
-#include "tac/Goto.hpp"
+#include <string>
+#include <memory>
 
 namespace eddic {
 
 namespace tac {
 
-typedef boost::variant<
-        tac::Quadruple,         //Basic quadruples
-        tac::IfFalse,           //Jumping quadruples
-        tac::Goto,              //Non-conditional jump
-        std::string             //For labels
-    > Statement;
+class BasicBlock;
+
+struct Goto {
+    std::string label;
+    
+    //Filled only in later phase replacing the label
+    std::shared_ptr<BasicBlock> block;
+
+    Goto();
+    Goto(const std::string& label);
+};
 
 } //end of tac
 
