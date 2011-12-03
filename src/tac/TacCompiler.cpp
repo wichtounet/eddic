@@ -16,6 +16,9 @@
 
 #include "ast/Program.hpp"
 
+//TODO Move label generator system in another folder
+#include "il/Labels.hpp"
+
 using namespace eddic;
 
 class CompilerVisitor : public boost::static_visitor<> {
@@ -82,22 +85,22 @@ class CompilerVisitor : public boost::static_visitor<> {
                 case BaseType::INT:{
                     auto temp = swap.Content->context->newTemporary();
 
-                    function->currentBasicBlock()->add(tac::Quadruple(temp, rhs_var));  
-                    function->currentBasicBlock()->add(tac::Quadruple(rhs_var, lhs_var));  
-                    function->currentBasicBlock()->add(tac::Quadruple(lhs_var, temp));  
+                    function->add(tac::Quadruple(temp, rhs_var));  
+                    function->add(tac::Quadruple(rhs_var, lhs_var));  
+                    function->add(tac::Quadruple(lhs_var, temp));  
 
                     break;
                 }
                 case BaseType::STRING:{
                     auto temp = swap.Content->context->newTemporary();
 
-                    function->currentBasicBlock()->add(tac::Quadruple(temp, rhs_var));  
-                    function->currentBasicBlock()->add(tac::Quadruple(rhs_var, lhs_var));  
-                    function->currentBasicBlock()->add(tac::Quadruple(lhs_var, temp));  
+                    function->add(tac::Quadruple(temp, rhs_var));  
+                    function->add(tac::Quadruple(rhs_var, lhs_var));  
+                    function->add(tac::Quadruple(lhs_var, temp));  
 
-                    function->currentBasicBlock()->add(tac::Quadruple(temp, rhs_var, tac::Operator::DOT, 4));  
-                    function->currentBasicBlock()->add(tac::Quadruple(rhs_var, lhs_var, tac::Operator::DOT, 4));  
-                    function->currentBasicBlock()->add(tac::Quadruple(lhs_var, temp));  
+                    function->add(tac::Quadruple(temp, rhs_var, tac::Operator::DOT, 4));  
+                    function->add(tac::Quadruple(rhs_var, lhs_var, tac::Operator::DOT, 4));  
+                    function->add(tac::Quadruple(lhs_var, temp));  
 
                     break;
                 }
@@ -107,7 +110,18 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::While& while_){
+            std::string startLabel = newLabel();
+            std::string endLabel = newLabel();
 
+            function->add(startLabel);
+
+            writeILJumpIfNot(program, while_.Content->condition, endLabel);
+
+            visit_each(*this, while_.Content->instructions);
+
+            program.addInstruction(program.factory().createJump(JumpCondition::ALWAYS, startLabel));
+
+            function->add(endLabel);
         }
 
         void operator()(ast::For for_){

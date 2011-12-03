@@ -30,6 +30,10 @@ struct ControlQuadruple {
     
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;
+
+    ControlQuadruple();
+    ControlQuadruple(BinaryOperator op, const std::string& label);
+    ControlQuadruple(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 
 } //end of tac
