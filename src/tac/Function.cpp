@@ -11,15 +11,13 @@ using namespace eddic;
 
 tac::Function::Function(std::shared_ptr<FunctionContext> c) : context(c) {}
 
-std::shared_ptr<tac::BasicBlock> tac::Function::currentBlock(){
-    if(blocks.empty()){
-        return newBlock();
-    }
+std::shared_ptr<tac::BasicBlock> tac::Function::currentBasicBlock(){
+    assert(!blocks.empty());
 
     return blocks.back();
 }
 
-std::shared_ptr<tac::BasicBlock> tac::Function::newBlock(){
+std::shared_ptr<tac::BasicBlock> tac::Function::newBasicBlock(){
     blocks.push_back(std::make_shared<BasicBlock>());
     return blocks.back();
 }   

@@ -36,7 +36,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             function = std::make_shared<tac::Function>(f.Content->context);
 
             //The entry basic block
-            function->newBlock(); 
+            function->newBasicBlock(); 
 
             visit_each(*this, f.Content->instructions);
 
