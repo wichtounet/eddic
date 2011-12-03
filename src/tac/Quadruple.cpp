@@ -5,23 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_ARGUMENT_H
-#define TAC_ARGUMENT_H
+#include "tac/Quadruple.hpp"
 
-#include <memory>
+using namespace eddic;
 
-#include <boost/variant/variant.hpp>
-
-namespace eddic {
-
-class Variable;
-
-namespace tac {
-
-typedef boost::variant<std::shared_ptr<Variable>> Argument;
-
-} //end of tac
-
-} //end of eddic
-
-#endif
+tac::Quadruple::Quadruple(){}
+tac::Quadruple::Quadruple(std::shared_ptr<Variable> r, tac::Argument arg) : result(r), arg1(arg) {}

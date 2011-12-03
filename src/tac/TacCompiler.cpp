@@ -8,6 +8,8 @@
 #include <string>
 
 #include "VisitorUtils.hpp"
+#include "Variable.hpp"
+#include "SemanticalException.hpp"
 
 #include "tac/TacCompiler.hpp"
 #include "tac/Program.hpp"
@@ -72,7 +74,39 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Swap& swap){
+            auto lhs_var = swap.Content->lhs_var;
+            auto rhs_var = swap.Content->rhs_var;
 
+            //We have the guarantee here that both variables are of the same type
+            switch (lhs_var->type().base()) {
+                case BaseType::INT:{
+                    auto temp = swap.Content->context->newTemporary();
+
+                    function->currentBasicBlock()->add(tac::Quadruple(temp, rhs_var));  
+                    function->currentBasicBlock()->add(tac::Quadruple(rhs_var, lhs_var));  
+                    function->currentBasicBlock()->add(tac::Quadruple(lhs_var, temp));  
+
+                    break;
+                }
+                case BaseType::STRING:{
+  /*                  auto registerA = program.registers(EAX);
+                   
+                    auto left = lhs_var->toStringOperand();
+                    auto right = rhs_var->toStringOperand();
+                    
+                    program.addInstruction(program.factory().createMove(left.first, registerA));
+                    program.addInstruction(program.factory().createMove(right.first, left.first));
+                    program.addInstruction(program.factory().createMove(registerA, right.first));
+                    
+                    program.addInstruction(program.factory().createMove(left.second, registerA));
+                    program.addInstruction(program.factory().createMove(right.second, left.second));
+                    program.addInstruction(program.factory().createMove(registerA, right.second));
+    */                
+                    break;
+                }
+                default:
+                   throw SemanticalException("Variable of invalid type");
+            }
         }
 
         void operator()(ast::While& while_){

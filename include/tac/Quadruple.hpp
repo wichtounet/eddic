@@ -24,6 +24,9 @@ struct Quadruple {
     tac::Argument arg1;
     tac::Argument arg2;
     tac::Operator op;
+
+    Quadruple();
+    Quadruple(std::shared_ptr<Variable> result, tac::Argument arg);
 };
 
 } //end of tac
