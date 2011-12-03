@@ -20,6 +20,8 @@ class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
         tac::Program& program;
+
+        std::shared_ptr<tac::Function> function;
     
     public:
         CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram) {}
@@ -30,8 +32,15 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit_each(*this, p.Content->blocks);
         }
 
-        void operator()(ast::FunctionDeclaration& function){
+        void operator()(ast::FunctionDeclaration& f){
+            function = std::make_shared<tac::Function>(f.Content->context);
 
+            //The entry basic block
+            function->newBlock(); 
+
+            visit_each(*this, f.Content->instructions);
+
+            program.functions.push_back(function);
         }
 
         void operator()(ast::GlobalVariableDeclaration&){

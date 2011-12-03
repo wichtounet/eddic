@@ -11,18 +11,18 @@
 #include <memory>
 #include <vector>
 
+#include "tac/Function.hpp"
+
 namespace eddic {
 
 struct GlobalContext;
 
 namespace tac {
 
-struct Function;
-
 struct Program {
     std::shared_ptr<GlobalContext> context;
 
-    std::vector<Function> functions;
+    std::vector<std::shared_ptr<Function>> functions;
 };
 
 } //end of tac

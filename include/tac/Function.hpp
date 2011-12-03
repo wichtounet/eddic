@@ -21,6 +21,8 @@ namespace tac {
 
 class Function {
     public:
+        Function(std::shared_ptr<FunctionContext> context);
+
         std::shared_ptr<tac::BasicBlock> currentBlock();
         std::shared_ptr<tac::BasicBlock> newBlock();
 

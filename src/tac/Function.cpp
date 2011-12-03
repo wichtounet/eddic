@@ -9,6 +9,8 @@
 
 using namespace eddic;
 
+tac::Function::Function(std::shared_ptr<FunctionContext> c) : context(c) {}
+
 std::shared_ptr<tac::BasicBlock> tac::Function::currentBlock(){
     if(blocks.empty()){
         return newBlock();
