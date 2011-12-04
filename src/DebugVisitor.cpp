@@ -33,6 +33,14 @@ void DebugVisitor::operator()(ast::Program& program) const {
     visit_each(*this, program.Content->blocks);
 }
 
+void DebugVisitor::operator()(ast::Import& import) const {
+    std::cout << indent() << "include \"" << import.file << "\"" << std::endl;
+}
+
+void DebugVisitor::operator()(ast::StandardImport& import) const {
+    std::cout << indent() << "include <" << import.header << ">" << std::endl;
+}
+
 void DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
     std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
 

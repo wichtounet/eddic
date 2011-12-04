@@ -22,6 +22,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     std::string indent() const ;
 
     void operator()(ast::Program& program) const ;
+    void operator()(ast::Import& import) const ;
+    void operator()(ast::StandardImport& import) const ;
     void operator()(ast::FunctionDeclaration& declaration) const ;
     void operator()(ast::GlobalVariableDeclaration&) const ;
     void operator()(ast::GlobalArrayDeclaration&) const ;
