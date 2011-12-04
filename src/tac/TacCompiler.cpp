@@ -88,7 +88,67 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
+            if (if_.Content->elseIfs.empty()) {
+                std::string endLabel = newLabel();
 
+                boost::apply_visitor(JumpIfFalseVisitor(function, endLabel), if_.Content->condition);
+
+                visit_each(*this, if_.Content->instructions);
+
+                if (if_.Content->else_) {
+                    std::string elseLabel = newLabel();
+
+                    function->add(tac::Goto(elseLabel));
+
+                    function->add(endLabel);
+
+                    visit_each(*this, (*if_.Content->else_).instructions);
+
+                    function->add(elseLabel);
+                } else {
+                    function->add(endLabel);
+                }
+            } else {
+                std::string end = newLabel();
+                std::string next = newLabel();
+
+                boost::apply_visitor(JumpIfFalseVisitor(function, next), if_.Content->condition);
+
+                visit_each(*this, if_.Content->instructions);
+
+                function->add(tac::Goto(end));
+
+                for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
+                    ast::ElseIf& elseIf = if_.Content->elseIfs[i];
+
+                    function->add(next);
+
+                    //Last elseif
+                    if (i == if_.Content->elseIfs.size() - 1) {
+                        if (if_.Content->else_) {
+                            next = newLabel();
+                        } else {
+                            next = end;
+                        }
+                    } else {
+                        next = newLabel();
+                    }
+
+                    boost::apply_visitor(JumpIfFalseVisitor(function, next), elseIf.condition);
+
+                    visit_each(*this, elseIf.instructions);
+
+                    function->add(tac::Goto(end));
+                }
+
+                if (if_.Content->else_) {
+                    function->add(next);
+
+                    visit_each(*this, (*if_.Content->else_).instructions);
+                }
+
+                function->add(end);
+            }
         }
 
         void operator()(ast::Assignment& assignment){
