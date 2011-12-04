@@ -22,6 +22,38 @@
 
 using namespace eddic;
 
+struct AssignValueToArray : public boost::static_visitor<> {
+    AssignValueToArray(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : function(f), variable(v), indexValue(i) {}
+    
+    mutable std::shared_ptr<tac::Function> function;
+    std::shared_ptr<Variable> variable;
+    ast::Value& indexValue;
+
+    void operator()(ast::Litteral& litteral) const {
+        //TODO
+    }
+
+    void operator()(ast::Integer& integer) const {
+        //TODO
+    }
+
+    void operator()(ast::FunctionCall& call) const {
+        //TODO
+    }
+
+    void operator()(ast::VariableValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ArrayValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ComposedValue& value) const {
+        //TODO
+    }
+};
+ 
 struct AssignValueToVariable : public boost::static_visitor<> {
     AssignValueToVariable(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v) : function(f), variable(v) {}
     
@@ -198,7 +230,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayAssignment& assignment){
-            //TODO
+            boost::apply_visitor(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
