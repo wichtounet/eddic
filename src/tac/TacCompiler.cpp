@@ -85,6 +85,14 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
 };
 
+void computeOffsetOfElement(std::shared_ptr<Variable> arrayVar, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> indexTemp){
+    //TODO
+}
+
+void computeLengthOfArray(std::shared_ptr<Variable> arrayVar, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> sizeTemp){
+    //TODO
+}
+
 class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
@@ -271,7 +279,47 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
        
         void operator()(ast::ForeachIn& foreach){
+            auto iterVar = foreach.Content->iterVar;
+            auto arrayVar = foreach.Content->arrayVar;
+            auto var = foreach.Content->var;
 
+            auto startLabel = newLabel();
+            auto endLabel = newLabel();
+
+            auto sizeTemp = foreach.Content->context->newTemporary();
+            auto indexTemp = foreach.Content->context->newTemporary();
+            auto stringTemp = foreach.Content->context->newTemporary();
+
+            //Init the index to 0
+            function->add(tac::Quadruple(iterVar, 0));
+
+            function->add(startLabel);
+
+            computeOffsetOfElement(arrayVar, iterVar, function, indexTemp);
+            computeLengthOfArray(arrayVar, function, sizeTemp);
+
+            function->add(tac::IfFalse(tac::BinaryOperator::LESS, iterVar, sizeTemp, endLabel));
+
+            computeOffsetOfElement(arrayVar, iterVar, function, indexTemp);
+
+            if(var->type().base() == BaseType::INT){
+                function->add(tac::Quadruple(var, arrayVar, tac::Operator::ARRAY, indexTemp));
+            } else {
+                function->add(tac::Quadruple(var, arrayVar, tac::Operator::ARRAY, indexTemp));
+
+                //Assign the second part of the string
+                function->add(tac::Quadruple(indexTemp, indexTemp, tac::Operator::ADD, 4));
+                function->add(tac::Quadruple(stringTemp, arrayVar, tac::Operator::ARRAY, indexTemp));
+                function->add(tac::Quadruple(var, 4, tac::Operator::DOT_ASSIGN, stringTemp));
+            }
+
+            visit_each(*this, foreach.Content->instructions);    
+
+            function->add(tac::Quadruple(iterVar, iterVar, tac::Operator::ADD, 1)); 
+
+            function->add(tac::Goto(startLabel));
+           
+            function->add(endLabel); 
         }
 
         void operator()(ast::FunctionCall& functionCall){

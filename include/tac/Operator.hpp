@@ -14,7 +14,9 @@ namespace tac {
 
 enum class Operator : unsigned int {
     ADD,
-    DOT
+    DOT,            //result = (arg1)+arg2
+    DOT_ASSIGN,     //result+arg1=arg2
+    ARRAY
 };
 
 } //end of tac
