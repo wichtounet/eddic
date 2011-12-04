@@ -13,6 +13,8 @@
 #include "tac/Quadruple.hpp"
 #include "tac/IfFalse.hpp"
 #include "tac/Goto.hpp"
+#include "tac/Call.hpp"
+#include "tac/Param.hpp"
 
 namespace eddic {
 
@@ -22,6 +24,8 @@ typedef boost::variant<
         tac::Quadruple,         //Basic quadruples
         tac::IfFalse,           //Jumping quadruples
         tac::Goto,              //Non-conditional jump
+        tac::Call,
+        tac::Param,
         std::string             //For labels
     > Statement;
 
