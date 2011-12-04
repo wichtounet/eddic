@@ -21,9 +21,40 @@
 #include "il/Labels.hpp"
 
 using namespace eddic;
+
+struct AssignValueToVariable : public boost::static_visitor<> {
+    AssignValueToVariable(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v) : function(f), variable(v) {}
+    
+    mutable std::shared_ptr<tac::Function> function;
+    std::shared_ptr<Variable> variable;
+
+    void operator()(ast::Litteral& litteral) const {
+        //TODO
+    }
+
+    void operator()(ast::Integer& call) const {
+        //TODO
+    }
+
+    void operator()(ast::FunctionCall& call) const {
+        //TODO
+    }
+
+    void operator()(ast::VariableValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ArrayValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ComposedValue& value) const {
+        //TODO
+    }
+};
  
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
-    JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {};
+    JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
     
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
@@ -41,8 +72,8 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
         auto t1 = function->context->newTemporary();
         auto t2 = function->context->newTemporary();
 
-        //TODO assign left to t1
-        //TODO assign right to t2
+        boost::apply_visitor(AssignValueToVariable(function, t1), binaryCondition.Content->lhs);
+        boost::apply_visitor(AssignValueToVariable(function, t2), binaryCondition.Content->rhs);
 
         function->add(tac::IfFalse(tac::toBinaryOperator(binaryCondition.Content->op), t1, t2, label));
     }
@@ -152,7 +183,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-
+            boost::apply_visitor(AssignValueToVariable(function, assignment.Content->context->getVariable(assignment.Content->variableName)), assignment.Content->value);
         }
         
         void operator()(ast::ArrayAssignment& assignment){
