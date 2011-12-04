@@ -104,9 +104,6 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& f){
             function = std::make_shared<tac::Function>(f.Content->context);
 
-            //The entry basic block
-            function->newBasicBlock(); 
-
             visit_each(*this, f.Content->instructions);
 
             program.functions.push_back(function);
@@ -193,7 +190,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayAssignment& assignment){
-
+            //TODO
         }
 
         void operator()(ast::VariableDeclaration& declaration){
@@ -249,7 +246,24 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::For for_){
+            visit_optional(*this, for_.Content->start);
 
+            std::string startLabel = newLabel();
+            std::string endLabel = newLabel();
+
+            function->add(startLabel);
+
+            if(for_.Content->condition){
+                boost::apply_visitor(JumpIfFalseVisitor(function, endLabel), *for_.Content->condition);
+            }
+
+            visit_each(*this, for_.Content->instructions);
+
+            visit_optional(*this, for_.Content->repeat);
+
+            function->add(tac::Goto(startLabel));
+            
+            function->add(endLabel);
         }
 
         void operator()(ast::Foreach&){
