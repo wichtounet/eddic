@@ -32,8 +32,8 @@ struct AssignValueToVariable : public boost::static_visitor<> {
         //TODO
     }
 
-    void operator()(ast::Integer& call) const {
-        //TODO
+    void operator()(ast::Integer& integer) const {
+        function->add(tac::Quadruple(variable, integer.value));
     }
 
     void operator()(ast::FunctionCall& call) const {
@@ -191,7 +191,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-
+            boost::apply_visitor(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
         }
 
         void operator()(ast::Swap& swap){
