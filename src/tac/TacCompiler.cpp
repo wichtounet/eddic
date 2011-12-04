@@ -41,7 +41,13 @@ struct AssignValueToVariable : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        //TODO
+        auto type = value.Content->var->type();
+
+        if(type.base() == BaseType::INT){
+            function->add(tac::Quadruple(variable, value.Content->var));
+        } else if(type.base() == BaseType::STRING){
+            //TODO
+        }
     }
 
     void operator()(ast::ArrayValue& value) const {
