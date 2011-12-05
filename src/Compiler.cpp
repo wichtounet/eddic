@@ -79,13 +79,13 @@ int Compiler::compile(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
+        
+            //Read dependencies
+            includeDependencies(program, parser);
            
             //Annotate the AST with more informations
             defineDefaultValues(program);
             defineContexts(program);
-        
-            //Read dependencies
-            includeDependencies(program, parser);
 
             //Transform the AST
             transform(program);
