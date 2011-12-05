@@ -187,7 +187,7 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
 
     program %=
             qi::eps 
-        >>  *(function | globalDeclaration | globalArrayDeclaration | import | standardImport);
+        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import);
 
     //Name the rules
     globalDeclaration.name("EDDI global variable");

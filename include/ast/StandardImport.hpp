@@ -15,7 +15,9 @@ namespace eddic {
 namespace ast {
 
 struct StandardImport {
+    std::string ignoreLess;
     std::string header;
+    std::string ignoreGreater;
 };
 
 } //end of ast
@@ -25,7 +27,9 @@ struct StandardImport {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::StandardImport, 
+    (std::string, ignoreLess)//Uglyfix in order to get the real value of header (ignoring <)
     (std::string, header)
+    (std::string, ignoreGreater)//Uglyfix in order to get the real value of header (ignoring >)
 )
 
 #endif
