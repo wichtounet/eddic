@@ -16,6 +16,30 @@ using namespace eddic;
 
 DependenciesResolver::DependenciesResolver(SpiritParser& p) : parser(p) {}
 
+class DependencyVisitor : public boost::static_visitor<> {
+    private:
+        SpiritParser& parser;
+
+    public:
+        DependencyVisitor(SpiritParser& p) : parser(p) {}
+
+        AUTO_RECURSE_PROGRAM()
+    
+        void operator()(ast::StandardImport& import){
+            //TODO
+        }
+    
+        void operator()(ast::Import& import){
+            //TODO
+        }
+
+        template<typename T>
+        void operator()(T&){
+            //Nothing to include there
+        }
+};
+
 void DependenciesResolver::resolve(ast::SourceFile& program) const {
-    //TODO
+    DependencyVisitor visitor(parser);
+    visitor(program);
 }
