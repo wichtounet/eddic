@@ -5,14 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
+#include <fstream>
+
 #include "DependenciesResolver.hpp"
 
 #include "ast/SourceFile.hpp"
 
+#include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
 using namespace eddic;
+
+bool exists(const std::string& file){
+   std::ifstream ifile(file.c_str());
+   return ifile; 
+}
 
 DependenciesResolver::DependenciesResolver(SpiritParser& p) : parser(p) {}
 
@@ -26,10 +35,23 @@ class DependencyVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
     
         void operator()(ast::StandardImport& import){
+            auto header = import.header;
+            auto headerFile = "stdlib/" + header + ".eddi";
+            
+            if(!exists(headerFile)){
+                throw SemanticalException("The header " + header + " does not exist");
+            }
+             
             //TODO
         }
     
         void operator()(ast::Import& import){
+            auto file = import.file.substr(1, import.file.size() - 2);
+
+            if(!exists(file)){
+                throw SemanticalException("The file " + file + " does not exist");
+            }
+
             //TODO
         }
 
