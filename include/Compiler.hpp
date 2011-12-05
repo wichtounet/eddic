@@ -17,11 +17,14 @@ namespace eddic {
 class StringPool;
 class FunctionTable;
 class IntermediateProgram;
+class SpiritParser;
 
 void defineDefaultValues(ast::SourceFile& program);
 void defineContexts(ast::SourceFile& program);
 void defineVariables(ast::SourceFile& program);
 void defineFunctions(ast::SourceFile& program, FunctionTable& table);
+
+void includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser);
 
 void checkTypes(ast::SourceFile& program);
 void checkStrings(ast::SourceFile& program, StringPool& pool);

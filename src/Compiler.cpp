@@ -30,6 +30,7 @@
 #include "TypeChecker.hpp"
 
 //Visitors
+#include "DependenciesResolver.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
 #include "IntermediateCompiler.hpp"
@@ -82,6 +83,9 @@ int Compiler::compile(const std::string& file) {
             //Annotate the AST with more informations
             defineDefaultValues(program);
             defineContexts(program);
+        
+            //Read dependencies
+            includeDependencies(program, parser);
 
             //Transform the AST
             transform(program);
@@ -194,6 +198,12 @@ void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
 
     il.writeAsm(writer);
     writer.write();
+}
+
+void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser){
+    DebugTimer<debug> timer("Resolve dependencies");
+    DependenciesResolver resolver(parser);
+    resolver.resolve(sourceFile);
 }
 
 void eddic::execCommand(const std::string& command) {
