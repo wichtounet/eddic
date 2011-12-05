@@ -28,7 +28,7 @@
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -58,7 +58,7 @@ struct Inspector : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::Program& program){
+        void operator()(ast::SourceFile& program){
             check(program.Content->context);
 
             visit_each(*this, program.Content->blocks);
@@ -83,7 +83,7 @@ struct Inspector : public boost::static_visitor<> {
         }
 };
 
-void WarningsEngine::check(ast::Program& program, FunctionTable& table) const {
+void WarningsEngine::check(ast::SourceFile& program, FunctionTable& table) const {
     if(WarningUnused){
         Inspector inspector(table);
         visit_non_variant(inspector, program);

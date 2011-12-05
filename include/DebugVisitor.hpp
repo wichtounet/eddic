@@ -10,7 +10,7 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 namespace eddic {
 
@@ -21,7 +21,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     std::string indent() const ;
 
-    void operator()(ast::Program& program) const ;
+    void operator()(ast::SourceFile& program) const ;
     void operator()(ast::Import& import) const ;
     void operator()(ast::StandardImport& import) const ;
     void operator()(ast::FunctionDeclaration& declaration) const ;

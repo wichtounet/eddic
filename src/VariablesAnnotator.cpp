@@ -12,7 +12,7 @@
 
 #include "VariablesAnnotator.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -212,7 +212,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void VariablesAnnotator::annotate(ast::Program& program) const {
+void VariablesAnnotator::annotate(ast::SourceFile& program) const {
     VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

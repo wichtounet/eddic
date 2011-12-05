@@ -10,7 +10,7 @@
 
 #include <boost/spirit/include/qi.hpp>
 #include "lexer/SpiritLexer.hpp"
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "parser/ValueGrammar.hpp"
 #include "parser/BooleanGrammar.hpp"
@@ -23,10 +23,10 @@ namespace eddic {
 typedef lexer_type::iterator_type Iterator;
 typedef SimpleLexer<lexer_type> Lexer;
 
-struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
+struct EddiGrammar : qi::grammar<Iterator, ast::SourceFile()> {
     EddiGrammar(const Lexer& lexer);
 
-    qi::rule<Iterator, ast::Program()> program;
+    qi::rule<Iterator, ast::SourceFile()> program;
     qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
     qi::rule<Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
     qi::rule<Iterator, ast::FunctionDeclaration()> function;

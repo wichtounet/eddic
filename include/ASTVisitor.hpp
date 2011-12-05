@@ -86,7 +86,7 @@ void operator()(ast::ArrayValue& array){\
 }
 
 #define AUTO_RECURSE_PROGRAM()\
-void operator()(ast::Program& program){\
+void operator()(ast::SourceFile& program){\
     visit_each(*this, program.Content->blocks);\
 }
 

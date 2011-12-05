@@ -8,14 +8,14 @@
 #ifndef STRING_CHECKER_H
 #define STRING_CHECKER_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 class StringPool;
 
 struct StringChecker {
-   void check(ast::Program& program, StringPool& pool) const ;
+   void check(ast::SourceFile& program, StringPool& pool) const ;
 };
 
 } //end of eddic

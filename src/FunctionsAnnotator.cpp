@@ -7,7 +7,7 @@
 
 #include "FunctionsAnnotator.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 #include "FunctionTable.hpp"
 
 #include "GetTypeVisitor.hpp"
@@ -116,7 +116,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void FunctionsAnnotator::annotate(ast::Program& program, FunctionTable& functionTable) const {
+void FunctionsAnnotator::annotate(ast::SourceFile& program, FunctionTable& functionTable) const {
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

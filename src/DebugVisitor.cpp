@@ -11,7 +11,7 @@
 
 #include "VisitorUtils.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
     
@@ -25,8 +25,8 @@ std::string DebugVisitor::indent() const {
     return acc;
 }
 
-void DebugVisitor::operator()(ast::Program& program) const {
-    std::cout << indent() << "Program" << std::endl; 
+void DebugVisitor::operator()(ast::SourceFile& program) const {
+    std::cout << indent() << "SourceFile" << std::endl; 
 
     ++level;
 

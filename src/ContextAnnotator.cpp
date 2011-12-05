@@ -13,7 +13,7 @@
 
 #include "ContextAnnotator.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -36,7 +36,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_COMPOSED_VALUES()
         
-        void operator()(ast::Program& program){
+        void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
 
             visit_each(*this, program.Content->blocks);
@@ -175,7 +175,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 };
 
-void ContextAnnotator::annotate(ast::Program& program) const {
+void ContextAnnotator::annotate(ast::SourceFile& program) const {
     AnnotateVisitor visitor;
     visitor(program);
 }
