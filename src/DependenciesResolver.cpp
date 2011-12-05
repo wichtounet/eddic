@@ -15,6 +15,7 @@
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
+#include "parser/SpiritParser.hpp"
 
 using namespace eddic;
 
@@ -25,12 +26,15 @@ bool exists(const std::string& file){
 
 DependenciesResolver::DependenciesResolver(SpiritParser& p) : parser(p) {}
 
+void includeDependencies(ast::SourceFile& program, SpiritParser& parser);
+
 class DependencyVisitor : public boost::static_visitor<> {
     private:
         SpiritParser& parser;
+        ast::SourceFile& source;
 
     public:
-        DependencyVisitor(SpiritParser& p) : parser(p) {}
+        DependencyVisitor(SpiritParser& p, ast::SourceFile& s) : parser(p), source(s) {}
 
         AUTO_RECURSE_PROGRAM()
     
@@ -41,8 +45,13 @@ class DependencyVisitor : public boost::static_visitor<> {
             if(!exists(headerFile)){
                 throw SemanticalException("The header " + header + " does not exist");
             }
-             
-            //TODO
+           
+            ast::SourceFile dependency; 
+            if(parser.parse(headerFile, dependency)){
+                includeDependencies(dependency, parser); 
+
+                //TODO Include contents of dependency into source
+            }
         }
     
         void operator()(ast::Import& import){
@@ -51,8 +60,13 @@ class DependencyVisitor : public boost::static_visitor<> {
             if(!exists(file)){
                 throw SemanticalException("The file " + file + " does not exist");
             }
+           
+            ast::SourceFile dependency; 
+            if(parser.parse(file, dependency)){
+                includeDependencies(dependency, parser); 
 
-            //TODO
+                //TODO Include contents of dependency into source
+            }
         }
 
         template<typename T>
@@ -61,7 +75,11 @@ class DependencyVisitor : public boost::static_visitor<> {
         }
 };
 
-void DependenciesResolver::resolve(ast::SourceFile& program) const {
-    DependencyVisitor visitor(parser);
+void includeDependencies(ast::SourceFile& program, SpiritParser& parser){
+    DependencyVisitor visitor(parser, program);
     visitor(program);
+}
+
+void DependenciesResolver::resolve(ast::SourceFile& program) const {
+    includeDependencies(program, parser);
 }
