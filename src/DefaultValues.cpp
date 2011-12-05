@@ -14,7 +14,7 @@
 
 #include "Types.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -69,7 +69,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     }
 };
 
-void DefaultValues::fill(ast::Program& program) const {
+void DefaultValues::fill(ast::SourceFile& program) const {
     SetDefaultValues visitor;
     visitor(program);
 }

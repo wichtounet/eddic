@@ -743,6 +743,16 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createFunctionExit(function.Content->context->size()));
         }
 
+        void operator()(ast::Import&){
+            //Should have been replaced in a previous phase
+            assert(false);
+        }
+
+        void operator()(ast::StandardImport&){
+            //Should have been replaced in a previous phase
+            assert(false);
+        }
+
         void operator()(ast::GlobalVariableDeclaration&){
             //Nothing to compile, the global variable values are written using global contexts
         }

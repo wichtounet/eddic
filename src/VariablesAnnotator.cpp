@@ -207,6 +207,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
             [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
     }
 
+    void operator()(ast::Import&){
+        //Nothing to check here
+    }
+
+    void operator()(ast::StandardImport&){
+        //Nothing to check here
+    }
+
     void operator()(ast::TerminalNode&){
         //Terminal nodes have no need for variable checking    
     }

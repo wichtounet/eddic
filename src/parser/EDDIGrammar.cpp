@@ -176,13 +176,13 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  lexer.right_brace;
 
     standardImport %= 
-            lexer.import
+            lexer.include
         >>  lexer.less
         >>  lexer.word
         >>  lexer.greater;
 
     import %=
-            lexer.import
+            lexer.include
         >>  lexer.litteral;
 
     program %=

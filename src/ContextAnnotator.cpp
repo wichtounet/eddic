@@ -169,6 +169,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             visit(*this, return_.Content->value);
         }
+        
+        void operator()(ast::Import&){
+            //No context there
+        }
+
+        void operator()(ast::StandardImport&){
+            //Context there
+        }
          
         void operator()(ast::TerminalNode&){
             //A terminal node has no context

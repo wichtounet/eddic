@@ -53,6 +53,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::Import&){
+        //Nothing to check here
+    }
+
+    void operator()(ast::StandardImport&){
+        //Nothing to check here
+    }
+
     void operator()(ast::GlobalArrayDeclaration&){
         //Nothing to check here
     }
