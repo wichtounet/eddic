@@ -16,7 +16,8 @@ enum class Operator : unsigned int {
     ADD,
     DOT,            //result = (arg1)+arg2
     DOT_ASSIGN,     //result+arg1=arg2
-    ARRAY
+    ARRAY,          //result=arg1[arg2]
+    ARRAY_ASSIGN,   //result[arg1]=arg2
 };
 
 } //end of tac
