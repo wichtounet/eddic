@@ -105,7 +105,7 @@ struct PassValueAsParam : public boost::static_visitor<> {
     }
 
     void operator()(ast::Integer& integer) const {
-        //TODO
+        function->add(tac::Param(integer.value));
     }
 
     void operator()(ast::FunctionCall& call) const {
