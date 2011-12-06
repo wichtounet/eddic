@@ -124,6 +124,36 @@ struct PassValueAsParam : public boost::static_visitor<> {
         //TODO
     }
 };
+
+struct ReturnValue : public boost::static_visitor<> {
+    ReturnValue(std::shared_ptr<tac::Function> f) : function(f) {}
+    
+    mutable std::shared_ptr<tac::Function> function;
+
+    void operator()(ast::Litteral& litteral) const {
+        //TODO
+    }
+
+    void operator()(ast::Integer& integer) const {
+        function->add(tac::Return(integer.value));
+    }
+
+    void operator()(ast::FunctionCall& call) const {
+        //TODO
+    }
+
+    void operator()(ast::VariableValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ArrayValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ComposedValue& value) const {
+        //TODO
+    }
+};
  
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
     JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
@@ -393,7 +423,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-
+            ReturnValue visitor(function);
+            boost::apply_visitor(visitor, return_.Content->value);
         }
 };
 
