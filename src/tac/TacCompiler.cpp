@@ -28,6 +28,14 @@ std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar
     //TODO
 }
 
+std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
+    //TODO
+}
+
+std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> arrayVar, std::shared_ptr<tac::Function> function){
+    //TODO
+}
+
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_);
 
 struct AssignValueToArray : public boost::static_visitor<> {
@@ -274,14 +282,6 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
 };
 
-void computeOffsetOfElement(std::shared_ptr<Variable> arrayVar, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> indexTemp){
-    //TODO
-}
-
-void computeLengthOfArray(std::shared_ptr<Variable> arrayVar, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> sizeTemp){
-    //TODO
-}
-
 class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
@@ -475,8 +475,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto startLabel = newLabel();
             auto endLabel = newLabel();
 
-            auto sizeTemp = foreach.Content->context->newTemporary();
-            auto indexTemp = foreach.Content->context->newTemporary();
             auto stringTemp = foreach.Content->context->newTemporary();
 
             //Init the index to 0
@@ -484,12 +482,10 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             function->add(startLabel);
 
-            computeOffsetOfElement(arrayVar, iterVar, function, indexTemp);
-            computeLengthOfArray(arrayVar, function, sizeTemp);
+            auto indexTemp = computeIndexOfArray(arrayVar, iterVar, function);
+            auto sizeTemp = computeLengthOfArray(arrayVar, function);
 
             function->add(tac::IfFalse(tac::BinaryOperator::LESS, iterVar, sizeTemp, endLabel));
-
-            computeOffsetOfElement(arrayVar, iterVar, function, indexTemp);
 
             if(var->type().base() == BaseType::INT){
                 function->add(tac::Quadruple(var, arrayVar, tac::Operator::ARRAY, indexTemp));
