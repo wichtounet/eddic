@@ -12,10 +12,11 @@
 
 #include "ast/SourceFile.hpp"
 
+#include "parser/SpiritParser.hpp"
+
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
-#include "parser/SpiritParser.hpp"
 
 using namespace eddic;
 
@@ -50,6 +51,9 @@ class DependencyVisitor : public boost::static_visitor<> {
             if(parser.parse(headerFile, dependency)){
                 includeDependencies(dependency, parser); 
 
+                for(ast::FirstLevelBlock& block : dependency.Content->blocks){
+                    source.Content->blocks.push_back(block);
+                }
                 //TODO Include contents of dependency into source
             }
         }
@@ -64,8 +68,6 @@ class DependencyVisitor : public boost::static_visitor<> {
             ast::SourceFile dependency; 
             if(parser.parse(file, dependency)){
                 includeDependencies(dependency, parser); 
-
-                //TODO Include contents of dependency into source
             }
         }
 
