@@ -744,13 +744,11 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Import&){
-            //Should have been replaced in a previous phase
-            assert(false);
+            //Nothing to compile, the content of the dependency have been included into this source. 
         }
 
         void operator()(ast::StandardImport&){
-            //Should have been replaced in a previous phase
-            assert(false);
+            //Nothing to compile, the content of the dependency have been included into this source. 
         }
 
         void operator()(ast::GlobalVariableDeclaration&){
