@@ -65,7 +65,8 @@ struct AssignValueToVariable : public boost::static_visitor<> {
     std::shared_ptr<Variable> variable;
 
     void operator()(ast::Litteral& litteral) const {
-        //TODO
+        function->add(tac::Quadruple(variable, litteral.label));
+        function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, litteral.value.size() - 2));
     }
 
     void operator()(ast::Integer& integer) const {
@@ -82,7 +83,11 @@ struct AssignValueToVariable : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             function->add(tac::Quadruple(variable, value.Content->var));
         } else if(type.base() == BaseType::STRING){
-            //TODO
+            function->add(tac::Quadruple(variable, value.Content->var));
+
+            auto temp = value.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
+            function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, temp));
         }
     }
 
@@ -101,7 +106,8 @@ struct PassValueAsParam : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
 
     void operator()(ast::Litteral& litteral) const {
-        //TODO
+        function->add(tac::Param(litteral.label));
+        function->add(tac::Param(litteral.value.size() - 2));
     }
 
     void operator()(ast::Integer& integer) const {
@@ -118,7 +124,11 @@ struct PassValueAsParam : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             function->add(tac::Param(value.Content->var));
         } else if(type.base() == BaseType::STRING){
-            //TODO
+            function->add(tac::Param(value.Content->var));
+
+            auto temp = value.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
+            function->add(tac::Param(temp));
         }
     }
 
@@ -137,7 +147,7 @@ struct ReturnValue : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
 
     void operator()(ast::Litteral& litteral) const {
-        //TODO
+        function->add(tac::Return(litteral.label, litteral.value.size() - 2));
     }
 
     void operator()(ast::Integer& integer) const {
@@ -154,7 +164,10 @@ struct ReturnValue : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             function->add(tac::Return(value.Content->var));
         } else if(type.base() == BaseType::STRING){
-            //TODO
+            auto temp = value.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
+
+            function->add(tac::Return(value.Content->var, temp));
         }
     }
 
