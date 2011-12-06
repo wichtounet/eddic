@@ -8,15 +8,24 @@
 #ifndef TAC_CALL_H
 #define TAC_CALL_H
 
+#include <memory>
+
+#include "Variable.hpp"
+
 namespace eddic {
+
+class Variable;
 
 namespace tac {
 
 struct Call {
     std::string function;
+    int params;
+    std::shared_ptr<Variable> return_;
 
     Call();
-    Call(const std::string& function);
+    Call(const std::string& function, int params);
+    Call(const std::string& function, int params, std::shared_ptr<Variable> return_);
 };
 
 } //end of tac
