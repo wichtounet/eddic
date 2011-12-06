@@ -42,7 +42,9 @@ struct AssignValueToArray : public boost::static_visitor<> {
     }
 
     void operator()(ast::Integer& integer) const {
-        //TODO
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+
+        function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, integer.value));
     }
 
     void operator()(ast::FunctionCall& call) const {
@@ -50,7 +52,20 @@ struct AssignValueToArray : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        //TODO
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+        auto type = value.Content->var->type();
+
+        if(type.base() == BaseType::INT){
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, value.Content->var));
+        } else if(type.base() == BaseType::STRING){
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, value.Content->var));
+
+            auto temp1 = value.Content->context->newTemporary();
+            auto temp2 = value.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(temp2, value.Content->var, tac::Operator::DOT, 4));
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, temp2));
+        }
     }
 
     void operator()(ast::ArrayValue& value) const {
