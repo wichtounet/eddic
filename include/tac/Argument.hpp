@@ -9,6 +9,7 @@
 #define TAC_ARGUMENT_H
 
 #include <memory>
+#include <string>
 
 #include <boost/variant/variant.hpp>
 
@@ -19,8 +20,9 @@ class Variable;
 namespace tac {
 
 typedef boost::variant<
-        std::shared_ptr<Variable>, 
-        int
+        std::shared_ptr<Variable>,  //A symbol
+        int,                        //An immediate int value
+        std::string                 //An immediate string value : A label
     > Argument;
 
 } //end of tac
