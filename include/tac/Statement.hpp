@@ -15,6 +15,7 @@
 #include "tac/Goto.hpp"
 #include "tac/Call.hpp"
 #include "tac/Param.hpp"
+#include "tac/Return.hpp"
 
 namespace eddic {
 
@@ -26,6 +27,7 @@ typedef boost::variant<
         tac::Goto,              //Non-conditional jump
         tac::Call,
         tac::Param,
+        tac::Return,
         std::string             //For labels
     > Statement;
 
