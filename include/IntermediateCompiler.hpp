@@ -8,7 +8,7 @@
 #ifndef INTERMEDIATE_COMPILER_H
 #define INTERMEDIATE_COMPILER_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
@@ -16,7 +16,7 @@ class StringPool;
 class IntermediateProgram;
 
 struct IntermediateCompiler {
-    void compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram) const ;
+    void compile(ast::SourceFile& program, StringPool& pool, IntermediateProgram& intermediateProgram) const ;
 };
 
 } //end of eddic

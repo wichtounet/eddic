@@ -8,12 +8,12 @@
 #ifndef CONTEXT_ANNOTATOR_H
 #define CONTEXT_ANNOTATOR_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 struct ContextAnnotator {
-    void annotate(ast::Program& program) const;
+    void annotate(ast::SourceFile& program) const;
 };
 
 } //end of eddic

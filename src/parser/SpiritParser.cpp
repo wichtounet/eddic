@@ -30,7 +30,7 @@ namespace qi = boost::spirit::qi;
 
 using namespace eddic;
 
-bool SpiritParser::parse(const std::string& file, ast::Program& program){
+bool SpiritParser::parse(const std::string& file, ast::SourceFile& program){
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
    

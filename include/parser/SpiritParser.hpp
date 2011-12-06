@@ -10,13 +10,13 @@
 
 #include <string>
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 namespace eddic {
 
 class SpiritParser {
     public:
-        bool parse(const std::string& file, ast::Program& program);
+        bool parse(const std::string& file, ast::SourceFile& program);
 };
 
 } //end of eddic

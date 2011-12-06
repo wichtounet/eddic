@@ -5,19 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef WARNINGS_ENGINE_H
-#define WARNINGS_ENGINE_H
+#ifndef AST_IMPORT_H
+#define AST_IMPORT_H
 
-#include "ast/source_def.hpp"
+#include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
 
-class FunctionTable;
+namespace ast {
 
-struct WarningsEngine {
-    void check(ast::SourceFile& program, FunctionTable& functionTable) const ;
+struct Import {
+    std::string file;
 };
 
+} //end of ast
+
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ast::Import, 
+    (std::string, file)
+)
 
 #endif

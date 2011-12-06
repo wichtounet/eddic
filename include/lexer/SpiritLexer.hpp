@@ -49,6 +49,7 @@ class SimpleLexer : public lex::lexer<L> {
             in_ = "in";
             return_ = "return";
             const_ = "const";
+            include = "include";
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
@@ -89,7 +90,7 @@ class SimpleLexer : public lex::lexer<L> {
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
             this->self += comma | stop;
             this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
-            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_;
+            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += integer | word | litteral;
 
@@ -116,7 +117,7 @@ class SimpleLexer : public lex::lexer<L> {
         //Keywords
         ConsumedToken if_, else_, for_, while_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
-        ConsumedToken const_;
+        ConsumedToken const_, include;
 
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;

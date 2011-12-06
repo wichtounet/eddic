@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_PROGRAM_H
-#define AST_PROGRAM_H
+#ifndef AST_SOURCE_FILE_H
+#define AST_SOURCE_FILE_H
 
 #include <vector>
 
@@ -20,6 +20,8 @@
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/GlobalArrayDeclaration.hpp"
+#include "ast/StandardImport.hpp"
+#include "ast/Import.hpp"
 
 #include "Context.hpp"
 
@@ -32,20 +34,22 @@ namespace ast {
 typedef boost::variant<
             FunctionDeclaration, 
             GlobalVariableDeclaration,
-            GlobalArrayDeclaration
+            GlobalArrayDeclaration,
+            StandardImport,
+            Import
         > FirstLevelBlock;
 
 //A source EDDI program
-struct ASTProgram {
+struct ASTSourceFile {
     std::shared_ptr<GlobalContext> context;
 
     std::vector<FirstLevelBlock> blocks;
 
     mutable long references;
-    ASTProgram() : references(0) {}
+    ASTSourceFile() : references(0) {}
 };
 
-typedef Deferred<ASTProgram> Program;
+typedef Deferred<ASTSourceFile> SourceFile;
 
 } //end of ast
 
@@ -53,7 +57,7 @@ typedef Deferred<ASTProgram> Program;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Program, 
+    eddic::ast::SourceFile, 
     (std::vector<eddic::ast::FirstLevelBlock>, Content->blocks)
 )
 

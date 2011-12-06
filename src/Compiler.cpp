@@ -17,7 +17,7 @@
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 //Annotators
 #include "DefaultValues.hpp"
@@ -30,6 +30,7 @@
 #include "TypeChecker.hpp"
 
 //Visitors
+#include "DependenciesResolver.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
 #include "IntermediateCompiler.hpp"
@@ -67,7 +68,7 @@ int Compiler::compile(const std::string& file) {
         SpiritParser parser;
 
         //The program to build
-        ast::Program program;
+        ast::SourceFile program;
 
         //Parse the file into the program
         bool parsing = parser.parse(file, program); 
@@ -78,6 +79,9 @@ int Compiler::compile(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
+        
+            //Read dependencies
+            includeDependencies(program, parser);
            
             //Annotate the AST with more informations
             defineDefaultValues(program);
@@ -128,61 +132,61 @@ int Compiler::compile(const std::string& file) {
     return code;
 }
 
-void eddic::defineDefaultValues(ast::Program& program){
+void eddic::defineDefaultValues(ast::SourceFile& program){
     DebugTimer<debug> timer("Annotate with default values");
     DefaultValues values;
     values.fill(program);
 }
 
-void eddic::defineContexts(ast::Program& program){
+void eddic::defineContexts(ast::SourceFile& program){
     DebugTimer<debug> timer("Annotate contexts");
     ContextAnnotator annotator;
     annotator.annotate(program);
 }
 
-void eddic::defineVariables(ast::Program& program){
+void eddic::defineVariables(ast::SourceFile& program){
     DebugTimer<debug> timer("Annotate variables");
     VariablesAnnotator annotator;
     annotator.annotate(program);
 }
 
-void eddic::defineFunctions(ast::Program& program, FunctionTable& functionTable){
+void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
     DebugTimer<debug> timer("Annotate functions");
     FunctionsAnnotator annotator;
     annotator.annotate(program, functionTable);
 }
 
-void eddic::checkStrings(ast::Program& program, StringPool& pool){
+void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
     DebugTimer<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);
 }
 
-void eddic::checkTypes(ast::Program& program){
+void eddic::checkTypes(ast::SourceFile& program){
     DebugTimer<debug> timer("Types checking");
     TypeChecker checker;
     checker.check(program); 
 }
 
-void eddic::checkForWarnings(ast::Program& program, FunctionTable& table){
+void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     DebugTimer<debug> timer("Check for warnings");
     WarningsEngine engine;
     engine.check(program, table);
 }
 
-void eddic::transform(ast::Program& program){
+void eddic::transform(ast::SourceFile& program){
     DebugTimer<debug> timer("Transformation");
     TransformerEngine engine;
     engine.transform(program);
 }
 
-void eddic::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool){
+void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
     DebugTimer<debug> timer("Optimization");
     OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
 }
 
-void eddic::writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
+void eddic::writeIL(ast::SourceFile& program, StringPool& pool, IntermediateProgram& intermediateProgram){
     DebugTimer<debug> timer("Compile into intermediate level");
     IntermediateCompiler compiler;
     compiler.compile(program, pool, intermediateProgram);
@@ -194,6 +198,12 @@ void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
 
     il.writeAsm(writer);
     writer.write();
+}
+
+void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser){
+    DebugTimer<debug> timer("Resolve dependencies");
+    DependenciesResolver resolver(parser);
+    resolver.resolve(sourceFile);
 }
 
 void eddic::execCommand(const std::string& command) {

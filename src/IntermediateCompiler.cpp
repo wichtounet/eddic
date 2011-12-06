@@ -31,7 +31,7 @@
 #include "il/Labels.hpp"
 #include "il/Math.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -700,7 +700,7 @@ class CompilerVisitor : public boost::static_visitor<> {
     public:
         CompilerVisitor(StringPool& p, IntermediateProgram& intermediateProgram) : pool(p), program(intermediateProgram) {}
         
-        void operator()(ast::Program& p){
+        void operator()(ast::SourceFile& p){
             MainDeclaration().writeIL(program);
 
             visit_each(*this, p.Content->blocks);
@@ -741,6 +741,14 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit_each(*this, function.Content->instructions);
 
             program.addInstruction(program.factory().createFunctionExit(function.Content->context->size()));
+        }
+
+        void operator()(ast::Import&){
+            //Nothing to compile, the content of the dependency have been included into this source. 
+        }
+
+        void operator()(ast::StandardImport&){
+            //Nothing to compile, the content of the dependency have been included into this source. 
         }
 
         void operator()(ast::GlobalVariableDeclaration&){
@@ -978,7 +986,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 };
 
-void IntermediateCompiler::compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram) const {
+void IntermediateCompiler::compile(ast::SourceFile& program, StringPool& pool, IntermediateProgram& intermediateProgram) const {
     CompilerVisitor visitor(pool, intermediateProgram);
     visitor(program);
 }

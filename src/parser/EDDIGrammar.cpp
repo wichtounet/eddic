@@ -175,9 +175,19 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  *(instruction)
         >>  lexer.right_brace;
 
+    standardImport %= 
+            lexer.include
+        >>  lexer.less
+        >>  lexer.word
+        >>  lexer.greater;
+
+    import %=
+            lexer.include
+        >>  lexer.litteral;
+
     program %=
             qi::eps 
-        >>  *(function | globalDeclaration | globalArrayDeclaration);
+        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import);
 
     //Name the rules
     globalDeclaration.name("EDDI global variable");

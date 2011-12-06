@@ -5,17 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef WARNINGS_ENGINE_H
-#define WARNINGS_ENGINE_H
+#ifndef DEPENDENCIES_RESOLVER_H
+#define DEPENDENCIES_RESOLVER_H
 
 #include "ast/source_def.hpp"
 
 namespace eddic {
 
-class FunctionTable;
+class SpiritParser;
 
-struct WarningsEngine {
-    void check(ast::SourceFile& program, FunctionTable& functionTable) const ;
+struct DependenciesResolver {
+    DependenciesResolver(SpiritParser& parser);
+
+    void resolve(ast::SourceFile& program) const;
+
+    private:
+        SpiritParser& parser;
 };
 
 } //end of eddic

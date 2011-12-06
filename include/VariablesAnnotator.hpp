@@ -8,12 +8,12 @@
 #ifndef VARIABLES_ANNOTATOR_H
 #define VARIABLES_ANNOTATOR_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 struct VariablesAnnotator {
-    void annotate(ast::Program& program) const ;
+    void annotate(ast::SourceFile& program) const ;
 };
 
 } //end of eddic
