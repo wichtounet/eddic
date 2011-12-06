@@ -5,24 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_PARAM_H
-#define TAC_PARAM_H
+#include "tac/Param.hpp"
 
-#include "Argument.hpp"
+using namespace eddic;
 
-namespace eddic {
-
-namespace tac {
-
-struct Param {
-    Argument arg;
-
-    Param();
-    Param(Argument argument);
-};
-
-} //end of tac
-
-} //end of eddic
-
-#endif
+tac::Param::Param(){}
+tac::Param::Param(Argument a) : arg(a) {}
