@@ -24,6 +24,10 @@
 
 using namespace eddic;
 
+std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
+    //TODO
+}
+
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_);
 
 struct AssignValueToArray : public boost::static_visitor<> {
@@ -91,8 +95,21 @@ struct AssignValueToVariable : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::ArrayValue& value) const {
-        //TODO
+    void operator()(ast::ArrayValue& array) const {
+        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+
+        if(array.Content->var->type().base() == BaseType::INT){
+            function->add(tac::Quadruple(variable, array.Content->var, tac::Operator::ARRAY, index));
+        } else {
+            function->add(tac::Quadruple(variable, array.Content->var, tac::Operator::ARRAY, index));
+                
+            auto t2 = array.Content->context->newTemporary();
+            
+            //Assign the second part of the string
+            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
+            function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t2));
+        }
     }
 
     void operator()(ast::ComposedValue& value) const {
@@ -132,8 +149,26 @@ struct PassValueAsParam : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::ArrayValue& value) const {
-        //TODO
+    void operator()(ast::ArrayValue& array) const {
+        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+
+        if(array.Content->var->type().base() == BaseType::INT){
+            auto temp = array.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
+            function->add(tac::Param(temp)); 
+        } else {
+            auto temp = array.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
+            function->add(tac::Param(temp)); 
+                
+            auto t2 = array.Content->context->newTemporary();
+            
+            //Assign the second part of the string
+            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
+            
+            function->add(tac::Param(t2)); 
+        }
     }
 
     void operator()(ast::ComposedValue& value) const {
@@ -171,8 +206,26 @@ struct ReturnValue : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::ArrayValue& value) const {
-        //TODO
+    void operator()(ast::ArrayValue& array) const {
+        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+
+        if(array.Content->var->type().base() == BaseType::INT){
+            auto temp = array.Content->context->newTemporary();
+            function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
+            function->add(tac::Return(temp)); 
+        } else {
+            auto t1 = array.Content->context->newTemporary();
+            function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
+            function->add(tac::Param(t1)); 
+                
+            auto t2 = array.Content->context->newTemporary();
+            
+            //Assign the second part of the string
+            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
+            
+            function->add(tac::Return(t1, t2)); 
+        }
     }
 
     void operator()(ast::ComposedValue& value) const {
