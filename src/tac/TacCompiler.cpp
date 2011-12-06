@@ -11,6 +11,8 @@
 #include "Variable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
+#include "GetTypeVisitor.hpp"
+#include "mangling.hpp"
 
 #include "tac/TacCompiler.hpp"
 #include "tac/Program.hpp"
@@ -21,6 +23,8 @@
 #include "il/Labels.hpp"
 
 using namespace eddic;
+
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_);
 
 struct AssignValueToArray : public boost::static_visitor<> {
     AssignValueToArray(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : function(f), variable(v), indexValue(i) {}
@@ -80,6 +84,36 @@ struct AssignValueToVariable : public boost::static_visitor<> {
         } else if(type.base() == BaseType::STRING){
             //TODO
         }
+    }
+
+    void operator()(ast::ArrayValue& value) const {
+        //TODO
+    }
+
+    void operator()(ast::ComposedValue& value) const {
+        //TODO
+    }
+};
+
+struct PassValueAsParam : public boost::static_visitor<> {
+    PassValueAsParam(std::shared_ptr<tac::Function> f) : function(f) {}
+    
+    mutable std::shared_ptr<tac::Function> function;
+
+    void operator()(ast::Litteral& litteral) const {
+        //TODO
+    }
+
+    void operator()(ast::Integer& integer) const {
+        //TODO
+    }
+
+    void operator()(ast::FunctionCall& call) const {
+        //TODO
+    }
+
+    void operator()(ast::VariableValue& value) const {
+        //TODO
     }
 
     void operator()(ast::ArrayValue& value) const {
@@ -355,13 +389,58 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
-
+            executeCall(functionCall, function, {});
         }
 
         void operator()(ast::Return& return_){
 
         }
 };
+
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_){
+    PassValueAsParam visitor(function);
+    for(auto& value : functionCall.Content->values){
+        boost::apply_visitor(visitor, value);
+    }
+
+    if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
+        Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
+
+        switch (type.base()) {
+            case BaseType::INT:
+                function->add(tac::Call("print_integer", 4));
+
+                break;
+            case BaseType::STRING:
+                function->add(tac::Call("print_string", 8));
+
+                break;
+            default:
+                throw SemanticalException("Variable of invalid type");
+        }
+
+        if(functionCall.Content->functionName == "println"){
+            function->add(tac::Call("print_line", 0));
+        }
+    } else {
+        std::string mangled = mangle(functionCall.Content->functionName, functionCall.Content->values);
+
+        int total = 0;
+
+        for(auto& value : functionCall.Content->values){
+            Type type = boost::apply_visitor(GetTypeVisitor(), value);   
+
+            if(type.isArray()){
+                //Passing an array is just passing an adress
+                total += size(BaseType::INT);
+            } else {
+                total += size(type);
+            }
+        }
+
+        function->add(tac::Call(mangled, total, return_));
+    }
+}
 
 void tac::TacCompiler::compile(ast::Program& program, StringPool& pool, tac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);
