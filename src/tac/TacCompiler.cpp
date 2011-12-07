@@ -64,6 +64,8 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
     function->add(tac::Quadruple(variable, t1));
 }
 
+void performStringOperation(ast::ComposedValue& value, IntermediateProgram& program, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
     //TODO
 }
@@ -331,6 +333,37 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function){
     AssignValueToVariable visitor(function, variable);
     boost::apply_visitor(visitor, value);
+}
+
+void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
+    assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
+
+    unsigned int iter = 0;
+
+    PassValueAsParam pusher(function);
+    visit_non_variant(pusher, value);
+
+    //Perfom all the additions
+    for(auto& operation : value.Content->operations){
+        visit(pusher, operation.get<1>());
+
+        auto t1 = value.Content->context->newTemporary();
+        auto t2 = value.Content->context->newTemporary();
+
+        //TODO result in t1, t2
+        function->add(tac::Call("concat", 16)); 
+
+        ++iter;
+
+        //If there is more operation, push the answer
+        if(iter < value.Content->operations.size()){
+           function->add(tac::Param(t1));
+           function->add(tac::Param(t2));
+        } else {
+            function->add(tac::Quadruple(v1, t1));
+            function->add(tac::Quadruple(v2, t2));
+        }
+    }
 }
 
 class CompilerVisitor : public boost::static_visitor<> {
