@@ -11,7 +11,11 @@
 #include "ast/program_def.hpp"
 
 namespace eddic {
-
+    
+/*!
+ * \class DefaultValues
+ * \brief Fill the AST with default values for local and global variables.  
+ */
 struct DefaultValues {
     void fill(ast::Program& program) const ;
 };
