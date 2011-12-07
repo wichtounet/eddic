@@ -64,7 +64,7 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
     function->add(tac::Quadruple(variable, t1));
 }
 
-void performStringOperation(ast::ComposedValue& value, IntermediateProgram& program, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
     //TODO
@@ -184,7 +184,7 @@ struct AssignValueToVariable : public boost::static_visitor<> {
             performIntOperation(value, function, variable);
         } else if(type.base() == BaseType::STRING){
             auto t1 = value.Content->context->newTemporary();
-            performStrngOperation(value, function, variable, t1);
+            performStringOperation(value, function, variable, t1);
             
             function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t1));
         }
@@ -246,7 +246,21 @@ struct PassValueAsParam : public boost::static_visitor<> {
     }
 
     void operator()(ast::ComposedValue& value) const {
-        //TODO
+        Type type = GetTypeVisitor()(value);
+
+        if(type.base() == BaseType::INT){
+            auto t1 = value.Content->context->newTemporary();
+            performIntOperation(value, function, t1);
+            function->add(tac::Param(t1));
+        } else if(type.base() == BaseType::STRING){
+            auto t1 = value.Content->context->newTemporary();
+            auto t2 = value.Content->context->newTemporary();
+
+            performStringOperation(value, function, t1, t2);
+            
+            function->add(tac::Param(t1)); 
+            function->add(tac::Param(t2)); 
+        }
     }
 };
 
