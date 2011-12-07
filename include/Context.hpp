@@ -22,6 +22,14 @@ namespace eddic {
 class Variable;
 class IntermediateProgram;
 
+/*!
+ * \class Context
+ * \brief A symbol table.
+ *
+ * The symbol table keeps track of each variables (local and global), parameters and temporaries. 
+ * The symbol tables are linked to their parent so that the search can be done within all the visibles symbols
+ * by going up onto the symbol tables parents.  
+ */
 class Context {
     private:
         std::shared_ptr<Context> m_parent;

@@ -35,10 +35,10 @@ void writeAsm(IntermediateProgram& il, const std::string& file);
 
 void execCommand(const std::string& command);
 
-//TODO Separate brief and following description in doc
 /*!
  * \class Compiler
- * \brief The EDDI compiler. 
+ * \brief The EDDI compiler.
+ *
  * This class is used to launch the compilation of a source file. It will then launch each phases of the compilation on this phase
  * and produce either an executable or an assembly file depending on the provided options. 
  */
