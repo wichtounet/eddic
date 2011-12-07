@@ -24,6 +24,46 @@
 
 using namespace eddic;
 
+tac::Operator toOperator(char op){
+    switch(op){
+        case '+':
+            return tac::Operator::ADD;
+        case '-':
+            return tac::Operator::SUB;
+        case '/':
+            return tac::Operator::DIV;
+        case '*':
+            return tac::Operator::MUL;
+        case '%':
+            return tac::Operator::MOD;
+        default:
+            assert(false);
+    }
+}
+
+void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function);
+
+void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable){
+    assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
+
+    auto t1 = value.Content->context->newTemporary();
+    auto t2 = value.Content->context->newTemporary();
+
+    moveToVariable(value.Content->first, t1, function);
+
+    //Apply all the operations in chain
+    for(auto& operation : value.Content->operations){
+        moveToVariable(value.Content->first, t2, function);
+        
+        function->add(tac::Quadruple(t2, t1, toOperator(operation.get<0>()), t2));
+
+        t1 = t2;
+        t2 = value.Content->context->newTemporary();
+    }
+
+    function->add(tac::Quadruple(variable, t1));
+}
+
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
     //TODO
 }
@@ -136,7 +176,13 @@ struct AssignValueToVariable : public boost::static_visitor<> {
     }
 
     void operator()(ast::ComposedValue& value) const {
-        //TODO
+        Type type = GetTypeVisitor()(value);
+
+        if(type.base() == BaseType::INT){
+            performIntOperation(value, function, variable);
+        } else if(type.base() == BaseType::STRING){
+            //TODO
+        }
     }
 };
 
@@ -281,6 +327,11 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
         function->add(tac::IfFalse(tac::toBinaryOperator(binaryCondition.Content->op), t1, t2, label));
     }
 };
+
+void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function){
+    AssignValueToVariable visitor(function, variable);
+    boost::apply_visitor(visitor, value);
+}
 
 class CompilerVisitor : public boost::static_visitor<> {
     private:
