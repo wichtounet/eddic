@@ -88,7 +88,13 @@ struct AssignValueToArray : public boost::static_visitor<> {
     ast::Value& indexValue;
 
     void operator()(ast::Litteral& litteral) const {
-        //TODO
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+        
+        function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, litteral.label));
+
+        auto temp1 = function->context->newTemporary();
+        function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
+        function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, litteral.value.size() - 2));
     }
 
     void operator()(ast::Integer& integer) const {
