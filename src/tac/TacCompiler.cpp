@@ -74,8 +74,17 @@ std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar
     //TODO
 }
 
-std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> arrayVar, std::shared_ptr<tac::Function> function){
-    //TODO
+std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<tac::Function> function){
+    auto t1 = function->context->newTemporary();
+    
+    auto position = array->position();
+    if(position.isGlobal() || position.isStack()){
+        function->add(tac::Quadruple(t1, array->type().size()));
+    } else if(position.isParameter()){
+        function->add(tac::Quadruple(t1, array, tac::Operator::ARRAY, 0));
+    }
+
+    return t1;
 }
 
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
