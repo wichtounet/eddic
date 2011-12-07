@@ -114,7 +114,7 @@ struct AssignValueToArray : public boost::static_visitor<> {
             auto temp2 = value.Content->context->newTemporary();
             function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
             function->add(tac::Quadruple(temp2, value.Content->var, tac::Operator::DOT, 4));
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, temp2));
+            function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, temp2));
         }
     }
 
@@ -123,7 +123,26 @@ struct AssignValueToArray : public boost::static_visitor<> {
     }
 
     void operator()(ast::ComposedValue& value) const {
-        //TODO
+        Type type = GetTypeVisitor()(value);
+
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+        
+        if(type.base() == BaseType::INT){
+            auto t1 = value.Content->context->newTemporary();
+            performIntOperation(value, function, t1);
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+        } else if(type.base() == BaseType::STRING){
+            auto t1 = value.Content->context->newTemporary();
+            auto t2 = value.Content->context->newTemporary();
+
+            performStringOperation(value, function, t1, t2);
+            
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+            
+            auto t3 = value.Content->context->newTemporary();
+            function->add(tac::Quadruple(t3, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(variable, t3, tac::Operator::ARRAY_ASSIGN, t2));
+        }
     }
 };
  
@@ -317,7 +336,21 @@ struct ReturnValue : public boost::static_visitor<> {
     }
 
     void operator()(ast::ComposedValue& value) const {
-        //TODO
+        Type type = GetTypeVisitor()(value);
+
+        if(type.base() == BaseType::INT){
+            auto t1 = value.Content->context->newTemporary();
+            performIntOperation(value, function, t1);
+            function->add(tac::Return(t1));
+        } else if(type.base() == BaseType::STRING){
+            auto t1 = value.Content->context->newTemporary();
+            auto t2 = value.Content->context->newTemporary();
+
+            performStringOperation(value, function, t1, t2);
+            
+            function->add(tac::Return(t1)); 
+            function->add(tac::Return(t2)); 
+        }
     }
 };
  
