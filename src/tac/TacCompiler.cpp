@@ -153,8 +153,26 @@ struct AssignValueToArray : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::ArrayValue& value) const {
-        //TODO
+    void operator()(ast::ArrayValue& array) const {
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+        auto sourceIndex = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+
+        if(array.Content->var->type().base() == BaseType::INT){
+            auto t1 = function->context->newTemporary();
+            function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, sourceIndex));
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+        } else {
+            auto t1 = function->context->newTemporary();
+            function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, sourceIndex));
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+                
+            auto t2 = array.Content->context->newTemporary();
+            
+            //Assign the second part of the string
+            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, sourceIndex));
+            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t2));
+        }
     }
 
     void operator()(ast::ComposedValue& value) const {
