@@ -22,10 +22,12 @@ struct Call {
     std::string function;
     int params;
     std::shared_ptr<Variable> return_;
+    std::shared_ptr<Variable> return2_;
 
     Call();
     Call(const std::string& function, int params);
     Call(const std::string& function, int params, std::shared_ptr<Variable> return_);
+    Call(const std::string& function, int params, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 };
 
 } //end of tac
