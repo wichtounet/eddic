@@ -34,7 +34,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
-        AUTO_RECURSE_COMPOSED_VALUES()
         
         void operator()(ast::Program& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
@@ -152,6 +151,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
+        }
+
+        void operator()(ast::ComposedValue& value){
+            value.Content->context = currentContext;
+
+            visit(*this, value.Content->first);
+            for_each(value.Content->operations.begin(), value.Content->operations.end(), 
+                    [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
         }
         
         void operator()(ast::VariableValue& variable){
