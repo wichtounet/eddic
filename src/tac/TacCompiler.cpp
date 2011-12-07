@@ -183,7 +183,10 @@ struct AssignValueToVariable : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             performIntOperation(value, function, variable);
         } else if(type.base() == BaseType::STRING){
-            //TODO
+            auto t1 = value.Content->context->newTemporary();
+            performStrngOperation(value, function, variable, t1);
+            
+            function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t1));
         }
     }
 };
