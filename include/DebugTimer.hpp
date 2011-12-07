@@ -13,6 +13,14 @@
 
 namespace eddic {
 
+/*!
+ * \class DebugTimer
+ * \brief Simple stopwatch to keep track of elapsed time between instantiation and destruction.
+ * 
+ * If debug template argument is set to false, this class transforms to a no-op.  
+ * 
+ * \see Timer
+ */
 template<bool Enabled>
 class DebugTimer {
     private:
