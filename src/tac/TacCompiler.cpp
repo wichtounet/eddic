@@ -520,8 +520,7 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
         auto t1 = value.Content->context->newTemporary();
         auto t2 = value.Content->context->newTemporary();
 
-        //TODO result in t1, t2
-        function->add(tac::Call("concat", 16)); 
+        function->add(tac::Call("concat", 16, t1, t2)); 
 
         ++iter;
 
