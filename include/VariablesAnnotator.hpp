@@ -12,7 +12,16 @@
 
 namespace eddic {
 
+/*!
+ * \class VariablesAnnotator
+ * \brief Check the variables of the AST
+ */
 struct VariablesAnnotator {
+    /*!
+     * \brief Annotate the program
+     * 
+     * After this phase, all the variables are resolved as entry to the symbol table. 
+     */
     void annotate(ast::Program& program) const ;
 };
 
