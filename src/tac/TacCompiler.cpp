@@ -78,7 +78,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> arrayVa
     //TODO
 }
 
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_);
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 
 struct AssignValueToArray : public boost::static_visitor<> {
     AssignValueToArray(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : function(f), variable(v), indexValue(i) {}
@@ -104,7 +104,36 @@ struct AssignValueToArray : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        //TODO
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+        Type type = call.Content->function->returnType;
+
+        switch(type.base()){
+            case BaseType::INT:{
+                auto t1 = function->context->newTemporary();
+
+                executeCall(call, function, t1, {});
+        
+                function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+
+                break;
+            }
+            case BaseType::STRING:{
+                auto t1 = function->context->newTemporary();
+                auto t2 = function->context->newTemporary();
+
+                executeCall(call, function, t1, t2);
+
+                function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t1));
+        
+                auto temp1 = function->context->newTemporary();
+                function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
+                function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, t2));
+
+                break;
+            }
+            default:
+                throw SemanticalException("This function doesn't return anything");   
+        }
     }
 
     void operator()(ast::VariableValue& value) const {
@@ -168,7 +197,25 @@ struct AssignValueToVariable : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        //TODO
+        Type type = call.Content->function->returnType;
+
+        switch(type.base()){
+            case BaseType::INT:
+                executeCall(call, function, variable, {});
+
+                break;
+            case BaseType::STRING:{
+                auto t1 = function->context->newTemporary();
+
+                executeCall(call, function, variable, t1);
+
+                function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t1));
+
+                break;
+            }
+            default:
+                throw SemanticalException("This function doesn't return anything");   
+        }
     }
 
     void operator()(ast::VariableValue& value) const {
@@ -231,7 +278,32 @@ struct PassValueAsParam : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        //TODO
+        Type type = call.Content->function->returnType;
+
+        switch(type.base()){
+            case BaseType::INT:{
+                auto t1 = function->context->newTemporary();
+
+                executeCall(call, function, t1, {});
+
+                function->add(tac::Param(t1));
+
+                break;
+            }
+            case BaseType::STRING:{
+                auto t1 = function->context->newTemporary();
+                auto t2 = function->context->newTemporary();
+
+                executeCall(call, function, t1, t2);
+
+                function->add(tac::Param(t1));
+                function->add(tac::Param(t2));
+
+                break;
+            }
+            default:
+                throw SemanticalException("This function doesn't return anything");   
+        }
     }
 
     void operator()(ast::VariableValue& value) const {
@@ -303,7 +375,31 @@ struct ReturnValue : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        //TODO
+        Type type = call.Content->function->returnType;
+
+        switch(type.base()){
+            case BaseType::INT:{
+                auto t1 = function->context->newTemporary();
+
+                executeCall(call, function, t1, {});
+
+                function->add(tac::Return(t1));
+
+                break;
+            }
+            case BaseType::STRING:{
+                auto t1 = function->context->newTemporary();
+                auto t2 = function->context->newTemporary();
+
+                executeCall(call, function, t1, t2);
+
+                function->add(tac::Return(t1, t2));
+
+                break;
+            }
+            default:
+                throw SemanticalException("This function doesn't return anything");   
+        }
     }
 
     void operator()(ast::VariableValue& value) const {
@@ -648,7 +744,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
-            executeCall(functionCall, function, {});
+            executeCall(functionCall, function, {}, {});
         }
 
         void operator()(ast::Return& return_){
@@ -657,7 +753,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 };
 
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_){
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     PassValueAsParam visitor(function);
     for(auto& value : functionCall.Content->values){
         boost::apply_visitor(visitor, value);
@@ -698,7 +794,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
             }
         }
 
-        function->add(tac::Call(mangled, total, return_));
+        function->add(tac::Call(mangled, total, return_, return2_));
     }
 }
 
