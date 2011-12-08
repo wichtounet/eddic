@@ -650,33 +650,21 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Swap& swap){
             auto lhs_var = swap.Content->lhs_var;
             auto rhs_var = swap.Content->rhs_var;
+            
+            auto temp = swap.Content->context->newTemporary();
 
-            //We have the guarantee here that both variables are of the same type
-            switch (lhs_var->type().base()) {
-                case BaseType::INT:{
-                    auto temp = swap.Content->context->newTemporary();
-
-                    function->add(tac::Quadruple(temp, rhs_var));  
-                    function->add(tac::Quadruple(rhs_var, lhs_var));  
-                    function->add(tac::Quadruple(lhs_var, temp));  
-
-                    break;
-                }
-                case BaseType::STRING:{
-                    auto temp = swap.Content->context->newTemporary();
-
-                    function->add(tac::Quadruple(temp, rhs_var));  
-                    function->add(tac::Quadruple(rhs_var, lhs_var));  
-                    function->add(tac::Quadruple(lhs_var, temp));  
-
+            if(lhs_var->type().base() == BaseType::INT || lhs_var->type().base() == BaseType::STRING){
+                function->add(tac::Quadruple(temp, rhs_var));  
+                function->add(tac::Quadruple(rhs_var, lhs_var));  
+                function->add(tac::Quadruple(lhs_var, temp));  
+                
+                if( lhs_var->type().base() == BaseType::STRING){
                     function->add(tac::Quadruple(temp, rhs_var, tac::Operator::DOT, 4));  
                     function->add(tac::Quadruple(rhs_var, lhs_var, tac::Operator::DOT, 4));  
                     function->add(tac::Quadruple(lhs_var, temp));  
-
-                    break;
                 }
-                default:
-                   throw SemanticalException("Variable of invalid type");
+            } else {
+                throw SemanticalException("Variable of invalid type");
             }
         }
 
