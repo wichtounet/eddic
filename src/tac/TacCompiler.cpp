@@ -753,8 +753,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            ReturnValue visitor(function);
-            boost::apply_visitor(visitor, return_.Content->value);
+            boost::apply_visitor(ReturnValue(function), return_.Content->value);
         }
 };
 
@@ -764,42 +763,37 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         boost::apply_visitor(visitor, value);
     }
 
+    std::string functionName;  
     if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
         Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
 
-        switch (type.base()) {
-            case BaseType::INT:
-                function->add(tac::Call("print_integer", 4));
-
-                break;
-            case BaseType::STRING:
-                function->add(tac::Call("print_string", 8));
-
-                break;
-            default:
-                throw SemanticalException("Variable of invalid type");
-        }
-
-        if(functionCall.Content->functionName == "println"){
-            function->add(tac::Call("print_line", 0));
+        if(type.base() == BaseType::INT){
+            functionName = "print_integer";
+        } else if(type.base() == BaseType::STRING){
+            functionName = "print_string";
+        } else {
+            assert(false);
         }
     } else {
-        std::string mangled = mangle(functionCall.Content->functionName, functionCall.Content->values);
+        functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
+    }
 
-        int total = 0;
+    int total = 0;
+    for(auto& value : functionCall.Content->values){
+        Type type = boost::apply_visitor(GetTypeVisitor(), value);   
 
-        for(auto& value : functionCall.Content->values){
-            Type type = boost::apply_visitor(GetTypeVisitor(), value);   
-
-            if(type.isArray()){
-                //Passing an array is just passing an adress
-                total += size(BaseType::INT);
-            } else {
-                total += size(type);
-            }
+        if(type.isArray()){
+            //Passing an array is just passing an adress
+            total += size(BaseType::INT);
+        } else {
+            total += size(type);
         }
+    }
 
-        function->add(tac::Call(mangled, total, return_, return2_));
+    function->add(tac::Call(functionName, total, return_, return2_));
+    
+    if(functionCall.Content->functionName == "println"){
+        function->add(tac::Call("print_line", 0));
     }
 }
 
