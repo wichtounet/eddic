@@ -395,28 +395,21 @@ struct ReturnValue : public boost::static_visitor<> {
     void operator()(ast::FunctionCall& call) const {
         Type type = call.Content->function->returnType;
 
-        switch(type.base()){
-            case BaseType::INT:{
-                auto t1 = function->context->newTemporary();
+        if(type.base() == BaseType::INT){
+            auto t1 = function->context->newTemporary();
 
-                executeCall(call, function, t1, {});
+            executeCall(call, function, t1, {});
 
-                function->add(tac::Return(t1));
+            function->add(tac::Return(t1));
+        } else if(type.base() == BaseType::STRING){
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
 
-                break;
-            }
-            case BaseType::STRING:{
-                auto t1 = function->context->newTemporary();
-                auto t2 = function->context->newTemporary();
+            executeCall(call, function, t1, t2);
 
-                executeCall(call, function, t1, t2);
-
-                function->add(tac::Return(t1, t2));
-
-                break;
-            }
-            default:
-                throw SemanticalException("This function doesn't return anything");   
+            function->add(tac::Return(t1, t2));
+        } else {
+            throw SemanticalException("This function doesn't return anything");   
         }
     }
 
@@ -443,8 +436,7 @@ struct ReturnValue : public boost::static_visitor<> {
         } else {
             auto t1 = array.Content->context->newTemporary();
             function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
-            function->add(tac::Param(t1)); 
-                
+               
             auto t2 = array.Content->context->newTemporary();
             
             //Assign the second part of the string
@@ -468,8 +460,7 @@ struct ReturnValue : public boost::static_visitor<> {
 
             performStringOperation(value, function, t1, t2);
             
-            function->add(tac::Return(t1)); 
-            function->add(tac::Return(t2)); 
+            function->add(tac::Return(t1, t2)); 
         }
     }
 };
@@ -501,8 +492,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 };
 
 void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function){
-    AssignValueToVariable visitor(function, variable);
-    boost::apply_visitor(visitor, value);
+    boost::apply_visitor(AssignValueToVariable(function, variable), value);
 }
 
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
