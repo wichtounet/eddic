@@ -67,16 +67,6 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
     function->add(tac::Quadruple(variable, t1));
 }
 
-std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, int index, std::shared_ptr<tac::Function> function){
-    int offset = index * array->type().size() + size(BaseType::INT); //index = index * size + size_of_length
-    
-    auto temp = function->context->newTemporary();
-    
-    function->add(tac::Quadruple(temp, offset));
-
-    return temp;
-}
-
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
     auto temp = function->context->newTemporary();
     
@@ -87,16 +77,11 @@ std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, s
 }
 
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
-    if(boost::apply_visitor(IsConstantVisitor(), indexValue)){
-        int index = boost::get<int>(boost::apply_visitor(GetConstantValue(), indexValue));
+    auto t1 = function->context->newTemporary();
 
-        return computeIndexOfArray(array, index, function);
-    } else {
-        auto t1 = function->context->newTemporary();
+    moveToVariable(indexValue, t1, function);
 
-        moveToVariable(indexValue, t1, function);
-        return computeIndexOfArray(array, t1, function);
-    }
+    return computeIndexOfArray(array, t1, function);
 }
 
 std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<tac::Function> function){
