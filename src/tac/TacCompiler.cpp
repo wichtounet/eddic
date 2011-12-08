@@ -78,7 +78,12 @@ std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, i
 }
 
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
-    //TODO
+    auto temp = function->context->newTemporary();
+    
+    function->add(tac::Quadruple(temp, iterVar, tac::Operator::MUL, array->type().size()));
+    function->add(tac::Quadruple(temp, temp, tac::Operator::ADD, size(BaseType::INT)));
+
+    return temp;
 }
 
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
