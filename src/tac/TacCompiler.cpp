@@ -12,6 +12,8 @@
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "GetTypeVisitor.hpp"
+#include "GetConstantValue.hpp"
+#include "IsConstantVisitor.hpp"
 #include "mangling.hpp"
 
 #include "tac/TacCompiler.hpp"
@@ -42,6 +44,7 @@ tac::Operator toOperator(char op){
 }
 
 void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function);
+void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 
 void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
@@ -64,14 +67,31 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
     function->add(tac::Quadruple(variable, t1));
 }
 
-void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, int index, std::shared_ptr<tac::Function> function){
+    int offset = index * array->type().size() + size(BaseType::INT); //index = index * size + size_of_length
+    
+    auto temp = function->context->newTemporary();
+    
+    function->add(tac::Quadruple(temp, offset));
 
-std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
+    return temp;
+}
+
+std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
     //TODO
 }
 
-std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> arrayVar, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
-    //TODO
+std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
+    if(boost::apply_visitor(IsConstantVisitor(), indexValue)){
+        int index = boost::get<int>(boost::apply_visitor(GetConstantValue(), indexValue));
+
+        return computeIndexOfArray(array, index, function);
+    } else {
+        auto t1 = function->context->newTemporary();
+
+        moveToVariable(indexValue, t1, function);
+        return computeIndexOfArray(array, t1, function);
+    }
 }
 
 std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<tac::Function> function){
