@@ -330,10 +330,10 @@ struct PassValueAsParam : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             function->add(tac::Param(value.Content->var));
         } else if(type.base() == BaseType::STRING){
-            function->add(tac::Param(value.Content->var));
-
             auto temp = value.Content->context->newTemporary();
             function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
+            
+            function->add(tac::Param(value.Content->var));
             function->add(tac::Param(temp));
         }
     }
@@ -346,9 +346,8 @@ struct PassValueAsParam : public boost::static_visitor<> {
             function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
             function->add(tac::Param(temp)); 
         } else {
-            auto temp = array.Content->context->newTemporary();
-            function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
-            function->add(tac::Param(temp)); 
+            auto t1 = array.Content->context->newTemporary();
+            function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
                 
             auto t2 = array.Content->context->newTemporary();
             
@@ -356,6 +355,7 @@ struct PassValueAsParam : public boost::static_visitor<> {
             function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
             function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
             
+            function->add(tac::Param(t1)); 
             function->add(tac::Param(t2)); 
         }
     }
