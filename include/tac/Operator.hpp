@@ -24,6 +24,8 @@ enum class Operator : unsigned int {
     ARRAY_ASSIGN    //result[arg1]=arg2
 };
 
+tac::Operator toOperator(char op);
+
 } //end of tac
 
 } //end of eddic

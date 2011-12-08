@@ -30,23 +30,6 @@ void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 
-tac::Operator toOperator(char op){
-    switch(op){
-        case '+':
-            return tac::Operator::ADD;
-        case '-':
-            return tac::Operator::SUB;
-        case '/':
-            return tac::Operator::DIV;
-        case '*':
-            return tac::Operator::MUL;
-        case '%':
-            return tac::Operator::MOD;
-        default:
-            assert(false);
-    }
-}
-
 void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
@@ -59,7 +42,7 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
     for(auto& operation : value.Content->operations){
         moveToVariable(value.Content->first, t2, function);
         
-        function->add(tac::Quadruple(t2, t1, toOperator(operation.get<0>()), t2));
+        function->add(tac::Quadruple(t2, t1, tac::toOperator(operation.get<0>()), t2));
 
         t1 = t2;
         t2 = value.Content->context->newTemporary();
