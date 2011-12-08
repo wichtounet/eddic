@@ -26,6 +26,10 @@
 
 using namespace eddic;
 
+void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function);
+void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+
 tac::Operator toOperator(char op){
     switch(op){
         case '+':
@@ -42,9 +46,6 @@ tac::Operator toOperator(char op){
             assert(false);
     }
 }
-
-void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function);
-void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 
 void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
@@ -97,8 +98,6 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     return t1;
 }
 
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-
 struct AssignValueToArray : public boost::static_visitor<> {
     AssignValueToArray(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : function(f), variable(v), indexValue(i) {}
     
@@ -106,24 +105,31 @@ struct AssignValueToArray : public boost::static_visitor<> {
     std::shared_ptr<Variable> variable;
     ast::Value& indexValue;
 
-    void operator()(ast::Litteral& litteral) const {
+    void intAssign(tac::Argument value) const {
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+
+        function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, value));
+    }
+
+    void stringAssign(tac::Argument v1, tac::Argument v2) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
         
-        function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, litteral.label));
+        function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, v1));
 
         auto temp1 = function->context->newTemporary();
         function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
-        function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, litteral.value.size() - 2));
+        function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, v2));
+    }
+
+    void operator()(ast::Litteral& litteral) const {
+        stringAssign(litteral.label, litteral.value.size() - 2);
     }
 
     void operator()(ast::Integer& integer) const {
-        auto index = computeIndexOfArray(variable, indexValue, function); 
-
-        function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, integer.value));
+        intAssign(integer.value);
     }
 
     void operator()(ast::FunctionCall& call) const {
-        auto index = computeIndexOfArray(variable, indexValue, function); 
         Type type = call.Content->function->returnType;
 
         switch(type.base()){
@@ -131,9 +137,9 @@ struct AssignValueToArray : public boost::static_visitor<> {
                 auto t1 = function->context->newTemporary();
 
                 executeCall(call, function, t1, {});
-        
-                function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
 
+                intAssign(t1);
+        
                 break;
             }
             case BaseType::STRING:{
@@ -142,11 +148,7 @@ struct AssignValueToArray : public boost::static_visitor<> {
 
                 executeCall(call, function, t1, t2);
 
-                function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t1));
-        
-                auto temp1 = function->context->newTemporary();
-                function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
-                function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, t2));
+                stringAssign(t1, t2);
 
                 break;
             }
@@ -156,41 +158,38 @@ struct AssignValueToArray : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        auto index = computeIndexOfArray(variable, indexValue, function); 
         auto type = value.Content->var->type();
 
         if(type.base() == BaseType::INT){
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, value.Content->var));
+            intAssign(value.Content->var);
         } else if(type.base() == BaseType::STRING){
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, value.Content->var));
+            auto t1 = value.Content->context->newTemporary();
+            function->add(tac::Quadruple(t1, value.Content->var, tac::Operator::DOT, 4));
 
-            auto temp1 = value.Content->context->newTemporary();
-            auto temp2 = value.Content->context->newTemporary();
-            function->add(tac::Quadruple(temp1, index, tac::Operator::ADD, 4));
-            function->add(tac::Quadruple(temp2, value.Content->var, tac::Operator::DOT, 4));
-            function->add(tac::Quadruple(variable, temp1, tac::Operator::ARRAY_ASSIGN, temp2));
+            stringAssign(value.Content->var, t1);
         }
     }
 
     void operator()(ast::ArrayValue& array) const {
-        auto index = computeIndexOfArray(variable, indexValue, function); 
         auto sourceIndex = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
         if(array.Content->var->type().base() == BaseType::INT){
             auto t1 = function->context->newTemporary();
             function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, sourceIndex));
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+
+            intAssign(t1);
         } else {
             auto t1 = function->context->newTemporary();
             function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, sourceIndex));
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
-                
+             
             auto t2 = array.Content->context->newTemporary();
+            auto t3 = array.Content->context->newTemporary();
             
             //Assign the second part of the string
-            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
-            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, sourceIndex));
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t2));
+            function->add(tac::Quadruple(t3, sourceIndex, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, t3));
+
+            stringAssign(t1, t2);
         }
     }
 
@@ -202,18 +201,14 @@ struct AssignValueToArray : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             auto t1 = value.Content->context->newTemporary();
             performIntOperation(value, function, t1);
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
+            intAssign(t1);
         } else if(type.base() == BaseType::STRING){
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
 
             performStringOperation(value, function, t1, t2);
             
-            function->add(tac::Quadruple(variable, index, tac::Operator::ARRAY_ASSIGN, t1));
-            
-            auto t3 = value.Content->context->newTemporary();
-            function->add(tac::Quadruple(t3, index, tac::Operator::ADD, 4));
-            function->add(tac::Quadruple(variable, t3, tac::Operator::ARRAY_ASSIGN, t2));
+            stringAssign(t1, t2);
         }
     }
 };
