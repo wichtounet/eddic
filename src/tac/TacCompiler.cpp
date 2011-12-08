@@ -212,6 +212,11 @@ struct AssignValueToArray : public boost::static_visitor<> {
         }
     }
 };
+
+void assignStringToVariable(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, tac::Argument v1, tac::Argument v2){
+    function->add(tac::Quadruple(variable, v1));
+    function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, v2));
+}
  
 struct AssignValueToVariable : public boost::static_visitor<> {
     AssignValueToVariable(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v) : function(f), variable(v) {}
@@ -220,8 +225,7 @@ struct AssignValueToVariable : public boost::static_visitor<> {
     std::shared_ptr<Variable> variable;
 
     void operator()(ast::Litteral& litteral) const {
-        function->add(tac::Quadruple(variable, litteral.label));
-        function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, litteral.value.size() - 2));
+        assignStringToVariable(function, variable, litteral.label, litteral.value.size() - 2);
     }
 
     void operator()(ast::Integer& integer) const {
@@ -256,11 +260,10 @@ struct AssignValueToVariable : public boost::static_visitor<> {
         if(type.base() == BaseType::INT){
             function->add(tac::Quadruple(variable, value.Content->var));
         } else if(type.base() == BaseType::STRING){
-            function->add(tac::Quadruple(variable, value.Content->var));
-
             auto temp = value.Content->context->newTemporary();
             function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
-            function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, temp));
+            
+            assignStringToVariable(function, variable, value.Content->var, temp);
         }
     }
 
