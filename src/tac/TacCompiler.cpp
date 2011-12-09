@@ -364,12 +364,12 @@ struct PassValueAsParam : public boost::static_visitor<> {
         Type type = GetTypeVisitor()(value);
 
         if(type.base() == BaseType::INT){
-            auto t1 = value.Content->context->newTemporary();
+            auto t1 = function->context->newTemporary();
             performIntOperation(value, function, t1);
             function->add(tac::Param(t1));
         } else if(type.base() == BaseType::STRING){
-            auto t1 = value.Content->context->newTemporary();
-            auto t2 = value.Content->context->newTemporary();
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
 
             performStringOperation(value, function, t1, t2);
             
@@ -501,7 +501,7 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
     unsigned int iter = 0;
 
     PassValueAsParam pusher(function);
-    visit_non_variant(pusher, value);
+    visit(pusher, value.Content->first);
 
     //Perfom all the additions
     for(auto& operation : value.Content->operations){
