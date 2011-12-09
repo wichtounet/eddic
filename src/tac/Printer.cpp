@@ -38,7 +38,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(tac::Goto& goto_){
-        std::cout << "goto " << goto_.label << std::endl;
+        std::cout << "\tgoto " << goto_.label << std::endl;
     }
 
     void operator()(tac::Param& param){
@@ -50,11 +50,25 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(tac::Call& call){
+        std::cout << "\t";
 
+        if(call.return_){
+            std::cout << call.return_->name();
+        }
+
+        if(call.return2_){
+            std::cout << ", " << call.return2_->name();
+        }
+
+        if(call.return_ || call.return2_){
+            std::cout << " = ";
+        }
+
+        std::cout << "call " << call.function << std::endl;
     }
 
     void operator()(std::string& label){
-        std::cout << label << ":" << std::endl;
+        std::cout << "\t" << label << ":" << std::endl;
     }
 };
 
