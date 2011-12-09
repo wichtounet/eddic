@@ -49,6 +49,8 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "Function " << function->getName() << std::endl;
 
         visit_each(*this, function->getStatements());
+
+        std::cout << std::endl;
     }
 
     void operator()(tac::Quadruple& quadruple){
@@ -64,7 +66,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(tac::Param& param){
+        std::cout << "\tparam ";
 
+        std::cout << printArgument(param.arg);
+
+        std::cout << std::endl;
     }
 
     void operator()(tac::Return& return_){
