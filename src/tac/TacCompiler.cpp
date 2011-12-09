@@ -26,6 +26,8 @@
 
 using namespace eddic;
 
+namespace {
+
 void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function);
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
@@ -786,6 +788,8 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         function->add(tac::Call("print_line", 0));
     }
 }
+
+} //end of anonymous namespace
 
 void tac::TacCompiler::compile(ast::Program& program, StringPool& pool, tac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);

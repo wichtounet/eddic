@@ -35,6 +35,8 @@
 
 using namespace eddic;
 
+namespace {
+
 inline bool isImmediate(ast::Value& value){
    return boost::apply_visitor(IsImmediateVisitor(), value); 
 }
@@ -975,6 +977,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.addInstruction(program.factory().createFunctionExit(return_.Content->context->size()));
         }
 };
+
+} //end of anonymous namespace
 
 void IntermediateCompiler::compile(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram) const {
     CompilerVisitor visitor(pool, intermediateProgram);
