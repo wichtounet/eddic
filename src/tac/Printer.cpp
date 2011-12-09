@@ -14,7 +14,29 @@
 
 #include "VisitorUtils.hpp"
 
+#include "Utils.hpp"
+
 using namespace eddic;
+
+namespace {
+
+struct ArgumentToString : public boost::static_visitor<std::string> {
+   std::string operator()(std::shared_ptr<Variable>& variable) const {
+        return variable->name();   
+   }
+
+   std::string operator()(int& integer) const {
+        return toString(integer);
+   }
+
+   std::string operator()(std::string& str) const {
+        return str;
+   }
+};
+
+std::string printArgument(tac::Argument& arg){
+    return boost::apply_visitor(ArgumentToString(), arg);
+}
 
 struct DebugVisitor : public boost::static_visitor<> {
     void operator()(tac::Program& program){
@@ -46,7 +68,17 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(tac::Return& return_){
+        std::cout << "\treturn";
 
+        if(return_.arg1){
+            std::cout << " " << printArgument(*return_.arg1);
+        }
+
+        if(return_.arg2){
+            std::cout << ", " << printArgument(*return_.arg2);
+        }
+
+        std::cout << std::endl;
     }
 
     void operator()(tac::Call& call){
@@ -71,6 +103,8 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "\t" << label << ":" << std::endl;
     }
 };
+
+} //end of anonymous namespace
 
 void tac::Printer::print(tac::Program& program) const {
    DebugVisitor visitor;
