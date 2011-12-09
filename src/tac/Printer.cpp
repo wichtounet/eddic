@@ -25,6 +25,36 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<tac::Function> function){
         std::cout << "Function " << function->getName() << std::endl;
+
+        visit_each(*this, function->getStatements());
+    }
+
+    void operator()(tac::Quadruple& quadruple){
+
+    }
+
+    void operator()(tac::IfFalse& ifFalse){
+
+    }
+
+    void operator()(tac::Goto& goto_){
+
+    }
+
+    void operator()(tac::Param& param){
+
+    }
+
+    void operator()(tac::Return& return_){
+
+    }
+
+    void operator()(tac::Call& call){
+
+    }
+
+    void operator()(std::string& label){
+        std::cout << label << ":" << std::endl;
     }
 };
 
