@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-tac::Function::Function(std::shared_ptr<FunctionContext> c) : context(c) {}
+tac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {}
         
 void tac::Function::add(tac::Statement statement){
     statements.push_back(statement);

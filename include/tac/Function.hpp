@@ -8,6 +8,7 @@
 #ifndef TAC_FUNCTION_H
 #define TAC_FUNCTION_H
 
+#include <string>
 #include <memory>
 #include <vector>
 
@@ -21,7 +22,7 @@ namespace tac {
 
 class Function {
     public:
-        Function(std::shared_ptr<FunctionContext> context);
+        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
         
         std::shared_ptr<FunctionContext> context;
 
@@ -36,6 +37,8 @@ class Function {
         
         //There is no basic blocks at the beginning
         std::vector<std::shared_ptr<tac::BasicBlock>> blocks;
+
+        std::string name;
 };
 
 } //end of tac

@@ -542,7 +542,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& f){
-            function = std::make_shared<tac::Function>(f.Content->context);
+            function = std::make_shared<tac::Function>(f.Content->context, f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
