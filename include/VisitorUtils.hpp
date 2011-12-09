@@ -25,12 +25,22 @@ inline void visit_each(Visitor& visitor, std::vector<Visitable>& elements){
 }
 
 template<typename Visitor, typename Visitable>
+inline void visit_each(Visitor& visitor, const std::vector<Visitable>& elements){
+    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit(visitor, visitable); });
+}
+
+template<typename Visitor, typename Visitable>
 inline void visit_non_variant(Visitor& visitor, Visitable& visitable){
     visitor(visitable);
 }
 
 template<typename Visitor, typename Visitable>
 inline void visit_each_non_variant(Visitor& visitor, std::vector<Visitable>& elements){
+    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit_non_variant(visitor, visitable); });
+}
+
+template<typename Visitor, typename Visitable>
+inline void visit_each_non_variant(Visitor& visitor, const std::vector<Visitable>& elements){
     for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit_non_variant(visitor, visitable); });
 }
       
