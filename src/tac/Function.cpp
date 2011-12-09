@@ -25,3 +25,7 @@ std::shared_ptr<tac::BasicBlock> tac::Function::newBasicBlock(){
     blocks.push_back(std::make_shared<BasicBlock>());
     return blocks.back();
 }   
+
+std::string tac::Function::getName(){
+    return name;
+}
