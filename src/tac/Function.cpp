@@ -26,6 +26,10 @@ std::shared_ptr<tac::BasicBlock> tac::Function::newBasicBlock(){
     return blocks.back();
 }   
 
-std::string tac::Function::getName(){
+std::string tac::Function::getName() const {
     return name;
+}
+
+const std::vector<tac::Statement>& tac::Function::getStatements() const {
+    return statements;
 }

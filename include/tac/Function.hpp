@@ -31,7 +31,9 @@ class Function {
         std::shared_ptr<tac::BasicBlock> currentBasicBlock();
         std::shared_ptr<tac::BasicBlock> newBasicBlock();
 
-        std::string getName();
+        std::string getName() const;
+
+        const std::vector<tac::Statement>& getStatements() const;
 
     private:
         //Before being partitioned, the function has only statement
