@@ -35,6 +35,11 @@
 #include "IntermediateCompiler.hpp"
 #include "WarningsEngine.hpp"
 
+//Three Address Code
+#include "tac/TacCompiler.hpp"
+#include "tac/Printer.hpp"
+#include "tac/Program.hpp"
+
 #include "SemanticalException.hpp"
 
 #include "parser/SpiritParser.hpp"
@@ -97,6 +102,17 @@ int Compiler::compile(const std::string& file) {
             
             //Optimize the AST
             optimize(program, functionTable, pool);
+
+            //IN Construction
+            
+            tac::Program tacProgram;
+            tac::TacCompiler compiler;
+            compiler.compile(program, pool, tacProgram);
+
+            tac::Printer printer;
+            printer.print(tacProgram);
+
+            //IN Construction
 
             //Write Intermediate representation of the parse tree
             IntermediateProgram il;
