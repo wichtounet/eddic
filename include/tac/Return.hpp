@@ -8,6 +8,8 @@
 #ifndef TAC_RETURN_H
 #define TAC_RETURN_H
 
+#include <boost/optional.hpp>
+
 #include "tac/Argument.hpp"
 
 namespace eddic {
@@ -15,8 +17,8 @@ namespace eddic {
 namespace tac {
 
 struct Return {
-    Argument arg1;
-    Argument arg2;
+    boost::optional<Argument> arg1;
+    boost::optional<Argument> arg2;
 
     Return();
     Return(Argument arg1);
