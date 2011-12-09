@@ -30,6 +30,6 @@ std::string tac::Function::getName() const {
     return name;
 }
 
-const std::vector<tac::Statement>& tac::Function::getStatements() const {
+std::vector<tac::Statement>& tac::Function::getStatements(){
     return statements;
 }

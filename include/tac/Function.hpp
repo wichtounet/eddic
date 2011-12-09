@@ -33,7 +33,7 @@ class Function {
 
         std::string getName() const;
 
-        const std::vector<tac::Statement>& getStatements() const;
+        std::vector<tac::Statement>& getStatements();
 
     private:
         //Before being partitioned, the function has only statement
