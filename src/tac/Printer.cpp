@@ -38,7 +38,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(tac::Goto& goto_){
-
+        std::cout << "goto " << goto_.label << std::endl;
     }
 
     void operator()(tac::Param& param){
