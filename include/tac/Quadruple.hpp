@@ -8,6 +8,8 @@
 #ifndef TAC_QUADRUPLE_H
 #define TAC_QUADRUPLE_H
 
+#include <boost/optional.hpp>
+
 #include <vector>
 
 #include "tac/Operator.hpp"
@@ -22,8 +24,8 @@ namespace tac {
 struct Quadruple {
     std::shared_ptr<Variable> result;
     tac::Argument arg1;
-    tac::Argument arg2;
-    tac::Operator op;
+    boost::optional<tac::Argument> arg2;
+    boost::optional<tac::Operator> op;
 
     Quadruple();
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg);
