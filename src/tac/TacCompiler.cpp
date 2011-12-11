@@ -28,6 +28,32 @@ using namespace eddic;
 
 namespace {
 
+struct IsSingleVisitor : public boost::static_visitor<bool> {
+    bool operator()(ast::Litteral& litteral) const {
+        return true;
+    }
+
+    bool operator()(ast::Integer& litteral) const {
+        return true;
+    }
+
+    bool operator()(ast::VariableValue& variable) const {
+        return true;
+    }
+
+    bool operator()(ast::ArrayValue& variable) const {
+        return false;
+    }
+
+    bool operator()(ast::ComposedValue& value) const {
+        return false;
+    }
+
+    bool operator()(ast::FunctionCall& value) const {
+        return false;
+    }
+};
+
 void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::shared_ptr<tac::Function> function);
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
@@ -42,7 +68,7 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
 
     //Apply all the operations in chain
     for(auto& operation : value.Content->operations){
-        moveToVariable(value.Content->first, t2, function);
+        moveToVariable(operation.get<1>(), t2, function);
         
         function->add(tac::Quadruple(t2, t1, tac::toOperator(operation.get<0>()), t2));
 
