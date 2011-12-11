@@ -111,21 +111,24 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
     }
 }
 
-std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
+tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
     auto temp = function->context->newTemporary();
     
-    function->add(tac::Quadruple(temp, iterVar, tac::Operator::MUL, array->type().size()));
+    function->add(tac::Quadruple(temp, iterVar, tac::Operator::MUL, size(array->type().base())));
     function->add(tac::Quadruple(temp, temp, tac::Operator::ADD, size(BaseType::INT)));
 
     return temp;
 }
 
-std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
-    auto t1 = function->context->newTemporary();
+tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
+    tac::Argument index = moveToArgument(indexValue, function);
 
-    moveToVariable(indexValue, t1, function);
+    auto temp = function->context->newTemporary();
+    
+    function->add(tac::Quadruple(temp, index, tac::Operator::MUL, size(array->type().base())));
+    function->add(tac::Quadruple(temp, temp, tac::Operator::ADD, size(BaseType::INT)));
 
-    return computeIndexOfArray(array, t1, function);
+    return temp;
 }
 
 std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<tac::Function> function){
@@ -317,11 +320,12 @@ struct AssignValueToVariable : public boost::static_visitor<> {
             function->add(tac::Quadruple(variable, array.Content->var, tac::Operator::ARRAY, index));
         } else {
             function->add(tac::Quadruple(variable, array.Content->var, tac::Operator::ARRAY, index));
-                
-            auto t2 = array.Content->context->newTemporary();
+            
+            auto t1 = function->context->newTemporary(); 
+            auto t2 = function->context->newTemporary();
             
             //Assign the second part of the string
-            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t1, index, tac::Operator::ADD, 4));
             function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
             function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, t2));
         }
@@ -410,9 +414,10 @@ struct PassValueAsParam : public boost::static_visitor<> {
             function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
                 
             auto t2 = array.Content->context->newTemporary();
+            auto t3 = array.Content->context->newTemporary();
             
             //Assign the second part of the string
-            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t3, index, tac::Operator::ADD, 4));
             function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
             
             function->add(tac::Param(t1)); 
@@ -498,9 +503,10 @@ struct ReturnValue : public boost::static_visitor<> {
             function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
                
             auto t2 = array.Content->context->newTemporary();
+            auto t3 = array.Content->context->newTemporary();
             
             //Assign the second part of the string
-            function->add(tac::Quadruple(index, index, tac::Operator::ADD, 4));
+            function->add(tac::Quadruple(t3, index, tac::Operator::ADD, 4));
             function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
             
             function->add(tac::Return(t1, t2)); 
@@ -776,9 +782,11 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else {
                 function->add(tac::Quadruple(var, arrayVar, tac::Operator::ARRAY, indexTemp));
 
+                auto t1 = function->context->newTemporary();
+
                 //Assign the second part of the string
-                function->add(tac::Quadruple(indexTemp, indexTemp, tac::Operator::ADD, 4));
-                function->add(tac::Quadruple(stringTemp, arrayVar, tac::Operator::ARRAY, indexTemp));
+                function->add(tac::Quadruple(t1, indexTemp, tac::Operator::ADD, 4));
+                function->add(tac::Quadruple(stringTemp, arrayVar, tac::Operator::ARRAY, t1));
                 function->add(tac::Quadruple(var, 4, tac::Operator::DOT_ASSIGN, stringTemp));
             }
 
