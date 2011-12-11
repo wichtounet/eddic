@@ -29,28 +29,43 @@ using namespace eddic;
 namespace {
 
 struct IsSingleVisitor : public boost::static_visitor<bool> {
-    bool operator()(ast::Litteral& litteral) const {
+    bool operator()(ast::VariableValue&) const {
         return true;
     }
 
-    bool operator()(ast::Integer& litteral) const {
+    bool operator()(ast::Integer&) const {
         return true;
     }
-
-    bool operator()(ast::VariableValue& variable) const {
-        return true;
-    }
-
-    bool operator()(ast::ArrayValue& variable) const {
+    
+    bool operator()(ast::Litteral&) const {
         return false;
     }
 
-    bool operator()(ast::ComposedValue& value) const {
+    bool operator()(ast::ArrayValue&) const {
         return false;
     }
 
-    bool operator()(ast::FunctionCall& value) const {
+    bool operator()(ast::ComposedValue&) const {
         return false;
+    }
+
+    bool operator()(ast::FunctionCall&) const {
+        return false;
+    }
+};
+
+struct ToArgumentVisitor : public boost::static_visitor<tac::Argument> {
+    tac::Argument operator()(ast::Integer& integer) const {
+        return integer.value;
+    }
+
+    tac::Argument operator()(ast::VariableValue& variable) const {
+        return variable.Content->var;
+    }
+
+    template<typename T>
+    tac::Argument operator()(T&) const {
+        assert(false);
     }
 };
 
@@ -58,25 +73,42 @@ void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 
+tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function){
+    tac::Argument arg;
+
+    if(boost::apply_visitor(IsSingleVisitor(), value)){
+        arg = boost::apply_visitor(ToArgumentVisitor(), value);
+    } else {
+        auto t1 = function->context->newTemporary();
+        moveToVariable(value, t1, function);
+        arg = t1; 
+    }
+    
+    return arg;
+}
+
 void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
-    auto t1 = value.Content->context->newTemporary();
-    auto t2 = value.Content->context->newTemporary();
+    tac::Argument left = moveToArgument(value.Content->first, function);
+    tac::Argument right;
 
-    moveToVariable(value.Content->first, t1, function);
+    auto t1 = function->context->newTemporary(); 
 
     //Apply all the operations in chain
-    for(auto& operation : value.Content->operations){
-        moveToVariable(operation.get<1>(), t2, function);
-        
-        function->add(tac::Quadruple(t2, t1, tac::toOperator(operation.get<0>()), t2));
+    for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
+        auto operation = value.Content->operations[i];
 
-        t1 = t2;
-        t2 = value.Content->context->newTemporary();
+        right = moveToArgument(operation.get<1>(), function);
+       
+        if(i == value.Content->operations.size() - 1){
+            function->add(tac::Quadruple(variable, left, tac::toOperator(operation.get<0>()), right));
+        } else if (i == 0){
+            function->add(tac::Quadruple(t1, left, tac::toOperator(operation.get<0>()), right));
+        } else {
+            function->add(tac::Quadruple(t1, t1, tac::toOperator(operation.get<0>()), right));
+        }
     }
-
-    function->add(tac::Quadruple(variable, t1));
 }
 
 std::shared_ptr<Variable> computeIndexOfArray(std::shared_ptr<Variable> array, std::shared_ptr<Variable> iterVar, std::shared_ptr<tac::Function> function){
@@ -509,13 +541,10 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
    
     void operator()(ast::BinaryCondition& binaryCondition) const {
-        auto t1 = function->context->newTemporary();
-        auto t2 = function->context->newTemporary();
+        tac::Argument left = moveToArgument(binaryCondition.Content->lhs, function);
+        tac::Argument right = moveToArgument(binaryCondition.Content->rhs, function);
 
-        boost::apply_visitor(AssignValueToVariable(function, t1), binaryCondition.Content->lhs);
-        boost::apply_visitor(AssignValueToVariable(function, t2), binaryCondition.Content->rhs);
-
-        function->add(tac::IfFalse(tac::toBinaryOperator(binaryCondition.Content->op), t1, t2, label));
+        function->add(tac::IfFalse(tac::toBinaryOperator(binaryCondition.Content->op), left, right, label));
     }
 };
 
