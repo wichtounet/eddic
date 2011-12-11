@@ -28,7 +28,7 @@ using namespace eddic;
 
 namespace {
 
-struct IsSingleVisitor : public boost::static_visitor<bool> {
+struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::VariableValue&) const {
         return true;
     }
@@ -47,6 +47,32 @@ struct IsSingleVisitor : public boost::static_visitor<bool> {
 
     bool operator()(ast::ComposedValue&) const {
         return false;
+    }
+
+    bool operator()(ast::FunctionCall&) const {
+        return false;
+    }
+};
+
+struct IsParamSafeVisitor : public boost::static_visitor<bool> {
+    bool operator()(ast::VariableValue&) const {
+        return true;
+    }
+
+    bool operator()(ast::Integer&) const {
+        return true;
+    }
+    
+    bool operator()(ast::Litteral&) const {
+        return true;
+    }
+
+    bool operator()(ast::ArrayValue&) const {
+        return false;//TODO In some cases, it's possible that it can be param safe
+    }
+
+    bool operator()(ast::ComposedValue&) const {
+        return false;//TODO In some cases, it's possible that it can be param safe
     }
 
     bool operator()(ast::FunctionCall&) const {
@@ -76,7 +102,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function){
     tac::Argument arg;
 
-    if(boost::apply_visitor(IsSingleVisitor(), value)){
+    if(boost::apply_visitor(IsSingleArgumentVisitor(), value)){
         arg = boost::apply_visitor(ToArgumentVisitor(), value);
     } else {
         auto t1 = function->context->newTemporary();
@@ -345,21 +371,20 @@ struct AssignValueToVariable : public boost::static_visitor<> {
     }
 };
 
-struct PassValueAsParam : public boost::static_visitor<> {
-    PassValueAsParam(std::shared_ptr<tac::Function> f) : function(f) {}
+struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
+    ToArgumentsVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
     
     mutable std::shared_ptr<tac::Function> function;
 
-    void operator()(ast::Litteral& litteral) const {
-        function->add(tac::Param(litteral.label));
-        function->add(tac::Param(litteral.value.size() - 2));
+    std::vector<tac::Argument> operator()(ast::Litteral& litteral) const {
+        return {litteral.label, litteral.value.size() - 2};
     }
 
-    void operator()(ast::Integer& integer) const {
-        function->add(tac::Param(integer.value));
+    std::vector<tac::Argument> operator()(ast::Integer& integer) const {
+        return {integer.value};
     }
 
-    void operator()(ast::FunctionCall& call) const {
+    std::vector<tac::Argument> operator()(ast::FunctionCall& call) const {
         Type type = call.Content->function->returnType;
 
         switch(type.base()){
@@ -368,9 +393,7 @@ struct PassValueAsParam : public boost::static_visitor<> {
 
                 executeCall(call, function, t1, {});
 
-                function->add(tac::Param(t1));
-
-                break;
+                return {t1};
             }
             case BaseType::STRING:{
                 auto t1 = function->context->newTemporary();
@@ -378,37 +401,34 @@ struct PassValueAsParam : public boost::static_visitor<> {
 
                 executeCall(call, function, t1, t2);
 
-                function->add(tac::Param(t1));
-                function->add(tac::Param(t2));
-
-                break;
+                return {t1, t2};
             }
             default:
                 throw SemanticalException("This function doesn't return anything");   
         }
     }
 
-    void operator()(ast::VariableValue& value) const {
+    std::vector<tac::Argument> operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
 
         if(type.base() == BaseType::INT){
-            function->add(tac::Param(value.Content->var));
-        } else if(type.base() == BaseType::STRING){
+            return {value.Content->var};
+        } else {
             auto temp = value.Content->context->newTemporary();
             function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
             
-            function->add(tac::Param(value.Content->var));
-            function->add(tac::Param(temp));
+            return {value.Content->var, temp};
         }
     }
 
-    void operator()(ast::ArrayValue& array) const {
+    std::vector<tac::Argument> operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
         if(array.Content->var->type().base() == BaseType::INT){
             auto temp = array.Content->context->newTemporary();
             function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
-            function->add(tac::Param(temp)); 
+            
+            return {temp};
         } else {
             auto t1 = array.Content->context->newTemporary();
             function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
@@ -420,26 +440,25 @@ struct PassValueAsParam : public boost::static_visitor<> {
             function->add(tac::Quadruple(t3, index, tac::Operator::ADD, 4));
             function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
             
-            function->add(tac::Param(t1)); 
-            function->add(tac::Param(t2)); 
+            return {t1, t2};
         }
     }
 
-    void operator()(ast::ComposedValue& value) const {
+    std::vector<tac::Argument> operator()(ast::ComposedValue& value) const {
         Type type = GetTypeVisitor()(value);
 
         if(type.base() == BaseType::INT){
             auto t1 = function->context->newTemporary();
             performIntOperation(value, function, t1);
-            function->add(tac::Param(t1));
-        } else if(type.base() == BaseType::STRING){
+
+            return {t1};
+        } else {
             auto t1 = function->context->newTemporary();
             auto t2 = function->context->newTemporary();
 
             performStringOperation(value, function, t1, t2);
             
-            function->add(tac::Param(t1)); 
-            function->add(tac::Param(t2)); 
+            return {t1, t2};
         }
     }
 };
@@ -558,17 +577,24 @@ void moveToVariable(ast::Value& value, std::shared_ptr<Variable> variable, std::
     boost::apply_visitor(AssignValueToVariable(function, variable), value);
 }
 
+void push(ast::Value& value, std::shared_ptr<tac::Function> function){
+    auto arguments = boost::apply_visitor(ToArgumentsVisitor(function), value);
+
+    for(auto& arg : arguments){
+        function->add(tac::Param(arg));   
+    }
+}
+
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
-    PassValueAsParam pusher(function);
-    visit(pusher, value.Content->first);
+    push(value.Content->first, function);
 
     //Perfom all the additions
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
-        visit(pusher, operation.get<1>());
+        push(operation.get<1>(), function);
         
         if(i == value.Content->operations.size() - 1){
             function->add(tac::Call("concat", 16, v1, v2)); 
@@ -809,9 +835,16 @@ class CompilerVisitor : public boost::static_visitor<> {
 };
 
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    PassValueAsParam visitor(function);
+    std::vector<std::vector<tac::Argument>> arguments;
+
     for(auto& value : functionCall.Content->values){
-        boost::apply_visitor(visitor, value);
+        arguments.push_back(boost::apply_visitor(ToArgumentsVisitor(function), value)); 
+    }
+
+    for(auto& first : arguments){
+        for(auto& arg : first){
+            function->add(tac::Param(arg));   
+        }
     }
 
     std::string functionName;  
