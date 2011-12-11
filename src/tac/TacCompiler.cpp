@@ -170,6 +170,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     return t1;
 }
 
+//TODO Use ToArgumentsVisitor to simplify this visitor
 struct AssignValueToArray : public boost::static_visitor<> {
     AssignValueToArray(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : function(f), variable(v), indexValue(i) {}
     
@@ -290,6 +291,7 @@ void assignStringToVariable(std::shared_ptr<tac::Function> function, std::shared
     function->add(tac::Quadruple(variable, 4, tac::Operator::DOT_ASSIGN, v2));
 }
  
+//TODO Use ToArgumentsVisitor to simplify this visitor
 struct AssignValueToVariable : public boost::static_visitor<> {
     AssignValueToVariable(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v) : function(f), variable(v) {}
     
@@ -459,93 +461,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             performStringOperation(value, function, t1, t2);
             
             return {t1, t2};
-        }
-    }
-};
-
-struct ReturnValue : public boost::static_visitor<> {
-    ReturnValue(std::shared_ptr<tac::Function> f) : function(f) {}
-    
-    mutable std::shared_ptr<tac::Function> function;
-
-    void operator()(ast::Litteral& litteral) const {
-        function->add(tac::Return(litteral.label, litteral.value.size() - 2));
-    }
-
-    void operator()(ast::Integer& integer) const {
-        function->add(tac::Return(integer.value));
-    }
-
-    void operator()(ast::FunctionCall& call) const {
-        Type type = call.Content->function->returnType;
-
-        if(type.base() == BaseType::INT){
-            auto t1 = function->context->newTemporary();
-
-            executeCall(call, function, t1, {});
-
-            function->add(tac::Return(t1));
-        } else if(type.base() == BaseType::STRING){
-            auto t1 = function->context->newTemporary();
-            auto t2 = function->context->newTemporary();
-
-            executeCall(call, function, t1, t2);
-
-            function->add(tac::Return(t1, t2));
-        } else {
-            throw SemanticalException("This function doesn't return anything");   
-        }
-    }
-
-    void operator()(ast::VariableValue& value) const {
-        auto type = value.Content->var->type();
-
-        if(type.base() == BaseType::INT){
-            function->add(tac::Return(value.Content->var));
-        } else if(type.base() == BaseType::STRING){
-            auto temp = value.Content->context->newTemporary();
-            function->add(tac::Quadruple(temp, value.Content->var, tac::Operator::DOT, 4));
-
-            function->add(tac::Return(value.Content->var, temp));
-        }
-    }
-
-    void operator()(ast::ArrayValue& array) const {
-        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-
-        if(array.Content->var->type().base() == BaseType::INT){
-            auto temp = array.Content->context->newTemporary();
-            function->add(tac::Quadruple(temp, array.Content->var, tac::Operator::ARRAY, index));
-            function->add(tac::Return(temp)); 
-        } else {
-            auto t1 = array.Content->context->newTemporary();
-            function->add(tac::Quadruple(t1, array.Content->var, tac::Operator::ARRAY, index));
-               
-            auto t2 = array.Content->context->newTemporary();
-            auto t3 = array.Content->context->newTemporary();
-            
-            //Assign the second part of the string
-            function->add(tac::Quadruple(t3, index, tac::Operator::ADD, 4));
-            function->add(tac::Quadruple(t2, array.Content->var, tac::Operator::ARRAY, index));
-            
-            function->add(tac::Return(t1, t2)); 
-        }
-    }
-
-    void operator()(ast::ComposedValue& value) const {
-        Type type = GetTypeVisitor()(value);
-
-        if(type.base() == BaseType::INT){
-            auto t1 = value.Content->context->newTemporary();
-            performIntOperation(value, function, t1);
-            function->add(tac::Return(t1));
-        } else if(type.base() == BaseType::STRING){
-            auto t1 = value.Content->context->newTemporary();
-            auto t2 = value.Content->context->newTemporary();
-
-            performStringOperation(value, function, t1, t2);
-            
-            function->add(tac::Return(t1, t2)); 
         }
     }
 };
@@ -830,7 +745,15 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            boost::apply_visitor(ReturnValue(function), return_.Content->value);
+            auto arguments = boost::apply_visitor(ToArgumentsVisitor(function), return_.Content->value);
+
+            if(arguments.size() == 1){
+                function->add(tac::Return(arguments[0]));
+            } else if(arguments.size() == 2){
+                function->add(tac::Return(arguments[0], arguments[1]));
+            } else {
+                throw SemanticalException("Invalid number of arguments");
+            }   
         }
 };
 
