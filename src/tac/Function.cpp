@@ -33,3 +33,7 @@ std::string tac::Function::getName() const {
 std::vector<tac::Statement>& tac::Function::getStatements(){
     return statements;
 }
+
+std::vector<std::shared_ptr<tac::BasicBlock>>& tac::Function::getBasicBlocks(){
+    return blocks;
+}
