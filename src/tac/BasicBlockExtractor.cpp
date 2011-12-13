@@ -15,19 +15,15 @@
 
 using namespace eddic;
 
-namespace {
-
-
-} //end of anonymous namespace
-
 void tac::BasicBlockExtractor::extract(tac::Program& program) const {
-    std::unordered_map<std::string, std::shared_ptr<BasicBlock>> labels;
-
     for(auto& function : program.functions){
-        auto current = function->newBasicBlock();
+        std::unordered_map<std::string, std::shared_ptr<BasicBlock>> labels;
+        
+        function->newBasicBlock();
 
         bool nextIsLeader = false;
 
+        //First separate the statements into basic blocks
         for(auto& statement : function->getStatements()){
             if(auto* ptr = boost::get<std::string>(&statement)){
                 function->newBasicBlock();
@@ -46,6 +42,17 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
                 }
 
                 function->currentBasicBlock()->add(statement);
+            }
+        }
+
+        //Then, replace all the the labels by reference to basic blocks
+        for(auto& block : function->getBasicBlocks()){
+            for(auto& statement : block->statements){
+                if(auto* ptr = boost::get<tac::IfFalse>(&statement)){
+                   ptr->block = labels[ptr->label];
+                } else if(auto* ptr = boost::get<tac::Goto>(&statement)){
+                   ptr->block = labels[ptr->label];
+                }
             }
         }
 
