@@ -372,25 +372,27 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
 };
 
-void push(ast::Value& value, std::shared_ptr<tac::Function> function){
-    auto arguments = boost::apply_visitor(ToArgumentsVisitor(function), value);
-
-    for(auto& arg : arguments){
-        function->add(tac::Param(arg));   
-    }
-}
-
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
-    push(value.Content->first, function);
+    std::vector<tac::Argument> arguments;
+
+    auto first = boost::apply_visitor(ToArgumentsVisitor(function), value.Content->first);
+    arguments.insert(arguments.end(), first.begin(), first.end());
 
     //Perfom all the additions
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
-        push(operation.get<1>(), function);
+        auto second = boost::apply_visitor(ToArgumentsVisitor(function), operation.get<1>());
+        arguments.insert(arguments.end(), second.begin(), second.end());
         
+        for(auto& arg : arguments){
+            function->add(tac::Param(arg));   
+        }
+
+        arguments.clear();
+
         if(i == value.Content->operations.size() - 1){
             function->add(tac::Call("concat", 16, v1, v2)); 
         } else {
@@ -398,9 +400,9 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
             auto t2 = value.Content->context->newTemporary();
             
             function->add(tac::Call("concat", 16, t1, t2)); 
-           
-            function->add(tac::Param(t1));
-            function->add(tac::Param(t2));
+          
+            arguments.push_back(t1);
+            arguments.push_back(t2);
         }
     }
 }
