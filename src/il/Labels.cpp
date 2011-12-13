@@ -14,3 +14,7 @@ static int currentLabel = 0;
 std::string eddic::newLabel(){
    return "L" + toString(currentLabel++); 
 }
+
+void eddic::resetNumbering(){
+    currentLabel = 0;
+}

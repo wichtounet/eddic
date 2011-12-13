@@ -13,6 +13,7 @@
 namespace eddic {
 
 std::string newLabel();
+void resetNumbering();
 
 template<typename T>
 std::string label(const std::string& prefix, T value){
