@@ -39,6 +39,7 @@
 #include "tac/TacCompiler.hpp"
 #include "tac/Printer.hpp"
 #include "tac/Program.hpp"
+#include "tac/BasicBlockExtractor.hpp"
 
 #include "SemanticalException.hpp"
 
@@ -110,6 +111,12 @@ int Compiler::compile(const std::string& file) {
             compiler.compile(program, pool, tacProgram);
 
             tac::Printer printer;
+            printer.print(tacProgram);
+
+            //Separate into basic blocks
+            tac::BasicBlockExtractor extractor;
+            extractor.extract(tacProgram);
+
             printer.print(tacProgram);
 
             //IN Construction
