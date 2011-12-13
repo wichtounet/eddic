@@ -55,7 +55,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<tac::BasicBlock>& block){
-        std::cout << "-> Basic block" << std::endl;
+        std::cout << "B" << block->index << "->" << std::endl;
         
         visit_each(*this, block->statements);     
     }
