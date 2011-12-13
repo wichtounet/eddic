@@ -92,7 +92,8 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    std::string printTarget(tac::IfFalse& ifFalse){
+    template<typename T>
+    std::string printTarget(T& ifFalse){
         if(ifFalse.block){
             return "B" + toString(ifFalse.block->index);   
         } else {
@@ -117,7 +118,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(tac::Goto& goto_){
-        std::cout << "\tgoto " << goto_.label << std::endl;
+        std::cout << "\tgoto " << printTarget(goto_) << std::endl;
     }
 
     void operator()(tac::Param& param){
