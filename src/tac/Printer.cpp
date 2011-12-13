@@ -49,8 +49,19 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "Function " << function->getName() << std::endl;
 
         visit_each(*this, function->getStatements());
+        visit_each_non_variant(*this, function->getBasicBlocks());
 
         std::cout << std::endl;
+    }
+
+    void operator()(std::shared_ptr<tac::BasicBlock>& block){
+        std::cout << "-> Basic block" << std::endl;
+        
+        visit_each(*this, block->statements);     
+    }
+
+    void operator()(tac::Statement& statement){
+        visit(*this, statement);
     }
 
     void operator()(tac::Quadruple& quadruple){

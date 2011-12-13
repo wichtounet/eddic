@@ -22,10 +22,10 @@ class BasicBlock {
     public:
         void add(tac::Statement statement);
 
+        std::vector<tac::Statement> statements;
+
     private:
         std::shared_ptr<Context> context;
-
-        std::vector<tac::Statement> statements;
 };
 
 } //end of tac
