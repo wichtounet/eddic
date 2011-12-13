@@ -8,16 +8,28 @@
 #ifndef TAC_INTEL_X86_CODE_GENERATOR_H
 #define TAC_INTEL_X86_CODE_GENERATOR_H
 
+#include <string>
+
+#include "tac/Program.hpp"
+
 namespace eddic {
 
 class AssemblyFileWriter;
 
 namespace tac {
 
-class Program;
+struct StatementCompiler;
 
-struct IntelX86CodeGenerator {
-    void generate(tac::Program& program, AssemblyFileWriter& writer) const ;
+class IntelX86CodeGenerator {
+    public:
+        IntelX86CodeGenerator(AssemblyFileWriter& writer);
+
+        void generate(tac::Program& program);
+        void compile(std::shared_ptr<tac::Function> function);
+        void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
+
+    private:
+        AssemblyFileWriter& writer;
 };
 
 } //end of ast

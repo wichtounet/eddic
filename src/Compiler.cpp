@@ -119,8 +119,8 @@ int Compiler::compile(const std::string& file) {
             printer.print(tacProgram);
 
             AssemblyFileWriter writer("output.asm");
-            tac::IntelX86CodeGenerator generator;
-            generator.generate(tacProgram, writer); 
+            tac::IntelX86CodeGenerator generator(writer);
+            generator.generate(tacProgram); 
             writer.write(); 
 
             //IN Construction
