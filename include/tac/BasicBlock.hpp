@@ -20,6 +20,10 @@ namespace tac {
 
 class BasicBlock {
     public:
+        unsigned int index;
+
+        BasicBlock(unsigned int index);
+
         void add(tac::Statement statement);
 
         std::vector<tac::Statement> statements;

@@ -9,6 +9,8 @@
 
 using namespace eddic;
 
+tac::BasicBlock::BasicBlock(unsigned int i) : index(i) {}
+
 void tac::BasicBlock::add(Statement statement){
     statements.push_back(statement);
 }

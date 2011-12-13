@@ -22,7 +22,7 @@ std::shared_ptr<tac::BasicBlock> tac::Function::currentBasicBlock(){
 }
 
 std::shared_ptr<tac::BasicBlock> tac::Function::newBasicBlock(){
-    blocks.push_back(std::make_shared<BasicBlock>());
+    blocks.push_back(std::make_shared<BasicBlock>(blocks.size() + 1));
     return blocks.back();
 }   
 
