@@ -40,6 +40,7 @@
 #include "tac/Printer.hpp"
 #include "tac/Program.hpp"
 #include "tac/BasicBlockExtractor.hpp"
+#include "tac/IntelX86CodeGenerator.hpp"
 
 #include "SemanticalException.hpp"
 
@@ -110,23 +111,26 @@ int Compiler::compile(const std::string& file) {
             tac::TacCompiler compiler;
             compiler.compile(program, pool, tacProgram);
 
-            tac::Printer printer;
-            printer.print(tacProgram);
-
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
-
+            
+            tac::Printer printer;
             printer.print(tacProgram);
+
+            AssemblyFileWriter writer("output.asm");
+            tac::IntelX86CodeGenerator generator;
+            generator.generate(tacProgram, writer); 
+            writer.write(); 
 
             //IN Construction
 
             //Write Intermediate representation of the parse tree
-            IntermediateProgram il;
-            writeIL(program, pool, il);
+//            IntermediateProgram il;
+//            writeIL(program, pool, il);
 
             //Write assembly to file
-            writeAsm(il, "output.asm");
+//            writeAsm(il, "output.asm");
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
