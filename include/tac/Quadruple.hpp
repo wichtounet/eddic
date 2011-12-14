@@ -27,6 +27,7 @@ struct Quadruple {
     boost::optional<tac::Argument> arg2;
     boost::optional<tac::Operator> op;
     
+    bool liveResult;
     bool liveVariable1;
     bool liveVariable2;
 

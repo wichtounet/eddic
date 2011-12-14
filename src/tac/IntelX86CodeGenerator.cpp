@@ -46,10 +46,12 @@ std::string arg(tac::Argument argument){
 
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
+    std::shared_ptr<tac::Function> function;
+
     std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
     std::unordered_map<Register, std::shared_ptr<Variable>> descriptors;
 
-    StatementCompiler(AssemblyFileWriter& w) : writer(w) {}
+    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {}
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
        writer.stream() << "goto " << labels[goto_->block] << std::endl; 
@@ -66,11 +68,21 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "addl " << call->params << ", %esp" << std::endl;
         }
 
-        //TODO Manage return values
+        //TODO Set return variables as contained in the good registers
     }
     
     void operator()(std::shared_ptr<tac::Return>& return_){
-        //TODO
+        //A return without args is the same as exiting from the function
+        if(!return_->arg1 && !return_->arg2){
+            if(function->context->size() > 0){
+                writer.stream() << "addl $" << function->context->size() << " , %esp" << std::endl;
+            }
+
+            writer.stream() << "leave" << std::endl;
+            writer.stream() << "ret" << std::endl;
+        } else {
+            //TODO Move values into registers
+        }
     }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
@@ -154,6 +166,8 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                     (*ptr)->liveVariable2 = updateLiveness(liveness, (*(*ptr)->arg2));
                 }
 
+                (*ptr)->liveResult = liveness[(*ptr)->result];
+
                 liveness[(*ptr)->result] = false; 
             }
 
@@ -178,7 +192,7 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function
         writer.stream() << "subl $" << size << " , %esp" << std::endl;
     }
 
-    StatementCompiler compiler(writer);
+    StatementCompiler compiler(writer, function);
     for(auto& block : function->getBasicBlocks()){
         compile(block, compiler);
     }
