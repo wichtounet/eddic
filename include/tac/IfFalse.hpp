@@ -27,6 +27,9 @@ struct IfFalse {
     Argument arg2;
     BinaryOperator op;
     std::string label;
+
+    bool liveVariable1;
+    bool liveVariable2;
     
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;

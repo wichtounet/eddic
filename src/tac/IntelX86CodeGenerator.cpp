@@ -144,6 +144,9 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                 if((*ptr)->arg2){
                     (*ptr)->liveVariable2 = updateLiveness(liveness, (*(*ptr)->arg2));
                 }
+            } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                (*ptr)->liveVariable1 = updateLiveness(liveness, (*ptr)->arg1);
+                (*ptr)->liveVariable2 = updateLiveness(liveness, (*ptr)->arg2);
             }
 
             sit++;
