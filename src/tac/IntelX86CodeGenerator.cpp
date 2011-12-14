@@ -23,9 +23,31 @@ tac::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : write
 
 namespace eddic { namespace tac { 
 
+enum Register {
+    EAX,
+    EBX,
+    ECX,
+    EDX,
+
+    ESP, //Extended stack pointer
+    EBP, //Extended base pointer
+
+    ESI, //Extended source index
+    EDI, //Extended destination index
+    
+    REGISTER_COUNT  
+};
+
+std::string arg(tac::Argument argument){
+    //TODO
+
+    return "";
+}
+
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
     std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
+    std::unordered_map<Register, std::shared_ptr<Variable>> descriptors;
 
     StatementCompiler(AssemblyFileWriter& w) : writer(w) {}
 
@@ -34,7 +56,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
 
     void operator()(tac::Param& param){
-        //TODO
+        writer.stream() << "pushl " << arg(param.arg) << std::endl;
     }
 
     void operator()(tac::Call& call){
