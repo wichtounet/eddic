@@ -20,6 +20,9 @@ struct Return {
     boost::optional<Argument> arg1;
     boost::optional<Argument> arg2;
 
+    bool liveVariable1;
+    bool liveVariable2;
+
     Return();
     Return(Argument arg1);
     Return(Argument arg1, Argument arg2);

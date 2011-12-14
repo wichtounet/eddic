@@ -100,25 +100,49 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
     }
 }
 
+bool updateLiveness(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
+    if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
+        if(liveness.find(*variable) != liveness.end()){
+            if((*variable)->position().isGlobal()){
+                liveness[*variable] = true;
+            } else {
+                liveness[*variable] = false;
+            }
+        }
+
+        bool live = liveness[*variable];
+
+        //variable is live
+        liveness[*variable] = true;
+
+        return live;
+    }
+
+    return false;
+}
+
 void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> function){
     std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
     std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
+    
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     while(bit != bend){
         std::vector<tac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
         std::vector<tac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
 
-        std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
-
         while(sit != send){
             auto statement = *sit;
 
             if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
-                auto arg = (*ptr)->arg;
-                if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
-                    if(liveness.find(*variable) == liveness.end()){
-                       (*ptr)->liveVariable = liveness[*variable];
-                    }
+                (*ptr)->liveVariable = updateLiveness(liveness, (*ptr)->arg);
+            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
+                if((*ptr)->arg1){
+                    (*ptr)->liveVariable1 = updateLiveness(liveness, (*(*ptr)->arg1));
+                }
+                
+                if((*ptr)->arg2){
+                    (*ptr)->liveVariable2 = updateLiveness(liveness, (*(*ptr)->arg2));
                 }
             }
 
