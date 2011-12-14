@@ -20,28 +20,31 @@ class FunctionContext;
 
 namespace tac {
 
+typedef std::shared_ptr<tac::BasicBlock> BlockPtr;
+typedef std::shared_ptr<tac::Statement> StatementPtr;
+
 class Function {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
         
         std::shared_ptr<FunctionContext> context;
 
-        void add(tac::Statement statement);
+        void add(StatementPtr statement);
 
-        std::shared_ptr<tac::BasicBlock> currentBasicBlock();
-        std::shared_ptr<tac::BasicBlock> newBasicBlock();
+        BlockPtr currentBasicBlock();
+        BlockPtr newBasicBlock();
 
         std::string getName() const;
 
-        std::vector<tac::Statement>& getStatements();
-        std::vector<std::shared_ptr<tac::BasicBlock>>& getBasicBlocks();
+        std::vector<BlockPtr>& getStatements();
+        std::vector<BlockPtr>& getBasicBlocks();
 
     private:
         //Before being partitioned, the function has only statement
-        std::vector<tac::Statement> statements;
+        std::vector<StatementPtr> statements;
         
         //There is no basic blocks at the beginning
-        std::vector<std::shared_ptr<tac::BasicBlock>> blocks;
+        std::vector<BlockPtr> blocks;
 
         std::string name;
 };
