@@ -51,33 +51,33 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     StatementCompiler(AssemblyFileWriter& w) : writer(w) {}
 
-    void operator()(tac::Goto& goto_){
-       writer.stream() << "goto " << labels[goto_.block] << std::endl; 
+    void operator()(std::shared_ptr<tac::Goto>& goto_){
+       writer.stream() << "goto " << labels[goto_->block] << std::endl; 
     }
 
-    void operator()(tac::Param& param){
-        writer.stream() << "pushl " << arg(param.arg) << std::endl;
+    void operator()(std::shared_ptr<tac::Param>& param){
+        writer.stream() << "pushl " << arg(param->arg) << std::endl;
     }
 
-    void operator()(tac::Call& call){
-        writer.stream() << "call " << call.function << std::endl;
+    void operator()(std::shared_ptr<tac::Call>& call){
+        writer.stream() << "call " << call->function << std::endl;
         
-        if(call.params > 0){
-            writer.stream() << "addl " << call.params << ", %esp" << std::endl;
+        if(call->params > 0){
+            writer.stream() << "addl " << call->params << ", %esp" << std::endl;
         }
 
         //TODO Manage return values
     }
     
-    void operator()(tac::Return& return_){
+    void operator()(std::shared_ptr<tac::Return>& return_){
         //TODO
     }
     
-    void operator()(tac::Quadruple& quadruple){
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //TODO
     }
     
-    void operator()(tac::IfFalse& ifFalse){
+    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         //TODO
     }
 

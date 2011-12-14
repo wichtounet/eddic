@@ -18,17 +18,15 @@ class Context;
 
 namespace tac {
 
-typedef std::shared_ptr<tac::Statement> StatementPtr;
-
 class BasicBlock {
     public:
         unsigned int index;
 
         BasicBlock(unsigned int index);
 
-        void add(StatementPtr statement);
+        void add(tac::Statement statement);
 
-        std::vector<StatementPtr> statements;
+        std::vector<tac::Statement> statements;
 
     private:
         std::shared_ptr<Context> context;
