@@ -147,6 +147,14 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
                 (*ptr)->liveVariable1 = updateLiveness(liveness, (*ptr)->arg1);
                 (*ptr)->liveVariable2 = updateLiveness(liveness, (*ptr)->arg2);
+            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+                (*ptr)->liveVariable1 = updateLiveness(liveness, (*ptr)->arg1);
+                
+                if((*ptr)->arg2){
+                    (*ptr)->liveVariable2 = updateLiveness(liveness, (*(*ptr)->arg2));
+                }
+
+                liveness[(*ptr)->result] = false; 
             }
 
             sit++;
@@ -157,8 +165,7 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
 }
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    //TODO Compute liveness and next use for every variables in every statements
-    //TODO Verify that the temporaries are only used in a single basic block
+    computeLiveness(function);
 
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
     

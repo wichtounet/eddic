@@ -26,6 +26,9 @@ struct Quadruple {
     tac::Argument arg1;
     boost::optional<tac::Argument> arg2;
     boost::optional<tac::Operator> op;
+    
+    bool liveVariable1;
+    bool liveVariable2;
 
     Quadruple();
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg);
