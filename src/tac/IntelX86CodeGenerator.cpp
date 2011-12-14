@@ -73,16 +73,23 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     void operator()(std::shared_ptr<tac::Return>& return_){
         //A return without args is the same as exiting from the function
-        if(!return_->arg1 && !return_->arg2){
-            if(function->context->size() > 0){
-                writer.stream() << "addl $" << function->context->size() << " , %esp" << std::endl;
-            }
+        if(return_->arg1){
+            //TODO If eax is used, reverse the order of operations
+            //TODO If both are used, use a temporary register to hold one of the values
 
-            writer.stream() << "leave" << std::endl;
-            writer.stream() << "ret" << std::endl;
-        } else {
-            //TODO Move values into registers
+            writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
+            
+            if(return_->arg2){
+                writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
+            }
         }
+        
+        if(function->context->size() > 0){
+            writer.stream() << "addl $" << function->context->size() << " , %esp" << std::endl;
+        }
+
+        writer.stream() << "leave" << std::endl;
+        writer.stream() << "ret" << std::endl;
     }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
