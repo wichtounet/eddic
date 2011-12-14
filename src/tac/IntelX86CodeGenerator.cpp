@@ -100,6 +100,35 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
     }
 }
 
+void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> function){
+    std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
+    std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
+
+    while(bit != bend){
+        std::vector<tac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
+        std::vector<tac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
+
+        std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
+
+        while(sit != send){
+            auto statement = *sit;
+
+            if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
+                auto arg = (*ptr)->arg;
+                if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
+                    if(liveness.find(*variable) == liveness.end()){
+                       (*ptr)->liveVariable = liveness[*variable];
+                    }
+                }
+            }
+
+            sit++;
+        }
+
+        bit++;
+    }
+}
+
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     //TODO Compute liveness and next use for every variables in every statements
     //TODO Verify that the temporaries are only used in a single basic block

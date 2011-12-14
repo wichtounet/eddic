@@ -16,6 +16,7 @@ namespace tac {
 
 struct Param {
     Argument arg;
+    bool liveVariable;
 
     Param();
     Param(Argument argument);
