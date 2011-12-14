@@ -101,6 +101,9 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
 }
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+    //TODO Compute liveness and next use for every variables in every statements
+    //TODO Verify that the temporaries are only used in a single basic block
+
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
     
     writer.stream() << "pushl %ebp" << std::endl;
