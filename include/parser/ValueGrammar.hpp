@@ -20,6 +20,10 @@ namespace eddic {
 typedef lexer_type::iterator_type Iterator;
 typedef SimpleLexer<lexer_type> Lexer;
 
+/*!
+ * \class ValueGrammar
+ * \brief Grammar representing values in EDDI language.
+ */
 struct ValueGrammar : qi::grammar<Iterator, ast::Value()> {
     ValueGrammar(const Lexer& lexer);
     
