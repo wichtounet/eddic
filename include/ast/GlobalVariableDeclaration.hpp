@@ -20,6 +20,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTGlobalVariableDeclaration
+ * \brief The AST node for a declaration of a global variable. 
+ * Should only be used from the Deferred version (eddic::ast::GlobalVariableDeclaration).
+ */
 struct ASTGlobalVariableDeclaration {
     std::shared_ptr<Context> context;
 
@@ -32,6 +37,10 @@ struct ASTGlobalVariableDeclaration {
     ASTGlobalVariableDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef GlobalVariableDeclaration
+ * \brief The AST node for a declaration of a global variable. 
+ */
 typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
 
 } //end of ast
