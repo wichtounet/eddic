@@ -38,12 +38,6 @@ enum Register {
     REGISTER_COUNT  
 };
 
-std::string arg(tac::Argument argument){
-    //TODO
-
-    return "";
-}
-
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
     std::shared_ptr<tac::Function> function;
@@ -54,6 +48,22 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::unordered_map<std::shared_ptr<Variable>, Register> variables;
 
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {}
+
+    std::string arg(tac::Argument argument){
+        if(auto* ptr = boost::get<int>(&argument)){
+            return "$" + toString(*ptr);
+        } else if(auto* ptr = boost::get<std::string>(&argument)){
+            return "$" + *ptr;
+        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            //TODO Output the location of the given variable
+        }
+
+        assert(false);
+    }
+
+    void spills(Register reg){
+        //TODO Spills the content of the reg with the valid content
+    }
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
        writer.stream() << "goto " << labels[goto_->block] << std::endl; 
@@ -84,17 +94,15 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<tac::Return>& return_){
         //A return without args is the same as exiting from the function
         if(return_->arg1){
-            //If eax is used
             if(descriptors[Register::EAX]){
-                //TODO Spills what is in eax
+                spills(Register::EAX);
             }
             
             writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
 
             if(return_->arg2){
-                //If ebx is used
                 if(descriptors[Register::EBX]){
-                    //TODO Spills what is in ebx
+                    spills(Register::EBX);
                 }
 
                 writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
