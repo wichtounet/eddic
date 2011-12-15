@@ -49,7 +49,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::shared_ptr<tac::Function> function;
 
     std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
-    std::unordered_map<Register, std::shared_ptr<Variable>> descriptors;
+    //std::unordered_map<Register, std::shared_ptr<Variable>> descriptors;
+    std::shared_ptr<Variable> descriptors[Register::REGISTER_COUNT];
 
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {}
 
@@ -68,7 +69,13 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "addl " << call->params << ", %esp" << std::endl;
         }
 
-        //TODO Set return variables as contained in the good registers
+        if(call->return_){
+            descriptors[Register::EAX] = call->return_;
+        }
+
+        if(call->return2_){
+            descriptors[Register::EBX] = call->return2_;
+        }
     }
     
     void operator()(std::shared_ptr<tac::Return>& return_){
