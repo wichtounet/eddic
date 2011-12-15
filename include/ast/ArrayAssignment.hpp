@@ -21,6 +21,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTArrayAssignment
+ * \brief The AST node for an assignment to an array. 
+ * Should only be used from the Deferred version (eddic::ast::ArrayAssignment).
+ */
 struct ASTArrayAssignment {
     std::shared_ptr<Context> context;
 
@@ -32,6 +37,10 @@ struct ASTArrayAssignment {
     ASTArrayAssignment() : references(0) {}
 };
 
+/*!
+ * \typedef ArrayAssignment
+ * \brief The AST node for an assignment to an array. 
+ */
 typedef Deferred<ASTArrayAssignment> ArrayAssignment;
 
 } //end of ast

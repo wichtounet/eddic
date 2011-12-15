@@ -35,7 +35,11 @@ typedef boost::variant<
             GlobalArrayDeclaration
         > FirstLevelBlock;
 
-//A source EDDI program
+/*!
+ * \class ASTProgram
+ * \brief The AST root node for a program.
+ * Should only be used from the Deferred version (eddic::ast::Program).
+ */
 struct ASTProgram {
     std::shared_ptr<GlobalContext> context;
 
@@ -45,6 +49,10 @@ struct ASTProgram {
     ASTProgram() : references(0) {}
 };
 
+/*!
+ * \typedef Program
+ * \brief The AST root node for a program.
+ */
 typedef Deferred<ASTProgram> Program;
 
 } //end of ast

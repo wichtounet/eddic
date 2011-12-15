@@ -35,6 +35,13 @@ inline void intrusive_ptr_release(T* expr){
         Deallocate(expr);
 }
 
+/*!
+ * \class Deferred
+ * \brief Deferred construction container for AST nodes.
+ *
+ * This class is used to speed up the construction of the AST. The construction of the node is only done when an access to the data is issued. 
+ * This code has been taken from the Epoch Compiler project (http://code.google.com/p/epoch-language/) and has been adapted a little.
+ */
 template <typename T>
 struct Deferred {
     Deferred() : Contents(reinterpret_cast<T*>(NULL)){
