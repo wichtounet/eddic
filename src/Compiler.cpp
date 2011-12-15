@@ -10,6 +10,8 @@
 
 #include "Compiler.hpp"
 
+#include "Target.hpp"
+
 #include "Timer.hpp"
 #include "DebugTimer.hpp"
 #include "Options.hpp"
@@ -56,6 +58,10 @@ using namespace eddic;
 
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
+
+    if(TargetDetermined && Target64){
+        std::cout << "Warning : Looks like you're running a 64 bit system. This compiler only outputs 32 bits assembly." << std::endl; 
+    }
 
     Timer timer;
 
