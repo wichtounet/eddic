@@ -49,8 +49,9 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::shared_ptr<tac::Function> function;
 
     std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
-    //std::unordered_map<Register, std::shared_ptr<Variable>> descriptors;
+    
     std::shared_ptr<Variable> descriptors[Register::REGISTER_COUNT];
+    std::unordered_map<std::shared_ptr<Variable>, Register> variables;
 
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {}
 
@@ -71,22 +72,31 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         if(call->return_){
             descriptors[Register::EAX] = call->return_;
+            variables[call->return_] = Register::EAX;
         }
 
         if(call->return2_){
             descriptors[Register::EBX] = call->return2_;
+            variables[call->return2_] = Register::EBX;
         }
     }
     
     void operator()(std::shared_ptr<tac::Return>& return_){
         //A return without args is the same as exiting from the function
         if(return_->arg1){
-            //TODO If eax is used, reverse the order of operations
-            //TODO If both are used, use a temporary register to hold one of the values
-
-            writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
+            //If eax is used
+            if(descriptors[Register::EAX]){
+                //TODO Spills what is in eax
+            }
             
+            writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
+
             if(return_->arg2){
+                //If ebx is used
+                if(descriptors[Register::EBX]){
+                    //TODO Spills what is in ebx
+                }
+
                 writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
             }
         }
