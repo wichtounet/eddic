@@ -18,10 +18,9 @@ using namespace eddic;
 void tac::BasicBlockExtractor::extract(tac::Program& program) const {
     for(auto& function : program.functions){
         std::unordered_map<std::string, std::shared_ptr<BasicBlock>> labels;
-        
-        function->newBasicBlock();
-
-        bool nextIsLeader = false;
+       
+        //The first is always a leader 
+        bool nextIsLeader = true;
 
         //First separate the statements into basic blocks
         for(auto& statement : function->getStatements()){
@@ -32,14 +31,14 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
 
                 nextIsLeader = false;
             } else {
-                if(nextIsLeader){
+                if(nextIsLeader || boost::get<std::shared_ptr<tac::Call>>(&statement)){
                     function->newBasicBlock();
                     nextIsLeader = false;
                 }
 
-                if(boost::get<tac::IfFalse>(&statement) || boost::get<tac::Return>(&statement) || boost::get<tac::Goto>(&statement)){
+                if(boost::get<std::shared_ptr<tac::IfFalse>>(&statement) || boost::get<std::shared_ptr<tac::Return>>(&statement) || boost::get<std::shared_ptr<tac::Goto>>(&statement)){
                     nextIsLeader = true;
-                }
+                } 
 
                 function->currentBasicBlock()->add(statement);
             }
@@ -48,10 +47,10 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
         //Then, replace all the the labels by reference to basic blocks
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<tac::IfFalse>(&statement)){
-                   ptr->block = labels[ptr->label];
-                } else if(auto* ptr = boost::get<tac::Goto>(&statement)){
-                   ptr->block = labels[ptr->label];
+                if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                   (*ptr)->block = labels[(*ptr)->label];
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&statement)){
+                   (*ptr)->block = labels[(*ptr)->label];
                 }
             }
         }
