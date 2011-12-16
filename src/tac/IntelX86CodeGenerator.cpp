@@ -38,6 +38,29 @@ enum Register {
     REGISTER_COUNT  
 };
 
+std::string regToString(Register reg){
+    switch(reg){
+        case EAX:
+            return "%eax";
+        case EBX:
+            return "%ebx";
+        case ECX:
+            return "%ecx";
+        case EDX:
+            return "%edx";
+        case ESP:
+            return "%esp";
+        case EBP:
+            return "%ebp";
+        case ESI:
+            return "%esi";
+        case EDI:
+            return "%edi";
+        default:
+            assert(false); //Not a register
+    }
+}
+
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
     std::shared_ptr<tac::Function> function;
@@ -55,7 +78,12 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return "$" + *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            if(variables.find(*ptr) != variables.end()){
+                //The variables is already in a register
+                return regToString(variables[*ptr]);
+            }
             //TODO Output the location of the given variable
+            return "";
         }
 
         assert(false);
@@ -122,7 +150,28 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        //TODO
+        writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
+
+        switch(ifFalse->op){
+            case BinaryOperator::EQUALS:
+                writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
+                break;
+            case BinaryOperator::NOT_EQUALS:
+                writer.stream() << "je " << labels[ifFalse->block] << std::endl;
+                break;
+            case BinaryOperator::LESS:
+                writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
+                break;
+            case BinaryOperator::LESS_EQUALS:
+                writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
+                break;
+            case BinaryOperator::GREATER:
+                writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
+                break;
+            case BinaryOperator::GREATER_EQUALS:
+                writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
+                break;
+        }
     }
 
     void operator()(std::string&){
