@@ -175,7 +175,39 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        //TODO
+        if(!quadruple->op){
+            //TODO Create a simple copy
+        } else {
+            switch(*quadruple->op){
+                case Operator::ADD:
+                    //TODO
+                    break;            
+                case Operator::SUB:
+                    //TODO
+                    break;            
+                case Operator::MUL:
+                    //TODO
+                    break;            
+                case Operator::DIV:
+                    //TODO
+                    break;            
+                case Operator::MOD:
+                    //TODO
+                    break;            
+                case Operator::DOT:
+                    //TODO
+                    break;            
+                case Operator::DOT_ASSIGN:
+                    //TODO
+                    break;            
+                case Operator::ARRAY:
+                    //TODO
+                    break;            
+                case Operator::ARRAY_ASSIGN:
+                    //TODO
+                    break;            
+            }
+        }
     }
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
