@@ -81,9 +81,11 @@ struct StatementCompiler : public boost::static_visitor<> {
             if(variables.find(*ptr) != variables.end()){
                 //The variables is already in a register
                 return regToString(variables[*ptr]);
+            } else {
+               //The variable is not in a register
+                
+                return "";
             }
-            //TODO Output the location of the given variable
-            return "";
         }
 
         assert(false);
