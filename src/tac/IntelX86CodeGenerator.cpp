@@ -66,11 +66,18 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::shared_ptr<tac::Function> function;
 
     std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
-    
+ 
+    std::vector<Register> registers;   
     std::shared_ptr<Variable> descriptors[Register::REGISTER_COUNT];
     std::unordered_map<std::shared_ptr<Variable>, Register> variables;
 
-    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {}
+    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {
+        registers = {EDI, ESI, ECX, EDX, EBX, EAX};
+    }
+
+    void move(std::shared_ptr<Variable> variable, Register reg){
+        //TODO
+    }
 
     std::string arg(tac::Argument argument){
         if(auto* ptr = boost::get<int>(&argument)){
@@ -82,9 +89,29 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //The variables is already in a register
                 return regToString(variables[*ptr]);
             } else {
-               //The variable is not in a register
-                
-                return "";
+                //The variable is not in a register
+                for(auto reg : registers){
+                    //If the register is free
+                    if(!descriptors[reg]){
+                        move(*ptr, reg);
+
+                        descriptors[reg] = *ptr;
+                        variables[*ptr] = reg;
+
+                        return regToString(reg);
+                    }
+                }
+
+                //There are no free register, take one
+                auto reg = registers[0];
+                spills(reg);
+
+                move(*ptr, reg);
+
+                descriptors[reg] = *ptr;
+                variables[*ptr] = reg;
+
+                return regToString(reg);
             }
         }
 
@@ -193,6 +220,8 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
     for(auto& statement : block->statements){
         boost::apply_visitor(compiler, statement);
     }
+
+    //TODO End the basic block
 }
 
 bool updateLiveness(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
