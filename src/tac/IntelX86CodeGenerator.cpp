@@ -76,12 +76,39 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
 
     void move(std::shared_ptr<Variable> variable, Register reg){
-        //TODO
+        auto position = variable->position();
+
+        if(position.isStack()){
+            writer.stream() << "movl " << (-1 * position.offset()) << "(%ebp), " << regToString(reg) << std::endl; 
+        } else if(position.isParameter()){
+            writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
+        } else if(position.isGlobal()){
+            writer.stream() << "movl " << "VI" << position.name() << ", " << regToString(reg) << std::endl;
+        } else if(position.isTemporary()){
+            std::cout << "Trying to move " << variable->name() << " into " << regToString(reg) << std::endl;
+//            assert(false); //We are in da shit
+        }
+    }
+
+    std::string toString(std::shared_ptr<Variable> variable, int offset){
+        auto position = variable->position();
+
+        if(position.isStack()){
+            return ::toString(-1 * (position.offset() + offset)) + "(%ebp)";
+        } else if(position.isParameter()){
+            return ::toString(position.offset() + offset) + "(%ebp)";
+        } else if(position.isGlobal()){
+            return "VI" + position.name() + "+" + ::toString(offset);
+        } else if(position.isTemporary()){
+            assert(false); //We are in da shit
+        }
+
+        assert(false);
     }
 
     std::string arg(tac::Argument argument){
         if(auto* ptr = boost::get<int>(&argument)){
-            return "$" + toString(*ptr);
+            return "$" + ::toString(*ptr);
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return "$" + *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
@@ -119,7 +146,24 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
 
     void spills(Register reg){
-        //TODO Spills the content of the reg with the valid content
+        assert(descriptors[reg]);
+
+        auto variable = descriptors[reg];
+        auto position = variable->position();
+        
+        if(position.isStack()){
+            writer.stream() << "movl " << regToString(reg) << ", " << (-1 * position.offset()) << "(%ebp)" << std::endl; 
+        } else if(position.isParameter()){
+            writer.stream() << "movl " << regToString(reg) << ", " <<  position.offset() << "(%ebp)" << std::endl; 
+        } else if(position.isGlobal()){
+            writer.stream() << "movl " << regToString(reg) << ", VI" << position.name() << std::endl;
+        } else if(position.isTemporary()){
+            std::cout << "Trying to spills " << variable->name() << " from " << regToString(reg) << std::endl;
+        }
+
+        //The variable is no more contained in the register
+        descriptors[reg] = nullptr;
+        variables.erase(variable);
     }
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
@@ -176,7 +220,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(!quadruple->op){
-            //TODO Create a simple copy
+            writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;            
         } else {
             switch(*quadruple->op){
                 case Operator::ADD:
@@ -194,12 +238,24 @@ struct StatementCompiler : public boost::static_visitor<> {
                 case Operator::MOD:
                     //TODO
                     break;            
-                case Operator::DOT:
-                    //TODO
-                    break;            
-                case Operator::DOT_ASSIGN:
-                    //TODO
-                    break;            
+                case Operator::DOT:{
+                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
+                    assert(boost::get<int>(&*quadruple->arg2));
+
+                    int offset = boost::get<int>(*quadruple->arg2);
+                    auto variable = boost::get<std::shared_ptr<Variable>>(quadruple->arg1);
+
+                    writer.stream() << "movl " << toString(variable, offset) << ", " << arg(quadruple->result) << std::endl;
+                    break;
+                }
+                case Operator::DOT_ASSIGN:{
+                    assert(boost::get<int>(&quadruple->arg1));
+
+                    int offset = boost::get<int>(quadruple->arg1);
+
+                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
+                    break;
+                }
                 case Operator::ARRAY:
                     //TODO
                     break;            
