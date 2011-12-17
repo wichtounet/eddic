@@ -79,6 +79,65 @@ struct StatementCompiler : public boost::static_visitor<> {
         registers = {EDI, ESI, ECX, EDX, EBX, EAX};
     }
 
+    bool isLive(std::shared_ptr<Variable> variable){
+        if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&current)){
+            if((*ptr)->result == variable){
+                return (*ptr)->liveResult;
+            }
+
+            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg1)){
+                if(*argPtr == variable){
+                    return (*ptr)->liveVariable1;
+                }
+            }
+             
+            if((*ptr)->arg2){
+                if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg2)){
+                    if(*argPtr == variable){
+                        return (*ptr)->liveVariable2;
+                    }
+                }
+            }
+        } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&current)){
+            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg1)){
+                if(*argPtr == variable){
+                    return (*ptr)->liveVariable1;
+                }
+            }
+
+            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg2)){
+                if(*argPtr == variable){
+                    return (*ptr)->liveVariable2;
+                }
+            }
+        } else if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&current)){
+            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg)){
+                if(*argPtr == variable){
+                    return (*ptr)->liveVariable;
+                }
+            }
+        } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&current)){
+            if((*ptr)->arg1){
+                if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg1)){
+                    if(*argPtr == variable){
+                        return (*ptr)->liveVariable1;
+                    }
+                }
+            }
+             
+            if((*ptr)->arg2){
+                if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg2)){
+                    if(*argPtr == variable){
+                        return (*ptr)->liveVariable2;
+                    }
+                }
+            }
+        }
+
+        //TODO Handle this case
+        return true;
+    }
+
     void move(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
             writer.stream() << "movl $" << ::toString(*ptr) << ", " << regToString(reg) << std::endl;
