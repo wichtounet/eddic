@@ -206,8 +206,8 @@ struct StatementCompiler : public boost::static_visitor<> {
             variables.erase(variable);
         }
     }
-
-    Register getReg(std::shared_ptr<Variable> variable){
+    
+    Register getReg(std::shared_ptr<Variable> variable, bool doMove){
         //The variable is already in a register
         if(variables.find(variable) != variables.end()){
             return variables[variable];
@@ -216,7 +216,9 @@ struct StatementCompiler : public boost::static_visitor<> {
         //Try to get a free register 
         for(auto reg : registers){
             if(!descriptors[reg] || !isLive(descriptors[reg])){
-                move(variable, reg);
+                if(doMove){
+                    move(variable, reg);
+                }
 
                 descriptors[reg] = variable;
                 variables[variable] = reg;
@@ -229,12 +231,22 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto reg = registers[0];
         spills(reg);
 
-        move(variable, reg);
+        if(doMove){
+            move(variable, reg);
+        }
 
         descriptors[reg] = variable;
         variables[variable] = reg;
 
         return reg;
+    }
+    
+    Register getRegNoMove(std::shared_ptr<Variable> variable){
+        return getReg(variable, false);
+    }
+
+    Register getReg(std::shared_ptr<Variable> variable){
+        return getReg(variable, true);
     }
     
     std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
@@ -366,14 +378,14 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //TODO Find a way to optimize statements like a = a + b or a = b + a
                 case Operator::ADD:
                 {
-                    Register reg = getReg(quadruple->result);
+                    Register reg = getRegNoMove(quadruple->result);
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                     writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     break;
                 }
                 case Operator::SUB:
                 {
-                    Register reg = getReg(quadruple->result);
+                    Register reg = getRegNoMove(quadruple->result);
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                     writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     break;
@@ -505,6 +517,8 @@ struct StatementCompiler : public boost::static_visitor<> {
 }}
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
+    std::cout << "compile basic block B" << block->index << std::endl;
+
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
@@ -597,6 +611,8 @@ void tac::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function
 }
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+    std::cout << "compile function " << function->getName() << std::endl;
+
     computeLiveness(function);
 
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
