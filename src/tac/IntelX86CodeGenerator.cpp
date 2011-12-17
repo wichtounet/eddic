@@ -73,6 +73,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::shared_ptr<Variable> descriptors[Register::REGISTER_COUNT];
     std::unordered_map<std::shared_ptr<Variable>, Register> variables;
 
+    tac::Statement current;
+
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {
         registers = {EDI, ESI, ECX, EDX, EBX, EAX};
     }
@@ -196,14 +198,20 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
+        current = goto_;
+
        writer.stream() << "goto " << labels[goto_->block] << std::endl; 
     }
 
     void operator()(std::shared_ptr<tac::Param>& param){
+        current = param;
+
         writer.stream() << "pushl " << arg(param->arg) << std::endl;
     }
 
     void operator()(std::shared_ptr<tac::Call>& call){
+        current = call;
+
         writer.stream() << "call " << call->function << std::endl;
         
         if(call->params > 0){
@@ -233,6 +241,8 @@ struct StatementCompiler : public boost::static_visitor<> {
    
     //TODO Move the necessary calculation part into another function 
     void operator()(std::shared_ptr<tac::Return>& return_){
+        current = return_;
+
         //A return without args is the same as exiting from the function
         if(return_->arg1){
             spillsIfNecessary(Register::EAX, *return_->arg1);
@@ -277,6 +287,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        current = quadruple;
+
         if(!quadruple->op){
             //TODO Optimize move of 0 in a register with xorl
             writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;            
@@ -391,6 +403,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        current = ifFalse;
+
         writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
 
         switch(ifFalse->op){
