@@ -301,7 +301,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         }
                     }
 
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    if(!fast && auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
                         if(descriptors[Register::EAX] == *ptr){
                            if((*ptr)->position().isTemporary() && !quadruple->liveVariable2){
                                 writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
