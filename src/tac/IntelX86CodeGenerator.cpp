@@ -247,7 +247,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
                     break;            
                 case Operator::SUB:
-                    //TODO
+                    writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << arg(quadruple->arg1) << std::endl;
+                    writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;
                     break;            
                 case Operator::MUL:
                     //TODO
