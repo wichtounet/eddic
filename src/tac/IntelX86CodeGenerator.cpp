@@ -75,18 +75,25 @@ struct StatementCompiler : public boost::static_visitor<> {
         registers = {EDI, ESI, ECX, EDX, EBX, EAX};
     }
 
-    void move(std::shared_ptr<Variable> variable, Register reg){
-        auto position = variable->position();
+    void move(tac::Argument argument, Register reg){
+        if(auto* ptr = boost::get<int>(&argument)){
+            writer.stream() << "movl $" << ::toString(*ptr) << ", " << regToString(reg) << std::endl;
+        } else if(auto* ptr = boost::get<std::string>(&argument)){
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            auto variable = *ptr;
+            auto position = variable->position();
 
-        if(position.isStack()){
-            writer.stream() << "movl " << (-1 * position.offset()) << "(%ebp), " << regToString(reg) << std::endl; 
-        } else if(position.isParameter()){
-            writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
-        } else if(position.isGlobal()){
-            writer.stream() << "movl " << "VI" << position.name() << ", " << regToString(reg) << std::endl;
-        } else if(position.isTemporary()){
-            std::cout << "Trying to move " << variable->name() << " into " << regToString(reg) << std::endl;
-//            assert(false); //We are in da shit
+            if(position.isStack()){
+                writer.stream() << "movl " << (-1 * position.offset()) << "(%ebp), " << regToString(reg) << std::endl; 
+            } else if(position.isParameter()){
+                writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
+            } else if(position.isGlobal()){
+                writer.stream() << "movl " << "VI" << position.name() << ", " << regToString(reg) << std::endl;
+            } else if(position.isTemporary()){
+                std::cout << "Trying to move " << variable->name() << " into " << regToString(reg) << std::endl;
+                //            assert(false); //We are in da shit
+            }
         }
     }
 
@@ -250,8 +257,18 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << arg(quadruple->arg1) << std::endl;
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;
                     break;            
-                case Operator::MUL:
-                    //TODO
+                case Operator::MUL://TODO if one of the arguments is in eax, use it directly
+                    if(descriptors[Register::EAX]){
+                        spills(Register::EAX);
+                    }
+
+                    move(quadruple->arg1, Register::EAX);
+
+                    writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+
+                    //result is in eax (no need to move it now)
+                    descriptors[Register::EAX] = quadruple->result;
+                    variables[quadruple->result] = Register::EAX;
                     break;            
                 case Operator::DIV:
                     //TODO
