@@ -8,6 +8,8 @@
 #ifndef TAC_PARAM_H
 #define TAC_PARAM_H
 
+#include <unordered_map>
+
 #include "Argument.hpp"
 
 namespace eddic {
@@ -16,7 +18,8 @@ namespace tac {
 
 struct Param {
     Argument arg;
-    bool liveVariable;
+    
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     Param();
     Param(Argument argument);

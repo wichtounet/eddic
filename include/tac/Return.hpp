@@ -8,6 +8,8 @@
 #ifndef TAC_RETURN_H
 #define TAC_RETURN_H
 
+#include <unordered_map>
+
 #include <boost/optional.hpp>
 
 #include "tac/Argument.hpp"
@@ -20,8 +22,7 @@ struct Return {
     boost::optional<Argument> arg1;
     boost::optional<Argument> arg2;
 
-    bool liveVariable1;
-    bool liveVariable2;
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     Return();
     Return(Argument arg1);

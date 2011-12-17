@@ -10,6 +10,7 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 #include "tac/BinaryOperator.hpp"
 #include "tac/Argument.hpp"
@@ -27,9 +28,8 @@ struct IfFalse {
     Argument arg2;
     BinaryOperator op;
     std::string label;
-
-    bool liveVariable1;
-    bool liveVariable2;
+    
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
     
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;

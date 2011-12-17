@@ -8,6 +8,8 @@
 #ifndef TAC_QUADRUPLE_H
 #define TAC_QUADRUPLE_H
 
+#include <unordered_map>
+
 #include <boost/optional.hpp>
 
 #include <vector>
@@ -27,9 +29,7 @@ struct Quadruple {
     boost::optional<tac::Argument> arg2;
     boost::optional<tac::Operator> op;
     
-    bool liveResult;
-    bool liveVariable1;
-    bool liveVariable2;
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     Quadruple();
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg);

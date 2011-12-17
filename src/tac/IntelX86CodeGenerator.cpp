@@ -90,61 +90,16 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     bool isLive(std::shared_ptr<Variable> variable){
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&current)){
-            if((*ptr)->result == variable){
-                return (*ptr)->liveResult;
-            }
-
-            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg1)){
-                if(*argPtr == variable){
-                    return (*ptr)->liveVariable1;
-                }
-            }
-             
-            if((*ptr)->arg2){
-                if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg2)){
-                    if(*argPtr == variable){
-                        return (*ptr)->liveVariable2;
-                    }
-                }
-            }
+            return (*ptr)->liveness[variable];
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&current)){
-            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg1)){
-                if(*argPtr == variable){
-                    return (*ptr)->liveVariable1;
-                }
-            }
-
-            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg2)){
-                if(*argPtr == variable){
-                    return (*ptr)->liveVariable2;
-                }
-            }
+            return (*ptr)->liveness[variable];
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&current)){
-            if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&(*ptr)->arg)){
-                if(*argPtr == variable){
-                    return (*ptr)->liveVariable;
-                }
-            }
+            return (*ptr)->liveness[variable];
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&current)){
-            if((*ptr)->arg1){
-                if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg1)){
-                    if(*argPtr == variable){
-                        return (*ptr)->liveVariable1;
-                    }
-                }
-            }
-             
-            if((*ptr)->arg2){
-                if(auto* argPtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg2)){
-                    if(*argPtr == variable){
-                        return (*ptr)->liveVariable2;
-                    }
-                }
-            }
+            return (*ptr)->liveness[variable];
         }
 
-        //TODO Handle this case
-        return true;
+        assert(false); //No liveness calculations in the other cases
     }
 
     void move(tac::Argument argument, Register reg){
@@ -163,8 +118,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isGlobal()){
                 writer.stream() << "movl " << "VI" << position.name() << ", " << regToString(reg) << std::endl;
             } else if(position.isTemporary()){
-                std::cout << "Trying to move " << variable->name() << " into " << regToString(reg) << std::endl;
-                //            assert(false); //We are in da shit
+                assert(false); //Should not happen
             }
         }
     }
@@ -198,7 +152,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isGlobal()){
                 writer.stream() << "movl " << regToString(reg) << ", VI" << position.name() << std::endl;
             } else if(position.isTemporary()){
-                std::cout << "Trying to spills " << variable->name() << " from " << regToString(reg) << std::endl;
+                assert(!isLive(variable));
             }
             
             //The variable is no more contained in the register
@@ -390,13 +344,13 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     break;
                 }
-                case Operator::MUL://TODO if one of the arguments is in eax, use it directly
+                case Operator::MUL:
                 {
                     bool fast = false;
 
                     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                         if(descriptors[Register::EAX] == *ptr){
-                           if((*ptr)->position().isTemporary() && !quadruple->liveVariable1){
+                           if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
                                 writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
                                 fast = true;
                            }
@@ -406,7 +360,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
                             if(descriptors[Register::EAX] == *ptr){
-                                if((*ptr)->position().isTemporary() && !quadruple->liveVariable2){
+                                if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
                                     writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
                                     fast = true;
                                 }
@@ -517,8 +471,6 @@ struct StatementCompiler : public boost::static_visitor<> {
 }}
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
-    std::cout << "compile basic block B" << block->index << std::endl;
-
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
@@ -532,25 +484,22 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
     //TODO End the basic block
 }
 
-bool updateLiveness(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
+//Set the default properties of the variable
+void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
     if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
-        if(liveness.find(*variable) != liveness.end()){
-            if((*variable)->position().isGlobal()){
-                liveness[*variable] = true;
-            } else {
-                liveness[*variable] = false;
-            }
+        if((*variable)->position().isGlobal()){
+            liveness[*variable] = true;
+        } else {
+            liveness[*variable] = false;
         }
-
-        bool live = liveness[*variable];
-
-        //variable is live
-        liveness[*variable] = true;
-
-        return live;
     }
+}
 
-    return false;
+//Set the variable as live
+void setLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
+    if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
+        liveness[*variable] = true;
+    }
 }
 
 void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> function){
@@ -567,28 +516,53 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
             auto statement = *sit;
 
             if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
-                (*ptr)->liveVariable = updateLiveness(liveness, (*ptr)->arg);
+                updateLive(liveness, (*ptr)->arg);
+           
+                (*ptr)->liveness = liveness;
+            
+                setLive(liveness, (*ptr)->arg);
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
                 if((*ptr)->arg1){
-                    (*ptr)->liveVariable1 = updateLiveness(liveness, (*(*ptr)->arg1));
+                    updateLive(liveness, (*(*ptr)->arg1));
                 }
                 
                 if((*ptr)->arg2){
-                    (*ptr)->liveVariable2 = updateLiveness(liveness, (*(*ptr)->arg2));
+                    updateLive(liveness, (*(*ptr)->arg2));
+                }
+               
+                (*ptr)->liveness = liveness;
+                
+                if((*ptr)->arg1){
+                    setLive(liveness, (*(*ptr)->arg1));
+                }
+                
+                if((*ptr)->arg2){
+                    setLive(liveness, (*(*ptr)->arg2));
                 }
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
-                (*ptr)->liveVariable1 = updateLiveness(liveness, (*ptr)->arg1);
-                (*ptr)->liveVariable2 = updateLiveness(liveness, (*ptr)->arg2);
+                updateLive(liveness, (*ptr)->arg1);
+                updateLive(liveness, (*ptr)->arg2);
+                
+                (*ptr)->liveness = liveness;
+                
+                setLive(liveness, (*ptr)->arg1);
+                setLive(liveness, (*ptr)->arg2);
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
-                (*ptr)->liveVariable1 = updateLiveness(liveness, (*ptr)->arg1);
+                updateLive(liveness, (*ptr)->arg1);
                 
                 if((*ptr)->arg2){
-                    (*ptr)->liveVariable2 = updateLiveness(liveness, (*(*ptr)->arg2));
+                    updateLive(liveness, (*(*ptr)->arg2));
+                }
+                
+                (*ptr)->liveness = liveness;
+                
+                setLive(liveness, (*ptr)->arg1);
+                
+                if((*ptr)->arg2){
+                    setLive(liveness, (*(*ptr)->arg2));
                 }
 
-                (*ptr)->liveResult = liveness[(*ptr)->result];
-
-                liveness[(*ptr)->result] = false; 
+                liveness[(*ptr)->result] = false;
             }
 
             sit++;
@@ -611,8 +585,6 @@ void tac::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function
 }
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    std::cout << "compile function " << function->getName() << std::endl;
-
     computeLiveness(function);
 
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
