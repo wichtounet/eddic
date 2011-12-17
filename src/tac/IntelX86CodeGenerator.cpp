@@ -280,14 +280,21 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else {
             switch(*quadruple->op){
                 //TODO Optimize a = a + 1 and a = a -1 with inc and dec
-                case Operator::ADD://TODO Find a way to optimize statements like a = a + b or a = b + a
-                    writer.stream() << "addl " << arg(quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
-                    break;            
+                //TODO Find a way to optimize statements like a = a + b or a = b + a
+                case Operator::ADD:
+                {
+                    Register reg = getReg(quadruple->result);
+                    writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
+                    writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                    break;
+                }
                 case Operator::SUB:
-                    writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << arg(quadruple->arg1) << std::endl;
-                    writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;
-                    break;            
+                {
+                    Register reg = getReg(quadruple->result);
+                    writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
+                    writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                    break;
+                }
                 case Operator::MUL://TODO if one of the arguments is in eax, use it directly
                 {
                     bool fast = false;
@@ -301,12 +308,14 @@ struct StatementCompiler : public boost::static_visitor<> {
                         }
                     }
 
-                    if(!fast && auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                        if(descriptors[Register::EAX] == *ptr){
-                           if((*ptr)->position().isTemporary() && !quadruple->liveVariable2){
-                                writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
-                                fast = true;
-                           }
+                    if(!fast){
+                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                            if(descriptors[Register::EAX] == *ptr){
+                                if((*ptr)->position().isTemporary() && !quadruple->liveVariable2){
+                                    writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
+                                    fast = true;
+                                }
+                            }
                         }
                     }
 
