@@ -206,16 +206,9 @@ struct StatementCompiler : public boost::static_visitor<> {
        
         //Try to get a free register 
         for(auto reg : registers){
-            if(!descriptors[reg]){
+            if(!descriptors[reg] || !isLive(descriptors[reg])){
                 move(variable, reg);
 
-                descriptors[reg] = variable;
-                variables[variable] = reg;
-
-                return reg;
-            } else if (!isLive(descriptors[reg])){
-                move(variable, reg);
-                
                 descriptors[reg] = variable;
                 variables[variable] = reg;
 
