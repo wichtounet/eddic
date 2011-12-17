@@ -423,7 +423,9 @@ struct StatementCompiler : public boost::static_visitor<> {
 }}
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
-    writer.stream() << compiler.labels[block] << ":" << std::endl;
+    if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
+        writer.stream() << compiler.labels[block] << ":" << std::endl;
+    }
 
     for(auto& statement : block->statements){
         boost::apply_visitor(compiler, statement);
@@ -526,7 +528,7 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function
 
     StatementCompiler compiler(writer, function);
 
-    //computeBlockUsage(function, compiler);
+    computeBlockUsage(function, compiler);
 
     //First we computes a label for each basic block
     for(auto& block : function->getBasicBlocks()){
