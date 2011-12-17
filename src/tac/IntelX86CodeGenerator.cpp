@@ -79,6 +79,15 @@ struct StatementCompiler : public boost::static_visitor<> {
         registers = {EDI, ESI, ECX, EDX, EBX, EAX};
     }
 
+    //Called at the beginning of each basic block
+    void reset(){
+        variables.clear();
+
+        for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
+            descriptors[i] = nullptr;
+        }
+    }
+
     bool isLive(std::shared_ptr<Variable> variable){
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&current)){
             if((*ptr)->result == variable){
@@ -496,6 +505,8 @@ struct StatementCompiler : public boost::static_visitor<> {
 }}
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
+    compiler.reset();
+
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
         writer.stream() << compiler.labels[block] << ":" << std::endl;
     }
@@ -531,12 +542,12 @@ bool updateLiveness(std::unordered_map<std::shared_ptr<Variable>, bool>& livenes
 void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> function){
     std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
     std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
-    
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     while(bit != bend){
         std::vector<tac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
         std::vector<tac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
+    
+        std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
         while(sit != send){
             auto statement = *sit;
