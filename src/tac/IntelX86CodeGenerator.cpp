@@ -276,6 +276,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(!quadruple->op){
+            //TODO Optimize move of 0 in a register with xorl
             writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;            
         } else {
             switch(*quadruple->op){
@@ -355,7 +356,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     descriptors[Register::EDX] = quadruple->result;
                     variables[quadruple->result] = Register::EDX;
                     break;            
-                case Operator::DOT:{
+                case Operator::DOT:
+                {
                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
                    assert(boost::get<int>(&*quadruple->arg2));
 
@@ -365,7 +367,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                    writer.stream() << "movl " << toString(variable, offset) << ", " << arg(quadruple->result) << std::endl;
                    break;
                 }
-                case Operator::DOT_ASSIGN:{
+                case Operator::DOT_ASSIGN:
+                {
                   assert(boost::get<int>(&quadruple->arg1));
 
                   int offset = boost::get<int>(quadruple->arg1);
