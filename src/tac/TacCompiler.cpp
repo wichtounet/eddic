@@ -49,8 +49,11 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
         return false;
     }
 
-    bool operator()(ast::FunctionCall&) const {
-        return false;
+    //A call to a function returning an int is single argument
+    bool operator()(ast::FunctionCall& call) const {
+        Type type = call.Content->function->returnType;
+
+        return type.base() == BaseType::INT;
     }
 };
 
@@ -77,21 +80,6 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
 
     bool operator()(ast::FunctionCall&) const {
         return false;
-    }
-};
-
-struct ToArgumentVisitor : public boost::static_visitor<tac::Argument> {
-    tac::Argument operator()(ast::Integer& integer) const {
-        return integer.value;
-    }
-
-    tac::Argument operator()(ast::VariableValue& variable) const {
-        return variable.Content->var;
-    }
-
-    template<typename T>
-    tac::Argument operator()(T&) const {
-        assert(false);
     }
 };
 
@@ -643,7 +631,7 @@ tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> f
     tac::Argument arg;
 
     if(boost::apply_visitor(IsSingleArgumentVisitor(), value)){
-        arg = boost::apply_visitor(ToArgumentVisitor(), value);
+        arg = boost::apply_visitor(ToArgumentsVisitor(function), value)[0];
     } else {
         auto t1 = function->context->newTemporary();
         boost::apply_visitor(AssignValueToVariable(function, t1), value);
