@@ -289,16 +289,40 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;
                     break;            
                 case Operator::MUL://TODO if one of the arguments is in eax, use it directly
-                    spills(Register::EAX);
+                {
+                    bool fast = false;
 
-                    move(quadruple->arg1, Register::EAX);
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                        if(descriptors[Register::EAX] == *ptr){
+                           if((*ptr)->position().isTemporary() && !quadruple->liveVariable1){
+                                writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                                fast = true;
+                           }
+                        }
+                    }
 
-                    writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        if(descriptors[Register::EAX] == *ptr){
+                           if((*ptr)->position().isTemporary() && !quadruple->liveVariable2){
+                                writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
+                                fast = true;
+                           }
+                        }
+                    }
+
+                    if(!fast){
+                        spills(Register::EAX);
+
+                        move(quadruple->arg1, Register::EAX);
+                        
+                        writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                    }
 
                     //result is in eax (no need to move it now)
                     descriptors[Register::EAX] = quadruple->result;
                     variables[quadruple->result] = Register::EAX;
                     break;            
+                }
                 case Operator::DIV:
                     spills(Register::EAX);
 
