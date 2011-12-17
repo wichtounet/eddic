@@ -218,16 +218,26 @@ struct StatementCompiler : public boost::static_visitor<> {
             variables[call->return2_] = Register::EBX;
         }
     }
+   
+    void spillsIfNecessary(Register reg, tac::Argument arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            if(descriptors[reg] != *ptr){
+                spills(reg);
+            }
+        } else {
+            spills(reg);
+        }
+    }
     
     void operator()(std::shared_ptr<tac::Return>& return_){
         //A return without args is the same as exiting from the function
         if(return_->arg1){
-            spills(Register::EAX);
+            spillsIfNecessary(Register::EAX, *return_->arg1);
 
             writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
 
             if(return_->arg2){
-                spills(Register::EBX);
+                spillsIfNecessary(Register::EBX, *return_->arg2);
 
                 writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
             }
