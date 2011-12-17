@@ -249,6 +249,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;            
         } else {
             switch(*quadruple->op){
+                //TODO Optimize a = a + 1 and a = a -1 with inc and dec
                 case Operator::ADD://TODO Find a way to optimize statements like a = a + b or a = b + a
                     writer.stream() << "addl " << arg(quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
