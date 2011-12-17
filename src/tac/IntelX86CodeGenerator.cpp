@@ -228,18 +228,41 @@ struct StatementCompiler : public boost::static_visitor<> {
             spills(reg);
         }
     }
-    
+   
+    //TODO Move the necessary calculation part into another function 
     void operator()(std::shared_ptr<tac::Return>& return_){
         //A return without args is the same as exiting from the function
         if(return_->arg1){
             spillsIfNecessary(Register::EAX, *return_->arg1);
 
-            writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
+            bool necessary = true;
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
+                if(variables.find(*ptr) != variables.end()){
+                    if(variables[*ptr] == Register::EAX){
+                        necessary = false;
+                    }
+                }
+            }    
+
+            if(necessary){
+                writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
+            }
 
             if(return_->arg2){
                 spillsIfNecessary(Register::EBX, *return_->arg2);
+                
+                necessary = true;
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
+                    if(variables.find(*ptr) != variables.end()){
+                        if(variables[*ptr] == Register::EBX){
+                            necessary = false;
+                        }
+                    }
+                }    
 
-                writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
+                if(necessary){
+                    writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
+                }
             }
         }
         
