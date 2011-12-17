@@ -105,46 +105,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         assert(false);
     }
-
-    std::string arg(tac::Argument argument){
-        if(auto* ptr = boost::get<int>(&argument)){
-            return "$" + ::toString(*ptr);
-        } else if(auto* ptr = boost::get<std::string>(&argument)){
-            return "$" + *ptr;
-        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            if(variables.find(*ptr) != variables.end()){
-                //The variables is already in a register
-                return regToString(variables[*ptr]);
-            } else {
-                //The variable is not in a register
-                for(auto reg : registers){
-                    //If the register is free
-                    if(!descriptors[reg]){
-                        move(*ptr, reg);
-
-                        descriptors[reg] = *ptr;
-                        variables[*ptr] = reg;
-
-                        return regToString(reg);
-                    }
-                }
-
-                //There are no free register, take one
-                auto reg = registers[0];
-                spills(reg);
-
-                move(*ptr, reg);
-
-                descriptors[reg] = *ptr;
-                variables[*ptr] = reg;
-
-                return regToString(reg);
-            }
-        }
-
-        assert(false);
-    }
-
+    
     void spills(Register reg){
         assert(descriptors[reg]);
 
@@ -164,6 +125,64 @@ struct StatementCompiler : public boost::static_visitor<> {
         //The variable is no more contained in the register
         descriptors[reg] = nullptr;
         variables.erase(variable);
+    }
+
+    Register getReg(std::shared_ptr<Variable> variable){
+        //The variable is already in a register
+        if(variables.find(variable) != variables.end()){
+            return variables[variable];
+        }
+       
+        //Try to get a free register 
+        for(auto reg : registers){
+            if(!descriptors[reg]){
+                move(variable, reg);
+
+                descriptors[reg] = variable;
+                variables[variable] = reg;
+
+                return reg;
+            }
+        }
+
+        //There are no free register, take one
+        auto reg = registers[0];
+        spills(reg);
+
+        move(variable, reg);
+
+        descriptors[reg] = variable;
+        variables[variable] = reg;
+
+        return reg;
+    }
+    
+    std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
+        if(auto* ptr = boost::get<int>(&offset)){
+            return toString(variable, *ptr);
+        }
+        
+        assert(boost::get<std::shared_ptr<Variable>>(&offset));
+
+        auto* offsetVariable = boost::get<std::shared_ptr<Variable>>(&offset);
+        auto position = variable->position();
+
+        auto reg = getReg(variable);
+        auto offsetReg = getReg(*offsetVariable);
+
+        return "(" + regToString(reg) + ")" + regToString(offsetReg);
+    }
+
+    std::string arg(tac::Argument argument){
+        if(auto* ptr = boost::get<int>(&argument)){
+            return "$" + ::toString(*ptr);
+        } else if(auto* ptr = boost::get<std::string>(&argument)){
+            return "$" + *ptr;
+        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            return regToString(getReg(*ptr));
+        }
+
+        assert(false);
     }
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
@@ -257,10 +276,12 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;
                 }
                 case Operator::ARRAY:
-                    //TODO
+                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
+                    
+                    writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
                     break;            
                 case Operator::ARRAY_ASSIGN:
-                    //TODO
+                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
                     break;            
             }
         }
