@@ -114,24 +114,25 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void spills(Register reg){
-        assert(descriptors[reg]);
+        //If the register is not used, there is nothing to spills
+        if(descriptors[reg]){
+            auto variable = descriptors[reg];
+            auto position = variable->position();
 
-        auto variable = descriptors[reg];
-        auto position = variable->position();
-        
-        if(position.isStack()){
-            writer.stream() << "movl " << regToString(reg) << ", " << (-1 * position.offset()) << "(%ebp)" << std::endl; 
-        } else if(position.isParameter()){
-            writer.stream() << "movl " << regToString(reg) << ", " <<  position.offset() << "(%ebp)" << std::endl; 
-        } else if(position.isGlobal()){
-            writer.stream() << "movl " << regToString(reg) << ", VI" << position.name() << std::endl;
-        } else if(position.isTemporary()){
-            std::cout << "Trying to spills " << variable->name() << " from " << regToString(reg) << std::endl;
+            if(position.isStack()){
+                writer.stream() << "movl " << regToString(reg) << ", " << (-1 * position.offset()) << "(%ebp)" << std::endl; 
+            } else if(position.isParameter()){
+                writer.stream() << "movl " << regToString(reg) << ", " <<  position.offset() << "(%ebp)" << std::endl; 
+            } else if(position.isGlobal()){
+                writer.stream() << "movl " << regToString(reg) << ", VI" << position.name() << std::endl;
+            } else if(position.isTemporary()){
+                std::cout << "Trying to spills " << variable->name() << " from " << regToString(reg) << std::endl;
+            }
+            
+            //The variable is no more contained in the register
+            descriptors[reg] = nullptr;
+            variables.erase(variable);
         }
-
-        //The variable is no more contained in the register
-        descriptors[reg] = nullptr;
-        variables.erase(variable);
     }
 
     Register getReg(std::shared_ptr<Variable> variable){
@@ -221,16 +222,12 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<tac::Return>& return_){
         //A return without args is the same as exiting from the function
         if(return_->arg1){
-            if(descriptors[Register::EAX]){
-                spills(Register::EAX);
-            }
-            
+            spills(Register::EAX);
+
             writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
 
             if(return_->arg2){
-                if(descriptors[Register::EBX]){
-                    spills(Register::EBX);
-                }
+                spills(Register::EBX);
 
                 writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
             }
@@ -259,9 +256,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << arg(quadruple->result) << std::endl;
                     break;            
                 case Operator::MUL://TODO if one of the arguments is in eax, use it directly
-                    if(descriptors[Register::EAX]){
-                        spills(Register::EAX);
-                    }
+                    spills(Register::EAX);
 
                     move(quadruple->arg1, Register::EAX);
 
@@ -272,37 +267,54 @@ struct StatementCompiler : public boost::static_visitor<> {
                     variables[quadruple->result] = Register::EAX;
                     break;            
                 case Operator::DIV:
-                    //TODO
+                    spills(Register::EAX);
+
+                    move(quadruple->arg1, Register::EAX);
+
+                    writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
+
+                    //result is in eax (no need to move it now)
+                    descriptors[Register::EAX] = quadruple->result;
+                    variables[quadruple->result] = Register::EAX;
                     break;            
                 case Operator::MOD:
-                    //TODO
+                    spills(Register::EAX);
+                    spills(Register::EDX);
+
+                    move(quadruple->arg1, Register::EAX);
+
+                    writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
+
+                    //result is in edx (no need to move it now)
+                    descriptors[Register::EDX] = quadruple->result;
+                    variables[quadruple->result] = Register::EDX;
                     break;            
                 case Operator::DOT:{
-                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
-                    assert(boost::get<int>(&*quadruple->arg2));
+                   assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
+                   assert(boost::get<int>(&*quadruple->arg2));
 
-                    int offset = boost::get<int>(*quadruple->arg2);
-                    auto variable = boost::get<std::shared_ptr<Variable>>(quadruple->arg1);
+                   int offset = boost::get<int>(*quadruple->arg2);
+                   auto variable = boost::get<std::shared_ptr<Variable>>(quadruple->arg1);
 
-                    writer.stream() << "movl " << toString(variable, offset) << ", " << arg(quadruple->result) << std::endl;
-                    break;
+                   writer.stream() << "movl " << toString(variable, offset) << ", " << arg(quadruple->result) << std::endl;
+                   break;
                 }
                 case Operator::DOT_ASSIGN:{
-                    assert(boost::get<int>(&quadruple->arg1));
+                  assert(boost::get<int>(&quadruple->arg1));
 
-                    int offset = boost::get<int>(quadruple->arg1);
+                  int offset = boost::get<int>(quadruple->arg1);
 
-                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
-                    break;
+                  writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
+                  break;
                 }
                 case Operator::ARRAY:
-                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
-                    
-                    writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
-                    break;            
+                      assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
+
+                      writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
+                      break;            
                 case Operator::ARRAY_ASSIGN:
-                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
-                    break;            
+                      writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
+                      break;            
             }
         }
     }
