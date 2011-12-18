@@ -248,7 +248,11 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return "$" + *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            return regToString(getReg(*ptr));
+            if((*ptr)->position().isTemporary()){
+                return regToString(getReg(*ptr, false));
+            } else {
+                return regToString(getReg(*ptr, true));
+            }
         }
 
         assert(false);
@@ -440,12 +444,12 @@ struct StatementCompiler : public boost::static_visitor<> {
                 }
                 case Operator::DOT_ASSIGN:
                 {
-                  assert(boost::get<int>(&quadruple->arg1));
+                      assert(boost::get<int>(&quadruple->arg1));
 
-                  int offset = boost::get<int>(quadruple->arg1);
+                      int offset = boost::get<int>(quadruple->arg1);
 
-                  writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
-                  break;
+                      writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
+                      break;
                 }
                 case Operator::ARRAY:
                       assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
