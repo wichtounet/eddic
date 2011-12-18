@@ -15,6 +15,7 @@
 
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
+#include "GlobalContext.hpp"
 
 #include "il/Labels.hpp"
 
@@ -922,6 +923,42 @@ void tac::IntelX86CodeGenerator::addStandardFunctions(){
    addAllocFunction(writer);
 }
 
+void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context){
+    writer.stream() << std::endl << ".data" << std::endl;
+     
+    for(auto it : context->getVariables()){
+        Type type = it.second->type();
+
+        if(type.isArray()){
+            writer.stream() << "VA" << it.second->position().name() << ":" <<std::endl;
+            writer.stream() << ".rept " << type.size() << std::endl;
+
+            if(type.base() == BaseType::INT){
+                writer.stream() << ".long 0" << std::endl;
+            } else if(type.base() == BaseType::STRING){
+                writer.stream() << ".long S3" << std::endl;
+                writer.stream() << ".long 0" << std::endl;
+            }
+
+            writer.stream() << ".endr" << std::endl;
+            writer.stream() << ".long " << type.size() << std::endl;
+        } else {
+            if (type.base() == BaseType::INT) {
+                writer.stream() << ".size VI" << it.second->position().name() << ", 4" << std::endl;
+                writer.stream() << "VI" << it.second->position().name() << ":" << std::endl;
+                writer.stream() << ".long " << boost::get<int>(it.second->val()) << std::endl;
+            } else if (type.base() == BaseType::STRING) {
+                auto value = boost::get<std::pair<std::string, int>>(it.second->val());
+    
+                writer.stream() << ".size VS" << it.second->position().name() << ", 8" << std::endl;
+                writer.stream() << "VS" << it.second->position().name() << ":" << std::endl;
+                writer.stream() << ".long " << value.first << std::endl;
+                writer.stream() << ".long " << value.second << std::endl;
+            }
+        }
+    }
+}
+
 void tac::IntelX86CodeGenerator::generate(tac::Program& program){
     writeRuntimeSupport(); 
 
@@ -932,4 +969,6 @@ void tac::IntelX86CodeGenerator::generate(tac::Program& program){
     }
 
     addStandardFunctions();
+
+    addGlobalVariables(program.context);
 }
