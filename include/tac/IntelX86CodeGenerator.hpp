@@ -24,6 +24,7 @@ class IntelX86CodeGenerator {
     public:
         IntelX86CodeGenerator(AssemblyFileWriter& writer);
 
+        void writeRuntimeSupport();
         void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
         void computeLiveness(std::shared_ptr<tac::Function> function);
         void generate(tac::Program& program);

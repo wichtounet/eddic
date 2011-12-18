@@ -652,7 +652,20 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function
     writer.stream() << "ret" << std::endl;
 }
 
+void tac::IntelX86CodeGenerator::writeRuntimeSupport(){
+    writer.stream() << ".text" << std::endl
+                    << ".globl _start" << std::endl
+                    
+                    << "_start:" << std::endl
+                    << "call main" << std::endl
+                    << "movl $1, %eax" << std::endl
+                    << "xorl %ebx, %ebx" << std::endl
+                    << "int $0x80" << std::endl;
+}
+
 void tac::IntelX86CodeGenerator::generate(tac::Program& program){
+    writeRuntimeSupport(); 
+
     resetNumbering();
 
     for(auto& function : program.functions){
