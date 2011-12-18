@@ -95,8 +95,6 @@ struct StatementCompiler : public boost::static_visitor<> {
             return (*ptr)->liveness[variable];
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&current)){
             return (*ptr)->liveness[variable];
-        } else if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&current)){
-            return (*ptr)->liveness[variable];
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&current)){
             return (*ptr)->liveness[variable];
         }
@@ -262,12 +260,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         current = goto_;
 
        writer.stream() << "goto " << labels[goto_->block] << std::endl; 
-    }
-
-    void operator()(std::shared_ptr<tac::Param>& param){
-        current = param;
-
-        writer.stream() << "pushl " << arg(param->arg) << std::endl;
     }
 
     void operator()(std::shared_ptr<tac::Call>& call){
@@ -458,7 +450,10 @@ struct StatementCompiler : public boost::static_visitor<> {
                       break;            
                 case Operator::ARRAY_ASSIGN:
                       writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
-                      break;            
+                      break;
+                case Operator::PARAM:
+                      writer.stream() << "pushl " << arg(quadruple->arg1) << std::endl;
+                      break;
             }
         }
     }
@@ -552,13 +547,7 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
         while(sit != send){
             auto statement = *sit;
 
-            if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
-                updateLive(liveness, (*ptr)->arg);
-           
-                (*ptr)->liveness = liveness;
-            
-                setLive(liveness, (*ptr)->arg);
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
+            if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
                 if((*ptr)->arg1){
                     updateLive(liveness, (*(*ptr)->arg1));
                 }
@@ -599,7 +588,9 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                     setLive(liveness, (*(*ptr)->arg2));
                 }
 
-                liveness[(*ptr)->result] = false;
+                if((*ptr)->result){
+                    liveness[(*ptr)->result] = false;
+                }
             }
 
             sit++;

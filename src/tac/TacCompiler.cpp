@@ -376,7 +376,7 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
         arguments.insert(arguments.end(), second.begin(), second.end());
         
         for(auto& arg : arguments){
-            function->add(std::make_shared<tac::Param>(arg));   
+            function->add(std::make_shared<tac::Quadruple>(tac::Operator::PARAM, arg));   
         }
 
         arguments.clear();
@@ -650,7 +650,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
     for(auto& first : arguments){
         for(auto& arg : first){
-            function->add(std::make_shared<tac::Param>(arg));   
+            function->add(std::make_shared<tac::Quadruple>(tac::Operator::PARAM, arg));   
         }
     }
 
