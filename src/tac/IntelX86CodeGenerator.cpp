@@ -90,13 +90,25 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
 
+    bool isLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
+       if(liveness.find(variable) != liveness.end()){
+            return liveness[variable];   
+       } else {
+            if(variable->position().isTemporary()){
+                return false;
+            } else {
+                return true;
+            }
+       }
+    }
+
     bool isLive(std::shared_ptr<Variable> variable){
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&current)){
-            return (*ptr)->liveness[variable];
+            return isLive((*ptr)->liveness, variable);
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&current)){
-            return (*ptr)->liveness[variable];
+            return isLive((*ptr)->liveness, variable);
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&current)){
-            return (*ptr)->liveness[variable];
+            return isLive((*ptr)->liveness, variable);
         }
 
         assert(false); //No liveness calculations in the other cases
@@ -520,7 +532,7 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
         if(compiler.descriptors[i]){
             auto variable = compiler.descriptors[i];
 
-            if(compiler.isLive(variable)){
+            if(!variable->position().isTemporary()){
                 compiler.spills((Register)i);    
             }
         }
@@ -531,10 +543,10 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
 void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
     if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
         if(liveness.find(*variable) == liveness.end()){
-            if((*variable)->position().isGlobal()){
-                liveness[*variable] = true;
-            } else {
+            if((*variable)->position().isTemporary()){
                 liveness[*variable] = false;
+            } else {
+                liveness[*variable] = true;
             }
         }
     }
@@ -550,12 +562,14 @@ void setLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac:
 void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> function){
     std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
     std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
+    
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     while(bit != bend){
         std::vector<tac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
         std::vector<tac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
     
-        std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
+        liveness.clear();
 
         while(sit != send){
             auto statement = *sit;
@@ -793,10 +807,6 @@ void addConcatFunction(AssemblyFileWriter& writer){
         << "pushl %ebp" << std::endl
         << "movl %esp, %ebp" << std::endl
 
-        //Save registers
-        << "pushl %ebx" << std::endl
-        << "pushl %ecx" << std::endl
-
         << "movl 16(%ebp), %edx" << std::endl
         << "movl 8(%ebp), %ecx" << std::endl
         << "addl %ecx, %edx" << std::endl
@@ -837,15 +847,11 @@ void addConcatFunction(AssemblyFileWriter& writer){
         << "jmp copy_concat_2" << std::endl
         << "end_concat_2:" << std::endl
 
-        << "movl 16(%ebp), %edx" << std::endl
+        << "movl 16(%ebp), %ebx" << std::endl
         << "movl 8(%ebp), %ecx" << std::endl
-        << "addl %ecx, %edx" << std::endl
+        << "addl %ecx, %ebx" << std::endl
 
         << "movl -4(%ebp), %eax" << std::endl
-
-        //Restore registers
-        << "popl %ecx" << std::endl
-        << "popl %ebx" << std::endl
 
         << "leave" << std::endl
         << "ret" << std::endl;
