@@ -105,16 +105,16 @@ int Compiler::compile(const std::string& file) {
             optimize(program, functionTable, pool);
 
             tac::Program tacProgram;
+
+            //Generate Three-Address-Code language
             tac::TacCompiler compiler;
             compiler.compile(program, pool, tacProgram);
 
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
-            
-            tac::Printer printer;
-            printer.print(tacProgram);
 
+            //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
             tac::IntelX86CodeGenerator generator(writer);
             generator.generate(tacProgram, pool); 
@@ -129,7 +129,6 @@ int Compiler::compile(const std::string& file) {
                 remove("output.asm");
                 remove("output.o");
             }
-
         }
     } catch (const SemanticalException& e) {
         std::cout << e.what() << std::endl;
