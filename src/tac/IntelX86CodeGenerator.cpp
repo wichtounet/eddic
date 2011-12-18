@@ -431,8 +431,9 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                    int offset = boost::get<int>(*quadruple->arg2);
                    auto variable = boost::get<std::shared_ptr<Variable>>(quadruple->arg1);
-
-                   writer.stream() << "movl " << toString(variable, offset) << ", " << arg(quadruple->result) << std::endl;
+   
+                   Register reg = getRegNoMove(quadruple->result);
+                   writer.stream() << "movl " << toString(variable, offset) << ", " << regToString(reg) << std::endl;
                    break;
                 }
                 case Operator::DOT_ASSIGN:
@@ -520,10 +521,12 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
 //Set the default properties of the variable
 void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
     if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
-        if((*variable)->position().isGlobal()){
-            liveness[*variable] = true;
-        } else {
-            liveness[*variable] = false;
+        if(liveness.find(*variable) == liveness.end()){
+            if((*variable)->position().isGlobal()){
+                liveness[*variable] = true;
+            } else {
+                liveness[*variable] = false;
+            }
         }
     }
 }
