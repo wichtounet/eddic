@@ -31,6 +31,9 @@ struct Quadruple {
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
+    Quadruple(const Quadruple& rhs) = delete;
+    Quadruple& operator=(const Quadruple& rhs) = delete;
+
     Quadruple();
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg);
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg1, Operator op, tac::Argument arg2);
