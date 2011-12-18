@@ -21,6 +21,10 @@
 #include "GetConstantValue.hpp"
 
 using namespace eddic;
+
+std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVariables(){
+    return variables;
+}
         
 GlobalContext::GlobalContext() : Context(NULL) {
     Val zero = 0;
