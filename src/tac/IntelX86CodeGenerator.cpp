@@ -203,6 +203,27 @@ struct StatementCompiler : public boost::static_visitor<> {
         return getReg(variable, true);
     }
     
+    Register getReg(){
+        //Try to get a free register 
+        for(auto reg : registers){
+            if(!descriptors[reg] || !isLive(descriptors[reg])){
+                variables.erase(descriptors[reg]);
+                descriptors[reg] = nullptr;
+
+                return reg;
+            }
+        }
+
+        //There are no free register, take one
+        auto reg = registers[0];
+        spills(reg);
+
+        variables.erase(descriptors[reg]);
+        descriptors[reg] = nullptr;
+
+        return reg;
+    }
+    
     std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
         if(auto* ptr = boost::get<int>(&offset)){
             return toString(variable, *ptr);
@@ -438,6 +459,16 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         current = ifFalse;
+
+        //The first argument is not important, it can be immediate, but the second must be a register
+        if(auto* ptr = boost::get<int>(&ifFalse->arg2)){
+            auto reg = getReg();
+
+            writer.stream() << "movl " << *ptr << ", " << regToString(reg) << std::endl;
+            writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << regToString(reg) << std::endl;
+
+            return;
+        }
 
         writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
 
