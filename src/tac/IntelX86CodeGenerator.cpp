@@ -663,6 +663,265 @@ void tac::IntelX86CodeGenerator::writeRuntimeSupport(){
                     << "int $0x80" << std::endl;
 }
 
+void addPrintIntegerFunction(AssemblyFileWriter& writer){
+    writer.stream() << std::endl;
+    writer.stream() << "print_integer:" << std::endl
+             << "pushl %ebp" << std::endl
+             << "movl %esp, %ebp" << std::endl
+
+            //Save registers
+            << "pushl %eax" << std::endl
+            << "pushl %ebx" << std::endl
+            << "pushl %ecx" << std::endl
+            << "pushl %edx" << std::endl
+
+             << "movl 8(%ebp), %eax" << std::endl
+             << "xorl %esi, %esi" << std::endl
+
+             //If the number is negative, we print the - and then the number
+             << "cmpl $0, %eax" << std::endl
+             << "jge loop" << std::endl
+
+             << "neg %eax" << std::endl
+             << "pushl %eax" << std::endl //We push eax to not loose it from print_string
+            
+             //Print "-" 
+             << "pushl $S2" << std::endl
+             << "pushl $1" << std::endl
+             << "call print_string" << std::endl
+             << "addl $8, %esp" << std::endl
+
+             //Get the the valueof eax again
+             << "popl %eax" << std::endl
+
+             << "loop:" << std::endl
+             << "movl $0, %edx" << std::endl
+             << "movl $10, %ebx" << std::endl
+             << "divl %ebx" << std::endl
+             << "addl $48, %edx" << std::endl
+             << "pushl %edx" << std::endl
+             << "incl %esi" << std::endl
+             << "cmpl $0, %eax" << std::endl
+             << "jz   next" << std::endl
+             << "jmp loop" << std::endl
+
+             << "next:" << std::endl
+             << "cmpl $0, %esi" << std::endl
+             << "jz   exit" << std::endl
+             << "decl %esi" << std::endl
+
+             << "movl $4, %eax" << std::endl
+             << "movl %esp, %ecx" << std::endl
+             << "movl $1, %ebx" << std::endl
+             << "movl $1, %edx" << std::endl
+             << "int  $0x80" << std::endl
+
+             << "addl $4, %esp" << std::endl
+
+             << "jmp  next" << std::endl
+
+             << "exit:" << std::endl
+
+            //Restore registers
+            << "popl %edx" << std::endl
+            << "popl %ecx" << std::endl
+            << "popl %ebx" << std::endl
+            << "popl %eax" << std::endl
+
+             << "leave" << std::endl
+             << "ret" << std::endl;
+}
+
+void addPrintLineFunction(AssemblyFileWriter& writer){
+    writer.stream() << std::endl;
+    writer.stream() << "print_line:" << std::endl;
+    writer.stream() << "pushl %ebp" << std::endl;
+    writer.stream() << "movl %esp, %ebp" << std::endl;
+
+    writer.stream() << "pushl $S1" << std::endl;
+    writer.stream() << "pushl $1" << std::endl;
+    writer.stream() << "call print_string" << std::endl;
+    writer.stream() << "addl $8, %esp" << std::endl;
+
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+}
+
+void addPrintStringFunction(AssemblyFileWriter& writer){
+    writer.stream() << std::endl;
+    writer.stream() << "print_string:" << std::endl;
+    writer.stream() << "pushl %ebp" << std::endl;
+    writer.stream() << "movl %esp, %ebp" << std::endl;
+    
+    //Save registers
+    writer.stream() << "pushl %eax" << std::endl;
+    writer.stream() << "pushl %ebx" << std::endl;
+    writer.stream() << "pushl %ecx" << std::endl;
+    writer.stream() << "pushl %edx" << std::endl;
+
+    writer.stream() << "movl $0, %esi" << std::endl;
+
+    writer.stream() << "movl $4, %eax" << std::endl;
+    writer.stream() << "movl $1, %ebx" << std::endl;
+    writer.stream() << "movl 12(%ebp), %ecx" << std::endl;
+    writer.stream() << "movl 8(%ebp), %edx" << std::endl;
+    writer.stream() << "int $0x80" << std::endl;
+
+    //Restore registers
+    writer.stream() << "popl %edx" << std::endl;
+    writer.stream() << "popl %ecx" << std::endl;
+    writer.stream() << "popl %ebx" << std::endl;
+    writer.stream() << "popl %eax" << std::endl;
+
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+}
+
+void addConcatFunction(AssemblyFileWriter& writer){
+    writer.stream() << std::endl;
+    writer.stream() << "concat:" << std::endl
+        << "pushl %ebp" << std::endl
+        << "movl %esp, %ebp" << std::endl
+
+        //Save registers
+        << "pushl %ebx" << std::endl
+        << "pushl %ecx" << std::endl
+
+        << "movl 16(%ebp), %edx" << std::endl
+        << "movl 8(%ebp), %ecx" << std::endl
+        << "addl %ecx, %edx" << std::endl
+
+        << "pushl %edx" << std::endl
+        << "call eddi_alloc" << std::endl
+        << "addl $4, %esp" << std::endl
+
+        << "movl %eax, -4(%ebp)" << std::endl
+        << "movl %eax, %ecx" << std::endl
+        << "movl $0, %eax" << std::endl
+
+        << "movl 16(%ebp), %ebx" << std::endl
+        << "movl 20(%ebp), %edx" << std::endl
+
+        << "copy_concat_1:" << std::endl
+        << "cmpl $0, %ebx" << std::endl
+        << "je end_concat_1"  << std::endl
+        << "movb (%edx), %al" << std::endl
+        << "movb %al, (%ecx)" << std::endl
+        << "addl $1, %ecx" << std::endl
+        << "addl $1, %edx" << std::endl
+        << "subl $1, %ebx" << std::endl
+        << "jmp copy_concat_1" << std::endl
+        << "end_concat_1" << ":" << std::endl
+
+        << "movl 8(%ebp), %ebx" << std::endl
+        << "movl 12(%ebp), %edx" << std::endl
+
+        << "copy_concat_2:" << std::endl
+        << "cmpl $0, %ebx" << std::endl
+        << "je end_concat_2"  << std::endl
+        << "movb (%edx), %al" << std::endl
+        << "movb %al, (%ecx)" << std::endl
+        << "addl $1, %ecx" << std::endl
+        << "addl $1, %edx" << std::endl
+        << "subl $1, %ebx" << std::endl
+        << "jmp copy_concat_2" << std::endl
+        << "end_concat_2:" << std::endl
+
+        << "movl 16(%ebp), %edx" << std::endl
+        << "movl 8(%ebp), %ecx" << std::endl
+        << "addl %ecx, %edx" << std::endl
+
+        << "movl -4(%ebp), %eax" << std::endl
+
+        //Restore registers
+        << "popl %ecx" << std::endl
+        << "popl %ebx" << std::endl
+
+        << "leave" << std::endl
+        << "ret" << std::endl;
+}
+
+void addAllocFunction(AssemblyFileWriter& writer){
+    writer.stream() << std::endl;
+    writer.stream() << "eddi_alloc:" << std::endl
+        << "pushl %ebp" << std::endl
+        << "movl %esp, %ebp" << std::endl
+
+        //Save registers
+        << "pushl %ebx" << std::endl
+        << "pushl %ecx" << std::endl
+        << "pushl %edx" << std::endl
+
+        << "movl 8(%ebp), %ecx" << std::endl
+        << "movl VIeddi_remaining, %ebx" << std::endl
+
+        << "cmpl %ebx, %ecx" << std::endl
+        << "jle alloc_normal" << std::endl
+
+        //Get the current address
+        << "movl $45, %eax" << std::endl        //45 = sys_brk
+        << "xorl %ebx, %ebx" << std::endl       //get end
+        << "int  $0x80" << std::endl
+       
+        //%eax is the current address 
+        << "movl %eax, %esi" << std::endl
+
+        //Alloc new block of 16384K from the current address
+        << "movl %eax, %ebx" << std::endl
+        << "addl $16384, %ebx" << std::endl
+        << "movl $45, %eax" << std::endl        //45 = sys_brk
+        << "int  $0x80" << std::endl
+
+        //zero'd the new block
+        << "movl %eax, %edi" << std::endl       //edi = start of block
+
+        << "subl $4, %edi" << std::endl         //EDI points to the last DWORD available to us
+        << "movl $4096, %ecx" << std::endl         //this many DWORDs were allocated
+        << "xorl %eax, %eax"  << std::endl         //   ; will write with zeroes
+        << "std"  << std::endl         //        ; walk backwards
+        << "rep stosl"  << std::endl         //      ; write all over the reserved area
+        << "cld"  << std::endl         //        ; bring back the DF flag to normal state
+
+        << "movl %esi, %eax" << std::endl
+
+        //We now have 16K of available memory starting at %esi
+        << "movl $16384, VIeddi_remaining" << std::endl
+        << "movl %esi, VIeddi_current" << std::endl
+
+        << "alloc_normal:" << std::endl
+
+        //old = current
+        << "movl VIeddi_current, %eax" << std::endl
+        
+        //current += size
+        << "movl VIeddi_current, %ebx" << std::endl
+        << "addl %ecx, %ebx" << std::endl
+        << "movl %ebx, VIeddi_current" << std::endl
+        
+        //remaining -= size
+        << "movl VIeddi_remaining, %ebx" << std::endl
+        << "subl %ecx, %ebx" << std::endl
+        << "movl %ebx, VIeddi_remaining" << std::endl
+       
+        << "alloc_end:" << std::endl
+
+        //Restore registers
+        << "popl %edx" << std::endl
+        << "popl %ecx" << std::endl
+        << "popl %ebx" << std::endl
+
+        << "leave" << std::endl
+        << "ret" << std::endl;
+}
+
+void tac::IntelX86CodeGenerator::addStandardFunctions(){
+   addPrintIntegerFunction(writer); 
+   addPrintLineFunction(writer); 
+   addPrintStringFunction(writer); 
+   addConcatFunction(writer);
+   addAllocFunction(writer);
+}
+
 void tac::IntelX86CodeGenerator::generate(tac::Program& program){
     writeRuntimeSupport(); 
 
@@ -671,4 +930,6 @@ void tac::IntelX86CodeGenerator::generate(tac::Program& program){
     for(auto& function : program.functions){
         compile(function);
     }
+
+    addStandardFunctions();
 }
