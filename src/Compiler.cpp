@@ -120,7 +120,7 @@ int Compiler::compile(const std::string& file) {
 
             AssemblyFileWriter writer("output.asm");
             tac::IntelX86CodeGenerator generator(writer);
-            generator.generate(tacProgram); 
+            generator.generate(tacProgram, pool); 
             writer.write(); 
 
             //IN Construction

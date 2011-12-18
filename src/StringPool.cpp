@@ -34,3 +34,7 @@ std::string StringPool::label(const std::string& value) {
 void StringPool::writeIL(IntermediateProgram& program){
     program.addInstruction(program.factory().createDataSection(pool));
 }
+
+std::unordered_map<std::string, std::string> StringPool::getPool() const {
+    return pool;
+}

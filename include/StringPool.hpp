@@ -27,6 +27,8 @@ class StringPool {
         std::string label(const std::string& value);
 
         void writeIL(IntermediateProgram& program);
+
+        std::unordered_map<std::string, std::string> getPool() const;
 };
 
 } //end of eddic

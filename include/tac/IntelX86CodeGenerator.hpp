@@ -16,6 +16,7 @@ namespace eddic {
 
 class AssemblyFileWriter;
 class Context;
+class StringPool;
 
 namespace tac {
 
@@ -27,12 +28,13 @@ class IntelX86CodeGenerator {
 
         void addStandardFunctions();
         void writeRuntimeSupport();
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context);
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
         void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
         void computeLiveness(std::shared_ptr<tac::Function> function);
-        void generate(tac::Program& program);
         void compile(std::shared_ptr<tac::Function> function);
         void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
+        
+        void generate(tac::Program& program, StringPool& pool);
 
     private:
         AssemblyFileWriter& writer;

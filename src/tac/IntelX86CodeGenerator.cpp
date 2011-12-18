@@ -16,6 +16,7 @@
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
+#include "StringPool.hpp"
 
 #include "il/Labels.hpp"
 
@@ -923,7 +924,7 @@ void tac::IntelX86CodeGenerator::addStandardFunctions(){
    addAllocFunction(writer);
 }
 
-void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context){
+void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
     writer.stream() << std::endl << ".data" << std::endl;
      
     for(auto it : context->getVariables()){
@@ -957,9 +958,14 @@ void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContex
             }
         }
     }
+    
+    for (auto it : pool.getPool()){
+        writer.stream() << it.second << ":" << std::endl;
+        writer.stream() << ".string " << it.first << std::endl;
+    }
 }
 
-void tac::IntelX86CodeGenerator::generate(tac::Program& program){
+void tac::IntelX86CodeGenerator::generate(tac::Program& program, StringPool& pool){
     writeRuntimeSupport(); 
 
     resetNumbering();
@@ -970,5 +976,5 @@ void tac::IntelX86CodeGenerator::generate(tac::Program& program){
 
     addStandardFunctions();
 
-    addGlobalVariables(program.context);
+    addGlobalVariables(program.context, pool);
 }
