@@ -16,7 +16,6 @@ namespace eddic {
 
 class StringPool;
 class FunctionTable;
-class IntermediateProgram;
 
 void defineDefaultValues(ast::Program& program);
 void defineContexts(ast::Program& program);
@@ -30,8 +29,6 @@ void checkForWarnings(ast::Program& program, FunctionTable& table);
 
 void transform(ast::Program& program);
 void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool);
-void writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram);
-void writeAsm(IntermediateProgram& il, const std::string& file);
 
 void execCommand(const std::string& command);
 

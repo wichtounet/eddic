@@ -47,7 +47,6 @@
 #include "parser/SpiritParser.hpp"
 
 #include "AssemblyFileWriter.hpp"
-#include "il/IntermediateProgram.hpp"
 
 #ifdef DEBUG
 static const bool debug = true;
@@ -105,8 +104,6 @@ int Compiler::compile(const std::string& file) {
             //Optimize the AST
             optimize(program, functionTable, pool);
 
-            //IN Construction
-            
             tac::Program tacProgram;
             tac::TacCompiler compiler;
             compiler.compile(program, pool, tacProgram);
@@ -122,15 +119,6 @@ int Compiler::compile(const std::string& file) {
             tac::IntelX86CodeGenerator generator(writer);
             generator.generate(tacProgram, pool); 
             writer.write(); 
-
-            //IN Construction
-
-            //Write Intermediate representation of the parse tree
-//            IntermediateProgram il;
-//            writeIL(program, pool, il);
-
-            //Write assembly to file
-//            writeAsm(il, "output.asm");
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
@@ -205,20 +193,6 @@ void eddic::optimize(ast::Program& program, FunctionTable& functionTable, String
     DebugTimer<debug> timer("Optimization");
     OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
-}
-
-void eddic::writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram){
-    DebugTimer<debug> timer("Compile into intermediate level");
-    IntermediateCompiler compiler;
-    compiler.compile(program, pool, intermediateProgram);
-}
-            
-void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
-    DebugTimer<debug> timer("Write assembly");
-    AssemblyFileWriter writer(file);
-
-    il.writeAsm(writer);
-    writer.write();
 }
 
 void eddic::execCommand(const std::string& command) {
