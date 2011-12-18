@@ -268,7 +268,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         writer.stream() << "call " << call->function << std::endl;
         
         if(call->params > 0){
-            writer.stream() << "addl " << call->params << ", %esp" << std::endl;
+            writer.stream() << "addl $" << call->params << ", %esp" << std::endl;
         }
 
         if(call->return_){
@@ -515,7 +515,16 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
         boost::apply_visitor(compiler, statement);
     }
 
-    //TODO End the basic block
+    //End the basic block
+    for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
+        if(compiler.descriptors[i]){
+            auto variable = compiler.descriptors[i];
+
+            if(compiler.isLive(variable)){
+                compiler.spills((Register)i);    
+            }
+        }
+    }
 }
 
 //Set the default properties of the variable
