@@ -16,6 +16,8 @@
 
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
+#include "SemanticalException.hpp"
+#include "AssemblyFileWriter.hpp"
 
 #include "ast/Program.hpp"
 
@@ -42,11 +44,7 @@
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/IntelX86CodeGenerator.hpp"
 
-#include "SemanticalException.hpp"
-
 #include "parser/SpiritParser.hpp"
-
-#include "AssemblyFileWriter.hpp"
 
 #ifdef DEBUG
 static const bool debug = true;
