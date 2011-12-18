@@ -18,10 +18,14 @@ enum class Operator : unsigned int {
     MUL,
     DIV,
     MOD,
+    
     DOT,            //result = (arg1)+arg2
     DOT_ASSIGN,     //result+arg1=arg2
+    
     ARRAY,          //result=arg1[arg2]
-    ARRAY_ASSIGN    //result[arg1]=arg2
+    ARRAY_ASSIGN,   //result[arg1]=arg2
+
+    PARAM           //push a single value
 };
 
 tac::Operator toOperator(char op);

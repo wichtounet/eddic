@@ -34,6 +34,9 @@ struct Quadruple {
     Quadruple();
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg);
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg1, Operator op, tac::Argument arg2);
+
+    //Constructor for quadruples without assign to result
+    Quadruple(Operator op, tac::Argument arg);
 };
 
 } //end of tac
