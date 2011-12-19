@@ -133,7 +133,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isParameter()){
                 writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
             } else if(position.isGlobal()){
-                writer.stream() << "movl " << "VI" << position.name() << ", " << regToString(reg) << std::endl;
+                writer.stream() << "movl " << "V" << position.name() << ", " << regToString(reg) << std::endl;
             } else if(position.isTemporary()){
                 assert(false); //Should not happen
             }
@@ -151,7 +151,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isParameter()){
                 writer.stream() << "movl " << regToString(reg) << ", " <<  position.offset() << "(%ebp)" << std::endl; 
             } else if(position.isGlobal()){
-                writer.stream() << "movl " << regToString(reg) << ", VI" << position.name() << std::endl;
+                writer.stream() << "movl " << regToString(reg) << ", V" << position.name() << std::endl;
             } else if(position.isTemporary()){
                 assert(!isLive(variable));
             }
@@ -233,7 +233,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else if(position.isParameter()){
             return ::toString(position.offset() + offset) + "(%ebp)";
         } else if(position.isGlobal()){
-            return "VI" + position.name() + "+" + ::toString(offset);
+            return "V" + position.name() + "+" + ::toString(offset);
         } else if(position.isTemporary()){
             assert(false); //We are in da shit
         }
@@ -251,10 +251,23 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto* offsetVariable = boost::get<std::shared_ptr<Variable>>(&offset);
         auto position = variable->position();
 
-        auto reg = getReg(variable);
         auto offsetReg = getReg(*offsetVariable);
+        
+        if(position.isStack()){
+            writer.stream() << "addl $" << ::toString(-1 * (position.offset())) << ", " << regToString(offsetReg) << std::endl;
+            return "(%ebp, " + regToString(offsetReg) + ",1)";
+        } else if(position.isParameter()){
+            writer.stream() << "addl $" << ::toString((position.offset())) << ", " << regToString(offsetReg) << std::endl;
+            return "(%ebp, " + regToString(offsetReg) + ",1)";
+        } else if(position.isGlobal()){
+            return "V" + position.name() + "(" + regToString(offsetReg) + ")";
+        } else if(position.isTemporary()){
+            assert(false); //We are in da shit
+        }
 
-        return "(" + regToString(reg) + ")" + regToString(offsetReg);
+        assert(false);
+
+        //return "(" + regToString(reg) + ")" + regToString(offsetReg);
     }
 
     std::string arg(tac::Argument argument){
@@ -381,6 +394,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     break;
                 }
+                //TODO Simplify this generation
                 case Operator::MUL:
                 {
                     bool fast = false;
@@ -630,8 +644,6 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                 if((*ptr)->arg2){
                     updateLive(liveness, (*(*ptr)->arg2));
                 }
-               
-                (*ptr)->liveness = liveness;
                 
                 if((*ptr)->arg1){
                     setLive(liveness, (*(*ptr)->arg1));
@@ -640,14 +652,16 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                 if((*ptr)->arg2){
                     setLive(liveness, (*(*ptr)->arg2));
                 }
+               
+                (*ptr)->liveness = liveness;
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
                 updateLive(liveness, (*ptr)->arg1);
                 updateLive(liveness, (*ptr)->arg2);
                 
-                (*ptr)->liveness = liveness;
-                
                 setLive(liveness, (*ptr)->arg1);
                 setLive(liveness, (*ptr)->arg2);
+                
+                (*ptr)->liveness = liveness;
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
                 updateLive(liveness, (*ptr)->arg1);
                 
@@ -655,14 +669,15 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                     updateLive(liveness, (*(*ptr)->arg2));
                 }
                 
-                (*ptr)->liveness = liveness;
-                
                 setLive(liveness, (*ptr)->arg1);
                 
                 if((*ptr)->arg2){
                     setLive(liveness, (*(*ptr)->arg2));
                 }
+                
+                (*ptr)->liveness = liveness;
 
+                //TODO Verify if this point should make before assigning livenes to the statement
                 if((*ptr)->result){
                     liveness[(*ptr)->result] = false;
                 }
@@ -917,7 +932,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
         << "pushl %edx" << std::endl
 
         << "movl 8(%ebp), %ecx" << std::endl
-        << "movl VIeddi_remaining, %ebx" << std::endl
+        << "movl Veddi_remaining, %ebx" << std::endl
 
         << "cmpl %ebx, %ecx" << std::endl
         << "jle alloc_normal" << std::endl
@@ -949,23 +964,23 @@ void addAllocFunction(AssemblyFileWriter& writer){
         << "movl %esi, %eax" << std::endl
 
         //We now have 16K of available memory starting at %esi
-        << "movl $16384, VIeddi_remaining" << std::endl
-        << "movl %esi, VIeddi_current" << std::endl
+        << "movl $16384, Veddi_remaining" << std::endl
+        << "movl %esi, Veddi_current" << std::endl
 
         << "alloc_normal:" << std::endl
 
         //old = current
-        << "movl VIeddi_current, %eax" << std::endl
+        << "movl Veddi_current, %eax" << std::endl
         
         //current += size
-        << "movl VIeddi_current, %ebx" << std::endl
+        << "movl Veddi_current, %ebx" << std::endl
         << "addl %ecx, %ebx" << std::endl
-        << "movl %ebx, VIeddi_current" << std::endl
+        << "movl %ebx, Veddi_current" << std::endl
         
         //remaining -= size
-        << "movl VIeddi_remaining, %ebx" << std::endl
+        << "movl Veddi_remaining, %ebx" << std::endl
         << "subl %ecx, %ebx" << std::endl
-        << "movl %ebx, VIeddi_remaining" << std::endl
+        << "movl %ebx, Veddi_remaining" << std::endl
        
         << "alloc_end:" << std::endl
 
@@ -993,7 +1008,7 @@ void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContex
         Type type = it.second->type();
 
         if(type.isArray()){
-            writer.stream() << "VA" << it.second->position().name() << ":" <<std::endl;
+            writer.stream() << "V" << it.second->position().name() << ":" <<std::endl;
             writer.stream() << ".rept " << type.size() << std::endl;
 
             if(type.base() == BaseType::INT){
@@ -1007,14 +1022,14 @@ void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContex
             writer.stream() << ".long " << type.size() << std::endl;
         } else {
             if (type.base() == BaseType::INT) {
-                writer.stream() << ".size VI" << it.second->position().name() << ", 4" << std::endl;
-                writer.stream() << "VI" << it.second->position().name() << ":" << std::endl;
+                writer.stream() << ".size V" << it.second->position().name() << ", 4" << std::endl;
+                writer.stream() << "V" << it.second->position().name() << ":" << std::endl;
                 writer.stream() << ".long " << boost::get<int>(it.second->val()) << std::endl;
             } else if (type.base() == BaseType::STRING) {
                 auto value = boost::get<std::pair<std::string, int>>(it.second->val());
     
-                writer.stream() << ".size VS" << it.second->position().name() << ", 8" << std::endl;
-                writer.stream() << "VS" << it.second->position().name() << ":" << std::endl;
+                writer.stream() << ".size V" << it.second->position().name() << ", 8" << std::endl;
+                writer.stream() << "V" << it.second->position().name() << ":" << std::endl;
                 writer.stream() << ".long " << value.first << std::endl;
                 writer.stream() << ".long " << value.second << std::endl;
             }
