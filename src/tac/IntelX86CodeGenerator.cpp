@@ -538,15 +538,15 @@ struct StatementCompiler : public boost::static_visitor<> {
         current = ifFalse;
 
         //The first argument is not important, it can be immediate, but the second must be a register
-        if(auto* ptr = boost::get<int>(&ifFalse->arg2)){
+        if(auto* ptr = boost::get<int>(&ifFalse->arg1)){
             auto reg = getReg();
 
             writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
-            writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << regToString(reg) << std::endl;
+            writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << regToString(reg) << std::endl;
 
             descriptors[reg] = nullptr;
         } else {
-            writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
+            writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
         }
 
         switch(ifFalse->op){
