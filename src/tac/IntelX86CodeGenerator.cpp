@@ -139,22 +139,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
 
-    std::string toString(std::shared_ptr<Variable> variable, int offset){
-        auto position = variable->position();
-
-        if(position.isStack()){
-            return ::toString(-1 * (position.offset() + offset)) + "(%ebp)";
-        } else if(position.isParameter()){
-            return ::toString(position.offset() + offset) + "(%ebp)";
-        } else if(position.isGlobal()){
-            return "VI" + position.name() + "+" + ::toString(offset);
-        } else if(position.isTemporary()){
-            assert(false); //We are in da shit
-        }
-
-        assert(false);
-    }
-    
     void spills(Register reg){
         //If the register is not used, there is nothing to spills
         if(descriptors[reg]){
@@ -238,6 +222,22 @@ struct StatementCompiler : public boost::static_visitor<> {
         descriptors[reg] = retainVariable;
 
         return reg;
+    }
+    
+    std::string toString(std::shared_ptr<Variable> variable, int offset){
+        auto position = variable->position();
+
+        if(position.isStack()){
+            return ::toString(-1 * (position.offset() + offset)) + "(%ebp)";
+        } else if(position.isParameter()){
+            return ::toString(position.offset() + offset) + "(%ebp)";
+        } else if(position.isGlobal()){
+            return "VI" + position.name() + "+" + ::toString(offset);
+        } else if(position.isTemporary()){
+            assert(false); //We are in da shit
+        }
+
+        assert(false);
     }
     
     std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
