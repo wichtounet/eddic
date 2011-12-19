@@ -583,10 +583,11 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             function->add(startLabel);
 
-            auto indexTemp = computeIndexOfArray(arrayVar, iterVar, function);
             auto sizeTemp = computeLengthOfArray(arrayVar, function);
 
             function->add(std::make_shared<tac::IfFalse>(tac::BinaryOperator::LESS, iterVar, sizeTemp, endLabel));
+            
+            auto indexTemp = computeIndexOfArray(arrayVar, iterVar, function);
 
             if(var->type().base() == BaseType::INT){
                 function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
