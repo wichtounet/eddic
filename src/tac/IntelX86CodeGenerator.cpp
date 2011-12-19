@@ -276,7 +276,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<tac::Goto>& goto_){
         current = goto_;
 
-       writer.stream() << "goto " << labels[goto_->block] << std::endl; 
+       writer.stream() << "jmp " << labels[goto_->block] << std::endl; 
     }
 
     void operator()(std::shared_ptr<tac::Call>& call){
