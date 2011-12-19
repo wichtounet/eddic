@@ -8,6 +8,8 @@
 #ifndef TAC_PRINTER_H
 #define TAC_PRINTER_H
 
+#include "tac/Statement.hpp"
+
 namespace eddic {
 
 namespace tac {
@@ -20,6 +22,7 @@ class Program;
  */
 struct Printer {
     void print(tac::Program& program) const ;
+    void print(tac::Statement& program) const ;
 };
 
 } //end of tac

@@ -166,3 +166,8 @@ void tac::Printer::print(tac::Program& program) const {
    DebugVisitor visitor;
    visitor(program); 
 }
+
+void tac::Printer::print(tac::Statement& statement) const {
+   DebugVisitor visitor;
+   visit(visitor, statement);
+}
