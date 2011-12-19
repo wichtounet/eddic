@@ -77,8 +77,12 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     tac::Statement current;
 
+    std::shared_ptr<Variable> retainVariable;
+
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {
         registers = {EDI, ESI, ECX, EDX, EBX, EAX};
+
+        retainVariable = std::make_shared<Variable>("__fake__", Type(BaseType::INT), Position(PositionType::TEMPORARY));
     }
 
     //Called at the beginning of each basic block
@@ -181,7 +185,7 @@ struct StatementCompiler : public boost::static_visitor<> {
        
         //Try to get a free register 
         for(auto reg : registers){
-            if(!descriptors[reg] || !isLive(descriptors[reg])){
+            if(!descriptors[reg] || (descriptors[reg] != retainVariable && !isLive(descriptors[reg]))){
                 if(doMove){
                     move(variable, reg);
                 }
@@ -218,9 +222,9 @@ struct StatementCompiler : public boost::static_visitor<> {
     Register getReg(){
         //Try to get a free register 
         for(auto reg : registers){
-            if(!descriptors[reg] || !isLive(descriptors[reg])){
+            if(!descriptors[reg] || (descriptors[reg] != retainVariable && !isLive(descriptors[reg]))){
                 variables.erase(descriptors[reg]);
-                descriptors[reg] = nullptr;
+                descriptors[reg] = retainVariable;
 
                 return reg;
             }
@@ -231,7 +235,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         spills(reg);
 
         variables.erase(descriptors[reg]);
-        descriptors[reg] = nullptr;
+        descriptors[reg] = retainVariable;
 
         return reg;
     }
@@ -481,6 +485,8 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
             writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << regToString(reg) << std::endl;
+
+            descriptors[reg] = nullptr;
         } else {
             writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
         }
