@@ -385,32 +385,75 @@ struct StatementCompiler : public boost::static_visitor<> {
                 {
                     bool fast = false;
 
+                    //If arg 1 is in eax
                     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                         if(descriptors[Register::EAX] == *ptr){
-                           if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
-                                writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                            if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
+                                //If the arg is a variable, it will be matched to a register automatically
+                                if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
+                                {
+                                    writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                                } //If it's an immediate value, we have to move it in a register
+                                else if (boost::get<int>(&*quadruple->arg2)){
+                                    auto reg = getReg();
+                                    
+                                    move(*quadruple->arg2, reg);
+                                    writer.stream() << "mull " << regToString(reg) << std::endl;
+
+                                    descriptors[reg] = nullptr;
+                                }
+
                                 fast = true;
-                           }
+                            }
                         }
                     }
 
+                    //If arg 2 is in eax
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
                             if(descriptors[Register::EAX] == *ptr){
                                 if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
-                                    writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
+                                    //If the arg is a variable, it will be matched to a register automatically
+                                    if(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1))
+                                    {
+                                        writer.stream() << "mull " << arg(quadruple->arg1) << std::endl;
+                                    } //If it's an immediate value, we have to move it in a register
+                                    else if (boost::get<int>(&quadruple->arg1)){
+                                        auto reg = getReg();
+
+                                        move(quadruple->arg1, reg);
+                                        writer.stream() << "mull " << regToString(reg) << std::endl;
+
+                                        descriptors[reg] = nullptr;
+                                    }
+
                                     fast = true;
                                 }
                             }
                         }
                     }
 
+                    //Neither of the args is in a register
                     if(!fast){
                         spills(Register::EAX);
 
                         move(quadruple->arg1, Register::EAX);
+
+                        descriptors[Register::EAX] = retainVariable;
                         
-                        writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                        //If the arg is a variable, it will be matched to a register automatically
+                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
+                        {
+                            writer.stream() << "mull " << arg(*quadruple->arg2) << std::endl;
+                        } //If it's an immediate value, we have to move it in a register
+                        else if (boost::get<int>(&*quadruple->arg2)){
+                            auto reg = getReg();
+
+                            move(*quadruple->arg2, reg);
+                            writer.stream() << "mull " << regToString(reg) << std::endl;
+
+                            descriptors[reg] = nullptr;
+                        }
                     }
 
                     //result is in eax (no need to move it now)
