@@ -12,6 +12,7 @@
 #include <boost/variant.hpp>
 
 #include "tac/IntelX86CodeGenerator.hpp"
+#include "tac/Printer.hpp"
 
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
@@ -454,24 +455,24 @@ struct StatementCompiler : public boost::static_visitor<> {
                 }
                 case Operator::DOT_ASSIGN:
                 {
-                      assert(boost::get<int>(&quadruple->arg1));
+                    assert(boost::get<int>(&quadruple->arg1));
 
-                      int offset = boost::get<int>(quadruple->arg1);
+                    int offset = boost::get<int>(quadruple->arg1);
 
-                      writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
-                      break;
+                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
+                    break;
                 }
                 case Operator::ARRAY:
-                      assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
+                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
 
-                      writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
-                      break;            
+                    writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
+                    break;            
                 case Operator::ARRAY_ASSIGN:
-                      writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
-                      break;
+                    writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
+                    break;
                 case Operator::PARAM:
-                      writer.stream() << "pushl " << arg(quadruple->arg1) << std::endl;
-                      break;
+                    writer.stream() << "pushl " << arg(quadruple->arg1) << std::endl;
+                    break;
             }
         }
     }
