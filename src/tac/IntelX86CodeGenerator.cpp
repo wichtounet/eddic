@@ -366,7 +366,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 {
                     Register reg = getRegNoMove(quadruple->result);
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
-                    writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                    writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     break;
                 }
                 case Operator::SUB:
