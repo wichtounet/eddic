@@ -479,13 +479,11 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(auto* ptr = boost::get<int>(&ifFalse->arg2)){
             auto reg = getReg();
 
-            writer.stream() << "movl " << *ptr << ", " << regToString(reg) << std::endl;
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
             writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << regToString(reg) << std::endl;
-
-            return;
+        } else {
+            writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
         }
-
-        writer.stream() << "cmpl " << arg(ifFalse->arg1) << ", " << arg(ifFalse->arg2) << std::endl;
 
         switch(ifFalse->op){
             case BinaryOperator::EQUALS:
