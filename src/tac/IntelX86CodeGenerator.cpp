@@ -153,7 +153,18 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isGlobal()){
                 writer.stream() << "movl " << regToString(reg) << ", V" << position.name() << std::endl;
             } else if(position.isTemporary()){
-                assert(!isLive(variable));
+                //If the variable is live, move it to another register, else do nothing
+                if(isLive(variable)){
+                    //Remove it from the register
+                    descriptors[reg] = retainVariable;
+                    variables.erase(variable);
+                    
+                    Register newReg = getReg(variable, false);
+                    writer.stream() << "movl " << regToString(reg) << ", " << regToString(newReg) << std::endl;
+
+                    assert(newReg != reg);
+                    assert(descriptors[newReg] == variable);
+                }
             }
             
             //The variable is no more contained in the register
@@ -371,7 +382,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         current = quadruple;
-
+        
         if(!quadruple->op){
             //TODO Optimize move of 0 in a register with xorl
             Register reg = getRegNoMove(quadruple->result);
