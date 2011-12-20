@@ -80,10 +80,15 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     std::shared_ptr<Variable> retainVariable;
 
+    bool last;
+    bool ended;
+
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {
         registers = {EDI, ESI, ECX, EDX, EBX, EAX};
 
         retainVariable = std::make_shared<Variable>("__fake__", Type(BaseType::INT), Position(PositionType::TEMPORARY));
+
+        last = ended = false;
     }
 
     //Called at the beginning of each basic block
@@ -281,8 +286,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         assert(false);
-
-        //return "(" + regToString(reg) + ")" + regToString(offsetReg);
     }
 
     std::string arg(tac::Argument argument){
@@ -304,7 +307,10 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<tac::Goto>& goto_){
         current = goto_;
 
-       writer.stream() << "jmp " << labels[goto_->block] << std::endl; 
+        //The basic block must be ended before the jump
+        endBasicBlock();
+
+        writer.stream() << "jmp " << labels[goto_->block] << std::endl; 
     }
 
     void operator()(std::shared_ptr<tac::Call>& call){
@@ -335,6 +341,25 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else {
             spills(reg);
         }
+    }
+   
+    void setLast(){
+        last = true;
+    }
+    
+    void endBasicBlock(){
+        //End the basic block
+        for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
+            if(descriptors[i]){
+                auto variable = descriptors[i];
+
+                if(!variable->position().isTemporary()){
+                    spills((Register)i);    
+                }
+            }
+        }
+
+        ended = true;
     }
    
     //TODO Move the necessary calculation part into another function 
@@ -379,6 +404,9 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(function->context->size() > 0){
             writer.stream() << "addl $" << function->context->size() << " , %esp" << std::endl;
         }
+
+        //The basic block must be ended before the jump
+        endBasicBlock();
 
         writer.stream() << "leave" << std::endl;
         writer.stream() << "ret" << std::endl;
@@ -557,10 +585,17 @@ struct StatementCompiler : public boost::static_visitor<> {
             auto reg = getReg();
 
             writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+            
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
             writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << regToString(reg) << std::endl;
 
             descriptors[reg] = nullptr;
         } else {
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
             writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
         }
 
@@ -600,19 +635,19 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
         writer.stream() << compiler.labels[block] << ":" << std::endl;
     }
 
-    for(auto& statement : block->statements){
+    for(unsigned int i = 0; i < block->statements.size(); ++i){
+        auto& statement = block->statements[i];
+
+        if(i == block->statements.size() - 1){
+            compiler.setLast();
+        }
+        
         boost::apply_visitor(compiler, statement);
     }
 
-    //End the basic block
-    for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
-        if(compiler.descriptors[i]){
-            auto variable = compiler.descriptors[i];
-
-            if(!variable->position().isTemporary()){
-                compiler.spills((Register)i);    
-            }
-        }
+    //If the basic block has not been ended
+    if(!compiler.ended){
+        compiler.endBasicBlock();
     }
 }
 
