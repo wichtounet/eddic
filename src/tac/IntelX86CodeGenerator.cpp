@@ -161,9 +161,13 @@ struct StatementCompiler : public boost::static_visitor<> {
                     
                     Register newReg = getReg(variable, false);
                     writer.stream() << "movl " << regToString(reg) << ", " << regToString(newReg) << std::endl;
-
+                
                     assert(newReg != reg);
                     assert(descriptors[newReg] == variable);
+                    assert(variables[variable] = newReg);
+
+                    descriptors[reg] = nullptr;
+                    return; //Return here to avoid erasing variable from variables
                 }
             }
             
