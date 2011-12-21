@@ -425,9 +425,32 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //TODO Find a way to optimize statements like a = a + b or a = b + a
                 case Operator::ADD:
                 {
+                    auto result = quadruple->result;
+
+                    //If the firsrt arg is the same variable as the result : a = a + x
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                        if(*ptr == quadruple->result){
+                            Register reg = getReg(quadruple->result);
+                            writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+
+                            break;
+                        }
+                    } 
+                   
+                    //If the second arg is the same variable as the result : a = 1 + a 
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        if(*ptr == result){
+                            Register reg = getReg(quadruple->result);
+                            writer.stream() << "addl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
+
+                            break;
+                        }
+                    } 
+                    
                     Register reg = getRegNoMove(quadruple->result);
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                     writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+
                     break;
                 }
                 case Operator::SUB:
