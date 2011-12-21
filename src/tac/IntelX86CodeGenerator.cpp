@@ -274,11 +274,9 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto offsetReg = getReg(*offsetVariable);
         
         if(position.isStack()){
-            writer.stream() << "addl $" << ::toString(-1 * (position.offset())) << ", " << regToString(offsetReg) << std::endl;
-            return "(%ebp, " + regToString(offsetReg) + ",1)";
+            return ::toString(-1 * (position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
         } else if(position.isParameter()){
-            writer.stream() << "addl $" << ::toString((position.offset())) << ", " << regToString(offsetReg) << std::endl;
-            return "(%ebp, " + regToString(offsetReg) + ",1)";
+            return ::toString((position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
         } else if(position.isGlobal()){
             return "V" + position.name() + "(" + regToString(offsetReg) + ")";
         } else if(position.isTemporary()){
