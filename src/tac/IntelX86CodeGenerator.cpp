@@ -788,6 +788,29 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function
     if(size > 0){
         writer.stream() << "subl $" << size << " , %esp" << std::endl;
     }
+    
+    auto iter = function->context->begin();
+    auto end = function->context->end();
+
+    for(; iter != end; iter++){
+        auto var = iter->second;
+        if(var->type().isArray() && var->position().isStack()){
+            int position = -var->position().offset();
+
+            writer.stream() << "movl $" << var->type().size() << ", " << position << "(%ebp)" << std::endl;
+
+            if(var->type().base() == BaseType::INT){
+                for(unsigned int i = 0; i < var->type().size(); ++i){
+                    writer.stream() << "movl $0, " << (position -= 4) << "(%ebp)" << std::endl;
+                }
+            } else if(var->type().base() == BaseType::STRING){
+                for(unsigned int i = 0; i < var->type().size(); ++i){
+                    writer.stream() << "movl $0, " << (position -= 4) << "(%ebp)" << std::endl;
+                    writer.stream() << "movl $0, " << (position -= 4) << "(%ebp)" << std::endl;
+                }
+            }
+        }
+    }
 
     StatementCompiler compiler(writer, function);
 
