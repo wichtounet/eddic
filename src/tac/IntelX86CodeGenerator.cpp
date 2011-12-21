@@ -426,10 +426,10 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
 
                     //If the firsrt arg is the same variable as the result : a = a + x
-                    if(*boost::get<std::shared_ptr<Variable>>(&quadruple->arg1) == result){
+                    if(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(quadruple->arg1) == result){
                         Register reg = getReg(quadruple->result);
                         writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
-                    } else if(*boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2) == result){
+                    } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2) && boost::get<std::shared_ptr<Variable>>(*quadruple->arg2) == result){
                         Register reg = getReg(quadruple->result);
                         writer.stream() << "addl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                     } else {                   
