@@ -98,6 +98,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
             descriptors[i] = nullptr;
         }
+
+        last = ended = false;
     }
 
     bool isLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
@@ -341,8 +343,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
    
-    void setLast(){
-        last = true;
+    void setLast(bool l){
+        last = l;
     }
     
     void endBasicBlock(){
@@ -653,7 +655,7 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
         auto& statement = block->statements[i];
 
         if(i == block->statements.size() - 1){
-            compiler.setLast();
+            compiler.setLast(true);
         }
         
         boost::apply_visitor(compiler, statement);
