@@ -276,6 +276,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto offsetReg = getReg(*offsetVariable);
         
         if(position.isStack()){
+            writer.stream() << "neg " << regToString(offsetReg) << std::endl;
             return ::toString(-1 * (position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
         } else if(position.isParameter()){
             return ::toString((position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
