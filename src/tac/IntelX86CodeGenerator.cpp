@@ -584,10 +584,14 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;
                 }
                 case Operator::ARRAY:
+                {
                     assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
 
-                    writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << arg(quadruple->result) << std::endl;
+                    Register reg = getRegNoMove(quadruple->result);
+            
+                    writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     break;            
+                }
                 case Operator::ARRAY_ASSIGN:
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
                     break;
