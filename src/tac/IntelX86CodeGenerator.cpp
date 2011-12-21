@@ -588,8 +588,41 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
                     break;
                 case Operator::PARAM:
-                    writer.stream() << "pushl " << arg(quadruple->arg1) << std::endl;
+                {
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                        if((*ptr)->type().isArray()){
+                            auto position = (*ptr)->position();
+
+                            if(position.isGlobal()){
+                                Register reg = getReg();
+                                
+                                auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+
+                                writer.stream() << "movl $V" << position.name() << ", " << regToString(reg) << std::endl;
+                                writer.stream() << "addl $" << offset << ", " << regToString(reg) << std::endl;
+                                writer.stream() << "pushl " << regToString(reg) << std::endl;
+
+                                descriptors[reg] = nullptr;
+                            } else if(position.isStack()){
+                                Register reg = getReg();
+
+                                writer.stream() << "movl %ebp, " << regToString(reg) << std::endl;
+                                writer.stream() << "addl $" << (-position.offset()) << ", " << regToString(reg) << std::endl;
+                                writer.stream() << "pushl " << regToString(reg) << std::endl;
+                                
+                                descriptors[reg] = nullptr;
+                            } else if(position.isParameter()){
+                                writer.stream() << "pushl " << position.offset() << "(%ebp)" << std::endl;
+                            }
+                        } else {
+                            writer.stream() << "pushl " << arg(quadruple->arg1) << std::endl;
+                        }
+                    } else {
+                        writer.stream() << "pushl " << arg(quadruple->arg1) << std::endl;
+                    }
+
                     break;
+                }
             }
         }
     }
