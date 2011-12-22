@@ -578,6 +578,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         fast = true;
                     }
 
+                    //TODO These two optimizations are not working due to liveness computations
                     //If arg 1 is in eax
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
