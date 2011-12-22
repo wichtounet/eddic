@@ -19,6 +19,7 @@
 #include "SemanticalException.hpp"
 #include "AssemblyFileWriter.hpp"
 
+#include "parser/SpiritParser.hpp"
 #include "ast/Program.hpp"
 
 //Annotators
@@ -43,9 +44,9 @@
 #include "tac/Program.hpp"
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/LivenessAnalyzer.hpp"
-#include "tac/IntelX86CodeGenerator.hpp"
 
-#include "parser/SpiritParser.hpp"
+//Code generation
+#include "asm/IntelX86CodeGenerator.hpp"
 
 #ifdef DEBUG
 static const bool debug = true;
@@ -119,7 +120,7 @@ int Compiler::compile(const std::string& file) {
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
-            tac::IntelX86CodeGenerator generator(writer);
+            as::IntelX86CodeGenerator generator(writer);
             generator.generate(tacProgram, pool); 
             writer.write(); 
 

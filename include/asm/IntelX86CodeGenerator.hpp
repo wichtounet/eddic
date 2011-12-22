@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_INTEL_X86_CODE_GENERATOR_H
-#define TAC_INTEL_X86_CODE_GENERATOR_H
+#ifndef ASM_INTEL_X86_CODE_GENERATOR_H
+#define ASM_INTEL_X86_CODE_GENERATOR_H
 
 #include <string>
 
@@ -18,7 +18,7 @@ class AssemblyFileWriter;
 class Context;
 class StringPool;
 
-namespace tac {
+namespace as {
 
 struct StatementCompiler;
 
@@ -40,7 +40,7 @@ class IntelX86CodeGenerator {
         AssemblyFileWriter& writer;
 };
 
-} //end of ast
+} //end of as
 
 } //end of eddic
 

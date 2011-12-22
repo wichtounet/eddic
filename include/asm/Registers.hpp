@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_REGISTERS_H
-#define TAC_REGISTERS_H
+#ifndef ASM_REGISTERS_H
+#define ASM_REGISTERS_H
 
 #include <memory>
 #include <vector>
@@ -16,7 +16,7 @@ namespace eddic {
 
 class Variable;
 
-namespace tac {
+namespace as {
 
 template<typename Reg>
 class Registers {
@@ -156,7 +156,7 @@ bool Registers<Reg>::reserved(Reg reg){
    return descriptors[reg] == retainVariable; 
 }
 
-} //end of ast
+} //end of as
 
 } //end of eddic
 

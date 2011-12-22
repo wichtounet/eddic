@@ -11,8 +11,9 @@
 
 #include <boost/variant.hpp>
 
-#include "tac/IntelX86CodeGenerator.hpp"
-#include "tac/Registers.hpp"
+#include "asm/IntelX86CodeGenerator.hpp"
+#include "asm/Registers.hpp"
+
 #include "tac/Printer.hpp"
 
 #include "AssemblyFileWriter.hpp"
@@ -24,9 +25,9 @@
 
 using namespace eddic;
 
-tac::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : writer(w) {}
+as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : writer(w) {}
 
-namespace eddic { namespace tac { 
+namespace eddic { namespace as { 
 
 enum Register {
     EAX,
@@ -75,8 +76,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
     std::shared_ptr<tac::Function> function;
 
-    std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
-    std::unordered_set<std::shared_ptr<BasicBlock>> blockUsage;
+    std::unordered_map<std::shared_ptr<tac::BasicBlock>, std::string> labels;
+    std::unordered_set<std::shared_ptr<tac::BasicBlock>> blockUsage;
 
     Registers<Register> registers;
 
@@ -496,7 +497,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             }
         } else {
             switch(*quadruple->op){
-                case Operator::ADD:
+                case tac::Operator::ADD:
                 {
                     auto result = quadruple->result;
 
@@ -543,7 +544,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     break;
                 }
-                case Operator::SUB:
+                case tac::Operator::SUB:
                 {
                     auto result = quadruple->result;
                     
@@ -574,7 +575,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;
                 }
                 //TODO Simplify this generation
-                case Operator::MUL:
+                case tac::Operator::MUL:
                 {
                     bool fast = false;
 
@@ -674,7 +675,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     break;            
                 }
-                case Operator::DIV:
+                case tac::Operator::DIV:
                     spills(Register::EAX);
 
                     registers.reserve(Register::EAX);
@@ -686,7 +687,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.setLocation(quadruple->result, Register::EAX);
                     
                     break;            
-                case Operator::MOD:
+                case tac::Operator::MOD:
                     spills(Register::EAX);
                     spills(Register::EDX);
 
@@ -703,7 +704,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.release(Register::EAX);
 
                     break;            
-                case Operator::DOT:
+                case tac::Operator::DOT:
                 {
                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
                    assert(boost::get<int>(&*quadruple->arg2));
@@ -716,7 +717,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                    break;
                 }
-                case Operator::DOT_ASSIGN:
+                case tac::Operator::DOT_ASSIGN:
                 {
                     assert(boost::get<int>(&quadruple->arg1));
 
@@ -726,7 +727,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     break;
                 }
-                case Operator::ARRAY:
+                case tac::Operator::ARRAY:
                 {
                     assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
 
@@ -736,11 +737,11 @@ struct StatementCompiler : public boost::static_visitor<> {
                     
                     break;            
                 }
-                case Operator::ARRAY_ASSIGN:
+                case tac::Operator::ARRAY_ASSIGN:
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
 
                     break;
-                case Operator::PARAM:
+                case tac::Operator::PARAM:
                 {
                     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                         if((*ptr)->type().isArray()){
@@ -803,22 +804,22 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         switch(ifFalse->op){
-            case BinaryOperator::EQUALS:
+            case tac::BinaryOperator::EQUALS:
                 writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
                 break;
-            case BinaryOperator::NOT_EQUALS:
+            case tac::BinaryOperator::NOT_EQUALS:
                 writer.stream() << "je " << labels[ifFalse->block] << std::endl;
                 break;
-            case BinaryOperator::LESS:
+            case tac::BinaryOperator::LESS:
                 writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
                 break;
-            case BinaryOperator::LESS_EQUALS:
+            case tac::BinaryOperator::LESS_EQUALS:
                 writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
                 break;
-            case BinaryOperator::GREATER:
+            case tac::BinaryOperator::GREATER:
                 writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
                 break;
-            case BinaryOperator::GREATER_EQUALS:
+            case tac::BinaryOperator::GREATER_EQUALS:
                 writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
                 break;
         }
@@ -831,7 +832,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
 }}
 
-void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
+void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
@@ -856,7 +857,7 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
     }
 }
 
-void tac::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler){
+void as::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&statement)){
@@ -868,7 +869,7 @@ void tac::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function
     }
 }
 
-void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
     
     writer.stream() << "pushl %ebp" << std::endl;
@@ -926,7 +927,7 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function
     writer.stream() << "ret" << std::endl;
 }
 
-void tac::IntelX86CodeGenerator::writeRuntimeSupport(){
+void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << ".text" << std::endl
                     << ".globl _start" << std::endl
                     
@@ -1180,7 +1181,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
         << "ret" << std::endl;
 }
 
-void tac::IntelX86CodeGenerator::addStandardFunctions(){
+void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
    addPrintLineFunction(writer); 
    addPrintStringFunction(writer); 
@@ -1188,7 +1189,7 @@ void tac::IntelX86CodeGenerator::addStandardFunctions(){
    addAllocFunction(writer);
 }
 
-void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
+void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
     writer.stream() << std::endl << ".data" << std::endl;
      
     for(auto it : context->getVariables()){
@@ -1229,7 +1230,7 @@ void tac::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContex
     }
 }
 
-void tac::IntelX86CodeGenerator::generate(tac::Program& program, StringPool& pool){
+void as::IntelX86CodeGenerator::generate(tac::Program& program, StringPool& pool){
     writeRuntimeSupport(); 
 
     resetNumbering();
