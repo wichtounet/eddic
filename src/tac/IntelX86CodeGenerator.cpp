@@ -260,7 +260,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             descriptors[reg] = nullptr;
 
-            return ::toString(offset) + "(" + regToString(reg)  + ")";
+            return "-" + ::toString(offset) + "(" + regToString(reg)  + ")";
         } else if(position.isGlobal()){
             return "V" + position.name() + "+" + ::toString(offset);
         } else if(position.isTemporary()){
@@ -286,6 +286,8 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "neg " << regToString(offsetReg) << std::endl;
             return ::toString(-1 * (position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
         } else if(position.isParameter()){
+            writer.stream() << "neg " << regToString(offsetReg) << std::endl;
+
             //TODO This register allocation is not safe
             Register reg = getReg();
             
