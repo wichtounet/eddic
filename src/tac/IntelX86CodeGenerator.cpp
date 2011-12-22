@@ -483,7 +483,6 @@ struct StatementCompiler : public boost::static_visitor<> {
             }
         } else {
             switch(*quadruple->op){
-                //TODO Optimize a = a + 1 and a = a -1 with inc and dec
                 case Operator::ADD:
                 {
                     auto result = quadruple->result;
@@ -491,12 +490,36 @@ struct StatementCompiler : public boost::static_visitor<> {
                     //Optimize the special form a = a + b by using only one instruction
                     if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
                         Register reg = getReg(quadruple->result);
-                        writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                        
+                        //a = a + 1 => increment a
+                        if(equals<int>(*quadruple->arg2, 1)){
+                            writer.stream() << "incl " << regToString(reg) << std::endl;
+                        }
+                        //a = a + -1 => decrement a
+                        else if(equals<int>(*quadruple->arg2, -1)){
+                            writer.stream() << "decl " << regToString(reg) << std::endl;
+                        }
+                        //In the other cases, perform a simple addition
+                        else {
+                            writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                        }
                     } 
                     //Optimize the special form a = b + a by using only one instruction
                     else if(equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
                         Register reg = getReg(quadruple->result);
-                        writer.stream() << "addl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
+                        
+                        //a = 1 + a => increment a
+                        if(equals<int>(quadruple->arg1, 1)){
+                            writer.stream() << "incl " << regToString(reg) << std::endl;
+                        }
+                        //a = -1 + a => decrement a
+                        else if(equals<int>(quadruple->arg1, -1)){
+                            writer.stream() << "decl " << regToString(reg) << std::endl;
+                        }
+                        //In the other cases, perform a simple addition
+                        else {
+                            writer.stream() << "addl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
+                        }
                     } 
                     //In the other cases, move the first arg into the result register and then add the second arg into it
                     else {
@@ -514,9 +537,21 @@ struct StatementCompiler : public boost::static_visitor<> {
                     //Optimize the special form a = a - b by using only one instruction
                     if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
                         Register reg = getReg(quadruple->result);
-                        writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                        
+                        //a = a - 1 => decrement a
+                        if(equals<int>(*quadruple->arg2, 1)){
+                            writer.stream() << "decl " << regToString(reg) << std::endl;
+                        }
+                        //a = a - -1 => increment a
+                        else if(equals<int>(*quadruple->arg2, -1)){
+                            writer.stream() << "incl " << regToString(reg) << std::endl;
+                        }
+                        //In the other cases, perform a simple subtraction
+                        else {
+                            writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                        }
                     } 
-                    //In the other cases, move the first arg into the result register and then add the second arg into it
+                    //In the other cases, move the first arg into the result register and then subtract the second arg into it
                     else {
                         Register reg = getRegNoMove(quadruple->result);
                         writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
