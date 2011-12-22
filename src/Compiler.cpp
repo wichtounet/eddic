@@ -35,7 +35,6 @@
 //Visitors
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
-#include "IntermediateCompiler.hpp"
 #include "WarningsEngine.hpp"
 
 //Three Address Code
