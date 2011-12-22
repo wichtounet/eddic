@@ -12,6 +12,7 @@
 #include <boost/variant.hpp>
 
 #include "tac/IntelX86CodeGenerator.hpp"
+#include "tac/Registers.hpp"
 #include "tac/Printer.hpp"
 
 #include "AssemblyFileWriter.hpp"
@@ -71,47 +72,36 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     std::unordered_map<std::shared_ptr<BasicBlock>, std::string> labels;
     std::unordered_set<std::shared_ptr<BasicBlock>> blockUsage;
- 
-    std::vector<Register> registers;   
-    std::shared_ptr<Variable> descriptors[Register::REGISTER_COUNT];
-    std::unordered_map<std::shared_ptr<Variable>, Register> variables;
+
+    Registers<Register> registers;
 
     tac::Statement current;
-
-    std::shared_ptr<Variable> retainVariable;
 
     bool last;
     bool ended;
 
-    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f) {
-        registers = {EDI, ESI, ECX, EDX, EBX, EAX};
-
-        retainVariable = std::make_shared<Variable>("__fake__", Type(BaseType::INT), Position(PositionType::TEMPORARY));
-
+    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f), 
+            registers({EDI, ESI, ECX, EDX, EBX, EAX}, std::make_shared<Variable>("__fake__", Type(BaseType::INT), Position(PositionType::TEMPORARY))){
         last = ended = false;
     }
 
     //Called at the beginning of each basic block
     void reset(){
-        variables.clear();
-
-        for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
-            descriptors[i] = nullptr;
-        }
+        registers.reset();
 
         last = ended = false;
     }
 
     bool isLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
-       if(liveness.find(variable) != liveness.end()){
+        if(liveness.find(variable) != liveness.end()){
             return liveness[variable];   
-       } else {
+        } else {
             if(variable->position().isTemporary()){
                 return false;
             } else {
                 return true;
             }
-       }
+        }
     }
 
     bool isLive(std::shared_ptr<Variable> variable){
@@ -126,6 +116,36 @@ struct StatementCompiler : public boost::static_visitor<> {
         assert(false); //No liveness calculations in the other cases
     }
 
+    void copy(tac::Argument argument, Register reg){
+        if(auto* ptr = boost::get<int>(&argument)){
+            writer.stream() << "movl $" << ::toString(*ptr) << ", " << regToString(reg) << std::endl;
+        } else if(auto* ptr = boost::get<std::string>(&argument)){
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            auto variable = *ptr;
+
+            //If the variable is hold in a register, just move the register value
+            if(registers.inRegister(variable)){
+                auto oldReg = registers[variable];
+                
+                writer.stream() << "movl " << regToString(oldReg) << ", " << regToString(reg) << std::endl;
+            } else {
+                auto position = variable->position();
+
+                if(position.isStack()){
+                    writer.stream() << "movl " << (-1 * position.offset()) << "(%ebp), " << regToString(reg) << std::endl; 
+                } else if(position.isParameter()){
+                    writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
+                } else if(position.isGlobal()){
+                    writer.stream() << "movl " << "V" << position.name() << ", " << regToString(reg) << std::endl;
+                } else if(position.isTemporary()){
+                    //The temporary should have been handled by the preceding condition (hold in a register)
+                    assert(false);
+                }
+            } 
+        }
+    }
+
     void move(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
             writer.stream() << "movl $" << ::toString(*ptr) << ", " << regToString(reg) << std::endl;
@@ -133,28 +153,39 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
-            auto position = variable->position();
 
-            if(position.isStack()){
-                writer.stream() << "movl " << (-1 * position.offset()) << "(%ebp), " << regToString(reg) << std::endl; 
-            } else if(position.isParameter()){
-                writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
-            } else if(position.isGlobal()){
-                writer.stream() << "movl " << "V" << position.name() << ", " << regToString(reg) << std::endl;
-            } else if(position.isTemporary()){
-                assert(variables.find(variable) != variables.end());
-
-                auto oldReg = variables[variable];
+            //If the variable is hold in a register, just move the register value
+            if(registers.inRegister(variable)){
+                auto oldReg = registers[variable];
                 
                 writer.stream() << "movl " << regToString(oldReg) << ", " << regToString(reg) << std::endl;
-            }
+
+                //There is nothing more in the old register
+                registers.remove(variable);
+            } else {
+                auto position = variable->position();
+
+                if(position.isStack()){
+                    writer.stream() << "movl " << (-1 * position.offset()) << "(%ebp), " << regToString(reg) << std::endl; 
+                } else if(position.isParameter()){
+                    writer.stream() << "movl " << position.offset() << "(%ebp), " << regToString(reg) << std::endl; 
+                } else if(position.isGlobal()){
+                    writer.stream() << "movl " << "V" << position.name() << ", " << regToString(reg) << std::endl;
+                } else if(position.isTemporary()){
+                    //The temporary should have been handled by the preceding condition (hold in a register)
+                    assert(false);
+                }
+            } 
+            
+            //The variable is now held in the new register
+            registers.setLocation(variable, reg);
         }
     }
 
     void spills(Register reg){
         //If the register is not used, there is nothing to spills
-        if(descriptors[reg]){
-            auto variable = descriptors[reg];
+        if(registers.used(reg)){
+            auto variable = registers[reg];
             auto position = variable->position();
 
             if(position.isStack()){
@@ -166,58 +197,61 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isTemporary()){
                 //If the variable is live, move it to another register, else do nothing
                 if(isLive(variable)){
-                    //Remove it from the register
-                    descriptors[reg] = retainVariable;
-                    variables.erase(variable);
+                    registers.remove(variable);
+                    registers.reserve(reg);
                     
                     Register newReg = getReg(variable, false);
                     writer.stream() << "movl " << regToString(reg) << ", " << regToString(newReg) << std::endl;
-                
-                    assert(newReg != reg);
-                    assert(descriptors[newReg] == variable);
-                    assert(variables[variable] = newReg);
 
-                    descriptors[reg] = nullptr;
+                    registers.release(reg);
+
                     return; //Return here to avoid erasing variable from variables
                 }
             }
             
             //The variable is no more contained in the register
-            descriptors[reg] = nullptr;
-            variables.erase(variable);
+            registers.remove(variable);
         }
     }
     
     Register getReg(std::shared_ptr<Variable> variable, bool doMove){
         //The variable is already in a register
-        if(variables.find(variable) != variables.end()){
-            return variables[variable];
+        if(registers.inRegister(variable)){
+            return registers[variable];
         }
        
         //Try to get a free register 
         for(auto reg : registers){
-            if(!descriptors[reg] || (descriptors[reg] != retainVariable && !isLive(descriptors[reg]))){
+            if(!registers.used(reg)){
+                if(doMove){
+                    move(variable, reg);
+                }
+                
+                registers.setLocation(variable, reg);
+                
+                return reg;
+            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
+                registers.remove(registers[reg]);
+                
                 if(doMove){
                     move(variable, reg);
                 }
 
-                descriptors[reg] = variable;
-                variables[variable] = reg;
+                registers.setLocation(variable, reg);
 
                 return reg;
             }
         }
 
         //There are no free register, take one
-        auto reg = registers[0];
+        auto reg = registers.first();
         spills(reg);
 
         if(doMove){
             move(variable, reg);
         }
 
-        descriptors[reg] = variable;
-        variables[variable] = reg;
+        registers.setLocation(variable, reg);
 
         return reg;
     }
@@ -233,20 +267,24 @@ struct StatementCompiler : public boost::static_visitor<> {
     Register getReg(){
         //Try to get a free register 
         for(auto reg : registers){
-            if(!descriptors[reg] || (descriptors[reg] != retainVariable && !isLive(descriptors[reg]))){
-                variables.erase(descriptors[reg]);
-                descriptors[reg] = retainVariable;
+            if(!registers.used(reg)){
+                registers.reserve(reg);
+                
+                return reg;
+            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
+                registers.remove(registers[reg]);
+
+                registers.reserve(reg);
 
                 return reg;
             }
         }
 
         //There are no free register, take one
-        auto reg = registers[0];
+        auto reg = registers.first();
         spills(reg);
 
-        variables.erase(descriptors[reg]);
-        descriptors[reg] = retainVariable;
+        registers.reserve(reg);
 
         return reg;
     }
@@ -262,7 +300,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             
             writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
 
-            descriptors[reg] = nullptr;
+            registers.release(reg);
 
             return ::toString(offset) + "(" + regToString(reg)  + ")";
         } else if(position.isGlobal()){
@@ -294,7 +332,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             
             writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
 
-            descriptors[reg] = nullptr;
+            registers.release(reg);
 
             return "(" + regToString(reg) + "," + regToString(offsetReg) + ")";
         } else if(position.isGlobal()){
@@ -341,19 +379,17 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         if(call->return_){
-            descriptors[Register::EAX] = call->return_;
-            variables[call->return_] = Register::EAX;
+            registers.setLocation(call->return_, Register::EAX);
         }
 
         if(call->return2_){
-            descriptors[Register::EBX] = call->return2_;
-            variables[call->return2_] = Register::EBX;
+            registers.setLocation(call->return2_, Register::EBX);
         }
     }
    
     void spillsIfNecessary(Register reg, tac::Argument arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(descriptors[reg] != *ptr){
+            if(registers[reg] != *ptr){
                 spills(reg);
             }
         } else {
@@ -367,12 +403,12 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     void endBasicBlock(){
         //End the basic block
-        for(unsigned int i = 0; i < Register::REGISTER_COUNT; ++i){
-            if(descriptors[i]){
-                auto variable = descriptors[i];
+        for(auto reg : registers){
+            if(registers.used(reg)){
+                auto variable = registers[reg];
 
                 if(!variable->position().isTemporary()){
-                    spills((Register)i);    
+                    spills(reg);    
                 }
             }
         }
@@ -390,10 +426,8 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             bool necessary = true;
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
-                if(variables.find(*ptr) != variables.end()){
-                    if(variables[*ptr] == Register::EAX){
-                        necessary = false;
-                    }
+                if(registers.inRegister(*ptr, Register::EAX)){
+                    necessary = false;
                 }
             }    
 
@@ -406,10 +440,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                 
                 necessary = true;
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
-                    if(variables.find(*ptr) != variables.end()){
-                        if(variables[*ptr] == Register::EBX){
-                            necessary = false;
-                        }
+                    if(registers.inRegister(*ptr, Register::EBX)){
+                        necessary = false;
                     }
                 }    
 
@@ -492,7 +524,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     //If arg 1 is in eax
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
-                            if(descriptors[Register::EAX] == *ptr){
+                            if(registers.inRegister(*ptr, Register::EAX)){
                                 if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
                                     //If the arg is a variable, it will be matched to a register automatically
                                     if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
@@ -505,7 +537,9 @@ struct StatementCompiler : public boost::static_visitor<> {
                                         move(*quadruple->arg2, reg);
                                         writer.stream() << "mull " << regToString(reg) << std::endl;
 
-                                        descriptors[reg] = nullptr;
+                                        if(registers.reserved(reg)){
+                                            registers.release(reg);
+                                        }
                                     }
 
                                     fast = true;
@@ -517,7 +551,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     //If arg 2 is in eax
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                            if(descriptors[Register::EAX] == *ptr){
+                            if(registers.inRegister(*ptr, Register::EAX)){
                                 if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
                                     //If the arg is a variable, it will be matched to a register automatically
                                     if(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1))
@@ -530,7 +564,9 @@ struct StatementCompiler : public boost::static_visitor<> {
                                         move(quadruple->arg1, reg);
                                         writer.stream() << "mull " << regToString(reg) << std::endl;
 
-                                        descriptors[reg] = nullptr;
+                                        if(registers.reserved(reg)){
+                                            registers.release(reg);
+                                        }
                                     }
 
                                     fast = true;
@@ -543,9 +579,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     if(!fast){
                         spills(Register::EAX);
 
-                        move(quadruple->arg1, Register::EAX);
-
-                        descriptors[Register::EAX] = retainVariable;
+                        registers.reserve(Register::EAX);
+                        copy(quadruple->arg1, Register::EAX);
                         
                         //If the arg is a variable, it will be matched to a register automatically
                         if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
@@ -558,37 +593,45 @@ struct StatementCompiler : public boost::static_visitor<> {
                             move(*quadruple->arg2, reg);
                             writer.stream() << "mull " << regToString(reg) << std::endl;
 
-                            descriptors[reg] = nullptr;
+                            if(registers.reserved(reg)){
+                                registers.release(reg);
+                            }
                         }
                     }
 
                     //result is in eax (no need to move it now)
-                    descriptors[Register::EAX] = quadruple->result;
-                    variables[quadruple->result] = Register::EAX;
+                    registers.setLocation(quadruple->result, Register::EAX);
+
                     break;            
                 }
                 case Operator::DIV:
                     spills(Register::EAX);
 
-                    move(quadruple->arg1, Register::EAX);
+                    registers.reserve(Register::EAX);
+                    copy(quadruple->arg1, Register::EAX);
 
                     writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
 
                     //result is in eax (no need to move it now)
-                    descriptors[Register::EAX] = quadruple->result;
-                    variables[quadruple->result] = Register::EAX;
+                    registers.setLocation(quadruple->result, Register::EAX);
+                    
                     break;            
                 case Operator::MOD:
                     spills(Register::EAX);
                     spills(Register::EDX);
 
-                    move(quadruple->arg1, Register::EAX);
+                    registers.reserve(Register::EAX);
+                    registers.reserve(Register::EDX);
+                    
+                    copy(quadruple->arg1, Register::EAX);
 
                     writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
 
                     //result is in edx (no need to move it now)
-                    descriptors[Register::EDX] = quadruple->result;
-                    variables[quadruple->result] = Register::EDX;
+                    registers.setLocation(quadruple->result, Register::EDX);
+
+                    registers.release(Register::EAX);
+
                     break;            
                 case Operator::DOT:
                 {
@@ -600,6 +643,7 @@ struct StatementCompiler : public boost::static_visitor<> {
    
                    Register reg = getRegNoMove(quadruple->result);
                    writer.stream() << "movl " << toString(variable, offset) << ", " << regToString(reg) << std::endl;
+
                    break;
                 }
                 case Operator::DOT_ASSIGN:
@@ -609,6 +653,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     int offset = boost::get<int>(quadruple->arg1);
 
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, offset) << std::endl;
+
                     break;
                 }
                 case Operator::ARRAY:
@@ -618,10 +663,12 @@ struct StatementCompiler : public boost::static_visitor<> {
                     Register reg = getRegNoMove(quadruple->result);
             
                     writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                    
                     break;            
                 }
                 case Operator::ARRAY_ASSIGN:
                     writer.stream() << "movl " << arg(*quadruple->arg2) << ", " << toString(quadruple->result, quadruple->arg1) << std::endl;
+
                     break;
                 case Operator::PARAM:
                 {
@@ -638,7 +685,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                                 writer.stream() << "addl $" << offset << ", " << regToString(reg) << std::endl;
                                 writer.stream() << "pushl " << regToString(reg) << std::endl;
 
-                                descriptors[reg] = nullptr;
+                                registers.release(reg);
                             } else if(position.isStack()){
                                 Register reg = getReg();
 
@@ -646,7 +693,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                                 writer.stream() << "addl $" << (-position.offset()) << ", " << regToString(reg) << std::endl;
                                 writer.stream() << "pushl " << regToString(reg) << std::endl;
                                 
-                                descriptors[reg] = nullptr;
+                                registers.release(reg);
                             } else if(position.isParameter()){
                                 writer.stream() << "pushl " << position.offset() << "(%ebp)" << std::endl;
                             }
@@ -677,7 +724,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << regToString(reg) << std::endl;
 
-            descriptors[reg] = nullptr;
+            registers.release(reg);
         } else {
             //The basic block must be ended before the jump
             endBasicBlock();
