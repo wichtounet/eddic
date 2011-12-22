@@ -42,6 +42,7 @@
 #include "tac/Printer.hpp"
 #include "tac/Program.hpp"
 #include "tac/BasicBlockExtractor.hpp"
+#include "tac/LivenessAnalyzer.hpp"
 #include "tac/IntelX86CodeGenerator.hpp"
 
 #include "parser/SpiritParser.hpp"
@@ -111,6 +112,10 @@ int Compiler::compile(const std::string& file) {
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
+
+            //Compute liveness of variables
+            tac::LivenessAnalyzer liveness;
+            liveness.compute(tacProgram);
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");

@@ -856,103 +856,6 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
     }
 }
 
-//Set the default properties of the variable
-void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
-    if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
-        if(liveness.find(*variable) == liveness.end()){
-            if((*variable)->position().isTemporary()){
-                liveness[*variable] = false;
-            } else {
-                liveness[*variable] = true;
-            }
-        }
-    }
-}
-
-//Set the variable as live
-void setLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
-    if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
-        liveness[*variable] = true;
-    }
-}
-
-void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> function){
-    std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
-    std::vector<std::shared_ptr<BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
-    
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
-
-    while(bit != bend){
-        std::vector<tac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
-        std::vector<tac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
-    
-        liveness.clear();
-
-        while(sit != send){
-            auto statement = *sit;
-
-            if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
-                if((*ptr)->arg1){
-                    updateLive(liveness, (*(*ptr)->arg1));
-                }
-                
-                if((*ptr)->arg2){
-                    updateLive(liveness, (*(*ptr)->arg2));
-                }
-                
-                if((*ptr)->arg1){
-                    setLive(liveness, (*(*ptr)->arg1));
-                }
-                
-                if((*ptr)->arg2){
-                    setLive(liveness, (*(*ptr)->arg2));
-                }
-               
-                (*ptr)->liveness = liveness;
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
-                updateLive(liveness, (*ptr)->arg1);
-                updateLive(liveness, (*ptr)->arg2);
-                
-                setLive(liveness, (*ptr)->arg1);
-                setLive(liveness, (*ptr)->arg2);
-                
-                (*ptr)->liveness = liveness;
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
-                updateLive(liveness, (*ptr)->arg1);
-                
-                if((*ptr)->arg2){
-                    updateLive(liveness, (*(*ptr)->arg2));
-                }
-                
-                setLive(liveness, (*ptr)->arg1);
-                
-                if((*ptr)->arg2){
-                    setLive(liveness, (*(*ptr)->arg2));
-                }
-                
-                (*ptr)->liveness = liveness;
-
-                if((*ptr)->result){
-                    //Not every quadruples erases the result
-                    if((*ptr)->op){
-                        auto op = *(*ptr)->op;
-
-                        if(op != Operator::DOT_ASSIGN && op != Operator::ARRAY_ASSIGN && op != Operator::PARAM){
-                            liveness[(*ptr)->result] = false;
-                        }
-                    } else {
-                        liveness[(*ptr)->result] = false;
-                    }
-                }
-            }
-
-            sit++;
-        }
-
-        bit++;
-    }
-}
-
 void tac::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
@@ -966,8 +869,6 @@ void tac::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function
 }
 
 void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    computeLiveness(function);
-
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
     
     writer.stream() << "pushl %ebp" << std::endl;
