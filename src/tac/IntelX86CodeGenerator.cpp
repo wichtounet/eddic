@@ -509,10 +509,20 @@ struct StatementCompiler : public boost::static_visitor<> {
                 }
                 case Operator::SUB:
                 {
-                    Register reg = getRegNoMove(quadruple->result);
-                    writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
-                    writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
-
+                    auto result = quadruple->result;
+                    
+                    //Optimize the special form a = a - b by using only one instruction
+                    if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
+                        Register reg = getReg(quadruple->result);
+                        writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                    } 
+                    //In the other cases, move the first arg into the result register and then add the second arg into it
+                    else {
+                        Register reg = getRegNoMove(quadruple->result);
+                        writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
+                        writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+                    }
+                    
                     break;
                 }
                 //TODO Simplify this generation
