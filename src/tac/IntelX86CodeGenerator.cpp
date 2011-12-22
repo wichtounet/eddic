@@ -484,19 +484,22 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else {
             switch(*quadruple->op){
                 //TODO Optimize a = a + 1 and a = a -1 with inc and dec
-                //TODO Find a way to optimize statements like a = a + b or a = b + a
                 case Operator::ADD:
                 {
                     auto result = quadruple->result;
 
-                    //If the firsrt arg is the same variable as the result : a = a + x
+                    //Optimize the special form a = a + b by using only one instruction
                     if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
                         Register reg = getReg(quadruple->result);
                         writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
-                    } else if(equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
+                    } 
+                    //Optimize the special form a = b + a by using only one instruction
+                    else if(equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
                         Register reg = getReg(quadruple->result);
                         writer.stream() << "addl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
-                    } else {                   
+                    } 
+                    //In the other cases, move the first arg into the result register and then add the second arg into it
+                    else {
                         Register reg = getRegNoMove(quadruple->result);
                         writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                         writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
