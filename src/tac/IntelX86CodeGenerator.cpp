@@ -81,6 +81,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     Registers<Register> registers;
 
     tac::Statement current;
+    tac::Statement next;
 
     bool last;
     bool ended;
@@ -97,28 +98,40 @@ struct StatementCompiler : public boost::static_visitor<> {
         last = ended = false;
     }
 
+    void setNext(tac::Statement statement){
+        next = statement;
+    }
+
     bool isLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
         if(liveness.find(variable) != liveness.end()){
             return liveness[variable];   
         } else {
-            if(variable->position().isTemporary()){
-                return false;
-            } else {
-                return true;
-            }
+            return !variable->position().isTemporary();
         }
     }
 
-    bool isLive(std::shared_ptr<Variable> variable){
-        if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&current)){
+    bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
+        if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&current)){
+        } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&current)){
+        } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         }
 
         assert(false); //No liveness calculations in the other cases
+    }
+
+    bool isNextLive(std::shared_ptr<Variable> variable){
+        if(last){
+            return !variable->position().isTemporary();
+        } else {             
+            return isLive(variable, next);
+        }
+    }   
+
+    bool isLive(std::shared_ptr<Variable> variable){
+        return isLive(variable, current);
     }
 
     void copy(tac::Argument argument, Register reg){
@@ -394,7 +407,7 @@ struct StatementCompiler : public boost::static_visitor<> {
    
     void spillsIfNecessary(Register reg, tac::Argument arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(registers.inRegister(*ptr, reg)){
+            if(!registers.inRegister(*ptr, reg)){
                 spills(reg);
             }
         } else {
@@ -578,12 +591,11 @@ struct StatementCompiler : public boost::static_visitor<> {
                         fast = true;
                     }
 
-                    //TODO These two optimizations are not working due to liveness computations
                     //If arg 1 is in eax
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                             if(registers.inRegister(*ptr, Register::EAX)){
-                                if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
+                                if((*ptr)->position().isTemporary() && !isNextLive(*ptr)){
                                     //If the arg is a variable, it will be matched to a register automatically
                                     if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
                                     {
@@ -610,7 +622,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     if(!fast){
                         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
                             if(registers.inRegister(*ptr, Register::EAX)){
-                                if((*ptr)->position().isTemporary() && !quadruple->liveness[*ptr]){
+                                if((*ptr)->position().isTemporary() && !isNextLive(*ptr)){
                                     //If the arg is a variable, it will be matched to a register automatically
                                     if(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1))
                                     {
@@ -831,6 +843,8 @@ void tac::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block,
 
         if(i == block->statements.size() - 1){
             compiler.setLast(true);
+        } else {
+            compiler.setNext(block->statements[i+1]);
         }
         
         boost::apply_visitor(compiler, statement);
