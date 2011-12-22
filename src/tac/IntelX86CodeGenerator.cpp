@@ -255,7 +255,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto position = variable->position();
 
         if(position.isStack()){
-            return ::toString(position.offset() + offset) + "(%ebp)";
+            return ::toString(-position.offset() + offset) + "(%ebp)";
         } else if(position.isParameter()){
             //TODO This register allocation is not safe
             Register reg = getReg();
