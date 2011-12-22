@@ -253,7 +253,14 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(position.isStack()){
             return ::toString(-1 * (position.offset() + offset)) + "(%ebp)";
         } else if(position.isParameter()){
-            return ::toString(position.offset() + offset) + "(%ebp)";
+            //TODO This register allocation is not safe
+            Register reg = getReg();
+            
+            writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
+
+            descriptors[reg] = nullptr;
+
+            return ::toString(offset) + "(" + regToString(reg)  + ")";
         } else if(position.isGlobal()){
             return "V" + position.name() + "+" + ::toString(offset);
         } else if(position.isTemporary()){
