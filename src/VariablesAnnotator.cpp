@@ -26,6 +26,7 @@
 #include "Compiler.hpp"
 #include "Options.hpp"
 #include "TypeTransformer.hpp"
+#include "Utils.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
@@ -97,7 +98,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
         foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter" + ++generated, stringToType("int"));
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), stringToType("int"));
 
         visit_each(*this, foreach.Content->instructions);
     }
