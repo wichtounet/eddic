@@ -13,7 +13,6 @@
 #include "FunctionContext.hpp"
 #include "GetTypeVisitor.hpp"
 #include "GetConstantValue.hpp"
-#include "IsConstantVisitor.hpp"
 #include "mangling.hpp"
 #include "Labels.hpp"
 
