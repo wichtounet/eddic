@@ -15,14 +15,12 @@
 #include "GetConstantValue.hpp"
 #include "IsConstantVisitor.hpp"
 #include "mangling.hpp"
+#include "Labels.hpp"
 
 #include "tac/TacCompiler.hpp"
 #include "tac/Program.hpp"
 
 #include "ast/Program.hpp"
-
-//TODO Move label generator system in another folder
-#include "il/Labels.hpp"
 
 using namespace eddic;
 

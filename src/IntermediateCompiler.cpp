@@ -25,10 +25,10 @@
 #include "GetTypeVisitor.hpp"
 
 #include "mangling.hpp"
+#include "Labels.hpp"
 
 #include "il/IntermediateProgram.hpp"
 #include "il/Operands.hpp"
-#include "il/Labels.hpp"
 #include "il/Math.hpp"
 
 #include "ast/Program.hpp"

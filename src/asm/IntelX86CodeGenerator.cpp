@@ -21,7 +21,7 @@
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
 
-#include "il/Labels.hpp"
+#include "Labels.hpp"
 
 using namespace eddic;
 
