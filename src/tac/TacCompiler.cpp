@@ -191,13 +191,17 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     std::vector<tac::Argument> operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
 
-        if(type.base() == BaseType::INT){
+        if(type.isArray()){
             return {value.Content->var};
         } else {
-            auto temp = value.Content->context->newTemporary();
-            function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, -4));
-            
-            return {value.Content->var, temp};
+            if(type.base() == BaseType::INT){
+                return {value.Content->var};
+            } else {
+                auto temp = value.Content->context->newTemporary();
+                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, -4));
+
+                return {value.Content->var, temp};
+            }
         }
     }
 
