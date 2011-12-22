@@ -66,6 +66,11 @@ std::string regToString(Register reg){
     }
 }
 
+template<typename V, typename T>
+bool equals(T& variant, V value){
+    return boost::get<V>(&variant) && boost::get<V>(variant) == value;
+}
+
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
     std::shared_ptr<tac::Function> function;
@@ -466,9 +471,16 @@ struct StatementCompiler : public boost::static_visitor<> {
         current = quadruple;
         
         if(!quadruple->op){
-            //TODO Optimize move of 0 in a register with xorl
-            Register reg = getRegNoMove(quadruple->result);
-            writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;            
+            //The fastest way to set a register to 0 is to use xorl
+            if(equals<int>(quadruple->arg1, 0)){
+                Register reg = getRegNoMove(quadruple->result);
+                writer.stream() << "xorl " << regToString(reg) << ", " << regToString(reg) << std::endl;            
+            } 
+            //In all the others cases, just move the value to the register
+            else {
+                Register reg = getRegNoMove(quadruple->result);
+                writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;            
+            }
         } else {
             switch(*quadruple->op){
                 //TODO Optimize a = a + 1 and a = a -1 with inc and dec
@@ -478,10 +490,10 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
 
                     //If the firsrt arg is the same variable as the result : a = a + x
-                    if(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(quadruple->arg1) == result){
+                    if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
                         Register reg = getReg(quadruple->result);
                         writer.stream() << "addl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
-                    } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2) && boost::get<std::shared_ptr<Variable>>(*quadruple->arg2) == result){
+                    } else if(equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
                         Register reg = getReg(quadruple->result);
                         writer.stream() << "addl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                     } else {                   
@@ -497,6 +509,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     Register reg = getRegNoMove(quadruple->result);
                     writer.stream() << "movl " << arg(quadruple->arg1) << ", " << regToString(reg) << std::endl;
                     writer.stream() << "subl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+
                     break;
                 }
                 //TODO Simplify this generation
@@ -505,17 +518,13 @@ struct StatementCompiler : public boost::static_visitor<> {
                     bool fast = false;
 
                     //Form x = -1 * x
-                    if(boost::get<int>(&quadruple->arg1) && boost::get<int>(quadruple->arg1) == -1 && 
-                        boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2) && boost::get<std::shared_ptr<Variable>>(*quadruple->arg2) == quadruple->result){
-
+                    if(equals<int>(quadruple->arg1, -1) && equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
                         writer.stream() << "neg " << arg(quadruple->result) << std::endl;
 
                         fast = true;
                     } 
                     //Form x = x * -1
-                    else if(boost::get<int>(&*quadruple->arg2) && boost::get<int>(*quadruple->arg2) == -1 && 
-                        boost::get<std::shared_ptr<Variable>>(&quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(quadruple->arg1) == quadruple->result){
-                        
+                    else if(equals<int>(*quadruple->arg2, -1) && equals<std::shared_ptr<Variable>>(quadruple->arg1, quadruple->result)){
                         writer.stream() << "neg " << arg(quadruple->result) << std::endl;
 
                         fast = true;
