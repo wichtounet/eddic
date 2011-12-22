@@ -16,8 +16,6 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 
-#include "il/IntermediateProgram.hpp"
-
 #include "GetConstantValue.hpp"
 
 using namespace eddic;
@@ -31,23 +29,6 @@ GlobalContext::GlobalContext() : Context(NULL) {
     
     variables["eddi_remaining"] = std::make_shared<Variable>("eddi_remaining", stringToType("int"), Position(GLOBAL, "eddi_remaining"), zero);
     variables["eddi_current"] = std::make_shared<Variable>("eddi_current", stringToType("int"), Position(GLOBAL, "eddi_current"), zero);
-}
-        
-void GlobalContext::writeIL(IntermediateProgram& program){
-    for(auto it : variables){
-        Type type = it.second->type();
-
-        if(type.isArray()){
-            program.addInstruction(program.factory().createGlobalArray(it.second->position().name(), type.base(), type.size()));
-        } else {
-            if (type.base() == BaseType::INT) {
-                program.addInstruction(program.factory().createGlobalIntVariable(it.second->position().name(), boost::get<int>(it.second->val())));
-            } else if (type.base() == BaseType::STRING) {
-                auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-                program.addInstruction(program.factory().createGlobalStringVariable(it.second->position().name(), value.first, value.second));
-            }
-        }
-    }
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){

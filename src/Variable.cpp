@@ -10,9 +10,6 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 
-#include "il/Operands.hpp"
-#include "il/Operand.hpp"
-
 using namespace eddic;
 
 Variable::Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
@@ -40,41 +37,4 @@ void Variable::addReference(){
 
 int Variable::referenceCount() const {
     return references;
-}
-
-std::shared_ptr<Operand> Variable::toIntegerOperand() const {
-    assert(m_type.base() == BaseType::INT); 
-    
-    if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
-        return createBaseStackOperand(-1 * m_position.offset());
-    } else if(m_position.isParameter()){
-        return createBaseStackOperand(m_position.offset());
-    } else if(m_position.isGlobal()){
-        return createGlobalOperand("VI" + m_position.name());
-    }
-
-    assert(false); //Position not managed
-}
-
-std::pair<OperandPtr, OperandPtr> Variable::toStringOperand() const {
-    assert(m_type.base() == BaseType::STRING); 
-   
-    if(m_position.isStack()){//TODO Rename in a way that we can understand that it is a variable
-        return make_pair(
-                    createBaseStackOperand(-1 * m_position.offset()), 
-                    createBaseStackOperand(-1 * m_position.offset() - 4)
-                );
-    } else if(m_position.isParameter()){
-        return make_pair(
-                    createBaseStackOperand(m_position.offset()), 
-                    createBaseStackOperand(m_position.offset() + 4)
-                );
-    } else if(m_position.isGlobal()){
-        return make_pair(
-                    createGlobalOperand("VS" + m_position.name()), 
-                    createGlobalOperand("VS" + m_position.name(), 4)
-                );
-    }
-
-    assert(false); //Position not managed
 }

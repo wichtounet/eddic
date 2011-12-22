@@ -40,9 +40,6 @@ class Variable {
         Variable(const std::string& name, Type type, Position position);
         Variable(const std::string& name, Type type, Position position, Val value);
 
-        OperandPtr toIntegerOperand() const ;
-        std::pair<OperandPtr, OperandPtr> toStringOperand() const ;
-
         std::string name() const ;
         Type type() const ;
         Position position() const ;
