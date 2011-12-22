@@ -142,7 +142,11 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isGlobal()){
                 writer.stream() << "movl " << "V" << position.name() << ", " << regToString(reg) << std::endl;
             } else if(position.isTemporary()){
-                assert(false); //Should not happen
+                assert(variables.find(variable) != variables.end());
+
+                auto oldReg = variables[variable];
+                
+                writer.stream() << "movl " << regToString(oldReg) << ", " << regToString(reg) << std::endl;
             }
         }
     }
@@ -251,7 +255,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto position = variable->position();
 
         if(position.isStack()){
-            return ::toString(-1 * (position.offset() + offset)) + "(%ebp)";
+            return ::toString(position.offset() + offset) + "(%ebp)";
         } else if(position.isParameter()){
             //TODO This register allocation is not safe
             Register reg = getReg();
@@ -260,7 +264,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             descriptors[reg] = nullptr;
 
-            return "-" + ::toString(offset) + "(" + regToString(reg)  + ")";
+            return ::toString(offset) + "(" + regToString(reg)  + ")";
         } else if(position.isGlobal()){
             return "V" + position.name() + "+" + ::toString(offset);
         } else if(position.isTemporary()){
@@ -283,11 +287,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto offsetReg = getReg(*offsetVariable);
         
         if(position.isStack()){
-            writer.stream() << "neg " << regToString(offsetReg) << std::endl;
             return ::toString(-1 * (position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
         } else if(position.isParameter()){
-            writer.stream() << "neg " << regToString(offsetReg) << std::endl;
-
             //TODO This register allocation is not safe
             Register reg = getReg();
             
