@@ -389,7 +389,7 @@ struct StatementCompiler : public boost::static_visitor<> {
    
     void spillsIfNecessary(Register reg, tac::Argument arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(registers[reg] != *ptr){
+            if(registers.inRegister(*ptr, reg)){
                 spills(reg);
             }
         } else {
@@ -661,7 +661,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
 
                     Register reg = getRegNoMove(quadruple->result);
-            
+
                     writer.stream() << "movl " << toString(boost::get<std::shared_ptr<Variable>>(quadruple->arg1), *quadruple->arg2) << ", " << regToString(reg) << std::endl;
                     
                     break;            
@@ -860,9 +860,17 @@ void tac::IntelX86CodeGenerator::computeLiveness(std::shared_ptr<tac::Function> 
                 
                 (*ptr)->liveness = liveness;
 
-                //TODO Verify if this point should make before assigning livenes to the statement
                 if((*ptr)->result){
-                    liveness[(*ptr)->result] = false;
+                    //Not every quadruples erases the result
+                    if((*ptr)->op){
+                        auto op = *(*ptr)->op;
+
+                        if(op != Operator::DOT_ASSIGN && op != Operator::ARRAY_ASSIGN && op != Operator::PARAM){
+                            liveness[(*ptr)->result] = false;
+                        }
+                    } else {
+                        liveness[(*ptr)->result] = false;
+                    }
                 }
             }
 
