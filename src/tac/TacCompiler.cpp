@@ -84,7 +84,7 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
-void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable){
+std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     tac::Argument left = moveToArgument(value.Content->first, function);
@@ -98,18 +98,14 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
 
         right = moveToArgument(operation.get<1>(), function);
        
-        if(i == value.Content->operations.size() - 1){
-            if(i == 0){
-                function->add(std::make_shared<tac::Quadruple>(variable, left, tac::toOperator(operation.get<0>()), right));
-            } else {
-                function->add(std::make_shared<tac::Quadruple>(variable, t1, tac::toOperator(operation.get<0>()), right));
-            }
-        } else if (i == 0){
+        if (i == 0){
             function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toOperator(operation.get<0>()), right));
         } else {
             function->add(std::make_shared<tac::Quadruple>(t1, t1, tac::toOperator(operation.get<0>()), right));
         }
     }
+
+    return t1;
 }
 
 tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, tac::Argument index, std::shared_ptr<tac::Function> function){
@@ -237,10 +233,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         Type type = GetTypeVisitor()(value);
 
         if(type.base() == BaseType::INT){
-            auto t1 = function->context->newTemporary();
-            performIntOperation(value, function, t1);
-
-            return {t1};
+            return {performIntOperation(value, function)};
         } else {
             auto t1 = function->context->newTemporary();
             auto t2 = function->context->newTemporary();
@@ -652,17 +645,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 };
 
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function){
-    tac::Argument arg;
-
-    if(boost::apply_visitor(IsSingleArgumentVisitor(), value)){
-        arg = boost::apply_visitor(ToArgumentsVisitor(function), value)[0];
-    } else {
-        auto t1 = function->context->newTemporary();
-        boost::apply_visitor(AssignValueToVariable(function, t1), value);
-        arg = t1; 
-    }
-    
-    return arg;
+    return boost::apply_visitor(ToArgumentsVisitor(function), value)[0];
 }
 
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
