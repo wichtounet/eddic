@@ -523,17 +523,24 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto lhs_var = swap.Content->lhs_var;
             auto rhs_var = swap.Content->rhs_var;
             
-            auto temp = swap.Content->context->newTemporary();
+            auto t1 = swap.Content->context->newTemporary();
 
             if(lhs_var->type().base() == BaseType::INT || lhs_var->type().base() == BaseType::STRING){
-                function->add(std::make_shared<tac::Quadruple>(temp, rhs_var));  
+                function->add(std::make_shared<tac::Quadruple>(t1, rhs_var));  
                 function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var));  
-                function->add(std::make_shared<tac::Quadruple>(lhs_var, temp));  
+                function->add(std::make_shared<tac::Quadruple>(lhs_var, t1));  
                 
                 if( lhs_var->type().base() == BaseType::STRING){
-                    function->add(std::make_shared<tac::Quadruple>(temp, rhs_var, tac::Operator::DOT, getStringOffset(rhs_var)));  
-                    function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var, tac::Operator::DOT, getStringOffset(lhs_var)));  
-                    function->add(std::make_shared<tac::Quadruple>(lhs_var, temp));  
+                    auto t2 = swap.Content->context->newTemporary();
+
+                    //t1 = 4(b)
+                    function->add(std::make_shared<tac::Quadruple>(t1, rhs_var, tac::Operator::DOT, getStringOffset(rhs_var)));  
+                    //t2 = 4(a)
+                    function->add(std::make_shared<tac::Quadruple>(t2, lhs_var, tac::Operator::DOT, getStringOffset(lhs_var)));  
+                    //4(b) = t2
+                    function->add(std::make_shared<tac::Quadruple>(rhs_var, getStringOffset(rhs_var), tac::Operator::DOT_ASSIGN, t2));  
+                    //4(a) = t1
+                    function->add(std::make_shared<tac::Quadruple>(lhs_var, getStringOffset(lhs_var), tac::Operator::DOT_ASSIGN, t1));  
                 }
             } else {
                 throw SemanticalException("Variable of invalid type");
