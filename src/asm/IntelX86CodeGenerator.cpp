@@ -423,7 +423,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     void endBasicBlock(){
         //End the basic block
         for(auto reg : registers){
-            if(registers.used(reg)){
+            //The register can be reserved if the ending occurs in a special break case
+            if(!registers.reserved(reg) && registers.used(reg)){
                 auto variable = registers[reg];
 
                 if(!variable->position().isTemporary()){
