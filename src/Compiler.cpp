@@ -83,9 +83,14 @@ int Compiler::compile(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
-            
-            //Annotate the AST with more informations
+           
+            //Add default values to the variables 
             defineDefaultValues(program);
+            
+            //Fill the string pool
+            checkStrings(program, pool);
+            
+            //Add some more informations to the AST
             defineContexts(program);
             defineVariables(program);
             defineFunctions(program, functionTable);
@@ -94,7 +99,6 @@ int Compiler::compile(const std::string& file) {
             transform(program);
 
             //Static analysis
-            checkStrings(program, pool);
             checkTypes(program);
 
             //Check for warnings

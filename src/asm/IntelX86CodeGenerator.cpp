@@ -1240,7 +1240,10 @@ void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext
                 writer.stream() << ".long " << boost::get<int>(it.second->val()) << std::endl;
             } else if (type.base() == BaseType::STRING) {
                 auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-    
+  
+                //If that's not the case, there is a problem with the pool 
+                assert(value.first.size() > 0);
+                
                 writer.stream() << ".size V" << it.second->position().name() << ", 8" << std::endl;
                 writer.stream() << "V" << it.second->position().name() << ":" << std::endl;
                 writer.stream() << ".long " << value.first << std::endl;
