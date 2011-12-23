@@ -678,9 +678,13 @@ struct StatementCompiler : public boost::static_visitor<> {
                 }
                 case tac::Operator::DIV:
                     spills(Register::EAX);
+                    spills(Register::EDX);
 
                     registers.reserve(Register::EAX);
+                    registers.reserve(Register::EDX);
+                    
                     copy(quadruple->arg1, Register::EAX);
+                    writer.stream() << "xorl %edx, %edx" << std::endl;
 
                     //If the second arg is immediate, we have to move it in a register
                     if(boost::get<int>(&*quadruple->arg2)){
@@ -699,6 +703,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     //result is in eax (no need to move it now)
                     registers.setLocation(quadruple->result, Register::EAX);
                     
+                    registers.release(Register::EDX);
+                    
                     break;            
                 case tac::Operator::MOD:
                     spills(Register::EAX);
@@ -708,6 +714,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.reserve(Register::EDX);
                     
                     copy(quadruple->arg1, Register::EAX);
+                    writer.stream() << "xorl %edx, %edx" << std::endl;
 
                     //If the second arg is immediate, we have to move it in a register
                     if(boost::get<int>(&*quadruple->arg2)){
