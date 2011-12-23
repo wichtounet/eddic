@@ -99,7 +99,11 @@ void performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Functio
         right = moveToArgument(operation.get<1>(), function);
        
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Quadruple>(variable, left, tac::toOperator(operation.get<0>()), right));
+            if(i == 0){
+                function->add(std::make_shared<tac::Quadruple>(variable, left, tac::toOperator(operation.get<0>()), right));
+            } else {
+                function->add(std::make_shared<tac::Quadruple>(variable, t1, tac::toOperator(operation.get<0>()), right));
+            }
         } else if (i == 0){
             function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toOperator(operation.get<0>()), right));
         } else {
