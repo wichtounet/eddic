@@ -148,6 +148,10 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     return t1;
 }
 
+int getStringOffset(std::shared_ptr<Variable> variable){
+    return variable->position().isGlobal() ? 4 : -4;
+}
+
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
     
@@ -195,7 +199,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {value.Content->var};
             } else {
                 auto temp = value.Content->context->newTemporary();
-                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, -4));
+                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, getStringOffset(value.Content->var)));
 
                 return {value.Content->var, temp};
             }
@@ -341,7 +345,7 @@ struct AssignValueToVariable : public AbstractVisitor {
 
     void stringAssign(std::vector<tac::Argument> arguments) const {
         function->add(std::make_shared<tac::Quadruple>(variable, arguments[0]));
-        function->add(std::make_shared<tac::Quadruple>(variable, -4, tac::Operator::DOT_ASSIGN, arguments[1]));
+        function->add(std::make_shared<tac::Quadruple>(variable, getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
     }
 };
 
@@ -527,8 +531,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                 function->add(std::make_shared<tac::Quadruple>(lhs_var, temp));  
                 
                 if( lhs_var->type().base() == BaseType::STRING){
-                    function->add(std::make_shared<tac::Quadruple>(temp, rhs_var, tac::Operator::DOT, -4));  
-                    function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var, tac::Operator::DOT, -4));  
+                    function->add(std::make_shared<tac::Quadruple>(temp, rhs_var, tac::Operator::DOT, getStringOffset(rhs_var)));  
+                    function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var, tac::Operator::DOT, getStringOffset(lhs_var)));  
                     function->add(std::make_shared<tac::Quadruple>(lhs_var, temp));  
                 }
             } else {
@@ -607,7 +611,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 //Assign the second part of the string
                 function->add(std::make_shared<tac::Quadruple>(t1, indexTemp, tac::Operator::ADD, -4));
                 function->add(std::make_shared<tac::Quadruple>(stringTemp, arrayVar, tac::Operator::ARRAY, t1));
-                function->add(std::make_shared<tac::Quadruple>(var, -4, tac::Operator::DOT_ASSIGN, stringTemp));
+                function->add(std::make_shared<tac::Quadruple>(var, getStringOffset(var), tac::Operator::DOT_ASSIGN, stringTemp));
             }
 
             visit_each(*this, foreach.Content->instructions);    
