@@ -46,7 +46,7 @@ void main(){
     print("Should print '2000' : ");
     println(ga);
 
-    gb = "New value";
+/*    gb = "New value";
     print("Should print 'New value' : ");
     println(gb);
 
@@ -219,7 +219,7 @@ void main(){
     
     println("["); 
     testArray(arrayTest);
-    println("]");
+    println("]");*/
 }
 
 void testArray(int[] array){
