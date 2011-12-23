@@ -682,7 +682,19 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.reserve(Register::EAX);
                     copy(quadruple->arg1, Register::EAX);
 
-                    writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
+                    //If the second arg is immediate, we have to move it in a register
+                    if(boost::get<int>(&*quadruple->arg2)){
+                        auto reg = getReg();
+
+                        move(*quadruple->arg2, reg);
+                        writer.stream() << "divl " << regToString(reg) << std::endl;
+
+                        if(registers.reserved(reg)){
+                            registers.release(reg);
+                        }
+                    } else {
+                        writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
+                    }
 
                     //result is in eax (no need to move it now)
                     registers.setLocation(quadruple->result, Register::EAX);
@@ -697,7 +709,19 @@ struct StatementCompiler : public boost::static_visitor<> {
                     
                     copy(quadruple->arg1, Register::EAX);
 
-                    writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
+                    //If the second arg is immediate, we have to move it in a register
+                    if(boost::get<int>(&*quadruple->arg2)){
+                        auto reg = getReg();
+
+                        move(*quadruple->arg2, reg);
+                        writer.stream() << "divl " << regToString(reg) << std::endl;
+
+                        if(registers.reserved(reg)){
+                            registers.release(reg);
+                        }
+                    } else {
+                        writer.stream() << "divl " << arg(*quadruple->arg2) << std::endl;
+                    }
 
                     //result is in edx (no need to move it now)
                     registers.setLocation(quadruple->result, Register::EDX);
