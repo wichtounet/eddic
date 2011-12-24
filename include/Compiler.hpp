@@ -33,8 +33,6 @@ void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 void transform(ast::SourceFile& program);
 void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
-void execCommand(const std::string& command);
-
 struct Compiler {
     int compile (const std::string& file);
     int compileOnly (const std::string& file);

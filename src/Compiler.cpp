@@ -12,6 +12,7 @@
 
 #include "Target.hpp"
 
+#include "Utils.hpp"
 #include "Timer.hpp"
 #include "DebugTimer.hpp"
 #include "Options.hpp"
@@ -60,6 +61,8 @@ static const bool debug = false;
 #define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
 
 using namespace eddic;
+
+void exec(const std::string& command);
 
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
@@ -147,8 +150,8 @@ int Compiler::compileOnly(const std::string& file) {
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
-                execCommand("as --32 -o output.o output.asm");
-                execCommand("ld -m elf_i386 output.o -o " + output);
+                exec("as --32 -o output.o output.asm");
+                exec("ld -m elf_i386 output.o -o " + output);
 
                 //Remove temporary files
                 remove("output.asm");
@@ -223,22 +226,18 @@ void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parse
     resolver.resolve(sourceFile);
 }
 
-void eddic::execCommand(const std::string& command) {
+void exec(const std::string& command) {
     DebugTimer<debug> timer("Exec " + command);
     
     if(debug){
         std::cout << "eddic : exec command : " << command << std::endl;
     }
 
-    char buffer[1024];
+    std::string result = execCommand(command);
 
-    FILE* stream = popen(command.c_str(), "r");
-
-    while (fgets(buffer, 1024, stream) != NULL) {
-        std::cout << buffer;
+    if(result.size() > 0){
+        std::cout << result << std::endl;
     }
-
-    pclose(stream);
 }
 
 void eddic::warn(const std::string& warning){
