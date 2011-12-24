@@ -127,9 +127,6 @@ int Compiler::compile(const std::string& file) {
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
 
-            tac::Printer printer;
-            printer.print(tacProgram);
-
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
             liveness.compute(tacProgram);
