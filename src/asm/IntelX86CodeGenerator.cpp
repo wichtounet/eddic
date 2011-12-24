@@ -88,7 +88,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     bool ended;
 
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f), 
-            registers({EDI, ESI, ECX, EDX, EBX, EAX}, std::make_shared<Variable>("__fake__", Type(BaseType::INT), Position(PositionType::TEMPORARY))){
+            registers({EDI, ESI, ECX, EDX, EBX, EAX}, std::make_shared<Variable>("__fake__", Type(BaseType::INT, false), Position(PositionType::TEMPORARY))){
         last = ended = false;
     }
 
@@ -1226,6 +1226,11 @@ void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext
      
     for(auto it : context->getVariables()){
         Type type = it.second->type();
+        
+        //The const variables are not stored
+        if(type.isConst()){
+            continue;
+        }
 
         if(type.isArray()){
             writer.stream() << "V" << it.second->position().name() << ":" <<std::endl;

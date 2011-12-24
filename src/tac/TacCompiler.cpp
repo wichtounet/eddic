@@ -19,7 +19,7 @@
 #include "tac/TacCompiler.hpp"
 #include "tac/Program.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -414,7 +414,7 @@ class CompilerVisitor : public boost::static_visitor<> {
     public:
         CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram) {}
         
-        void operator()(ast::Program& p){
+        void operator()(ast::SourceFile& p){
             program.context = p.Content->context;
 
             visit_each(*this, p.Content->blocks);
@@ -631,6 +631,14 @@ class CompilerVisitor : public boost::static_visitor<> {
             executeCall(functionCall, function, {}, {});
         }
 
+        void operator()(ast::StandardImport&){
+            //Nothing to do with imports
+        }
+
+        void operator()(ast::Import&){
+            //Nothing to do with imports
+        }
+
         void operator()(ast::Return& return_){
             auto arguments = boost::apply_visitor(ToArgumentsVisitor(function), return_.Content->value);
 
@@ -697,7 +705,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
 } //end of anonymous namespace
 
-void tac::TacCompiler::compile(ast::Program& program, StringPool& pool, tac::Program& tacProgram) const {
+void tac::TacCompiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);
 }

@@ -24,7 +24,6 @@
 #include "parser/SpiritParser.hpp"
 #include "ast/SourceFile.hpp"
 
-
 //Annotators
 #include "DefaultValues.hpp"
 #include "ContextAnnotator.hpp"
@@ -106,13 +105,8 @@ int Compiler::compile(const std::string& file) {
             defineVariables(program);
             defineFunctions(program, functionTable);
 
-
             //Transform the AST
             transform(program);
-
-            //Annotate the AST
-            defineVariables(program);
-            defineFunctions(program, functionTable);
 
             //Static analysis
             checkTypes(program);
@@ -217,12 +211,12 @@ void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, Str
     engine.optimize(program, functionTable, pool);
 }
 
-}
-
 void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser){
     DebugTimer<debug> timer("Resolve dependencies");
     DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
+}
+
 void eddic::execCommand(const std::string& command) {
     DebugTimer<debug> timer("Exec " + command);
     

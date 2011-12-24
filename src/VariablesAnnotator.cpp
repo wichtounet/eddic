@@ -71,7 +71,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, declaration.Content->arraySize);
+        Type type(baseType, declaration.Content->arraySize, false);
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
@@ -157,7 +157,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, declaration.Content->arraySize);
+        Type type(baseType, declaration.Content->arraySize, false);
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
