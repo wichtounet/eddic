@@ -53,7 +53,7 @@ std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& param
 }
 
 std::shared_ptr<Variable> FunctionContext::newTemporary(){
-    Position position(TEMPORARY);
+    Position position(PositionType::TEMPORARY);
 
     std::string name = "t_" + toString(temporary++);
     Type type(BaseType::INT, false); 

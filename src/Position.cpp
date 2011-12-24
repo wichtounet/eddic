@@ -30,7 +30,7 @@ bool Position::isConst() const {
 }
 
 bool Position::isTemporary() const {
-    return m_type == TEMPORARY;
+    return m_type == PositionType::TEMPORARY;
 }
 
 int Position::offset() const {
