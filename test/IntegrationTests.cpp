@@ -7,13 +7,24 @@
 
 #include <string>
 
-#define CLEAR
+#include "Options.hpp"
 #include "Compiler.hpp"
+#include "Utils.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Eddic Tests
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( first ){
-    BOOST_CHECK_EQUAL ("33", "33");
+BOOST_AUTO_TEST_CASE( if_ ){
+    eddic::parseOptions(0, {});
+
+    eddic::Compiler compiler;
+
+    int code = compiler.compileOnly("test/cases/if.eddi");
+
+    BOOST_CHECK_EQUAL (code, 0);
+
+    std::string output = eddic::execCommand("./a.out"); 
+    
+    BOOST_CHECK_EQUAL (output, "Cool");
 }
