@@ -7,19 +7,13 @@
 
 #include <string>
 
-#include "Utils.hpp"
+#define CLEAR
+#include "Compiler.hpp"
 
 #define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE Eddic Tests
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( toString ){
-    std::string result = eddic::toString(33);
-
-    BOOST_CHECK_EQUAL (result, "33");
-}
-
-BOOST_AUTO_TEST_CASE( toNumber ){
-    int value = eddic::toNumber<int>("22");
-
-    BOOST_CHECK_EQUAL (value, 22);
+BOOST_AUTO_TEST_CASE( first ){
+    BOOST_CHECK_EQUAL ("33", "33");
 }
