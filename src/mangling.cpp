@@ -25,7 +25,7 @@ std::string eddic::mangle(Type type){
 }
 
 std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){
-    if(functionName == "main"){
+    if(functionName == "main" || functionName == "print" || functionName == "println"){
         return functionName;
     }
 

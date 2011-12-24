@@ -5,27 +5,31 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef STRING_POOL_H
-#define STRING_POOL_H
+#ifndef TAC_RETURN_H
+#define TAC_RETURN_H
 
-#include <string>
 #include <unordered_map>
+
+#include <boost/optional.hpp>
+
+#include "tac/Argument.hpp"
 
 namespace eddic {
 
-class StringPool {
-    private:
-        std::unordered_map<std::string, std::string> pool;
-        unsigned int currentString;
+namespace tac {
 
-    public:
-        StringPool();
-        StringPool(const StringPool& rhs) = delete;
+struct Return {
+    boost::optional<Argument> arg1;
+    boost::optional<Argument> arg2;
 
-        std::string label(const std::string& value);
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
-        std::unordered_map<std::string, std::string> getPool() const;
+    Return();
+    Return(Argument arg1);
+    Return(Argument arg1, Argument arg2);
 };
+
+} //end of tac
 
 } //end of eddic
 

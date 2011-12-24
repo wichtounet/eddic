@@ -18,8 +18,12 @@
 
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
+#include "SemanticalException.hpp"
+#include "AssemblyFileWriter.hpp"
 
+#include "parser/SpiritParser.hpp"
 #include "ast/SourceFile.hpp"
+
 
 //Annotators
 #include "DefaultValues.hpp"
@@ -35,15 +39,17 @@
 #include "DependenciesResolver.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
-#include "IntermediateCompiler.hpp"
 #include "WarningsEngine.hpp"
 
-#include "SemanticalException.hpp"
+//Three Address Code
+#include "tac/TacCompiler.hpp"
+#include "tac/Printer.hpp"
+#include "tac/Program.hpp"
+#include "tac/BasicBlockExtractor.hpp"
+#include "tac/LivenessAnalyzer.hpp"
 
-#include "parser/SpiritParser.hpp"
-
-#include "AssemblyFileWriter.hpp"
-#include "il/IntermediateProgram.hpp"
+//Code generation
+#include "asm/IntelX86CodeGenerator.hpp"
 
 #ifdef DEBUG
 static const bool debug = true;
@@ -85,13 +91,21 @@ int Compiler::compile(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
-        
+           
             //Read dependencies
             includeDependencies(program, parser);
            
             //Annotate the AST with more informations
             defineDefaultValues(program);
+            
+            //Fill the string pool
+            checkStrings(program, pool);
+            
+            //Add some more informations to the AST
             defineContexts(program);
+            defineVariables(program);
+            defineFunctions(program, functionTable);
+
 
             //Transform the AST
             transform(program);
@@ -101,7 +115,6 @@ int Compiler::compile(const std::string& file) {
             defineFunctions(program, functionTable);
 
             //Static analysis
-            checkStrings(program, pool);
             checkTypes(program);
 
             //Check for warnings
@@ -110,12 +123,25 @@ int Compiler::compile(const std::string& file) {
             //Optimize the AST
             optimize(program, functionTable, pool);
     
-            //Write Intermediate representation of the parse tree
-            IntermediateProgram il;
-            writeIL(program, pool, il);
+            tac::Program tacProgram;
 
-            //Write assembly to file
-            writeAsm(il, "output.asm");
+            //Generate Three-Address-Code language
+            tac::TacCompiler compiler;
+            compiler.compile(program, pool, tacProgram);
+
+            //Separate into basic blocks
+            tac::BasicBlockExtractor extractor;
+            extractor.extract(tacProgram);
+
+            //Compute liveness of variables
+            tac::LivenessAnalyzer liveness;
+            liveness.compute(tacProgram);
+
+            //Generate assembly from TAC
+            AssemblyFileWriter writer("output.asm");
+            as::IntelX86CodeGenerator generator(writer);
+            generator.generate(tacProgram, pool); 
+            writer.write(); 
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
@@ -126,7 +152,6 @@ int Compiler::compile(const std::string& file) {
                 remove("output.asm");
                 remove("output.o");
             }
-
         }
     } catch (const SemanticalException& e) {
         std::cout << e.what() << std::endl;
@@ -192,26 +217,12 @@ void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, Str
     engine.optimize(program, functionTable, pool);
 }
 
-void eddic::writeIL(ast::SourceFile& program, StringPool& pool, IntermediateProgram& intermediateProgram){
-    DebugTimer<debug> timer("Compile into intermediate level");
-    IntermediateCompiler compiler;
-    compiler.compile(program, pool, intermediateProgram);
-}
-            
-void eddic::writeAsm(IntermediateProgram& il, const std::string& file){
-    DebugTimer<debug> timer("Write assembly");
-    AssemblyFileWriter writer(file);
-
-    il.writeAsm(writer);
-    writer.write();
 }
 
 void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser){
     DebugTimer<debug> timer("Resolve dependencies");
     DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
-}
-
 void eddic::execCommand(const std::string& command) {
     DebugTimer<debug> timer("Exec " + command);
     

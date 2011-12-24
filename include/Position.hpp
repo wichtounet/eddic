@@ -16,6 +16,7 @@ enum PositionType {
     STACK, 
     PARAMETER,
     GLOBAL,
+    TEMPORARY,
     CONST       //Constants are not stored but replaced at their uses
 };
 
@@ -34,6 +35,8 @@ class Position {
         bool isParameter() const;
         bool isGlobal() const;
         bool isConst() const;
+        bool isTemporary() const;
+
         int offset() const;
 
         PositionType type() const;

@@ -5,27 +5,29 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef STRING_POOL_H
-#define STRING_POOL_H
+#ifndef TAC_GOTO_H
+#define TAC_GOTO_H
 
 #include <string>
-#include <unordered_map>
+#include <memory>
 
 namespace eddic {
 
-class StringPool {
-    private:
-        std::unordered_map<std::string, std::string> pool;
-        unsigned int currentString;
+namespace tac {
 
-    public:
-        StringPool();
-        StringPool(const StringPool& rhs) = delete;
+class BasicBlock;
 
-        std::string label(const std::string& value);
+struct Goto {
+    std::string label;
+    
+    //Filled only in later phase replacing the label
+    std::shared_ptr<BasicBlock> block;
 
-        std::unordered_map<std::string, std::string> getPool() const;
+    Goto();
+    Goto(const std::string& label);
 };
+
+} //end of tac
 
 } //end of eddic
 

@@ -16,7 +16,6 @@ namespace eddic {
 
 class StringPool;
 class FunctionTable;
-class IntermediateProgram;
 class SpiritParser;
 
 void defineDefaultValues(ast::SourceFile& program);
@@ -33,8 +32,6 @@ void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 
 void transform(ast::SourceFile& program);
 void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
-void writeIL(ast::SourceFile& program, StringPool& pool, IntermediateProgram& intermediateProgram);
-void writeAsm(IntermediateProgram& il, const std::string& file);
 
 void execCommand(const std::string& command);
 

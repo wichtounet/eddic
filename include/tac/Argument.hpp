@@ -5,27 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef STRING_POOL_H
-#define STRING_POOL_H
+#ifndef TAC_ARGUMENT_H
+#define TAC_ARGUMENT_H
 
+#include <memory>
 #include <string>
-#include <unordered_map>
+
+#include <boost/variant/variant.hpp>
 
 namespace eddic {
 
-class StringPool {
-    private:
-        std::unordered_map<std::string, std::string> pool;
-        unsigned int currentString;
+class Variable;
 
-    public:
-        StringPool();
-        StringPool(const StringPool& rhs) = delete;
+namespace tac {
 
-        std::string label(const std::string& value);
+typedef boost::variant<
+        std::shared_ptr<Variable>,  //A symbol
+        int,                        //An immediate int value
+        std::string                 //An immediate string value : A label
+    > Argument;
 
-        std::unordered_map<std::string, std::string> getPool() const;
-};
+} //end of tac
 
 } //end of eddic
 

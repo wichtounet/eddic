@@ -8,6 +8,7 @@
 #ifndef AST_COMPOSED_VALUE_H
 #define AST_COMPOSED_VALUE_H
 
+#include <memory>
 #include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -17,11 +18,14 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 typedef std::vector<boost::tuple<char, Value>> Operations;
 
 struct ASTComposedValue {
+    std::shared_ptr<Context> context;
     Value first;
     Operations operations;
 

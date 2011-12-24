@@ -24,9 +24,10 @@ class FunctionContext : public Context {
         int currentPosition;
         int currentParameter;
         int m_size;
+        int temporary;
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}
+        FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8), temporary(1) {}
         
         int size() const;
 
@@ -35,6 +36,8 @@ class FunctionContext : public Context {
         std::shared_ptr<Variable> addParameter(const std::string& a, Type type);
         std::shared_ptr<Variable> newVariable(const std::string& a, Type type);
         std::shared_ptr<Variable> newParameter(const std::string& a, Type type);
+
+        std::shared_ptr<Variable> newTemporary();
 };
 
 } //end of eddic
