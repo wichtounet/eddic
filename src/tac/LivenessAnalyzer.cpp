@@ -90,16 +90,7 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 (*ptr)->liveness = liveness;
 
                 if((*ptr)->result){
-                    //Not every quadruples erases the result
-                    if((*ptr)->op){
-                        auto op = *(*ptr)->op;
-
-                        if(op != tac::Operator::DOT_ASSIGN && op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::PARAM){
-                            liveness[(*ptr)->result] = false;
-                        }
-                    } else {
-                        liveness[(*ptr)->result] = false;
-                    }
+                    //TODO Take into account that the the result is overriden, so should no be live (warning with a = a + b)
                 }
             }
 
