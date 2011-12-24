@@ -99,14 +99,14 @@ int Compiler::compile(const std::string& file) {
             
             //Fill the string pool
             checkStrings(program, pool);
+
+            //Transform the AST
+            transform(program);
             
             //Add some more informations to the AST
             defineContexts(program);
             defineVariables(program);
             defineFunctions(program, functionTable);
-
-            //Transform the AST
-            transform(program);
 
             //Static analysis
             checkTypes(program);
@@ -126,6 +126,9 @@ int Compiler::compile(const std::string& file) {
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
+
+            tac::Printer printer;
+            printer.print(tacProgram);
 
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;

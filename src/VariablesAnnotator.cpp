@@ -148,7 +148,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         } else {
             declaration.Content->context->addVariable(declaration.Content->variableName, type);
         }
-
     }
     
     void operator()(ast::ArrayDeclaration& declaration){

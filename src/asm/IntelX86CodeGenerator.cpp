@@ -1258,7 +1258,7 @@ void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext
                 
                 writer.stream() << ".size V" << it.second->position().name() << ", 8" << std::endl;
                 writer.stream() << "V" << it.second->position().name() << ":" << std::endl;
-                writer.stream() << ".long " << value.first << std::endl;
+                writer.stream() << ".long " << pool.label(value.first) << std::endl;
                 writer.stream() << ".long " << value.second << std::endl;
             }
         }

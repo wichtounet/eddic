@@ -192,7 +192,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     std::vector<tac::Argument> operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
 
-        if(type.isArray()){
+        //If it's a const, we just have to replace it by its constant value
+        if(type.isConst()){
+           auto val = value.Content->var->val();
+           
+           if(type.base() == BaseType::INT){
+               return {boost::get<int>(val)};
+           } else if (type.base() == BaseType::STRING){
+                auto value = boost::get<std::pair<std::string, int>>(val);
+
+                return {value.first, value.second};
+           }
+        } else if(type.isArray()){
             return {value.Content->var};
         } else {
             if(type.base() == BaseType::INT){
@@ -204,6 +215,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {value.Content->var, temp};
             }
         }
+
+        assert(false);
     }
 
     std::vector<tac::Argument> operator()(ast::ArrayValue& array) const {
@@ -513,7 +526,9 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            boost::apply_visitor(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+            if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
+                boost::apply_visitor(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+            }
         }
 
         void operator()(ast::Swap& swap){
