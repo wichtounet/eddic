@@ -8,12 +8,12 @@
 #ifndef TRANSFORMER_ENGINE_H
 #define TRANSFORMER_ENGINE_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 struct TransformerEngine {
-    void transform(ast::Program& program) const;
+    void transform(ast::SourceFile& program) const;
 };
 
 } //end of eddic

@@ -51,3 +51,12 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, Type type){
     return variables[parameter] = newParameter(parameter, type);
 }
+
+std::shared_ptr<Variable> FunctionContext::newTemporary(){
+    Position position(TEMPORARY);
+
+    std::string name = "t_" + toString(temporary++);
+    Type type(BaseType::INT, false); 
+
+    return variables[name] = std::make_shared<Variable>(name, type, position); 
+}

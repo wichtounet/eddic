@@ -49,14 +49,11 @@ class Variable {
          * \brief Return an operand pointing to the location of this variable. Is valid only for int variables.   
          * \return A new Operand representing the location of this variable.
          */
-        OperandPtr toIntegerOperand() const ;
         
         /*!
          * \brief Return a pair of operand pointing to the location of this variable. Is valid only for string variables.   
          * \return A pair of Operand representing the location of this variable.
          */
-        std::pair<OperandPtr, OperandPtr> toStringOperand() const ;
-
         std::string name() const ;
         Type type() const ;
         Position position() const ;

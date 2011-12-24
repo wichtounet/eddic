@@ -13,7 +13,7 @@
 
 #include "ContextAnnotator.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -34,9 +34,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
-        AUTO_RECURSE_COMPOSED_VALUES()
         
-        void operator()(ast::Program& program){
+        void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
 
             visit_each(*this, program.Content->blocks);
@@ -153,6 +152,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
         }
+
+        void operator()(ast::ComposedValue& value){
+            value.Content->context = currentContext;
+
+            visit(*this, value.Content->first);
+            for_each(value.Content->operations.begin(), value.Content->operations.end(), 
+                    [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
+        }
         
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
@@ -169,13 +176,21 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             visit(*this, return_.Content->value);
         }
+        
+        void operator()(ast::Import&){
+            //No context there
+        }
+
+        void operator()(ast::StandardImport&){
+            //Context there
+        }
          
         void operator()(ast::TerminalNode&){
             //A terminal node has no context
         }
 };
 
-void ContextAnnotator::annotate(ast::Program& program) const {
+void ContextAnnotator::annotate(ast::SourceFile& program) const {
     AnnotateVisitor visitor;
     visitor(program);
 }

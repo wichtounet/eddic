@@ -1,0 +1,8 @@
+include <math>
+
+include "samples/included.eddi"
+
+void main(){
+    println(factorial(9));
+    println(sum(9));
+}

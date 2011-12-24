@@ -29,7 +29,7 @@
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -51,6 +51,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }
+    }
+
+    void operator()(ast::Import&){
+        //Nothing to check here
+    }
+
+    void operator()(ast::StandardImport&){
+        //Nothing to check here
     }
 
     void operator()(ast::GlobalArrayDeclaration&){
@@ -165,7 +173,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TypeChecker::check(ast::Program& program) const {
+void TypeChecker::check(ast::SourceFile& program) const {
     CheckerVisitor visitor;
     visit_non_variant(visitor, program);
 }

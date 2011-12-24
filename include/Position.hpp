@@ -20,7 +20,8 @@ enum class PositionType : unsigned int {
     STACK,          /**< A variable on the stack  */ 
     PARAMETER,      /**< A parameter */
     GLOBAL,         /**< A global variable */
-    CONST           /**< A const variable. Not stored. Will be replaced in each usage */
+    CONST,          /**< A const variable. Not stored. Will be replaced in each usage */
+    TEMPORARY       /**< A temporary, used only in three-address-code. Not stored. */
 };
 
 /*!
@@ -42,6 +43,8 @@ class Position {
         bool isParameter() const;
         bool isGlobal() const;
         bool isConst() const;
+        bool isTemporary() const;
+
         int offset() const;
 
         PositionType type() const;

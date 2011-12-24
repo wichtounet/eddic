@@ -10,12 +10,12 @@
 
 #include <string>
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 namespace eddic {
 
 /*!
- * \class SpiritParser
+ * \struct SpiritParser
  * \brief The EDDI source file parser.
  *
  * This class takes an EDDI source file as input and produces an Abstract Syntax Tree as its output. The output syntax is created
@@ -28,7 +28,7 @@ struct SpiritParser {
      * \param program The Abstract Syntax Tree root to fill. 
      * \return true if the file was valid, false otherwise
      */
-    bool parse(const std::string& file, ast::Program& program);
+    bool parse(const std::string& file, ast::SourceFile& program);
 };
 
 } //end of eddic

@@ -14,7 +14,7 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -132,7 +132,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     ValueTransformer transformer;
     InstructionTransformer instructionTransformer;
 
-    void operator()(ast::Program& program) const {
+    void operator()(ast::SourceFile& program) const {
         visit_each(*this, program.Content->blocks);
     }
 
@@ -226,7 +226,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TransformerEngine::transform(ast::Program& program) const {
+void TransformerEngine::transform(ast::SourceFile& program) const {
     TransformerVisitor visitor;
     visitor(program);
 }

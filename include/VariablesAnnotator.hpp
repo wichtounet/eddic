@@ -8,7 +8,7 @@
 #ifndef VARIABLES_ANNOTATOR_H
 #define VARIABLES_ANNOTATOR_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
@@ -22,7 +22,7 @@ struct VariablesAnnotator {
      * 
      * After this phase, all the variables are resolved as entry to the symbol table. 
      */
-    void annotate(ast::Program& program) const ;
+    void annotate(ast::SourceFile& program) const ;
 };
 
 } //end of eddic

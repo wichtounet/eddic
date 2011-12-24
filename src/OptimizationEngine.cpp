@@ -21,8 +21,7 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
-#include "ast/Program.hpp"
-#include <iostream>
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -272,7 +271,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             visit_each(*this, vector);
         }
 
-        void operator()(ast::Program& program){\
+        void operator()(ast::SourceFile& program){\
             removeUnused(program.Content->blocks);
         }
         
@@ -355,7 +354,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void OptimizationEngine::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool) const {
+void OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }
