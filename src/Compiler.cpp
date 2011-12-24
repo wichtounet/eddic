@@ -69,7 +69,15 @@ int Compiler::compile(const std::string& file) {
     }
 
     Timer timer;
+    
+    int code = compileOnly(file);
 
+    std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
+
+    return code;
+}
+
+int Compiler::compileOnly(const std::string& file) {
     std::string output = options["output"].as<std::string>();
 
     int code = 0;
@@ -151,8 +159,6 @@ int Compiler::compile(const std::string& file) {
         std::cout << e.what() << std::endl;
         code = 1;
     }
-
-    std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
 
     return code;
 }

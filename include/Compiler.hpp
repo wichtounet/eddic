@@ -37,6 +37,7 @@ void execCommand(const std::string& command);
 
 struct Compiler {
     int compile (const std::string& file);
+    int compileOnly (const std::string& file);
 };
 
 //Utility for other classes
