@@ -5,16 +5,38 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <memory>
+
 #include <boost/variant.hpp>
 
 #include "tac/Optimizer.hpp"
 #include "tac/Program.hpp"
+#include "tac/Utils.hpp"
 
 using namespace eddic;
 
 namespace {
 
 struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        if(quadruple->op){
+            switch(*quadruple->op){
+                case tac::Operator::ADD:
+                    if(tac::equals<int>(quadruple->arg1, 0)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
+                    } else if(tac::equals<int>(*quadruple->arg2, 0)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                    }
+
+                    break;
+                default:
+                    return quadruple;
+            }
+        }
+
+        return quadruple;
+    }
+
     template<typename T>
     tac::Statement operator()(T& statement) const { 
         return statement;
