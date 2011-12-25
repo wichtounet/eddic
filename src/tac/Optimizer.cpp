@@ -107,12 +107,31 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
 
                     break;
                 case tac::Operator::SUB:
+                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, 
+                            boost::get<int>(quadruple->arg1) - boost::get<int>(*quadruple->arg2));
+                    }
 
                     break;
                 case tac::Operator::MUL:
+                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, 
+                            boost::get<int>(quadruple->arg1) * boost::get<int>(*quadruple->arg2));
+                    }
 
                     break;
                 case tac::Operator::DIV:
+                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, 
+                            boost::get<int>(quadruple->arg1) / boost::get<int>(*quadruple->arg2));
+                    }
+
+                    break;
+                case tac::Operator::MOD:
+                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, 
+                            boost::get<int>(quadruple->arg1) % boost::get<int>(*quadruple->arg2));
+                    }
 
                     break;
                 default:
