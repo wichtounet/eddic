@@ -19,6 +19,11 @@ bool equals(T& variant, V value){
     return boost::get<V>(&variant) && boost::get<V>(variant) == value;
 }
 
+template<typename T>
+bool isInt(T& variant){
+    return boost::get<int>(&variant);
+}
+
 } //end of tac
 
 } //end of eddic

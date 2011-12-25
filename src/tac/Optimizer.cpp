@@ -94,8 +94,46 @@ struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
         return statement;
     }
 };
-    
-}
+
+struct ConstantFolding : public boost::static_visitor<tac::Statement> {
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        if(quadruple->op){
+            switch(*quadruple->op){
+                case tac::Operator::ADD:
+                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, 
+                            boost::get<int>(quadruple->arg1) + boost::get<int>(*quadruple->arg2));
+                    }
+
+                    break;
+                case tac::Operator::SUB:
+
+                    break;
+                case tac::Operator::MUL:
+
+                    break;
+                case tac::Operator::DIV:
+
+                    break;
+                default:
+                    return quadruple;
+            }
+        }
+
+        return quadruple;
+    }
+
+    tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        //TODO Evaluate boolean expressions at compile time
+
+        return ifFalse;
+    }
+
+    template<typename T>
+    tac::Statement operator()(T& statement) const { 
+        return statement;
+    }
+};
 
 template<typename Visitor>
 void apply_to_all(Visitor visitor, tac::Program& program){
@@ -108,10 +146,17 @@ void apply_to_all(Visitor visitor, tac::Program& program){
     }
 }
 
+}
+
 void tac::Optimizer::optimize(tac::Program& program) const {
     //Optimize using arithmetic identities
     apply_to_all(ArithmeticIdentities(), program);
 
     //Reduce arithtmetic instructions in strength
     apply_to_all(ReduceInStrength(), program);
+
+    //Constant folding
+    apply_to_all(ConstantFolding(), program);
+
+    //TODO Constant propagation
 }
