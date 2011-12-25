@@ -34,7 +34,7 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
                         return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
                     }
 
-                    //TODO Transform x = 0 - a into x = -a
+                    //TODO Transform x = 0 - a into x = -a by adding a NEG tac instruction
 
                     break;
                 case tac::Operator::MUL:
@@ -45,6 +45,14 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
                     }
 
                     //TODO Transform x = a * -1 and x = -1 * a into x = -a by adding a NEG tac instruction
+
+                    break;
+                case tac::Operator::DIV:
+                    if(tac::equals<int>(*quadruple->arg2, 1)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                    }
+
+                    //TODO Transform x = 0 / -1 into x = -a by adding a NEG tac instruction
 
                     break;
                 default:
