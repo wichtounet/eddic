@@ -15,16 +15,20 @@
 #define BOOST_TEST_MODULE Eddic Tests
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( if_ ){
+void assertOutputEquals(const std::string& file, const std::string& output){
     eddic::parseOptions(0, {});
 
     eddic::Compiler compiler;
 
-    int code = compiler.compileOnly("test/cases/if.eddi");
+    int code = compiler.compileOnly("test/cases/" + file);
 
     BOOST_CHECK_EQUAL (code, 0);
 
-    std::string output = eddic::execCommand("./a.out"); 
+    std::string out = eddic::execCommand("./a.out"); 
     
-    BOOST_CHECK_EQUAL (output, "Cool");
+    BOOST_CHECK_EQUAL (output, out);
+}
+
+BOOST_AUTO_TEST_CASE( if_ ){
+    assertOutputEquals("if.eddi", "Cool");
 }
