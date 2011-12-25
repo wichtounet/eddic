@@ -113,7 +113,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         repeatAssign.Content->variableName = foreach.Content->variableName;
         repeatAssign.Content->value = addition;
 
-        for_.Content->start = startAssign;
+        for_.Content->repeat = repeatAssign;
 
         //Put the operations into the new for
         for_.Content->instructions = foreach.Content->instructions;
