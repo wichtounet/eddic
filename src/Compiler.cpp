@@ -110,14 +110,14 @@ int Compiler::compileOnly(const std::string& file) {
             
             //Fill the string pool
             checkStrings(program, pool);
-
-            //Transform the AST
-            transform(program);
             
             //Add some more informations to the AST
             defineContexts(program);
             defineVariables(program);
             defineFunctions(program, functionTable);
+
+            //Transform the AST
+            transform(program);
 
             //Static analysis
             checkTypes(program);
