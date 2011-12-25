@@ -8,4 +8,9 @@ void main(){
     int g = a - 0;
     int h = 2 * a;
     int i = a * 2;
+    int j = 1 + 1;
+    int k = 2 * 2;
+    int l = 3 / 3;
+    int m = 4 - 3;
+    int n = 5 % 2;
 }
