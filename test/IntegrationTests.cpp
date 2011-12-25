@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( for_ ){
 }
 
 BOOST_AUTO_TEST_CASE( foreach_ ){
-    //assertOutputEquals("foreach.eddi", "01234");
+    assertOutputEquals("foreach.eddi", "01234");
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
