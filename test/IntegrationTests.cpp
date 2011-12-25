@@ -32,3 +32,15 @@ void assertOutputEquals(const std::string& file, const std::string& output){
 BOOST_AUTO_TEST_CASE( if_ ){
     assertOutputEquals("if.eddi", "Cool");
 }
+
+BOOST_AUTO_TEST_CASE( while_ ){
+    assertOutputEquals("while.eddi", "01234");
+}
+
+BOOST_AUTO_TEST_CASE( for_ ){
+    assertOutputEquals("for.eddi", "01234");
+}
+
+BOOST_AUTO_TEST_CASE( foreach_ ){
+    assertOutputEquals("foreach.eddi", "01234");
+}
