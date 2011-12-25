@@ -6,4 +6,6 @@ void main(){
     int e = a * 1;
     int f = a / 1;
     int g = a - 0;
+    int h = 2 * a;
+    int i = a * 2;
 }
