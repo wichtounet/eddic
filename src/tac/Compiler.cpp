@@ -16,7 +16,7 @@
 #include "mangling.hpp"
 #include "Labels.hpp"
 
-#include "tac/TacCompiler.hpp"
+#include "tac/Compiler.hpp"
 #include "tac/Program.hpp"
 
 #include "ast/SourceFile.hpp"
@@ -720,7 +720,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
 } //end of anonymous namespace
 
-void tac::TacCompiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
+void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);
 }

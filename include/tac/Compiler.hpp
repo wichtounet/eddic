@@ -18,7 +18,7 @@ namespace tac {
 
 class Program;
 
-struct TacCompiler {
+struct Compiler {
     void compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const ;
 };
 

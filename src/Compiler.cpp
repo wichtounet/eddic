@@ -41,9 +41,9 @@
 #include "WarningsEngine.hpp"
 
 //Three Address Code
-#include "tac/TacCompiler.hpp"
-#include "tac/Printer.hpp"
 #include "tac/Program.hpp"
+#include "tac/Compiler.hpp"
+#include "tac/Printer.hpp"
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/LivenessAnalyzer.hpp"
 
@@ -120,7 +120,7 @@ int Compiler::compile(const std::string& file) {
             tac::Program tacProgram;
 
             //Generate Three-Address-Code language
-            tac::TacCompiler compiler;
+            tac::Compiler compiler;
             compiler.compile(program, pool, tacProgram);
 
             //Separate into basic blocks
