@@ -68,6 +68,32 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
         return statement;
     }
 };
+
+struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        if(quadruple->op){
+            switch(*quadruple->op){
+                case tac::Operator::MUL:
+                    if(tac::equals<int>(quadruple->arg1, 2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
+                    } else if(tac::equals<int>(*quadruple->arg2, 2)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1, tac::Operator::ADD, quadruple->arg1);
+                    }
+
+                    break;
+                default:
+                    return quadruple;
+            }
+        }
+
+        return quadruple;
+    }
+
+    template<typename T>
+    tac::Statement operator()(T& statement) const { 
+        return statement;
+    }
+};
     
 }
 
@@ -83,6 +109,9 @@ void apply_to_all(Visitor visitor, tac::Program& program){
 }
 
 void tac::Optimizer::optimize(tac::Program& program) const {
-    ArithmeticIdentities identities;
-    apply_to_all(identities, program);
+    //Optimize using arithmetic identities
+    apply_to_all(ArithmeticIdentities(), program);
+
+    //Reduce arithtmetic instructions in strength
+    apply_to_all(ReduceInStrength(), program);
 }
