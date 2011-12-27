@@ -17,4 +17,6 @@ void main(){
     int q = 0 * a;
     int r = 0 / a;
     int o = (3 + 10) * (3 * 3 * 7) - 300 * 2;
+    print(o);
+    print(r);
 }
