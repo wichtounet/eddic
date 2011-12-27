@@ -178,10 +178,32 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
     }
 };
 
+struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
+    template<typename T>
+    tac::Statement operator()(T& statement) const { 
+        return statement;
+    }
+};
+
 template<typename Visitor>
-void apply_to_all(Visitor visitor, tac::Program& program){
+void apply_to_all(tac::Program& program){
+    Visitor visitor;
+
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
+            for(auto& statement : block->statements){
+                statement = boost::apply_visitor(visitor, statement);
+            }
+        }
+    }
+}
+
+template<typename Visitor>
+void apply_to_basic_blocks(tac::Program& program){
+    for(auto& function : program.functions){
+        for(auto& block : function->getBasicBlocks()){
+            Visitor visitor;
+
             for(auto& statement : block->statements){
                 statement = boost::apply_visitor(visitor, statement);
             }
@@ -193,13 +215,16 @@ void apply_to_all(Visitor visitor, tac::Program& program){
 
 void tac::Optimizer::optimize(tac::Program& program) const {
     //Optimize using arithmetic identities
-    apply_to_all(ArithmeticIdentities(), program);
+    apply_to_all<ArithmeticIdentities>(program);
 
     //Reduce arithtmetic instructions in strength
-    apply_to_all(ReduceInStrength(), program);
+    apply_to_all<ReduceInStrength>(program);
 
     //Constant folding
-    apply_to_all(ConstantFolding(), program);
+    apply_to_all<ConstantFolding>(program);
 
-    //TODO Constant propagation
+    //Constant propagation
+    apply_to_basic_blocks<ConstantPropagation>(program);
+    
+    //TODO Copy propagation
 }
