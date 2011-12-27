@@ -14,10 +14,13 @@
 
 namespace eddic {
 
-class SpiritParser {
-    public:
-        bool parse(const std::string& file, ast::SourceFile& program);
+namespace parser {
+
+struct SpiritParser {
+    bool parse(const std::string& file, ast::SourceFile& program);
 };
+
+}
 
 } //end of eddic
 

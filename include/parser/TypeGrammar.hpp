@@ -17,6 +17,8 @@ namespace qi = boost::spirit::qi;
 
 namespace eddic {
 
+namespace parser {
+
 typedef lexer::lexer_type::iterator_type Iterator;
 typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
 
@@ -27,6 +29,8 @@ struct TypeGrammar : qi::grammar<Iterator, ast::Type()> {
     qi::rule<Iterator, ast::ArrayType()> arrayType;
     qi::rule<Iterator, ast::SimpleType()> simpleType;
 };
+
+} //end of parser
 
 } //end of eddic
 

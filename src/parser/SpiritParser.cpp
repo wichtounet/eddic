@@ -31,7 +31,7 @@ namespace spirit = boost::spirit;
 
 using namespace eddic;
 
-bool SpiritParser::parse(const std::string& file, ast::SourceFile& program){
+bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& program){
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
    
@@ -47,7 +47,7 @@ bool SpiritParser::parse(const std::string& file, ast::SourceFile& program){
     lexer::pos_iterator_type position_end;
 
     lexer::SimpleLexer<lexer::lexer_type> lexer;
-    EddiGrammar grammar(lexer); 
+    parser::EddiGrammar grammar(lexer); 
     
     try {
         bool r = spirit::lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);
