@@ -32,6 +32,13 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
                 case tac::Operator::SUB:
                     if(tac::equals<int>(*quadruple->arg2, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                    } 
+
+                    //a = b - b => a = 0
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                        if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, *ptr)){
+                            return std::make_shared<tac::Quadruple>(quadruple->result, 0);
+                        }
                     }
 
                     //TODO Transform x = 0 - a into x = -a by adding a NEG tac instruction
@@ -60,6 +67,13 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
 
                     if(tac::equals<int>(quadruple->arg1, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 0);
+                    }
+
+                    //a = b / b => a = 1
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                        if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, *ptr)){
+                            return std::make_shared<tac::Quadruple>(quadruple->result, 1);
+                        }
                     }
 
                     //TODO Transform x = 0 / -1 into x = -a by adding a NEG tac instruction
