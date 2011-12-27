@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <boost/variant.hpp>
 
@@ -17,6 +18,11 @@
 using namespace eddic;
 
 namespace {
+
+enum class Pass : unsigned int {
+    DATA_MINING,
+    OPTIMIZE
+};
 
 struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
     bool optimized;
@@ -248,9 +254,60 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
     }
 
     template<typename T>
-        tac::Statement operator()(T& statement){ 
-            return statement;
+    tac::Statement operator()(T& statement){ 
+        return statement;
+    }
+};
+
+struct RemoveAssign : public boost::static_visitor<bool> {
+    bool optimized;
+    Pass pass;
+
+    RemoveAssign() : optimized(false) {}
+
+    std::unordered_set<std::shared_ptr<Variable>> used;
+
+    bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        if(pass == Pass::DATA_MINING){
+            if(!quadruple->op){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                    used.insert(*ptr);
+                }
+            } else {
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                    used.insert(*ptr);
+                }
+
+                if(quadruple->arg2){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        used.insert(*ptr);
+                    }
+                }
+            }
+            
+            return true;
+        } else {
+            //These operators are not erasing result
+            if(quadruple->op && (*quadruple->op == tac::Operator::PARAM || *quadruple->op == tac::Operator::DOT_ASSIGN || *quadruple->op == tac::Operator::ARRAY_ASSIGN)){
+                return true;
+            }
+
+            if(used.find(quadruple->result) == used.end()){
+                //The other kind of variables can be used in other basic block
+                if(quadruple->result->position().isTemporary()){
+                    optimized = true;
+                    return false;
+                }
+            }
+
+            return true;
         }
+    }
+    
+    template<typename T>
+    bool operator()(T&){ 
+        return true;
+    }
 };
 
 template<typename Visitor>
@@ -287,6 +344,50 @@ bool apply_to_basic_blocks(tac::Program& program){
     return optimized;
 }
 
+template<typename Visitor>
+bool apply_to_basic_blocks_two_pass(tac::Program& program){
+    bool optimized = false;
+
+    for(auto& function : program.functions){
+        for(auto& block : function->getBasicBlocks()){
+            Visitor visitor;
+            visitor.pass = Pass::DATA_MINING;
+
+            auto it = block->statements.begin();
+            auto end = block->statements.end();
+
+            while(it != end){
+                bool keep = boost::apply_visitor(visitor, *it);
+                
+                if(!keep){
+                    it = block->statements.erase(it);   
+                }
+
+                it++;
+            }
+
+            visitor.pass = Pass::OPTIMIZE;
+
+            it = block->statements.begin();
+            end = block->statements.end();
+
+            while(it != end){
+                bool keep = boost::apply_visitor(visitor, *it);
+                
+                if(!keep){
+                    it = block->statements.erase(it);   
+                }
+
+                it++;
+            }
+
+            optimized |= visitor.optimized;
+        }
+    }
+
+    return optimized;
+}
+
 }
 
 void tac::Optimizer::optimize(tac::Program& program) const {
@@ -305,9 +406,10 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Constant propagation
         optimized |= apply_to_basic_blocks<ConstantPropagation>(program);
+
+        //Remove unused assignations
+        optimized |= apply_to_basic_blocks_two_pass<RemoveAssign>(program);
     } while (optimized);
-   
-    //TODO Remove unused temporaries
     
     //TODO Copy propagation
 }
