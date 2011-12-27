@@ -2,7 +2,25 @@
  * Standard Library : Math functions
 */
 
+//Return maximal value between a and b
+int max(int a, int b){
+    if(a >= b){
+        return a;
+    }
 
+    return b;
+}
+
+//Return minimal value between a and b
+int min(int a, int b){
+    if(a <= b){
+        return a;
+    }
+
+    return b;
+}
+
+//Factorial function
 int factorial(int n){
     if(n == 0){
         return 1;
