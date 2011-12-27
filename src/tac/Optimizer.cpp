@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <memory>
+#include <unordered_map>
 
 #include <boost/variant.hpp>
 
@@ -179,10 +180,45 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
 };
 
 struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
-    template<typename T>
-    tac::Statement operator()(T& statement) const { 
-        return statement;
+    std::unordered_map<std::shared_ptr<Variable>, int> constants;
+
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        if(!quadruple->op){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                if(constants.find(*ptr) != constants.end()){
+                    quadruple->arg1 = constants[*ptr];
+                }
+            }
+
+            if(auto* ptr = boost::get<int>(&quadruple->arg1)){
+                constants[quadruple->result] = *ptr;
+            }
+        } else {
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                if(constants.find(*ptr) != constants.end()){
+                    quadruple->arg1 = constants[*ptr];
+                }
+            }
+
+            if(quadruple->arg2){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    if(constants.find(*ptr) != constants.end()){
+                        quadruple->arg2 = constants[*ptr];
+                    }
+                }
+            }
+
+            //The result is not constant at this point
+            constants.erase(quadruple->result);
+        }
+
+        return quadruple;
     }
+
+    template<typename T>
+        tac::Statement operator()(T& statement){ 
+            return statement;
+        }
 };
 
 template<typename Visitor>
@@ -225,6 +261,8 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
     //Constant propagation
     apply_to_basic_blocks<ConstantPropagation>(program);
+   
+    //TODO Remove unused temporaries
     
     //TODO Copy propagation
 }
