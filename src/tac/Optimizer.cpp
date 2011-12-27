@@ -19,7 +19,14 @@ using namespace eddic;
 namespace {
 
 struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    ArithmeticIdentities() : optimized(false) {}
+
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        bool old = optimized;
+        optimized = true;
+
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::ADD:
@@ -81,10 +88,11 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
 
                     break;
                 default:
-                    return quadruple;
+                    break;
             }
         }
 
+        optimized = old;
         return quadruple;
     }
 
@@ -95,7 +103,14 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
 };
 
 struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    ReduceInStrength() : optimized(false) {}
+
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        bool old = optimized;
+        optimized = true;
+
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::MUL:
@@ -107,10 +122,11 @@ struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
 
                     break;
                 default:
-                    return quadruple;
+                    break;
             }
         }
 
+        optimized = old;
         return quadruple;
     }
 
@@ -121,7 +137,14 @@ struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
 };
 
 struct ConstantFolding : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    ConstantFolding() : optimized(false) {}
+
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        bool old = optimized;
+        optimized = true;
+        
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::ADD:
@@ -160,10 +183,11 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
 
                     break;
                 default:
-                    return quadruple;
+                    break;
             }
         }
 
+        optimized = old;
         return quadruple;
     }
 
@@ -180,9 +204,16 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
 };
 
 struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    ConstantPropagation() : optimized(false) {}
+
     std::unordered_map<std::shared_ptr<Variable>, int> constants;
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        bool old = optimized;
+        optimized = true;
+
         if(!quadruple->op){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                 if(constants.find(*ptr) != constants.end()){
@@ -212,6 +243,7 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
             constants.erase(quadruple->result);
         }
 
+        optimized = old;
         return quadruple;
     }
 
@@ -222,7 +254,7 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 };
 
 template<typename Visitor>
-void apply_to_all(tac::Program& program){
+bool apply_to_all(tac::Program& program){
     Visitor visitor;
 
     for(auto& function : program.functions){
@@ -232,10 +264,14 @@ void apply_to_all(tac::Program& program){
             }
         }
     }
+
+    return visitor.optimized;
 }
 
 template<typename Visitor>
-void apply_to_basic_blocks(tac::Program& program){
+bool apply_to_basic_blocks(tac::Program& program){
+    bool optimized = false;
+
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
@@ -243,24 +279,33 @@ void apply_to_basic_blocks(tac::Program& program){
             for(auto& statement : block->statements){
                 statement = boost::apply_visitor(visitor, statement);
             }
+
+            optimized |= visitor.optimized;
         }
     }
+
+    return optimized;
 }
 
 }
 
 void tac::Optimizer::optimize(tac::Program& program) const {
-    //Optimize using arithmetic identities
-    apply_to_all<ArithmeticIdentities>(program);
+    bool optimized;
+    do {
+        optimized = false;
 
-    //Reduce arithtmetic instructions in strength
-    apply_to_all<ReduceInStrength>(program);
+        //Optimize using arithmetic identities
+        optimized |= apply_to_all<ArithmeticIdentities>(program);
+        
+        //Reduce arithtmetic instructions in strength
+        optimized |= apply_to_all<ReduceInStrength>(program);
 
-    //Constant folding
-    apply_to_all<ConstantFolding>(program);
+        //Constant folding
+        optimized |= apply_to_all<ConstantFolding>(program);
 
-    //Constant propagation
-    apply_to_basic_blocks<ConstantPropagation>(program);
+        //Constant propagation
+        optimized |= apply_to_basic_blocks<ConstantPropagation>(program);
+    } while (optimized);
    
     //TODO Remove unused temporaries
     
