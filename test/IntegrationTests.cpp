@@ -48,3 +48,19 @@ BOOST_AUTO_TEST_CASE( foreach_ ){
 BOOST_AUTO_TEST_CASE( globals_ ){
     assertOutputEquals("globals.eddi", "1000a2000aa");
 }
+
+BOOST_AUTO_TEST_CASE( void_functions ){
+    assertOutputEquals("void.eddi", "4445");
+}
+
+BOOST_AUTO_TEST_CASE( string_functions ){
+    assertOutputEquals("return_string.eddi", "abcdef");
+}
+
+BOOST_AUTO_TEST_CASE( int_functions ){
+    assertOutputEquals("return_int.eddi", "484");
+}
+
+BOOST_AUTO_TEST_CASE( recursive_functions ){
+    assertOutputEquals("recursive.eddi", "362880");
+}
