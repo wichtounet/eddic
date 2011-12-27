@@ -20,8 +20,10 @@ namespace qi = boost::spirit::qi;
 
 namespace eddic {
 
-typedef lexer_type::iterator_type Iterator;
-typedef SimpleLexer<lexer_type> Lexer;
+namespace parser {
+
+typedef lexer::lexer_type::iterator_type Iterator;
+typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
 
 struct EddiGrammar : qi::grammar<Iterator, ast::SourceFile()> {
     EddiGrammar(const Lexer& lexer);
@@ -58,6 +60,8 @@ struct EddiGrammar : qi::grammar<Iterator, ast::SourceFile()> {
     BooleanGrammar condition;
     TypeGrammar type;
 };
+
+} //end of parser
 
 } //end of eddic
 

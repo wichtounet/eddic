@@ -25,17 +25,17 @@ bool exists(const std::string& file){
    return ifile; 
 }
 
-DependenciesResolver::DependenciesResolver(SpiritParser& p) : parser(p) {}
+DependenciesResolver::DependenciesResolver(parser::SpiritParser& p) : parser(p) {}
 
-void includeDependencies(ast::SourceFile& program, SpiritParser& parser);
+void includeDependencies(ast::SourceFile& program, parser::SpiritParser& parser);
 
 class DependencyVisitor : public boost::static_visitor<> {
     private:
-        SpiritParser& parser;
+        parser::SpiritParser& parser;
         ast::SourceFile& source;
 
     public:
-        DependencyVisitor(SpiritParser& p, ast::SourceFile& s) : parser(p), source(s) {}
+        DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& s) : parser(p), source(s) {}
 
         AUTO_RECURSE_PROGRAM()
     
@@ -80,7 +80,7 @@ class DependencyVisitor : public boost::static_visitor<> {
         }
 };
 
-void includeDependencies(ast::SourceFile& program, SpiritParser& parser){
+void includeDependencies(ast::SourceFile& program, parser::SpiritParser& parser){
     DependencyVisitor visitor(parser, program);
     visitor(program);
 }

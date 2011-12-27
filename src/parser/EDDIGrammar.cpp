@@ -9,15 +9,15 @@
 
 using namespace eddic;
 
-EddiGrammar::EddiGrammar(const Lexer& lexer) : 
+parser::EddiGrammar::EddiGrammar(const Lexer& lexer) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
         condition(lexer),
         type(lexer){
    
     const_ %=
-            (lexer.const_ > spirit::attr(true))
-        |   spirit::attr(false);
+            (lexer.const_ > boost::spirit::attr(true))
+        |   boost::spirit::attr(false);
     
     else_if_ %= 
             lexer.else_ 

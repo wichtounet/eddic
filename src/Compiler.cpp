@@ -76,7 +76,7 @@ int Compiler::compile(const std::string& file) {
     try {
         TIMER_START(parsing)
 
-        SpiritParser parser;
+        parser::SpiritParser parser;
 
         //The program to build
         ast::SourceFile program;
@@ -211,7 +211,7 @@ void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, Str
     engine.optimize(program, functionTable, pool);
 }
 
-void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser){
+void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
     DebugTimer<debug> timer("Resolve dependencies");
     DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
