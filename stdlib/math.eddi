@@ -20,6 +20,15 @@ int min(int a, int b){
     return b;
 }
 
+//Return the nth pow of a
+int pow(int a, int n){
+    if(n == 0){
+        return 1;
+    }
+
+    return n * pow(a, n -1);
+}
+
 //Factorial function
 int factorial(int n){
     if(n == 0){
