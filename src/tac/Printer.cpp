@@ -80,6 +80,8 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " / " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MOD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " % " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::MINUS){
+                std::cout << "\t" << quadruple->result->name() << " = - " << printArgument(quadruple->arg1) << std::endl;
             } else if(op == tac::Operator::DOT){
                 std::cout << "\t" << quadruple->result->name() << " = (" << printArgument(quadruple->arg1) << ")" << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::DOT_ASSIGN){
