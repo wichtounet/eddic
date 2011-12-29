@@ -24,6 +24,14 @@ Type GetTypeVisitor::operator()(const ast::Integer&) const {
     return Type(BaseType::INT, false);
 }
 
+Type GetTypeVisitor::operator()(const ast::Plus&) const;
+    return Type(BaseType::INT, false);
+}
+
+Type GetTypeVisitor::operator()(const ast::Minus&) const;
+    return Type(BaseType::INT, false);
+}
+
 Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
