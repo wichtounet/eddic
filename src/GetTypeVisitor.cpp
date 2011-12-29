@@ -24,11 +24,11 @@ Type GetTypeVisitor::operator()(const ast::Integer&) const {
     return Type(BaseType::INT, false);
 }
 
-Type GetTypeVisitor::operator()(const ast::Plus&) const;
+Type GetTypeVisitor::operator()(const ast::Plus&) const {
     return Type(BaseType::INT, false);
 }
 
-Type GetTypeVisitor::operator()(const ast::Minus&) const;
+Type GetTypeVisitor::operator()(const ast::Minus&) const {
     return Type(BaseType::INT, false);
 }
 
