@@ -195,6 +195,10 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
                         return std::make_shared<tac::Quadruple>(quadruple->result, 
                             boost::get<int>(quadruple->arg1) % boost::get<int>(*quadruple->arg2));
                     }
+                case tac::Operator::MINUS:
+                    if(tac::isInt(quadruple->arg1)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, -1 * boost::get<int>(quadruple->arg1));
+                    }
 
                     break;
                 default:
