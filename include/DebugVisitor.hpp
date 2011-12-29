@@ -44,6 +44,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::VariableValue&) const ;
     void operator()(ast::ArrayValue&) const ;
     void operator()(ast::ComposedValue& value) const ;
+    void operator()(ast::Plus& value) const ;
+    void operator()(ast::Minus& value) const ;
 };
 
 } //end of eddic
