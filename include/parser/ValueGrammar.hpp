@@ -28,6 +28,7 @@ struct ValueGrammar : qi::grammar<Iterator, ast::Value()> {
     qi::rule<Iterator, ast::Value()> value;
     qi::rule<Iterator, ast::Value()> primaryValue;
     qi::rule<Iterator, ast::Value()> unaryValue;
+    qi::rule<Iterator, ast::NegatedValue()> negatedValue;
     qi::rule<Iterator, ast::ComposedValue()> additiveValue;
     qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
     qi::rule<Iterator, ast::Value()> constant;
