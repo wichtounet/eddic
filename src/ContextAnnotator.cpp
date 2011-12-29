@@ -160,6 +160,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
             for_each(value.Content->operations.begin(), value.Content->operations.end(), 
                     [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
         }
+
+        void operator()(ast::Plus& value){
+            visit(*this, value.Content->value);
+        }
+
+        void operator()(ast::Minus& value){
+            visit(*this, value.Content->value);
+        }
         
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
@@ -182,7 +190,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::StandardImport&){
-            //Context there
+            //No Context there
         }
          
         void operator()(ast::TerminalNode&){

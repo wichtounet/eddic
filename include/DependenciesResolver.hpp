@@ -12,15 +12,17 @@
 
 namespace eddic {
 
-class SpiritParser;
+namespace parser {
+    class SpiritParser;
+}
 
 struct DependenciesResolver {
-    DependenciesResolver(SpiritParser& parser);
+    DependenciesResolver(parser::SpiritParser& parser);
 
     void resolve(ast::SourceFile& program) const;
 
     private:
-        SpiritParser& parser;
+        parser::SpiritParser& parser;
 };
 
 } //end of eddic

@@ -732,6 +732,24 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.release(Register::EAX);
 
                     break;            
+                case tac::Operator::MINUS:
+                {
+                    //If arg is immediate, we have to move it in a register
+                    if(boost::get<int>(&quadruple->arg1)){
+                        auto reg = getReg();
+
+                        move(quadruple->arg1, reg);
+                        writer.stream() << "neg " << regToString(reg) << std::endl;
+
+                        if(registers.reserved(reg)){
+                            registers.release(reg);
+                        }
+                    } else {
+                        writer.stream() << "neg " << arg(quadruple->arg1) << std::endl;
+                    }
+
+                    break;
+                }
                 case tac::Operator::DOT:
                 {
                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));

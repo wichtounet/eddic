@@ -22,6 +22,8 @@
 
 namespace eddic {
 
+namespace lexer {
+
 namespace spirit = boost::spirit;
 namespace lex = boost::spirit::lex;
     
@@ -122,6 +124,8 @@ class SimpleLexer : public lex::lexer<L> {
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
 };
+
+} //end of lexer
 
 } //end of eddic
 

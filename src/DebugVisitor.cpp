@@ -172,3 +172,17 @@ void DebugVisitor::operator()(ast::ComposedValue& value) const {
     }
     --level;
 }
+
+void DebugVisitor::operator()(ast::Minus& value) const {
+    std::cout << indent() << "Unary +" << std::endl; 
+    ++level;
+    visit(*this, value.Content->value);
+    --level;
+}
+
+void DebugVisitor::operator()(ast::Plus& value) const {
+    std::cout << indent() << "Unary -" << std::endl; 
+    ++level;
+    visit(*this, value.Content->value);
+    --level;
+}

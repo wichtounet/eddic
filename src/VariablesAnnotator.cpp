@@ -207,6 +207,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
             [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
     }
 
+    void operator()(ast::Plus& value){
+        visit(*this, value.Content->value);
+    }
+
+    void operator()(ast::Minus& value){
+        visit(*this, value.Content->value);
+    }
+
     void operator()(ast::Import&){
         //Nothing to check here
     }
