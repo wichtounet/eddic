@@ -18,6 +18,7 @@ namespace ast {
 
 struct ASTMinus {
     Value value;
+    char op;
 
     mutable long references;
     ASTMinus() : references(0) {}
@@ -32,6 +33,7 @@ typedef Deferred<ASTMinus> Minus;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Minus, 
+    (char, Content->op)
     (eddic::ast::Value, Content->value)
 )
 

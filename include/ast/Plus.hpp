@@ -18,6 +18,7 @@ namespace ast {
 
 struct ASTPlus {
     Value value;
+    char op;
 
     mutable long references;
     ASTPlus() : references(0) {}
@@ -32,6 +33,7 @@ typedef Deferred<ASTPlus> Plus;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Plus, 
+    (char, Content->op)
     (eddic::ast::Value, Content->value)
 )
 
