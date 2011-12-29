@@ -54,8 +54,11 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
                             return std::make_shared<tac::Quadruple>(quadruple->result, 0);
                         }
                     }
-
-                    //TODO Transform x = 0 - a into x = -a by adding a NEG tac instruction
+                    
+                    //a = 0 - b => a = -b
+                    if(tac::equals<int>(quadruple->arg1, 0)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
+                    }
 
                     break;
                 case tac::Operator::MUL:
@@ -70,8 +73,12 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
                     } else if(tac::equals<int>(*quadruple->arg2, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 0);
                     }
-
-                    //TODO Transform x = a * -1 and x = -1 * a into x = -a by adding a NEG tac instruction
+                    
+                    if(tac::equals<int>(quadruple->arg1, -1)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
+                    } else if(tac::equals<int>(*quadruple->arg2, -1)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1, tac::Operator::MINUS);
+                    }
 
                     break;
                 case tac::Operator::DIV:
@@ -89,8 +96,10 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
                             return std::make_shared<tac::Quadruple>(quadruple->result, 1);
                         }
                     }
-
-                    //TODO Transform x = 0 / -1 into x = -a by adding a NEG tac instruction
+                    
+                    if(tac::equals<int>(*quadruple->arg2, 1)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1, tac::Operator::MINUS);
+                    }
 
                     break;
                 default:
