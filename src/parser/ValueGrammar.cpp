@@ -26,16 +26,18 @@ parser::ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type
             |   (lexer.division > unaryValue)
             |   (lexer.modulo > unaryValue)
             );
-   
     
-    
-    //TODO Support + - primaryValue
-    unaryValue = 
+    unaryValue %= 
             negatedValue
+        |   plusValue
         |   primaryValue;
    
     negatedValue = 
             lexer.subtraction
+         >> primaryValue;
+  
+    plusValue %=
+            lexer.addition
          >> primaryValue;
     
     primaryValue = 

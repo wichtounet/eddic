@@ -8,8 +8,6 @@
 #ifndef AST_MINUS_H
 #define AST_MINUS_H
 
-#include <memory>
-
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
@@ -19,7 +17,6 @@ namespace eddic {
 namespace ast {
 
 struct ASTMinus {
-    std::shared_ptr<Context> context;
     Value value;
 
     mutable long references;
