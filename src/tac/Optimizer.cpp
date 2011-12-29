@@ -425,4 +425,5 @@ void tac::Optimizer::optimize(tac::Program& program) const {
     } while (optimized);
     
     //TODO Copy propagation
+    //TODO Find a way to optimize branches in a way that dead code is never outputted and there are no jump if not necessary
 }
