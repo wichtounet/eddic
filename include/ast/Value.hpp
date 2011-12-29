@@ -25,6 +25,7 @@ typedef boost::variant<
             Litteral, 
             VariableValue,
             ComposedValue,
+            Minus,
             ArrayValue,
             FunctionCall
         > Value;
@@ -36,5 +37,6 @@ typedef boost::variant<
 #include "ast/ComposedValue.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
+#include "ast/Minus.hpp"
 
 #endif

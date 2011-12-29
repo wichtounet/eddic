@@ -5,8 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VALUES_DEF_H
-#define VALUES_DEF_H
+#ifndef AST_MINUS_H
+#define AST_MINUS_H
+
+#include <memory>
+
+#include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
 
@@ -14,26 +18,24 @@ namespace eddic {
 
 namespace ast {
 
-struct Integer;
-struct Litteral;
+struct ASTMinus {
+    std::shared_ptr<Context> context;
+    Value value;
 
-struct ASTFunctionCall;
-typedef Deferred<ASTFunctionCall> FunctionCall;
+    mutable long references;
+    ASTMinus() : references(0) {}
+};
 
-struct ASTVariableValue;
-typedef Deferred<ASTVariableValue> VariableValue;
-
-struct ASTComposedValue;
-typedef Deferred<ASTComposedValue> ComposedValue;
-
-struct ASTMinus;
 typedef Deferred<ASTMinus> Minus;
-
-struct ASTArrayValue;
-typedef Deferred<ASTArrayValue> ArrayValue;
 
 } //end of ast
 
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ast::Minus, 
+    (eddic::ast::Value, Content->value)
+)
 
 #endif
