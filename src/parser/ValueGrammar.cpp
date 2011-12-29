@@ -27,8 +27,18 @@ parser::ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type
             |   (lexer.modulo > unaryValue)
             );
     
-    //TODO Support + - primaryValue
-    unaryValue = primaryValue.alias();
+    unaryValue %= 
+            negatedValue
+        |   plusValue
+        |   primaryValue;
+   
+    negatedValue = 
+            lexer.subtraction
+         >> primaryValue;
+  
+    plusValue %=
+            lexer.addition
+         >> primaryValue;
     
     primaryValue = 
             constant 

@@ -18,6 +18,8 @@ enum class Operator : unsigned int {
     MUL,
     DIV,
     MOD,
+
+    MINUS,          //result = -arg1
     
     DOT,            //result = (arg1)+arg2
     DOT_ASSIGN,     //result+arg1=arg2

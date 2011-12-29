@@ -14,7 +14,6 @@
 
 #include "Compiler.hpp"
 
-#include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -39,6 +38,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
+    AUTO_RECURSE_MINUS_PLUS_VALUES()
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);

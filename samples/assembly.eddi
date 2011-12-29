@@ -104,6 +104,14 @@ void main(){
     d = c;
     println(d);
 
+    int minusZZ = -222;
+    print("Should print '-222' : ");
+    println(-222);
+    
+    int plusZZ = +222;
+    print("Should print '222' : ");
+    println(+222);
+
     print("2222 + 2222 = ");
     println(c + d);
 
