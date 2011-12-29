@@ -14,7 +14,6 @@
 
 #include "Compiler.hpp"
 
-#include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"

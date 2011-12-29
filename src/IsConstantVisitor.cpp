@@ -22,6 +22,14 @@ bool IsConstantVisitor::operator()(ast::Integer&) const {
     return true;
 }
 
+bool IsConstantVisitor::operator()(ast::Minus& value) const {
+    return boost::apply_visitor(*this, value.Content->value);
+}
+
+bool IsConstantVisitor::operator()(ast::Plus& value) const {
+    return boost::apply_visitor(*this, value.Content->value);
+}
+
 bool IsConstantVisitor::operator()(ast::VariableValue& variable) const {
     return variable.Content->var->type().isConst();
 }

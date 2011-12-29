@@ -17,6 +17,8 @@ namespace eddic {
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::Litteral& litteral) const;
     bool operator()(ast::Integer& litteral) const;
+    bool operator()(ast::Plus& plus) const;
+    bool operator()(ast::Minus& minus) const;
     bool operator()(ast::VariableValue& variable) const;
     bool operator()(ast::ArrayValue& variable) const;
     bool operator()(ast::ComposedValue& value) const; 
