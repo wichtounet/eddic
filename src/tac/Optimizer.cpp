@@ -429,19 +429,63 @@ bool apply_to_basic_blocks_two_pass(tac::Program& program){
 
             it = block->statements.begin();
             end = block->statements.end();
-
-            while(it != end){
-                bool keep = boost::apply_visitor(visitor, *it);
-                
-                if(!keep){
-                    it = block->statements.erase(it);   
-                }
-
-                it++;
-            }
+            
+            block->statements.erase(
+                std::remove_if(it, end,
+                    [&](tac::Statement& s){return !boost::apply_visitor(visitor, s); }), 
+                end);
 
             optimized |= visitor.optimized;
         }
+    }
+
+    return optimized;
+}
+
+template<typename T>
+int index(const std::vector<T>& vector, T& search){
+    for(unsigned int i = 0; i < vector.size(); ++i){
+        if(vector[i] == search){
+            return i;
+        }
+    }
+
+    assert(false);
+}
+
+bool remove_dead_basic_blocks(tac::Program& program){
+    bool optimized = false;
+
+    for(auto& function : program.functions){
+        std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
+
+        auto& blocks = function->getBasicBlocks();
+
+        for(unsigned int i = 0; i < blocks.size();){
+            usage.insert(blocks[i]);
+            
+            auto& block = blocks[i];
+            if(block->statements.size() > 0){
+                auto& last = block->statements[block->statements.size() - 1];
+
+                if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&last)){
+                    i = index(blocks, (*ptr)->block);
+                    continue;
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&last)){
+                    usage.insert((*ptr)->block); 
+                }
+            }
+
+            ++i;
+        }
+
+        auto it = blocks.begin();
+        auto end = blocks.end();
+
+        blocks.erase(
+            std::remove_if(it, end, 
+                [&](std::shared_ptr<tac::BasicBlock>& b){ return usage.find(b) == usage.end(); }), 
+            end);
     }
 
     return optimized;
@@ -468,8 +512,10 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Remove unused assignations
         optimized |= apply_to_basic_blocks_two_pass<RemoveAssign>(program);
+
+        //Remove dead basic blocks (unreachable code)
+        optimized |= remove_dead_basic_blocks(program);
     } while (optimized);
     
     //TODO Copy propagation
-    //TODO Find a way to optimize branches in a way that dead code is never outputted and there are no jump if not necessary
 }
