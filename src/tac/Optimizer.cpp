@@ -461,6 +461,8 @@ bool remove_dead_basic_blocks(tac::Program& program){
 
         auto& blocks = function->getBasicBlocks();
 
+        unsigned int before = blocks.size();
+
         for(unsigned int i = 0; i < blocks.size();){
             usage.insert(blocks[i]);
             
@@ -486,6 +488,10 @@ bool remove_dead_basic_blocks(tac::Program& program){
             std::remove_if(it, end, 
                 [&](std::shared_ptr<tac::BasicBlock>& b){ return usage.find(b) == usage.end(); }), 
             end);
+
+        if(blocks.size() < before){
+            optimized = true;
+        }
     }
 
     return optimized;
