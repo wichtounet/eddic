@@ -19,4 +19,23 @@ void main(){
     int o = (3 + 10) * (3 * 3 * 7) - 300 * 2;
     print(o);
     print(r);
+
+    if(false){
+        println(111);
+    } else {
+        println(666);
+    }
+
+    if(5 > 3){
+        println(222);
+    } else {
+        println(777);
+    }
+
+    int z = 111;
+    if(z > 2){
+        println(333);
+    } else {
+        println(888);
+    }
 }
