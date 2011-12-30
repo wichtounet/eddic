@@ -125,6 +125,10 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "\tgoto " << printTarget(goto_) << std::endl;
     }
 
+    void operator()(tac::NoOp&){
+        std::cout << "\tno-op" << std::endl;
+    }
+
     void operator()(std::shared_ptr<tac::Return>& return_){
         std::cout << "\treturn";
 

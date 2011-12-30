@@ -871,6 +871,10 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
 
+    void operator()(tac::NoOp&){
+        //It's a no-op
+    }
+
     void operator()(std::string&){
         assert(false); //There is no more label after the basic blocks have been extracted
     }
