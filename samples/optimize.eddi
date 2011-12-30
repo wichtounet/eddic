@@ -20,10 +20,12 @@ void main(){
     print(o);
     print(r);
 
+    println("tests");
+
     if(false){
-        println(111);
-    } else {
         println(666);
+    } else {
+        println(111);
     }
 
     if(5 > 3){

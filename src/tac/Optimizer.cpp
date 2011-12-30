@@ -211,7 +211,53 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
     }
 
     tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        //TODO Evaluate boolean expressions at compile time
+        if(tac::isInt(ifFalse->arg1) && tac::isInt(ifFalse->arg2)){
+            int left = boost::get<int>(ifFalse->arg1);
+            int right = boost::get<int>(ifFalse->arg2);
+
+            bool value = false;
+
+            switch(ifFalse->op){
+                case tac::BinaryOperator::EQUALS:
+                    value = left == right;
+
+                    break;
+                case tac::BinaryOperator::NOT_EQUALS:
+                    value = left != right;
+
+                    break;
+                case tac::BinaryOperator::LESS:
+                    value = left < right;
+
+                    break;
+                case tac::BinaryOperator::LESS_EQUALS:
+                    value = left <= right;
+
+                    break;
+                case tac::BinaryOperator::GREATER:
+                    value = left > right;
+
+                    break;
+                case tac::BinaryOperator::GREATER_EQUALS:
+                    value = left >= right;
+
+                    break;
+            }
+
+            //replace if_false true by no-op
+            if(value){
+               return tac::NoOp();
+            } 
+            //replace if_false false by goto 
+            else {
+               auto goto_ = std::make_shared<tac::Goto>();
+               
+               goto_->label = ifFalse->label;
+               goto_->block = ifFalse->block;
+
+               return goto_; 
+            }
+        }
 
         return ifFalse;
     }
