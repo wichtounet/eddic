@@ -276,12 +276,10 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
     std::unordered_map<std::shared_ptr<Variable>, int> constants;
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        bool old = optimized;
-        optimized = true;
-
         if(!quadruple->op){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                 if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
                     quadruple->arg1 = constants[*ptr];
                 }
             }
@@ -292,6 +290,7 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         } else {
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
                 if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
                     quadruple->arg1 = constants[*ptr];
                 }
             }
@@ -299,6 +298,7 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
             if(quadruple->arg2){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
                     if(constants.find(*ptr) != constants.end()){
+                        optimized = true;
                         quadruple->arg2 = constants[*ptr];
                     }
                 }
@@ -308,8 +308,25 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
             constants.erase(quadruple->result);
         }
 
-        optimized = old;
         return quadruple;
+    }
+
+    tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&ifFalse->arg1)){
+            if(constants.find(*ptr) != constants.end()){
+                optimized = true;
+                ifFalse->arg1 = constants[*ptr];
+            }
+        }
+        
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&ifFalse->arg2)){
+            if(constants.find(*ptr) != constants.end()){
+                optimized = true;
+                ifFalse->arg2 = constants[*ptr];
+            }
+        }
+
+        return ifFalse;
     }
 
     template<typename T>
