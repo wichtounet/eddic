@@ -572,4 +572,6 @@ void tac::Optimizer::optimize(tac::Program& program) const {
     } while (optimized);
     
     //TODO Copy propagation
+    //TODO Merge the basic blocks that can be merged (and are not accessed)
+    //TODO Consider the print methods as safe as the registers are saved
 }
