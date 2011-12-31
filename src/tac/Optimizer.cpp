@@ -443,7 +443,7 @@ bool apply_to_basic_blocks_two_pass(tac::Program& program){
 }
 
 template<typename T>
-int index(const std::vector<T>& vector, T& search){
+unsigned int index(const std::vector<T>& vector, T& search){
     for(unsigned int i = 0; i < vector.size(); ++i){
         if(vector[i] == search){
             return i;
@@ -497,6 +497,34 @@ bool remove_dead_basic_blocks(tac::Program& program){
     return optimized;
 }
 
+bool remove_needless_jumps(tac::Program& program){
+    bool optimized = false;
+
+    for(auto& function : program.functions){
+        auto& blocks = function->getBasicBlocks();
+
+        for(unsigned int i = 0; i < blocks.size();++i){
+            auto& block = blocks[i];
+            if(block->statements.size() > 0){
+                auto& last = block->statements[block->statements.size() - 1];
+
+                if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&last)){
+                    unsigned int target = index(blocks, (*ptr)->block);
+                   
+                    if(target == i + 1){
+                        block->statements.pop_back();
+                        //erase(block->statements.size() - 1);
+
+                        optimized = true;
+                    }
+                }
+            }
+        }
+    }
+
+    return optimized;
+}
+
 }
 
 void tac::Optimizer::optimize(tac::Program& program) const {
@@ -521,6 +549,9 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Remove dead basic blocks (unreachable code)
         optimized |= remove_dead_basic_blocks(program);
+
+        //Remove needless jumps
+        optimized |= remove_needless_jumps(program);
     } while (optimized);
     
     //TODO Copy propagation
