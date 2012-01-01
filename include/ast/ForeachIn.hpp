@@ -21,6 +21,11 @@ class Variable;
 
 namespace ast {
 
+/*!
+ * \class ASTForeachIn
+ * \brief The AST node for a foreach loop over an array. 
+ * Should only be used from the Deferred version (eddic::ast::ForeachIn).
+ */
 struct ASTForeachIn {
     std::shared_ptr<Context> context;
 
@@ -38,6 +43,10 @@ struct ASTForeachIn {
     ASTForeachIn() : references(0) {}
 };
 
+/*!
+ * \typedef ForeachIn
+ * \brief The AST node for a foreach loop over an array.
+ */
 typedef Deferred<ASTForeachIn> ForeachIn;
 
 } //end of ast

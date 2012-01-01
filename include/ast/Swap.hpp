@@ -21,6 +21,11 @@ class Variable;
 
 namespace ast {
 
+/*!
+ * \class ASTSwap
+ * \brief The AST node for a swap instruction. 
+ * Should only be used from the Deferred version (eddic::ast::Swap).
+ */
 struct ASTSwap {
     std::shared_ptr<Context> context;
     std::string lhs;
@@ -32,6 +37,10 @@ struct ASTSwap {
     ASTSwap() : references(0) {}
 };
 
+/*!
+ * \typedef Swap
+ * \brief The AST node for a swap instruction.
+ */
 typedef Deferred<ASTSwap> Swap;
 
 } //end of ast
