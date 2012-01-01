@@ -40,4 +40,11 @@ void main(){
     } else {
         println(888);
     }
+
+    int zzz = 999;
+    if(zzz > 111){
+        println(zzz);
+    } else {
+        println(333);
+    }
 }
