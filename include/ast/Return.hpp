@@ -23,6 +23,11 @@ class FunctionContext;
 
 namespace ast {
 
+/*!
+ * \class ASTReturn
+ * \brief The AST node for a return.   
+ * Should only be used from the Deferred version (eddic::ast::Return).
+ */
 struct ASTReturn {
     std::shared_ptr<Function> function;
     std::shared_ptr<FunctionContext> context;
@@ -33,6 +38,10 @@ struct ASTReturn {
     ASTReturn() : references(0) {}
 };
 
+/*!
+ * \typedef Return
+ * \brief The AST node for a return. 
+ */
 typedef Deferred<ASTReturn> Return;
 
 } //end of ast

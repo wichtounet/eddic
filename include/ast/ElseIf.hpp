@@ -18,6 +18,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ElseIf
+ * \brief The AST node for an else if construction.
+ */
 struct ElseIf {
     Condition condition;
     std::vector<Instruction> instructions;

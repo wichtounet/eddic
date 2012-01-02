@@ -16,6 +16,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class Litteral
+ * \brief The AST node for a string litteral.    
+ */
 struct Litteral : public TerminalNode {
     std::string value;
     std::string label;

@@ -31,6 +31,10 @@ class GlobalContext;
 
 namespace ast {
 
+/*!
+ * \typedef SourceFile
+ * \brief A first level block in a source file.
+ */
 typedef boost::variant<
             FunctionDeclaration, 
             GlobalVariableDeclaration,
@@ -42,7 +46,7 @@ typedef boost::variant<
 /*!
  * \class ASTSourceFile
  * \brief The AST root node for a program.
- * Should only be used from the Deferred version (eddic::ast::Program).
+ * Should only be used from the Deferred version (eddic::ast::SourceFile).
  */
 struct ASTSourceFile {
     std::shared_ptr<GlobalContext> context;
@@ -54,7 +58,7 @@ struct ASTSourceFile {
 };
 
 /*!
- * \typedef Program
+ * \typedef SourceFile
  * \brief The AST root node for a program.
  */
 typedef Deferred<ASTSourceFile> SourceFile;

@@ -82,6 +82,10 @@ struct Deferred {
         return *this;
     }
 
+    /*!
+     * \struct SafeContentAccess
+     * \brief Provide safe content access to the content of the deferred node
+     */
     struct SafeContentAccess {
         T& operator * () const {
             if(!Owner->Contents)

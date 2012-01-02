@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class Import
+ * \brief The AST node for an import.    
+ */
 struct Import {
     std::string file;
 };
