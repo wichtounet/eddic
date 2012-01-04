@@ -31,7 +31,7 @@ class FunctionContext : public Context {
         int temporary;
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8), temporary(1) {}
+        FunctionContext(std::shared_ptr<Context> parent);
         
         int size() const;
 

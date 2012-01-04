@@ -14,12 +14,14 @@
 
 using namespace eddic;
 
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8), temporary(1) {}
+
 int FunctionContext::size() const {
     return currentPosition - 4;
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
-    Position position(PositionType::PARAMETER, currentParameter);
+    Position position(PositionType::PARAMETER, currentParameter + (::size(type) - 4));
 
     currentParameter += ::size(type);
 
