@@ -40,6 +40,7 @@
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
 #include "WarningsEngine.hpp"
+#include "DebugVisitor.hpp"
 
 //Three Address Code
 #include "tac/Program.hpp"
@@ -105,13 +106,16 @@ int Compiler::compileOnly(const std::string& file) {
            
             //Read dependencies
             includeDependencies(program, parser);
+
+            //Apply some cleaning transformations
+            clean(program);
            
             //Annotate the AST with more informations
             defineDefaultValues(program);
             
             //Fill the string pool
             checkStrings(program, pool);
-            
+
             //Add some more informations to the AST
             defineContexts(program);
             defineVariables(program);
@@ -210,6 +214,12 @@ void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     DebugTimer<debug> timer("Check for warnings");
     WarningsEngine engine;
     engine.check(program, table);
+}
+
+void eddic::clean(ast::SourceFile& program){
+    DebugTimer<debug> timer("Cleaning");
+    TransformerEngine engine;
+    engine.clean(program);
 }
 
 void eddic::transform(ast::SourceFile& program){

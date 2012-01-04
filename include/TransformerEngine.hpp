@@ -20,6 +20,7 @@ namespace eddic {
  * to remove some not-composed values introduced by the parsing phase.    
  */
 struct TransformerEngine {
+    void clean(ast::SourceFile& program) const;
     void transform(ast::SourceFile& program) const;
 };
 
