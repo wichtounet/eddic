@@ -132,8 +132,13 @@ tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, tac::Argument
 
     if(position.isGlobal()){
         function->add(std::make_shared<tac::Quadruple>(temp, index, tac::Operator::MUL, -1 * size(array->type().base())));
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::ADD, (size(array->type().base()) * array->type().size())));
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::SUB, size(BaseType::INT)));
+
+        //Compute the offset manually to avoid having ADD then SUB
+        //TODO Find a way to make that optimization in the TAC Optimizer
+        int offset = size(array->type().base()) * array->type().size();
+        offset -= size(BaseType::INT);
+
+        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::ADD, offset));
     } else if(position.isStack()){
         function->add(std::make_shared<tac::Quadruple>(temp, index, tac::Operator::MUL, size(array->type().base())));
         function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::ADD, size(BaseType::INT)));
