@@ -15,6 +15,7 @@
 #include "asm/Registers.hpp"
 
 #include "tac/Printer.hpp"
+#include "tac/Utils.hpp"
 
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
@@ -65,11 +66,6 @@ std::string regToString(Register reg){
         default:
             assert(false); //Not a register
     }
-}
-
-template<typename V, typename T>
-bool equals(T& variant, V value){
-    return boost::get<V>(&variant) && boost::get<V>(variant) == value;
 }
 
 struct StatementCompiler : public boost::static_visitor<> {
@@ -487,7 +483,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         
         if(!quadruple->op){
             //The fastest way to set a register to 0 is to use xorl
-            if(equals<int>(quadruple->arg1, 0)){
+            if(tac::equals<int>(quadruple->arg1, 0)){
                 Register reg = getRegNoMove(quadruple->result);
                 writer.stream() << "xorl " << regToString(reg) << ", " << regToString(reg) << std::endl;            
             } 
@@ -503,15 +499,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
 
                     //Optimize the special form a = a + b by using only one instruction
-                    if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
+                    if(tac::equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
                         Register reg = getReg(quadruple->result);
                         
                         //a = a + 1 => increment a
-                        if(equals<int>(*quadruple->arg2, 1)){
+                        if(tac::equals<int>(*quadruple->arg2, 1)){
                             writer.stream() << "incl " << regToString(reg) << std::endl;
                         }
                         //a = a + -1 => decrement a
-                        else if(equals<int>(*quadruple->arg2, -1)){
+                        else if(tac::equals<int>(*quadruple->arg2, -1)){
                             writer.stream() << "decl " << regToString(reg) << std::endl;
                         }
                         //In the other cases, perform a simple addition
@@ -520,15 +516,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                         }
                     } 
                     //Optimize the special form a = b + a by using only one instruction
-                    else if(equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
+                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
                         Register reg = getReg(quadruple->result);
                         
                         //a = 1 + a => increment a
-                        if(equals<int>(quadruple->arg1, 1)){
+                        if(tac::equals<int>(quadruple->arg1, 1)){
                             writer.stream() << "incl " << regToString(reg) << std::endl;
                         }
                         //a = -1 + a => decrement a
-                        else if(equals<int>(quadruple->arg1, -1)){
+                        else if(tac::equals<int>(quadruple->arg1, -1)){
                             writer.stream() << "decl " << regToString(reg) << std::endl;
                         }
                         //In the other cases, perform a simple addition
@@ -550,15 +546,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
                     
                     //Optimize the special form a = a - b by using only one instruction
-                    if(equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
+                    if(tac::equals<std::shared_ptr<Variable>>(quadruple->arg1, result)){
                         Register reg = getReg(quadruple->result);
                         
                         //a = a - 1 => decrement a
-                        if(equals<int>(*quadruple->arg2, 1)){
+                        if(tac::equals<int>(*quadruple->arg2, 1)){
                             writer.stream() << "decl " << regToString(reg) << std::endl;
                         }
                         //a = a - -1 => increment a
-                        else if(equals<int>(*quadruple->arg2, -1)){
+                        else if(tac::equals<int>(*quadruple->arg2, -1)){
                             writer.stream() << "incl " << regToString(reg) << std::endl;
                         }
                         //In the other cases, perform a simple subtraction
@@ -581,13 +577,13 @@ struct StatementCompiler : public boost::static_visitor<> {
                     bool fast = false;
 
                     //Form x = -1 * x
-                    if(equals<int>(quadruple->arg1, -1) && equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
+                    if(tac::equals<int>(quadruple->arg1, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
                         writer.stream() << "neg " << arg(quadruple->result) << std::endl;
 
                         fast = true;
                     } 
                     //Form x = x * -1
-                    else if(equals<int>(*quadruple->arg2, -1) && equals<std::shared_ptr<Variable>>(quadruple->arg1, quadruple->result)){
+                    else if(tac::equals<int>(*quadruple->arg2, -1) && tac::equals<std::shared_ptr<Variable>>(quadruple->arg1, quadruple->result)){
                         writer.stream() << "neg " << arg(quadruple->result) << std::endl;
 
                         fast = true;
@@ -873,6 +869,10 @@ struct StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
                 break;
         }
+    }
+
+    void operator()(tac::NoOp&){
+        //It's a no-op
     }
 
     void operator()(std::string&){

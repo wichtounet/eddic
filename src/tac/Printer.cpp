@@ -80,6 +80,8 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " / " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MOD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " % " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::MINUS){
+                std::cout << "\t" << quadruple->result->name() << " = - " << printArgument(quadruple->arg1) << std::endl;
             } else if(op == tac::Operator::DOT){
                 std::cout << "\t" << quadruple->result->name() << " = (" << printArgument(quadruple->arg1) << ")" << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::DOT_ASSIGN){
@@ -121,6 +123,10 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
         std::cout << "\tgoto " << printTarget(goto_) << std::endl;
+    }
+
+    void operator()(tac::NoOp&){
+        std::cout << "\tno-op" << std::endl;
     }
 
     void operator()(std::shared_ptr<tac::Return>& return_){

@@ -41,11 +41,12 @@
 #include "WarningsEngine.hpp"
 
 //Three Address Code
-#include "tac/TacCompiler.hpp"
-#include "tac/Printer.hpp"
 #include "tac/Program.hpp"
+#include "tac/Compiler.hpp"
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/LivenessAnalyzer.hpp"
+#include "tac/Optimizer.hpp"
+#include "tac/Printer.hpp"
 
 //Code generation
 #include "asm/IntelX86CodeGenerator.hpp"
@@ -120,12 +121,15 @@ int Compiler::compile(const std::string& file) {
             tac::Program tacProgram;
 
             //Generate Three-Address-Code language
-            tac::TacCompiler compiler;
+            tac::Compiler compiler;
             compiler.compile(program, pool, tacProgram);
 
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
+
+            tac::Optimizer optimizer;
+            optimizer.optimize(tacProgram);
 
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
