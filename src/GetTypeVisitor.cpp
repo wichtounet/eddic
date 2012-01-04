@@ -37,7 +37,7 @@ Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
 }
 
 Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return array.Content->context->getVariable(array.Content->arrayName)->type();
+    return Type(array.Content->context->getVariable(array.Content->arrayName)->type().base(), false);
 }
 
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
