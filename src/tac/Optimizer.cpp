@@ -19,6 +19,8 @@ using namespace eddic;
 
 namespace {
 
+static const bool Debug = false;
+
 enum class Pass : unsigned int {
     DATA_MINING,
     OPTIMIZE
@@ -542,6 +544,19 @@ bool remove_needless_jumps(tac::Program& program){
     return optimized;
 }
 
+template<bool Enabled, int i>
+bool debug(bool b){
+    if(Enabled){
+        if(b){
+            std::cout << "optimization " << i << " returned true" << std::endl;
+        } else {
+            std::cout << "optimization " << i << " returned false" << std::endl;
+        }
+    }
+
+    return b;
+}
+
 }
 
 void tac::Optimizer::optimize(tac::Program& program) const {
@@ -550,25 +565,25 @@ void tac::Optimizer::optimize(tac::Program& program) const {
         optimized = false;
 
         //Optimize using arithmetic identities
-        optimized |= apply_to_all<ArithmeticIdentities>(program);
+        optimized |= debug<Debug, 1>(apply_to_all<ArithmeticIdentities>(program));
         
         //Reduce arithtmetic instructions in strength
-        optimized |= apply_to_all<ReduceInStrength>(program);
+        optimized |= debug<Debug, 2>(apply_to_all<ReduceInStrength>(program));
 
         //Constant folding
-        optimized |= apply_to_all<ConstantFolding>(program);
+        optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
 
         //Constant propagation
-        optimized |= apply_to_basic_blocks<ConstantPropagation>(program);
+        optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
 
         //Remove unused assignations
-        optimized |= apply_to_basic_blocks_two_pass<RemoveAssign>(program);
+        optimized |= debug<Debug, 5>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= remove_dead_basic_blocks(program);
+        optimized |= debug<Debug, 6>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= remove_needless_jumps(program);
+        optimized |= debug<Debug, 7>(remove_needless_jumps(program));
     } while (optimized);
     
     //TODO Copy propagation
