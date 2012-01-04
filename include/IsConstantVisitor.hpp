@@ -14,6 +14,10 @@
 
 namespace eddic {
 
+/*!
+ * \struct IsConstantVisitor
+ * \brief AST Visitor to test if a node is constant. 
+ */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::Litteral& litteral) const;
     bool operator()(ast::Integer& litteral) const;

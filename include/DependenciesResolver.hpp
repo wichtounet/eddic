@@ -14,6 +14,10 @@ namespace eddic {
 
 class SpiritParser;
 
+/*!
+ * \struct DependenciesResolver
+ * \brief Utility class to resolve all the imports in a program.   
+ */
 struct DependenciesResolver {
     DependenciesResolver(SpiritParser& parser);
 

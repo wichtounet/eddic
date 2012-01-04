@@ -20,6 +20,11 @@ enum class BaseType : unsigned int {
     COUNT
 };
 
+/*!
+ * \struct Type
+ * \brief A type descriptor.
+ * Can describe any type in an EDDI source file. 
+ */
 class Type {
     private:
         BaseType type;
