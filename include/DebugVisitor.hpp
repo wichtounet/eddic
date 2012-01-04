@@ -14,6 +14,12 @@
 
 namespace eddic {
 
+/*!
+ * \class DebugVisitor
+ * \brief AST Debugger
+ *  
+ * This static visitor browse and print the entire AST to the console. 
+ */
 struct DebugVisitor : public boost::static_visitor<> {
     mutable int level;
 

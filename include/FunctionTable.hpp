@@ -17,6 +17,10 @@
 
 namespace eddic {
 
+/*!
+ * \class ParameterType
+ * \brief A parameter for a function.  
+ */
 struct ParameterType {
     std::string name;
     Type paramType;
@@ -24,6 +28,10 @@ struct ParameterType {
     ParameterType(const std::string& n, Type t) : name(n), paramType(t) {}
 };
 
+/*!
+ * \class Function
+ * \brief A function entry in the function table. 
+ */
 struct Function {
     Type returnType;
     std::string name;
@@ -34,6 +42,13 @@ struct Function {
     Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
 };
 
+/*!
+ * \class FunctionTable
+ * \brief The global function table. 
+ * 
+ * This class is responsible for managing all the functions of the current program. It's also responsible
+ * of managing the reference count for the functions.  
+ */
 class FunctionTable {
     private:
         std::unordered_map<std::string, std::shared_ptr<Function>> functions;

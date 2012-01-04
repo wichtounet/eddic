@@ -19,6 +19,11 @@ class FunctionContext;
 
 namespace ast {
 
+/*!
+ * \class ASTFunctionDeclaration
+ * \brief The AST node for a function declaration.  
+ * Should only be used from the Deferred version (eddic::ast::FunctionDeclaration).
+ */
 struct ASTFunctionDeclaration { 
     std::shared_ptr<FunctionContext> context;
     std::string returnType;
@@ -31,6 +36,10 @@ struct ASTFunctionDeclaration {
     ASTFunctionDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef FunctionDeclaration
+ * \brief The AST node for a function declaration.
+ */
 typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration; 
 
 } //end of ast

@@ -21,6 +21,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTAssignment
+ * \brief The AST node for an assignement to a variable.  
+ * Should only be used from the Deferred version (eddic::ast::Assignment).
+ */
 struct ASTAssignment {
     std::shared_ptr<Context> context;
 
@@ -31,6 +36,10 @@ struct ASTAssignment {
     ASTAssignment() : references(0) {}
 };
 
+/*!
+ * \typedef Assignment
+ * \brief The AST node for an assignment to a variable. 
+ */
 typedef Deferred<ASTAssignment> Assignment;
 
 } //end of ast

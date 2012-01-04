@@ -14,6 +14,10 @@ namespace eddic {
 
 class FunctionTable;
 
+/*!
+ * \class WarningsEngine
+ * \brief A simple warnings engine checking the whole program for possible problems.  
+ */
 struct WarningsEngine {
     void check(ast::SourceFile& program, FunctionTable& functionTable) const ;
 };

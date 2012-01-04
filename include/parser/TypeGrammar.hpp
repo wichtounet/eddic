@@ -22,6 +22,10 @@ namespace parser {
 typedef lexer::lexer_type::iterator_type Iterator;
 typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
 
+/*!
+ * \class TypeGrammar
+ * \brief Grammar representing types in EDDI language.
+ */
 struct TypeGrammar : qi::grammar<Iterator, ast::Type()> {
     TypeGrammar(const Lexer& lexer);
 

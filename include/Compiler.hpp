@@ -38,11 +38,21 @@ void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool
 
 void execCommand(const std::string& command);
 
+/*!
+ * \class Compiler
+ * \brief The EDDI compiler.
+ *
+ * This class is used to launch the compilation of a source file. It will then launch each phases of the compilation on this phase
+ * and produce either an executable or an assembly file depending on the provided options. 
+ */
 struct Compiler {
     int compile (const std::string& file);
 };
 
-//Utility for other classes
+/*!
+ * \brief Produces a warning on the command line. 
+ * \param warning The warning message to produce.  
+ */
 void warn(const std::string& warning);
 
 } //end of eddic

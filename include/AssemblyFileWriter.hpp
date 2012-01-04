@@ -13,6 +13,10 @@
 
 namespace eddic {
 
+/*!
+ * \class AssemblyFileWriter
+ * \brief A simple writer to append assembly code to the assembly output file. 
+ */
 class AssemblyFileWriter {
     private:
         std::ofstream m_stream;

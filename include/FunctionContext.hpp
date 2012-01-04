@@ -19,6 +19,10 @@ namespace eddic {
 
 class Value;
 
+/*!
+ * \class FunctionContext
+ * \brief A symbol table for a function.
+ */
 class FunctionContext : public Context {
     private:
         int currentPosition;

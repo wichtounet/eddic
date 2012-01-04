@@ -24,6 +24,10 @@ namespace parser {
 typedef lexer::lexer_type::iterator_type Iterator;
 typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
 
+/*!
+ * \class BooleanGrammar
+ * \brief Grammar to represent boolean litterals and conditions. 
+ */
 struct BooleanGrammar : qi::grammar<Iterator, ast::Condition()> {
     BooleanGrammar(const Lexer& lexer);
 

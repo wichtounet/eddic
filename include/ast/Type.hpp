@@ -17,6 +17,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \typedef Type
+ * \brief A type in the AST.  
+ */
 typedef boost::variant<SimpleType, ArrayType> Type;
 
 } //end of ast

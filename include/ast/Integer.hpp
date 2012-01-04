@@ -16,6 +16,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class Integer
+ * \brief The AST node for an integer.    
+ */
 struct Integer : public TerminalNode {
     int value;
 };

@@ -12,6 +12,12 @@
 
 namespace eddic {
 
+/*!
+ * \class Timer
+ * \brief Simple stopwatch to keep track of elapsed time between two points. 
+ * 
+ * The stopwatch starts automatically when instantiated. This stopwatch use Boost Chrono to keep tracks of time.    
+ */
 class Timer {
     public:
         Timer();

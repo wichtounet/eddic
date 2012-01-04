@@ -19,6 +19,11 @@ class Variable;
 
 namespace ast {
 
+/*!
+ * \class ASTArrayValue
+ * \brief The AST node for a value of an array. 
+ * Should only be used from the Deferred version (eddic::ast::ArrayValue).
+ */
 struct ASTArrayValue {
     std::shared_ptr<Context> context;
 
@@ -30,6 +35,10 @@ struct ASTArrayValue {
     ASTArrayValue() : references(0) {}
 };
 
+/*!
+ * \typedef ArrayValue
+ * \brief The AST node for a value of an array.
+ */
 typedef Deferred<ASTArrayValue> ArrayValue;
 
 } //end of ast

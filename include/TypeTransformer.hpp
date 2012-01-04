@@ -15,6 +15,10 @@
 
 namespace eddic {
 
+/*!
+ * \struct TypeTransformer
+ * \brief AST visitor to transform an AST type into a type descriptor.   
+ */
 struct TypeTransformer : public boost::static_visitor<Type> {
     Type operator()(ast::SimpleType& type) const;
     Type operator()(ast::ArrayType& type) const;

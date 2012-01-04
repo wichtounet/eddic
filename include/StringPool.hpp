@@ -13,6 +13,11 @@
 
 namespace eddic {
 
+/*!
+ * \class StringPool
+ * \brief The string pool of the program. 
+ * All the strings are stored and referred only by an index.  
+ */
 class StringPool {
     private:
         std::unordered_map<std::string, std::string> pool;

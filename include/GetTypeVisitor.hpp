@@ -16,6 +16,10 @@
 
 namespace eddic {
 
+/*!
+ * \class GetTypeVisitor
+ * \brief Static Visitor to get the Type of a Value from the AST. 
+ */
 struct GetTypeVisitor : public boost::static_visitor<Type> {
     Type operator()(const ast::Litteral& litteral) const;
     Type operator()(const ast::Integer& litteral) const;

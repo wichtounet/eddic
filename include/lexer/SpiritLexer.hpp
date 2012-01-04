@@ -32,10 +32,15 @@ typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_itera
 typedef boost::spirit::lex::lexertl::token<pos_iterator_type, boost::mpl::vector<std::string, int>> Tok;
 typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
+/*!
+ * \class SimpleLexer
+ * \brief The EDDI lexer. 
+ *
+ * This class is used to do lexical analysis on an EDDI source file. This file is based on a Boost Spirit Lexer. It's 
+ * used by the parser to parse a source file. 
+ */
 template<typename L>
 class SimpleLexer : public lex::lexer<L> {
-    private:
-
     public:
         SimpleLexer() {
             //Define keywords
