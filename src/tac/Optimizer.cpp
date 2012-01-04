@@ -490,8 +490,10 @@ bool remove_dead_basic_blocks(tac::Program& program){
                 auto& last = block->statements[block->statements.size() - 1];
 
                 if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&last)){
-                    i = index(blocks, (*ptr)->block);
-                    continue;
+                    if(usage.find((*ptr)->block) == usage.end()){
+                        i = index(blocks, (*ptr)->block);
+                        continue;
+                    }
                 } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&last)){
                     usage.insert((*ptr)->block); 
                 }
