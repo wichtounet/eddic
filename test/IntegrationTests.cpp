@@ -71,6 +71,10 @@ BOOST_AUTO_TEST_CASE( samples_problem ){
     assertCompiles("samples/problem.eddi");
 }
 
+BOOST_AUTO_TEST_CASE( samples_sort ){
+    assertCompiles("samples/sort.eddi");
+}
+
 /* Specific tests */ 
 
 BOOST_AUTO_TEST_CASE( if_ ){
