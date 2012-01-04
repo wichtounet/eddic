@@ -113,7 +113,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         repeatAssign.Content->variableName = foreach.Content->variableName;
         repeatAssign.Content->value = addition;
 
-        for_.Content->start = startAssign;
+        for_.Content->repeat = repeatAssign;
 
         //Put the operations into the new for
         for_.Content->instructions = foreach.Content->instructions;
@@ -128,13 +128,67 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
     }
 };
 
-struct TransformerVisitor : public boost::static_visitor<> {
+struct CleanerVisitor : public boost::static_visitor<> {
     ValueTransformer transformer;
+
+    AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_FUNCTION_DECLARATION()
+    AUTO_RECURSE_BRANCHES()
+    AUTO_RECURSE_SIMPLE_LOOPS()
+    AUTO_RECURSE_FOREACH()
+
+    void operator()(ast::FunctionCall& functionCall) const {
+        auto start = functionCall.Content->values.begin();
+        auto end = functionCall.Content->values.end();
+
+        while(start != end){
+            *start = boost::apply_visitor(transformer, *start);
+
+            ++start;
+        }
+    }
+
+    void operator()(ast::GlobalVariableDeclaration& declaration) const {
+        if(declaration.Content->value){
+            declaration.Content->value = boost::apply_visitor(transformer, *declaration.Content->value); 
+        }
+    }
+
+    void operator()(ast::Assignment& assignment) const {
+        assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
+    }
+
+    void operator()(ast::Return& return_) const {
+        return_.Content->value = boost::apply_visitor(transformer, return_.Content->value); 
+    }
+
+    void operator()(ast::ArrayAssignment& assignment) const {
+        assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
+        assignment.Content->indexValue = boost::apply_visitor(transformer, assignment.Content->indexValue); 
+    }
+
+    void operator()(ast::VariableDeclaration& declaration) const {
+        if(declaration.Content->value){
+            declaration.Content->value = boost::apply_visitor(transformer, *declaration.Content->value); 
+        }
+    }
+
+    void operator()(ast::BinaryCondition& binaryCondition) const {
+        binaryCondition.Content->lhs = boost::apply_visitor(transformer, binaryCondition.Content->lhs); 
+        binaryCondition.Content->rhs = boost::apply_visitor(transformer, binaryCondition.Content->rhs); 
+    }
+
+    //No transformations
+    template<typename T>
+    void operator()(T&) const {
+        //Do nothing
+    }
+};
+
+struct TransformerVisitor : public boost::static_visitor<> {
     InstructionTransformer instructionTransformer;
 
-    void operator()(ast::SourceFile& program) const {
-        visit_each(*this, program.Content->blocks);
-    }
+    AUTO_RECURSE_PROGRAM()
 
     template<typename T>
     void transform(T& instructions) const {
@@ -186,45 +240,17 @@ struct TransformerVisitor : public boost::static_visitor<> {
         transform(while_.Content->instructions);
     }
 
-    void operator()(ast::FunctionCall& functionCall) const {
-        auto start = functionCall.Content->values.begin();
-        auto end = functionCall.Content->values.end();
-
-        while(start != end){
-            *start = boost::apply_visitor(transformer, *start);
-
-            ++start;
-        }
-    }
-
-    void operator()(ast::Assignment& assignment) const {
-        assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
-    }
-
-    void operator()(ast::Return& return_) const {
-        return_.Content->value = boost::apply_visitor(transformer, return_.Content->value); 
-    }
-
-    void operator()(ast::ArrayAssignment& assignment) const {
-        assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
-        assignment.Content->indexValue = boost::apply_visitor(transformer, assignment.Content->indexValue); 
-    }
-
-    void operator()(ast::VariableDeclaration& declaration) const {
-        declaration.Content->value = boost::apply_visitor(transformer, *declaration.Content->value); 
-    }
-
-    void operator()(ast::BinaryCondition& binaryCondition) const {
-        binaryCondition.Content->lhs = boost::apply_visitor(transformer, binaryCondition.Content->lhs); 
-        binaryCondition.Content->rhs = boost::apply_visitor(transformer, binaryCondition.Content->rhs); 
-    }
-
     //No transformations
     template<typename T>
     void operator()(T&) const {
         //Do nothing
     }
 };
+
+void TransformerEngine::clean(ast::SourceFile& program) const {
+    CleanerVisitor visitor;
+    visitor(program);
+}
 
 void TransformerEngine::transform(ast::SourceFile& program) const {
     TransformerVisitor visitor;

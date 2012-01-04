@@ -50,6 +50,8 @@ inline std::string toString(T number) {
     return boost::lexical_cast<std::string>(number); 
 }
 
+std::string execCommand(const std::string& command);
+
 } //end of eddic
 
 #endif

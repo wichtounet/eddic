@@ -1,0 +1,7 @@
+void main(){
+    print(first("abc"));
+}
+
+string first(string a){
+    return a + "def";
+}

@@ -12,6 +12,7 @@
 
 #include "Target.hpp"
 
+#include "Utils.hpp"
 #include "Timer.hpp"
 #include "DebugTimer.hpp"
 #include "Options.hpp"
@@ -39,6 +40,7 @@
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
 #include "WarningsEngine.hpp"
+#include "DebugVisitor.hpp"
 
 //Three Address Code
 #include "tac/Program.hpp"
@@ -62,6 +64,8 @@ static const bool debug = false;
 
 using namespace eddic;
 
+void exec(const std::string& command);
+
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
 
@@ -70,7 +74,15 @@ int Compiler::compile(const std::string& file) {
     }
 
     Timer timer;
+    
+    int code = compileOnly(file);
 
+    std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
+
+    return code;
+}
+
+int Compiler::compileOnly(const std::string& file) {
     std::string output = options["output"].as<std::string>();
 
     int code = 0;
@@ -94,6 +106,9 @@ int Compiler::compile(const std::string& file) {
            
             //Read dependencies
             includeDependencies(program, parser);
+
+            //Apply some cleaning transformations
+            clean(program);
            
             //Annotate the AST with more informations
             defineDefaultValues(program);
@@ -101,13 +116,13 @@ int Compiler::compile(const std::string& file) {
             //Fill the string pool
             checkStrings(program, pool);
 
-            //Transform the AST
-            transform(program);
-            
             //Add some more informations to the AST
             defineContexts(program);
             defineVariables(program);
             defineFunctions(program, functionTable);
+
+            //Transform the AST
+            transform(program);
 
             //Static analysis
             checkTypes(program);
@@ -143,8 +158,8 @@ int Compiler::compile(const std::string& file) {
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
-                execCommand("as --32 -o output.o output.asm");
-                execCommand("ld -m elf_i386 output.o -o " + output);
+                exec("as --32 -o output.o output.asm");
+                exec("ld -m elf_i386 output.o -o " + output);
 
                 //Remove temporary files
                 remove("output.asm");
@@ -155,8 +170,6 @@ int Compiler::compile(const std::string& file) {
         std::cout << e.what() << std::endl;
         code = 1;
     }
-
-    std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
 
     return code;
 }
@@ -203,6 +216,12 @@ void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     engine.check(program, table);
 }
 
+void eddic::clean(ast::SourceFile& program){
+    DebugTimer<debug> timer("Cleaning");
+    TransformerEngine engine;
+    engine.clean(program);
+}
+
 void eddic::transform(ast::SourceFile& program){
     DebugTimer<debug> timer("Transformation");
     TransformerEngine engine;
@@ -221,22 +240,18 @@ void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParse
     resolver.resolve(sourceFile);
 }
 
-void eddic::execCommand(const std::string& command) {
+void exec(const std::string& command) {
     DebugTimer<debug> timer("Exec " + command);
     
     if(debug){
         std::cout << "eddic : exec command : " << command << std::endl;
     }
 
-    char buffer[1024];
+    std::string result = execCommand(command);
 
-    FILE* stream = popen(command.c_str(), "r");
-
-    while (fgets(buffer, 1024, stream) != NULL) {
-        std::cout << buffer;
+    if(result.size() > 0){
+        std::cout << result << std::endl;
     }
-
-    pclose(stream);
 }
 
 void eddic::warn(const std::string& warning){

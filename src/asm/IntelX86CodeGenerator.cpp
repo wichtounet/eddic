@@ -310,14 +310,22 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(position.isStack()){
             return ::toString(-position.offset() + offset) + "(%ebp)";
         } else if(position.isParameter()){
-            //TODO This register allocation is not safe
-            Register reg = getReg();
-            
-            writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
+            //The case of array is special because only the address is passed, not the complete array
+            if(variable->type().isArray())
+            {
+                //TODO This register allocation is not safe
+                Register reg = getReg();
 
-            registers.release(reg);
+                writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
 
-            return ::toString(offset) + "(" + regToString(reg)  + ")";
+                registers.release(reg);
+
+                return ::toString(offset) + "(" + regToString(reg)  + ")";
+            } 
+            //In the other cases, the value is passed, so we can compute the offset directly
+            else {
+                return ::toString(position.offset() + offset) + "(%ebp)";
+            }
         } else if(position.isGlobal()){
             return "V" + position.name() + "+" + ::toString(offset);
         } else if(position.isTemporary()){

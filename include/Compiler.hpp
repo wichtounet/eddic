@@ -21,6 +21,7 @@ namespace parser {
 class StringPool;
 class FunctionTable;
 
+void clean(ast::SourceFile& program);
 void defineDefaultValues(ast::SourceFile& program);
 void defineContexts(ast::SourceFile& program);
 void defineVariables(ast::SourceFile& program);
@@ -36,8 +37,6 @@ void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 void transform(ast::SourceFile& program);
 void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
-void execCommand(const std::string& command);
-
 /*!
  * \class Compiler
  * \brief The EDDI compiler.
@@ -47,6 +46,7 @@ void execCommand(const std::string& command);
  */
 struct Compiler {
     int compile (const std::string& file);
+    int compileOnly (const std::string& file);
 };
 
 /*!

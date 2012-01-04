@@ -5,21 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <string>
-
 #include "Utils.hpp"
 
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+std::string eddic::execCommand(const std::string& command) {
+    std::stringstream output;
 
-BOOST_AUTO_TEST_CASE( toString ){
-    std::string result = eddic::toString(33);
+    char buffer[1024];
 
-    BOOST_CHECK_EQUAL (result, "33");
-}
+    FILE* stream = popen(command.c_str(), "r");
 
-BOOST_AUTO_TEST_CASE( toNumber ){
-    int value = eddic::toNumber<int>("22");
+    while (fgets(buffer, 1024, stream) != NULL) {
+        output << buffer;
+    }
 
-    BOOST_CHECK_EQUAL (value, 22);
+    pclose(stream);
+
+    return output.str();
 }

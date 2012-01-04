@@ -1,0 +1,7 @@
+void main(){
+    if(5 > 3){
+        print("Cool");
+    } else {
+        print("Pas cool");
+    }
+}

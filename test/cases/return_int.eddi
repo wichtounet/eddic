@@ -1,0 +1,7 @@
+void main(){
+    print(first(22));
+}
+
+int first(int a){
+    return a * a;
+}
