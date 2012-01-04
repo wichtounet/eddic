@@ -106,6 +106,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             return value;
         }
 
+        //TODO This should be done in the TAC Optimizer
         ast::Value operator()(ast::VariableValue& variable) const {
             Type type = variable.Content->var->type();
 
@@ -171,6 +172,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
             return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
         }
 
+        //TODO This should be done in the TAC Optimizer
         bool operator()(ast::FunctionDeclaration& declaration){
             if(OptimizeUnused){
                 if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
