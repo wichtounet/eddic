@@ -381,6 +381,20 @@ struct RemoveAssign : public boost::static_visitor<bool> {
             return true;
         }
     }
+    
+    bool operator()(std::shared_ptr<tac::IfFalse>& quadruple){
+        if(pass == Pass::DATA_MINING){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                used.insert(*ptr);
+            }
+
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg2)){
+                used.insert(*ptr);
+            }
+        }
+
+        return true;
+    }
 
     bool operator()(std::shared_ptr<tac::Return>& return_){
         if(pass == Pass::DATA_MINING){
