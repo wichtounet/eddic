@@ -1,0 +1,40 @@
+const int SIZE = 1000;
+int array[1000];
+
+void main(){
+    for(int i = 0; i < SIZE; i = i + 1){
+        array[i] = SIZE - i;
+    }
+
+    println("Before sort");
+
+    /*foreach(int a in array){
+        println(a);
+    }*/
+
+    sort();
+
+    println("After sort");
+
+    /*foreach(int a in array){
+        println(a);
+    }*/
+}
+
+void sort(){
+    int swapped = 1;
+
+    while(swapped == 1){
+        swapped = 0;
+
+        for(int i = 1; i < SIZE; i = i + 1){
+            if(array[i - 1] > array[i]){
+                int a = array[i];
+                array[i] = array[i - 1];
+                array[i - 1] = a; 
+
+                swapped = 1;
+            }
+        }
+    }
+}
