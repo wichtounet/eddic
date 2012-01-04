@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class False
+ * \brief Reprensent a false boolean litteral. 
+ */
 struct False : public TerminalNode {
 
 };

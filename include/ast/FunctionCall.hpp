@@ -20,6 +20,11 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ASTFunctionCall
+ * \brief The AST node for a function call. 
+ * Should only be used from the Deferred version (eddic::ast::FunctionCall).
+ */
 struct ASTFunctionCall {
     std::shared_ptr<Function> function;
 
@@ -30,6 +35,10 @@ struct ASTFunctionCall {
     ASTFunctionCall() : references(0) {}
 };
 
+/*!
+ * \typedef FunctionCall
+ * \brief The AST node for a function call.
+ */
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
 } //end of ast

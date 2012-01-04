@@ -18,6 +18,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class Else
+ * \brief The AST node for an else construction.
+ */
 struct Else {
     std::vector<Instruction> instructions;
 };

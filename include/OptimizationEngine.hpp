@@ -15,6 +15,10 @@ namespace eddic {
 class FunctionTable;
 class StringPool;
 
+/*!
+ * \class OptimizationEngine
+ * \brief This optimizer edit the AST in order to optimize it for runtime performances and for size.  
+ */
 struct OptimizationEngine {
     void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const ;
 };

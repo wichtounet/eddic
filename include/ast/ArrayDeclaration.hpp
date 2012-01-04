@@ -20,6 +20,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTArrayDeclaration
+ * \brief The AST node for a declaration of a local array.  
+ * Should only be used from the Deferred version (eddic::ast::ArrayDeclaration).
+ */
 struct ASTArrayDeclaration {
     std::shared_ptr<Context> context;
 
@@ -31,6 +36,10 @@ struct ASTArrayDeclaration {
     ASTArrayDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef ArrayDeclaration
+ * \brief The AST node for a declaration of an array. 
+ */
 typedef Deferred<ASTArrayDeclaration> ArrayDeclaration;
 
 } //end of ast

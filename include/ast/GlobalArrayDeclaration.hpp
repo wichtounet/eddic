@@ -18,6 +18,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTGlobalArrayDeclaration
+ * \brief The AST node for a global array declaration.   
+ * Should only be used from the Deferred version (eddic::ast::GlobalarrayDeclaration).
+ */
 struct ASTGlobalArrayDeclaration {
     std::shared_ptr<Context> context;
     
@@ -29,6 +34,10 @@ struct ASTGlobalArrayDeclaration {
     ASTGlobalArrayDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef GlobalArrayDeclaration
+ * \brief The AST node for a global array declaration.
+ */
 typedef Deferred<ASTGlobalArrayDeclaration> GlobalArrayDeclaration;
 
 } //end of ast

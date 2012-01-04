@@ -20,6 +20,12 @@ namespace eddic {
 
 typedef boost::variant<int, std::pair<std::string, int>> Val;
 
+/*!
+ * \class GetConstantValue
+ * \brief AST Visitor to retrieve the constant value of an AST node. 
+ * This visitor should only be used on a constant node.
+ * \see eddic::IsConstantVisitor 
+ */
 struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const ast::Litteral& litteral) const;
     Val operator()(const ast::Integer& litteral) const;

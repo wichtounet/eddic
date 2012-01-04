@@ -1,0 +1,50 @@
+void main(){
+    int a = 1;
+    int b = a + 0;
+    int c = 0 + a;
+    int d = 1 * a;
+    int e = a * 1;
+    int f = a / 1;
+    int g = a - 0;
+    int h = 2 * a;
+    int i = a * 2;
+    int j = 1 + 1;
+    int k = 2 * 2;
+    int l = 3 / 3;
+    int m = 4 - 3;
+    int n = 5 % 2;
+    int p = a * 0;
+    int q = 0 * a;
+    int r = 0 / a;
+    int o = (3 + 10) * (3 * 3 * 7) - 300 * 2;
+    print(o);
+    print(r);
+
+    println("tests");
+
+    if(false){
+        println(666);
+    } else {
+        println(111);
+    }
+
+    if(5 > 3){
+        println(222);
+    } else {
+        println(777);
+    }
+
+    int z = 111;
+    if(z > 2){
+        println(333);
+    } else {
+        println(888);
+    }
+
+    int zzz = 999;
+    if(zzz > 111){
+        println(zzz);
+    } else {
+        println(333);
+    }
+}

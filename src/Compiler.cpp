@@ -42,11 +42,12 @@
 #include "WarningsEngine.hpp"
 
 //Three Address Code
-#include "tac/TacCompiler.hpp"
-#include "tac/Printer.hpp"
 #include "tac/Program.hpp"
+#include "tac/Compiler.hpp"
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/LivenessAnalyzer.hpp"
+#include "tac/Optimizer.hpp"
+#include "tac/Printer.hpp"
 
 //Code generation
 #include "asm/IntelX86CodeGenerator.hpp"
@@ -87,7 +88,7 @@ int Compiler::compileOnly(const std::string& file) {
     try {
         TIMER_START(parsing)
 
-        SpiritParser parser;
+        parser::SpiritParser parser;
 
         //The program to build
         ast::SourceFile program;
@@ -131,12 +132,15 @@ int Compiler::compileOnly(const std::string& file) {
             tac::Program tacProgram;
 
             //Generate Three-Address-Code language
-            tac::TacCompiler compiler;
+            tac::Compiler compiler;
             compiler.compile(program, pool, tacProgram);
 
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
+
+            tac::Optimizer optimizer;
+            optimizer.optimize(tacProgram);
 
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
@@ -220,7 +224,7 @@ void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, Str
     engine.optimize(program, functionTable, pool);
 }
 
-void eddic::includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser){
+void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
     DebugTimer<debug> timer("Resolve dependencies");
     DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);

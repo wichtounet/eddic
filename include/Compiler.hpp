@@ -14,16 +14,19 @@
 
 namespace eddic {
 
+namespace parser {
+    class SpiritParser;
+}
+
 class StringPool;
 class FunctionTable;
-class SpiritParser;
 
 void defineDefaultValues(ast::SourceFile& program);
 void defineContexts(ast::SourceFile& program);
 void defineVariables(ast::SourceFile& program);
 void defineFunctions(ast::SourceFile& program, FunctionTable& table);
 
-void includeDependencies(ast::SourceFile& sourceFile, SpiritParser& parser);
+void includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser);
 
 void checkTypes(ast::SourceFile& program);
 void checkStrings(ast::SourceFile& program, StringPool& pool);
@@ -33,12 +36,22 @@ void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 void transform(ast::SourceFile& program);
 void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
+/*!
+ * \class Compiler
+ * \brief The EDDI compiler.
+ *
+ * This class is used to launch the compilation of a source file. It will then launch each phases of the compilation on this phase
+ * and produce either an executable or an assembly file depending on the provided options. 
+ */
 struct Compiler {
     int compile (const std::string& file);
     int compileOnly (const std::string& file);
 };
 
-//Utility for other classes
+/*!
+ * \brief Produces a warning on the command line. 
+ * \param warning The warning message to produce.  
+ */
 void warn(const std::string& warning);
 
 } //end of eddic

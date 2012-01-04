@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class SimpleType
+ * \brief A simple (non-array) type in the AST.  
+ */
 struct SimpleType {
     std::string type;
 };

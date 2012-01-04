@@ -16,6 +16,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class FunctionParameter
+ * \brief The AST node for a function parameter in a function declaration.
+ */
 struct FunctionParameter {
     Type parameterType;
     std::string parameterName;

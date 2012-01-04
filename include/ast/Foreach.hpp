@@ -20,6 +20,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTForeach
+ * \brief The AST node for a foreach loop. 
+ * Should only be used from the Deferred version (eddic::ast::Foreach).
+ */
 struct ASTForeach {
     std::shared_ptr<Context> context;
     std::string variableType;
@@ -32,6 +37,10 @@ struct ASTForeach {
     ASTForeach() : references(0) {}
 };
 
+/*!
+ * \typedef Foreach
+ * \brief The AST node for a foreach loop.
+ */
 typedef Deferred<ASTForeach> Foreach;
 
 } //end of ast

@@ -17,15 +17,23 @@ namespace qi = boost::spirit::qi;
 
 namespace eddic {
 
-typedef lexer_type::iterator_type Iterator;
-typedef SimpleLexer<lexer_type> Lexer;
+namespace parser {
 
+typedef lexer::lexer_type::iterator_type Iterator;
+typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
+
+/*!
+ * \class ValueGrammar
+ * \brief Grammar representing values in EDDI language.
+ */
 struct ValueGrammar : qi::grammar<Iterator, ast::Value()> {
     ValueGrammar(const Lexer& lexer);
     
     qi::rule<Iterator, ast::Value()> value;
     qi::rule<Iterator, ast::Value()> primaryValue;
     qi::rule<Iterator, ast::Value()> unaryValue;
+    qi::rule<Iterator, ast::Minus()> negatedValue;
+    qi::rule<Iterator, ast::Plus()> plusValue;
     qi::rule<Iterator, ast::ComposedValue()> additiveValue;
     qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
     qi::rule<Iterator, ast::Value()> constant;
@@ -35,6 +43,8 @@ struct ValueGrammar : qi::grammar<Iterator, ast::Value()> {
     qi::rule<Iterator, ast::ArrayValue()> arrayValue;
     qi::rule<Iterator, ast::FunctionCall()> functionCall;
 };
+
+} //end of parser
 
 } //end of eddic
 

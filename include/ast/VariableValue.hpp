@@ -19,6 +19,11 @@ class Variable;
 
 namespace ast {
 
+/*!
+ * \class ASTVariableValue
+ * \brief The AST node for a variable value.  
+ * Should only be used from the Deferred version (eddic::ast::VariableValue).
+ */
 struct ASTVariableValue {
     std::shared_ptr<Context> context;
 
@@ -29,6 +34,10 @@ struct ASTVariableValue {
     ASTVariableValue() : references(0) {}
 };
 
+/*!
+ * \typedef VariableValue
+ * \brief The AST node for a variable value.
+*/
 typedef Deferred<ASTVariableValue> VariableValue;
 
 } //end of ast

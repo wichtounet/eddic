@@ -25,57 +25,6 @@
 
 using namespace eddic;
 
-struct GetIntValue : public boost::static_visitor<int> {
-    int operator()(ast::ComposedValue& value) const {
-        int acc = boost::apply_visitor(*this, value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            int v = boost::apply_visitor(*this, operation.get<1>());
-            char op = operation.get<0>();
-
-            switch(op){
-                case '+':
-                    acc += v;
-                    break;
-                case '-':
-                    acc -= v;
-                    break;
-                case '*':
-                    acc *= v;
-                    break;
-                case '/':
-                    acc /= v;
-                    break;
-                case '%':
-                    acc %= v;
-                    break;
-            }
-        }
-
-        return acc;
-    }
-
-    int operator()(ast::Integer& integer) const {
-        return integer.value; 
-    }
-
-    int operator()(ast::VariableValue& variable) const {
-        Type type = variable.Content->var->type();
-        assert(type.isConst() && type.base() == BaseType::INT);
-        
-        return boost::get<int>(variable.Content->var->val());
-    }
-   
-    //Other values are not integers
-    template<typename T> 
-    int operator()(T&) const {
-        assert(false);
-
-        return -1; 
-    }
-};
-
-
 struct GetStringValue : public boost::static_visitor<std::string> {
     std::string operator()(ast::ComposedValue& value) const {
         std::string acc = boost::apply_visitor(*this, value.Content->first);
@@ -124,13 +73,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             if(IsConstantVisitor()(value)){
                 Type type = GetTypeVisitor()(value);
 
-                if(type.base() == BaseType::INT){
-                    if (OptimizeIntegers) {
-                        ast::Integer integer;
-                        integer.value = GetIntValue()(value);
-                        return integer; 
-                    }
-                } else if(type.base() == BaseType::STRING){
+                if(type.base() == BaseType::STRING){
                     if (OptimizeStrings) {
                         ast::Litteral litteral;
                         litteral.value = GetStringValue()(value);
@@ -163,6 +106,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             return value;
         }
 
+        //TODO This should be done in the TAC Optimizer
         ast::Value operator()(ast::VariableValue& variable) const {
             Type type = variable.Content->var->type();
 
@@ -228,6 +172,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
             return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
         }
 
+        //TODO This should be done in the TAC Optimizer
         bool operator()(ast::FunctionDeclaration& declaration){
             if(OptimizeUnused){
                 if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){

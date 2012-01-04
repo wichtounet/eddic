@@ -19,7 +19,7 @@ int FunctionContext::size() const {
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
-    Position position(PARAMETER, currentParameter);
+    Position position(PositionType::PARAMETER, currentParameter);
 
     currentParameter += ::size(type);
 
@@ -27,7 +27,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, Type type){
-    Position position(STACK, currentPosition);
+    Position position(PositionType::STACK, currentPosition);
 
     currentPosition += ::size(type);
 
@@ -41,7 +41,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type, ast::Value& value){
     assert(type.isConst());
 
-    Position position(CONST);
+    Position position(PositionType::CONST);
 
     auto val = boost::apply_visitor(GetConstantValue(), value);
 
@@ -53,7 +53,7 @@ std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& param
 }
 
 std::shared_ptr<Variable> FunctionContext::newTemporary(){
-    Position position(TEMPORARY);
+    Position position(PositionType::TEMPORARY);
 
     std::string name = "t_" + toString(temporary++);
     Type type(BaseType::INT, false); 

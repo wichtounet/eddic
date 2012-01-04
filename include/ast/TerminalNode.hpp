@@ -12,7 +12,10 @@ namespace eddic {
 
 namespace ast {
 
-//Tag to speficy a terminal value node
+/*!
+ * \class TerminalNode
+ * \brief A special tag indicating a terminal node. 
+ */
 struct TerminalNode {
 
 };

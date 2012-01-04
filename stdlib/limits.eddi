@@ -1,0 +1,5 @@
+/* 
+ * Standard Library : Limits of integral type
+*/
+
+const MAX_INT = 2147483747

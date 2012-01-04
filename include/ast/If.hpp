@@ -21,6 +21,11 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ASTIf
+ * \brief The AST node for a if.    
+ * Should only be used from the Deferred version (eddic::ast::If).
+ */
 struct ASTIf {
     Condition condition;
     std::vector<Instruction> instructions;
@@ -31,6 +36,10 @@ struct ASTIf {
     ASTIf() : references(0) {}
 };
 
+/*!
+ * \typedef If
+ * \brief The AST node for a if. 
+ */
 typedef Deferred<ASTIf> If;
 
 } //end of ast

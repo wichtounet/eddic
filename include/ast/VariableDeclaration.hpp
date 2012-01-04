@@ -21,6 +21,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTVariableDeclaration
+ * \brief The AST node for a declaration of a local variable. 
+ * Should only be used from the Deferred version (eddic::ast::VariableDeclaration).
+ */
 struct ASTVariableDeclaration {
     std::shared_ptr<Context> context;
 
@@ -33,6 +38,10 @@ struct ASTVariableDeclaration {
     ASTVariableDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef VariableDeclaration
+ * \brief The AST node for a declaration of a local variable. 
+ */
 typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 
 } //end of ast

@@ -28,6 +28,10 @@ typedef std::shared_ptr<Operand> OperandPtr;
 
 typedef boost::variant<int, std::pair<std::string, int>> Val;
 
+/*!
+ * \class Variable
+ * \brief An entry of the symbol table
+ */
 class Variable {
     private:
         const std::string m_name;
@@ -41,6 +45,15 @@ class Variable {
         Variable(const std::string& name, Type type, Position position);
         Variable(const std::string& name, Type type, Position position, Val value);
 
+        /*!
+         * \brief Return an operand pointing to the location of this variable. Is valid only for int variables.   
+         * \return A new Operand representing the location of this variable.
+         */
+        
+        /*!
+         * \brief Return a pair of operand pointing to the location of this variable. Is valid only for string variables.   
+         * \return A pair of Operand representing the location of this variable.
+         */
         std::string name() const ;
         Type type() const ;
         Position position() const ;

@@ -16,7 +16,7 @@
 #include "mangling.hpp"
 #include "Labels.hpp"
 
-#include "tac/TacCompiler.hpp"
+#include "tac/Compiler.hpp"
 #include "tac/Program.hpp"
 
 #include "ast/SourceFile.hpp"
@@ -46,6 +46,14 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
         return false;
     }
 
+    bool operator()(ast::Minus&) const {
+        return false;
+    }
+
+    bool operator()(ast::Plus&) const {
+        return false;
+    }
+
     //A call to a function returning an int is single argument
     bool operator()(ast::FunctionCall& call) const {
         Type type = call.Content->function->returnType;
@@ -54,6 +62,8 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     }
 };
 
+//TODO In some cases, it's possible that some of them can be param safe
+//Typically when their subcomponents are safe or constants
 struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::VariableValue&) const {
         return true;
@@ -68,11 +78,19 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     }
 
     bool operator()(ast::ArrayValue&) const {
-        return false;//TODO In some cases, it's possible that it can be param safe
+        return false;
     }
 
     bool operator()(ast::ComposedValue&) const {
-        return false;//TODO In some cases, it's possible that it can be param safe
+        return false;
+    }
+
+    bool operator()(ast::Minus&) const {
+        return false;
+    }
+
+    bool operator()(ast::Plus&) const {
+        return false;
     }
 
     bool operator()(ast::FunctionCall&) const {
@@ -256,6 +274,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             return {t1, t2};
         }
     }
+
+    std::vector<tac::Argument> operator()(ast::Minus& value) const {
+        tac::Argument arg = moveToArgument(value.Content->value, function);
+
+        auto t1 = function->context->newTemporary();
+        function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::MINUS));
+
+        return {t1};
+    }
+
+    //No operation to do
+    std::vector<tac::Argument> operator()(ast::Plus& value) const {
+        return boost::apply_visitor(*this, value.Content->value);
+    }
 };
 
 struct AbstractVisitor : public boost::static_visitor<> {
@@ -272,6 +304,14 @@ struct AbstractVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Integer& integer) const {
         intAssign(ToArgumentsVisitor(function)(integer));
+    }
+    
+    void operator()(ast::Plus& value) const {
+        intAssign(ToArgumentsVisitor(function)(value));
+    }
+    
+    void operator()(ast::Minus& value) const {
+        intAssign(ToArgumentsVisitor(function)(value));
     }
 
     void operator()(ast::FunctionCall& call) const {
@@ -720,7 +760,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
 } //end of anonymous namespace
 
-void tac::TacCompiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
+void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);
 }

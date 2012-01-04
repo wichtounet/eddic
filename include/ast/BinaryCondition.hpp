@@ -16,6 +16,11 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ASTBinaryCondition
+ * \brief The AST node for a boolean comparison of two values.  
+ * Should only be used from the Deferred version (eddic::ast::BinaryCondition).
+ */
 struct ASTBinaryCondition {
     std::string op;
     Value lhs;
@@ -25,6 +30,10 @@ struct ASTBinaryCondition {
     ASTBinaryCondition() : references(0) {}
 };
 
+/*!
+ * \typedef BinaryCondition
+ * \brief The AST node for a boolean comparison of two values.
+ */
 typedef Deferred<ASTBinaryCondition> BinaryCondition;
 
 } //end of ast

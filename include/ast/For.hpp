@@ -19,6 +19,11 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ASTFor
+ * \brief The AST node for a for loop. 
+ * Should only be used from the Deferred version (eddic::ast::For).
+ */
 struct ASTFor {
     boost::optional<Instruction> start;
     boost::optional<Condition> condition;
@@ -29,6 +34,10 @@ struct ASTFor {
     ASTFor() : references(0) {}
 };
 
+/*!
+ * \typedef For
+ * \brief The AST node for a for loop.
+ */
 typedef Deferred<ASTFor> For;
 
 } //end of ast
