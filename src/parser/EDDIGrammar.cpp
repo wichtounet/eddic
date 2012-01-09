@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-parser::EddiGrammar::EddiGrammar(const Lexer& lexer) : 
+parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
         condition(lexer),

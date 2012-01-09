@@ -46,7 +46,7 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
     lexer::pos_iterator_type position_begin(contents.begin(), contents.end(), file);
     lexer::pos_iterator_type position_end;
 
-    lexer::SimpleLexer<lexer::lexer_type> lexer;
+    lexer::Lexer lexer;
     parser::EddiGrammar grammar(lexer); 
     
     try {

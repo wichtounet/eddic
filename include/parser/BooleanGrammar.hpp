@@ -21,20 +21,17 @@ namespace eddic {
 
 namespace parser {
 
-typedef lexer::lexer_type::iterator_type Iterator;
-typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
-
 /*!
  * \class BooleanGrammar
  * \brief Grammar to represent boolean litterals and conditions. 
  */
-struct BooleanGrammar : qi::grammar<Iterator, ast::Condition()> {
-    BooleanGrammar(const Lexer& lexer);
+struct BooleanGrammar : qi::grammar<lexer::Iterator, ast::Condition()> {
+    BooleanGrammar(const lexer::Lexer& lexer);
 
-    qi::rule<Iterator, ast::Condition()> condition;
-    qi::rule<Iterator, ast::True()> true_;
-    qi::rule<Iterator, ast::False()> false_;
-    qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
+    qi::rule<lexer::Iterator, ast::Condition()> condition;
+    qi::rule<lexer::Iterator, ast::True()> true_;
+    qi::rule<lexer::Iterator, ast::False()> false_;
+    qi::rule<lexer::Iterator, ast::BinaryCondition()> binary_condition;
     
     ValueGrammar value;
 };

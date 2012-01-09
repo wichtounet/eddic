@@ -40,9 +40,9 @@ typedef lex::lexertl::actor_lexer<Tok> lexer_type;
  * used by the parser to parse a source file. 
  */
 template<typename L>
-class SimpleLexer : public lex::lexer<L> {
+class SpiritLexer : public lex::lexer<L> {
     public:
-        SimpleLexer() {
+        SpiritLexer() {
             //Define keywords
             for_ = "for";
             while_ = "while";
@@ -129,6 +129,10 @@ class SimpleLexer : public lex::lexer<L> {
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
 };
+
+//Typedef for the parsers
+typedef lexer::lexer_type::iterator_type Iterator;
+typedef lexer::SpiritLexer<lexer::lexer_type> Lexer;
 
 } //end of lexer
 

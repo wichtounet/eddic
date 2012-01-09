@@ -19,19 +19,16 @@ namespace eddic {
 
 namespace parser {
 
-typedef lexer::lexer_type::iterator_type Iterator;
-typedef lexer::SimpleLexer<lexer::lexer_type> Lexer;
-
 /*!
  * \class TypeGrammar
  * \brief Grammar representing types in EDDI language.
  */
-struct TypeGrammar : qi::grammar<Iterator, ast::Type()> {
-    TypeGrammar(const Lexer& lexer);
+struct TypeGrammar : qi::grammar<lexer::Iterator, ast::Type()> {
+    TypeGrammar(const lexer::Lexer& lexer);
 
-    qi::rule<Iterator, ast::Type()> type;
-    qi::rule<Iterator, ast::ArrayType()> arrayType;
-    qi::rule<Iterator, ast::SimpleType()> simpleType;
+    qi::rule<lexer::Iterator, ast::Type()> type;
+    qi::rule<lexer::Iterator, ast::ArrayType()> arrayType;
+    qi::rule<lexer::Iterator, ast::SimpleType()> simpleType;
 };
 
 } //end of parser
