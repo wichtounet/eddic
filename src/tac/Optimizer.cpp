@@ -602,6 +602,8 @@ bool remove_needless_jumps(tac::Program& program){
 }
 
 bool merge_basic_blocks(tac::Program& program){
+    bool optimized = false;
+
     std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
 
     for(auto& function : program.functions){
@@ -635,6 +637,7 @@ bool merge_basic_blocks(tac::Program& program){
                         block->statements.insert(block->statements.end(), (*next)->statements.begin(), (*next)->statements.end());
 
                         it = blocks.erase(next);
+                        optimized = true;
                         continue;
                     }
                 }
@@ -644,7 +647,7 @@ bool merge_basic_blocks(tac::Program& program){
         }
     }
    
-    return false; 
+    return optimized; 
 }
 
 template<bool Enabled, int i>
