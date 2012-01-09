@@ -19,6 +19,7 @@ namespace ast {
  * \brief The AST node for an import.    
  */
 struct Import {
+    int fake;
     std::string file;
 };
 

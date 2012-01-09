@@ -103,7 +103,7 @@ int Compiler::compileOnly(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
-           
+
             //Read dependencies
             includeDependencies(program, parser);
 
@@ -149,9 +149,6 @@ int Compiler::compileOnly(const std::string& file) {
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
             liveness.compute(tacProgram);
-
-            tac::Printer printer;
-            printer.print(tacProgram);
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
