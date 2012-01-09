@@ -332,7 +332,27 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         return ifFalse;
     }
 
-    //TODO Constant propagation should be applied to return as well
+    tac::Statement operator()(std::shared_ptr<tac::Return>& return_){
+        if(return_->arg1){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    return_->arg1 = constants[*ptr];
+                }
+            }
+        }
+
+        if(return_->arg2){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    return_->arg2 = constants[*ptr];
+                }
+            }
+        }
+
+        return return_;
+    }
 
     template<typename T>
     tac::Statement operator()(T& statement){ 
