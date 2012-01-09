@@ -601,6 +601,16 @@ bool remove_needless_jumps(tac::Program& program){
     return optimized;
 }
 
+bool merge_basic_blocks(tac::Program& program){
+    std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
+
+    for(auto& function : program.functions){
+        computeBlockUsage(function, usage);
+    }
+   
+    return false; 
+}
+
 template<bool Enabled, int i>
 bool debug(bool b){
     if(Enabled){
@@ -641,6 +651,9 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Remove needless jumps
         optimized |= debug<Debug, 7>(remove_needless_jumps(program));
+
+        //Merge basic blocks
+        optimized |= debug<Debug, 8>(merge_basic_blocks(program));
     } while (optimized);
     
     //TODO Copy propagation

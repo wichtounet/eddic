@@ -915,18 +915,6 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, 
     }
 }
 
-void as::IntelX86CodeGenerator::computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler){
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&statement)){
-                compiler.blockUsage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
-                compiler.blockUsage.insert((*ptr)->block);
-            }
-        }
-    }
-}
-
 void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
     
@@ -964,7 +952,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
 
     StatementCompiler compiler(writer, function);
 
-    computeBlockUsage(function, compiler);
+    tac::computeBlockUsage(function, compiler.blockUsage);
 
     //First we computes a label for each basic block
     for(auto& block : function->getBasicBlocks()){

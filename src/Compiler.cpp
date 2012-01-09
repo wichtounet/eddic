@@ -150,6 +150,9 @@ int Compiler::compileOnly(const std::string& file) {
             tac::LivenessAnalyzer liveness;
             liveness.compute(tacProgram);
 
+            tac::Printer printer;
+            printer.print(tacProgram);
+
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
             as::IntelX86CodeGenerator generator(writer);
