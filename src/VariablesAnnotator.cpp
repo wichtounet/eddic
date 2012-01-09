@@ -12,7 +12,7 @@
 
 #include "VariablesAnnotator.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -26,6 +26,7 @@
 #include "Compiler.hpp"
 #include "Options.hpp"
 #include "TypeTransformer.hpp"
+#include "Utils.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
@@ -59,7 +60,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The value must be constant");
         }
 
-        Type type = stringToType(declaration.Content->variableType); 
+        BaseType baseType = stringToBaseType(declaration.Content->variableType); 
+        Type type(baseType, declaration.Content->constant);
         declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 
@@ -69,7 +71,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, declaration.Content->arraySize);
+        Type type(baseType, declaration.Content->arraySize, false);
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
@@ -97,7 +99,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
         foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter" + ++generated, stringToType("int"));
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), stringToType("int"));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -131,11 +133,21 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
         }
-
-        Type variableType = stringToType(declaration.Content->variableType);
-        declaration.Content->context->addVariable(declaration.Content->variableName, variableType);
-
+        
         visit(*this, *declaration.Content->value);
+
+        BaseType baseType = stringToBaseType(declaration.Content->variableType);
+        Type type(baseType, declaration.Content->const_);
+
+        if(type.isConst()){
+            if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
+                throw SemanticalException("The value must be constant");
+            }
+            
+            declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+        } else {
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
+        }
     }
     
     void operator()(ast::ArrayDeclaration& declaration){
@@ -144,7 +156,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, declaration.Content->arraySize);
+        Type type(baseType, declaration.Content->arraySize, false);
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
@@ -195,12 +207,28 @@ struct VariablesVisitor : public boost::static_visitor<> {
             [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
     }
 
+    void operator()(ast::Plus& value){
+        visit(*this, value.Content->value);
+    }
+
+    void operator()(ast::Minus& value){
+        visit(*this, value.Content->value);
+    }
+
+    void operator()(ast::Import&){
+        //Nothing to check here
+    }
+
+    void operator()(ast::StandardImport&){
+        //Nothing to check here
+    }
+
     void operator()(ast::TerminalNode&){
         //Terminal nodes have no need for variable checking    
     }
 };
 
-void VariablesAnnotator::annotate(ast::Program& program) const {
+void VariablesAnnotator::annotate(ast::SourceFile& program) const {
     VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

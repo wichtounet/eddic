@@ -10,36 +10,49 @@
 
 #include <string>
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
+namespace parser {
+    class SpiritParser;
+}
+
 class StringPool;
 class FunctionTable;
-class IntermediateProgram;
 
-void defineDefaultValues(ast::Program& program);
-void defineContexts(ast::Program& program);
-void defineVariables(ast::Program& program);
-void defineFunctions(ast::Program& program, FunctionTable& table);
+void clean(ast::SourceFile& program);
+void defineDefaultValues(ast::SourceFile& program);
+void defineContexts(ast::SourceFile& program);
+void defineVariables(ast::SourceFile& program);
+void defineFunctions(ast::SourceFile& program, FunctionTable& table);
 
-void checkTypes(ast::Program& program);
-void checkStrings(ast::Program& program, StringPool& pool);
+void includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser);
 
-void checkForWarnings(ast::Program& program, FunctionTable& table);
+void checkTypes(ast::SourceFile& program);
+void checkStrings(ast::SourceFile& program, StringPool& pool);
 
-void transform(ast::Program& program);
-void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool);
-void writeIL(ast::Program& program, StringPool& pool, IntermediateProgram& intermediateProgram);
-void writeAsm(IntermediateProgram& il, const std::string& file);
+void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 
-void execCommand(const std::string& command);
+void transform(ast::SourceFile& program);
+void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
+/*!
+ * \class Compiler
+ * \brief The EDDI compiler.
+ *
+ * This class is used to launch the compilation of a source file. It will then launch each phases of the compilation on this phase
+ * and produce either an executable or an assembly file depending on the provided options. 
+ */
 struct Compiler {
     int compile (const std::string& file);
+    int compileOnly (const std::string& file);
 };
 
-//Utility for other classes
+/*!
+ * \brief Produces a warning on the command line. 
+ * \param warning The warning message to produce.  
+ */
 void warn(const std::string& warning);
 
 } //end of eddic

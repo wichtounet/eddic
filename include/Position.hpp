@@ -12,12 +12,22 @@
 
 namespace eddic {
 
-enum PositionType {
-    STACK, 
-    PARAMETER,
-    GLOBAL
+/*!
+ * \enum PositionType
+ * \brief A type of position for a variable
+ */
+enum class PositionType : unsigned int {
+    STACK,          /**< A variable on the stack  */ 
+    PARAMETER,      /**< A parameter */
+    GLOBAL,         /**< A global variable */
+    CONST,          /**< A const variable. Not stored. Will be replaced in each usage */
+    TEMPORARY       /**< A temporary, used only in three-address-code. Not stored. */
 };
 
+/*!
+ * \class Position
+ * \brief The position of a variable
+ */
 class Position {
     private:
         const PositionType m_type;
@@ -25,12 +35,16 @@ class Position {
         const std::string m_name;
 
     public:
+        Position(PositionType type);
         Position(PositionType type, int offset);
         Position(PositionType type, const std::string& name);
 
         bool isStack() const;
         bool isParameter() const;
         bool isGlobal() const;
+        bool isConst() const;
+        bool isTemporary() const;
+
         int offset() const;
 
         PositionType type() const;

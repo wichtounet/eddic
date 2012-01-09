@@ -14,7 +14,6 @@
 
 #include "Compiler.hpp"
 
-#include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -29,7 +28,7 @@
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -39,6 +38,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
+    AUTO_RECURSE_MINUS_PLUS_VALUES()
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);
@@ -51,6 +51,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }
+    }
+
+    void operator()(ast::Import&){
+        //Nothing to check here
+    }
+
+    void operator()(ast::StandardImport&){
+        //Nothing to check here
     }
 
     void operator()(ast::GlobalArrayDeclaration&){
@@ -76,6 +84,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
+        }
+
+        if(var->type().isConst()){
+            throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it");
         }
     }
 
@@ -161,7 +173,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TypeChecker::check(ast::Program& program) const {
+void TypeChecker::check(ast::SourceFile& program) const {
     CheckerVisitor visitor;
     visit_non_variant(visitor, program);
 }

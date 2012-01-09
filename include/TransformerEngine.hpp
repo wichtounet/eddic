@@ -8,12 +8,20 @@
 #ifndef TRANSFORMER_ENGINE_H
 #define TRANSFORMER_ENGINE_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
+/*!
+ * \struct TransformerEngine
+ * \brief Transforms the AST.
+ *
+ * The main transformation is to transform a Foreach in a For loop. Another transformation is the cleanup of composed values
+ * to remove some not-composed values introduced by the parsing phase.    
+ */
 struct TransformerEngine {
-    void transform(ast::Program& program) const;
+    void clean(ast::SourceFile& program) const;
+    void transform(ast::SourceFile& program) const;
 };
 
 } //end of eddic

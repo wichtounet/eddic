@@ -4,8 +4,8 @@ project("EDDI Compiler")
 
 #Set the version number
 set(VERSION_MAJOR 0)
-set(VERSION_MINOR 6)
-set(VERSION_PATCH 1)
+set(VERSION_MINOR 7)
+set(VERSION_PATCH 0)
 
 #Activate warnings
 if(MSVC)
@@ -42,7 +42,11 @@ file(
 	GLOB_RECURSE
 	test_files
 	test/*
+    src/*
 )
+
+file(GLOB to_remove src/eddi.cpp)
+list(REMOVE_ITEM test_files ${to_remove})
 
 add_executable(eddic ${source_files})
 
@@ -52,4 +56,7 @@ target_link_libraries (eddic boost_program_options)
 
 add_executable (test ${test_files})
 
+target_link_libraries (test boost_chrono)
+target_link_libraries (test boost_system)
+target_link_libraries (test boost_program_options)
 target_link_libraries (test boost_unit_test_framework)

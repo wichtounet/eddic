@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
+parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
     value = additiveValue.alias();
     
     additiveValue %=
@@ -27,8 +27,18 @@ ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type(value, 
             |   (lexer.modulo > unaryValue)
             );
     
-    //TODO Support + - primaryValue
-    unaryValue = primaryValue.alias();
+    unaryValue %= 
+            negatedValue
+        |   plusValue
+        |   primaryValue;
+   
+    negatedValue = 
+            lexer.subtraction
+         >> primaryValue;
+  
+    plusValue %=
+            lexer.addition
+         >> primaryValue;
     
     primaryValue = 
             constant 

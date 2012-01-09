@@ -8,14 +8,18 @@
 #ifndef WARNINGS_ENGINE_H
 #define WARNINGS_ENGINE_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 class FunctionTable;
 
+/*!
+ * \class WarningsEngine
+ * \brief A simple warnings engine checking the whole program for possible problems.  
+ */
 struct WarningsEngine {
-    void check(ast::Program& program, FunctionTable& functionTable) const ;
+    void check(ast::SourceFile& program, FunctionTable& functionTable) const ;
 };
 
 } //end of eddic

@@ -22,6 +22,8 @@
 
 namespace eddic {
 
+namespace lexer {
+
 namespace spirit = boost::spirit;
 namespace lex = boost::spirit::lex;
     
@@ -30,12 +32,17 @@ typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_itera
 typedef boost::spirit::lex::lexertl::token<pos_iterator_type, boost::mpl::vector<std::string, int>> Tok;
 typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
+/*!
+ * \class SimpleLexer
+ * \brief The EDDI lexer. 
+ *
+ * This class is used to do lexical analysis on an EDDI source file. This file is based on a Boost Spirit Lexer. It's 
+ * used by the parser to parse a source file. 
+ */
 template<typename L>
-class SimpleLexer : public lex::lexer<L> {
-    private:
-
+class SpiritLexer : public lex::lexer<L> {
     public:
-        SimpleLexer() {
+        SpiritLexer() {
             //Define keywords
             for_ = "for";
             while_ = "while";
@@ -48,6 +55,8 @@ class SimpleLexer : public lex::lexer<L> {
             foreach_ = "foreach";
             in_ = "in";
             return_ = "return";
+            const_ = "const";
+            include = "include";
 
             word = "[a-zA-Z]+";
             integer = "[0-9]+";
@@ -88,7 +97,7 @@ class SimpleLexer : public lex::lexer<L> {
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
             this->self += comma | stop;
             this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
-            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_;
+            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += integer | word | litteral;
 
@@ -115,10 +124,17 @@ class SimpleLexer : public lex::lexer<L> {
         //Keywords
         ConsumedToken if_, else_, for_, while_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
+        ConsumedToken const_, include;
 
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
 };
+
+//Typedef for the parsers
+typedef lexer::lexer_type::iterator_type Iterator;
+typedef lexer::SpiritLexer<lexer::lexer_type> Lexer;
+
+} //end of lexer
 
 } //end of eddic
 

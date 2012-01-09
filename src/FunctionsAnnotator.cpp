@@ -7,7 +7,7 @@
 
 #include "FunctionsAnnotator.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 #include "FunctionTable.hpp"
 
 #include "GetTypeVisitor.hpp"
@@ -74,6 +74,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_COMPOSED_VALUES()
+        AUTO_RECURSE_MINUS_PLUS_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ast::FunctionDeclaration& declaration){
@@ -116,7 +117,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void FunctionsAnnotator::annotate(ast::Program& program, FunctionTable& functionTable) const {
+void FunctionsAnnotator::annotate(ast::SourceFile& program, FunctionTable& functionTable) const {
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

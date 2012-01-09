@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include <boost/variant/variant.hpp>
+#include <boost/variant/get.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 #include "ast/values_def.hpp"
@@ -20,9 +20,16 @@ namespace eddic {
 
 typedef boost::variant<int, std::pair<std::string, int>> Val;
 
+/*!
+ * \class GetConstantValue
+ * \brief AST Visitor to retrieve the constant value of an AST node. 
+ * This visitor should only be used on a constant node.
+ * \see eddic::IsConstantVisitor 
+ */
 struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const ast::Litteral& litteral) const;
     Val operator()(const ast::Integer& litteral) const;
+    Val operator()(const ast::VariableValue& variable) const;
 
     template<typename T>
     Val operator()(const T&) const {

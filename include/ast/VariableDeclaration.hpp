@@ -21,9 +21,15 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTVariableDeclaration
+ * \brief The AST node for a declaration of a local variable. 
+ * Should only be used from the Deferred version (eddic::ast::VariableDeclaration).
+ */
 struct ASTVariableDeclaration {
     std::shared_ptr<Context> context;
 
+    bool const_;
     std::string variableType;
     std::string variableName;
     boost::optional<Value> value;
@@ -32,6 +38,10 @@ struct ASTVariableDeclaration {
     ASTVariableDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef VariableDeclaration
+ * \brief The AST node for a declaration of a local variable. 
+ */
 typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 
 } //end of ast
@@ -41,6 +51,7 @@ typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableDeclaration, 
+    (bool, Content->const_)
     (std::string, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)

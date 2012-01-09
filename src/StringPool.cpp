@@ -7,9 +7,6 @@
 
 #include "StringPool.hpp"
 
-#include "il/IntermediateProgram.hpp"
-#include "il/DataSection.hpp"
-
 #include <sstream>
 
 using namespace eddic;
@@ -31,6 +28,6 @@ std::string StringPool::label(const std::string& value) {
     return pool[value];
 }
 
-void StringPool::writeIL(IntermediateProgram& program){
-    program.addInstruction(program.factory().createDataSection(pool));
+std::unordered_map<std::string, std::string> StringPool::getPool() const {
+    return pool;
 }

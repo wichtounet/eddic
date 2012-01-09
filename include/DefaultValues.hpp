@@ -8,12 +8,16 @@
 #ifndef DEFAULT_VALUES_H
 #define DEFAULT_VALUES_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
-
+    
+/*!
+ * \class DefaultValues
+ * \brief Fill the AST with default values for local and global variables.  
+ */
 struct DefaultValues {
-    void fill(ast::Program& program) const ;
+    void fill(ast::SourceFile& program) const ;
 };
 
 } //end of eddic

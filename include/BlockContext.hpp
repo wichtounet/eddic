@@ -19,6 +19,10 @@ namespace eddic {
 class FunctionContext;
 class Variable;
 
+/*!
+ * \class BlockContext
+ * \brief A symbol table for the block level. 
+ */
 class BlockContext : public Context {
     private:
         std::shared_ptr<FunctionContext> m_functionContext;
@@ -27,6 +31,8 @@ class BlockContext : public Context {
         BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext);
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        std::shared_ptr<Variable> newTemporary();
 };
 
 } //end of eddic

@@ -13,8 +13,11 @@
 
 namespace eddic {
 
-class IntermediateProgram;
-
+/*!
+ * \class StringPool
+ * \brief The string pool of the program. 
+ * All the strings are stored and referred only by an index.  
+ */
 class StringPool {
     private:
         std::unordered_map<std::string, std::string> pool;
@@ -26,7 +29,7 @@ class StringPool {
 
         std::string label(const std::string& value);
 
-        void writeIL(IntermediateProgram& program);
+        std::unordered_map<std::string, std::string> getPool() const;
 };
 
 } //end of eddic

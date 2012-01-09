@@ -20,9 +20,15 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTGlobalVariableDeclaration
+ * \brief The AST node for a declaration of a global variable. 
+ * Should only be used from the Deferred version (eddic::ast::GlobalVariableDeclaration).
+ */
 struct ASTGlobalVariableDeclaration {
     std::shared_ptr<Context> context;
-    
+
+    bool constant;    
     std::string variableType;
     std::string variableName;
     boost::optional<Value> value;
@@ -31,6 +37,10 @@ struct ASTGlobalVariableDeclaration {
     ASTGlobalVariableDeclaration() : references(0) {}
 };
 
+/*!
+ * \typedef GlobalVariableDeclaration
+ * \brief The AST node for a declaration of a global variable. 
+ */
 typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
 
 } //end of ast
@@ -40,6 +50,7 @@ typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalVariableDeclaration, 
+    (bool, Content->constant)
     (std::string, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)

@@ -9,11 +9,15 @@
 
 using namespace eddic;
 
-EddiGrammar::EddiGrammar(const Lexer& lexer) : 
+parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
         condition(lexer),
         type(lexer){
+   
+    const_ %=
+            (lexer.const_ > boost::spirit::attr(true))
+        |   boost::spirit::attr(false);
     
     else_if_ %= 
             lexer.else_ 
@@ -91,7 +95,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >   lexer.right_brace;
 
     declaration %= 
-            lexer.word 
+            const_
+        >>  lexer.word 
         >>  lexer.word 
         >>  -(lexer.assign >> value);
     
@@ -121,7 +126,8 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  value;
     
     globalDeclaration %= 
-            lexer.word 
+            const_
+        >>  lexer.word 
         >>  lexer.word 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;
@@ -169,9 +175,19 @@ EddiGrammar::EddiGrammar(const Lexer& lexer) :
         >>  *(instruction)
         >>  lexer.right_brace;
 
+    standardImport %= 
+            lexer.include
+        >>  lexer.less
+        >>  lexer.word
+        >>  lexer.greater;
+
+    import %=
+            lexer.include
+        >>  lexer.litteral;
+
     program %=
             qi::eps 
-        >>  *(function | globalDeclaration | globalArrayDeclaration);
+        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import);
 
     //Name the rules
     globalDeclaration.name("EDDI global variable");

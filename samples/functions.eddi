@@ -1,6 +1,3 @@
-int zz = 888;
-string yy = "trest";
-
 void main(){
     println(sum(0));
     println(sum(4));

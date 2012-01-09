@@ -17,11 +17,18 @@
 
 namespace eddic {
 
+/*!
+ * \class GlobalContext
+ * \brief The symbol table for the whole source. 
+ *
+ * There is always only one instance of this class in the application. This symbol table is responsible
+ * of storing all the global variables. 
+ */
 class GlobalContext : public Context {
     public:
         GlobalContext();
         
-        void writeIL(IntermediateProgram& writer);
+        Variables getVariables();
         
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);

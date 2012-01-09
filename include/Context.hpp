@@ -22,6 +22,14 @@ namespace eddic {
 class Variable;
 class IntermediateProgram;
 
+/*!
+ * \class Context
+ * \brief A symbol table.
+ *
+ * The symbol table keeps track of each variables (local and global), parameters and temporaries. 
+ * The symbol tables are linked to their parent so that the search can be done within all the visibles symbols
+ * by going up onto the symbol tables parents.  
+ */
 class Context {
     private:
         std::shared_ptr<Context> m_parent;
@@ -36,8 +44,10 @@ class Context {
         Context(const Context& rhs) = delete;
 
         virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type) = 0;
-        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        virtual std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value) = 0;
         virtual void removeVariable(const std::string& variable);
+
+        virtual std::shared_ptr<Variable> newTemporary();
 
         bool exists(const std::string& a) const;
         std::shared_ptr<Variable> getVariable(const std::string& variable) const;

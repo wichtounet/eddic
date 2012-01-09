@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-BooleanGrammar::BooleanGrammar(const Lexer& lexer) : BooleanGrammar::base_type(condition, "Boolean Grammar"), value(lexer) {
+parser::BooleanGrammar::BooleanGrammar(const lexer::Lexer& lexer) : BooleanGrammar::base_type(condition, "Boolean Grammar"), value(lexer) {
     true_ %= 
             qi::eps
         >>  lexer.true_;

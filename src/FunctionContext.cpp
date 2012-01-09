@@ -5,18 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/variant/apply_visitor.hpp>
+
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
+#include "GetConstantValue.hpp"
 
 using namespace eddic;
+
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8), temporary(1) {}
 
 int FunctionContext::size() const {
     return currentPosition - 4;
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
-    Position position(PARAMETER, currentParameter);
+    Position position(PositionType::PARAMETER, currentParameter + (::size(type) - 4));
 
     currentParameter += ::size(type);
 
@@ -24,7 +29,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, Type type){
-    Position position(STACK, currentPosition);
+    Position position(PositionType::STACK, currentPosition);
 
     currentPosition += ::size(type);
 
@@ -35,6 +40,25 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = newVariable(variable, type);
 }
 
+std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type, ast::Value& value){
+    assert(type.isConst());
+
+    Position position(PositionType::CONST);
+
+    auto val = boost::apply_visitor(GetConstantValue(), value);
+
+    return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
+}
+
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, Type type){
     return variables[parameter] = newParameter(parameter, type);
+}
+
+std::shared_ptr<Variable> FunctionContext::newTemporary(){
+    Position position(PositionType::TEMPORARY);
+
+    std::string name = "t_" + toString(temporary++);
+    Type type(BaseType::INT, false); 
+
+    return variables[name] = std::make_shared<Variable>(name, type, position); 
 }

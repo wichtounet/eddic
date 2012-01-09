@@ -8,12 +8,16 @@
 #ifndef TYPE_CHECKER_H
 #define TYPE_CHECKER_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
+/*!
+ * \class TypeChecker
+ * \brief A checker for type safety in the program. 
+ */
 struct TypeChecker {
-    void check(ast::Program& program) const ;
+    void check(ast::SourceFile& program) const ;
 };
 
 } //end of eddic

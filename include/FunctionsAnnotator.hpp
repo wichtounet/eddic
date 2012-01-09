@@ -8,14 +8,18 @@
 #ifndef FUNCTIONS_ANNOTATOR_H
 #define FUNCTIONS_ANNOTATOR_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 class FunctionTable;
 
+/*!
+ * \struct FunctionsAnnotator
+ * \brief Annotate the AST with function references.  
+ */
 struct FunctionsAnnotator {
-   void annotate(ast::Program& program, FunctionTable& functionTable) const ;
+   void annotate(ast::SourceFile& program, FunctionTable& functionTable) const ;
 };
 
 } //end of eddic

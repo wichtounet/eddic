@@ -20,6 +20,11 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ASTWhile
+ * \brief The AST node for a while loop. 
+ * Should only be used from the Deferred version (eddic::ast::While).
+ */
 struct ASTWhile {
     Condition condition;
     std::vector<Instruction> instructions;
@@ -28,6 +33,10 @@ struct ASTWhile {
     ASTWhile() : references(0) {}
 };
 
+/*!
+ * \typedef While
+ * \brief The AST node for a while loop.
+ */
 typedef Deferred<ASTWhile> While;
 
 } //end of ast

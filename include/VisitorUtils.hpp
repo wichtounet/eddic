@@ -15,6 +15,11 @@
 namespace eddic {
 
 template<typename Visitor, typename Visitable>
+inline void visit(Visitor& visitor, const Visitable& visitable){
+    boost::apply_visitor(visitor, visitable);
+}
+
+template<typename Visitor, typename Visitable>
 inline void visit(Visitor& visitor, Visitable& visitable){
     boost::apply_visitor(visitor, visitable);
 }

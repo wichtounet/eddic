@@ -20,18 +20,25 @@ enum class BaseType : unsigned int {
     COUNT
 };
 
+/*!
+ * \struct Type
+ * \brief A type descriptor.
+ * Can describe any type in an EDDI source file. 
+ */
 class Type {
     private:
         BaseType type;
         bool array;
+        bool const_;
         unsigned int m_size;
     
     public:
-        Type(BaseType base);
-        Type(BaseType base, unsigned int size);
+        Type(BaseType base, bool constant);
+        Type(BaseType base, unsigned int size, bool constant);
         
         BaseType base() const;
         bool isArray() const;
+        bool isConst() const;
         unsigned int size() const;
 
         friend bool operator==(const Type& lhs, const Type& rhs);

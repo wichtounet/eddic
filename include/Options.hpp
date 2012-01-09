@@ -14,16 +14,32 @@ namespace po = boost::program_options;
 
 namespace eddic {
 
-extern bool OptimizeIntegers;
 extern bool OptimizeStrings;
 extern bool OptimizeUnused;
 
 extern bool WarningUnused;
 
+/*!
+ * \brief The program options. 
+ */
 extern po::variables_map options;
 
+/*!
+ * \brief Parse the options of the command line filling the options. 
+ * \param argc The number of argument
+ * \param argv The arguments
+ * \return A boolean indicating if the options are valid (\c true) or not. 
+ */
 bool parseOptions(int argc, const char* argv[]);
+
+/*!
+ * \brief Print the help.
+ */
 void printHelp();
+
+/*!
+ * \brief Print the usage.
+ */
 void printVersion();
 
 } //end of eddic

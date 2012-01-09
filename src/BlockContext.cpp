@@ -5,8 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/variant/apply_visitor.hpp>
+
 #include "BlockContext.hpp"
+#include "Variable.hpp"
 #include "FunctionContext.hpp"
+#include "Position.hpp"
+#include "GetConstantValue.hpp"
 
 using namespace eddic;
 
@@ -14,4 +19,18 @@ BlockContext::BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<Func
 
 std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type){
     return variables[variable] = m_functionContext->newVariable(variable, type);
+}
+
+std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type, ast::Value& value){
+    assert(type.isConst());
+
+    Position position(PositionType::CONST);
+
+    auto val = boost::apply_visitor(GetConstantValue(), value);
+
+    return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
+}
+
+std::shared_ptr<Variable> BlockContext::newTemporary(){
+    return m_functionContext->newTemporary();
 }

@@ -10,7 +10,7 @@
 
 #include <boost/spirit/include/qi.hpp>
 #include "lexer/SpiritLexer.hpp"
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "parser/ValueGrammar.hpp"
 #include "parser/BooleanGrammar.hpp"
@@ -20,39 +20,49 @@ namespace qi = boost::spirit::qi;
 
 namespace eddic {
 
-typedef lexer_type::iterator_type Iterator;
-typedef SimpleLexer<lexer_type> Lexer;
+namespace parser {
 
-struct EddiGrammar : qi::grammar<Iterator, ast::Program()> {
-    EddiGrammar(const Lexer& lexer);
+/*!
+ * \class EDDIGrammar
+ * \brief Grammar representing the whole EDDI syntax.  
+ */
+struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
+    EddiGrammar(const lexer::Lexer& lexer);
 
-    qi::rule<Iterator, ast::Program()> program;
-    qi::rule<Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
-    qi::rule<Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
-    qi::rule<Iterator, ast::FunctionDeclaration()> function;
-    qi::rule<Iterator, ast::FunctionParameter()> arg;
+    qi::rule<lexer::Iterator, ast::SourceFile()> program;
+    qi::rule<lexer::Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
+    qi::rule<lexer::Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
+    qi::rule<lexer::Iterator, ast::FunctionDeclaration()> function;
+    qi::rule<lexer::Iterator, ast::FunctionParameter()> arg;
 
-    qi::rule<Iterator, ast::Instruction()> instruction;
-    qi::rule<Iterator, ast::Instruction()> repeatable_instruction;
-    qi::rule<Iterator, ast::Swap()> swap;
-    qi::rule<Iterator, ast::VariableDeclaration()> declaration;
-    qi::rule<Iterator, ast::ArrayDeclaration()> arrayDeclaration;
-    qi::rule<Iterator, ast::Assignment()> assignment;
-    qi::rule<Iterator, ast::Return()> return_;
-    qi::rule<Iterator, ast::ArrayAssignment()> arrayAssignment;
-    qi::rule<Iterator, ast::While()> while_;
-    qi::rule<Iterator, ast::For()> for_;
-    qi::rule<Iterator, ast::Foreach()> foreach_;
-    qi::rule<Iterator, ast::ForeachIn()> foreachin_;
-    qi::rule<Iterator, ast::If()> if_;
+    qi::rule<lexer::Iterator, ast::Instruction()> instruction;
+    qi::rule<lexer::Iterator, ast::Instruction()> repeatable_instruction;
+    qi::rule<lexer::Iterator, ast::Swap()> swap;
+    qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
+    qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
+    qi::rule<lexer::Iterator, ast::Assignment()> assignment;
+    qi::rule<lexer::Iterator, ast::Return()> return_;
+    qi::rule<lexer::Iterator, ast::ArrayAssignment()> arrayAssignment;
+    qi::rule<lexer::Iterator, ast::While()> while_;
+    qi::rule<lexer::Iterator, ast::For()> for_;
+    qi::rule<lexer::Iterator, ast::Foreach()> foreach_;
+    qi::rule<lexer::Iterator, ast::ForeachIn()> foreachin_;
+    qi::rule<lexer::Iterator, ast::If()> if_;
 
-    qi::rule<Iterator, ast::Else()> else_;
-    qi::rule<Iterator, ast::ElseIf()> else_if_;
+    qi::rule<lexer::Iterator, ast::Else()> else_;
+    qi::rule<lexer::Iterator, ast::ElseIf()> else_if_;
+
+    qi::rule<lexer::Iterator, ast::StandardImport()> standardImport;
+    qi::rule<lexer::Iterator, ast::Import()> import;
+
+    qi::rule<lexer::Iterator, bool()> const_;
 
     ValueGrammar value;
     BooleanGrammar condition;
     TypeGrammar type;
 };
+
+} //end of parser
 
 } //end of eddic
 

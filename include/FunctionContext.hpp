@@ -19,21 +19,29 @@ namespace eddic {
 
 class Value;
 
+/*!
+ * \class FunctionContext
+ * \brief A symbol table for a function.
+ */
 class FunctionContext : public Context {
     private:
         int currentPosition;
         int currentParameter;
         int m_size;
+        int temporary;
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent) : Context(parent), currentPosition(4), currentParameter(8) {}
+        FunctionContext(std::shared_ptr<Context> parent);
         
         int size() const;
 
         std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
         std::shared_ptr<Variable> addParameter(const std::string& a, Type type);
         std::shared_ptr<Variable> newVariable(const std::string& a, Type type);
         std::shared_ptr<Variable> newParameter(const std::string& a, Type type);
+
+        std::shared_ptr<Variable> newTemporary();
 };
 
 } //end of eddic

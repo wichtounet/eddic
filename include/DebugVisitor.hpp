@@ -10,10 +10,16 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 namespace eddic {
 
+/*!
+ * \class DebugVisitor
+ * \brief AST Debugger
+ *  
+ * This static visitor browse and print the entire AST to the console. 
+ */
 struct DebugVisitor : public boost::static_visitor<> {
     mutable int level;
 
@@ -21,7 +27,9 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     std::string indent() const ;
 
-    void operator()(ast::Program& program) const ;
+    void operator()(ast::SourceFile& program) const ;
+    void operator()(ast::Import& import) const ;
+    void operator()(ast::StandardImport& import) const ;
     void operator()(ast::FunctionDeclaration& declaration) const ;
     void operator()(ast::GlobalVariableDeclaration&) const ;
     void operator()(ast::GlobalArrayDeclaration&) const ;
@@ -42,6 +50,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::VariableValue&) const ;
     void operator()(ast::ArrayValue&) const ;
     void operator()(ast::ComposedValue& value) const ;
+    void operator()(ast::Plus& value) const ;
+    void operator()(ast::Minus& value) const ;
 };
 
 } //end of eddic

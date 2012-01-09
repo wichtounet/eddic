@@ -79,6 +79,14 @@ void operator()(ast::ComposedValue& value){\
     for_each(value.Content->operations.begin(), value.Content->operations.end(), \
         [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });\
 }
+
+#define AUTO_RECURSE_MINUS_PLUS_VALUES()\
+void operator()(ast::Plus& value){\
+    visit(*this, value.Content->value);\
+}\
+void operator()(ast::Minus& value){\
+    visit(*this, value.Content->value);\
+}
         
 #define AUTO_RECURSE_ARRAY_VALUES()\
 void operator()(ast::ArrayValue& array){\
@@ -86,7 +94,7 @@ void operator()(ast::ArrayValue& array){\
 }
 
 #define AUTO_RECURSE_PROGRAM()\
-void operator()(ast::Program& program){\
+void operator()(ast::SourceFile& program){\
     visit_each(*this, program.Content->blocks);\
 }
 

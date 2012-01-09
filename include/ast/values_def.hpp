@@ -26,6 +26,12 @@ typedef Deferred<ASTVariableValue> VariableValue;
 struct ASTComposedValue;
 typedef Deferred<ASTComposedValue> ComposedValue;
 
+struct ASTMinus;
+typedef Deferred<ASTMinus> Minus;
+
+struct ASTPlus;
+typedef Deferred<ASTPlus> Plus;
+
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
 

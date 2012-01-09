@@ -17,24 +17,31 @@ namespace qi = boost::spirit::qi;
 
 namespace eddic {
 
-typedef lexer_type::iterator_type Iterator;
-typedef SimpleLexer<lexer_type> Lexer;
+namespace parser {
 
-struct ValueGrammar : qi::grammar<Iterator, ast::Value()> {
-    ValueGrammar(const Lexer& lexer);
+/*!
+ * \class ValueGrammar
+ * \brief Grammar representing values in EDDI language.
+ */
+struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
+    ValueGrammar(const lexer::Lexer& lexer);
     
-    qi::rule<Iterator, ast::Value()> value;
-    qi::rule<Iterator, ast::Value()> primaryValue;
-    qi::rule<Iterator, ast::Value()> unaryValue;
-    qi::rule<Iterator, ast::ComposedValue()> additiveValue;
-    qi::rule<Iterator, ast::ComposedValue()> multiplicativeValue;
-    qi::rule<Iterator, ast::Value()> constant;
-    qi::rule<Iterator, ast::Integer()> integer;
-    qi::rule<Iterator, ast::Litteral()> litteral;
-    qi::rule<Iterator, ast::VariableValue()> variable;
-    qi::rule<Iterator, ast::ArrayValue()> arrayValue;
-    qi::rule<Iterator, ast::FunctionCall()> functionCall;
+    qi::rule<lexer::Iterator, ast::Value()> value;
+    qi::rule<lexer::Iterator, ast::Value()> primaryValue;
+    qi::rule<lexer::Iterator, ast::Value()> unaryValue;
+    qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
+    qi::rule<lexer::Iterator, ast::Plus()> plusValue;
+    qi::rule<lexer::Iterator, ast::ComposedValue()> additiveValue;
+    qi::rule<lexer::Iterator, ast::ComposedValue()> multiplicativeValue;
+    qi::rule<lexer::Iterator, ast::Value()> constant;
+    qi::rule<lexer::Iterator, ast::Integer()> integer;
+    qi::rule<lexer::Iterator, ast::Litteral()> litteral;
+    qi::rule<lexer::Iterator, ast::VariableValue()> variable;
+    qi::rule<lexer::Iterator, ast::ArrayValue()> arrayValue;
+    qi::rule<lexer::Iterator, ast::FunctionCall()> functionCall;
 };
+
+} //end of parser
 
 } //end of eddic
 

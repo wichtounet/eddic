@@ -12,6 +12,10 @@
 
 namespace eddic {
 
+/*!
+ * \struct SemanticalException
+ * \brief An exception occuring after the AST has been correctly constructed. 
+ */
 class SemanticalException: public std::exception {
     protected:
         std::string m_message;

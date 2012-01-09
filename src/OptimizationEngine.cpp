@@ -21,52 +21,9 @@
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
-
-struct GetIntValue : public boost::static_visitor<int> {
-    int operator()(ast::ComposedValue& value) const {
-        int acc = boost::apply_visitor(*this, value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            int v = boost::apply_visitor(*this, operation.get<1>());
-            char op = operation.get<0>();
-
-            switch(op){
-                case '+':
-                    acc += v;
-                    break;
-                case '-':
-                    acc -= v;
-                    break;
-                case '*':
-                    acc *= v;
-                    break;
-                case '/':
-                    acc /= v;
-                    break;
-                case '%':
-                    acc %= v;
-                    break;
-            }
-        }
-
-        return acc;
-    }
-
-    int operator()(ast::Integer& integer) const {
-        return integer.value; 
-    }
-   
-    //Other values are not integers
-    template<typename T> 
-    int operator()(T&) const {
-        assert(false);
-
-        return -1; 
-    }
-};
 
 struct GetStringValue : public boost::static_visitor<std::string> {
     std::string operator()(ast::ComposedValue& value) const {
@@ -82,6 +39,15 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     
     std::string operator()(ast::Litteral& litteral) const {
         return litteral.value;
+    }
+
+    std::string operator()(ast::VariableValue& variable) const {
+        Type type = variable.Content->var->type();
+        assert(type.isConst() && type.base() == BaseType::STRING);
+
+        auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
+
+        return value.first;
     }
     
     //Other values are not strings
@@ -107,13 +73,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             if(IsConstantVisitor()(value)){
                 Type type = GetTypeVisitor()(value);
 
-                if(type.base() == BaseType::INT){
-                    if (OptimizeIntegers) {
-                        ast::Integer integer;
-                        integer.value = GetIntValue()(value);
-                        return integer; 
-                    }
-                } else if(type.base() == BaseType::STRING){
+                if(type.base() == BaseType::STRING){
                     if (OptimizeStrings) {
                         ast::Litteral litteral;
                         litteral.value = GetStringValue()(value);
@@ -144,6 +104,29 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
 
             return value;
+        }
+
+        //Cannot be done in the TAC Optimizer as the string variables are splitted into two parts
+        ast::Value operator()(ast::VariableValue& variable) const {
+            Type type = variable.Content->var->type();
+
+            if(type.isConst()){
+                if(type.base() == BaseType::INT){
+                    ast::Integer integer;
+                    integer.value = boost::get<int>(variable.Content->var->val());
+                    return integer; 
+                } else if(type.base() == BaseType::STRING){
+                    auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
+
+                    ast::Litteral litteral;
+                    litteral.value = value.first;
+                    litteral.label = pool.label(litteral.value);
+
+                    return litteral;
+                }
+            }
+
+            return variable;
         }
 
         //No optimizations for other kind of values
@@ -232,7 +215,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             visit_each(*this, vector);
         }
 
-        void operator()(ast::Program& program){\
+        void operator()(ast::SourceFile& program){\
             removeUnused(program.Content->blocks);
         }
         
@@ -315,7 +298,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void OptimizationEngine::optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool) const {
+void OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

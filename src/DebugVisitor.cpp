@@ -11,7 +11,7 @@
 
 #include "VisitorUtils.hpp"
 
-#include "ast/Program.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
     
@@ -25,12 +25,20 @@ std::string DebugVisitor::indent() const {
     return acc;
 }
 
-void DebugVisitor::operator()(ast::Program& program) const {
-    std::cout << indent() << "Program" << std::endl; 
+void DebugVisitor::operator()(ast::SourceFile& program) const {
+    std::cout << indent() << "SourceFile" << std::endl; 
 
     ++level;
 
     visit_each(*this, program.Content->blocks);
+}
+
+void DebugVisitor::operator()(ast::Import& import) const {
+    std::cout << indent() << "include \"" << import.file << "\"" << std::endl;
+}
+
+void DebugVisitor::operator()(ast::StandardImport& import) const {
+    std::cout << indent() << "include <" << import.header << ">" << std::endl;
 }
 
 void DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
@@ -138,8 +146,8 @@ void DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Litteral&) const {
-    std::cout << indent() << "Litteral" << std::endl; 
+void DebugVisitor::operator()(ast::Litteral& litteral) const {
+    std::cout << indent() << "Litteral [" << litteral.value << "]" << std::endl; 
 }
 
 void DebugVisitor::operator()(ast::Integer& integer) const {
@@ -162,5 +170,19 @@ void DebugVisitor::operator()(ast::ComposedValue& value) const {
         std::cout << indent() << operation.get<0>() << std::endl;
         visit(*this, operation.get<1>());
     }
+    --level;
+}
+
+void DebugVisitor::operator()(ast::Minus& value) const {
+    std::cout << indent() << "Unary +" << std::endl; 
+    ++level;
+    visit(*this, value.Content->value);
+    --level;
+}
+
+void DebugVisitor::operator()(ast::Plus& value) const {
+    std::cout << indent() << "Unary -" << std::endl; 
+    ++level;
+    visit(*this, value.Content->value);
     --level;
 }

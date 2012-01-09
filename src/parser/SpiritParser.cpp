@@ -27,10 +27,11 @@
 #include "parser/EDDIGrammar.hpp"
 
 namespace qi = boost::spirit::qi;
+namespace spirit = boost::spirit;
 
 using namespace eddic;
 
-bool SpiritParser::parse(const std::string& file, ast::Program& program){
+bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& program){
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
    
@@ -42,14 +43,14 @@ bool SpiritParser::parse(const std::string& file, ast::Program& program){
     std::string contents(size, 0);
     in.read(&contents[0], size);    
 
-    pos_iterator_type position_begin(contents.begin(), contents.end(), file);
-    pos_iterator_type position_end;
+    lexer::pos_iterator_type position_begin(contents.begin(), contents.end(), file);
+    lexer::pos_iterator_type position_end;
 
-    SimpleLexer<lexer_type> lexer;
-    EddiGrammar grammar(lexer); 
+    lexer::Lexer lexer;
+    parser::EddiGrammar grammar(lexer); 
     
     try {
-        bool r = lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);
+        bool r = spirit::lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);
 
         if(r && position_begin == position_end) {
             return true;
@@ -59,15 +60,15 @@ bool SpiritParser::parse(const std::string& file, ast::Program& program){
             std::cout <<
                 "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl <<
                 "'" << position_begin.get_currentline() << "'" << std::endl <<
-                std::setw(pos.column) << " " << "^- here";
+                std::setw(pos.column) << " " << "^- here" << std::endl;
             
             return false;
         }
-    } catch (const qi::expectation_failure<lexer_type::iterator_type>& exception) {
+    } catch (const qi::expectation_failure<lexer::lexer_type::iterator_type>& exception) {
         std::cout << "Parsing failed" << std::endl;
       
         //TODO Improve to get information from exception 
-        const spirit::classic::file_position_base<std::string>& pos = position_begin.get_position();
+        const auto& pos = position_begin.get_position();
        
         std::cout <<
             "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << " Expecting " << exception.what_ << std::endl <<

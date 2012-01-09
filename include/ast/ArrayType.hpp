@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ArrayType
+ * \brief An array type in the AST.  
+ */
 struct ArrayType {
     std::string type;
 };

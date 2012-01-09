@@ -8,15 +8,19 @@
 #ifndef OPTIMIZATION_ENGINE_H
 #define OPTIMIZATION_ENGINE_H
 
-#include "ast/program_def.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 class FunctionTable;
 class StringPool;
 
+/*!
+ * \class OptimizationEngine
+ * \brief This optimizer edit the AST in order to optimize it for runtime performances and for size.  
+ */
 struct OptimizationEngine {
-    void optimize(ast::Program& program, FunctionTable& functionTable, StringPool& pool) const ;
+    void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const ;
 };
 
 } //end of eddic

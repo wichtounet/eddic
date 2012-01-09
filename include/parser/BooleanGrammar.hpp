@@ -19,19 +19,24 @@ namespace qi = boost::spirit::qi;
 
 namespace eddic {
 
-typedef lexer_type::iterator_type Iterator;
-typedef SimpleLexer<lexer_type> Lexer;
+namespace parser {
 
-struct BooleanGrammar : qi::grammar<Iterator, ast::Condition()> {
-    BooleanGrammar(const Lexer& lexer);
+/*!
+ * \class BooleanGrammar
+ * \brief Grammar to represent boolean litterals and conditions. 
+ */
+struct BooleanGrammar : qi::grammar<lexer::Iterator, ast::Condition()> {
+    BooleanGrammar(const lexer::Lexer& lexer);
 
-    qi::rule<Iterator, ast::Condition()> condition;
-    qi::rule<Iterator, ast::True()> true_;
-    qi::rule<Iterator, ast::False()> false_;
-    qi::rule<Iterator, ast::BinaryCondition()> binary_condition;
+    qi::rule<lexer::Iterator, ast::Condition()> condition;
+    qi::rule<lexer::Iterator, ast::True()> true_;
+    qi::rule<lexer::Iterator, ast::False()> false_;
+    qi::rule<lexer::Iterator, ast::BinaryCondition()> binary_condition;
     
     ValueGrammar value;
 };
+
+} //end of parser
 
 } //end of eddic
 
