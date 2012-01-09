@@ -13,8 +13,7 @@
 #include "Target.hpp"
 
 #include "Utils.hpp"
-#include "Timer.hpp"
-#include "DebugTimer.hpp"
+#include "DebugStopWatch.hpp"
 #include "Options.hpp"
 
 #include "StringPool.hpp"
@@ -59,7 +58,7 @@ static const bool debug = true;
 static const bool debug = false;
 #endif
 
-#define TIMER_START(name) Timer name_timer; 
+#define TIMER_START(name) StopWatch name_timer; 
 #define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
 
 using namespace eddic;
@@ -73,7 +72,7 @@ int Compiler::compile(const std::string& file) {
         std::cout << "Warning : Looks like you're running a 64 bit system. This compiler only outputs 32 bits assembly." << std::endl; 
     }
 
-    Timer timer;
+    StopWatch timer;
     
     int code = compileOnly(file);
 
@@ -175,73 +174,73 @@ int Compiler::compileOnly(const std::string& file) {
 }
 
 void eddic::defineDefaultValues(ast::SourceFile& program){
-    DebugTimer<debug> timer("Annotate with default values");
+    DebugStopWatch<debug> timer("Annotate with default values");
     DefaultValues values;
     values.fill(program);
 }
 
 void eddic::defineContexts(ast::SourceFile& program){
-    DebugTimer<debug> timer("Annotate contexts");
+    DebugStopWatch<debug> timer("Annotate contexts");
     ContextAnnotator annotator;
     annotator.annotate(program);
 }
 
 void eddic::defineVariables(ast::SourceFile& program){
-    DebugTimer<debug> timer("Annotate variables");
+    DebugStopWatch<debug> timer("Annotate variables");
     VariablesAnnotator annotator;
     annotator.annotate(program);
 }
 
 void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
-    DebugTimer<debug> timer("Annotate functions");
+    DebugStopWatch<debug> timer("Annotate functions");
     FunctionsAnnotator annotator;
     annotator.annotate(program, functionTable);
 }
 
 void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
-    DebugTimer<debug> timer("Strings checking");
+    DebugStopWatch<debug> timer("Strings checking");
     StringChecker checker;
     checker.check(program, pool);
 }
 
 void eddic::checkTypes(ast::SourceFile& program){
-    DebugTimer<debug> timer("Types checking");
+    DebugStopWatch<debug> timer("Types checking");
     TypeChecker checker;
     checker.check(program); 
 }
 
 void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
-    DebugTimer<debug> timer("Check for warnings");
+    DebugStopWatch<debug> timer("Check for warnings");
     WarningsEngine engine;
     engine.check(program, table);
 }
 
 void eddic::clean(ast::SourceFile& program){
-    DebugTimer<debug> timer("Cleaning");
+    DebugStopWatch<debug> timer("Cleaning");
     TransformerEngine engine;
     engine.clean(program);
 }
 
 void eddic::transform(ast::SourceFile& program){
-    DebugTimer<debug> timer("Transformation");
+    DebugStopWatch<debug> timer("Transformation");
     TransformerEngine engine;
     engine.transform(program);
 }
 
 void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
-    DebugTimer<debug> timer("Optimization");
+    DebugStopWatch<debug> timer("Optimization");
     OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
 }
 
 void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
-    DebugTimer<debug> timer("Resolve dependencies");
+    DebugStopWatch<debug> timer("Resolve dependencies");
     DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
 }
 
 void exec(const std::string& command) {
-    DebugTimer<debug> timer("Exec " + command);
+    DebugStopWatch<debug> timer("Exec " + command);
     
     if(debug){
         std::cout << "eddic : exec command : " << command << std::endl;

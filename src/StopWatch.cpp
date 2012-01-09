@@ -5,15 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Timer.hpp"
+#include "StopWatch.hpp"
 
 using namespace eddic;
 
-Timer::Timer() {
+StopWatch::StopWatch() {
     startTime = boost::chrono::system_clock::now();
 }
 
-double Timer::elapsed() {
+double StopWatch::elapsed() {
     boost::chrono::duration<double> sec = boost::chrono::system_clock::now() - startTime;
     
     return sec.count();

@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-parser::ValueGrammar::ValueGrammar(const Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
+parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
     value = additiveValue.alias();
     
     additiveValue %=
