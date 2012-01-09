@@ -12,6 +12,7 @@
 
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/Program.hpp"
+#include "tac/Utils.hpp"
 
 using namespace eddic;
 
@@ -31,7 +32,7 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
 
                 nextIsLeader = false;
             } else {
-                if(nextIsLeader || boost::get<std::shared_ptr<tac::Call>>(&statement)){
+                if(nextIsLeader || (boost::get<std::shared_ptr<tac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<tac::Call>>(statement)))){
                     function->newBasicBlock();
                     nextIsLeader = false;
                 }

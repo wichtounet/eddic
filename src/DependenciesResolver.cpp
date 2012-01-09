@@ -58,14 +58,15 @@ class DependencyVisitor : public boost::static_visitor<> {
         }
     
         void operator()(ast::Import& import){
-            auto file = import.file.substr(1, import.file.size() - 2);
+            import.file.erase(0, 1);
+            import.file.resize(import.file.size() - 1);
 
-            if(!exists(file)){
-                throw SemanticalException("The file " + file + " does not exist");
+            if(!exists(import.file)){
+                throw SemanticalException("The file " + import.file + " does not exist");
             }
            
             ast::SourceFile dependency; 
-            if(parser.parse(file, dependency)){
+            if(parser.parse(import.file, dependency)){
                 includeDependencies(dependency, parser); 
 
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){

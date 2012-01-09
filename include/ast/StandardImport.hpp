@@ -19,6 +19,7 @@ namespace ast {
  * \brief The AST node for an import of the standard import. 
  */
 struct StandardImport {
+    int fake;
     std::string ignoreLess;
     std::string header;
     std::string ignoreGreater;

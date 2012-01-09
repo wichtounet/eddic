@@ -8,7 +8,12 @@
 #ifndef TAC_UTILS_H
 #define TAC_UTILS_H
 
+#include <memory>
+#include <unordered_set>
+
 #include <boost/variant.hpp>
+
+#include "tac/Program.hpp"
 
 namespace eddic {
 
@@ -23,6 +28,10 @@ template<typename T>
 bool isInt(T& variant){
     return boost::get<int>(&variant);
 }
+
+void computeBlockUsage(std::shared_ptr<tac::Function> function, std::unordered_set<std::shared_ptr<tac::BasicBlock>>& usage);
+
+bool safe(std::shared_ptr<tac::Call> call);
 
 } //end of tac
 

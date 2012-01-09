@@ -21,6 +21,7 @@ namespace {
 
 static const bool Debug = false;
 
+//Use for two pass optimization
 enum class Pass : unsigned int {
     DATA_MINING,
     OPTIMIZE
@@ -331,6 +332,28 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         return ifFalse;
     }
 
+    tac::Statement operator()(std::shared_ptr<tac::Return>& return_){
+        if(return_->arg1){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    return_->arg1 = constants[*ptr];
+                }
+            }
+        }
+
+        if(return_->arg2){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    return_->arg2 = constants[*ptr];
+                }
+            }
+        }
+
+        return return_;
+    }
+
     template<typename T>
     tac::Statement operator()(T& statement){ 
         return statement;
@@ -578,6 +601,62 @@ bool remove_needless_jumps(tac::Program& program){
     return optimized;
 }
 
+bool merge_basic_blocks(tac::Program& program){
+    bool optimized = false;
+
+    std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
+
+    for(auto& function : program.functions){
+        computeBlockUsage(function, usage);
+    }
+    
+    for(auto& function : program.functions){
+        auto& blocks = function->getBasicBlocks();
+
+        auto it = blocks.begin();
+
+        while(it != blocks.end()){
+            auto& block = *it;
+            if(block->statements.size() > 0){
+                auto& last = block->statements[block->statements.size() - 1];
+
+                bool merge = false;
+
+                if(boost::get<std::shared_ptr<tac::Quadruple>>(&last)){
+                    merge = true;
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&last)){
+                    merge = safe(*ptr); 
+                } else if(boost::get<tac::NoOp>(&last)){
+                    merge = true;
+                }
+
+                auto next = it + 1;
+                if(merge && next != blocks.end()){
+                    //Only if the next block is not used because we will remove its label
+                    if(usage.find(*next) == usage.end()){
+                        if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&(*(*next)->statements.begin()))){
+                            if(!safe(*ptr)){
+                                ++it;
+                                continue;
+                            }
+                        }
+
+                        block->statements.insert(block->statements.end(), (*next)->statements.begin(), (*next)->statements.end());
+
+                        it = blocks.erase(next);
+                        optimized = true;
+                        continue;
+                    }
+                }
+            }
+
+            ++it;
+        }
+    }
+   
+    return optimized; 
+}
+
 template<bool Enabled, int i>
 bool debug(bool b){
     if(Enabled){
@@ -618,9 +697,10 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Remove needless jumps
         optimized |= debug<Debug, 7>(remove_needless_jumps(program));
+
+        //Merge basic blocks
+        optimized |= debug<Debug, 8>(merge_basic_blocks(program));
     } while (optimized);
     
     //TODO Copy propagation
-    //TODO Merge the basic blocks that can be merged (and are not accessed)
-    //TODO Consider the print methods as safe as the registers are saved
 }

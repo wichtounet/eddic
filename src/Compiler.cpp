@@ -103,7 +103,7 @@ int Compiler::compileOnly(const std::string& file) {
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
-           
+
             //Read dependencies
             includeDependencies(program, parser);
 
