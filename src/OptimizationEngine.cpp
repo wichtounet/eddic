@@ -172,7 +172,6 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
             return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
         }
 
-        //TODO This should be done in the TAC Optimizer
         bool operator()(ast::FunctionDeclaration& declaration){
             if(OptimizeUnused){
                 if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
