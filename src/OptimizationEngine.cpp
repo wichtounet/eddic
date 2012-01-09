@@ -106,7 +106,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             return value;
         }
 
-        //TODO This should be done in the TAC Optimizer
+        //Cannot be done in the TAC Optimizer as the string variables are splitted into two parts
         ast::Value operator()(ast::VariableValue& variable) const {
             Type type = variable.Content->var->type();
 

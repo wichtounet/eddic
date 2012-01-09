@@ -21,6 +21,7 @@ namespace {
 
 static const bool Debug = false;
 
+//Use for two pass optimization
 enum class Pass : unsigned int {
     DATA_MINING,
     OPTIMIZE
@@ -330,6 +331,8 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
         return ifFalse;
     }
+
+    //TODO Constant propagation should be applied to return as well
 
     template<typename T>
     tac::Statement operator()(T& statement){ 
