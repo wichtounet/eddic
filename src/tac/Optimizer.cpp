@@ -634,6 +634,13 @@ bool merge_basic_blocks(tac::Program& program){
                 if(merge && next != blocks.end()){
                     //Only if the next block is not used because we will remove its label
                     if(usage.find(*next) == usage.end()){
+                        if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&(*(*next)->statements.begin()))){
+                            if(!safe(*ptr)){
+                                ++it;
+                                continue;
+                            }
+                        }
+
                         block->statements.insert(block->statements.end(), (*next)->statements.begin(), (*next)->statements.end());
 
                         it = blocks.erase(next);
