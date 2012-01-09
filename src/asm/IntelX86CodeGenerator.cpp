@@ -260,6 +260,15 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         //There are no free register, take one
         auto reg = registers.first();
+        bool found = false;
+        for(auto remaining : registers){
+            if(!registers.reserved(remaining)){
+                reg = remaining;
+                found = true;
+            }
+        }
+
+        assert(found);
         spills(reg);
 
         if(doMove){
