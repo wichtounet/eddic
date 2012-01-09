@@ -20,3 +20,10 @@ void eddic::tac::computeBlockUsage(std::shared_ptr<tac::Function> function, std:
         }
     }
 }
+
+bool eddic::tac::safe(std::shared_ptr<tac::Call> call){
+    auto function = call->function;
+
+    //These three functions are considered as safe because they save/restore all the registers and does not return anything 
+    return function == "print_integer" || function == "print_string" || function == "print_line"; 
+}

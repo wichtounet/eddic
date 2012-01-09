@@ -607,6 +607,42 @@ bool merge_basic_blocks(tac::Program& program){
     for(auto& function : program.functions){
         computeBlockUsage(function, usage);
     }
+    
+    for(auto& function : program.functions){
+        auto& blocks = function->getBasicBlocks();
+
+        auto it = blocks.begin();
+
+        while(it != blocks.end()){
+            auto& block = *it;
+            if(block->statements.size() > 0){
+                auto& last = block->statements[block->statements.size() - 1];
+
+                bool merge = false;
+
+                if(boost::get<std::shared_ptr<tac::Quadruple>>(&last)){
+                    merge = true;
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&last)){
+                    merge = safe(*ptr); 
+                } else if(boost::get<tac::NoOp>(&last)){
+                    merge = true;
+                }
+
+                auto next = it + 1;
+                if(merge && next != blocks.end()){
+                    //Only if the next block is not used because we will remove its label
+                    if(usage.find(*next) == usage.end()){
+                        block->statements.insert(block->statements.end(), (*next)->statements.begin(), (*next)->statements.end());
+
+                        it = blocks.erase(next);
+                        continue;
+                    }
+                }
+            }
+
+            ++it;
+        }
+    }
    
     return false; 
 }

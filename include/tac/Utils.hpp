@@ -31,6 +31,8 @@ bool isInt(T& variant){
 
 void computeBlockUsage(std::shared_ptr<tac::Function> function, std::unordered_set<std::shared_ptr<tac::BasicBlock>>& usage);
 
+bool safe(std::shared_ptr<tac::Call> call);
+
 } //end of tac
 
 } //end of eddic

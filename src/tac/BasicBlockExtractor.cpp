@@ -12,15 +12,9 @@
 
 #include "tac/BasicBlockExtractor.hpp"
 #include "tac/Program.hpp"
+#include "tac/Utils.hpp"
 
 using namespace eddic;
-
-bool safe(std::shared_ptr<tac::Call> call){
-    auto function = call->function;
-
-    //These three functions are considered as safe because they save/restore all the registers and does not return anything 
-    return function == "print_integer" || function == "print_string" || function == "print_line"; 
-}
 
 void tac::BasicBlockExtractor::extract(tac::Program& program) const {
     for(auto& function : program.functions){
