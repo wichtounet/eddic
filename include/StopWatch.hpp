@@ -5,22 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef STOP_WATCH_H
+#define STOP_WATCH_H
 
 #include <boost/chrono.hpp>
 
 namespace eddic {
 
 /*!
- * \class Timer
+ * \class StopWatch
  * \brief Simple stopwatch to keep track of elapsed time between two points. 
  * 
  * The stopwatch starts automatically when instantiated. This stopwatch use Boost Chrono to keep tracks of time.    
  */
-class Timer {
+class StopWatch {
     public:
-        Timer();
+        StopWatch();
         double elapsed();
 	
     private:

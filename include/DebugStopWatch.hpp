@@ -5,39 +5,41 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef DEBUG_TIMER_H
-#define DEBUG_TIMER_H
+#ifndef DEBUG_STOP_WATCH_H
+#define DEBUG_STOP_WATCH_H
 
 #include <string>
 #include <iostream>
 
+#include "StopWatch.hpp"
+
 namespace eddic {
 
 /*!
- * \class DebugTimer
+ * \class DebugStopWatch
  * \brief Simple stopwatch to keep track of elapsed time between instantiation and destruction.
  * 
  * If debug template argument is set to false, this class transforms to a no-op.  
  * 
- * \see Timer
+ * \see StopWatch
  */
 template<bool Enabled>
-class DebugTimer {
+class DebugStopWatch {
     private:
-        Timer timer;
+        StopWatch timer;
         std::string name;
 
     public:
-        DebugTimer(const std::string& n) : name(n) {}
+        DebugStopWatch(const std::string& n) : name(n) {}
         
-        ~DebugTimer(){
+        ~DebugStopWatch(){
             std::cout << name << " took " << timer.elapsed() << "s" << std::endl;
         }
 };
 
 template<>
-struct DebugTimer<false> {
-    DebugTimer(const std::string&) {}
+struct DebugStopWatch<false> {
+    DebugStopWatch(const std::string&) {}
 };
 
 } //end of eddic
