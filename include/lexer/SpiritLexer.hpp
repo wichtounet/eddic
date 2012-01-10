@@ -29,7 +29,7 @@ namespace lex = boost::spirit::lex;
     
 typedef std::string::iterator base_iterator_type;
 typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-typedef boost::spirit::lex::lexertl::token<pos_iterator_type, boost::mpl::vector<std::string, int>> Tok;
+typedef boost::spirit::lex::lexertl::token<pos_iterator_type> Tok;
 typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
 /*!
@@ -81,8 +81,8 @@ class SpiritLexer : public lex::lexer<L> {
             modulo = '%';
 
             //Bool operators
-            and_ = "&&";
-            or_ = "||";
+            and_ = "\\&\\&";
+            or_ = "\\|\\|";
 
             equals = "==";
             not_equals = "!=";

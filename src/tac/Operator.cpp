@@ -11,17 +11,17 @@
 
 using namespace eddic;
 
-tac::Operator tac::toOperator(char op){
+tac::Operator tac::toOperator(ast::Operator op){
     switch(op){
-        case '+':
+        case ast::Operator::ADD:
             return tac::Operator::ADD;
-        case '-':
+        case ast::Operator::SUB:
             return tac::Operator::SUB;
-        case '/':
+        case ast::Operator::DIV:
             return tac::Operator::DIV;
-        case '*':
+        case ast::Operator::MUL:
             return tac::Operator::MUL;
-        case '%':
+        case ast::Operator::MOD:
             return tac::Operator::MOD;
         default:
             assert(false);

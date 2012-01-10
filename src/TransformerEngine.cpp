@@ -106,7 +106,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         ast::ComposedValue addition;
         addition.Content->first = v;
-        addition.Content->operations.push_back(boost::tuples::tuple<char, ast::Value>('+', inc));
+        addition.Content->operations.push_back(ast::Operation(ast::Operator::ADD, inc));
         
         ast::Assignment repeatAssign;
         repeatAssign.Content->context = foreach.Content->context;

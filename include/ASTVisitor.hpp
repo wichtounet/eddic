@@ -77,7 +77,7 @@ void operator()(ast::FunctionCall& functionCall){\
 void operator()(ast::ComposedValue& value){\
     visit(*this, value.Content->first);\
     for_each(value.Content->operations.begin(), value.Content->operations.end(), \
-        [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });\
+        [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });\
 }
 
 #define AUTO_RECURSE_MINUS_PLUS_VALUES()\

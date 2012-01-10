@@ -167,7 +167,7 @@ void DebugVisitor::operator()(ast::ComposedValue& value) const {
     ++level;
     visit(*this, value.Content->first);
     for(auto& operation : value.Content->operations){
-        std::cout << indent() << operation.get<0>() << std::endl;
+        std::cout << indent() << (int) operation.get<0>() << std::endl;
         visit(*this, operation.get<1>());
     }
     --level;

@@ -204,7 +204,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
+            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
     }
 
     void operator()(ast::Plus& value){

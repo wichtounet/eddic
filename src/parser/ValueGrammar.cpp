@@ -6,11 +6,13 @@
 //=======================================================================
 
 #include "parser/ValueGrammar.hpp"
+#include "lexer/adapttokens.hpp"
 
 using namespace eddic;
 
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
     /* Match operators into symbols */
+    //TODO Find a way to avoid duplication of these things
     additive_op.add
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
@@ -26,18 +28,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     
     additiveValue %=
             multiplicativeValue
-        >>  *(
-                (lexer.addition > multiplicativeValue)
-            |   (lexer.subtraction > multiplicativeValue)
-            );
+        >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
    
     multiplicativeValue %=
             unaryValue
-        >>  *(
-                (lexer.multiplication > unaryValue)
-            |   (lexer.division > unaryValue)
-            |   (lexer.modulo > unaryValue)
-            );
+        >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
     
     unaryValue %= 
             negatedValue

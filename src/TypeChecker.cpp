@@ -150,7 +150,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
+            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
 
         GetTypeVisitor visitor;
         Type type = boost::apply_visitor(visitor, value.Content->first);
