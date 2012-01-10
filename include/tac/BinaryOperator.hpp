@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include "ast/Operator.hpp"
+
 namespace eddic {
 
 namespace tac {
@@ -23,7 +25,7 @@ enum class BinaryOperator : unsigned int {
     GREATER_EQUALS
 };
 
-BinaryOperator toBinaryOperator(const std::string& op);
+BinaryOperator toBinaryOperator(ast::Operator op);
 
 } //end of tac
 

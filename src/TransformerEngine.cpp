@@ -95,7 +95,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         ast::BinaryCondition binaryCondition; 
         binaryCondition.Content->lhs = v;
         binaryCondition.Content->rhs = toValue;
-        binaryCondition.Content->op = "<=";
+        binaryCondition.Content->op = ast::Operator::LESS_EQUALS;
 
         for_.Content->condition = binaryCondition;
 

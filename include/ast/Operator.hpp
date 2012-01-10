@@ -17,7 +17,14 @@ enum class Operator : unsigned int {
     SUB,
     DIV,
     MUL,
-    MOD
+    MOD,
+
+    EQUALS,
+    NOT_EQUALS,
+    LESS,
+    LESS_EQUALS,
+    GREATER,
+    GREATER_EQUALS
 };
 
 } //end of ast

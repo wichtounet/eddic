@@ -34,6 +34,8 @@ struct BooleanGrammar : qi::grammar<lexer::Iterator, ast::Condition()> {
     qi::rule<lexer::Iterator, ast::BinaryCondition()> binary_condition;
     
     ValueGrammar value;
+    
+    qi::symbols<char, ast::Operator> logical_binary_op;
 };
 
 } //end of parser

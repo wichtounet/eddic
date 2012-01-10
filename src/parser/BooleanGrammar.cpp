@@ -6,10 +6,20 @@
 //=======================================================================
 
 #include "parser/BooleanGrammar.hpp"
+#include "lexer/adapttokens.hpp"
 
 using namespace eddic;
 
 parser::BooleanGrammar::BooleanGrammar(const lexer::Lexer& lexer) : BooleanGrammar::base_type(condition, "Boolean Grammar"), value(lexer) {
+    logical_binary_op.add
+        (">=", ast::Operator::GREATER_EQUALS) 
+        (">", ast::Operator::GREATER) 
+        ("<=", ast::Operator::LESS_EQUALS) 
+        ("<", ast::Operator::LESS) 
+        ("!=", ast::Operator::NOT_EQUALS) 
+        ("==", ast::Operator::EQUALS) 
+        ;
+
     true_ %= 
             qi::eps
         >>  lexer.true_;
@@ -20,15 +30,8 @@ parser::BooleanGrammar::BooleanGrammar(const lexer::Lexer& lexer) : BooleanGramm
 
     binary_condition %=
             value
-        >>  (
-                lexer.greater_equals
-            |   lexer.greater
-            |   lexer.less_equals
-            |   lexer.less
-            |   lexer.not_equals
-            |   lexer.equals
-            )
-        >>   value;
+        >>  qi::adapttokens[logical_binary_op]
+        >>  value;
 
     condition %= 
             true_ 

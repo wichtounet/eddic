@@ -11,6 +11,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Operator.hpp"
 
 namespace eddic {
 
@@ -22,7 +23,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::BinaryCondition).
  */
 struct ASTBinaryCondition {
-    std::string op;
+    Operator op;
     Value lhs;
     Value rhs;
 
@@ -44,7 +45,7 @@ typedef Deferred<ASTBinaryCondition> BinaryCondition;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::BinaryCondition, 
     (eddic::ast::Value, Content->lhs)
-    (std::string, Content->op)
+    (eddic::ast::Operator, Content->op)
     (eddic::ast::Value, Content->rhs)
 )
 
