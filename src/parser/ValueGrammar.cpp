@@ -10,6 +10,18 @@
 using namespace eddic;
 
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
+    /* Match operators into symbols */
+    additive_op.add
+        ("+", ast::Operator::ADD)
+        ("-", ast::Operator::SUB)
+        ;
+
+    multiplicative_op.add
+        ("/", ast::Operator::DIV)
+        ("*", ast::Operator::MUL)
+        ("%", ast::Operator::MOD)
+        ;
+
     value = additiveValue.alias();
     
     additiveValue %=

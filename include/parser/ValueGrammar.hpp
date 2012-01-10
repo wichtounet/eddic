@@ -39,6 +39,9 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::VariableValue()> variable;
     qi::rule<lexer::Iterator, ast::ArrayValue()> arrayValue;
     qi::rule<lexer::Iterator, ast::FunctionCall()> functionCall;
+
+    qi::symbols<char, ast::Operator> multiplicative_op;
+    qi::symbols<char, ast::Operator> additive_op;
 };
 
 } //end of parser

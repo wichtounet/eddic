@@ -15,6 +15,7 @@
 #include <boost/fusion/adapted/boost_tuple.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Operator.hpp"
 
 namespace eddic {
 
