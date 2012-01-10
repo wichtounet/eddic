@@ -80,6 +80,10 @@ class SpiritLexer : public lex::lexer<L> {
             division = '/';
             modulo = '%';
 
+            //Bool operators
+            and_ = "&&";
+            or_ = "||";
+
             equals = "==";
             not_equals = "!=";
             greater = ">";
@@ -97,6 +101,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
             this->self += comma | stop;
             this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
+            this->self += and_ | or_;
             this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += integer | word | litteral;
@@ -116,6 +121,7 @@ class SpiritLexer : public lex::lexer<L> {
         
         CharToken addition, subtraction, multiplication, division, modulo;
         StringToken equals, not_equals, greater, less, greater_equals, less_equals;
+        StringToken and_, or_;
 
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace, left_bracket, right_bracket;
         ConsumedToken stop, comma;
