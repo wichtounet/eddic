@@ -15,6 +15,8 @@
 #include "ast/Integer.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
+#include "ast/True.hpp"
+#include "ast/False.hpp"
 
 namespace eddic {
 
@@ -27,6 +29,8 @@ typedef boost::variant<
             ComposedValue,
             Minus,
             Plus,
+            True,
+            False,
             ArrayValue,
             FunctionCall
         > Value;

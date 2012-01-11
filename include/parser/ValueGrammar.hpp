@@ -42,10 +42,8 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::VariableValue()> variable;
     qi::rule<lexer::Iterator, ast::ArrayValue()> arrayValue;
     qi::rule<lexer::Iterator, ast::FunctionCall()> functionCall;
-    qi::rule<lexer::Iterator, ast::Condition()> condition;
     qi::rule<lexer::Iterator, ast::True()> true_;
     qi::rule<lexer::Iterator, ast::False()> false_;
-    qi::rule<lexer::Iterator, ast::BinaryCondition()> binary_condition;
 
     qi::symbols<char, ast::Operator> multiplicative_op;
     qi::symbols<char, ast::Operator> additive_op;

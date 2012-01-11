@@ -154,6 +154,14 @@ void DebugVisitor::operator()(ast::Integer& integer) const {
     std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
 }
 
+void DebugVisitor::operator()(ast::True& true_) const {
+    std::cout << indent() << "true" << std::endl; 
+}
+
+void DebugVisitor::operator()(ast::False& false_) const {
+    std::cout << indent() << "false" << std::endl; 
+}
+
 void DebugVisitor::operator()(ast::VariableValue&) const {
     std::cout << indent() << "Variable" << std::endl; 
 }
