@@ -19,6 +19,9 @@ enum class Operator : unsigned int {
     MUL,
     MOD,
 
+    AND,
+    OR,
+
     EQUALS,
     NOT_EQUALS,
     LESS,

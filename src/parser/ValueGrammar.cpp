@@ -23,8 +23,41 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         ("*", ast::Operator::MUL)
         ("%", ast::Operator::MOD)
         ;
+    
+    relational_op.add
+        (">=", ast::Operator::GREATER_EQUALS) 
+        (">", ast::Operator::GREATER) 
+        ("<=", ast::Operator::LESS_EQUALS) 
+        ("<", ast::Operator::LESS) 
+        ("!=", ast::Operator::NOT_EQUALS) 
+        ("==", ast::Operator::EQUALS) 
+        ;
+    
+    logical_and_op.add
+        ("&&", ast::Operator::AND) 
+        ;
+    
+    logical_or_op.add
+        ("||", ast::Operator::OR) 
+        ;
 
-    value = additiveValue.alias();
+    //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
+
+    /* Define values */ 
+
+    value = logicalOrValue.alias();
+    
+    logicalOrValue %=
+            logicalOrValue
+        >>  *(qi::adapttokens[logical_or_op] > logicalOrValue);  
+    
+    logicalAndValue %=
+            relationalValue
+        >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
+   
+    relationalValue %=
+            additiveValue
+        >>  *(qi::adapttokens[relational_op] > additiveValue);  
     
     additiveValue %=
             multiplicativeValue
@@ -52,7 +85,17 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         |   functionCall
         |   arrayValue
         |   variable 
+        |   true_
+        |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+    
+    true_ %= 
+            qi::eps
+        >>  lexer.true_;
+    
+    false_ %= 
+            qi::eps
+        >>  lexer.false_;
 
     integer %= 
             qi::eps 
