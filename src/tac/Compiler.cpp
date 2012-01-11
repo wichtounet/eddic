@@ -25,11 +25,6 @@ using namespace eddic;
 
 namespace {
 
-#define ASSIGN(Type, Value)\
-result_type operator()(Type & ){\
-    return Value;\
-}
-
 struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::VariableValue, true)
     ASSIGN(ast::Integer, true)
