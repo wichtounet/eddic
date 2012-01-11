@@ -25,34 +25,22 @@ using namespace eddic;
 
 namespace {
 
+#define ASSIGN(Type, Value)\
+result_type operator()(Type & ){\
+    return Value;\
+}
+
 struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
-    bool operator()(ast::VariableValue&) const {
-        return true;
-    }
-
-    bool operator()(ast::Integer&) const {
-        return true;
-    }
+    ASSIGN(ast::VariableValue, true)
+    ASSIGN(ast::Integer, true)
+    ASSIGN(ast::True, true)
+    ASSIGN(ast::False, true)
     
-    bool operator()(ast::Litteral&) const {
-        return false;
-    }
-
-    bool operator()(ast::ArrayValue&) const {
-        return false;
-    }
-
-    bool operator()(ast::ComposedValue&) const {
-        return false;
-    }
-
-    bool operator()(ast::Minus&) const {
-        return false;
-    }
-
-    bool operator()(ast::Plus&) const {
-        return false;
-    }
+    ASSIGN(ast::Litteral, false)
+    ASSIGN(ast::ArrayValue, false)
+    ASSIGN(ast::ComposedValue, false)
+    ASSIGN(ast::Minus, false)
+    ASSIGN(ast::Plus, false)
 
     //A call to a function returning an int is single argument
     bool operator()(ast::FunctionCall& call) const {
@@ -65,37 +53,17 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
 //TODO In some cases, it's possible that some of them can be param safe
 //Typically when their subcomponents are safe or constants
 struct IsParamSafeVisitor : public boost::static_visitor<bool> {
-    bool operator()(ast::VariableValue&) const {
-        return true;
-    }
-
-    bool operator()(ast::Integer&) const {
-        return true;
-    }
+    ASSIGN(ast::VariableValue, true)
+    ASSIGN(ast::Integer, true)
+    ASSIGN(ast::True, true)
+    ASSIGN(ast::False, true)
+    ASSIGN(ast::Litteral, true)
     
-    bool operator()(ast::Litteral&) const {
-        return true;
-    }
-
-    bool operator()(ast::ArrayValue&) const {
-        return false;
-    }
-
-    bool operator()(ast::ComposedValue&) const {
-        return false;
-    }
-
-    bool operator()(ast::Minus&) const {
-        return false;
-    }
-
-    bool operator()(ast::Plus&) const {
-        return false;
-    }
-
-    bool operator()(ast::FunctionCall&) const {
-        return false;
-    }
+    ASSIGN(ast::ArrayValue, false)
+    ASSIGN(ast::ComposedValue, false)
+    ASSIGN(ast::Minus, false)
+    ASSIGN(ast::Plus, false)
+    ASSIGN(ast::FunctionCall, false)
 };
 
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
@@ -180,15 +148,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     
     mutable std::shared_ptr<tac::Function> function;
 
-    std::vector<tac::Argument> operator()(ast::Litteral& litteral) const {
+    result_type operator()(ast::Litteral& litteral) const {
         return {litteral.label, litteral.value.size() - 2};
     }
 
-    std::vector<tac::Argument> operator()(ast::Integer& integer) const {
+    result_type operator()(ast::Integer& integer) const {
         return {integer.value};
     }
+    
+    result_type operator()(ast::False&) const {
+        return {0};
+    }
+    
+    result_type operator()(ast::True&) const {
+        return {1};
+    }
 
-    std::vector<tac::Argument> operator()(ast::FunctionCall& call) const {
+    result_type operator()(ast::FunctionCall& call) const {
         Type type = call.Content->function->returnType;
 
         switch(type.base()){
@@ -212,7 +188,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
-    std::vector<tac::Argument> operator()(ast::VariableValue& value) const {
+    result_type operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
 
         //If it's a const, we just have to replace it by its constant value
@@ -242,7 +218,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         assert(false);
     }
 
-    std::vector<tac::Argument> operator()(ast::ArrayValue& array) const {
+    result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
         if(array.Content->var->type().base() == BaseType::INT){
@@ -265,7 +241,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
-    std::vector<tac::Argument> operator()(ast::ComposedValue& value) const {
+    result_type operator()(ast::ComposedValue& value) const {
         Type type = GetTypeVisitor()(value);
 
         if(type.base() == BaseType::INT){
@@ -280,7 +256,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
-    std::vector<tac::Argument> operator()(ast::Minus& value) const {
+    result_type operator()(ast::Minus& value) const {
         tac::Argument arg = moveToArgument(value.Content->value, function);
 
         auto t1 = function->context->newTemporary();
@@ -290,7 +266,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     }
 
     //No operation to do
-    std::vector<tac::Argument> operator()(ast::Plus& value) const {
+    result_type operator()(ast::Plus& value) const {
         return boost::apply_visitor(*this, value.Content->value);
     }
 };
@@ -302,67 +278,55 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     virtual void intAssign(std::vector<tac::Argument> arguments) const = 0;
     virtual void stringAssign(std::vector<tac::Argument> arguments) const = 0;
+   
+    /* Litterals are always strings */
     
     void operator()(ast::Litteral& litteral) const {
         stringAssign(ToArgumentsVisitor(function)(litteral));
     }
 
-    void operator()(ast::Integer& integer) const {
-        intAssign(ToArgumentsVisitor(function)(integer));
-    }
+    /* Can be of two types */
     
-    void operator()(ast::Plus& value) const {
-        intAssign(ToArgumentsVisitor(function)(value));
-    }
-    
-    void operator()(ast::Minus& value) const {
-        intAssign(ToArgumentsVisitor(function)(value));
+    template<typename T>
+    void complexAssign(Type type, T& value) const {
+        if(type.base() == BaseType::INT){
+            intAssign(ToArgumentsVisitor(function)(value));
+        } else if(type.base() == BaseType::STRING){
+            stringAssign(ToArgumentsVisitor(function)(value));
+        } else {
+            throw SemanticalException("Invalid variable type");   
+        }
     }
 
     void operator()(ast::FunctionCall& call) const {
-        Type type = call.Content->function->returnType;
+        auto type = call.Content->function->returnType;
 
-        if(type.base() == BaseType::INT){
-            intAssign(ToArgumentsVisitor(function)(call));
-        } else if(type.base() == BaseType::STRING){
-            stringAssign(ToArgumentsVisitor(function)(call));
-        } else {
-            throw SemanticalException("This function doesn't return anything");   
-        }
+        complexAssign(type, call);
     }
 
     void operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
 
-        if(type.base() == BaseType::INT){
-            intAssign(ToArgumentsVisitor(function)(value));
-        } else if(type.base() == BaseType::STRING){
-            stringAssign(ToArgumentsVisitor(function)(value));
-        } else {
-            throw SemanticalException("Invalid variable type");   
-        }
+        complexAssign(type, value);
     }
 
     void operator()(ast::ArrayValue& array) const {
-        if(array.Content->var->type().base() == BaseType::INT){
-            intAssign(ToArgumentsVisitor(function)(array));
-        } else if(array.Content->var->type().base() == BaseType::STRING){
-            stringAssign(ToArgumentsVisitor(function)(array));
-        } else {
-            throw SemanticalException("Invalid variable type");   
-        }
+        auto type = array.Content->var->type();
+
+        complexAssign(type, array);
     }
 
     void operator()(ast::ComposedValue& value) const {
-        Type type = GetTypeVisitor()(value);
+        auto type = GetTypeVisitor()(value);
         
-        if(type.base() == BaseType::INT){
-            intAssign(ToArgumentsVisitor(function)(value));
-        } else if(type.base() == BaseType::STRING){
-            stringAssign(ToArgumentsVisitor(function)(value));
-        } else {
-            throw SemanticalException("Invalid variable type");   
-        }
+        complexAssign(type, value);
+    }
+
+    /* Only int */
+
+    template<typename T>
+    void operator()(T& value) const {
+        intAssign(ToArgumentsVisitor(function)(value));
     }
 };
 
