@@ -17,6 +17,11 @@ result_type operator()(Type & ){\
     return Value;\
 }
 
+#define ASSIGN_INSIDE(Visitor, Type, Value)\
+result_type Visitor::operator()(Type & ){\
+    return Value;\
+}
+
 namespace eddic {
 
 template<typename Visitor, typename Visitable>
