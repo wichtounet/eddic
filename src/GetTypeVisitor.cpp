@@ -32,6 +32,14 @@ Type GetTypeVisitor::operator()(const ast::Minus&) const {
     return Type(BaseType::INT, false);
 }
 
+Type GetTypeVisitor::operator()(const ast::False&) const {
+    return Type(BaseType::BOOL, false);
+}
+
+Type GetTypeVisitor::operator()(const ast::True&) const {
+    return Type(BaseType::BOOL, false);
+}
+
 Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
@@ -41,6 +49,7 @@ Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
 }
 
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
+    //TODO Adapt to handle bools
     //No need to recurse into operations because type are enforced in the check variables phase
     return boost::apply_visitor(*this, value.Content->first);
 }

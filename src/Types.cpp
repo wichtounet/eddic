@@ -41,7 +41,7 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
     return !(lhs == rhs); 
 }
 
-const int typeSizes[(int) BaseType::COUNT] = { 8, 4, 0 };
+const int typeSizes[(int) BaseType::COUNT] = { 8, 4, 4, 0 };
 
 int eddic::size(BaseType type){
     return typeSizes[(unsigned int) type];
@@ -56,12 +56,14 @@ int eddic::size(Type type){
 }
 
 bool eddic::isType(const std::string& type){
-    return type == "int" || type == "void" || type == "string";
+    return type == "int" || type == "void" || type == "string" || type == "bool";
 }
 
 BaseType eddic::stringToBaseType(const std::string& type){
     if (type == "int") {
         return BaseType::INT;
+    else if (type == "bool") {
+        return BaseType::BOOL;
     } else if (type == "string"){
         return BaseType::STRING;
     } else if(type == "void") {
@@ -74,12 +76,16 @@ BaseType eddic::stringToBaseType(const std::string& type){
 Type eddic::stringToType(const std::string& type){
     if (type == "int") {
         return Type(BaseType::INT, false);
+    } else if (type == "bool"){
+        return Type(BaseType::BOOL, false);
     } else if (type == "string"){
         return Type(BaseType::STRING, false);
     } else if(type == "int[]") {
-        return Type(BaseType::INT, 0, false);//Use a more proper way to set that it's an array type
+        return Type(BaseType::INT, 0, false);       //Use a more proper way to set that it's an array type
+    } else if(type == "bool[]") {
+        return Type(BaseType::BOOL, 0, false);      //Use a more proper way to set that it's an array type
     } else if(type == "string[]") {
-        return Type(BaseType::STRING, 0, false);//Use a more proper way to set that it's an array type
+        return Type(BaseType::STRING, 0, false);    //Use a more proper way to set that it's an array type
     } else if(type == "void") {
         return Type(BaseType::VOID, false);
     }
