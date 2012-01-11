@@ -52,6 +52,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::ComposedValue& value) const ;
     void operator()(ast::Plus& value) const ;
     void operator()(ast::Minus& value) const ;
+    void operator()(ast::False& value) const ;
+    void operator()(ast::True& value) const ;
 };
 
 } //end of eddic
