@@ -13,7 +13,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Condition.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -26,7 +26,7 @@ namespace ast {
  */
 struct ASTFor {
     boost::optional<Instruction> start;
-    boost::optional<Condition> condition;
+    boost::optional<Value> condition;
     boost::optional<Instruction> repeat;
     std::vector<Instruction> instructions;
 
@@ -48,7 +48,7 @@ typedef Deferred<ASTFor> For;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::For, 
     (boost::optional<eddic::ast::Instruction>, Content->start)
-    (boost::optional<eddic::ast::Condition>, Content->condition)
+    (boost::optional<eddic::ast::Value>, Content->condition)
     (boost::optional<eddic::ast::Instruction>, Content->repeat)
     (std::vector<eddic::ast::Instruction>, Content->instructions)
 )

@@ -14,7 +14,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/While.hpp"
-#include "ast/Condition.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -26,7 +26,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::While).
  */
 struct ASTWhile {
-    Condition condition;
+    Value condition;
     std::vector<Instruction> instructions;
 
     mutable long references;
@@ -46,7 +46,7 @@ typedef Deferred<ASTWhile> While;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::While, 
-    (eddic::ast::Condition, Content->condition)
+    (eddic::ast::Value, Content->condition)
     (std::vector<eddic::ast::Instruction>, Content->instructions)
 )
 

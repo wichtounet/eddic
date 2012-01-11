@@ -12,6 +12,11 @@
 #include <boost/variant/variant.hpp>
 #include <boost/optional/optional.hpp>
 
+#define ASSIGN(Type, Value)\
+result_type operator()(Type & ){\
+    return Value;\
+}
+
 namespace eddic {
 
 template<typename Visitor, typename Visitable>

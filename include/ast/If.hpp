@@ -13,9 +13,9 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Condition.hpp"
 #include "ast/ElseIf.hpp"
 #include "ast/Else.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -27,7 +27,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::If).
  */
 struct ASTIf {
-    Condition condition;
+    Value condition;
     std::vector<Instruction> instructions;
     std::vector<ElseIf> elseIfs;
     boost::optional<Else> else_;
@@ -49,7 +49,7 @@ typedef Deferred<ASTIf> If;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::If, 
-    (eddic::ast::Condition, Content->condition)
+    (eddic::ast::Value, Content->condition)
     (std::vector<eddic::ast::Instruction>, Content->instructions)
     (std::vector<eddic::ast::ElseIf>, Content->elseIfs)
     (boost::optional<eddic::ast::Else>, Content->else_)
