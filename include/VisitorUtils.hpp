@@ -25,7 +25,19 @@ result_type Visitor::operator()(Type & ){\
 
 namespace eddic {
 
-/* non-const-non-const version */
+/* Use with a variant */
+
+template<typename Visitor, typename Visitable>
+inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+visit(Visitor&& visitor, Visitable& visitable){
+    return boost::apply_visitor(visitor, visitable);
+}
+
+template<typename Visitor, typename Visitable>
+inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type
+visit(Visitor&& visitor, Visitable& visitable){
+    boost::apply_visitor(visitor, visitable);
+}
 
 template<typename Visitor, typename Visitable>
 inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
@@ -34,24 +46,12 @@ visit(Visitor& visitor, Visitable& visitable){
 }
 
 template<typename Visitor, typename Visitable>
-inline void visit(Visitor& visitor, Visitable& visitable){
+inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+visit(Visitor& visitor, Visitable& visitable){
     boost::apply_visitor(visitor, visitable);
 }
 
-/* const-const version */
-
-template<typename Visitor, typename Visitable>
-inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
-visit(const Visitor& visitor, const Visitable& visitable){
-    return boost::apply_visitor(visitor, visitable);
-}
-
-template<typename Visitor, typename Visitable>
-inline void visit(const Visitor& visitor, const Visitable& visitable){
-    boost::apply_visitor(visitor, visitable);
-}
-
-/* non const non variant version */
+/* Use with non-variant */
 
 template<typename Visitor, typename Visitable>
 inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
