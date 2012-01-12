@@ -11,6 +11,7 @@
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/optional/optional.hpp>
+#include <boost/utility/enable_if.hpp>
 
 #define ASSIGN(Type, Value)\
 result_type operator()(Type & ){\
@@ -24,9 +25,12 @@ result_type Visitor::operator()(Type & ){\
 
 namespace eddic {
 
+/* non-const-non-const version */
+
 template<typename Visitor, typename Visitable>
-inline void visit(Visitor& visitor, const Visitable& visitable){
-    boost::apply_visitor(visitor, visitable);
+inline typename boost::disable_if_c<boost::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit(Visitor& visitor, Visitable& visitable){
+    return boost::apply_visitor(visitor, visitable);
 }
 
 template<typename Visitor, typename Visitable>
@@ -34,9 +38,25 @@ inline void visit(Visitor& visitor, Visitable& visitable){
     boost::apply_visitor(visitor, visitable);
 }
 
+/* const-const version */
+
 template<typename Visitor, typename Visitable>
-inline void visit_each(Visitor& visitor, std::vector<Visitable>& elements){
-    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit(visitor, visitable); });
+inline typename boost::disable_if_c<boost::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit(const Visitor& visitor, const Visitable& visitable){
+    return boost::apply_visitor(visitor, visitable);
+}
+
+template<typename Visitor, typename Visitable>
+inline void visit(const Visitor& visitor, const Visitable& visitable){
+    boost::apply_visitor(visitor, visitable);
+}
+
+/* non const non variant version */
+
+template<typename Visitor, typename Visitable>
+inline typename boost::disable_if_c<boost::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit_non_variant(Visitor& visitor, Visitable& visitable){
+    return visitor(visitable);
 }
 
 template<typename Visitor, typename Visitable>
@@ -44,11 +64,21 @@ inline void visit_non_variant(Visitor& visitor, Visitable& visitable){
     visitor(visitable);
 }
 
+/* const non variant version */
+
 template<typename Visitor, typename Visitable>
-inline void visit_each_non_variant(Visitor& visitor, std::vector<Visitable>& elements){
-    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit_non_variant(visitor, visitable); });
+inline typename boost::disable_if_c<boost::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit_non_variant(const Visitor& visitor, const Visitable& visitable){
+    return visitor(visitable);
 }
-      
+
+template<typename Visitor, typename Visitable>
+inline void visit_non_variant(const Visitor& visitor, const Visitable& visitable){
+    visitor(visitable);
+}
+
+/* optional versions : no return */
+ 
 template<typename Visitor, typename Visitable>
 inline void visit_optional(Visitor& visitor, boost::optional<Visitable>& optional){
     if(optional){
@@ -61,6 +91,18 @@ inline void visit_optional_non_variant(Visitor& visitor, boost::optional<Visitab
     if(optional){
         visit_non_variant(visitor, *optional);
     }
+}
+
+/* Visit a set : only void version */
+
+template<typename Visitor, typename Visitable>
+inline void visit_each(Visitor& visitor, std::vector<Visitable>& elements){
+    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit(visitor, visitable); });
+}
+
+template<typename Visitor, typename Visitable>
+inline void visit_each_non_variant(Visitor& visitor, std::vector<Visitable>& elements){
+    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit_non_variant(visitor, visitable); });
 }
 
 } //end of eddic
