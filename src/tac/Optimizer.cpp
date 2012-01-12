@@ -247,6 +247,8 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
                     break;
             }
 
+            //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
+
             //replace if_false true by no-op
             if(value){
                return tac::NoOp();
