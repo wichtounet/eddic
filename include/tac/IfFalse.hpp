@@ -27,7 +27,7 @@ class BasicBlock;
 
 struct IfFalse {
     Argument arg1;
-    bost::optional<BinaryOperator> op;
+    boost::optional<BinaryOperator> op;
     boost::optional<Argument> arg2;
     std::string label;
     
