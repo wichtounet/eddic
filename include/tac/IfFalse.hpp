@@ -12,6 +12,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include <boost/optional.hpp>
+
 #include "tac/BinaryOperator.hpp"
 #include "tac/Argument.hpp"
 
@@ -25,8 +27,8 @@ class BasicBlock;
 
 struct IfFalse {
     Argument arg1;
-    Argument arg2;
-    BinaryOperator op;
+    bost::optional<BinaryOperator> op;
+    boost::optional<Argument> arg2;
     std::string label;
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
@@ -35,6 +37,7 @@ struct IfFalse {
     std::shared_ptr<BasicBlock> block;
 
     IfFalse();
+    IfFalse(Argument arg1, const std::string& label);
     IfFalse(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 
