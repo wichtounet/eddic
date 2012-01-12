@@ -325,11 +325,13 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
                 ifFalse->arg1 = constants[*ptr];
             }
         }
-        
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&ifFalse->arg2)){
-            if(constants.find(*ptr) != constants.end()){
-                optimized = true;
-                ifFalse->arg2 = constants[*ptr];
+       
+        if(ifFalse->arg2){ 
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*ifFalse->arg2)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    ifFalse->arg2 = constants[*ptr];
+                }
             }
         }
 
