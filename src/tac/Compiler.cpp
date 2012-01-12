@@ -369,13 +369,13 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::ComposedValue& value) const {
+    void operator()(ast::ComposedValue&) const {
         //TODO Manage several levels of composed values
     }
    
     template<typename T>
     void operator()(T& value) const {
-        auto argument = moveToArgument(value, function);
+        auto argument = ToArgumentsVisitor(function)(value)[0];
 
         function->add(std::make_shared<tac::IfFalse>(argument, label));
     }

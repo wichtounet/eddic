@@ -214,53 +214,55 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
     }
 
     tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        if(tac::isInt(ifFalse->arg1) && tac::isInt(ifFalse->arg2)){
-            int left = boost::get<int>(ifFalse->arg1);
-            int right = boost::get<int>(ifFalse->arg2);
+        if(ifFalse->op){
+            if(tac::isInt(ifFalse->arg1) && tac::isInt(*ifFalse->arg2)){
+                int left = boost::get<int>(ifFalse->arg1);
+                int right = boost::get<int>(*ifFalse->arg2);
 
-            bool value = false;
+                bool value = false;
 
-            switch(ifFalse->op){
-                case tac::BinaryOperator::EQUALS:
-                    value = left == right;
+                switch(*ifFalse->op){
+                    case tac::BinaryOperator::EQUALS:
+                        value = left == right;
 
-                    break;
-                case tac::BinaryOperator::NOT_EQUALS:
-                    value = left != right;
+                        break;
+                    case tac::BinaryOperator::NOT_EQUALS:
+                        value = left != right;
 
-                    break;
-                case tac::BinaryOperator::LESS:
-                    value = left < right;
+                        break;
+                    case tac::BinaryOperator::LESS:
+                        value = left < right;
 
-                    break;
-                case tac::BinaryOperator::LESS_EQUALS:
-                    value = left <= right;
+                        break;
+                    case tac::BinaryOperator::LESS_EQUALS:
+                        value = left <= right;
 
-                    break;
-                case tac::BinaryOperator::GREATER:
-                    value = left > right;
+                        break;
+                    case tac::BinaryOperator::GREATER:
+                        value = left > right;
 
-                    break;
-                case tac::BinaryOperator::GREATER_EQUALS:
-                    value = left >= right;
+                        break;
+                    case tac::BinaryOperator::GREATER_EQUALS:
+                        value = left >= right;
 
-                    break;
-            }
+                        break;
+                }
 
-            //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
+                //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
 
-            //replace if_false true by no-op
-            if(value){
-               return tac::NoOp();
-            } 
-            //replace if_false false by goto 
-            else {
-               auto goto_ = std::make_shared<tac::Goto>();
-               
-               goto_->label = ifFalse->label;
-               goto_->block = ifFalse->block;
+                //replace if_false true by no-op
+                if(value){
+                    return tac::NoOp();
+                } 
+                //replace if_false false by goto 
+                else {
+                    auto goto_ = std::make_shared<tac::Goto>();
 
-               return goto_; 
+                    goto_->label = ifFalse->label;
+                    goto_->block = ifFalse->block;
+
+                    return goto_; 
+                }
             }
         }
 
@@ -413,8 +415,10 @@ struct RemoveAssign : public boost::static_visitor<bool> {
                 used.insert(*ptr);
             }
 
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg2)){
-                used.insert(*ptr);
+            if(quadruple->arg2){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    used.insert(*ptr);
+                }
             }
         }
 
