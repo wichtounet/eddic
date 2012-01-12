@@ -369,20 +369,15 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::True&) const {
-        //it is a no-op
+    void operator()(ast::ComposedValue& value) const {
+        //TODO Manage several levels of composed values
     }
    
-    void operator()(ast::False&) const {
-        //we always jump
-        function->add(std::make_shared<tac::Goto>(label));
-    }
-   
-    void operator()(ast::BinaryCondition& binaryCondition) const {
-        tac::Argument left = moveToArgument(binaryCondition.Content->lhs, function);
-        tac::Argument right = moveToArgument(binaryCondition.Content->rhs, function);
+    template<typename T>
+    void operator()(T& value) const {
+        auto argument = moveToArgument(value, function);
 
-        function->add(std::make_shared<tac::IfFalse>(tac::toBinaryOperator(binaryCondition.Content->op), left, right, label));
+        function->add(std::make_shared<tac::IfFalse>(argument, label));
     }
 };
 
