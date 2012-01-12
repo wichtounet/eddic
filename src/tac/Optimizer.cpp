@@ -11,6 +11,8 @@
 
 #include <boost/variant.hpp>
 
+#include "VisitorUtils.hpp"
+
 #include "tac/Optimizer.hpp"
 #include "tac/Program.hpp"
 #include "tac/Utils.hpp"
@@ -458,7 +460,7 @@ bool apply_to_all(tac::Program& program){
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
-                statement = boost::apply_visitor(visitor, statement);
+                statement = visit(visitor, statement);
             }
         }
     }
@@ -475,7 +477,7 @@ bool apply_to_basic_blocks(tac::Program& program){
             Visitor visitor;
 
             for(auto& statement : block->statements){
-                statement = boost::apply_visitor(visitor, statement);
+                statement = visit(visitor, statement);
             }
 
             optimized |= visitor.optimized;
@@ -498,7 +500,7 @@ bool apply_to_basic_blocks_two_pass(tac::Program& program){
             auto end = block->statements.end();
 
             while(it != end){
-                bool keep = boost::apply_visitor(visitor, *it);
+                bool keep = visit(visitor, *it);
                 
                 if(!keep){
                     it = block->statements.erase(it);   
@@ -514,7 +516,7 @@ bool apply_to_basic_blocks_two_pass(tac::Program& program){
             
             block->statements.erase(
                 std::remove_if(it, end,
-                    [&](tac::Statement& s){return !boost::apply_visitor(visitor, s); }), 
+                    [&](tac::Statement& s){return !visit(visitor, s); }), 
                 end);
 
             optimized |= visitor.optimized;

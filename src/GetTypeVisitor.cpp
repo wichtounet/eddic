@@ -5,14 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/apply_visitor.hpp>
-
 #include "GetTypeVisitor.hpp"
-
-#include "ast/Value.hpp"
-
 #include "Context.hpp"
 #include "Variable.hpp"
+#include "VisitorUtils.hpp"
+
+#include "ast/Value.hpp"
 
 using namespace eddic;
 
@@ -51,7 +49,7 @@ Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     //TODO Adapt to handle bools
     //No need to recurse into operations because type are enforced in the check variables phase
-    return boost::apply_visitor(*this, value.Content->first);
+    return visit(*this, value.Content->first);
 }
 
 Type GetTypeVisitor::operator()(const ast::FunctionCall& call) const {

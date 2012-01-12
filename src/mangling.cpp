@@ -8,8 +8,7 @@
 #include <sstream>
 
 #include "mangling.hpp"
-
-#include <boost/variant/apply_visitor.hpp>
+#include "VisitorUtils.hpp"
 #include "GetTypeVisitor.hpp"
 
 using namespace eddic;
@@ -56,7 +55,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     GetTypeVisitor visitor;
 
     for(auto& value : values){
-        Type type = boost::apply_visitor(visitor, value);
+        Type type = visit(visitor, value);
         ss << mangle(type);
     }
 

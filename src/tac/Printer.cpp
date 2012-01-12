@@ -13,7 +13,6 @@
 #include "tac/Program.hpp"
 
 #include "VisitorUtils.hpp"
-
 #include "Utils.hpp"
 
 using namespace eddic;
@@ -35,7 +34,7 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
 };
 
 std::string printArgument(tac::Argument& arg){
-    return boost::apply_visitor(ArgumentToString(), arg);
+    return visit(ArgumentToString(), arg);
 }
 
 struct DebugVisitor : public boost::static_visitor<> {

@@ -11,6 +11,7 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "GetConstantValue.hpp"
+#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -45,7 +46,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 
     Position position(PositionType::CONST);
 
-    auto val = boost::apply_visitor(GetConstantValue(), value);
+    auto val = visit(GetConstantValue(), value);
 
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }

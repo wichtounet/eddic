@@ -915,7 +915,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, 
             compiler.setNext(block->statements[i+1]);
         }
         
-        boost::apply_visitor(compiler, statement);
+        visit(compiler, statement);
     }
 
     //If the basic block has not been ended

@@ -15,7 +15,7 @@
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
-
+#include "VisitorUtils.hpp"
 #include "GetConstantValue.hpp"
 
 using namespace eddic;
@@ -41,7 +41,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
-    auto val = boost::apply_visitor(GetConstantValue(), value);
+    auto val = visit(GetConstantValue(), value);
      
     if(type.isConst()){
         Position position(PositionType::CONST);

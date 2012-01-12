@@ -6,13 +6,11 @@
 //=======================================================================
 
 #include <algorithm>
-
 #include <memory>
+
 #include <boost/variant/variant.hpp>
 
 #include "VariablesAnnotator.hpp"
-
-#include "ast/SourceFile.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -31,6 +29,8 @@
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
+#include "ast/SourceFile.hpp"
+
 using namespace eddic;
 
 struct VariablesVisitor : public boost::static_visitor<> {
@@ -43,7 +43,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = boost::apply_visitor(TypeTransformer(), parameter.parameterType);
+            Type type = visit(TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -56,7 +56,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
+        if(!visit(IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
@@ -140,7 +140,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         Type type(baseType, declaration.Content->const_);
 
         if(type.isConst()){
-            if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
+            if(!visit(IsConstantVisitor(), *declaration.Content->value)){
                 throw SemanticalException("The value must be constant");
             }
             

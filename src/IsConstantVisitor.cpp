@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/apply_visitor.hpp>
-
 #include "Variable.hpp"
 #include "IsConstantVisitor.hpp"
 #include "VisitorUtils.hpp"
@@ -22,11 +20,11 @@ ASSIGN_INSIDE(IsConstantVisitor, ast::ArrayValue, false)
 ASSIGN_INSIDE(IsConstantVisitor, ast::FunctionCall, false)
 
 bool IsConstantVisitor::operator()(ast::Minus& value) const {
-    return boost::apply_visitor(*this, value.Content->value);
+    return visit(*this, value.Content->value);
 }
 
 bool IsConstantVisitor::operator()(ast::Plus& value) const {
-    return boost::apply_visitor(*this, value.Content->value);
+    return visit(*this, value.Content->value);
 }
 
 bool IsConstantVisitor::operator()(ast::VariableValue& variable) const {
@@ -34,9 +32,9 @@ bool IsConstantVisitor::operator()(ast::VariableValue& variable) const {
 }
 
 bool IsConstantVisitor::operator()(ast::ComposedValue& value) const {
-    if(boost::apply_visitor(*this, value.Content->first)){
+    if(visit(*this, value.Content->first)){
         for(auto& op : value.Content->operations){
-            if(!boost::apply_visitor(*this, op.get<1>())){
+            if(!visit(*this, op.get<1>())){
                 return false;
             }
         }

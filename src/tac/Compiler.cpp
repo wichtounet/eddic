@@ -262,7 +262,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     //No operation to do
     result_type operator()(ast::Plus& value) const {
-        return boost::apply_visitor(*this, value.Content->value);
+        return visit(*this, value.Content->value);
     }
 };
 
@@ -386,14 +386,14 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
 
     std::vector<tac::Argument> arguments;
 
-    auto first = boost::apply_visitor(ToArgumentsVisitor(function), value.Content->first);
+    auto first = visit(ToArgumentsVisitor(function), value.Content->first);
     arguments.insert(arguments.end(), first.begin(), first.end());
 
     //Perfom all the additions
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
-        auto second = boost::apply_visitor(ToArgumentsVisitor(function), operation.get<1>());
+        auto second = visit(ToArgumentsVisitor(function), operation.get<1>());
         arguments.insert(arguments.end(), second.begin(), second.end());
         
         for(auto& arg : arguments){
@@ -456,7 +456,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             if (if_.Content->elseIfs.empty()) {
                 std::string endLabel = newLabel();
 
-                boost::apply_visitor(JumpIfFalseVisitor(function, endLabel), if_.Content->condition);
+                visit(JumpIfFalseVisitor(function, endLabel), if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
 
@@ -477,7 +477,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 std::string end = newLabel();
                 std::string next = newLabel();
 
-                boost::apply_visitor(JumpIfFalseVisitor(function, next), if_.Content->condition);
+                visit(JumpIfFalseVisitor(function, next), if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
 
@@ -499,7 +499,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                         next = newLabel();
                     }
 
-                    boost::apply_visitor(JumpIfFalseVisitor(function, next), elseIf.condition);
+                    visit(JumpIfFalseVisitor(function, next), elseIf.condition);
 
                     visit_each(*this, elseIf.instructions);
 
@@ -517,16 +517,16 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            boost::apply_visitor(AssignValueToVariable(function, assignment.Content->context->getVariable(assignment.Content->variableName)), assignment.Content->value);
+            visit(AssignValueToVariable(function, assignment.Content->context->getVariable(assignment.Content->variableName)), assignment.Content->value);
         }
         
         void operator()(ast::ArrayAssignment& assignment){
-            boost::apply_visitor(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
+            visit(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
             if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
-                boost::apply_visitor(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+                visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
             }
         }
 
@@ -564,7 +564,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             function->add(startLabel);
 
-            boost::apply_visitor(JumpIfFalseVisitor(function, endLabel), while_.Content->condition);
+            visit(JumpIfFalseVisitor(function, endLabel), while_.Content->condition);
 
             visit_each(*this, while_.Content->instructions);
 
@@ -582,7 +582,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             function->add(startLabel);
 
             if(for_.Content->condition){
-                boost::apply_visitor(JumpIfFalseVisitor(function, endLabel), *for_.Content->condition);
+                visit(JumpIfFalseVisitor(function, endLabel), *for_.Content->condition);
             }
 
             visit_each(*this, for_.Content->instructions);
@@ -654,7 +654,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            auto arguments = boost::apply_visitor(ToArgumentsVisitor(function), return_.Content->value);
+            auto arguments = visit(ToArgumentsVisitor(function), return_.Content->value);
 
             if(arguments.size() == 1){
                 function->add(std::make_shared<tac::Return>(arguments[0]));
@@ -667,14 +667,14 @@ class CompilerVisitor : public boost::static_visitor<> {
 };
 
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function){
-    return boost::apply_visitor(ToArgumentsVisitor(function), value)[0];
+    return visit(ToArgumentsVisitor(function), value)[0];
 }
 
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     std::vector<std::vector<tac::Argument>> arguments;
 
     for(auto& value : functionCall.Content->values){
-        arguments.push_back(boost::apply_visitor(ToArgumentsVisitor(function), value)); 
+        arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
     }
 
     for(auto& first : arguments){
@@ -685,7 +685,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
     std::string functionName;  
     if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
-        Type type = boost::apply_visitor(GetTypeVisitor(), functionCall.Content->values[0]);
+        Type type = visit(GetTypeVisitor(), functionCall.Content->values[0]);
 
         if(type.base() == BaseType::INT){
             functionName = "print_integer";
@@ -700,7 +700,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
     int total = 0;
     for(auto& value : functionCall.Content->values){
-        Type type = boost::apply_visitor(GetTypeVisitor(), value);   
+        Type type = visit(GetTypeVisitor(), value);   
 
         if(type.isArray()){
             //Passing an array is just passing an adress

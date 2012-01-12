@@ -21,16 +21,16 @@ using namespace eddic;
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
     ast::Value operator()(ast::ComposedValue& value) const {
         if(value.Content->operations.empty()){
-            return boost::apply_visitor(*this, value.Content->first);   
+            return visit(*this, value.Content->first);   
         }
 
-        value.Content->first = boost::apply_visitor(*this, value.Content->first);
+        value.Content->first = visit(*this, value.Content->first);
 
         auto start = value.Content->operations.begin();
         auto end = value.Content->operations.end();
 
         while(start != end){
-            start->get<1>() = boost::apply_visitor(*this, start->get<1>());
+            start->get<1>() = visit(*this, start->get<1>());
 
             ++start;
         }
@@ -41,7 +41,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& value) const {
-        value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
+        value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
         return value;
     }
@@ -51,7 +51,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         auto end = functionCall.Content->values.end();
 
         while(start != end){
-            *start = boost::apply_visitor(*this, *start);
+            *start = visit(*this, *start);
 
             ++start;
         }
@@ -142,7 +142,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
         auto end = functionCall.Content->values.end();
 
         while(start != end){
-            *start = boost::apply_visitor(transformer, *start);
+            *start = visit(transformer, *start);
 
             ++start;
         }
@@ -150,32 +150,32 @@ struct CleanerVisitor : public boost::static_visitor<> {
 
     void operator()(ast::GlobalVariableDeclaration& declaration) const {
         if(declaration.Content->value){
-            declaration.Content->value = boost::apply_visitor(transformer, *declaration.Content->value); 
+            declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
 
     void operator()(ast::Assignment& assignment) const {
-        assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
     void operator()(ast::Return& return_) const {
-        return_.Content->value = boost::apply_visitor(transformer, return_.Content->value); 
+        return_.Content->value = visit(transformer, return_.Content->value); 
     }
 
     void operator()(ast::ArrayAssignment& assignment) const {
-        assignment.Content->value = boost::apply_visitor(transformer, assignment.Content->value); 
-        assignment.Content->indexValue = boost::apply_visitor(transformer, assignment.Content->indexValue); 
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+        assignment.Content->indexValue = visit(transformer, assignment.Content->indexValue); 
     }
 
     void operator()(ast::VariableDeclaration& declaration) const {
         if(declaration.Content->value){
-            declaration.Content->value = boost::apply_visitor(transformer, *declaration.Content->value); 
+            declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
 
     void operator()(ast::BinaryCondition& binaryCondition) const {
-        binaryCondition.Content->lhs = boost::apply_visitor(transformer, binaryCondition.Content->lhs); 
-        binaryCondition.Content->rhs = boost::apply_visitor(transformer, binaryCondition.Content->rhs); 
+        binaryCondition.Content->lhs = visit(transformer, binaryCondition.Content->lhs); 
+        binaryCondition.Content->rhs = visit(transformer, binaryCondition.Content->rhs); 
     }
 
     //No transformations
@@ -196,7 +196,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
         auto end = instructions.end();
 
         while(start != end){
-            *start = boost::apply_visitor(instructionTransformer, *start);
+            *start = visit(instructionTransformer, *start);
 
             ++start;
         }
