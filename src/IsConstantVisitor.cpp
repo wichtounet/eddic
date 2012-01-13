@@ -13,11 +13,13 @@
 
 using namespace eddic;
 
-ASSIGN_INSIDE(IsConstantVisitor, ast::Litteral, true)
-ASSIGN_INSIDE(IsConstantVisitor, ast::Integer, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::Litteral, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::Integer, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::True, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::False, true)
 
-ASSIGN_INSIDE(IsConstantVisitor, ast::ArrayValue, false)
-ASSIGN_INSIDE(IsConstantVisitor, ast::FunctionCall, false)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::ArrayValue, false)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::FunctionCall, false)
 
 bool IsConstantVisitor::operator()(ast::Minus& value) const {
     return visit(*this, value.Content->value);

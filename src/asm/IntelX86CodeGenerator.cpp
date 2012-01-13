@@ -21,8 +21,8 @@
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
-
 #include "Labels.hpp"
+#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -856,35 +856,39 @@ struct StatementCompiler : public boost::static_visitor<> {
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << regToString(reg) << std::endl;
+            writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << regToString(reg) << std::endl;
 
             registers.release(reg);
         } else {
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
+            writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
         }
 
-        switch(ifFalse->op){
-            case tac::BinaryOperator::EQUALS:
-                writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::NOT_EQUALS:
-                writer.stream() << "je " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::LESS:
-                writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::LESS_EQUALS:
-                writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::GREATER:
-                writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::GREATER_EQUALS:
-                writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
-                break;
+        if(ifFalse->op){
+            switch(*ifFalse->op){
+                case tac::BinaryOperator::EQUALS:
+                    writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::NOT_EQUALS:
+                    writer.stream() << "je " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS:
+                    writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS_EQUALS:
+                    writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER:
+                    writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER_EQUALS:
+                    writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
+                    break;
+            }
+        } else {
+            //TODO Handle that case
         }
     }
 

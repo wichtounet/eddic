@@ -19,7 +19,12 @@ result_type operator()(Type & ){\
 }
 
 #define ASSIGN_INSIDE(Visitor, Type, Value)\
-result_type Visitor::operator()(Type & ){\
+Visitor::result_type Visitor::operator()(Type & ){\
+    return Value;\
+}
+
+#define ASSIGN_INSIDE_CONST(Visitor, Type, Value)\
+Visitor::result_type Visitor::operator()(Type & ) const {\
     return Value;\
 }
 

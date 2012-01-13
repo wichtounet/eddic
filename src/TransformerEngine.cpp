@@ -92,12 +92,11 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         v.Content->context = foreach.Content->context;
         v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
 
-        ast::BinaryCondition binaryCondition; 
-        binaryCondition.Content->lhs = v;
-        binaryCondition.Content->rhs = toValue;
-        binaryCondition.Content->op = ast::Operator::LESS_EQUALS;
+        ast::ComposedValue cond;
+        cond.Content->first = v;
+        cond.Content->operations.push_back({ast::Operator::LESS_EQUALS, toValue});
 
-        for_.Content->condition = binaryCondition;
+        for_.Content->condition = cond;
 
         //Define the repeat instruction
 
@@ -106,7 +105,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         ast::ComposedValue addition;
         addition.Content->first = v;
-        addition.Content->operations.push_back(ast::Operation(ast::Operator::ADD, inc));
+        addition.Content->operations.push_back({ast::Operator::ADD, inc});
         
         ast::Assignment repeatAssign;
         repeatAssign.Content->context = foreach.Content->context;

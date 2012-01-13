@@ -62,7 +62,7 @@ bool eddic::isType(const std::string& type){
 BaseType eddic::stringToBaseType(const std::string& type){
     if (type == "int") {
         return BaseType::INT;
-    else if (type == "bool") {
+    } else if (type == "bool") {
         return BaseType::BOOL;
     } else if (type == "string"){
         return BaseType::STRING;
