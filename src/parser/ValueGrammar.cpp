@@ -48,8 +48,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     value = logicalOrValue.alias();
     
     logicalOrValue %=
-            logicalOrValue
-        >>  *(qi::adapttokens[logical_or_op] > logicalOrValue);  
+            logicalAndValue
+        >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
     
     logicalAndValue %=
             relationalValue
