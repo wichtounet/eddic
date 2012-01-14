@@ -43,6 +43,10 @@ BOOST_AUTO_TEST_CASE( samples_asm ){
     assertCompiles("samples/asm.eddi");
 }
 
+BOOST_AUTO_TEST_CASE( samples_bool ){
+    assertCompiles("samples/bool.eddi");
+}
+
 BOOST_AUTO_TEST_CASE( samples_assembly ){
     assertCompiles("samples/assembly.eddi");
 }
