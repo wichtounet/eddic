@@ -369,7 +369,20 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::ComposedValue&) const {
+    void operator()(ast::ComposedValue& value) const {
+        auto op = value.Content->operations[0].get<0>();
+
+        if(op == ast::Operator::AND){
+            //TODO
+        } else if(op == ast::Operator::OR){
+            //TODO
+        } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+            //TODO
+        } else { //Perform int operations
+            auto var = performIntOperation(value, function);
+            
+            function->add(std::make_shared<tac::IfFalse>(var, label));
+        }
         //TODO Manage several levels of composed values
     }
    

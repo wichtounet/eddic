@@ -847,26 +847,26 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         current = ifFalse;
 
-        //The first argument is not important, it can be immediate, but the second must be a register
-        if(auto* ptr = boost::get<int>(&ifFalse->arg1)){
-            auto reg = getReg();
-
-            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
-            
-            //The basic block must be ended before the jump
-            endBasicBlock();
-
-            writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << regToString(reg) << std::endl;
-
-            registers.release(reg);
-        } else {
-            //The basic block must be ended before the jump
-            endBasicBlock();
-
-            writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
-        }
-
         if(ifFalse->op){
+            //The first argument is not important, it can be immediate, but the second must be a register
+            if(auto* ptr = boost::get<int>(&ifFalse->arg1)){
+                auto reg = getReg();
+
+                writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+
+                //The basic block must be ended before the jump
+                endBasicBlock();
+
+                writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << regToString(reg) << std::endl;
+
+                registers.release(reg);
+            } else {
+                //The basic block must be ended before the jump
+                endBasicBlock();
+
+                writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
+            }
+
             switch(*ifFalse->op){
                 case tac::BinaryOperator::EQUALS:
                     writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
