@@ -16,6 +16,8 @@ void eddic::tac::computeBlockUsage(std::shared_ptr<tac::Function> function, std:
                 usage.insert((*ptr)->block);
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
                 usage.insert((*ptr)->block);
+            } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+                usage.insert((*ptr)->block);
             }
         }
     }
