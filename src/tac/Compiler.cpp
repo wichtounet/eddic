@@ -363,6 +363,53 @@ struct AssignValueToVariable : public AbstractVisitor {
     }
 };
 
+struct JumpIfTrueVisitor : public boost::static_visitor<> {
+    JumpIfTrueVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
+    
+    mutable std::shared_ptr<tac::Function> function;
+    std::string label;
+   
+    void operator()(ast::ComposedValue& value) const {
+        auto op = value.Content->operations[0].get<0>();
+
+        //Logical and operators (&&)
+        if(op == ast::Operator::AND){
+            visit(*this, value.Content->first);
+
+            for(auto& operation : value.Content->operations){
+                visit(*this, operation.get<1>());
+            }
+        } 
+        //Logical or operators (||)
+        else if(op == ast::Operator::OR){
+            //TODO
+        }
+        //Relational operators 
+        else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+            //relational operations cannot be chained
+            assert(value.Content->operations.size() == 1);
+            
+            auto left = moveToArgument(value.Content->first, function);
+            auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+
+            function->add(std::make_shared<tac::If>(tac::toBinaryOperator(op), left, right, label));
+        } 
+        //A bool value
+        else { //Perform int operations
+            auto var = performIntOperation(value, function);
+            
+            function->add(std::make_shared<tac::If>(var, label));
+        }
+    }
+   
+    template<typename T>
+    void operator()(T& value) const {
+        auto argument = ToArgumentsVisitor(function)(value)[0];
+
+        function->add(std::make_shared<tac::If>(argument, label));
+    }
+};
+
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
     JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
     
@@ -382,7 +429,19 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
         } 
         //Logical or operators (||)
         else if(op == ast::Operator::OR){
-            //TODO
+            std::string codeLabel = newLabel();
+
+            visit(JumpIfTrueVisitor(function, codeLabel), value.Content->first);
+
+            for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
+                if(i == value.Content->operations.size() - 1){
+                    visit(*this, value.Content->operations[i].get<1>());   
+                } else {
+                    visit(JumpIfTrueVisitor(function, codeLabel), value.Content->operations[i].get<1>());
+                }
+            }
+
+            function->add(codeLabel);
         }
         //Relational operators 
         else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
