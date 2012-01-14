@@ -372,13 +372,30 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     void operator()(ast::ComposedValue& value) const {
         auto op = value.Content->operations[0].get<0>();
 
+        //Logical and operators (&&)
         if(op == ast::Operator::AND){
+            visit(*this, value.Content->first);
+
+            for(auto& operation : value.Content->operations){
+                visit(*this, operation.get<1>());
+            }
+        } 
+        //Logical or operators (||)
+        else if(op == ast::Operator::OR){
             //TODO
-        } else if(op == ast::Operator::OR){
-            //TODO
-        } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-            //TODO
-        } else { //Perform int operations
+        }
+        //Relational operators 
+        else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+            //relational operations cannot be chained
+            assert(value.Content->operations.size() == 1);
+            
+            auto left = moveToArgument(value.Content->first, function);
+            auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+
+            function->add(std::make_shared<tac::IfFalse>(tac::toBinaryOperator(op), left, right, label));
+        } 
+        //A bool value
+        else { //Perform int operations
             auto var = performIntOperation(value, function);
             
             function->add(std::make_shared<tac::IfFalse>(var, label));
