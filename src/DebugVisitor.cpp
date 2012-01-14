@@ -95,6 +95,12 @@ void DebugVisitor::operator()(ast::Swap&) const {
 
 void DebugVisitor::operator()(ast::If& if_) const {
     std::cout << indent() << "If" << std::endl; 
+    std::cout << indent() << "Condition:" << std::endl;
+    ++level;
+    visit(*this, if_.Content->condition);    
+    --level;
+
+    std::cout << indent() << "Body:" << std::endl;
     ++level;
     visit_each(*this, if_.Content->instructions);    
     --level;
