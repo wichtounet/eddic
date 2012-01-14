@@ -131,6 +131,8 @@ int Compiler::compileOnly(const std::string& file) {
             
             //Optimize the AST
             optimize(program, functionTable, pool);
+
+            DebugVisitor()(program);
     
             tac::Program tacProgram;
 
@@ -141,6 +143,9 @@ int Compiler::compileOnly(const std::string& file) {
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
+
+            tac::Printer printer;
+            printer.print(tacProgram);
 
             tac::Optimizer optimizer;
             optimizer.optimize(tacProgram);

@@ -400,7 +400,6 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
             
             function->add(std::make_shared<tac::IfFalse>(var, label));
         }
-        //TODO Manage several levels of composed values
     }
    
     template<typename T>

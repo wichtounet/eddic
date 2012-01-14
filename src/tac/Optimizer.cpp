@@ -270,6 +270,11 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
 
         return ifFalse;
     }
+    
+    tac::Statement operator()(std::shared_ptr<tac::If>& ifFalse){
+        //TODO Optimize
+        return ifFalse;
+    }
 
     template<typename T>
     tac::Statement operator()(T& statement) const { 
@@ -337,6 +342,11 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
             }
         }
 
+        return ifFalse;
+    }
+    
+    tac::Statement operator()(std::shared_ptr<tac::If>& ifFalse){
+        //TODO Optimize
         return ifFalse;
     }
 
@@ -426,6 +436,11 @@ struct RemoveAssign : public boost::static_visitor<bool> {
             }
         }
 
+        return true;
+    }
+    
+    bool operator()(std::shared_ptr<tac::If>& ifFalse){
+        //TODO Optimize
         return true;
     }
 
@@ -560,6 +575,8 @@ bool remove_dead_basic_blocks(tac::Program& program){
                         continue;
                     }
                 } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&last)){
+                    usage.insert((*ptr)->block); 
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&last)){
                     usage.insert((*ptr)->block); 
                 }
             }
