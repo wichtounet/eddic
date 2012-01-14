@@ -132,9 +132,39 @@ struct CleanerVisitor : public boost::static_visitor<> {
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_DECLARATION()
-    AUTO_RECURSE_BRANCHES()
-    AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_FOREACH()
+
+    void operator()(ast::If& if_){
+        if_.Content->condition = visit(transformer, if_.Content->condition);
+
+        visit_each(*this, if_.Content->instructions);
+        visit_each_non_variant(*this, if_.Content->elseIfs);
+        visit_optional_non_variant(*this, if_.Content->else_);
+    }
+
+    void operator()(ast::ElseIf& elseIf){
+        elseIf.condition = visit(transformer, elseIf.condition);
+
+        visit_each(*this, elseIf.instructions);
+    }
+
+    void operator()(ast::Else& else_){
+        visit_each(*this, else_.instructions);
+    }
+
+    void operator()(ast::For& for_){
+        visit_optional(*this, for_.Content->start);
+        if(for_.Content->condition){
+            for_.Content->condition = visit(transformer, *for_.Content->condition);
+        }
+        visit_optional(*this, for_.Content->repeat);
+        visit_each(*this, for_.Content->instructions);
+    }
+
+    void operator()(ast::While& while_){
+        while_.Content->condition = visit(transformer, while_.Content->condition);
+        visit_each(*this, while_.Content->instructions);
+    }
 
     void operator()(ast::FunctionCall& functionCall) const {
         auto start = functionCall.Content->values.begin();
