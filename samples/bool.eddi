@@ -1,0 +1,5 @@
+void main(){
+    if(3 > 2 && 3 < 2){
+        println("Youkkaidi");
+    }
+}
