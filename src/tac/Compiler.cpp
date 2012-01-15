@@ -190,7 +190,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         if(type.isConst()){
            auto val = value.Content->var->val();
            
-           if(type.base() == BaseType::INT){
+           if(type.base() == BaseType::INT || type.base() == BaseType::BOOL){
                return {boost::get<int>(val)};
            } else if (type.base() == BaseType::STRING){
                 auto value = boost::get<std::pair<std::string, int>>(val);
@@ -200,7 +200,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         } else if(type.isArray()){
             return {value.Content->var};
         } else {
-            if(type.base() == BaseType::INT){
+            if(type.base() == BaseType::INT || type.base() == BaseType::BOOL){
                 return {value.Content->var};
             } else {
                 auto temp = value.Content->context->newTemporary();
