@@ -288,6 +288,8 @@ struct AbstractVisitor : public boost::static_visitor<> {
             intAssign(ToArgumentsVisitor(function)(value));
         } else if(type.base() == BaseType::STRING){
             stringAssign(ToArgumentsVisitor(function)(value));
+        } else if(type.base() == BaseType::BOOL){
+            intAssign(ToArgumentsVisitor(function)(value));
         } else {
             throw SemanticalException("Invalid variable type");   
         }
