@@ -120,7 +120,7 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " >= " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
             }
         } else {
-            //TODO
+            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
         }
     }
     void operator()(std::shared_ptr<tac::If>& ifFalse){
@@ -139,7 +139,7 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\tif " << printArgument(ifFalse->arg1) << " >= " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
             }
         } else {
-            //TODO
+            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
         }
     }
 
