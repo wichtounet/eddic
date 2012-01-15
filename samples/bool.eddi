@@ -14,4 +14,10 @@ void main(){
     if( (2 > 3 || 2 > 1) && (2 > 3 || 2 > 1) && 2 < 1 ){
         println("Four");
     }
+    
+    bool a = true;
+
+    if(a){
+        println("Five");
+    }
 }
