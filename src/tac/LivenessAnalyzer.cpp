@@ -98,10 +98,10 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 }
             }
 
-            sit++;
+            ++sit;
         }
 
-        bit++;
+        ++bit;
     }
 }
 
