@@ -123,6 +123,7 @@ struct DebugVisitor : public boost::static_visitor<> {
             std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
         }
     }
+
     void operator()(std::shared_ptr<tac::If>& ifFalse){
         if(ifFalse->op){
             if(*ifFalse->op == tac::BinaryOperator::EQUALS){
