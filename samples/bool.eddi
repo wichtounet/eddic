@@ -1,9 +1,17 @@
 void main(){
     if(3 > 2 && 3 < 2){
-        println("Youkkaidi");
+        println("One");
     }
 
     if(2 < 1 || 3 > 2){
-        println("Youkkaida");
+        println("Two");
+    }
+
+    if(2 > 2 || 3 > 3 || 5 > 4){
+        println("Three");
+    }
+
+    if( (2 > 3 || 2 > 1) && (2 > 3 || 2 > 1) && 2 < 1 ){
+        println("Four");
     }
 }

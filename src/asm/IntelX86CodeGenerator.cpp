@@ -844,28 +844,54 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
     
+    template<typename T>
+    void compareBinary(T& if_){
+        //The first argument is not important, it can be immediate, but the second must be a register
+        if(auto* ptr = boost::get<int>(&if_->arg1)){
+            auto reg = getReg();
+
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "cmpl " << arg(*if_->arg2) << ", " << regToString(reg) << std::endl;
+
+            registers.release(reg);
+        } else {
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "cmpl " << arg(*if_->arg2) << ", " << arg(if_->arg1) << std::endl;
+        }
+    }
+
+    template<typename T>
+    void compareUnary(T& if_){
+        if(auto* ptr = boost::get<int>(&if_->arg1)){
+            auto reg = getReg();
+
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "cmpl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+
+            registers.release(reg);
+        } else {
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "cmpl " << arg(if_->arg1) << ", " << arg(if_->arg1) << std::endl;
+        }
+    }
+    
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         current = ifFalse;
 
         if(ifFalse->op){
-            //The first argument is not important, it can be immediate, but the second must be a register
-            if(auto* ptr = boost::get<int>(&ifFalse->arg1)){
-                auto reg = getReg();
-
-                writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
-
-                //The basic block must be ended before the jump
-                endBasicBlock();
-
-                writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << regToString(reg) << std::endl;
-
-                registers.release(reg);
-            } else {
-                //The basic block must be ended before the jump
-                endBasicBlock();
-
-                writer.stream() << "cmpl " << arg(*ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
-            }
+            compareBinary(ifFalse);
 
             switch(*ifFalse->op){
                 case tac::BinaryOperator::EQUALS:
@@ -888,12 +914,43 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;
             }
         } else {
-            //TODO Handle that case
+            compareUnary(ifFalse);
+
+            writer.stream() << "jz" << labels[ifFalse->block] << std::endl;
         }
     }
-    
-    void operator()(std::shared_ptr<tac::If>& ifFalse){
-        //TODO Compile
+
+    void operator()(std::shared_ptr<tac::If>& if_){
+        current = if_;
+
+        if(if_->op){
+            compareBinary(if_);
+
+            switch(*if_->op){
+                case tac::BinaryOperator::EQUALS:
+                    writer.stream() << "je " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::NOT_EQUALS:
+                    writer.stream() << "jne " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS:
+                    writer.stream() << "jl " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS_EQUALS:
+                    writer.stream() << "jle " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER:
+                    writer.stream() << "jg " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER_EQUALS:
+                    writer.stream() << "jge " << labels[if_->block] << std::endl;
+                    break;
+            }
+        } else {
+            compareUnary(if_);
+
+            writer.stream() << "jnz" << labels[if_->block] << std::endl;
+        }
     }
 
     void operator()(tac::NoOp&){
