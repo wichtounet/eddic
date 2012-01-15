@@ -28,6 +28,11 @@ Visitor::result_type Visitor::operator()(Type & ) const {\
     return Value;\
 }
 
+#define ASSIGN_INSIDE_CONST_CONST(Visitor, Type, Value)\
+Visitor::result_type Visitor::operator()(const Type & ) const {\
+    return Value;\
+}
+
 namespace eddic {
 
 /* Use with a variant */

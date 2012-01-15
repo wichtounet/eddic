@@ -14,29 +14,14 @@
 
 using namespace eddic;
 
-Type GetTypeVisitor::operator()(const ast::Litteral&) const {
-    return Type(BaseType::STRING, false);
-}
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Litteral, Type(BaseType::STRING, false))
 
-Type GetTypeVisitor::operator()(const ast::Integer&) const {
-    return Type(BaseType::INT, false);
-}
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Integer, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Minus, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Plus, Type(BaseType::INT, false))
 
-Type GetTypeVisitor::operator()(const ast::Plus&) const {
-    return Type(BaseType::INT, false);
-}
-
-Type GetTypeVisitor::operator()(const ast::Minus&) const {
-    return Type(BaseType::INT, false);
-}
-
-Type GetTypeVisitor::operator()(const ast::False&) const {
-    return Type(BaseType::BOOL, false);
-}
-
-Type GetTypeVisitor::operator()(const ast::True&) const {
-    return Type(BaseType::BOOL, false);
-}
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::False, Type(BaseType::BOOL, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::True, Type(BaseType::BOOL, false))
 
 Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
@@ -47,9 +32,16 @@ Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
 }
 
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
-    //TODO Adapt to handle bools
-    //No need to recurse into operations because type are enforced in the check variables phase
-    return visit(*this, value.Content->first);
+    auto op = value.Content->operations[0].get<0>();
+
+    if(op == ast::Operator::AND || op == ast::Operator::OR){
+        return Type(BaseType::BOOL, false);
+    } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+        return Type(BaseType::BOOL, false);
+    } else {
+        //No need to recurse into operations because type are enforced in the check variables phase
+        return visit(*this, value.Content->first);
+    }
 }
 
 Type GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
