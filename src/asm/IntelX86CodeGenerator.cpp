@@ -916,7 +916,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else {
             compareUnary(ifFalse);
 
-            writer.stream() << "jz" << labels[ifFalse->block] << std::endl;
+            writer.stream() << "jz " << labels[ifFalse->block] << std::endl;
         }
     }
 
@@ -949,7 +949,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else {
             compareUnary(if_);
 
-            writer.stream() << "jnz" << labels[if_->block] << std::endl;
+            writer.stream() << "jnz " << labels[if_->block] << std::endl;
         }
     }
 
