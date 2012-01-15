@@ -20,4 +20,10 @@ void main(){
     if(a){
         println("Five");
     }
+
+    bool b = false;
+
+    if(b){
+        println("Six");
+    }
 }

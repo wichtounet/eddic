@@ -876,14 +876,14 @@ struct StatementCompiler : public boost::static_visitor<> {
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmpl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+            writer.stream() << "orl " << regToString(reg) << ", " << regToString(reg) << std::endl;
 
             registers.release(reg);
         } else {
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmpl " << arg(if_->arg1) << ", " << arg(if_->arg1) << std::endl;
+            writer.stream() << "orl " << arg(if_->arg1) << ", " << arg(if_->arg1) << std::endl;
         }
     }
     
