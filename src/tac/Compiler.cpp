@@ -41,7 +41,7 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::FunctionCall& call) const {
         Type type = call.Content->function->returnType;
 
-        return type.base() == BaseType::INT;
+        return type.base() == BaseType::INT || type.base() == BaseType::BOOL;
     }
 };
 
@@ -86,6 +86,12 @@ std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::sh
         }
     }
 
+    return t1;
+}
+
+std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+    auto t1 = function->context->newTemporary(); 
+    //TODO
     return t1;
 }
 
@@ -163,6 +169,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         Type type = call.Content->function->returnType;
 
         switch(type.base()){
+            case BaseType::BOOL:
             case BaseType::INT:{
                 auto t1 = function->context->newTemporary();
 
@@ -216,23 +223,28 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
-        if(array.Content->var->type().base() == BaseType::INT){
-            auto temp = array.Content->context->newTemporary();
-            function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
-            
-            return {temp};
-        } else {
-            auto t1 = array.Content->context->newTemporary();
-            function->add(std::make_shared<tac::Quadruple>(t1, array.Content->var, tac::Operator::ARRAY, index));
+        switch(array.Content->var->type().base()){
+            case BaseType::BOOL:
+            case BaseType::INT: {
+                auto temp = array.Content->context->newTemporary();
+                function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
+
+                return {temp};
+
+            }   
+            case BaseType::STRING: {
+                auto t1 = array.Content->context->newTemporary();
+                function->add(std::make_shared<tac::Quadruple>(t1, array.Content->var, tac::Operator::ARRAY, index));
+                    
+                auto t2 = array.Content->context->newTemporary();
+                auto t3 = array.Content->context->newTemporary();
                 
-            auto t2 = array.Content->context->newTemporary();
-            auto t3 = array.Content->context->newTemporary();
-            
-            //Assign the second part of the string
-            function->add(std::make_shared<tac::Quadruple>(t3, index, tac::Operator::ADD, -4));
-            function->add(std::make_shared<tac::Quadruple>(t2, array.Content->var, tac::Operator::ARRAY, t3));
-            
-            return {t1, t2};
+                //Assign the second part of the string
+                function->add(std::make_shared<tac::Quadruple>(t3, index, tac::Operator::ADD, -4));
+                function->add(std::make_shared<tac::Quadruple>(t2, array.Content->var, tac::Operator::ARRAY, t3));
+                
+                return {t1, t2};
+            }
         }
     }
 
@@ -241,6 +253,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         if(type.base() == BaseType::INT){
             return {performIntOperation(value, function)};
+        } else if(type.base() == BaseType::BOOL){
+            return {performBoolOperation(value, function)};
         } else {
             auto t1 = function->context->newTemporary();
             auto t2 = function->context->newTemporary();
@@ -284,14 +298,16 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     template<typename T>
     void complexAssign(Type type, T& value) const {
-        if(type.base() == BaseType::INT){
-            intAssign(ToArgumentsVisitor(function)(value));
-        } else if(type.base() == BaseType::STRING){
-            stringAssign(ToArgumentsVisitor(function)(value));
-        } else if(type.base() == BaseType::BOOL){
-            intAssign(ToArgumentsVisitor(function)(value));
-        } else {
-            throw SemanticalException("Invalid variable type");   
+        switch(type.base()){
+            case BaseType::INT:
+            case BaseType::BOOL:
+                intAssign(ToArgumentsVisitor(function)(value));
+                break;
+            case BaseType::STRING:
+                stringAssign(ToArgumentsVisitor(function)(value));
+                break;
+            default:
+                throw SemanticalException("Invalid variable type");   
         }
     }
 
@@ -640,7 +656,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             
             auto t1 = swap.Content->context->newTemporary();
 
-            if(lhs_var->type().base() == BaseType::INT || lhs_var->type().base() == BaseType::STRING){
+            if(lhs_var->type().base() == BaseType::INT || lhs_var->type().base() == BaseType::BOOL || lhs_var->type().base() == BaseType::STRING){
                 function->add(std::make_shared<tac::Quadruple>(t1, rhs_var));  
                 function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var));  
                 function->add(std::make_shared<tac::Quadruple>(lhs_var, t1));  
@@ -723,7 +739,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             
             auto indexTemp = computeIndexOfArray(arrayVar, iterVar, function);
 
-            if(var->type().base() == BaseType::INT){
+            if(var->type().base() == BaseType::INT || var->type().base() == BaseType::BOOL){
                 function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
             } else {
                 function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
