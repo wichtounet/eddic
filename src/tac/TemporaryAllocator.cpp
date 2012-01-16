@@ -22,7 +22,7 @@ namespace {
 
 typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::BasicBlock>> Usage;
 
-void updateTemporary(Usage usage, std::shared_ptr<Variable> variable, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
+void updateTemporary(Usage& usage, std::shared_ptr<Variable> variable, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
     if(variable->position().isTemporary()){
         if(usage.find(variable) == usage.end()){
             usage[variable] = block;
@@ -33,7 +33,7 @@ void updateTemporary(Usage usage, std::shared_ptr<Variable> variable, std::share
 }
 
 template<typename T>
-void updateIf(Usage usage, std::shared_ptr<T> if_, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
+void updateIf(Usage& usage, std::shared_ptr<T> if_, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
     if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
         updateTemporary(usage, *variablePtr, block, function);
     }
@@ -45,8 +45,10 @@ void updateIf(Usage usage, std::shared_ptr<T> if_, std::shared_ptr<tac::BasicBlo
     }
 }
 
-void updateQuadruple(Usage usage, std::shared_ptr<tac::Quadruple> quadruple, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
-    updateTemporary(usage, quadruple->result, block, function);
+void updateQuadruple(Usage& usage, std::shared_ptr<tac::Quadruple> quadruple, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
+    if(quadruple->result){
+        updateTemporary(usage, quadruple->result, block, function);
+    }
 
     updateIf(usage, quadruple, block, function);
 }
