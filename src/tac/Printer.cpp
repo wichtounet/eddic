@@ -79,6 +79,18 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " / " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MOD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " % " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " == " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::NOT_EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " != " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::GREATER){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " > " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::GREATER_EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " >= " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::LESS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " < " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::LESS_EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " <= " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MINUS){
                 std::cout << "\t" << quadruple->result->name() << " = - " << printArgument(quadruple->arg1) << std::endl;
             } else if(op == tac::Operator::DOT){
