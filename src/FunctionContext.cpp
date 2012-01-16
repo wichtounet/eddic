@@ -63,3 +63,11 @@ std::shared_ptr<Variable> FunctionContext::newTemporary(){
 
     return variables[name] = std::make_shared<Variable>(name, type, position); 
 }
+
+void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
+    Position position(PositionType::STACK, currentPosition);
+
+    currentPosition += ::size(temp->type());
+   
+    temp->setPosition(position); 
+}
