@@ -494,6 +494,50 @@ struct StatementCompiler : public boost::static_visitor<> {
         writer.stream() << "leave" << std::endl;
         writer.stream() << "ret" << std::endl;
     }
+
+    std::string toSubRegister(const std::string& reg){
+        if(reg == "%eax"){
+            return "%ah";
+        } else if(reg == "%ebx"){
+            return "%bh";
+        } else if(reg == "%ecx"){
+            return "%ch";
+        } else if(reg == "%edx"){
+            return "%dh";
+        } else if(reg == "%edi"){
+            return "%di";
+        } else if(reg == "%esi"){
+            return "%si";
+        } else {
+            assert(false);
+        }
+    }
+
+    void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
+        //We use EAX in order to avoid esi and edi that have not 8 byte version
+        spills(Register::EAX);
+
+        Register reg = Register::EAX;
+
+        registers.setLocation(quadruple->result, reg);
+        
+        writer.stream() << "xorl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+
+        //The first argument is not important, it can be immediate, but the second must be a register
+        if(auto* ptr = boost::get<int>(&quadruple->arg1)){
+            auto reg = getReg();
+
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+
+            writer.stream() << "cmpl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+
+            registers.release(reg);
+        } else {
+            writer.stream() << "cmpl " << arg(*quadruple->arg2) << ", " << arg(quadruple->arg1) << std::endl;
+        }
+
+        writer.stream() << set << " " << toSubRegister(regToString(reg)) << std::endl;
+    }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         current = quadruple;
@@ -767,6 +811,24 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     break;
                 }
+                case tac::Operator::GREATER:
+                    setIfCc("setg", quadruple);
+                    break;
+                case tac::Operator::GREATER_EQUALS:
+                    setIfCc("setge", quadruple);
+                    break;
+                case tac::Operator::LESS:
+                    setIfCc("setl", quadruple);
+                    break;
+                case tac::Operator::LESS_EQUALS:
+                    setIfCc("setle", quadruple);
+                    break;
+                case tac::Operator::EQUALS:
+                    setIfCc("sete", quadruple);
+                    break;
+                case tac::Operator::NOT_EQUALS:
+                    setIfCc("setne", quadruple);
+                    break;
                 case tac::Operator::DOT:
                 {
                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
