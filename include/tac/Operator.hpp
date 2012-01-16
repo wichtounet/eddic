@@ -21,6 +21,14 @@ enum class Operator : unsigned int {
     DIV,
     MOD,
 
+    /* relational operators */
+    EQUALS,
+    NOT_EQUALS,
+    GREATER,
+    GREATER_EQUALS,
+    LESS,
+    LESS_EQUALS,
+
     MINUS,          //result = -arg1
     
     DOT,            //result = (arg1)+arg2

@@ -91,6 +91,54 @@ std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::sh
 
 std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
     auto t1 = function->context->newTemporary(); 
+   
+    //The first operator defines the kind of operation 
+    auto op = value.Content->operations[0].get<0>();
+
+    //Logical and operators (&&)
+    if(op == ast::Operator::AND){
+
+    } 
+    //Logical or operators (||)
+    else if(op == ast::Operator::OR){
+
+    }
+    //Relational operators 
+    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+        //relational operations cannot be chained
+        assert(value.Content->operations.size() == 1);
+
+        auto left = moveToArgument(value.Content->first, function);
+        auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+
+        //Simplify that
+        switch(op){
+            case ast::Operator::EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::EQUALS, right));
+                break;
+            case ast::Operator::NOT_EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::NOT_EQUALS, right));
+                break;
+            case ast::Operator::LESS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS, right));
+                break;
+            case ast::Operator::LESS_EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS_EQUALS, right));
+                break;
+            case ast::Operator::GREATER:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER, right));
+                break;
+            case ast::Operator::GREATER_EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER_EQUALS, right));
+                break;
+        }
+    } 
+    else { 
+        assert(false);
+    }
+    
+
+
     //TODO
     return t1;
 }
