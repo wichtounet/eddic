@@ -89,59 +89,7 @@ std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::sh
     return t1;
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
-    auto t1 = function->context->newTemporary(); 
-   
-    //The first operator defines the kind of operation 
-    auto op = value.Content->operations[0].get<0>();
-
-    //Logical and operators (&&)
-    if(op == ast::Operator::AND){
-
-    } 
-    //Logical or operators (||)
-    else if(op == ast::Operator::OR){
-
-    }
-    //Relational operators 
-    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        //relational operations cannot be chained
-        assert(value.Content->operations.size() == 1);
-
-        auto left = moveToArgument(value.Content->first, function);
-        auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
-
-        //Simplify that
-        switch(op){
-            case ast::Operator::EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::EQUALS, right));
-                break;
-            case ast::Operator::NOT_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::NOT_EQUALS, right));
-                break;
-            case ast::Operator::LESS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS, right));
-                break;
-            case ast::Operator::LESS_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS_EQUALS, right));
-                break;
-            case ast::Operator::GREATER:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER, right));
-                break;
-            case ast::Operator::GREATER_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER_EQUALS, right));
-                break;
-        }
-    } 
-    else { 
-        assert(false);
-    }
-    
-
-
-    //TODO
-    return t1;
-}
+std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function);
 
 tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, tac::Argument index, std::shared_ptr<tac::Function> function){
     auto temp = function->context->newTemporary();
@@ -348,6 +296,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     void complexAssign(Type type, T& value) const {
         switch(type.base()){
             case BaseType::INT:
+                intAssign(ToArgumentsVisitor(function)(value));
             case BaseType::BOOL:
                 intAssign(ToArgumentsVisitor(function)(value));
                 break;
@@ -884,6 +833,73 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         function->add(std::make_shared<tac::Call>("print_line", 0));
     }
 }
+
+std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+    auto t1 = function->context->newTemporary(); 
+   
+    //The first operator defines the kind of operation 
+    auto op = value.Content->operations[0].get<0>();
+
+    //Logical and operators (&&)
+    if(op == ast::Operator::AND){
+        auto falseLabel = newLabel();
+        auto endLabel = newLabel();
+
+        visit(JumpIfFalseVisitor(function, falseLabel), value.Content->first);
+
+        for(auto& operation : value.Content->operations){
+            visit(JumpIfFalseVisitor(function, falseLabel), operation.get<1>());
+        }
+
+        function->add(std::make_shared<tac::Quadruple>(t1, 1));
+        function->add(std::make_shared<tac::Goto>(endLabel));
+
+        function->add(falseLabel);
+        function->add(std::make_shared<tac::Quadruple>(t1, 0));
+
+        function->add(endLabel);
+    } 
+    //Logical or operators (||)
+    else if(op == ast::Operator::OR){
+
+    }
+    //Relational operators 
+    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+        //relational operations cannot be chained
+        assert(value.Content->operations.size() == 1);
+
+        auto left = moveToArgument(value.Content->first, function);
+        auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+
+        //Simplify that
+        switch(op){
+            case ast::Operator::EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::EQUALS, right));
+                break;
+            case ast::Operator::NOT_EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::NOT_EQUALS, right));
+                break;
+            case ast::Operator::LESS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS, right));
+                break;
+            case ast::Operator::LESS_EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS_EQUALS, right));
+                break;
+            case ast::Operator::GREATER:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER, right));
+                break;
+            case ast::Operator::GREATER_EQUALS:
+                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER_EQUALS, right));
+                break;
+        }
+    } 
+    else { 
+        assert(false);
+    }
+    
+    return t1;
+}
+
 
 } //end of anonymous namespace
 

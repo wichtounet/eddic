@@ -32,4 +32,16 @@ void main(){
     if(c){
         println("Seven");
     }
+
+    bool d = 3 > 2 && 2 > 3;
+
+    if(d){
+        println("Eight");
+    }
+
+    bool e = 3 > 2 && 2 < 3 && 4 == 4;
+
+    if(e){
+        println("Nine");
+    }
 }
