@@ -50,4 +50,16 @@ void main(){
     if(f){
         println("Ten");
     }
+
+    bool g = ((4 > 5 && 5 > 4) && ( 3 == 3 && 4 == 4)) || 4 == 4;
+
+    if(g){
+        println("Eleven");
+    }
+
+    bool h = ((4 > 5 && 5 > 4) && ( 3 == 3 && 4 == 4)) && (4 == 4 && (5 > 6 || 6 == 5));
+
+    if(h){
+        println("Twelve");
+    }
 }
