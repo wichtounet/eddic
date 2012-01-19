@@ -241,6 +241,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 
                 return {t1, t2};
             }
+            default:
+                assert(false);
         }
     }
 
@@ -861,7 +863,22 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
     } 
     //Logical or operators (||)
     else if(op == ast::Operator::OR){
+        auto trueLabel = newLabel();
+        auto endLabel = newLabel();
 
+        visit(JumpIfTrueVisitor(function, trueLabel), value.Content->first);
+
+        for(auto& operation : value.Content->operations){
+            visit(JumpIfTrueVisitor(function, trueLabel), operation.get<1>());
+        }
+
+        function->add(std::make_shared<tac::Quadruple>(t1, 0));
+        function->add(std::make_shared<tac::Goto>(endLabel));
+
+        function->add(trueLabel);
+        function->add(std::make_shared<tac::Quadruple>(t1, 1));
+
+        function->add(endLabel);
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
@@ -891,6 +908,9 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
             case ast::Operator::GREATER_EQUALS:
                 function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER_EQUALS, right));
                 break;
+            default:
+                //Not a relational operator
+                assert(false);
         }
     } 
     else { 
