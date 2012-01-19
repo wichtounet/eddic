@@ -1120,93 +1120,136 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
                     << "int $0x80" << std::endl;
 }
 
+void addPrintIntegerBody(AssemblyFileWriter& writer){
+    static int ctr = 0;
+    ctr++;
+
+    writer.stream() << "movl 8(%ebp), %eax" << std::endl
+        << "xorl %esi, %esi" << std::endl
+
+        //If the number is negative, we print the - and then the number
+        << "cmpl $0, %eax" << std::endl
+        << "jge loop" << ctr << std::endl
+
+        << "neg %eax" << std::endl
+        << "pushl %eax" << std::endl //We push eax to not loose it from print_string
+
+        //Print "-" 
+        << "pushl $S2" << std::endl
+        << "pushl $1" << std::endl
+        << "call _F5printS" << std::endl
+        << "addl $8, %esp" << std::endl
+
+        //Get the the valueof eax again
+        << "popl %eax" << std::endl
+
+        << "loop" << ctr << ":" << std::endl
+        << "movl $0, %edx" << std::endl
+        << "movl $10, %ebx" << std::endl
+        << "divl %ebx" << std::endl
+        << "addl $48, %edx" << std::endl
+        << "pushl %edx" << std::endl
+        << "incl %esi" << std::endl
+        << "cmpl $0, %eax" << std::endl
+        << "jz   next" << ctr << std::endl
+        << "jmp loop" << ctr << std::endl
+
+        << "next" << ctr << ":" << std::endl
+        << "cmpl $0, %esi" << std::endl
+        << "jz   exit" << ctr << std::endl
+        << "decl %esi" << std::endl
+
+        << "movl $4, %eax" << std::endl
+        << "movl %esp, %ecx" << std::endl
+        << "movl $1, %ebx" << std::endl
+        << "movl $1, %edx" << std::endl
+        << "int  $0x80" << std::endl
+
+        << "addl $4, %esp" << std::endl
+
+        << "jmp next" << ctr << std::endl
+
+        << "exit" << ctr << ":" << std::endl;
+}
+
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
-    writer.stream() << "print_integer:" << std::endl
-             << "pushl %ebp" << std::endl
-             << "movl %esp, %ebp" << std::endl
+    writer.stream() << "_F5printI:" << std::endl;
+    writer.stream() << "pushl %ebp" << std::endl;
+    writer.stream() << "movl %esp, %ebp" << std::endl;
 
-            //Save registers
-            << "pushl %eax" << std::endl
-            << "pushl %ebx" << std::endl
-            << "pushl %ecx" << std::endl
-            << "pushl %edx" << std::endl
+    //Save registers
+    writer.stream() << "pushl %eax" << std::endl;
+    writer.stream() << "pushl %ebx" << std::endl;
+    writer.stream() << "pushl %ecx" << std::endl;
+    writer.stream() << "pushl %edx" << std::endl;
 
-             << "movl 8(%ebp), %eax" << std::endl
-             << "xorl %esi, %esi" << std::endl
+    addPrintIntegerBody(writer);
 
-             //If the number is negative, we print the - and then the number
-             << "cmpl $0, %eax" << std::endl
-             << "jge loop" << std::endl
+    //Restore registers
+    writer.stream() << "popl %edx" << std::endl;
+    writer.stream() << "popl %ecx" << std::endl;
+    writer.stream() << "popl %ebx" << std::endl;
+    writer.stream() << "popl %eax" << std::endl;
 
-             << "neg %eax" << std::endl
-             << "pushl %eax" << std::endl //We push eax to not loose it from print_string
-            
-             //Print "-" 
-             << "pushl $S2" << std::endl
-             << "pushl $1" << std::endl
-             << "call print_string" << std::endl
-             << "addl $8, %esp" << std::endl
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+   
+    /* println version */
+    
+    writer.stream() << std::endl;
+    writer.stream() << "_F7printlnI:" << std::endl;
+    writer.stream() << "pushl %ebp" << std::endl;
+    writer.stream() << "movl %esp, %ebp" << std::endl;
 
-             //Get the the valueof eax again
-             << "popl %eax" << std::endl
+    //Save registers
+    writer.stream() << "pushl %eax" << std::endl;
+    writer.stream() << "pushl %ebx" << std::endl;
+    writer.stream() << "pushl %ecx" << std::endl;
+    writer.stream() << "pushl %edx" << std::endl;
 
-             << "loop:" << std::endl
-             << "movl $0, %edx" << std::endl
-             << "movl $10, %ebx" << std::endl
-             << "divl %ebx" << std::endl
-             << "addl $48, %edx" << std::endl
-             << "pushl %edx" << std::endl
-             << "incl %esi" << std::endl
-             << "cmpl $0, %eax" << std::endl
-             << "jz   next" << std::endl
-             << "jmp loop" << std::endl
+    writer.stream() << "call _F7println" << std::endl;
 
-             << "next:" << std::endl
-             << "cmpl $0, %esi" << std::endl
-             << "jz   exit" << std::endl
-             << "decl %esi" << std::endl
+    addPrintIntegerBody(writer);
 
-             << "movl $4, %eax" << std::endl
-             << "movl %esp, %ecx" << std::endl
-             << "movl $1, %ebx" << std::endl
-             << "movl $1, %edx" << std::endl
-             << "int  $0x80" << std::endl
+    //Restore registers
+    writer.stream() << "popl %edx" << std::endl;
+    writer.stream() << "popl %ecx" << std::endl;
+    writer.stream() << "popl %ebx" << std::endl;
+    writer.stream() << "popl %eax" << std::endl;
 
-             << "addl $4, %esp" << std::endl
-
-             << "jmp  next" << std::endl
-
-             << "exit:" << std::endl
-
-            //Restore registers
-            << "popl %edx" << std::endl
-            << "popl %ecx" << std::endl
-            << "popl %ebx" << std::endl
-            << "popl %eax" << std::endl
-
-             << "leave" << std::endl
-             << "ret" << std::endl;
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
 }
 
 void addPrintLineFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
-    writer.stream() << "print_line:" << std::endl;
+    writer.stream() << "_F7println:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
 
     writer.stream() << "pushl $S1" << std::endl;
     writer.stream() << "pushl $1" << std::endl;
-    writer.stream() << "call print_string" << std::endl;
+    writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "addl $8, %esp" << std::endl;
 
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;
 }
 
+void addPrintStringBody(AssemblyFileWriter& writer){
+    writer.stream() << "movl $0, %esi" << std::endl;
+
+    writer.stream() << "movl $4, %eax" << std::endl;
+    writer.stream() << "movl $1, %ebx" << std::endl;
+    writer.stream() << "movl 12(%ebp), %ecx" << std::endl;
+    writer.stream() << "movl 8(%ebp), %edx" << std::endl;
+    writer.stream() << "int $0x80" << std::endl;
+}
+
 void addPrintStringFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
-    writer.stream() << "print_string:" << std::endl;
+    writer.stream() << "_F5printS:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
     
@@ -1216,13 +1259,33 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     writer.stream() << "pushl %ecx" << std::endl;
     writer.stream() << "pushl %edx" << std::endl;
 
-    writer.stream() << "movl $0, %esi" << std::endl;
+    addPrintStringBody(writer);
 
-    writer.stream() << "movl $4, %eax" << std::endl;
-    writer.stream() << "movl $1, %ebx" << std::endl;
-    writer.stream() << "movl 12(%ebp), %ecx" << std::endl;
-    writer.stream() << "movl 8(%ebp), %edx" << std::endl;
-    writer.stream() << "int $0x80" << std::endl;
+    //Restore registers
+    writer.stream() << "popl %edx" << std::endl;
+    writer.stream() << "popl %ecx" << std::endl;
+    writer.stream() << "popl %ebx" << std::endl;
+    writer.stream() << "popl %eax" << std::endl;
+
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+   
+    /* println version */
+    
+    writer.stream() << std::endl;
+    writer.stream() << "_F7printlnS:" << std::endl;
+    writer.stream() << "pushl %ebp" << std::endl;
+    writer.stream() << "movl %esp, %ebp" << std::endl;
+    
+    //Save registers
+    writer.stream() << "pushl %eax" << std::endl;
+    writer.stream() << "pushl %ebx" << std::endl;
+    writer.stream() << "pushl %ecx" << std::endl;
+    writer.stream() << "pushl %edx" << std::endl;
+
+    addPrintStringBody(writer);
+
+    writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
     writer.stream() << "popl %edx" << std::endl;

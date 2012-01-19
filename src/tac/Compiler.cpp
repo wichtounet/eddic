@@ -802,21 +802,8 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
             function->add(std::make_shared<tac::Quadruple>(tac::Operator::PARAM, arg));   
         }
     }
-
-    std::string functionName;  
-    if(functionCall.Content->functionName == "print" || functionCall.Content->functionName == "println"){
-        Type type = visit(GetTypeVisitor(), functionCall.Content->values[0]);
-
-        if(type.base() == BaseType::INT){
-            functionName = "print_integer";
-        } else if(type.base() == BaseType::STRING){
-            functionName = "print_string";
-        } else {
-            assert(false);
-        }
-    } else {
-        functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
-    }
+    
+    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
 
     int total = 0;
     for(auto& value : functionCall.Content->values){
@@ -831,10 +818,6 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     }
 
     function->add(std::make_shared<tac::Call>(functionName, total, return_, return2_));
-    
-    if(functionCall.Content->functionName == "println"){
-        function->add(std::make_shared<tac::Call>("print_line", 0));
-    }
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
