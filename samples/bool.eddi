@@ -44,4 +44,10 @@ void main(){
     if(e){
         println("Nine");
     }
+
+    bool f = 3 < 2 || 3 > 2 || 4 == 4;
+
+    if(f){
+        println("Ten");
+    }
 }
