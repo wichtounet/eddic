@@ -132,8 +132,6 @@ int Compiler::compileOnly(const std::string& file) {
             
             //Optimize the AST
             optimize(program, functionTable, pool);
-
-            DebugVisitor()(program);
     
             tac::Program tacProgram;
 
@@ -148,9 +146,6 @@ int Compiler::compileOnly(const std::string& file) {
             //Allocate storage for the temporaries that need to be stored
             tac::TemporaryAllocator allocator;
             allocator.allocate(tacProgram);
-
-            tac::Printer printer;
-            printer.print(tacProgram);
 
             tac::Optimizer optimizer;
             optimizer.optimize(tacProgram);

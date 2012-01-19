@@ -40,11 +40,10 @@ class DependencyVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
     
         void operator()(ast::StandardImport& import){
-            auto header = import.header;
-            auto headerFile = "stdlib/" + header + ".eddi";
+            auto headerFile = "stdlib/" + import.header + ".eddi";
             
             if(!exists(headerFile)){
-                throw SemanticalException("The header " + header + " does not exist");
+                throw SemanticalException("The header " + import.header + " does not exist");
             }
            
             ast::SourceFile dependency; 
@@ -54,24 +53,29 @@ class DependencyVisitor : public boost::static_visitor<> {
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){
                     source.Content->blocks.push_back(block);
                 }
+            } else {
+                throw SemanticalException("The header " + import.header + " cannot be imported");
             }
         }
     
         void operator()(ast::Import& import){
-            import.file.erase(0, 1);
-            import.file.resize(import.file.size() - 1);
+            auto file = import.file;
+            file.erase(0, 1);
+            file.resize(file.size() - 1);
 
-            if(!exists(import.file)){
-                throw SemanticalException("The file " + import.file + " does not exist");
+            if(!exists(file)){
+                throw SemanticalException("The file " + file + " does not exist");
             }
            
             ast::SourceFile dependency; 
-            if(parser.parse(import.file, dependency)){
+            if(parser.parse(file, dependency)){
                 includeDependencies(dependency, parser); 
 
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){
                     source.Content->blocks.push_back(block);
                 }
+            } else {
+                throw SemanticalException("The file " + file + " cannot be imported");
             }
         }
 
