@@ -299,6 +299,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
         switch(type.base()){
             case BaseType::INT:
                 intAssign(ToArgumentsVisitor(function)(value));
+                break;
             case BaseType::BOOL:
                 intAssign(ToArgumentsVisitor(function)(value));
                 break;
