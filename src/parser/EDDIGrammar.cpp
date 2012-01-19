@@ -12,7 +12,6 @@ using namespace eddic;
 parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
-        condition(lexer),
         type(lexer){
    
     const_ %=
@@ -23,7 +22,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
             lexer.else_ 
         >>  lexer.if_ 
         >>  lexer.left_parenth 
-        >>  condition 
+        >>  value 
         >>  lexer.right_parenth 
         >>  lexer.left_brace
         >>  *(instruction)
@@ -38,7 +37,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     if_ %= 
             lexer.if_ 
         >>  lexer.left_parenth 
-        >>  condition 
+        >>  value 
         >>  lexer.right_parenth 
         >>  lexer.left_brace 
         >>  *(instruction) 
@@ -51,7 +50,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >   lexer.left_parenth 
         >   -declaration 
         >   lexer.stop 
-        >   -condition 
+        >   -value 
         >   lexer.stop 
         >   -repeatable_instruction 
         >   lexer.right_parenth 
@@ -88,7 +87,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     while_ %=
             lexer.while_ 
         >   lexer.left_parenth 
-        >   condition 
+        >   value 
         >   lexer.right_parenth 
         >   lexer.left_brace 
         >   *(instruction)

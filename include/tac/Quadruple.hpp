@@ -9,10 +9,9 @@
 #define TAC_QUADRUPLE_H
 
 #include <unordered_map>
+#include <vector>
 
 #include <boost/optional.hpp>
-
-#include <vector>
 
 #include "tac/Operator.hpp"
 #include "tac/Argument.hpp"

@@ -8,6 +8,8 @@
 #ifndef TAC_OPERATOR_H
 #define TAC_OPERATOR_H
 
+#include "ast/Operator.hpp"
+
 namespace eddic {
 
 namespace tac {
@@ -18,6 +20,14 @@ enum class Operator : unsigned int {
     MUL,
     DIV,
     MOD,
+
+    /* relational operators */
+    EQUALS,
+    NOT_EQUALS,
+    GREATER,
+    GREATER_EQUALS,
+    LESS,
+    LESS_EQUALS,
 
     MINUS,          //result = -arg1
     
@@ -30,7 +40,7 @@ enum class Operator : unsigned int {
     PARAM           //push a single value
 };
 
-tac::Operator toOperator(char op);
+tac::Operator toOperator(ast::Operator op);
 
 } //end of tac
 

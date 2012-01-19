@@ -15,6 +15,7 @@ namespace eddic {
 enum class BaseType : unsigned int {
     STRING,
     INT,
+    BOOL,
     VOID, 
 
     COUNT

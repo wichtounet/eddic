@@ -6,26 +6,66 @@
 //=======================================================================
 
 #include "parser/ValueGrammar.hpp"
+#include "lexer/adapttokens.hpp"
 
 using namespace eddic;
 
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
-    value = additiveValue.alias();
+    /* Match operators into symbols */
+    //TODO Find a way to avoid duplication of these things
+    additive_op.add
+        ("+", ast::Operator::ADD)
+        ("-", ast::Operator::SUB)
+        ;
+
+    multiplicative_op.add
+        ("/", ast::Operator::DIV)
+        ("*", ast::Operator::MUL)
+        ("%", ast::Operator::MOD)
+        ;
+    
+    relational_op.add
+        (">=", ast::Operator::GREATER_EQUALS) 
+        (">", ast::Operator::GREATER) 
+        ("<=", ast::Operator::LESS_EQUALS) 
+        ("<", ast::Operator::LESS) 
+        ("!=", ast::Operator::NOT_EQUALS) 
+        ("==", ast::Operator::EQUALS) 
+        ;
+    
+    logical_and_op.add
+        ("&&", ast::Operator::AND) 
+        ;
+    
+    logical_or_op.add
+        ("||", ast::Operator::OR) 
+        ;
+
+    //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
+
+    /* Define values */ 
+
+    value = logicalOrValue.alias();
+    
+    logicalOrValue %=
+            logicalAndValue
+        >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
+    
+    logicalAndValue %=
+            relationalValue
+        >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
+   
+    relationalValue %=
+            additiveValue
+        >>  *(qi::adapttokens[relational_op] > additiveValue);  
     
     additiveValue %=
             multiplicativeValue
-        >>  *(
-                (lexer.addition > multiplicativeValue)
-            |   (lexer.subtraction > multiplicativeValue)
-            );
+        >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
    
     multiplicativeValue %=
             unaryValue
-        >>  *(
-                (lexer.multiplication > unaryValue)
-            |   (lexer.division > unaryValue)
-            |   (lexer.modulo > unaryValue)
-            );
+        >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
     
     unaryValue %= 
             negatedValue
@@ -45,7 +85,17 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         |   functionCall
         |   arrayValue
         |   variable 
+        |   true_
+        |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+    
+    true_ %= 
+            qi::eps
+        >>  lexer.true_;
+    
+    false_ %= 
+            qi::eps
+        >>  lexer.false_;
 
     integer %= 
             qi::eps 

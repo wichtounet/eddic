@@ -21,8 +21,8 @@
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
-
 #include "Labels.hpp"
+#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -494,6 +494,50 @@ struct StatementCompiler : public boost::static_visitor<> {
         writer.stream() << "leave" << std::endl;
         writer.stream() << "ret" << std::endl;
     }
+
+    std::string toSubRegister(const std::string& reg){
+        if(reg == "%eax"){
+            return "%ah";
+        } else if(reg == "%ebx"){
+            return "%bh";
+        } else if(reg == "%ecx"){
+            return "%ch";
+        } else if(reg == "%edx"){
+            return "%dh";
+        } else if(reg == "%edi"){
+            return "%di";
+        } else if(reg == "%esi"){
+            return "%si";
+        } else {
+            assert(false);
+        }
+    }
+
+    void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
+        //We use EAX in order to avoid esi and edi that have not 8 byte version
+        spills(Register::EAX);
+
+        Register reg = Register::EAX;
+
+        registers.setLocation(quadruple->result, reg);
+        
+        writer.stream() << "xorl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+
+        //The first argument is not important, it can be immediate, but the second must be a register
+        if(auto* ptr = boost::get<int>(&quadruple->arg1)){
+            auto reg = getReg();
+
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+
+            writer.stream() << "cmpl " << arg(*quadruple->arg2) << ", " << regToString(reg) << std::endl;
+
+            registers.release(reg);
+        } else {
+            writer.stream() << "cmpl " << arg(*quadruple->arg2) << ", " << arg(quadruple->arg1) << std::endl;
+        }
+
+        writer.stream() << set << " " << toSubRegister(regToString(reg)) << std::endl;
+    }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         current = quadruple;
@@ -767,6 +811,24 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     break;
                 }
+                case tac::Operator::GREATER:
+                    setIfCc("setg", quadruple);
+                    break;
+                case tac::Operator::GREATER_EQUALS:
+                    setIfCc("setge", quadruple);
+                    break;
+                case tac::Operator::LESS:
+                    setIfCc("setl", quadruple);
+                    break;
+                case tac::Operator::LESS_EQUALS:
+                    setIfCc("setle", quadruple);
+                    break;
+                case tac::Operator::EQUALS:
+                    setIfCc("sete", quadruple);
+                    break;
+                case tac::Operator::NOT_EQUALS:
+                    setIfCc("setne", quadruple);
+                    break;
                 case tac::Operator::DOT:
                 {
                    assert(boost::get<std::shared_ptr<Variable>>(&quadruple->arg1));
@@ -844,47 +906,112 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
     
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        current = ifFalse;
-
+    template<typename T>
+    void compareBinary(T& if_){
         //The first argument is not important, it can be immediate, but the second must be a register
-        if(auto* ptr = boost::get<int>(&ifFalse->arg1)){
+        if(auto* ptr = boost::get<int>(&if_->arg1)){
             auto reg = getReg();
 
             writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
-            
+
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << regToString(reg) << std::endl;
+            writer.stream() << "cmpl " << arg(*if_->arg2) << ", " << regToString(reg) << std::endl;
 
             registers.release(reg);
         } else {
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmpl " << arg(ifFalse->arg2) << ", " << arg(ifFalse->arg1) << std::endl;
+            writer.stream() << "cmpl " << arg(*if_->arg2) << ", " << arg(if_->arg1) << std::endl;
         }
+    }
 
-        switch(ifFalse->op){
-            case tac::BinaryOperator::EQUALS:
-                writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::NOT_EQUALS:
-                writer.stream() << "je " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::LESS:
-                writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::LESS_EQUALS:
-                writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::GREATER:
-                writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
-                break;
-            case tac::BinaryOperator::GREATER_EQUALS:
-                writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
-                break;
+    template<typename T>
+    void compareUnary(T& if_){
+        if(auto* ptr = boost::get<int>(&if_->arg1)){
+            auto reg = getReg();
+
+            writer.stream() << "movl $" << *ptr << ", " << regToString(reg) << std::endl;
+
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "orl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+
+            registers.release(reg);
+        } else {
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "orl " << arg(if_->arg1) << ", " << arg(if_->arg1) << std::endl;
+        }
+    }
+    
+    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        current = ifFalse;
+
+        if(ifFalse->op){
+            compareBinary(ifFalse);
+
+            switch(*ifFalse->op){
+                case tac::BinaryOperator::EQUALS:
+                    writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::NOT_EQUALS:
+                    writer.stream() << "je " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS:
+                    writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS_EQUALS:
+                    writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER:
+                    writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER_EQUALS:
+                    writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
+                    break;
+            }
+        } else {
+            compareUnary(ifFalse);
+
+            writer.stream() << "jz " << labels[ifFalse->block] << std::endl;
+        }
+    }
+
+    void operator()(std::shared_ptr<tac::If>& if_){
+        current = if_;
+
+        if(if_->op){
+            compareBinary(if_);
+
+            switch(*if_->op){
+                case tac::BinaryOperator::EQUALS:
+                    writer.stream() << "je " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::NOT_EQUALS:
+                    writer.stream() << "jne " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS:
+                    writer.stream() << "jl " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::LESS_EQUALS:
+                    writer.stream() << "jle " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER:
+                    writer.stream() << "jg " << labels[if_->block] << std::endl;
+                    break;
+                case tac::BinaryOperator::GREATER_EQUALS:
+                    writer.stream() << "jge " << labels[if_->block] << std::endl;
+                    break;
+            }
+        } else {
+            compareUnary(if_);
+
+            writer.stream() << "jnz " << labels[if_->block] << std::endl;
         }
     }
 
@@ -915,7 +1042,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, 
             compiler.setNext(block->statements[i+1]);
         }
         
-        boost::apply_visitor(compiler, statement);
+        visit(compiler, statement);
     }
 
     //If the basic block has not been ended

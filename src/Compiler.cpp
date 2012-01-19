@@ -45,6 +45,7 @@
 #include "tac/Program.hpp"
 #include "tac/Compiler.hpp"
 #include "tac/BasicBlockExtractor.hpp"
+#include "tac/TemporaryAllocator.hpp"
 #include "tac/LivenessAnalyzer.hpp"
 #include "tac/Optimizer.hpp"
 #include "tac/Printer.hpp"
@@ -141,6 +142,10 @@ int Compiler::compileOnly(const std::string& file) {
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
+
+            //Allocate storage for the temporaries that need to be stored
+            tac::TemporaryAllocator allocator;
+            allocator.allocate(tacProgram);
 
             tac::Optimizer optimizer;
             optimizer.optimize(tacProgram);

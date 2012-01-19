@@ -95,6 +95,12 @@ void DebugVisitor::operator()(ast::Swap&) const {
 
 void DebugVisitor::operator()(ast::If& if_) const {
     std::cout << indent() << "If" << std::endl; 
+    std::cout << indent() << "Condition:" << std::endl;
+    ++level;
+    visit(*this, if_.Content->condition);    
+    --level;
+
+    std::cout << indent() << "Body:" << std::endl;
     ++level;
     visit_each(*this, if_.Content->instructions);    
     --level;
@@ -154,6 +160,14 @@ void DebugVisitor::operator()(ast::Integer& integer) const {
     std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
 }
 
+void DebugVisitor::operator()(ast::True&) const {
+    std::cout << indent() << "true" << std::endl; 
+}
+
+void DebugVisitor::operator()(ast::False&) const {
+    std::cout << indent() << "false" << std::endl; 
+}
+
 void DebugVisitor::operator()(ast::VariableValue&) const {
     std::cout << indent() << "Variable" << std::endl; 
 }
@@ -167,7 +181,7 @@ void DebugVisitor::operator()(ast::ComposedValue& value) const {
     ++level;
     visit(*this, value.Content->first);
     for(auto& operation : value.Content->operations){
-        std::cout << indent() << operation.get<0>() << std::endl;
+        std::cout << indent() << (int) operation.get<0>() << std::endl;
         visit(*this, operation.get<1>());
     }
     --level;

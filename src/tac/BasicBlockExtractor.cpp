@@ -37,7 +37,8 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
                     nextIsLeader = false;
                 }
 
-                if(boost::get<std::shared_ptr<tac::IfFalse>>(&statement) || boost::get<std::shared_ptr<tac::Return>>(&statement) || boost::get<std::shared_ptr<tac::Goto>>(&statement)){
+                if(boost::get<std::shared_ptr<tac::IfFalse>>(&statement) || boost::get<std::shared_ptr<tac::If>>(&statement) || 
+                        boost::get<std::shared_ptr<tac::Return>>(&statement) || boost::get<std::shared_ptr<tac::Goto>>(&statement)){
                     nextIsLeader = true;
                 } 
 
@@ -49,6 +50,8 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
                 if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                   (*ptr)->block = labels[(*ptr)->label];
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];
                 } else if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];

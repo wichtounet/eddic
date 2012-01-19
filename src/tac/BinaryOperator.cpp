@@ -11,18 +11,18 @@
 
 using namespace eddic;
 
-tac::BinaryOperator eddic::tac::toBinaryOperator(const std::string& op){
-    if(op == "!="){
+tac::BinaryOperator eddic::tac::toBinaryOperator(ast::Operator op){
+    if(op == ast::Operator::NOT_EQUALS){
         return tac::BinaryOperator::NOT_EQUALS;
-    } else if(op == "=="){
+    } else if(op == ast::Operator::EQUALS){
         return tac::BinaryOperator::EQUALS;
-    } else if(op == ">="){
+    } else if(op == ast::Operator::GREATER_EQUALS){
         return tac::BinaryOperator::GREATER_EQUALS;
-    } else if(op == ">"){
+    } else if(op == ast::Operator::GREATER){
         return tac::BinaryOperator::GREATER;
-    } else if(op == "<="){
+    } else if(op == ast::Operator::LESS_EQUALS){
         return tac::BinaryOperator::LESS_EQUALS;
-    } else if(op == "<"){
+    } else if(op == ast::Operator::LESS){
         return tac::BinaryOperator::LESS;
     }
 

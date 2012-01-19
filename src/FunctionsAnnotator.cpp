@@ -6,20 +6,17 @@
 //=======================================================================
 
 #include "FunctionsAnnotator.hpp"
-
-#include "ast/SourceFile.hpp"
 #include "FunctionTable.hpp"
-
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
 #include "TypeTransformer.hpp"
-
 #include "mangling.hpp"
-
 #include "Options.hpp"
 #include "Compiler.hpp"
+
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -40,7 +37,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = boost::apply_visitor(TypeTransformer(), param.parameterType);
+                Type paramType = visit(TypeTransformer(), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             

@@ -38,3 +38,7 @@ void Variable::addReference(){
 int Variable::referenceCount() const {
     return references;
 }
+
+void Variable::setPosition(Position position){
+    m_position = position;
+}

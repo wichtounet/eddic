@@ -16,6 +16,8 @@ namespace ast {
 
 struct Integer;
 struct Litteral;
+struct True;
+struct False;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;

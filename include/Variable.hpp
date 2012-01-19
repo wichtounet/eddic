@@ -62,6 +62,8 @@ class Variable {
 
         void addReference();
         int referenceCount() const ;
+
+        void setPosition(Position position);
 };
 
 } //end of eddic

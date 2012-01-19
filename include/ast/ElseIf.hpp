@@ -12,7 +12,7 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Condition.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -23,7 +23,7 @@ namespace ast {
  * \brief The AST node for an else if construction.
  */
 struct ElseIf {
-    Condition condition;
+    Value condition;
     std::vector<Instruction> instructions;
 };
 
@@ -34,7 +34,7 @@ struct ElseIf {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ElseIf, 
-    (eddic::ast::Condition, condition)
+    (eddic::ast::Value, condition)
     (std::vector<eddic::ast::Instruction>, instructions)
 )
 

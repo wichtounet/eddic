@@ -5,18 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_BINARY_OPERATOR_H
-#define TAC_BINARY_OPERATOR_H
-
-#include <string>
-
-#include "ast/Operator.hpp"
+#ifndef AST_OPERATOR_H
+#define AST_OPERATOR_H
 
 namespace eddic {
 
-namespace tac {
+namespace ast {
 
-enum class BinaryOperator : unsigned int {
+enum class Operator : unsigned int {
+    ADD,
+    SUB,
+    DIV,
+    MUL,
+    MOD,
+
+    AND,
+    OR,
+
     EQUALS,
     NOT_EQUALS,
     LESS,
@@ -25,9 +30,7 @@ enum class BinaryOperator : unsigned int {
     GREATER_EQUALS
 };
 
-BinaryOperator toBinaryOperator(ast::Operator op);
-
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

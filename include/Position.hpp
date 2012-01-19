@@ -30,9 +30,9 @@ enum class PositionType : unsigned int {
  */
 class Position {
     private:
-        const PositionType m_type;
-        const int m_offset;
-        const std::string m_name;
+        PositionType m_type;
+        int m_offset;
+        std::string m_name;
 
     public:
         Position(PositionType type);
