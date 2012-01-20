@@ -537,6 +537,15 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         writer.stream() << set << " " << toSubRegister(regToString(reg)) << std::endl;
+        
+        static int ctr = 0;
+        ++ctr;
+
+        //TODO In the future avoid that to allow any value other than 0 as true
+        writer.stream() << "orl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+        writer.stream() << "jz " << "intern" << ctr << std::endl;
+        writer.stream() << "movl $1, " << regToString(reg) << std::endl;
+        writer.stream() << "intern" << ctr << ":" << std::endl;
     }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
@@ -1174,6 +1183,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
+    writer.stream() << "_F5printB:" << std::endl;
     writer.stream() << "_F5printI:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
@@ -1198,6 +1208,7 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     /* println version */
     
     writer.stream() << std::endl;
+    writer.stream() << "_F7printlnB:" << std::endl;
     writer.stream() << "_F7printlnI:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
@@ -1208,9 +1219,9 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "pushl %ecx" << std::endl;
     writer.stream() << "pushl %edx" << std::endl;
 
-    writer.stream() << "call _F7println" << std::endl;
-
     addPrintIntegerBody(writer);
+
+    writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
     writer.stream() << "popl %edx" << std::endl;

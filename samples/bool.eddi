@@ -62,4 +62,20 @@ void main(){
     if(h){
         println("Twelve");
     }
+
+    println(h);
+
+    foo(true);
+    foo(h);
+
+    println(bar(0));
+    println(bar(1));
+}
+
+void foo(bool a){
+    println(a);
+}
+
+bool bar(int a){
+    return a == 1;
 }
