@@ -64,4 +64,11 @@ void main(){
     }
 
     println(h);
+
+    foo(true);
+    foo(h);
+}
+
+void foo(bool a){
+    println(a);
 }
