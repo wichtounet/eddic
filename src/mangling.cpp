@@ -18,6 +18,8 @@ std::string eddic::mangle(Type type){
         return type.isArray() ? "AI" : "I";
     } else if(type.base() == BaseType::STRING){
         return type.isArray() ? "AS" : "S";
+    } else if(type.base() == BaseType::BOOL){
+        return type.isArray() ? "AB" : "B";
     }
 
     assert(false); //Type not handled
