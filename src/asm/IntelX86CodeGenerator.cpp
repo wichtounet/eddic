@@ -1174,6 +1174,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
+    writer.stream() << "_F5printB:" << std::endl;
     writer.stream() << "_F5printI:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
@@ -1198,6 +1199,7 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     /* println version */
     
     writer.stream() << std::endl;
+    writer.stream() << "_F7printlnB:" << std::endl;
     writer.stream() << "_F7printlnI:" << std::endl;
     writer.stream() << "pushl %ebp" << std::endl;
     writer.stream() << "movl %esp, %ebp" << std::endl;
@@ -1208,9 +1210,9 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "pushl %ecx" << std::endl;
     writer.stream() << "pushl %edx" << std::endl;
 
-    writer.stream() << "call _F7println" << std::endl;
-
     addPrintIntegerBody(writer);
+
+    writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
     writer.stream() << "popl %edx" << std::endl;
