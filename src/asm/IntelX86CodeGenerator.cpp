@@ -537,6 +537,15 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         writer.stream() << set << " " << toSubRegister(regToString(reg)) << std::endl;
+        
+        static int ctr = 0;
+        ++ctr;
+
+        //TODO In the future avoid that to allow any value other than 0 as true
+        writer.stream() << "orl " << regToString(reg) << ", " << regToString(reg) << std::endl;
+        writer.stream() << "jz " << "intern" << ctr << std::endl;
+        writer.stream() << "movl $1, " << regToString(reg) << std::endl;
+        writer.stream() << "intern" << ctr << ":" << std::endl;
     }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
