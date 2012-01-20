@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "parser/EDDIGrammar.hpp"
+#include "lexer/adapttokens.hpp"
 
 using namespace eddic;
 
@@ -13,6 +14,14 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
         type(lexer){
+    
+    suffix_op.add
+        ("++", ast::Operator::INC)
+        ("--", ast::Operator::DEC)
+    
+    prefix_op.add
+        ("++", ast::Operator::INC)
+        ("--", ast::Operator::DEC)
    
     const_ %=
             (lexer.const_ > boost::spirit::attr(true))
@@ -111,6 +120,16 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.assign 
         >>  value;
 
+    prefixOperation %=
+            qi::adapttokens[prefix_op]
+        >>  lexer.word
+        >>  lexer.stop;            
+
+    suffixOperation %=
+            lexer.word
+        >>  qi::adapttokens[suffix_op]
+        >>  lexer.stop;            
+
     return_ %=
             lexer.return_
         >>  value
@@ -150,6 +169,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         |   (declaration >> lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (arrayAssignment > lexer.stop)
+        |   suffixOperation
+        |   prefixOperation
         |   if_
         |   for_
         |   while_

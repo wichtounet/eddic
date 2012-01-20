@@ -58,6 +58,9 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
 
     qi::rule<lexer::Iterator, bool()> const_;
 
+    qi::symbols<char, ast::Operator> suffix_op;
+    qi::symbols<char, ast::Operator> prefix_op;
+    
     ValueGrammar value;
     TypeGrammar type;
 };
