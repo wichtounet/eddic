@@ -62,4 +62,6 @@ void main(){
     if(h){
         println("Twelve");
     }
+
+    println(h);
 }
