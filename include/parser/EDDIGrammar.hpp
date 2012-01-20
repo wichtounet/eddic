@@ -36,6 +36,8 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
 
     qi::rule<lexer::Iterator, ast::Instruction()> instruction;
     qi::rule<lexer::Iterator, ast::Instruction()> repeatable_instruction;
+    qi::rule<lexer::Iterator, ast::PrefixOperation> prefix_operation;
+    qi::rule<lexer::Iterator, ast::SuffixOperation> suffix_operation;
     qi::rule<lexer::Iterator, ast::Swap()> swap;
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
