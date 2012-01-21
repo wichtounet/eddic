@@ -29,6 +29,8 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::ArrayValue& variable) const;
     bool operator()(ast::ComposedValue& value) const; 
     bool operator()(ast::FunctionCall& value) const; 
+    bool operator()(ast::SuffixOperation& value) const; 
+    bool operator()(ast::PrefixOperation& value) const; 
 };
 
 } //end of eddic
