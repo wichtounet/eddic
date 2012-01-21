@@ -34,7 +34,9 @@ typedef boost::variant<
             True,
             False,
             ArrayValue,
-            FunctionCall
+            FunctionCall,
+            SuffixOperation,
+            PrefixOperation
         > Value;
 
 } //end of ast

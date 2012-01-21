@@ -93,6 +93,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     primaryValue = 
             constant 
         |   functionCall
+        |   prefix_operation
+        |   suffix_operation
         |   arrayValue
         |   variable 
         |   true_
