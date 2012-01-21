@@ -678,6 +678,26 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
+        void operator()(ast::SuffixOperation& operation){
+            auto var = operation.Content->variable;
+
+            if(operation.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            } else if(operation.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            }
+        }
+        
+        void operator()(ast::PrefixOperation& operation){
+            auto var = operation.Content->variable;
+
+            if(operation.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            } else if(operation.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            }
+        }
+
         void operator()(ast::While& while_){
             std::string startLabel = newLabel();
             std::string endLabel = newLabel();
