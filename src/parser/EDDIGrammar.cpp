@@ -167,10 +167,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
             (value.functionCall > lexer.stop)
         |   (assignment > lexer.stop)
         |   (declaration > lexer.stop)
-        |   (arrayDeclaration > lexer.stop)
-        |   (arrayAssignment > lexer.stop)
         |   (suffix_operation > lexer.stop)
         |   (prefix_operation > lexer.stop)
+        |   (arrayDeclaration > lexer.stop)
+        |   (arrayAssignment > lexer.stop)
         |   if_
         |   for_
         |   while_
