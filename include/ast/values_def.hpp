@@ -37,6 +37,12 @@ typedef Deferred<ASTPlus> Plus;
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
 
+struct ASTSuffixOperation;
+typedef Deferred<ASTSuffixOperation> SuffixOperation;
+
+struct ASTPrefixOperation;
+typedef Deferred<ASTPrefixOperation> PrefixOperation;
+
 } //end of ast
 
 } //end of eddic
