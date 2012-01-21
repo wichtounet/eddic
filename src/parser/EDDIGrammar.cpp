@@ -124,13 +124,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
 
     prefix_operation %=
             qi::adapttokens[prefix_op]
-        >>  lexer.word
-        >>  lexer.stop;            
+        >>  lexer.word;
 
     suffix_operation %=
             lexer.word
-        >>  qi::adapttokens[suffix_op]
-        >>  lexer.stop;            
+        >>  qi::adapttokens[suffix_op];
 
     return_ %=
             lexer.return_
@@ -168,11 +166,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     instruction %= 
             (value.functionCall > lexer.stop)
         |   (assignment > lexer.stop)
-        |   (declaration >> lexer.stop)
-        |   (arrayDeclaration >> lexer.stop)
+        |   (declaration > lexer.stop)
+        |   (arrayDeclaration > lexer.stop)
         |   (arrayAssignment > lexer.stop)
-        |   suffix_operation
-        |   prefix_operation
+        |   (suffix_operation > lexer.stop)
+        |   (prefix_operation > lexer.stop)
         |   if_
         |   for_
         |   while_
