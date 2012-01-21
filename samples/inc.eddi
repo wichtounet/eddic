@@ -1,14 +1,17 @@
 void main(){
     int a = 0;
-
     println(a);
 
     a++;
-
     println(a);
 
     ++a;
+    println(a);
 
+    --a;
+    println(a);
+
+    a--;
     println(a);
 }
 
