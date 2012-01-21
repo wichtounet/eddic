@@ -40,6 +40,16 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     logical_or_op.add
         ("||", ast::Operator::OR) 
         ;
+    
+    suffix_op.add
+        ("++", ast::Operator::INC)
+        ("--", ast::Operator::DEC)
+        ;
+    
+    prefix_op.add
+        ("++", ast::Operator::INC)
+        ("--", ast::Operator::DEC)
+        ;
 
     //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
 
@@ -124,4 +134,13 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
+    
+    prefix_operation %=
+            qi::adapttokens[prefix_op]
+        >>  lexer.word;
+
+    suffix_operation %=
+            lexer.word
+        >>  qi::adapttokens[suffix_op];
+
 }
