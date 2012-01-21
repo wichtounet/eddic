@@ -91,6 +91,22 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::SuffixOperation& operation){
+        auto var = operation.Content->variable;
+        
+        if(var->type().isConst()){
+            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it");
+        }
+    }
+
+    void operator()(ast::PrefixOperation& operation){
+        auto var = operation.Content->variable;
+        
+        if(var->type().isConst()){
+            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it");
+        }
+    }
+
     void operator()(ast::Return& return_){
         visit(*this, return_.Content->value);
        
