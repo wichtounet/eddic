@@ -18,10 +18,12 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     suffix_op.add
         ("++", ast::Operator::INC)
         ("--", ast::Operator::DEC)
+        ;
     
     prefix_op.add
         ("++", ast::Operator::INC)
         ("--", ast::Operator::DEC)
+        ;
    
     const_ %=
             (lexer.const_ > boost::spirit::attr(true))
@@ -120,12 +122,12 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.assign 
         >>  value;
 
-    prefixOperation %=
+    prefix_operation %=
             qi::adapttokens[prefix_op]
         >>  lexer.word
         >>  lexer.stop;            
 
-    suffixOperation %=
+    suffix_operation %=
             lexer.word
         >>  qi::adapttokens[suffix_op]
         >>  lexer.stop;            
@@ -169,8 +171,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         |   (declaration >> lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (arrayAssignment > lexer.stop)
-        |   suffixOperation
-        |   prefixOperation
+        |   suffix_operation
+        |   prefix_operation
         |   if_
         |   for_
         |   while_
