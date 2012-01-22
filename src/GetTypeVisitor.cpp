@@ -19,6 +19,8 @@ ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Litteral, Type(BaseType::STRING, 
 ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Integer, Type(BaseType::INT, false))
 ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Minus, Type(BaseType::INT, false))
 ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Plus, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::SuffixOperation, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::PrefixOperation, Type(BaseType::INT, false))
 
 ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::False, Type(BaseType::BOOL, false))
 ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::True, Type(BaseType::BOOL, false))

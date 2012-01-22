@@ -44,12 +44,16 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::FunctionCall()> functionCall;
     qi::rule<lexer::Iterator, ast::True()> true_;
     qi::rule<lexer::Iterator, ast::False()> false_;
+    qi::rule<lexer::Iterator, ast::PrefixOperation()> prefix_operation;
+    qi::rule<lexer::Iterator, ast::SuffixOperation()> suffix_operation;
 
     qi::symbols<char, ast::Operator> multiplicative_op;
     qi::symbols<char, ast::Operator> additive_op;
     qi::symbols<char, ast::Operator> relational_op;
     qi::symbols<char, ast::Operator> logical_and_op;
     qi::symbols<char, ast::Operator> logical_or_op;
+    qi::symbols<char, ast::Operator> suffix_op;
+    qi::symbols<char, ast::Operator> prefix_op;
 };
 
 } //end of parser

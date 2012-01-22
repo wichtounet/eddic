@@ -22,6 +22,9 @@ enum class Operator : unsigned int {
     AND,
     OR,
 
+    DEC,
+    INC,
+
     EQUALS,
     NOT_EQUALS,
     LESS,

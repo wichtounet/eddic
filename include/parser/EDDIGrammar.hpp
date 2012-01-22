@@ -55,7 +55,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::Import()> import;
 
     qi::rule<lexer::Iterator, bool()> const_;
-
+    
     ValueGrammar value;
     TypeGrammar type;
 };

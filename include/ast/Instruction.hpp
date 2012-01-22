@@ -18,6 +18,8 @@
 #include "ast/Return.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
+#include "ast/SuffixOperation.hpp"
+#include "ast/PrefixOperation.hpp"
 
 namespace eddic {
 
@@ -50,6 +52,8 @@ typedef boost::variant<
             While, 
             Foreach,
             ForeachIn, 
+            SuffixOperation,
+            PrefixOperation,
             For>
         Instruction;
 

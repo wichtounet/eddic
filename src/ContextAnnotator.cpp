@@ -152,6 +152,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
         }
+        
+        void operator()(ast::SuffixOperation& operation){
+            operation.Content->context = currentContext;
+        }
+        
+        void operator()(ast::PrefixOperation& operation){
+            operation.Content->context = currentContext;
+        }
 
         void operator()(ast::ComposedValue& value){
             value.Content->context = currentContext;

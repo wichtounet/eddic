@@ -128,6 +128,14 @@ void DebugVisitor::operator()(ast::ArrayDeclaration&) const {
     std::cout << indent() << "Array declaration" << std::endl; 
 }
 
+void DebugVisitor::operator()(ast::SuffixOperation& op) const {
+    std::cout << indent() << op.Content->variableName << "(suffix)" << (int)op.Content->op << std::endl; 
+}
+
+void DebugVisitor::operator()(ast::PrefixOperation& op) const {
+    std::cout << indent() << (int)op.Content->op << "(prefix)" << op.Content->variableName << std::endl; 
+}
+
 void DebugVisitor::operator()(ast::Assignment& assign) const {
     std::cout << indent() << "Variable assignment" << std::endl; 
 

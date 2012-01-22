@@ -17,6 +17,8 @@
 #include "ast/VariableValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
+#include "ast/SuffixOperation.hpp"
+#include "ast/PrefixOperation.hpp"
 
 namespace eddic {
 
@@ -32,7 +34,9 @@ typedef boost::variant<
             True,
             False,
             ArrayValue,
-            FunctionCall
+            FunctionCall,
+            SuffixOperation,
+            PrefixOperation
         > Value;
 
 } //end of ast

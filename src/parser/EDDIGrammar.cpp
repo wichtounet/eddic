@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "parser/EDDIGrammar.hpp"
+#include "lexer/adapttokens.hpp"
 
 using namespace eddic;
 
@@ -148,6 +149,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
             (value.functionCall > lexer.stop)
         |   (assignment > lexer.stop)
         |   (declaration >> lexer.stop)
+        |   (value.suffix_operation > lexer.stop)
+        |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (arrayAssignment > lexer.stop)
         |   if_

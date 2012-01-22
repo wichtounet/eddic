@@ -59,6 +59,8 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::Minus, false)
     ASSIGN(ast::Plus, false)
     ASSIGN(ast::FunctionCall, false)
+    ASSIGN(ast::SuffixOperation, false)
+    ASSIGN(ast::PrefixOperation, false)
 };
 
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
@@ -214,6 +216,34 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
 
         assert(false);
+    }
+
+    result_type operator()(ast::PrefixOperation& value) const {
+        auto var = value.Content->variable;
+
+        if(value.Content->op == ast::Operator::INC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+        } else if(value.Content->op == ast::Operator::DEC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+        }
+
+        return {var};
+    }
+
+    result_type operator()(ast::SuffixOperation& value) const {
+        auto var = value.Content->variable;
+
+        auto temp = value.Content->context->newTemporary();
+
+        function->add(std::make_shared<tac::Quadruple>(temp, var));
+
+        if(value.Content->op == ast::Operator::INC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+        } else if(value.Content->op == ast::Operator::DEC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+        }
+
+        return {temp};
     }
 
     result_type operator()(ast::ArrayValue& array) const {
@@ -675,6 +705,26 @@ class CompilerVisitor : public boost::static_visitor<> {
                 }
             } else {
                 throw SemanticalException("Variable of invalid type");
+            }
+        }
+
+        void operator()(ast::SuffixOperation& operation){
+            auto var = operation.Content->variable;
+
+            if(operation.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            } else if(operation.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            }
+        }
+        
+        void operator()(ast::PrefixOperation& operation){
+            auto var = operation.Content->variable;
+
+            if(operation.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            } else if(operation.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
             }
         }
 
