@@ -21,7 +21,7 @@ using namespace eddic;
 
 namespace {
 
-static const bool Debug = false;
+static const bool Debug = true;
 
 //Use for two pass optimization
 enum class Pass : unsigned int {
@@ -328,6 +328,9 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
             if(auto* ptr = boost::get<int>(&quadruple->arg1)){
                 constants[quadruple->result] = *ptr;
+            } else {
+                //The result is not constant at this point
+                constants.erase(quadruple->result);
             }
         } else {
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
