@@ -206,6 +206,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::Assignment& assignment) const {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
+    
+    void operator()(ast::CompoundAssignment& assignment) const {
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+    }
 
     void operator()(ast::Return& return_) const {
         return_.Content->value = visit(transformer, return_.Content->value); 
