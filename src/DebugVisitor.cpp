@@ -144,6 +144,14 @@ void DebugVisitor::operator()(ast::Assignment& assign) const {
     --level;
 }
 
+void DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
+    std::cout << indent() << "Compound variable assignment [operator = " << (int) assign.Content->op << " ]" << std::endl; 
+
+    ++level;
+    visit(*this, assign.Content->value);
+    --level;
+}
+
 void DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
 

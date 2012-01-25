@@ -76,7 +76,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    void operator()(ast::Assignment& assignment){
+    template<typename T>
+    void checkAssignment(T& assignment){
         visit(*this, assignment.Content->value);
 
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
@@ -89,6 +90,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if(var->type().isConst()){
             throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it");
         }
+    }
+
+    void operator()(ast::Assignment& assignment){
+        checkAssignment(assignment);
+    }
+    
+    void operator()(ast::CompoundAssignment& assignment){
+        checkAssignment(assignment);
     }
 
     void operator()(ast::SuffixOperation& operation){

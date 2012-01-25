@@ -67,6 +67,26 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 };
 
 struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
+    ast::Instruction operator()(ast::CompoundAssignment& compound) const {
+        ast::Assignment assignment;
+
+        assignment.Content->context = compound.Content->context;
+        assignment.Content->variableName = compound.Content->variableName;
+
+        ast::VariableValue variable;
+        variable.Content->context = compound.Content->context;
+        variable.Content->variableName = compound.Content->variableName;
+        variable.Content->var = compound.Content->context->getVariable(compound.Content->variableName);
+
+        ast::ComposedValue composed;
+        composed.Content->first = variable;
+        composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
+
+        assignment.Content->value = composed;
+
+        return assignment;
+    }
+
     ast::Instruction operator()(ast::Foreach& foreach) const {
         ast::For for_;
 
@@ -184,6 +204,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment) const {
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+    }
+    
+    void operator()(ast::CompoundAssignment& assignment) const {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
