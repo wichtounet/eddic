@@ -1,0 +1,13 @@
+void main(){
+    int a = 5;
+
+    a += 4;
+
+    println(a);
+
+    int b = 5;
+
+    b = b + 5;
+
+    println(b);
+}
