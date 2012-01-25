@@ -36,7 +36,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
             ("optimize-unused", po::bool_switch(&OptimizeUnused), "Enable the removal of unused variables and functions")
             
-            ("debug,d", "Add debugging symbols")
+            ("debug,g", "Add debugging symbols")
 
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
