@@ -47,6 +47,7 @@ typedef boost::variant<
             VariableDeclaration,
             ArrayDeclaration,
             Assignment, 
+            CompoundAssignment,
             ArrayAssignment, 
             Return,
             If, 
