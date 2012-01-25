@@ -114,6 +114,16 @@ struct VariablesVisitor : public boost::static_visitor<> {
         assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
     }
     
+    void operator()(ast::CompoundAssignment& assignment){
+        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
+            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
+        }
+
+        visit(*this, assignment.Content->value);
+
+        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
+    }
+    
     void operator()(ast::SuffixOperation& operation){
         if (!operation.Content->context->exists(operation.Content->variableName)) {
             throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared");
