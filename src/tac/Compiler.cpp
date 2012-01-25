@@ -670,7 +670,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit(AssignValueToVariable(function, assignment.Content->context->getVariable(assignment.Content->variableName)), assignment.Content->value);
         }
 
-        void operator()(ast::CompoundAssignment& assignment){
+        void operator()(ast::CompoundAssignment&){
             //There should be no more compound assignment there as they are transformed before into Assignement with composed value
             assert(false);
         }
