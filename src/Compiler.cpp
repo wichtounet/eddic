@@ -163,7 +163,7 @@ int Compiler::compileOnly(const std::string& file) {
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
                 exec("as --32 -o output.o output.asm");
-                exec("ld -m elf_i386 output.o -o " + output);
+                exec("ld -S -m elf_i386 output.o -o " + output);
 
                 //Remove temporary files
                 remove("output.asm");
