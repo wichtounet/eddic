@@ -171,7 +171,10 @@ int Compiler::compileOnly(const std::string& file) {
                 }
 
                 //Remove temporary files
-                remove("output.asm");
+                if(!options.count("keep")){
+                    remove("output.asm");
+                }
+
                 remove("output.o");
             }
         }
