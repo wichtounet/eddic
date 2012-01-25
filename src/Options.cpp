@@ -29,6 +29,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         desc.add_options()
             ("help,h", "Generate this help message")
             ("assembly,S", "Generate only the assembly")
+            ("keep,k", "Keep the assembly file")
             ("version", "Print the version of eddic")
             ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
             
