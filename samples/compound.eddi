@@ -1,13 +1,22 @@
 void main(){
-    int a = 5;
+    int a = 2;
+    int b = 3;
 
     a += 4;
-
     println(a);
 
-    int b = 5;
+    a += b;
+    println(a);
 
-    b = b + 5;
+    a -= b;
+    println(a);
 
-    println(b);
+    a *= b;
+    println(a);
+
+    a /= b;
+    println(a);
+
+    a %= b;
+    println(a);
 }
