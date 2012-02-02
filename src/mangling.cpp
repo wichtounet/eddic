@@ -96,23 +96,22 @@ std::string eddic::unmangle(std::string mangled){
     for(unsigned int i = 2 + l + digits; i < mangled.length(); ++i){
         char current = mangled[i];
 
+        bool array = false;
+        if(current == 'A'){
+            array = true;
+            current = mangled[++i];
+        }
+
         if(current == 'I'){
             function << "int";
         } else if(current == 'S'){
             function << "string";
         } else if(current == 'B'){
             function << "bool";
-        } else if(current == 'A'){
-            ++i;
+        } 
 
-            char second = mangled[i];
-            if(second == 'I'){
-                function << "int[]";
-            } else if(second == 'S'){
-                function << "string[]";
-            } else if(second == 'B'){
-                function << "bool[]";
-            }
+        if(array){
+            function << "[]";
         }
 
         if(i < mangled.length() - 1){
