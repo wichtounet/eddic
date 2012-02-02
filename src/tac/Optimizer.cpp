@@ -333,10 +333,12 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
                 constants.erase(quadruple->result);
             }
         } else {
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    quadruple->arg1 = constants[*ptr];
+            if(quadruple->arg1){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(constants.find(*ptr) != constants.end()){
+                        optimized = true;
+                        quadruple->arg1 = constants[*ptr];
+                    }
                 }
             }
 
@@ -385,28 +387,6 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         return optimizeBranch(if_);
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::Return>& return_){
-        if(return_->arg1){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    return_->arg1 = constants[*ptr];
-                }
-            }
-        }
-
-        if(return_->arg2){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    return_->arg2 = constants[*ptr];
-                }
-            }
-        }
-
-        return return_;
-    }
-
     template<typename T>
     tac::Statement operator()(T& statement){ 
         return statement;
@@ -428,8 +408,10 @@ struct RemoveAssign : public boost::static_visitor<bool> {
                     used.insert(*ptr);
                 }
             } else {
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    used.insert(*ptr);
+                if(quadruple->arg1){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                        used.insert(*ptr);
+                    }
                 }
 
                 if(quadruple->arg2){
@@ -447,10 +429,12 @@ struct RemoveAssign : public boost::static_visitor<bool> {
             }
 
             if(used.find(quadruple->result) == used.end()){
-                //The other kind of variables can be used in other basic block
-                if(quadruple->result->position().isTemporary()){
-                    optimized = true;
-                    return false;
+                if(quadruple->result){
+                    //The other kind of variables can be used in other basic block
+                    if(quadruple->result->position().isTemporary()){
+                        optimized = true;
+                        return false;
+                    }
                 }
             }
 
@@ -481,24 +465,6 @@ struct RemoveAssign : public boost::static_visitor<bool> {
     
     bool operator()(std::shared_ptr<tac::If>& if_){
         return collectUsageFromBranch(if_);
-    }
-
-    bool operator()(std::shared_ptr<tac::Return>& return_){
-        if(pass == Pass::DATA_MINING){
-            if(return_->arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
-                    used.insert(*ptr);
-                }
-            }
-
-            if(return_->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
-                    used.insert(*ptr);
-                }
-            }
-        }
-
-        return true;
     }
     
     template<typename T>

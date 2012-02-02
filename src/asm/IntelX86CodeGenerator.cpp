@@ -112,9 +112,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             return isLive((*ptr)->liveness, variable);
         } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
-            return isLive((*ptr)->liveness, variable);
-        }
+        } 
 
         assert(false); //No liveness calculations in the other cases
     }
@@ -447,52 +445,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         ended = true;
-    }
-   
-    //TODO Move the necessary calculation part into another function 
-    void operator()(std::shared_ptr<tac::Return>& return_){
-        current = return_;
-
-        //A return without args is the same as exiting from the function
-        if(return_->arg1){
-            spillsIfNecessary(Register::EAX, *return_->arg1);
-
-            bool necessary = true;
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
-                if(registers.inRegister(*ptr, Register::EAX)){
-                    necessary = false;
-                }
-            }    
-
-            if(necessary){
-                writer.stream() << "movl " << arg(*return_->arg1) << ", %eax" << std::endl;
-            }
-
-            if(return_->arg2){
-                spillsIfNecessary(Register::EBX, *return_->arg2);
-                
-                necessary = true;
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
-                    if(registers.inRegister(*ptr, Register::EBX)){
-                        necessary = false;
-                    }
-                }    
-
-                if(necessary){
-                    writer.stream() << "movl " << arg(*return_->arg2) << ", %ebx" << std::endl;
-                }
-            }
-        }
-        
-        if(function->context->size() > 0){
-            writer.stream() << "addl $" << function->context->size() << " , %esp" << std::endl;
-        }
-
-        //The basic block must be ended before the jump
-        endBasicBlock();
-
-        writer.stream() << "leave" << std::endl;
-        writer.stream() << "ret" << std::endl;
     }
 
     std::string toSubRegister(const std::string& reg){
@@ -908,6 +860,51 @@ struct StatementCompiler : public boost::static_visitor<> {
                     } else {
                         writer.stream() << "pushl " << arg(*quadruple->arg1) << std::endl;
                     }
+
+                    break;
+                }
+                case tac::Operator::RETURN:
+                {
+                    //A return without args is the same as exiting from the function
+                    if(quadruple->arg1){
+                        spillsIfNecessary(Register::EAX, *quadruple->arg1);
+
+                        bool necessary = true;
+                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                            if(registers.inRegister(*ptr, Register::EAX)){
+                                necessary = false;
+                            }
+                        }    
+
+                        if(necessary){
+                            writer.stream() << "movl " << arg(*quadruple->arg1) << ", %eax" << std::endl;
+                        }
+
+                        if(quadruple->arg2){
+                            spillsIfNecessary(Register::EBX, *quadruple->arg2);
+
+                            necessary = true;
+                            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                                if(registers.inRegister(*ptr, Register::EBX)){
+                                    necessary = false;
+                                }
+                            }    
+
+                            if(necessary){
+                                writer.stream() << "movl " << arg(*quadruple->arg2) << ", %ebx" << std::endl;
+                            }
+                        }
+                    }
+        
+                    if(function->context->size() > 0){
+                        writer.stream() << "addl $" << function->context->size() << " , %esp" << std::endl;
+                    }
+
+                    //The basic block must be ended before the jump
+                    endBasicBlock();
+
+                    writer.stream() << "leave" << std::endl;
+                    writer.stream() << "ret" << std::endl;
 
                     break;
                 }

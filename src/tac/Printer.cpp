@@ -103,6 +103,18 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << "[" << printArgument(*quadruple->arg1) << "] = " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::PARAM){
                 std::cout << "\tparam " << printArgument(*quadruple->arg1) << std::endl;
+            } else if(op == tac::Operator::RETURN){
+                std::cout << "\treturn";
+
+                if(quadruple->arg1){
+                    std::cout << " " << printArgument(*quadruple->arg1);
+                }
+
+                if(quadruple->arg2){
+                    std::cout << ", " << printArgument(*quadruple->arg2);
+                }
+
+                std::cout << std::endl;
             }
         }
     }
@@ -162,20 +174,6 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(tac::NoOp&){
         std::cout << "\tno-op" << std::endl;
-    }
-
-    void operator()(std::shared_ptr<tac::Return>& return_){
-        std::cout << "\treturn";
-
-        if(return_->arg1){
-            std::cout << " " << printArgument(*return_->arg1);
-        }
-
-        if(return_->arg2){
-            std::cout << ", " << printArgument(*return_->arg2);
-        }
-
-        std::cout << std::endl;
     }
 
     void operator()(std::shared_ptr<tac::Call>& call){

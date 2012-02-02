@@ -15,7 +15,6 @@
 #include "tac/If.hpp"
 #include "tac/Goto.hpp"
 #include "tac/Call.hpp"
-#include "tac/Return.hpp"
 #include "tac/NoOp.hpp"
 
 namespace eddic {
@@ -28,7 +27,6 @@ typedef boost::variant<
         std::shared_ptr<tac::If>,               //Jumping quadruples
         std::shared_ptr<tac::Goto>,             //Non-conditional jump
         std::shared_ptr<tac::Call>,             //Call a function
-        std::shared_ptr<tac::Return>,           //Return from function
         tac::NoOp,                              //Only used by the optimizer
         std::string                             //For labels
     > Statement;

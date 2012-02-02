@@ -77,13 +77,7 @@ void tac::TemporaryAllocator::allocate(tac::Program& program) const {
                     updateIf(usage, *ptr, block, function);
                 } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
                     updateIf(usage, *ptr, block, function);
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
-                    if((*ptr)->arg1){
-                        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg1)){
-                            updateTemporary(usage, *variablePtr, block, function);
-                        }
-                    }
-                }
+                } 
             }
         }
     }
