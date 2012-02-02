@@ -13,7 +13,6 @@
 #include "tac/Program.hpp"
 
 #include "VisitorUtils.hpp"
-
 #include "Utils.hpp"
 
 using namespace eddic;
@@ -35,7 +34,7 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
 };
 
 std::string printArgument(tac::Argument& arg){
-    return boost::apply_visitor(ArgumentToString(), arg);
+    return visit(ArgumentToString(), arg);
 }
 
 struct DebugVisitor : public boost::static_visitor<> {
@@ -66,32 +65,56 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(!quadruple->op){
-            std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << std::endl;
+            std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << std::endl;
         } else {
             tac::Operator op = *quadruple->op;
 
             if(op == tac::Operator::ADD){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " + " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " + " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::SUB){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " - " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " - " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MUL){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " * " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " * " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::DIV){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " / " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " / " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MOD){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " % " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " % " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " == " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::NOT_EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " != " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::GREATER){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " > " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::GREATER_EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " >= " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::LESS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " < " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::LESS_EQUALS){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " <= " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MINUS){
-                std::cout << "\t" << quadruple->result->name() << " = - " << printArgument(quadruple->arg1) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = - " << printArgument(*quadruple->arg1) << std::endl;
             } else if(op == tac::Operator::DOT){
-                std::cout << "\t" << quadruple->result->name() << " = (" << printArgument(quadruple->arg1) << ")" << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = (" << printArgument(*quadruple->arg1) << ")" << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::DOT_ASSIGN){
-                std::cout << "\t(" << quadruple->result->name() << ")" << printArgument(quadruple->arg1) << " = " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t(" << quadruple->result->name() << ")" << printArgument(*quadruple->arg1) << " = " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::ARRAY){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(quadruple->arg1) << " [" << printArgument(*quadruple->arg2) << "]" << std::endl;
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " [" << printArgument(*quadruple->arg2) << "]" << std::endl;
             } else if(op == tac::Operator::ARRAY_ASSIGN){
-                std::cout << "\t" << quadruple->result->name() << "[" << printArgument(quadruple->arg1) << "] = " << printArgument(*quadruple->arg2) << std::endl;
+                std::cout << "\t" << quadruple->result->name() << "[" << printArgument(*quadruple->arg1) << "] = " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::PARAM){
-                std::cout << "\tparam " << printArgument(quadruple->arg1) << std::endl;
+                std::cout << "\tparam " << printArgument(*quadruple->arg1) << std::endl;
+            } else if(op == tac::Operator::RETURN){
+                std::cout << "\treturn";
+
+                if(quadruple->arg1){
+                    std::cout << " " << printArgument(*quadruple->arg1);
+                }
+
+                if(quadruple->arg2){
+                    std::cout << ", " << printArgument(*quadruple->arg2);
+                }
+
+                std::cout << std::endl;
             }
         }
     }
@@ -106,18 +129,42 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        if(ifFalse->op == tac::BinaryOperator::EQUALS){
-            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " == " << printArgument(ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-        } else if(ifFalse->op == tac::BinaryOperator::NOT_EQUALS){
-            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " != " << printArgument(ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-        } else if(ifFalse->op == tac::BinaryOperator::LESS){
-            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " < " << printArgument(ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-        } else if(ifFalse->op == tac::BinaryOperator::LESS_EQUALS){
-            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " <= " << printArgument(ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-        } else if(ifFalse->op == tac::BinaryOperator::GREATER){
-            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " > " << printArgument(ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-        } else if(ifFalse->op == tac::BinaryOperator::GREATER_EQUALS){
-            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " >= " << printArgument(ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+        if(ifFalse->op){
+            if(*ifFalse->op == tac::BinaryOperator::EQUALS){
+                std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " == " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::NOT_EQUALS){
+                std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " != " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::LESS){
+                std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " < " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::LESS_EQUALS){
+                std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " <= " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::GREATER){
+                std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " > " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::GREATER_EQUALS){
+                std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " >= " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            }
+        } else {
+            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
+        }
+    }
+
+    void operator()(std::shared_ptr<tac::If>& ifFalse){
+        if(ifFalse->op){
+            if(*ifFalse->op == tac::BinaryOperator::EQUALS){
+                std::cout << "\tif " << printArgument(ifFalse->arg1) << " == " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::NOT_EQUALS){
+                std::cout << "\tif " << printArgument(ifFalse->arg1) << " != " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::LESS){
+                std::cout << "\tif " << printArgument(ifFalse->arg1) << " < " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::LESS_EQUALS){
+                std::cout << "\tif " << printArgument(ifFalse->arg1) << " <= " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::GREATER){
+                std::cout << "\tif " << printArgument(ifFalse->arg1) << " > " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            } else if(*ifFalse->op == tac::BinaryOperator::GREATER_EQUALS){
+                std::cout << "\tif " << printArgument(ifFalse->arg1) << " >= " << printArgument(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
+            }
+        } else {
+            std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
         }
     }
 
@@ -127,20 +174,6 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(tac::NoOp&){
         std::cout << "\tno-op" << std::endl;
-    }
-
-    void operator()(std::shared_ptr<tac::Return>& return_){
-        std::cout << "\treturn";
-
-        if(return_->arg1){
-            std::cout << " " << printArgument(*return_->arg1);
-        }
-
-        if(return_->arg2){
-            std::cout << ", " << printArgument(*return_->arg2);
-        }
-
-        std::cout << std::endl;
     }
 
     void operator()(std::shared_ptr<tac::Call>& call){

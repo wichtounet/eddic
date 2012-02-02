@@ -13,7 +13,6 @@
 #include "ast/SourceFile.hpp"
 
 #include "parser/ValueGrammar.hpp"
-#include "parser/BooleanGrammar.hpp"
 #include "parser/TypeGrammar.hpp"
 
 namespace qi = boost::spirit::qi;
@@ -41,6 +40,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
     qi::rule<lexer::Iterator, ast::Assignment()> assignment;
+    qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
     qi::rule<lexer::Iterator, ast::Return()> return_;
     qi::rule<lexer::Iterator, ast::ArrayAssignment()> arrayAssignment;
     qi::rule<lexer::Iterator, ast::While()> while_;
@@ -56,9 +56,10 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::Import()> import;
 
     qi::rule<lexer::Iterator, bool()> const_;
-
+    
+    qi::symbols<char, ast::Operator> compound_op;
+    
     ValueGrammar value;
-    BooleanGrammar condition;
     TypeGrammar type;
 };
 

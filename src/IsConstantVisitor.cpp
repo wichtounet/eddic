@@ -5,47 +5,40 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/apply_visitor.hpp>
-
 #include "Variable.hpp"
 #include "IsConstantVisitor.hpp"
+#include "VisitorUtils.hpp"
 
 #include "ast/Value.hpp"
 
 using namespace eddic;
 
-bool IsConstantVisitor::operator()(ast::Litteral&) const {
-    return true;
-}
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::Litteral, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::Integer, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::True, true)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::False, true)
 
-bool IsConstantVisitor::operator()(ast::Integer&) const {
-    return true;
-}
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::ArrayValue, false)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::FunctionCall, false)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::SuffixOperation, false)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::PrefixOperation, false)
 
 bool IsConstantVisitor::operator()(ast::Minus& value) const {
-    return boost::apply_visitor(*this, value.Content->value);
+    return visit(*this, value.Content->value);
 }
 
 bool IsConstantVisitor::operator()(ast::Plus& value) const {
-    return boost::apply_visitor(*this, value.Content->value);
+    return visit(*this, value.Content->value);
 }
 
 bool IsConstantVisitor::operator()(ast::VariableValue& variable) const {
     return variable.Content->var->type().isConst();
 }
 
-bool IsConstantVisitor::operator()(ast::ArrayValue&) const {
-    return false;
-}
-
-bool IsConstantVisitor::operator()(ast::FunctionCall&) const {
-    return false;
-}
-
 bool IsConstantVisitor::operator()(ast::ComposedValue& value) const {
-    if(boost::apply_visitor(*this, value.Content->first)){
+    if(visit(*this, value.Content->first)){
         for(auto& op : value.Content->operations){
-            if(!boost::apply_visitor(*this, op.get<1>())){
+            if(!visit(*this, op.get<1>())){
                 return false;
             }
         }

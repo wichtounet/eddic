@@ -6,13 +6,11 @@
 //=======================================================================
 
 #include <algorithm>
-
 #include <memory>
+
 #include <boost/variant/variant.hpp>
 
 #include "VariablesAnnotator.hpp"
-
-#include "ast/SourceFile.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -31,6 +29,8 @@
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
+#include "ast/SourceFile.hpp"
+
 using namespace eddic;
 
 struct VariablesVisitor : public boost::static_visitor<> {
@@ -43,7 +43,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = boost::apply_visitor(TypeTransformer(), parameter.parameterType);
+            Type type = visit(TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -56,7 +56,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
+        if(!visit(IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
@@ -113,6 +113,34 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
     }
+    
+    void operator()(ast::CompoundAssignment& assignment){
+        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
+            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
+        }
+
+        visit(*this, assignment.Content->value);
+
+        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
+    }
+    
+    void operator()(ast::SuffixOperation& operation){
+        if (!operation.Content->context->exists(operation.Content->variableName)) {
+            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared");
+        }
+
+        operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
+        operation.Content->variable->addReference();
+    }
+    
+    void operator()(ast::PrefixOperation& operation){
+        if (!operation.Content->context->exists(operation.Content->variableName)) {
+            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared");
+        }
+
+        operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
+        operation.Content->variable->addReference();
+    }
 
     void operator()(ast::Return& return_){
         visit(*this, return_.Content->value);
@@ -140,7 +168,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         Type type(baseType, declaration.Content->const_);
 
         if(type.isConst()){
-            if(!boost::apply_visitor(IsConstantVisitor(), *declaration.Content->value)){
+            if(!visit(IsConstantVisitor(), *declaration.Content->value)){
                 throw SemanticalException("The value must be constant");
             }
             
@@ -204,7 +232,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
+            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
     }
 
     void operator()(ast::Plus& value){

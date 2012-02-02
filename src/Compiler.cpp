@@ -45,6 +45,7 @@
 #include "tac/Program.hpp"
 #include "tac/Compiler.hpp"
 #include "tac/BasicBlockExtractor.hpp"
+#include "tac/TemporaryAllocator.hpp"
 #include "tac/LivenessAnalyzer.hpp"
 #include "tac/Optimizer.hpp"
 #include "tac/Printer.hpp"
@@ -142,6 +143,10 @@ int Compiler::compileOnly(const std::string& file) {
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
 
+            //Allocate storage for the temporaries that need to be stored
+            tac::TemporaryAllocator allocator;
+            allocator.allocate(tacProgram);
+
             tac::Optimizer optimizer;
             optimizer.optimize(tacProgram);
 
@@ -157,11 +162,19 @@ int Compiler::compileOnly(const std::string& file) {
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
-                exec("as --32 -o output.o output.asm");
-                exec("ld -m elf_i386 output.o -o " + output);
+                if(options.count("debug")){
+                    exec("as -g --32 -o output.o output.asm");
+                    exec("ld -m elf_i386 output.o -o " + output);
+                } else {
+                    exec("as --32 -o output.o output.asm");
+                    exec("ld -S -m elf_i386 output.o -o " + output);
+                }
 
                 //Remove temporary files
-                remove("output.asm");
+                if(!options.count("keep")){
+                    remove("output.asm");
+                }
+
                 remove("output.o");
             }
         }

@@ -6,14 +6,22 @@
 //=======================================================================
 
 #include "parser/EDDIGrammar.hpp"
+#include "lexer/adapttokens.hpp"
 
 using namespace eddic;
 
 parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
-        condition(lexer),
         type(lexer){
+    
+    compound_op.add
+        ("+=", ast::Operator::ADD)
+        ("-=", ast::Operator::SUB)
+        ("/=", ast::Operator::DIV)
+        ("*=", ast::Operator::MUL)
+        ("%=", ast::Operator::MOD)
+        ;
    
     const_ %=
             (lexer.const_ > boost::spirit::attr(true))
@@ -23,7 +31,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
             lexer.else_ 
         >>  lexer.if_ 
         >>  lexer.left_parenth 
-        >>  condition 
+        >>  value 
         >>  lexer.right_parenth 
         >>  lexer.left_brace
         >>  *(instruction)
@@ -38,7 +46,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     if_ %= 
             lexer.if_ 
         >>  lexer.left_parenth 
-        >>  condition 
+        >>  value 
         >>  lexer.right_parenth 
         >>  lexer.left_brace 
         >>  *(instruction) 
@@ -51,7 +59,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >   lexer.left_parenth 
         >   -declaration 
         >   lexer.stop 
-        >   -condition 
+        >   -value 
         >   lexer.stop 
         >   -repeatable_instruction 
         >   lexer.right_parenth 
@@ -88,7 +96,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     while_ %=
             lexer.while_ 
         >   lexer.left_parenth 
-        >   condition 
+        >   value 
         >   lexer.right_parenth 
         >   lexer.left_brace 
         >   *(instruction)
@@ -110,6 +118,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     assignment %= 
             lexer.word 
         >>  lexer.assign 
+        >>  value;
+
+    compound_assignment %=
+            lexer.word
+        >>  qi::adapttokens[compound_op]
         >>  value;
 
     return_ %=
@@ -148,7 +161,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     instruction %= 
             (value.functionCall > lexer.stop)
         |   (assignment > lexer.stop)
+        |   (compound_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
+        |   (value.suffix_operation > lexer.stop)
+        |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (arrayAssignment > lexer.stop)
         |   if_
@@ -159,7 +175,15 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         |   return_
         |   (swap > lexer.stop);
 
-    repeatable_instruction = assignment | declaration | swap;
+    //TODO Check that to see if it's complete and correct
+    repeatable_instruction = 
+            assignment 
+        |   swap 
+        |   compound_assignment
+        |   value.suffix_operation
+        |   value.prefix_operation
+        |   value.functionCall
+        |   arrayAssignment;
     
     arg %= 
             type 

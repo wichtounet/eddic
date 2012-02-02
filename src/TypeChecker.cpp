@@ -47,7 +47,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::GlobalVariableDeclaration& declaration){
         Type type = stringToType(declaration.Content->variableType); 
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), *declaration.Content->value);
+        Type valueType = visit(GetTypeVisitor(), *declaration.Content->value);
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName);
         }
@@ -76,12 +76,13 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    void operator()(ast::Assignment& assignment){
+    template<typename T>
+    void checkAssignment(T& assignment){
         visit(*this, assignment.Content->value);
 
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
+        Type valueType = visit(GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName);
         }
@@ -89,12 +90,48 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if(var->type().isConst()){
             throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it");
         }
+
+        if(var->position().isParameter()){
+            throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName);
+        }
+    }
+
+    void operator()(ast::Assignment& assignment){
+        checkAssignment(assignment);
+    }
+    
+    void operator()(ast::CompoundAssignment& assignment){
+        checkAssignment(assignment);
+    }
+
+    void operator()(ast::SuffixOperation& operation){
+        auto var = operation.Content->variable;
+        
+        if(var->type().isArray() || var->type().base() != BaseType::INT){
+            throw SemanticalException("The variable " + var->name() + " is not of type int, cannot increment or decrement it");
+        }
+
+        if(var->type().isConst()){
+            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it");
+        }
+    }
+
+    void operator()(ast::PrefixOperation& operation){
+        auto var = operation.Content->variable;
+        
+        if(var->type().isArray() || var->type().base() != BaseType::INT){
+            throw SemanticalException("The variable " + var->name() + " is not of type int, cannot increment or decrement it");
+        }
+        
+        if(var->type().isConst()){
+            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it");
+        }
     }
 
     void operator()(ast::Return& return_){
         visit(*this, return_.Content->value);
        
-        Type returnValueType = boost::apply_visitor(GetTypeVisitor(), return_.Content->value);
+        Type returnValueType = visit(GetTypeVisitor(), return_.Content->value);
         if(returnValueType != return_.Content->function->returnType){
             throw SemanticalException("The return value is not of the good type in the function " + return_.Content->function->name);
         }
@@ -106,12 +143,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->value);
+        Type valueType = visit(GetTypeVisitor(), assignment.Content->value);
         if (valueType.base() != var->type().base()) {
             throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName);
         }
         
-        Type indexType = boost::apply_visitor(GetTypeVisitor(), assignment.Content->indexValue);
+        Type indexType = visit(GetTypeVisitor(), assignment.Content->indexValue);
         if (indexType.base() != BaseType::INT) {
             throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName);
         }
@@ -121,7 +158,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit(*this, *declaration.Content->value);
 
         Type variableType = stringToType(declaration.Content->variableType);
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), *declaration.Content->value);
+        Type valueType = visit(GetTypeVisitor(), *declaration.Content->value);
         if (valueType != variableType) {
             throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName);
         }
@@ -140,7 +177,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::ArrayValue& array){
         visit(*this, array.Content->indexValue);
 
-        Type valueType = boost::apply_visitor(GetTypeVisitor(), array.Content->indexValue);
+        Type valueType = visit(GetTypeVisitor(), array.Content->indexValue);
         if (valueType.base() != BaseType::INT || valueType.isArray()) {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName);
         }
@@ -150,13 +187,13 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
+            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
 
         GetTypeVisitor visitor;
-        Type type = boost::apply_visitor(visitor, value.Content->first);
+        Type type = visit(visitor, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            Type operationType = boost::apply_visitor(visitor, operation.get<1>());
+            Type operationType = visit(visitor, operation.get<1>());
 
             if(type != operationType){
                 throw SemanticalException("Incompatible type");

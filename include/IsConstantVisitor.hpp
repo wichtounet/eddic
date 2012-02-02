@@ -22,11 +22,15 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::Litteral& litteral) const;
     bool operator()(ast::Integer& litteral) const;
     bool operator()(ast::Plus& plus) const;
+    bool operator()(ast::True& true_) const;
+    bool operator()(ast::False& false_) const;
     bool operator()(ast::Minus& minus) const;
     bool operator()(ast::VariableValue& variable) const;
     bool operator()(ast::ArrayValue& variable) const;
     bool operator()(ast::ComposedValue& value) const; 
     bool operator()(ast::FunctionCall& value) const; 
+    bool operator()(ast::SuffixOperation& value) const; 
+    bool operator()(ast::PrefixOperation& value) const; 
 };
 
 } //end of eddic

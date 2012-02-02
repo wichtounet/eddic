@@ -41,8 +41,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::If& if_) const ;
     void operator()(ast::VariableDeclaration& declaration) const ;
     void operator()(ast::ArrayDeclaration&) const ;
+    void operator()(ast::CompoundAssignment& assign) const ;
     void operator()(ast::Assignment& assign) const ;
     void operator()(ast::Return& return_) const ;
+    void operator()(ast::SuffixOperation& operation_) const ;
+    void operator()(ast::PrefixOperation& operation_) const ;
     void operator()(ast::ArrayAssignment& assign) const ;
     void operator()(ast::Litteral&) const ;
     void operator()(ast::FunctionCall&) const ;
@@ -52,6 +55,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::ComposedValue& value) const ;
     void operator()(ast::Plus& value) const ;
     void operator()(ast::Minus& value) const ;
+    void operator()(ast::False& value) const ;
+    void operator()(ast::True& value) const ;
 };
 
 } //end of eddic

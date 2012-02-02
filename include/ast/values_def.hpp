@@ -16,6 +16,8 @@ namespace ast {
 
 struct Integer;
 struct Litteral;
+struct True;
+struct False;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
@@ -34,6 +36,12 @@ typedef Deferred<ASTPlus> Plus;
 
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
+
+struct ASTSuffixOperation;
+typedef Deferred<ASTSuffixOperation> SuffixOperation;
+
+struct ASTPrefixOperation;
+typedef Deferred<ASTPrefixOperation> PrefixOperation;
 
 } //end of ast
 

@@ -5,32 +5,25 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/apply_visitor.hpp>
-
 #include "GetTypeVisitor.hpp"
+#include "Context.hpp"
+#include "Variable.hpp"
+#include "VisitorUtils.hpp"
 
 #include "ast/Value.hpp"
 
-#include "Context.hpp"
-#include "Variable.hpp"
-
 using namespace eddic;
 
-Type GetTypeVisitor::operator()(const ast::Litteral&) const {
-    return Type(BaseType::STRING, false);
-}
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Litteral, Type(BaseType::STRING, false))
 
-Type GetTypeVisitor::operator()(const ast::Integer&) const {
-    return Type(BaseType::INT, false);
-}
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Integer, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Minus, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Plus, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::SuffixOperation, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::PrefixOperation, Type(BaseType::INT, false))
 
-Type GetTypeVisitor::operator()(const ast::Plus&) const {
-    return Type(BaseType::INT, false);
-}
-
-Type GetTypeVisitor::operator()(const ast::Minus&) const {
-    return Type(BaseType::INT, false);
-}
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::False, Type(BaseType::BOOL, false))
+ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::True, Type(BaseType::BOOL, false))
 
 Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
@@ -41,8 +34,16 @@ Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
 }
 
 Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
-    //No need to recurse into operations because type are enforced in the check variables phase
-    return boost::apply_visitor(*this, value.Content->first);
+    auto op = value.Content->operations[0].get<0>();
+
+    if(op == ast::Operator::AND || op == ast::Operator::OR){
+        return Type(BaseType::BOOL, false);
+    } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+        return Type(BaseType::BOOL, false);
+    } else {
+        //No need to recurse into operations because type are enforced in the check variables phase
+        return visit(*this, value.Content->first);
+    }
 }
 
 Type GetTypeVisitor::operator()(const ast::FunctionCall& call) const {

@@ -15,6 +15,7 @@
 #include <boost/fusion/adapted/boost_tuple.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Operator.hpp"
 
 namespace eddic {
 
@@ -22,7 +23,8 @@ class Context;
 
 namespace ast {
 
-typedef std::vector<boost::tuple<char, Value>> Operations;
+typedef boost::tuple<Operator, Value> Operation;
+typedef std::vector<Operation> Operations;
 
 /*!
  * \class ASTComposedValue

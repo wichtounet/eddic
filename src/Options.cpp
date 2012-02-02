@@ -29,6 +29,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         desc.add_options()
             ("help,h", "Generate this help message")
             ("assembly,S", "Generate only the assembly")
+            ("keep,k", "Keep the assembly file")
             ("version", "Print the version of eddic")
             ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
             
@@ -36,6 +37,8 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
             ("optimize-unused", po::bool_switch(&OptimizeUnused), "Enable the removal of unused variables and functions")
             
+            ("debug,g", "Add debugging symbols")
+
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
            
@@ -76,5 +79,5 @@ void eddic::printHelp(){
 }
 
 void eddic::printVersion(){
-    std::cout << "eddic version 0.7.0" << std::endl;
+    std::cout << "eddic version 0.7.1" << std::endl;
 }

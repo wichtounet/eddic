@@ -1,4 +1,4 @@
-# EDDI Compiler 0.7.0 #
+# EDDI Compiler 0.7.1 #
 
 The compiler of the EDDI programming language. 
 
@@ -37,6 +37,8 @@ Read `ChangeLog`
 The project is open for any kind of contribution : new features, hotfixes, tests, ...
 
 If you want to contribute to this project, you can contact me by [email](baptiste.wicht@gmail.com) or via my [website](http://baptiste-wicht.com/).
+
+If you want to support the development of this project, you [donate via Pledgie](http://pledgie.com/campaigns/16583). Thank you !
 
 ## More informations ##
 

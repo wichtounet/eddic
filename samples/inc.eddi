@@ -1,0 +1,24 @@
+void main(){
+    int a = 0;
+    println(a);
+
+    a++;
+    println(a);
+
+    ++a;
+    println(a);
+
+    --a;
+    println(a);
+
+    a--;
+    println(a);
+
+    int b = ++a;
+    println(b);
+    
+    b = a++;
+
+    println(b);
+}
+

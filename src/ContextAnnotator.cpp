@@ -142,6 +142,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
+        void operator()(ast::CompoundAssignment& assignment){
+            assignment.Content->context = currentContext;
+
+            visit(*this, assignment.Content->value);
+        }
+        
         void operator()(ast::ArrayAssignment& assignment){
             assignment.Content->context = currentContext;
 
@@ -152,13 +158,21 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
         }
+        
+        void operator()(ast::SuffixOperation& operation){
+            operation.Content->context = currentContext;
+        }
+        
+        void operator()(ast::PrefixOperation& operation){
+            operation.Content->context = currentContext;
+        }
 
         void operator()(ast::ComposedValue& value){
             value.Content->context = currentContext;
 
             visit(*this, value.Content->first);
             for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-                    [&](boost::tuple<char, ast::Value>& operation){ visit(*this, operation.get<1>()); });
+                    [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
         }
 
         void operator()(ast::Plus& value){

@@ -11,10 +11,8 @@
 
 #include "Types.hpp"
 #include "Options.hpp"
-
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
-
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "VisitorUtils.hpp"
@@ -27,10 +25,10 @@ using namespace eddic;
 
 struct GetStringValue : public boost::static_visitor<std::string> {
     std::string operator()(ast::ComposedValue& value) const {
-        std::string acc = boost::apply_visitor(*this, value.Content->first);
+        std::string acc = visit(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            std::string v = boost::apply_visitor(*this, operation.get<1>());
+            std::string v = visit(*this, operation.get<1>());
             acc = acc.substr(0, acc.size() - 1).append(v.substr(1, acc.size() - 1));
         }
 
@@ -84,14 +82,14 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             }
 
             //Optimize the first value
-            value.Content->first = boost::apply_visitor(*this, value.Content->first);
+            value.Content->first = visit(*this, value.Content->first);
 
             //We can try to optimize every part of the composed value
             auto start = value.Content->operations.begin();
             auto end = value.Content->operations.end();
 
             while(start != end){
-                start->get<1>() = boost::apply_visitor(*this, start->get<1>());
+                start->get<1>() = visit(*this, start->get<1>());
 
                 ++start;
             }
@@ -101,7 +99,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         }
         
         ast::Value operator()(ast::ArrayValue& value) const {
-            value.Content->indexValue = boost::apply_visitor(*this, value.Content->indexValue); 
+            value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
             return value;
         }
@@ -144,7 +142,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         CanBeRemoved(FunctionTable& table) : functionTable(table) {}
 
         bool operator()(ast::FirstLevelBlock block){
-            return boost::apply_visitor(*this, block);
+            return visit(*this, block);
         }
 
         bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
@@ -183,7 +181,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool operator()(ast::Instruction& instruction){
-           return boost::apply_visitor(*this, instruction); 
+           return visit(*this, instruction); 
         }
 
         //Nothing to optimize for the other types
@@ -264,32 +262,32 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             auto end = functionCall.Content->values.end();
 
             while(start != end){
-                *start = boost::apply_visitor(optimizer, *start);
+                *start = visit(optimizer, *start);
                 
                 ++start;
             }
         }
 
         void operator()(ast::Assignment& assignment){
-            assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
+            assignment.Content->value = visit(optimizer, assignment.Content->value); 
         }
 
         void operator()(ast::Return& return_){
-            return_.Content->value = boost::apply_visitor(optimizer, return_.Content->value); 
+            return_.Content->value = visit(optimizer, return_.Content->value); 
         }
 
         void operator()(ast::ArrayAssignment& assignment){
-            assignment.Content->value = boost::apply_visitor(optimizer, assignment.Content->value); 
-            assignment.Content->indexValue = boost::apply_visitor(optimizer, assignment.Content->indexValue); 
+            assignment.Content->value = visit(optimizer, assignment.Content->value); 
+            assignment.Content->indexValue = visit(optimizer, assignment.Content->indexValue); 
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            declaration.Content->value = boost::apply_visitor(optimizer, *declaration.Content->value); 
+            declaration.Content->value = visit(optimizer, *declaration.Content->value); 
         }
 
         void operator()(ast::BinaryCondition& binaryCondition){
-            binaryCondition.Content->lhs = boost::apply_visitor(optimizer, binaryCondition.Content->lhs); 
-            binaryCondition.Content->rhs = boost::apply_visitor(optimizer, binaryCondition.Content->rhs); 
+            binaryCondition.Content->lhs = visit(optimizer, binaryCondition.Content->lhs); 
+            binaryCondition.Content->rhs = visit(optimizer, binaryCondition.Content->rhs); 
         }
 
         template<typename T>

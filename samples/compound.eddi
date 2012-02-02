@@ -1,0 +1,22 @@
+void main(){
+    int a = 2;
+    int b = 3;
+
+    a += 4;
+    println(a);
+
+    a += b;
+    println(a);
+
+    a -= b;
+    println(a);
+
+    a *= b;
+    println(a);
+
+    a /= b;
+    println(a);
+
+    a %= b;
+    println(a);
+}

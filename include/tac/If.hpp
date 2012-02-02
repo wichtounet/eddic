@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_IF_FALSE_H
-#define TAC_IF_FALSE_H
+#ifndef TAC_IF_H
+#define TAC_IF_H
 
 #include <string>
 #include <memory>
@@ -25,7 +25,7 @@ namespace tac {
 
 class BasicBlock;
 
-struct IfFalse {
+struct If {
     Argument arg1;
     boost::optional<BinaryOperator> op;
     boost::optional<Argument> arg2;
@@ -36,9 +36,9 @@ struct IfFalse {
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;
 
-    IfFalse();
-    IfFalse(Argument arg1, const std::string& label);
-    IfFalse(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
+    If();
+    If(Argument arg1, const std::string& label);
+    If(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 
 } //end of tac

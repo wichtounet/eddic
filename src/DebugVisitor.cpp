@@ -95,6 +95,12 @@ void DebugVisitor::operator()(ast::Swap&) const {
 
 void DebugVisitor::operator()(ast::If& if_) const {
     std::cout << indent() << "If" << std::endl; 
+    std::cout << indent() << "Condition:" << std::endl;
+    ++level;
+    visit(*this, if_.Content->condition);    
+    --level;
+
+    std::cout << indent() << "Body:" << std::endl;
     ++level;
     visit_each(*this, if_.Content->instructions);    
     --level;
@@ -122,8 +128,24 @@ void DebugVisitor::operator()(ast::ArrayDeclaration&) const {
     std::cout << indent() << "Array declaration" << std::endl; 
 }
 
+void DebugVisitor::operator()(ast::SuffixOperation& op) const {
+    std::cout << indent() << op.Content->variableName << "(suffix)" << (int)op.Content->op << std::endl; 
+}
+
+void DebugVisitor::operator()(ast::PrefixOperation& op) const {
+    std::cout << indent() << (int)op.Content->op << "(prefix)" << op.Content->variableName << std::endl; 
+}
+
 void DebugVisitor::operator()(ast::Assignment& assign) const {
     std::cout << indent() << "Variable assignment" << std::endl; 
+
+    ++level;
+    visit(*this, assign.Content->value);
+    --level;
+}
+
+void DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
+    std::cout << indent() << "Compound variable assignment [operator = " << (int) assign.Content->op << " ]" << std::endl; 
 
     ++level;
     visit(*this, assign.Content->value);
@@ -154,6 +176,14 @@ void DebugVisitor::operator()(ast::Integer& integer) const {
     std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
 }
 
+void DebugVisitor::operator()(ast::True&) const {
+    std::cout << indent() << "true" << std::endl; 
+}
+
+void DebugVisitor::operator()(ast::False&) const {
+    std::cout << indent() << "false" << std::endl; 
+}
+
 void DebugVisitor::operator()(ast::VariableValue&) const {
     std::cout << indent() << "Variable" << std::endl; 
 }
@@ -167,7 +197,7 @@ void DebugVisitor::operator()(ast::ComposedValue& value) const {
     ++level;
     visit(*this, value.Content->first);
     for(auto& operation : value.Content->operations){
-        std::cout << indent() << operation.get<0>() << std::endl;
+        std::cout << indent() << (int) operation.get<0>() << std::endl;
         visit(*this, operation.get<1>());
     }
     --level;

@@ -5,39 +5,35 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_WHILE_H
-#define AST_WHILE_H
+#ifndef AST_SUFFIX_OPERATION_H
+#define AST_SUFFIX_OPERATION_H
 
+#include <memory>
 #include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/While.hpp"
-#include "ast/Value.hpp"
+#include "ast/Operator.hpp"
 
 namespace eddic {
 
+class Context;
+class Variable;
+
 namespace ast {
 
-/*!
- * \class ASTWhile
- * \brief The AST node for a while loop. 
- * Should only be used from the Deferred version (eddic::ast::While).
- */
-struct ASTWhile {
-    Value condition;
-    std::vector<Instruction> instructions;
+struct ASTSuffixOperation {
+    std::shared_ptr<Context> context;
+    std::string variableName;
+    std::shared_ptr<Variable> variable;
+    ast::Operator op;
 
     mutable long references;
-    ASTWhile() : references(0) {}
+    ASTSuffixOperation() : references(0) {}
 };
 
-/*!
- * \typedef While
- * \brief The AST node for a while loop.
- */
-typedef Deferred<ASTWhile> While;
+typedef Deferred<ASTSuffixOperation> SuffixOperation;
 
 } //end of ast
 
@@ -45,9 +41,9 @@ typedef Deferred<ASTWhile> While;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::While, 
-    (eddic::ast::Value, Content->condition)
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    eddic::ast::SuffixOperation, 
+    (std::string, Content->variableName)
+    (eddic::ast::Operator, Content->op)
 )
 
 #endif

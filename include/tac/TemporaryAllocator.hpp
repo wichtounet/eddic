@@ -5,29 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_BINARY_OPERATOR_H
-#define TAC_BINARY_OPERATOR_H
-
-#include <string>
-
-#include "ast/Operator.hpp"
+#ifndef TAC_TEMPORARY_ALLOCATOR_H
+#define TAC_TEMPORARY_ALLOCATOR_H
 
 namespace eddic {
 
 namespace tac {
 
-enum class BinaryOperator : unsigned int {
-    EQUALS,
-    NOT_EQUALS,
-    LESS,
-    LESS_EQUALS,
-    GREATER,
-    GREATER_EQUALS
+class Program;
+
+struct TemporaryAllocator {
+    void allocate(tac::Program& program) const ;
 };
 
-BinaryOperator toBinaryOperator(ast::Operator op);
-
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

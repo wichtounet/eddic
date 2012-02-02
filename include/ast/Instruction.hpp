@@ -13,11 +13,14 @@
 #include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
 #include "ast/Assignment.hpp"
+#include "ast/CompoundAssignment.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/ArrayAssignment.hpp"
 #include "ast/Return.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
+#include "ast/SuffixOperation.hpp"
+#include "ast/PrefixOperation.hpp"
 
 namespace eddic {
 
@@ -44,12 +47,15 @@ typedef boost::variant<
             VariableDeclaration,
             ArrayDeclaration,
             Assignment, 
+            CompoundAssignment,
             ArrayAssignment, 
             Return,
             If, 
             While, 
             Foreach,
             ForeachIn, 
+            SuffixOperation,
+            PrefixOperation,
             For>
         Instruction;
 

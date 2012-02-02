@@ -9,10 +9,9 @@
 #define TAC_QUADRUPLE_H
 
 #include <unordered_map>
+#include <vector>
 
 #include <boost/optional.hpp>
-
-#include <vector>
 
 #include "tac/Operator.hpp"
 #include "tac/Argument.hpp"
@@ -25,7 +24,7 @@ namespace tac {
 
 struct Quadruple {
     std::shared_ptr<Variable> result;
-    tac::Argument arg1;
+    boost::optional<tac::Argument> arg1;
     boost::optional<tac::Argument> arg2;
     boost::optional<tac::Operator> op;
     
@@ -47,7 +46,10 @@ struct Quadruple {
     Quadruple(std::shared_ptr<Variable> result, tac::Argument arg1, Operator op, tac::Argument arg2);
 
     //Quadruples without assign to result
-    Quadruple(Operator op, tac::Argument arg);
+    Quadruple(Operator op, tac::Argument arg1);
+
+    //Quadruples without assign to result
+    Quadruple(Operator op, tac::Argument arg1, tac::Argument arg2);
 };
 
 } //end of tac

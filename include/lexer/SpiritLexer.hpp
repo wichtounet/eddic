@@ -29,7 +29,7 @@ namespace lex = boost::spirit::lex;
     
 typedef std::string::iterator base_iterator_type;
 typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-typedef boost::spirit::lex::lexertl::token<pos_iterator_type, boost::mpl::vector<std::string, int>> Tok;
+typedef boost::spirit::lex::lexertl::token<pos_iterator_type> Tok;
 typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
 /*!
@@ -72,14 +72,33 @@ class SpiritLexer : public lex::lexer<L> {
             stop = ';';
             comma = ',';
 
+            /* Assignment operators */
             swap = "<=>";
             assign = '=';
+           
+            /* compound assignment operators */ 
+            compound_add = "\\+=";
+            compound_sub = "-=";
+            compound_mul = "\\*=";
+            compound_div = "\\/=";
+            compound_mod = "%=";
+
+            /* Math operators  */
             addition = '+';
             subtraction = '-';
             multiplication = '*';
             division = '/';
             modulo = '%';
 
+            /* Suffix and prefix math operators  */
+            increment = "\\+\\+";
+            decrement = "--";
+
+            /* Logical operators */
+            and_ = "\\&\\&";
+            or_ = "\\|\\|";
+
+            /* Relational operators  */
             equals = "==";
             not_equals = "!=";
             greater = ">";
@@ -96,7 +115,11 @@ class SpiritLexer : public lex::lexer<L> {
 
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
             this->self += comma | stop;
-            this->self += assign | swap | addition | subtraction | multiplication | division | modulo;
+            this->self += assign | swap;
+            this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
+            this->self += addition | subtraction | multiplication | division | modulo;
+            this->self += increment | decrement;
+            this->self += and_ | or_;
             this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += integer | word | litteral;
@@ -115,7 +138,10 @@ class SpiritLexer : public lex::lexer<L> {
         IntegerToken integer;
         
         CharToken addition, subtraction, multiplication, division, modulo;
+        StringToken increment, decrement;
+        StringToken compound_add, compound_sub, compound_mul, compound_div, compound_mod;
         StringToken equals, not_equals, greater, less, greater_equals, less_equals;
+        StringToken and_, or_;
 
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace, left_bracket, right_bracket;
         ConsumedToken stop, comma;

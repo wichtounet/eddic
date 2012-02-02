@@ -15,6 +15,11 @@
 #define BOOST_TEST_MODULE Eddic Tests
 #include <boost/test/unit_test.hpp>
 
+#define TEST_SAMPLE(file)\
+BOOST_AUTO_TEST_CASE( samples_##file ){\
+    assertCompiles("samples/" #file ".eddi");\
+}
+
 void assertCompiles(const std::string& file){
     eddic::parseOptions(0, {});
 
@@ -35,45 +40,19 @@ void assertOutputEquals(const std::string& file, const std::string& output){
 
 /* Compiles all the samples */
 
-BOOST_AUTO_TEST_CASE( samples_arrays ){
-    assertCompiles("samples/arrays.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_asm ){
-    assertCompiles("samples/asm.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_assembly ){
-    assertCompiles("samples/assembly.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_const ){
-    assertCompiles("samples/const.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_concat ){
-    assertCompiles("samples/concat.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_functions ){
-    assertCompiles("samples/functions.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_includes ){
-    assertCompiles("samples/includes.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_optimize ){
-    assertCompiles("samples/optimize.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_problem ){
-    assertCompiles("samples/problem.eddi");
-}
-
-BOOST_AUTO_TEST_CASE( samples_sort ){
-    assertCompiles("samples/sort.eddi");
-}
+TEST_SAMPLE(arrays)
+TEST_SAMPLE(asm)
+TEST_SAMPLE(assembly)
+TEST_SAMPLE(bool)
+TEST_SAMPLE(compound)
+TEST_SAMPLE(concat)
+TEST_SAMPLE(const)
+TEST_SAMPLE(functions)
+TEST_SAMPLE(inc)
+TEST_SAMPLE(includes)
+TEST_SAMPLE(optimize)
+TEST_SAMPLE(problem)
+TEST_SAMPLE(sort)
 
 /* Specific tests */ 
 

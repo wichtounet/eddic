@@ -5,39 +5,39 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_WHILE_H
-#define AST_WHILE_H
+#ifndef AST_COMPOUND_ASSIGNMENT_H
+#define AST_COMPOUND_ASSIGNMENT_H
 
-#include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/While.hpp"
 #include "ast/Value.hpp"
+#include "ast/Operator.hpp"
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
-/*!
- * \class ASTWhile
- * \brief The AST node for a while loop. 
- * Should only be used from the Deferred version (eddic::ast::While).
- */
-struct ASTWhile {
-    Value condition;
-    std::vector<Instruction> instructions;
+struct ASTCompoundAssignment {
+    std::shared_ptr<Context> context;
+
+    std::string variableName;
+    Value value;
+    ast::Operator op;
 
     mutable long references;
-    ASTWhile() : references(0) {}
+    ASTCompoundAssignment() : references(0) {}
 };
 
 /*!
- * \typedef While
- * \brief The AST node for a while loop.
+ * \typedef Assignment
+ * \brief The AST node for an assignment to a variable. 
  */
-typedef Deferred<ASTWhile> While;
+typedef Deferred<ASTCompoundAssignment> CompoundAssignment;
 
 } //end of ast
 
@@ -45,9 +45,10 @@ typedef Deferred<ASTWhile> While;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::While, 
-    (eddic::ast::Value, Content->condition)
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    eddic::ast::CompoundAssignment, 
+    (std::string, Content->variableName)
+    (eddic::ast::Operator, Content->op)
+    (eddic::ast::Value, Content->value)
 )
 
 #endif
