@@ -50,7 +50,17 @@ void updateQuadruple(Usage& usage, std::shared_ptr<tac::Quadruple> quadruple, st
         updateTemporary(usage, quadruple->result, block, function);
     }
 
-    updateIf(usage, quadruple, block, function);
+    if(quadruple->arg1){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+            updateTemporary(usage, *variablePtr, block, function);
+        }
+    }
+
+    if(quadruple->arg2){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+            updateTemporary(usage, *variablePtr, block, function);
+        }
+    }
 }
 
 }
@@ -67,13 +77,7 @@ void tac::TemporaryAllocator::allocate(tac::Program& program) const {
                     updateIf(usage, *ptr, block, function);
                 } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
                     updateIf(usage, *ptr, block, function);
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Return>>(&statement)){
-                    if((*ptr)->arg1){
-                        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*(*ptr)->arg1)){
-                            updateTemporary(usage, *variablePtr, block, function);
-                        }
-                    }
-                }
+                } 
             }
         }
     }

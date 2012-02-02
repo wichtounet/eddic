@@ -832,9 +832,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto arguments = visit(ToArgumentsVisitor(function), return_.Content->value);
 
             if(arguments.size() == 1){
-                function->add(std::make_shared<tac::Return>(arguments[0]));
+                function->add(std::make_shared<tac::Quadruple>(tac::Operator::RETURN, arguments[0]));
             } else if(arguments.size() == 2){
-                function->add(std::make_shared<tac::Return>(arguments[0], arguments[1]));
+                function->add(std::make_shared<tac::Quadruple>(tac::Operator::RETURN, arguments[0], arguments[1]));
             } else {
                 throw SemanticalException("Invalid number of arguments");
             }   

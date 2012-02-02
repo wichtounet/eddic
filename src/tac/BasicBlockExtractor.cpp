@@ -16,6 +16,15 @@
 
 using namespace eddic;
 
+template<typename T>
+bool isReturn(T statement){
+    if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+        return (*ptr)->op == tac::Operator::RETURN;
+    }
+
+    return false;
+}
+
 void tac::BasicBlockExtractor::extract(tac::Program& program) const {
     for(auto& function : program.functions){
         std::unordered_map<std::string, std::shared_ptr<BasicBlock>> labels;
@@ -38,7 +47,7 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
                 }
 
                 if(boost::get<std::shared_ptr<tac::IfFalse>>(&statement) || boost::get<std::shared_ptr<tac::If>>(&statement) || 
-                        boost::get<std::shared_ptr<tac::Return>>(&statement) || boost::get<std::shared_ptr<tac::Goto>>(&statement)){
+                        isReturn(statement) || boost::get<std::shared_ptr<tac::Goto>>(&statement)){
                     nextIsLeader = true;
                 } 
 

@@ -41,69 +41,69 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::ADD:
-                    if(tac::equals<int>(quadruple->arg1, 0)){
+                    if(tac::equals<int>(*quadruple->arg1, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
                     } else if(tac::equals<int>(*quadruple->arg2, 0)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
                     }
 
                     break;
                 case tac::Operator::SUB:
                     if(tac::equals<int>(*quadruple->arg2, 0)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
                     } 
 
                     //a = b - b => a = 0
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                         if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, *ptr)){
                             return std::make_shared<tac::Quadruple>(quadruple->result, 0);
                         }
                     }
                     
                     //a = 0 - b => a = -b
-                    if(tac::equals<int>(quadruple->arg1, 0)){
+                    if(tac::equals<int>(*quadruple->arg1, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
                     }
 
                     break;
                 case tac::Operator::MUL:
-                    if(tac::equals<int>(quadruple->arg1, 1)){
+                    if(tac::equals<int>(*quadruple->arg1, 1)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
                     } else if(tac::equals<int>(*quadruple->arg2, 1)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
                     }
                     
-                    if(tac::equals<int>(quadruple->arg1, 0)){
+                    if(tac::equals<int>(*quadruple->arg1, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 0);
                     } else if(tac::equals<int>(*quadruple->arg2, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 0);
                     }
                     
-                    if(tac::equals<int>(quadruple->arg1, -1)){
+                    if(tac::equals<int>(*quadruple->arg1, -1)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
                     } else if(tac::equals<int>(*quadruple->arg2, -1)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1, tac::Operator::MINUS);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
                     }
 
                     break;
                 case tac::Operator::DIV:
                     if(tac::equals<int>(*quadruple->arg2, 1)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
                     }
 
-                    if(tac::equals<int>(quadruple->arg1, 0)){
+                    if(tac::equals<int>(*quadruple->arg1, 0)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 0);
                     }
 
                     //a = b / b => a = 1
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                         if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, *ptr)){
                             return std::make_shared<tac::Quadruple>(quadruple->result, 1);
                         }
                     }
                     
                     if(tac::equals<int>(*quadruple->arg2, 1)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1, tac::Operator::MINUS);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
                     }
 
                     break;
@@ -134,10 +134,10 @@ struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::MUL:
-                    if(tac::equals<int>(quadruple->arg1, 2)){
+                    if(tac::equals<int>(*quadruple->arg1, 2)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
                     } else if(tac::equals<int>(*quadruple->arg2, 2)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, quadruple->arg1, tac::Operator::ADD, quadruple->arg1);
+                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
                     }
 
                     break;
@@ -168,41 +168,41 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::ADD:
-                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                    if(tac::isInt(*quadruple->arg1) && tac::isInt(*quadruple->arg2)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 
-                            boost::get<int>(quadruple->arg1) + boost::get<int>(*quadruple->arg2));
+                            boost::get<int>(*quadruple->arg1) + boost::get<int>(*quadruple->arg2));
                     }
 
                     break;
                 case tac::Operator::SUB:
-                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                    if(tac::isInt(*quadruple->arg1) && tac::isInt(*quadruple->arg2)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 
-                            boost::get<int>(quadruple->arg1) - boost::get<int>(*quadruple->arg2));
+                            boost::get<int>(*quadruple->arg1) - boost::get<int>(*quadruple->arg2));
                     }
 
                     break;
                 case tac::Operator::MUL:
-                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                    if(tac::isInt(*quadruple->arg1) && tac::isInt(*quadruple->arg2)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 
-                            boost::get<int>(quadruple->arg1) * boost::get<int>(*quadruple->arg2));
+                            boost::get<int>(*quadruple->arg1) * boost::get<int>(*quadruple->arg2));
                     }
 
                     break;
                 case tac::Operator::DIV:
-                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                    if(tac::isInt(*quadruple->arg1) && tac::isInt(*quadruple->arg2)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 
-                            boost::get<int>(quadruple->arg1) / boost::get<int>(*quadruple->arg2));
+                            boost::get<int>(*quadruple->arg1) / boost::get<int>(*quadruple->arg2));
                     }
 
                     break;
                 case tac::Operator::MOD:
-                    if(tac::isInt(quadruple->arg1) && tac::isInt(*quadruple->arg2)){
+                    if(tac::isInt(*quadruple->arg1) && tac::isInt(*quadruple->arg2)){
                         return std::make_shared<tac::Quadruple>(quadruple->result, 
-                            boost::get<int>(quadruple->arg1) % boost::get<int>(*quadruple->arg2));
+                            boost::get<int>(*quadruple->arg1) % boost::get<int>(*quadruple->arg2));
                     }
                 case tac::Operator::MINUS:
-                    if(tac::isInt(quadruple->arg1)){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, -1 * boost::get<int>(quadruple->arg1));
+                    if(tac::isInt(*quadruple->arg1)){
+                        return std::make_shared<tac::Quadruple>(quadruple->result, -1 * boost::get<int>(*quadruple->arg1));
                     }
 
                     break;
@@ -319,24 +319,26 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(!quadruple->op){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                 if(constants.find(*ptr) != constants.end()){
                     optimized = true;
                     quadruple->arg1 = constants[*ptr];
                 }
             }
 
-            if(auto* ptr = boost::get<int>(&quadruple->arg1)){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 constants[quadruple->result] = *ptr;
             } else {
                 //The result is not constant at this point
                 constants.erase(quadruple->result);
             }
         } else {
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    quadruple->arg1 = constants[*ptr];
+            if(quadruple->arg1){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(constants.find(*ptr) != constants.end()){
+                        optimized = true;
+                        quadruple->arg1 = constants[*ptr];
+                    }
                 }
             }
 
@@ -385,28 +387,6 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         return optimizeBranch(if_);
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::Return>& return_){
-        if(return_->arg1){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    return_->arg1 = constants[*ptr];
-                }
-            }
-        }
-
-        if(return_->arg2){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    return_->arg2 = constants[*ptr];
-                }
-            }
-        }
-
-        return return_;
-    }
-
     template<typename T>
     tac::Statement operator()(T& statement){ 
         return statement;
@@ -424,12 +404,14 @@ struct RemoveAssign : public boost::static_visitor<bool> {
     bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(pass == Pass::DATA_MINING){
             if(!quadruple->op){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                     used.insert(*ptr);
                 }
             } else {
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&quadruple->arg1)){
-                    used.insert(*ptr);
+                if(quadruple->arg1){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                        used.insert(*ptr);
+                    }
                 }
 
                 if(quadruple->arg2){
@@ -447,10 +429,12 @@ struct RemoveAssign : public boost::static_visitor<bool> {
             }
 
             if(used.find(quadruple->result) == used.end()){
-                //The other kind of variables can be used in other basic block
-                if(quadruple->result->position().isTemporary()){
-                    optimized = true;
-                    return false;
+                if(quadruple->result){
+                    //The other kind of variables can be used in other basic block
+                    if(quadruple->result->position().isTemporary()){
+                        optimized = true;
+                        return false;
+                    }
                 }
             }
 
@@ -481,24 +465,6 @@ struct RemoveAssign : public boost::static_visitor<bool> {
     
     bool operator()(std::shared_ptr<tac::If>& if_){
         return collectUsageFromBranch(if_);
-    }
-
-    bool operator()(std::shared_ptr<tac::Return>& return_){
-        if(pass == Pass::DATA_MINING){
-            if(return_->arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg1)){
-                    used.insert(*ptr);
-                }
-            }
-
-            if(return_->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*return_->arg2)){
-                    used.insert(*ptr);
-                }
-            }
-        }
-
-        return true;
     }
     
     template<typename T>
