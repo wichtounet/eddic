@@ -6,8 +6,10 @@
 //=======================================================================
 
 #include <sstream>
+#include <cctype>
 
 #include "mangling.hpp"
+#include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "GetTypeVisitor.hpp"
 
@@ -62,4 +64,63 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     }
 
     return ss.str();
+}
+
+std::string eddic::unmangle(std::string mangled){
+    if(mangled == "main"){
+        return "main";
+    }
+
+    std::ostringstream length;
+    int digits = 0;
+
+    for(unsigned int i = 2; i < mangled.length(); ++i){
+        if(isdigit(mangled[i])){
+            length << mangled[i];
+            ++digits;
+        } else {
+            break;
+        }
+    }
+
+    int l = toNumber<unsigned int>(length.str());
+
+    std::ostringstream function;
+    
+    for(int i = 0; i < l; ++i){
+        function << mangled[i + 2 + digits];
+    }
+
+    function << '(';
+
+    for(unsigned int i = 2 + l + digits; i < mangled.length(); ++i){
+        char current = mangled[i];
+
+        if(current == 'I'){
+            function << "int";
+        } else if(current == 'S'){
+            function << "string";
+        } else if(current == 'B'){
+            function << "bool";
+        } else if(current == 'A'){
+            ++i;
+
+            char second = mangled[i];
+            if(second == 'I'){
+                function << "int[]";
+            } else if(second == 'S'){
+                function << "string[]";
+            } else if(second == 'B'){
+                function << "bool[]";
+            }
+        }
+
+        if(i < mangled.length() - 1){
+            function << ", ";
+        }
+    }
+
+    function << ')';
+
+    return function.str();
 }

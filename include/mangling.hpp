@@ -26,6 +26,13 @@ namespace eddic {
 std::string mangle(Type type);
 
 /*!
+ * \brief Return the signature of the function from the mangled representation. 
+ * \param mangled The mangled representation of the function. 
+ * \return The function signature. 
+ */
+std::string unmangle(std::string mangled);
+
+/*!
  * \brief Return the mangled representation of the given function. Used for function declarations.  
  * \param functionName The name of the function
  * \param types The types of parameters. 

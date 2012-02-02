@@ -92,7 +92,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             std::string mangled = mangle(name, functionCall.Content->values);
 
             if(!functionTable.exists(mangled)){
-                throw SemanticalException("The function \"" + functionCall.Content->functionName + "()\" does not exists");
+                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists");
             } 
 
             functionTable.addReference(mangled);
