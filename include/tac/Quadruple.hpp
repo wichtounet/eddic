@@ -24,7 +24,7 @@ namespace tac {
 
 struct Quadruple {
     std::shared_ptr<Variable> result;
-    tac::Argument arg1;
+    boost::optional<tac::Argument> arg1;
     boost::optional<tac::Argument> arg2;
     boost::optional<tac::Operator> op;
     

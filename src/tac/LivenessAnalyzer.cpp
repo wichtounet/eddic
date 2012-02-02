@@ -79,13 +79,17 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 
                 (*ptr)->liveness = liveness;
             } else if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
-                updateLive(liveness, (*ptr)->arg1);
+                if((*ptr)->arg1){
+                    updateLive(liveness, (*(*ptr)->arg1));
+                }
                 
                 if((*ptr)->arg2){
                     updateLive(liveness, (*(*ptr)->arg2));
                 }
                 
-                setLive(liveness, (*ptr)->arg1);
+                if((*ptr)->arg1){
+                    setLive(liveness, (*(*ptr)->arg1));
+                }
                 
                 if((*ptr)->arg2){
                     setLive(liveness, (*(*ptr)->arg2));

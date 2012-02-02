@@ -50,7 +50,17 @@ void updateQuadruple(Usage& usage, std::shared_ptr<tac::Quadruple> quadruple, st
         updateTemporary(usage, quadruple->result, block, function);
     }
 
-    updateIf(usage, quadruple, block, function);
+    if(quadruple->arg1){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+            updateTemporary(usage, *variablePtr, block, function);
+        }
+    }
+
+    if(quadruple->arg2){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+            updateTemporary(usage, *variablePtr, block, function);
+        }
+    }
 }
 
 }
