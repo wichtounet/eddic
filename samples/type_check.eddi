@@ -2,8 +2,9 @@ void main(){
     sum(1);
     sum("asdf");
 
-    sum(1,2,3);
-    sum(2,"asdf",3,9,99, "asdf");
+    int a[2];
+
+    sum(a, 2,"asdf",3,9,99, "asdf");
 }
 
 int sum(int a){
