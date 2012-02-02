@@ -135,7 +135,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
             lexer.word
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
-        >>  lexer.right_parenth;
+        >   lexer.right_parenth;
     
     prefix_operation %=
             qi::adapttokens[prefix_op]
