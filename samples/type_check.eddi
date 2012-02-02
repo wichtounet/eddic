@@ -1,0 +1,20 @@
+void main(){
+    sum(1);
+    sum("asdf");
+
+    int a[2];
+
+    sum(a, 2,"asdf",3,9,99, "asdf");
+}
+
+int sum(int a){
+    //Nothing
+}
+
+int sum(string b){
+    //Nothing
+}
+
+int sum(int a, int b, string c, string d, int e){
+    //Nothing
+}

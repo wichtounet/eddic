@@ -60,7 +60,7 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
             std::cout <<
                 "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl <<
                 "'" << position_begin.get_currentline() << "'" << std::endl <<
-                std::setw(pos.column) << " " << "^- here" << std::endl;
+                std::setw(pos.column - 1) << " " << "^- here" << std::endl;
             
             return false;
         }
@@ -73,7 +73,7 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
         std::cout <<
             "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << " Expecting " << exception.what_ << std::endl <<
             "'" << position_begin.get_currentline() << "'" << std::endl <<
-            std::setw(pos.column) << " " << "^- here" << std::endl;
+            std::setw(pos.column - 1) << " " << "^- here" << std::endl;
         
         return false;
     }
