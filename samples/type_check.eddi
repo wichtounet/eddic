@@ -3,6 +3,7 @@ void main(){
     sum("asdf");
 
     sum(1,2,3);
+    sum(2,"asdf",3,9,99, "asdf");
 }
 
 int sum(int a){
