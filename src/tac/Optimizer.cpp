@@ -318,15 +318,26 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
     std::unordered_map<std::shared_ptr<Variable>, int> constants;
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        if(!quadruple->op){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    quadruple->arg1 = constants[*ptr];
-                }
+    void optimize(tac::Argument* arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+            if(constants.find(*ptr) != constants.end()){
+                optimized = true;
+                *arg = constants[*ptr];
             }
+        }
+    }
 
+    void optimize_optional(boost::optional<tac::Argument>& arg){
+        if(arg){
+            optimize(&*arg);
+        }
+    }
+
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        optimize_optional(quadruple->arg1);
+        optimize_optional(quadruple->arg2);
+
+        if(!quadruple->op){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 constants[quadruple->result] = *ptr;
             } else {
@@ -334,24 +345,6 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
                 constants.erase(quadruple->result);
             }
         } else {
-            if(quadruple->arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    if(constants.find(*ptr) != constants.end()){
-                        optimized = true;
-                        quadruple->arg1 = constants[*ptr];
-                    }
-                }
-            }
-
-            if(quadruple->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    if(constants.find(*ptr) != constants.end()){
-                        optimized = true;
-                        quadruple->arg2 = constants[*ptr];
-                    }
-                }
-            }
-
             //The result is not constant at this point
             constants.erase(quadruple->result);
         }
@@ -361,21 +354,8 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
     template<typename T>
     tac::Statement optimizeBranch(T& if_){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
-            if(constants.find(*ptr) != constants.end()){
-                optimized = true;
-                if_->arg1 = constants[*ptr];
-            }
-        }
-       
-        if(if_->arg2){ 
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    if_->arg2 = constants[*ptr];
-                }
-            }
-        }
+        optimize(&if_->arg1);
+        optimize_optional(if_->arg2);
 
         return if_;
     }
@@ -401,15 +381,26 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
 
     std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> constants;
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        if(!quadruple->op){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    quadruple->arg1 = constants[*ptr];
-                }
+    void optimize(tac::Argument* arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+            if(constants.find(*ptr) != constants.end()){
+                optimized = true;
+                *arg = constants[*ptr];
             }
+        }
+    }
 
+    void optimize_optional(boost::optional<tac::Argument>& arg){
+        if(arg){
+            optimize(&*arg);
+        }
+    }
+
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        optimize_optional(quadruple->arg1);
+        optimize_optional(quadruple->arg2);
+        
+        if(!quadruple->op){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                 constants[quadruple->result] = *ptr;
             } else {
@@ -417,24 +408,6 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
                 constants.erase(quadruple->result);
             }
         } else {
-            if(quadruple->arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    if(constants.find(*ptr) != constants.end()){
-                        optimized = true;
-                        quadruple->arg1 = constants[*ptr];
-                    }
-                }
-            }
-
-            if(quadruple->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    if(constants.find(*ptr) != constants.end()){
-                        optimized = true;
-                        quadruple->arg2 = constants[*ptr];
-                    }
-                }
-            }
-
             //The result is not constant at this point
             constants.erase(quadruple->result);
         }
@@ -444,21 +417,8 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
 
     template<typename T>
     tac::Statement optimizeBranch(T& if_){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
-            if(constants.find(*ptr) != constants.end()){
-                optimized = true;
-                if_->arg1 = constants[*ptr];
-            }
-        }
-       
-        if(if_->arg2){ 
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
-                if(constants.find(*ptr) != constants.end()){
-                    optimized = true;
-                    if_->arg2 = constants[*ptr];
-                }
-            }
-        }
+        optimize(&if_->arg1);
+        optimize_optional(if_->arg2);
 
         return if_;
     }
@@ -485,24 +445,25 @@ struct RemoveAssign : public boost::static_visitor<bool> {
 
     std::unordered_set<std::shared_ptr<Variable>> used;
 
+    void collect(tac::Argument* arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+            used.insert(*ptr);
+        }
+    }
+
+    void collect_optional(boost::optional<tac::Argument>& arg){
+        if(arg){
+            collect(&*arg);
+        }
+    }
+
     bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(pass == Pass::DATA_MINING){
             if(!quadruple->op){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    used.insert(*ptr);
-                }
+                collect_optional(quadruple->arg1);
             } else {
-                if(quadruple->arg1){
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        used.insert(*ptr);
-                    }
-                }
-
-                if(quadruple->arg2){
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                        used.insert(*ptr);
-                    }
-                }
+                collect_optional(quadruple->arg1);
+                collect_optional(quadruple->arg2);
             }
             
             return true;
@@ -529,15 +490,8 @@ struct RemoveAssign : public boost::static_visitor<bool> {
     template<typename T>
     bool collectUsageFromBranch(T& if_){
         if(pass == Pass::DATA_MINING){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
-                used.insert(*ptr);
-            }
-
-            if(if_->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
-                    used.insert(*ptr);
-                }
-            }
+            collect(&if_->arg1);
+            collect_optional(if_->arg2);
         }
 
         return true;
@@ -567,19 +521,22 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
     std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::Quadruple>> lastAssign;
     std::unordered_set<std::shared_ptr<tac::Quadruple>> removed;
 
+    void collect(tac::Argument* arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
+            used.insert(*ptr);
+        }
+    }
+
+    void collect(boost::optional<tac::Argument>& arg){
+        if(arg){
+            collect(&*arg);
+        }
+    }
+
     bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(pass == Pass::DATA_MINING){
-            if(quadruple->arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    used.insert(*ptr);
-                }
-            }
-
-            if(quadruple->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    used.insert(*ptr);
-                }
-            }
+            collect(quadruple->arg1);
+            collect(quadruple->arg2);
             
             if(quadruple->result){
                 //If the variable have not been used since the last assign
@@ -605,15 +562,8 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
     template<typename T>
     bool collectUsageFromBranch(T& if_){
         if(pass == Pass::DATA_MINING){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
-                used.insert(*ptr);
-            }
-
-            if(if_->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
-                    used.insert(*ptr);
-                }
-            }
+            collect(&if_->arg1);
+            collect(if_->arg2);
         }
 
         return true;
@@ -641,20 +591,23 @@ struct MathPropagation : public boost::static_visitor<void> {
 
     std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::Quadruple>> assigns;
     std::unordered_map<std::shared_ptr<Variable>, int> usage;
+    
+    void collect(tac::Argument* arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+            usage[*ptr] += 1;
+        }
+    }
+
+    void collect(boost::optional<tac::Argument>& arg){
+        if(arg){
+            collect(&*arg);
+        }
+    }
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(pass == Pass::DATA_MINING){
-            if(quadruple->arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    usage[*ptr] += 1;
-                }
-            }
-
-            if(quadruple->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    usage[*ptr] += 1;
-                }
-            }
+            collect(quadruple->arg1);
+            collect(quadruple->arg2);
         } else {
             if(quadruple->result){
                 assigns[quadruple->result] = quadruple;
@@ -679,15 +632,8 @@ struct MathPropagation : public boost::static_visitor<void> {
     template<typename T>
     void collectUsageFromBranch(T& if_){
         if(pass == Pass::DATA_MINING){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
-                usage[*ptr] += 1;
-            }
-
-            if(if_->arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
-                    usage[*ptr] += 1;
-                }
-            }
+            collect(&if_->arg1);
+            collect(if_->arg2);
         }
     }
     
