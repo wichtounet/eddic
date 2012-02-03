@@ -867,7 +867,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                                 
                                 registers.release(reg);
                             } else if(position.isParameter()){
-                                writer.stream() << "push [ebp + " << position.offset() << "]" << std::endl;
+                                writer.stream() << "push dword [ebp + " << position.offset() << "]" << std::endl;
                             }
                         } else {
                             writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
