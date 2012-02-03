@@ -22,7 +22,7 @@ using namespace eddic;
 
 namespace {
 
-static const bool Debug = false;
+static const bool Debug = true;
 
 //Use for two pass optimization
 enum class Pass : unsigned int {
@@ -383,7 +383,7 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
 
     void optimize(tac::Argument* arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-            if(constants.find(*ptr) != constants.end()){
+            if(constants.find(*ptr) != constants.end() && constants[*ptr] != *ptr){
                 optimized = true;
                 *arg = constants[*ptr];
             }
@@ -459,12 +459,8 @@ struct RemoveAssign : public boost::static_visitor<bool> {
 
     bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(pass == Pass::DATA_MINING){
-            if(!quadruple->op){
-                collect_optional(quadruple->arg1);
-            } else {
-                collect_optional(quadruple->arg1);
-                collect_optional(quadruple->arg2);
-            }
+            collect_optional(quadruple->arg1);
+            collect_optional(quadruple->arg2);
             
             return true;
         } else {
@@ -538,11 +534,18 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
             collect(quadruple->arg1);
             collect(quadruple->arg2);
             
+            //These operators are not erasing result
+            if(quadruple->op && (*quadruple->op == tac::Operator::PARAM || *quadruple->op == tac::Operator::DOT_ASSIGN || *quadruple->op == tac::Operator::ARRAY_ASSIGN)){
+                return true;
+            }
+            
             if(quadruple->result){
                 //If the variable have not been used since the last assign
                 if(used.find(quadruple->result) == used.end() && lastAssign.find(quadruple->result) != lastAssign.end()){
                     //Mark the last assign as useless
                     removed.insert(lastAssign[quadruple->result]);
+
+                    optimized = true;
                 }
 
                 used.erase(quadruple->result);
