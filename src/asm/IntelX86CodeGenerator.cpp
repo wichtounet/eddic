@@ -341,7 +341,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                 registers.release(reg);
 
-                return "[" + reg + "+" + ::toString(offset) + "]" + ")";
+                return "[" + reg + "+" + ::toString(offset) + "]";
             } 
             //In the other cases, the value is passed, so we can compute the offset directly
             else {
@@ -839,7 +839,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;            
                 }
                 case tac::Operator::ARRAY_ASSIGN:
-                    writer.stream() << "mov " << toString(quadruple->result, *quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+                    writer.stream() << "mov dword " << toString(quadruple->result, *quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
 
                     break;
                 case tac::Operator::PARAM:
@@ -853,7 +853,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                                 
                                 auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
 
-                                writer.stream() << "movl $V" << position.name() << ", " << reg << std::endl;
+                                writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
                                 writer.stream() << "add " << reg << ", " << offset << std::endl;
                                 writer.stream() << "push " << reg << std::endl;
 
@@ -1092,16 +1092,16 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
         if(var->type().isArray() && var->position().isStack()){
             int position = -var->position().offset();
 
-            writer.stream() << "mov [ebp + " << position << "], " << var->type().size() << std::endl;
+            writer.stream() << "mov dword [ebp + " << position << "], " << var->type().size() << std::endl;
 
             if(var->type().base() == BaseType::INT){
                 for(unsigned int i = 0; i < var->type().size(); ++i){
-                    writer.stream() << "mov [ebp + " << (position -= 4) << "], 0" << std::endl;
+                    writer.stream() << "mov dword [ebp + " << (position -= 4) << "], 0" << std::endl;
                 }
             } else if(var->type().base() == BaseType::STRING){
                 for(unsigned int i = 0; i < var->type().size(); ++i){
-                    writer.stream() << "mov [ebp + " << (position -= 4) << "], 0" << std::endl;
-                    writer.stream() << "mov [ebp + " << (position -= 4) << "], 0" << std::endl;
+                    writer.stream() << "mov dword [ebp + " << (position -= 4) << "], 0" << std::endl;
+                    writer.stream() << "mov dword [ebp + " << (position -= 4) << "], 0" << std::endl;
                 }
             }
         }
