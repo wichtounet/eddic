@@ -163,10 +163,10 @@ int Compiler::compileOnly(const std::string& file) {
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
                 if(options.count("debug")){
-                    exec("as -g --32 -o output.o output.asm");
+                    exec("nasm -g -f elf32 -o output.o output.asm");
                     exec("ld -m elf_i386 output.o -o " + output);
                 } else {
-                    exec("as --32 -o output.o output.asm");
+                    exec("nasm -f elf32 -o output.o output.asm");
                     exec("ld -S -m elf_i386 output.o -o " + output);
                 }
 
