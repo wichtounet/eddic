@@ -824,7 +824,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     int offset = boost::get<int>(*quadruple->arg1);
 
-                    writer.stream() << "mov " << toString(quadruple->result, offset) << ", " << arg(*quadruple->arg2) << std::endl;
+                    writer.stream() << "mov dword " << toString(quadruple->result, offset) << ", " << arg(*quadruple->arg2) << std::endl;
 
                     break;
                 }
