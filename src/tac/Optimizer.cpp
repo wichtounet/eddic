@@ -393,6 +393,89 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
     }
 };
 
+struct CopyPropagation : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    CopyPropagation() : optimized(false) {}
+
+    std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> constants;
+
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        if(!quadruple->op){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    quadruple->arg1 = constants[*ptr];
+                }
+            }
+
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                constants[quadruple->result] = *ptr;
+            } else {
+                //The result is not constant at this point
+                constants.erase(quadruple->result);
+            }
+        } else {
+            if(quadruple->arg1){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(constants.find(*ptr) != constants.end()){
+                        optimized = true;
+                        quadruple->arg1 = constants[*ptr];
+                    }
+                }
+            }
+
+            if(quadruple->arg2){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    if(constants.find(*ptr) != constants.end()){
+                        optimized = true;
+                        quadruple->arg2 = constants[*ptr];
+                    }
+                }
+            }
+
+            //The result is not constant at this point
+            constants.erase(quadruple->result);
+        }
+
+        return quadruple;
+    }
+
+    template<typename T>
+    tac::Statement optimizeBranch(T& if_){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
+            if(constants.find(*ptr) != constants.end()){
+                optimized = true;
+                if_->arg1 = constants[*ptr];
+            }
+        }
+       
+        if(if_->arg2){ 
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(constants.find(*ptr) != constants.end()){
+                    optimized = true;
+                    if_->arg2 = constants[*ptr];
+                }
+            }
+        }
+
+        return if_;
+    }
+
+    tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        return optimizeBranch(ifFalse);
+    }
+    
+    tac::Statement operator()(std::shared_ptr<tac::If>& if_){
+        return optimizeBranch(if_);
+    }
+
+    template<typename T>
+    tac::Statement operator()(T& statement){ 
+        return statement;
+    }
+};
+
 struct RemoveAssign : public boost::static_visitor<bool> {
     bool optimized;
     Pass pass;
@@ -720,18 +803,21 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Constant propagation
         optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
+        
+        //Copy propagation
+        optimized |= debug<Debug, 5>(apply_to_basic_blocks<CopyPropagation>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 5>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
+        optimized |= debug<Debug, 6>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 6>(remove_dead_basic_blocks(program));
+        optimized |= debug<Debug, 7>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= debug<Debug, 7>(remove_needless_jumps(program));
+        optimized |= debug<Debug, 8>(remove_needless_jumps(program));
 
         //Merge basic blocks
-        optimized |= debug<Debug, 8>(merge_basic_blocks(program));
+        optimized |= debug<Debug, 9>(merge_basic_blocks(program));
     } while (optimized);
     
     //TODO Copy propagation
