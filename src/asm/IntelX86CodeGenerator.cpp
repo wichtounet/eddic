@@ -183,7 +183,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 } else if(position.isParameter()){
                     writer.stream() << "mov " << regToString(reg) << ", [ebp + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "mov " << regToString(reg) << ", V" << position.name() << std::endl;
+                    writer.stream() << "mov " << regToString(reg) << ", [V" << position.name() << "]" << std::endl;
                 } else if(position.isTemporary()){
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
@@ -206,7 +206,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             } else if(position.isParameter()){
                 writer.stream() << "mov [ebp + " << position.offset() << "], " << regToString(reg) << std::endl; 
             } else if(position.isGlobal()){
-                writer.stream() << "mov V" << position.name() << ", " << regToString(reg) << std::endl;
+                writer.stream() << "mov [V" << position.name() << "], " << regToString(reg) << std::endl;
             } else if(position.isTemporary()){
                 //If the variable is live, move it to another register, else do nothing
                 if(isLive(variable)){
@@ -323,18 +323,18 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //TODO This register allocation is not safe
                 Register reg = getReg();
 
-                writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
+                writer.stream() << "mov " << regToString(reg) << "[ebp + " << ::toString(position.offset()) << "]" << std::endl;
 
                 registers.release(reg);
 
-                return ::toString(offset) + "(" + regToString(reg)  + ")";
+                return "[" + regToString(reg) + "+" + ::toString(offset) + "]" + ")";
             } 
             //In the other cases, the value is passed, so we can compute the offset directly
             else {
                 return "[ebp + " + ::toString(position.offset() + offset) + "]";
             }
         } else if(position.isGlobal()){
-            return "V" + position.name() + "+" + ::toString(offset);
+            return "[V" + position.name() + "+" + ::toString(offset) + "]";
         } else if(position.isTemporary()){
             assert(false); //We are in da shit
         }
@@ -355,18 +355,18 @@ struct StatementCompiler : public boost::static_visitor<> {
         auto offsetReg = getReg(*offsetVariable);
         
         if(position.isStack()){
-            return ::toString(-1 * (position.offset())) + "(%ebp, " + regToString(offsetReg) + ",1)";
+            return "[ebp + " + ::toString(-1 * (position.offset())) + "]";//TODO Verify
         } else if(position.isParameter()){
             //TODO This register allocation is not safe
             Register reg = getReg();
             
-            writer.stream() << "movl " << ::toString(position.offset()) << "(%ebp), " << regToString(reg) << std::endl;
+            writer.stream() << "mov " << regToString(reg) << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
 
             registers.release(reg);
 
-            return "(" + regToString(reg) + "," + regToString(offsetReg) + ")";
+            return "[" + regToString(reg) + "+" + regToString(offsetReg) + "]";
         } else if(position.isGlobal()){
-            return "V" + position.name() + "(" + regToString(offsetReg) + ")";
+            return "[" + regToString(offsetReg) + "+" + position.name() + "]";
         } else if(position.isTemporary()){
             assert(false); //We are in da shit
         }
@@ -378,7 +378,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(auto* ptr = boost::get<int>(&argument)){
             return ::toString(*ptr);
         } else if(auto* ptr = boost::get<std::string>(&argument)){
-            return "$" + *ptr;
+            return *ptr;//TODO Verify that
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             if((*ptr)->position().isTemporary()){
                 return regToString(getReg(*ptr, false));
