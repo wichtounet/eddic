@@ -1116,14 +1116,15 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
 }
 
 void as::IntelX86CodeGenerator::writeRuntimeSupport(){
-    writer.stream() << "section .text" << std::endl
-                    << "global _start" << std::endl
-                    
-                    << "_start:" << std::endl
-                    << "call main" << std::endl
-                    << "mov eax, 1" << std::endl
-                    << "xor ebx, ebx" << std::endl
-                    << "int 80h" << std::endl;
+    writer.stream() << "section .text" << std::endl << std::endl;
+
+    writer.stream() << "global _start" << std::endl << std::endl;
+
+    writer.stream() << "_start:" << std::endl;
+    writer.stream() << "call main" << std::endl;
+    writer.stream() << "mov eax, 1" << std::endl;
+    writer.stream() << "xor ebx, ebx" << std::endl;
+    writer.stream() << "int 80h" << std::endl;
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
