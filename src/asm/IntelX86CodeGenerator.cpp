@@ -1482,7 +1482,7 @@ void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext
     }
     
     for (auto it : pool.getPool()){
-        writer.stream() << it.second << " dd '" << it.first  << "'" << std::endl;
+        writer.stream() << it.second << " dd " << it.first  << std::endl;
     }
 }
 
