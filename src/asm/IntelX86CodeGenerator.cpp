@@ -1146,52 +1146,52 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     static int ctr = 0;
     ctr++;
 
-    writer.stream() << "mov eax, [ebp+8]" << std::endl
-        << "xor esi, esi" << std::endl
+    writer.stream() << "mov eax, [ebp+8]" << std::endl;
+    writer.stream() << "xor esi, esi" << std::endl;
 
-        //If the number is negative, we print the - and then the number
-        << "cmp eax, 0" << std::endl
-        << "jge loop" << ctr << std::endl
+    //If the number is negative, we print the - and then the number
+    writer.stream() << "cmp eax, 0" << std::endl;
+    writer.stream() << "jge loop" << ctr << std::endl;
 
-        << "neg eax" << std::endl
-        << "push eax" << std::endl //We push eax to not loose it from print_string
+    writer.stream() << "neg eax" << std::endl;
+    writer.stream() << "push eax" << std::endl; //We push eax to not loose it from print_string
 
-        //Print "-" 
-        << "push S2" << std::endl
-        << "push 1" << std::endl
-        << "call _F5printS" << std::endl
-        << "add esp, 8" << std::endl
+    //Print "-" 
+    writer.stream() << "push S2" << std::endl;
+    writer.stream() << "push 1" << std::endl;
+    writer.stream() << "call _F5printS" << std::endl;
+    writer.stream() << "add esp, 8" << std::endl;
 
-        //Get the the valueof eax again
-        << "pop eax" << std::endl
+    //Get the the valueof eax again
+    writer.stream() << "pop eax" << std::endl;
 
-        << "loop" << ctr << ":" << std::endl
-        << "mov edx, 0" << std::endl
-        << "mov ebx, 10" << std::endl
-        << "div ebx" << std::endl
-        << "add edx, 48" << std::endl
-        << "push edx" << std::endl
-        << "inc esi" << std::endl
-        << "cmp eax, 0" << std::endl
-        << "jz   next" << ctr << std::endl
-        << "jmp loop" << ctr << std::endl
+    writer.stream() << "loop" << ctr << ":" << std::endl;
+    writer.stream() << "mov edx, 0" << std::endl;
+    writer.stream() << "mov ebx, 10" << std::endl;
+    writer.stream() << "div ebx" << std::endl;
+    writer.stream() << "add edx, 48" << std::endl;
+    writer.stream() << "push edx" << std::endl;
+    writer.stream() << "inc esi" << std::endl;
+    writer.stream() << "cmp eax, 0" << std::endl;
+    writer.stream() << "jz   next" << ctr << std::endl;
+    writer.stream() << "jmp loop" << ctr << std::endl;
 
-        << "next" << ctr << ":" << std::endl
-        << "cmp esi, 0" << std::endl
-        << "jz   exit" << ctr << std::endl
-        << "dec esi" << std::endl
+    writer.stream() << "next" << ctr << ":" << std::endl;
+    writer.stream() << "cmp esi, 0" << std::endl;
+    writer.stream() << "jz   exit" << ctr << std::endl;
+    writer.stream() << "dec esi" << std::endl;
 
-        << "mov eax, 4" << std::endl
-        << "mov ecx, esp" << std::endl
-        << "mov ebx, 1" << std::endl
-        << "mov edx, 1" << std::endl
-        << "int 80h" << std::endl
+    writer.stream() << "mov eax, 4" << std::endl;
+    writer.stream() << "mov ecx, esp" << std::endl;
+    writer.stream() << "mov ebx, 1" << std::endl;
+    writer.stream() << "mov edx, 1" << std::endl;
+    writer.stream() << "int 80h" << std::endl;
 
-        << "add esp, 4" << std::endl
+    writer.stream() << "add esp, 4" << std::endl;
 
-        << "jmp next" << ctr << std::endl
+    writer.stream() << "jmp next" << ctr << std::endl;
 
-        << "exit" << ctr << ":" << std::endl;
+    writer.stream() << "exit" << ctr << ":" << std::endl;
 }
 
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
@@ -1323,131 +1323,131 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
 
 void addConcatFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
-    writer.stream() << "concat:" << std::endl
-        << "push ebp" << std::endl
-        << "mov ebp, esp" << std::endl
+    writer.stream() << "concat:" << std::endl;
+    writer.stream() << "push ebp" << std::endl;
+    writer.stream() << "mov ebp, esp" << std::endl;
 
-        << "mov edx, [ebp + 16]" << std::endl
-        << "mov ecx, [ebp + 8]" << std::endl
-        << "add edx, ecx" << std::endl
+    writer.stream() << "mov edx, [ebp + 16]" << std::endl;
+    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
+    writer.stream() << "add edx, ecx" << std::endl;
 
-        << "push edx" << std::endl
-        << "call eddi_alloc" << std::endl
-        << "add esp, 4" << std::endl
+    writer.stream() << "push edx" << std::endl;
+    writer.stream() << "call eddi_alloc" << std::endl;
+    writer.stream() << "add esp, 4" << std::endl;
 
-        << "mov [ebp - 4], eax" << std::endl
-        << "mov ecx, eax" << std::endl
-        << "mov eax, 0" << std::endl
+    writer.stream() << "mov [ebp - 4], eax" << std::endl;
+    writer.stream() << "mov ecx, eax" << std::endl;
+    writer.stream() << "mov eax, 0" << std::endl;
 
-        << "mov ebx, [ebp + 16]" << std::endl
-        << "mov edx, [ebp + 20]" << std::endl
+    writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
+    writer.stream() << "mov edx, [ebp + 20]" << std::endl;
 
-        << "copy_concat_1:" << std::endl
-        << "cmp ebx, 0" << std::endl
-        << "je end_concat_1"  << std::endl
-        << "mov byte al, [edx]" << std::endl
-        << "mov byte [ecx], al" << std::endl
-        << "add ecx, 1" << std::endl
-        << "add edx, 1" << std::endl
-        << "sub ebx, 1" << std::endl
-        << "jmp copy_concat_1" << std::endl
-        << "end_concat_1" << ":" << std::endl
+    writer.stream() << "copy_concat_1:" << std::endl;
+    writer.stream() << "cmp ebx, 0" << std::endl;
+    writer.stream() << "je end_concat_1"  << std::endl;
+    writer.stream() << "mov byte al, [edx]" << std::endl;
+    writer.stream() << "mov byte [ecx], al" << std::endl;
+    writer.stream() << "add ecx, 1" << std::endl;
+    writer.stream() << "add edx, 1" << std::endl;
+    writer.stream() << "sub ebx, 1" << std::endl;
+    writer.stream() << "jmp copy_concat_1" << std::endl;
+    writer.stream() << "end_concat_1" << ":" << std::endl;
 
-        << "mov ebx, [ebp + 8]" << std::endl
-        << "mov edx, [ebp + 12]" << std::endl
+    writer.stream() << "mov ebx, [ebp + 8]" << std::endl;
+    writer.stream() << "mov edx, [ebp + 12]" << std::endl;
 
-        << "copy_concat_2:" << std::endl
-        << "cmp ebx, 0" << std::endl
-        << "je end_concat_2"  << std::endl
-        << "mov byte al, [edx]" << std::endl
-        << "mov byte [ecx], al" << std::endl
-        << "add ecx, 1" << std::endl
-        << "add edx, 1" << std::endl
-        << "sub ebx, 1" << std::endl
-        << "jmp copy_concat_2" << std::endl
-        << "end_concat_2:" << std::endl
+    writer.stream() << "copy_concat_2:" << std::endl;
+    writer.stream() << "cmp ebx, 0" << std::endl;
+    writer.stream() << "je end_concat_2"  << std::endl;
+    writer.stream() << "mov byte al, [edx]" << std::endl;
+    writer.stream() << "mov byte [ecx], al" << std::endl;
+    writer.stream() << "add ecx, 1" << std::endl;
+    writer.stream() << "add edx, 1" << std::endl;
+    writer.stream() << "sub ebx, 1" << std::endl;
+    writer.stream() << "jmp copy_concat_2" << std::endl;
+    writer.stream() << "end_concat_2:" << std::endl;
 
-        << "mov ebx, [ebp + 16]" << std::endl
-        << "mov ecx, [ebp + 8]" << std::endl
-        << "add ebx, ecx" << std::endl
+    writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
+    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
+    writer.stream() << "add ebx, ecx" << std::endl;
 
-        << "mov eax, [ebp - 4]" << std::endl
+    writer.stream() << "mov eax, [ebp - 4]" << std::endl;
 
-        << "leave" << std::endl
-        << "ret" << std::endl;
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
 }
 
 void addAllocFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
-    writer.stream() << "eddi_alloc:" << std::endl
-        << "push ebp" << std::endl
-        << "mov ebp, esp" << std::endl
+    writer.stream() << "eddi_alloc:" << std::endl;
+    writer.stream() << "push ebp" << std::endl;
+    writer.stream() << "mov ebp, esp" << std::endl;
 
-        //Save registers
-        << "push ebx" << std::endl
-        << "push ecx" << std::endl
-        << "push edx" << std::endl
+    //Save registers
+    writer.stream() << "push ebx" << std::endl;
+    writer.stream() << "push ecx" << std::endl;
+    writer.stream() << "push edx" << std::endl;
 
-        << "mov ecx, [ebp + 8]" << std::endl
-        << "mov ebx, [Veddi_remaining]" << std::endl
+    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
+    writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
 
-        << "cmp ecx, ebx" << std::endl
-        << "jle alloc_normal" << std::endl
+    writer.stream() << "cmp ecx, ebx" << std::endl;
+    writer.stream() << "jle alloc_normal" << std::endl;
 
-        //Get the current address
-        << "mov eax, 45" << std::endl        //45 = sys_brk
-        << "xor ebx, ebx" << std::endl       //get end
-        << "int 80h" << std::endl
-       
-        //%eax is the current address 
-        << "mov esi, eax" << std::endl
+    //Get the current address
+    writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
+    writer.stream() << "xor ebx, ebx" << std::endl;         //get end
+    writer.stream() << "int 80h" << std::endl;
 
-        //Alloc new block of 16384K from the current address
-        << "mov ebx, eax" << std::endl
-        << "add ebx, 16384" << std::endl
-        << "mov eax, 45" << std::endl        //45 = sys_brk
-        << "int 80h" << std::endl
+    //%eax is the current address 
+    writer.stream() << "mov esi, eax" << std::endl;
 
-        //zero'd the new block
-        << "mov edi, eax" << std::endl       //edi = start of block
+    //Alloc new block of 16384K from the current address
+    writer.stream() << "mov ebx, eax" << std::endl;
+    writer.stream() << "add ebx, 16384" << std::endl;
+    writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
+    writer.stream() << "int 80h" << std::endl;
 
-        << "sub edi, 4" << std::endl         //EDI points to the last DWORD available to us
-        << "mov ecx, 4096" << std::endl         //this many DWORDs were allocated
-        << "xor eax, eax"  << std::endl         //   ; will write with zeroes
-        << "std"  << std::endl         //        ; walk backwards
-        << "rep stosb"  << std::endl         //      ; write all over the reserved area
-        << "cld"  << std::endl         //        ; bring back the DF flag to normal state
+    //zero'd the new block
+    writer.stream() << "mov edi, eax" << std::endl;         //edi = start of block
 
-        << "mov eax, esi" << std::endl
+    writer.stream() << "sub edi, 4" << std::endl;           //edi points to the last DWORD available to us
+    writer.stream() << "mov ecx, 4096" << std::endl;        //this many DWORDs were allocated
+    writer.stream() << "xor eax, eax"  << std::endl;        //will write with zeroes
+    writer.stream() << "std"  << std::endl;                 //walk backwards
+    writer.stream() << "rep stosb"  << std::endl;           //write all over the reserved area
+    writer.stream() << "cld"  << std::endl;                 //bring back the DF flag to normal state
 
-        //We now have 16K of available memory starting at %esi
-        << "mov dword [Veddi_remaining], 16384" << std::endl
-        << "mov [Veddi_current], esi" << std::endl
+    writer.stream() << "mov eax, esi" << std::endl;
 
-        << "alloc_normal:" << std::endl
+    //We now have 16K of available memory starting at %esi
+    writer.stream() << "mov dword [Veddi_remaining], 16384" << std::endl;
+    writer.stream() << "mov [Veddi_current], esi" << std::endl;
 
-        //old = current
-        << "mov eax, [Veddi_current]" << std::endl
-        
-        //current += size
-        << "mov ebx, [Veddi_current]" << std::endl
-        << "add ebx, ecx" << std::endl
-        << "mov [Veddi_current], ebx" << std::endl
-        
-        //remaining -= size
-        << "mov ebx, [Veddi_remaining]" << std::endl
-        << "sub ebx, ecx" << std::endl
-        << "mov [Veddi_remaining], ebx" << std::endl
-       
-        << "alloc_end:" << std::endl
+    writer.stream() << "alloc_normal:" << std::endl;
 
-        //Restore registers
-        << "pop edx" << std::endl
-        << "pop ecx" << std::endl
-        << "pop ebx" << std::endl
+    //old = current
+    writer.stream() << "mov eax, [Veddi_current]" << std::endl;
 
-        << "leave" << std::endl
-        << "ret" << std::endl;
+    //current += size
+    writer.stream() << "mov ebx, [Veddi_current]" << std::endl;
+    writer.stream() << "add ebx, ecx" << std::endl;
+    writer.stream() << "mov [Veddi_current], ebx" << std::endl;
+
+    //remaining -= size
+    writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
+    writer.stream() << "sub ebx, ecx" << std::endl;
+    writer.stream() << "mov [Veddi_remaining], ebx" << std::endl;
+
+    writer.stream() << "alloc_end:" << std::endl;
+
+    //Restore registers
+    writer.stream() << "pop edx" << std::endl;
+    writer.stream() << "pop ecx" << std::endl;
+    writer.stream() << "pop ebx" << std::endl;
+
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
