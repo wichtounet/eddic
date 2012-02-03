@@ -68,6 +68,20 @@ std::string regToString(Register reg){
     }
 }
 
+std::ostream& operator<<(std::ostream& os, Register reg){
+    os << regToString(reg);
+
+    return os;
+}
+
+std::string operator+(const char* left, Register right) {
+    return left + regToString(right);
+}
+
+std::string operator+(std::string left, Register right) {
+    return left + regToString(right);
+}
+
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
     std::shared_ptr<tac::Function> function;
@@ -131,9 +145,9 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     void copy(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << regToString(reg) << ", " << ::toString(*ptr) << std::endl;
+            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
         } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << regToString(reg) << ", " << *ptr << std::endl;
+            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -141,16 +155,16 @@ struct StatementCompiler : public boost::static_visitor<> {
             if(registers.inRegister(variable)){
                 auto oldReg = registers[variable];
                 
-                writer.stream() << "mov " << regToString(reg) << ", " << regToString(oldReg) << std::endl;
+                writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
             } else {
                 auto position = variable->position();
 
                 if(position.isStack()){
-                    writer.stream() << "mov " << regToString(reg) << ", [ebp + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << "mov " << reg << ", [ebp + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "mov " << regToString(reg) << ", [ebp + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << "mov " << reg << ", [ebp + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "mov " << regToString(reg) << ", V" << position.name() << std::endl;
+                    writer.stream() << "mov " << reg << ", [V" << position.name() << "]" << std::endl;
                 } else if(position.isTemporary()){
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
@@ -161,9 +175,9 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     void move(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << regToString(reg) << ", " << ::toString(*ptr) << std::endl;
+            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
         } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << regToString(reg) << ", " << *ptr << std::endl;
+            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -171,7 +185,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             if(registers.inRegister(variable)){
                 auto oldReg = registers[variable];
                 
-                writer.stream() << "mov " << regToString(reg) << ", " << regToString(oldReg) << std::endl;
+                writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
 
                 //There is nothing more in the old register
                 registers.remove(variable);
@@ -179,11 +193,11 @@ struct StatementCompiler : public boost::static_visitor<> {
                 auto position = variable->position();
 
                 if(position.isStack()){
-                    writer.stream() << "mov " << regToString(reg) << ", [ebp + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << "mov " << reg << ", [ebp + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "mov " << regToString(reg) << ", [ebp + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << "mov " << reg << ", [ebp + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "mov " << regToString(reg) << ", [V" << position.name() << "]" << std::endl;
+                    writer.stream() << "mov " << reg << ", [V" << position.name() << "]" << std::endl;
                 } else if(position.isTemporary()){
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
@@ -202,11 +216,11 @@ struct StatementCompiler : public boost::static_visitor<> {
             auto position = variable->position();
 
             if(position.isStack()){
-                writer.stream() << "mov [ebp + " << (-1 * position.offset()) << "], " << regToString(reg) << std::endl; 
+                writer.stream() << "mov [ebp + " << (-1 * position.offset()) << "], " << reg << std::endl; 
             } else if(position.isParameter()){
-                writer.stream() << "mov [ebp + " << position.offset() << "], " << regToString(reg) << std::endl; 
+                writer.stream() << "mov [ebp + " << position.offset() << "], " << reg << std::endl; 
             } else if(position.isGlobal()){
-                writer.stream() << "mov [V" << position.name() << "], " << regToString(reg) << std::endl;
+                writer.stream() << "mov [V" << position.name() << "], " << reg << std::endl;
             } else if(position.isTemporary()){
                 //If the variable is live, move it to another register, else do nothing
                 if(isLive(variable)){
@@ -214,7 +228,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.reserve(reg);
                     
                     Register newReg = getReg(variable, false);
-                    writer.stream() << "mov " << regToString(newReg) << ", " << regToString(reg) << std::endl;
+                    writer.stream() << "mov " << newReg << ", " << reg << std::endl;
 
                     registers.release(reg);
 
@@ -323,11 +337,11 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //TODO This register allocation is not safe
                 Register reg = getReg();
 
-                writer.stream() << "mov " << regToString(reg) << "[ebp + " << ::toString(position.offset()) << "]" << std::endl;
+                writer.stream() << "mov " << reg << "[ebp + " << ::toString(position.offset()) << "]" << std::endl;
 
                 registers.release(reg);
 
-                return "[" + regToString(reg) + "+" + ::toString(offset) + "]" + ")";
+                return "[" + reg + "+" + ::toString(offset) + "]" + ")";
             } 
             //In the other cases, the value is passed, so we can compute the offset directly
             else {
@@ -360,13 +374,13 @@ struct StatementCompiler : public boost::static_visitor<> {
             //TODO This register allocation is not safe
             Register reg = getReg();
             
-            writer.stream() << "mov " << regToString(reg) << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
+            writer.stream() << "mov " << reg << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
 
             registers.release(reg);
 
-            return "[" + regToString(reg) + "+" + regToString(offsetReg) + "]";
+            return "[" + reg + "+" + offsetReg + "]";
         } else if(position.isGlobal()){
-            return "[" + regToString(offsetReg) + "+" + position.name() + "]";
+            return "[" + offsetReg + "+" + position.name() + "]";
         } else if(position.isTemporary()){
             assert(false); //We are in da shit
         }
@@ -447,21 +461,22 @@ struct StatementCompiler : public boost::static_visitor<> {
         ended = true;
     }
 
-    std::string toSubRegister(const std::string& reg){
-        if(reg == "eax"){
-            return "ah";
-        } else if(reg == "ebx"){
-            return "bh";
-        } else if(reg == "ecx"){
-            return "ch";
-        } else if(reg == "edx"){
-            return "dh";
-        } else if(reg == "edi"){
-            return "di";
-        } else if(reg == "esi"){
-            return "si";
-        } else {
-            assert(false);
+    std::string toSubRegister(Register reg){
+        switch(reg){
+            case Register::EAX:
+                return "ah";
+            case Register::EBX:
+                return "bh";
+            case Register::ECX:
+                return "ch";
+            case Register::EDX:
+                return "dh";
+            case Register::EDI:
+                return "di";
+            case Register::ESI:
+                return "si";
+            default:
+                assert(false);
         }
     }
 
@@ -473,30 +488,30 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         registers.setLocation(quadruple->result, reg);
         
-        writer.stream() << "xor " << regToString(reg) << ", " << regToString(reg) << std::endl;
+        writer.stream() << "xor " << reg << ", " << reg << std::endl;
 
         //The first argument is not important, it can be immediate, but the second must be a register
         if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
             auto reg = getReg();
 
-            writer.stream() << "mov " << regToString(reg) << ", " << *ptr << std::endl;
+            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
 
-            writer.stream() << "cmp " << regToString(reg) << ", " << arg(*quadruple->arg2) << std::endl;
+            writer.stream() << "cmp " << reg << ", " << arg(*quadruple->arg2) << std::endl;
 
             registers.release(reg);
         } else {
             writer.stream() << "cmp " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
         }
 
-        writer.stream() << set << " " << toSubRegister(regToString(reg)) << std::endl;
+        writer.stream() << set << " " << toSubRegister(reg) << std::endl;
         
         static int ctr = 0;
         ++ctr;
 
         //TODO In the future avoid that to allow any value other than 0 as true
-        writer.stream() << "or " << regToString(reg) << ", " << regToString(reg) << std::endl;
+        writer.stream() << "or " << reg << ", " << reg << std::endl;
         writer.stream() << "jz " << "intern" << ctr << std::endl;
-        writer.stream() << "mov " << regToString(reg) << ", 1" << std::endl;
+        writer.stream() << "mov " << reg << ", 1" << std::endl;
         writer.stream() << "intern" << ctr << ":" << std::endl;
     }
     
@@ -507,12 +522,12 @@ struct StatementCompiler : public boost::static_visitor<> {
             //The fastest way to set a register to 0 is to use xorl
             if(tac::equals<int>(*quadruple->arg1, 0)){
                 Register reg = getRegNoMove(quadruple->result);
-                writer.stream() << "xor " << regToString(reg) << ", " << regToString(reg) << std::endl;            
+                writer.stream() << "xor " << reg << ", " << reg << std::endl;            
             } 
             //In all the others cases, just move the value to the register
             else {
                 Register reg = getRegNoMove(quadruple->result);
-                writer.stream() << "mov " << regToString(reg) << ", " << arg(*quadruple->arg1) << std::endl;            
+                writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;            
             }
         } else {
             switch(*quadruple->op){
@@ -526,15 +541,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                         
                         //a = a + 1 => increment a
                         if(tac::equals<int>(*quadruple->arg2, 1)){
-                            writer.stream() << "inc " << regToString(reg) << std::endl;
+                            writer.stream() << "inc " << reg << std::endl;
                         }
                         //a = a + -1 => decrement a
                         else if(tac::equals<int>(*quadruple->arg2, -1)){
-                            writer.stream() << "dec " << regToString(reg) << std::endl;
+                            writer.stream() << "dec " << reg << std::endl;
                         }
                         //In the other cases, perform a simple addition
                         else {
-                            writer.stream() << "add " << regToString(reg) << ", " << arg(*quadruple->arg2) << std::endl;
+                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
                     } 
                     //Optimize the special form a = b + a by using only one instruction
@@ -543,22 +558,22 @@ struct StatementCompiler : public boost::static_visitor<> {
                         
                         //a = 1 + a => increment a
                         if(tac::equals<int>(*quadruple->arg1, 1)){
-                            writer.stream() << "inc " << regToString(reg) << std::endl;
+                            writer.stream() << "inc " << reg << std::endl;
                         }
                         //a = -1 + a => decrement a
                         else if(tac::equals<int>(*quadruple->arg1, -1)){
-                            writer.stream() << "dec " << regToString(reg) << std::endl;
+                            writer.stream() << "dec " << reg << std::endl;
                         }
                         //In the other cases, perform a simple addition
                         else {
-                            writer.stream() << "add " << regToString(reg) << ", " << arg(*quadruple->arg1) << std::endl;
+                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                         }
                     } 
                     //In the other cases, move the first arg into the result register and then add the second arg into it
                     else {
                         Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "mov " << regToString(reg) << ", " << arg(*quadruple->arg1) << std::endl;
-                        writer.stream() << "add " << regToString(reg) << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                        writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
 
                     break;
@@ -573,22 +588,22 @@ struct StatementCompiler : public boost::static_visitor<> {
                         
                         //a = a - 1 => decrement a
                         if(tac::equals<int>(*quadruple->arg2, 1)){
-                            writer.stream() << "dec " << regToString(reg) << std::endl;
+                            writer.stream() << "dec " << reg << std::endl;
                         }
                         //a = a - -1 => increment a
                         else if(tac::equals<int>(*quadruple->arg2, -1)){
-                            writer.stream() << "inc " << regToString(reg) << std::endl;
+                            writer.stream() << "inc " << reg << std::endl;
                         }
                         //In the other cases, perform a simple subtraction
                         else {
-                            writer.stream() << "sub " << regToString(reg) << ", " << arg(*quadruple->arg2) << std::endl;
+                            writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
                     } 
                     //In the other cases, move the first arg into the result register and then subtract the second arg into it
                     else {
                         Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "mov " << regToString(reg) << ", " << arg(*quadruple->arg1) << std::endl;
-                        writer.stream() << "sub " << regToString(reg) << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                        writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                     
                     break;
@@ -625,7 +640,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                                         auto reg = getReg();
 
                                         move(*quadruple->arg2, reg);
-                                        writer.stream() << "mul " << regToString(reg) << std::endl;
+                                        writer.stream() << "mul " << reg << std::endl;
 
                                         if(registers.reserved(reg)){
                                             registers.release(reg);
@@ -652,7 +667,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                                         auto reg = getReg();
 
                                         move(*quadruple->arg1, reg);
-                                        writer.stream() << "mul " << regToString(reg) << std::endl;
+                                        writer.stream() << "mul " << reg << std::endl;
 
                                         if(registers.reserved(reg)){
                                             registers.release(reg);
@@ -681,7 +696,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                             auto reg = getReg();
 
                             move(*quadruple->arg2, reg);
-                            writer.stream() << "mul " << regToString(reg) << std::endl;
+                            writer.stream() << "mul " << reg << std::endl;
 
                             if(registers.reserved(reg)){
                                 registers.release(reg);
@@ -709,7 +724,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         auto reg = getReg();
 
                         move(*quadruple->arg2, reg);
-                        writer.stream() << "div " << regToString(reg) << std::endl;
+                        writer.stream() << "div " << reg << std::endl;
 
                         if(registers.reserved(reg)){
                             registers.release(reg);
@@ -739,7 +754,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         auto reg = getReg();
 
                         move(*quadruple->arg2, reg);
-                        writer.stream() << "div " << regToString(reg) << std::endl;
+                        writer.stream() << "div " << reg << std::endl;
 
                         if(registers.reserved(reg)){
                             registers.release(reg);
@@ -761,7 +776,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         auto reg = getReg();
 
                         move(*quadruple->arg1, reg);
-                        writer.stream() << "neg " << regToString(reg) << std::endl;
+                        writer.stream() << "neg " << reg << std::endl;
 
                         if(registers.reserved(reg)){
                             registers.release(reg);
@@ -799,7 +814,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
    
                    Register reg = getRegNoMove(quadruple->result);
-                   writer.stream() << "mov " << regToString(reg) << ", " << toString(variable, offset) << std::endl;
+                   writer.stream() << "mov " << reg << ", " << toString(variable, offset) << std::endl;
 
                    break;
                 }
@@ -819,7 +834,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                     Register reg = getRegNoMove(quadruple->result);
 
-                    writer.stream() << "mov " << regToString(reg) << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
+                    writer.stream() << "mov " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
                     
                     break;            
                 }
@@ -838,21 +853,21 @@ struct StatementCompiler : public boost::static_visitor<> {
                                 
                                 auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
 
-                                writer.stream() << "movl $V" << position.name() << ", " << regToString(reg) << std::endl;
-                                writer.stream() << "add " << regToString(reg) << ", " << offset << std::endl;
-                                writer.stream() << "push " << regToString(reg) << std::endl;
+                                writer.stream() << "movl $V" << position.name() << ", " << reg << std::endl;
+                                writer.stream() << "add " << reg << ", " << offset << std::endl;
+                                writer.stream() << "push " << reg << std::endl;
 
                                 registers.release(reg);
                             } else if(position.isStack()){
                                 Register reg = getReg();
 
-                                writer.stream() << "mov " << regToString(reg) << ", ebp" << std::endl;
-                                writer.stream() << "add " << regToString(reg) << ", " << -position.offset() << std::endl;
-                                writer.stream() << "push " << regToString(reg) << std::endl;
+                                writer.stream() << "mov " << reg << ", ebp" << std::endl;
+                                writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
+                                writer.stream() << "push " << reg << std::endl;
                                 
                                 registers.release(reg);
                             } else if(position.isParameter()){
-                                writer.stream() << "push " << position.offset() << "(%ebp)" << std::endl;
+                                writer.stream() << "push [ebp + " << position.offset() << "]" << std::endl;
                             }
                         } else {
                             writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
@@ -918,12 +933,12 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(auto* ptr = boost::get<int>(&if_->arg1)){
             auto reg = getReg();
 
-            writer.stream() << "mov " << regToString(reg) << ", " << *ptr << std::endl;
+            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
 
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "cmp " << regToString(reg) << ", " << arg(*if_->arg2) << std::endl;
+            writer.stream() << "cmp " << reg << ", " << arg(*if_->arg2) << std::endl;
 
             registers.release(reg);
         } else {
@@ -939,12 +954,12 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(auto* ptr = boost::get<int>(&if_->arg1)){
             auto reg = getReg();
 
-            writer.stream() << "mov " << regToString(reg) << "," << *ptr << std::endl;
+            writer.stream() << "mov " << reg << "," << *ptr << std::endl;
 
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "or " << regToString(reg) << ", " << regToString(reg) << std::endl;
+            writer.stream() << "or " << reg << ", " << reg << std::endl;
 
             registers.release(reg);
         } else {
