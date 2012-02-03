@@ -1405,7 +1405,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
         << "mov eax, esi" << std::endl
 
         //We now have 16K of available memory starting at %esi
-        << "mov [Veddi_remaining], 16384" << std::endl
+        << "mov dword [Veddi_remaining], 16384" << std::endl
         << "mov [Veddi_current], esi" << std::endl
 
         << "alloc_normal:" << std::endl
