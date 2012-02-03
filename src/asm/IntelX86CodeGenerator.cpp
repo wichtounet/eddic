@@ -337,7 +337,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //TODO This register allocation is not safe
                 Register reg = getReg();
 
-                writer.stream() << "mov " << reg << "[ebp + " << ::toString(position.offset()) << "]" << std::endl;
+                writer.stream() << "mov " << reg << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
 
                 registers.release(reg);
 
@@ -380,7 +380,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             return "[" + reg + "+" + offsetReg + "]";
         } else if(position.isGlobal()){
-            return "[" + offsetReg + "+" + position.name() + "]";
+            return "[" + offsetReg + "+V" + position.name() + "]";
         } else if(position.isTemporary()){
             assert(false); //We are in da shit
         }
