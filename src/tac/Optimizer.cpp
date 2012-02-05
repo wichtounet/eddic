@@ -22,7 +22,7 @@ using namespace eddic;
 
 namespace {
 
-static const bool Debug = true;
+static const bool Debug = false;
 
 //Use for two pass optimization
 enum class Pass : unsigned int {
