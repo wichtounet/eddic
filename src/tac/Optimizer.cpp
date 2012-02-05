@@ -402,7 +402,9 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
         
         if(!quadruple->op){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                constants[quadruple->result] = *ptr;
+                if(!(*ptr)->position().isTemporary()){
+                    constants[quadruple->result] = *ptr;
+                }
             } else {
                 //The result is not constant at this point
                 constants.erase(quadruple->result);
