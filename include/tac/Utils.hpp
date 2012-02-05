@@ -20,13 +20,23 @@ namespace eddic {
 namespace tac {
 
 template<typename V, typename T>
-bool equals(T& variant, V value){
-    return boost::get<V>(&variant) && boost::get<V>(variant) == value;
+inline bool equals(T& variant, V value){
+    return boost::get<V>(&variant) && value == boost::get<V>(variant);
 }
 
 template<typename T>
-bool isInt(T& variant){
+inline bool isInt(T& variant){
     return boost::get<int>(&variant);
+}
+
+template<typename T>
+inline bool isVariable(T& variant){
+    return boost::get<std::shared_ptr<Variable>>(&variant);
+}
+
+template<typename T>
+inline void assertIntOrVariable(T& variant){
+    assert(isInt(variant) || isVariable(variant));
 }
 
 void computeBlockUsage(std::shared_ptr<tac::Function> function, std::unordered_set<std::shared_ptr<tac::BasicBlock>>& usage);

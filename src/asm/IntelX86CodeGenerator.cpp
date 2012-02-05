@@ -26,6 +26,9 @@
 
 using namespace eddic;
 
+using eddic::tac::isVariable;
+using eddic::tac::isInt;
+
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : writer(w) {}
 
 namespace eddic { namespace as { 
@@ -608,7 +611,6 @@ struct StatementCompiler : public boost::static_visitor<> {
                     
                     break;
                 }
-                //TODO Simplify this generation
                 case tac::Operator::MUL:
                 {
                     //Form  x = -1 * x
@@ -616,61 +618,36 @@ struct StatementCompiler : public boost::static_visitor<> {
                     if((tac::equals<int>(*quadruple->arg1, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)) || 
                             (tac::equals<int>(*quadruple->arg2, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result))){
                         writer.stream() << "neg " << arg(quadruple->result) << std::endl;
-
-                        return;
-                    } 
-
+                    }
                     //Form  x = x * y
-                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
-                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
-                        } else if(boost::get<int>(&*quadruple->arg2)){
-                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
-                        } else {
-                            assert(false);
-                        }
+                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
+                        tac::assertIntOrVariable(*quadruple->arg2);
 
-                        return;
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
                     }
-
                     //Form x = y * x
-                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
-                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
-                        } else if(boost::get<int>(&*quadruple->arg1)){
-                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
-                        } else {
-                            assert(false);
-                        }
-
-                        return;
+                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
+                        tac::assertIntOrVariable(*quadruple->arg2);
+                        
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
                     }
-
                     //Form x = y * z (z: immediate)
-                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && !boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
                         writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-
-                        return;
                     }
-
                     //Form x = y * z (y: immediate)
-                    if(!boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
                         writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
-
-                        return;
                     }
-
                     //Form x = y * z (both variables)
-                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
                         auto reg = getReg(quadruple->result, false);
                         copy(*quadruple->arg1, reg);
                         writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-
-                        return;
+                    } else {
+                        //This case should never happen unless the optimizer has bugs
+                        assert(false);
                     }
-
-                    //This case should never happen unless the optimizer has bugs
-                    assert(false);
 
                     break;            
                 }
