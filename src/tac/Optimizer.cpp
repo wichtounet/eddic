@@ -471,6 +471,12 @@ struct RemoveAssign : public boost::static_visitor<bool> {
                 return true;
             }
 
+            //x = x is never useful
+            if(!quadruple->op && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
+                optimized = true;
+                return false;
+            }
+
             if(used.find(quadruple->result) == used.end()){
                 if(quadruple->result){
                     //The other kind of variables can be used in other basic block
