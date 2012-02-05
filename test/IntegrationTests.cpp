@@ -91,3 +91,8 @@ BOOST_AUTO_TEST_CASE( int_functions ){
 BOOST_AUTO_TEST_CASE( recursive_functions ){
     assertOutputEquals("recursive.eddi", "362880");
 }
+
+/* Unit test for bug fixes regression */
+BOOST_AUTO_TEST_CASE( while_bug ){
+    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5");
+}
