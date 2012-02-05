@@ -611,101 +611,66 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //TODO Simplify this generation
                 case tac::Operator::MUL:
                 {
-                    bool fast = false;
-
-                    //Form x = -1 * x
-                    if(tac::equals<int>(*quadruple->arg1, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
+                    //Form  x = -1 * x
+                    //Or    x = x * -1
+                    if((tac::equals<int>(*quadruple->arg1, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)) || 
+                            (tac::equals<int>(*quadruple->arg2, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result))){
                         writer.stream() << "neg " << arg(quadruple->result) << std::endl;
 
-                        fast = true;
+                        return;
                     } 
-                    //Form x = x * -1
-                    else if(tac::equals<int>(*quadruple->arg2, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
-                        writer.stream() << "neg " << arg(quadruple->result) << std::endl;
 
-                        fast = true;
-                    }
-
-                    //If arg 1 is in eax
-                    if(!fast){
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            if(registers.inRegister(*ptr, Register::EAX)){
-                                if((*ptr)->position().isTemporary() && !isNextLive(*ptr)){
-                                    //If the arg is a variable, it will be matched to a register automatically
-                                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
-                                    {
-                                        writer.stream() << "mul " << arg(*quadruple->arg2) << std::endl;
-                                    } //If it's an immediate value, we have to move it in a register
-                                    else if (boost::get<int>(&*quadruple->arg2)){
-                                        auto reg = getReg();
-
-                                        move(*quadruple->arg2, reg);
-                                        writer.stream() << "mul " << reg << std::endl;
-
-                                        if(registers.reserved(reg)){
-                                            registers.release(reg);
-                                        }
-                                    }
-
-                                    fast = true;
-                                }
-                            }
+                    //Form  x = x * y
+                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
+                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
+                        } else if(boost::get<int>(&*quadruple->arg2)){
+                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
+                        } else {
+                            assert(false);
                         }
+
+                        return;
                     }
 
-                    //If arg 2 is in eax
-                    if(!fast){
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                            if(registers.inRegister(*ptr, Register::EAX)){
-                                if((*ptr)->position().isTemporary() && !isNextLive(*ptr)){
-                                    //If the arg is a variable, it will be matched to a register automatically
-                                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1))
-                                    {
-                                        writer.stream() << "mul " << arg(*quadruple->arg1) << std::endl;
-                                    } //If it's an immediate value, we have to move it in a register
-                                    else if (boost::get<int>(&*quadruple->arg1)){
-                                        auto reg = getReg();
-
-                                        move(*quadruple->arg1, reg);
-                                        writer.stream() << "mul " << reg << std::endl;
-
-                                        if(registers.reserved(reg)){
-                                            registers.release(reg);
-                                        }
-                                    }
-
-                                    fast = true;
-                                }
-                            }
+                    //Form x = y * x
+                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
+                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
+                        } else if(boost::get<int>(&*quadruple->arg1)){
+                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
+                        } else {
+                            assert(false);
                         }
+
+                        return;
                     }
 
-                    //Neither of the args is in a register
-                    if(!fast){
-                        spills(Register::EAX);
+                    //Form x = y * z (z: immediate)
+                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && !boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
 
-                        registers.reserve(Register::EAX);
-                        copy(*quadruple->arg1, Register::EAX);
-                        
-                        //If the arg is a variable, it will be matched to a register automatically
-                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
-                        {
-                            writer.stream() << "mul " << arg(*quadruple->arg2) << std::endl;
-                        } //If it's an immediate value, we have to move it in a register
-                        else if (boost::get<int>(&*quadruple->arg2)){
-                            auto reg = getReg();
-
-                            move(*quadruple->arg2, reg);
-                            writer.stream() << "mul " << reg << std::endl;
-
-                            if(registers.reserved(reg)){
-                                registers.release(reg);
-                            }
-                        }
+                        return;
                     }
 
-                    //result is in eax (no need to move it now)
-                    registers.setLocation(quadruple->result, Register::EAX);
+                    //Form x = y * z (y: immediate)
+                    if(!boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
+
+                        return;
+                    }
+
+                    //Form x = y * z (both variables)
+                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        auto reg = getReg(quadruple->result, false);
+                        copy(*quadruple->arg1, reg);
+                        writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+
+                        return;
+                    }
+
+                    //This case should never happen unless the optimizer has bugs
+                    assert(false);
 
                     break;            
                 }
