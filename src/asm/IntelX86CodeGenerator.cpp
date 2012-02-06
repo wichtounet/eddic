@@ -575,7 +575,6 @@ struct StatementCompiler : public boost::static_visitor<> {
                     //In the other cases, use lea to perform the addition
                     else {
                         Register reg = getRegNoMove(quadruple->result);
-
                         writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                     }
 
