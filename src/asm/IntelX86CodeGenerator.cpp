@@ -539,15 +539,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
 
                     //Optimize the special form a = a + b by using only one instruction
-                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, result)){
+                    if(*quadruple->arg1 == result){
                         Register reg = getReg(quadruple->result);
                         
                         //a = a + 1 => increment a
-                        if(tac::equals<int>(*quadruple->arg2, 1)){
+                        if(*quadruple->arg2 == 1){
                             writer.stream() << "inc " << reg << std::endl;
                         }
                         //a = a + -1 => decrement a
-                        else if(tac::equals<int>(*quadruple->arg2, -1)){
+                        else if(*quadruple->arg2 == -1){
                             writer.stream() << "dec " << reg << std::endl;
                         }
                         //In the other cases, perform a simple addition
@@ -556,15 +556,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                         }
                     } 
                     //Optimize the special form a = b + a by using only one instruction
-                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
+                    else if(*quadruple->arg2 == result){
                         Register reg = getReg(quadruple->result);
                         
                         //a = 1 + a => increment a
-                        if(tac::equals<int>(*quadruple->arg1, 1)){
+                        if(*quadruple->arg1 == 1){
                             writer.stream() << "inc " << reg << std::endl;
                         }
                         //a = -1 + a => decrement a
-                        else if(tac::equals<int>(*quadruple->arg1, -1)){
+                        else if(*quadruple->arg1 == -1){
                             writer.stream() << "dec " << reg << std::endl;
                         }
                         //In the other cases, perform a simple addition
@@ -586,15 +586,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
                     
                     //Optimize the special form a = a - b by using only one instruction
-                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, result)){
+                    if(*quadruple->arg1 == result){
                         Register reg = getReg(quadruple->result);
                         
                         //a = a - 1 => decrement a
-                        if(tac::equals<int>(*quadruple->arg2, 1)){
+                        if(*quadruple->arg2 == 1){
                             writer.stream() << "dec " << reg << std::endl;
                         }
                         //a = a - -1 => increment a
-                        else if(tac::equals<int>(*quadruple->arg2, -1)){
+                        else if(*quadruple->arg2 == -1){
                             writer.stream() << "inc " << reg << std::endl;
                         }
                         //In the other cases, perform a simple subtraction
@@ -613,21 +613,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                 }
                 case tac::Operator::MUL:
                 {
-                    //Form  x = -1 * x
-                    //Or    x = x * -1
-                    if((tac::equals<int>(*quadruple->arg1, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)) || 
-                            (tac::equals<int>(*quadruple->arg2, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result))){
-                        writer.stream() << "neg " << arg(quadruple->result) << std::endl;
-                    }
                     //Form  x = x * y
-                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
+                    if(*quadruple->arg1 == quadruple->result){
                         tac::assertIntOrVariable(*quadruple->arg2);
 
                         writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
                     }
                     //Form x = y * x
-                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
-                        tac::assertIntOrVariable(*quadruple->arg2);
+                    else if(*quadruple->arg2 == quadruple->result){
+                        tac::assertIntOrVariable(*quadruple->arg1);
                         
                         writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
                     }
@@ -662,7 +656,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     writer.stream() << "xor edx, edx" << std::endl;
 
                     //If the second arg is immediate, we have to move it in a register
-                    if(boost::get<int>(&*quadruple->arg2)){
+                    if(isInt(*quadruple->arg2)){
                         auto reg = getReg();
 
                         move(*quadruple->arg2, reg);
@@ -714,7 +708,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 case tac::Operator::MINUS:
                 {
                     //If arg is immediate, we have to move it in a register
-                    if(boost::get<int>(&*quadruple->arg1)){
+                    if(isInt(*quadruple->arg1)){
                         auto reg = getReg();
 
                         move(*quadruple->arg1, reg);
