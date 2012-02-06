@@ -517,6 +517,28 @@ struct StatementCompiler : public boost::static_visitor<> {
         writer.stream() << "mov " << reg << ", 1" << std::endl;
         writer.stream() << "intern" << ctr << ":" << std::endl;
     }
+
+    void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
+        tac::assertIntOrVariable(arg2);
+
+        if(isInt(arg2)){
+            int constant = boost::get<int>(arg2);
+
+            if(isPowerOfTwo(constant)){
+                writer.stream() << "sal " << arg(result) << ", " << powerOfTwo(constant) << std::endl;
+            } else if(constant == 3){
+                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 2 + " << arg(result) << "]" << std::endl;
+            } else if(constant == 5){
+                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 4 + " << arg(result) << "]" << std::endl;
+            } else if(constant == 9){
+                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 8 + " << arg(result) << "]" << std::endl;
+            } else {
+                writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
+            }
+        } else {
+            writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
+        }
+    }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         current = quadruple;
@@ -614,15 +636,11 @@ struct StatementCompiler : public boost::static_visitor<> {
                 {
                     //Form  x = x * y
                     if(*quadruple->arg1 == quadruple->result){
-                        tac::assertIntOrVariable(*quadruple->arg2);
-
-                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << std::endl; 
+                        mul(quadruple->result, *quadruple->arg2);
                     }
                     //Form x = y * x
                     else if(*quadruple->arg2 == quadruple->result){
-                        tac::assertIntOrVariable(*quadruple->arg1);
-                        
-                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << std::endl; 
+                        mul(quadruple->result, *quadruple->arg1);
                     }
                     //Form x = y * z (z: immediate)
                     else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
@@ -645,6 +663,16 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;            
                 }
                 case tac::Operator::DIV:
+                    //Form x = x / y when y is power of two
+                    if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
+                        int constant = boost::get<int>(quadruple->arg2);
+
+                        if(isPowerOfTwo(constant)){
+                            writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
+                            return;
+                        }
+                    }
+
                     spills(Register::EAX);
                     spills(Register::EDX);
 
@@ -659,13 +687,13 @@ struct StatementCompiler : public boost::static_visitor<> {
                         auto reg = getReg();
 
                         move(*quadruple->arg2, reg);
-                        writer.stream() << "div " << reg << std::endl;
+                        writer.stream() << "idiv " << reg << std::endl;
 
                         if(registers.reserved(reg)){
                             registers.release(reg);
                         }
                     } else {
-                        writer.stream() << "div " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
                     }
 
                     //result is in eax (no need to move it now)
