@@ -187,11 +187,14 @@ struct StatementCompiler : public boost::static_visitor<> {
             //If the variable is hold in a register, just move the register value
             if(registers.inRegister(variable)){
                 auto oldReg = registers[variable];
-                
-                writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
+               
+                //Only if the variable is not already on the same register 
+                if(oldReg != reg){
+                    writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
 
-                //There is nothing more in the old register
-                registers.remove(variable);
+                    //There is nothing more in the old register
+                    registers.remove(variable);
+                }
             } else {
                 auto position = variable->position();
 
@@ -209,6 +212,18 @@ struct StatementCompiler : public boost::static_visitor<> {
             
             //The variable is now held in the new register
             registers.setLocation(variable, reg);
+        }
+    }
+
+    void safeMove(std::shared_ptr<Variable> variable, Register reg){
+        if(registers.used(reg)){
+            if(registers[reg] != variable){
+                spills(reg);
+
+                move(variable, reg);
+            }
+        } else {
+            move(variable, reg);
         }
     }
 
@@ -665,39 +680,73 @@ struct StatementCompiler : public boost::static_visitor<> {
                 case tac::Operator::DIV:
                     //Form x = x / y when y is power of two
                     if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
-                        int constant = boost::get<int>(quadruple->arg2);
+                        int constant = boost::get<int>(*quadruple->arg2);
 
                         if(isPowerOfTwo(constant)){
                             writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
                             return;
                         }
                     }
-
-                    spills(Register::EAX);
-                    spills(Register::EDX);
-
-                    registers.reserve(Register::EAX);
-                    registers.reserve(Register::EDX);
                     
-                    copy(*quadruple->arg1, Register::EAX);
+                    spills(Register::EDX);
+                    registers.reserve(Register::EDX);
                     writer.stream() << "xor edx, edx" << std::endl;
 
-                    //If the second arg is immediate, we have to move it in a register
-                    if(isInt(*quadruple->arg2)){
-                        auto reg = getReg();
+                    //Form x = x / y
+                    if(*quadruple->arg1 == quadruple->result){
+                        safeMove(quadruple->result, Register::EAX);
 
-                        move(*quadruple->arg2, reg);
-                        writer.stream() << "idiv " << reg << std::endl;
+                        if(isInt(*quadruple->arg2)){
+                            auto reg = getReg();
+                            move(*quadruple->arg2, reg);
 
-                        if(registers.reserved(reg)){
-                            registers.release(reg);
+                            writer.stream() << "idiv " << reg << std::endl;
+
+                            if(registers.reserved(reg)){
+                                registers.release(reg);
+                            }
+                        } else {
+                            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
                         }
-                    } else {
-                        writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
-                    }
+                    //Form x = y / z (y: variable)
+                    } else if(isVariable(*quadruple->arg1)){
+                        safeMove(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
+                        
+                        if(isInt(*quadruple->arg2)){
+                            auto reg = getReg();
+                            move(*quadruple->arg2, reg);
 
-                    //result is in eax (no need to move it now)
-                    registers.setLocation(quadruple->result, Register::EAX);
+                            writer.stream() << "idiv " << reg << std::endl;
+
+                            if(registers.reserved(reg)){
+                                registers.release(reg);
+                            }
+                        } else {
+                            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
+                        }
+
+                        registers.setLocation(quadruple->result, Register::EAX);
+                    } else {
+                        spills(Register::EAX);
+                        registers.reserve(Register::EAX);
+                        
+                        copy(*quadruple->arg1, Register::EAX);
+                        
+                        if(isInt(*quadruple->arg2)){
+                            auto reg = getReg();
+                            move(*quadruple->arg2, reg);
+
+                            writer.stream() << "idiv " << reg << std::endl;
+
+                            if(registers.reserved(reg)){
+                                registers.release(reg);
+                            }
+                        } else {
+                            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
+                        }
+
+                        registers.setLocation(quadruple->result, Register::EAX);
+                    }
                     
                     registers.release(Register::EDX);
                     
