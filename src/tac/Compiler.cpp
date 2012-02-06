@@ -148,7 +148,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     mutable std::shared_ptr<tac::Function> function;
 
     result_type operator()(ast::Litteral& litteral) const {
-        return {litteral.label, litteral.value.size() - 2};
+        return {litteral.label, (int) litteral.value.size() - 2};
     }
 
     result_type operator()(ast::Integer& integer) const {
