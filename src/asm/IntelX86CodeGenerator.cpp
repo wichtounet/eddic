@@ -572,11 +572,11 @@ struct StatementCompiler : public boost::static_visitor<> {
                             writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                         }
                     } 
-                    //In the other cases, move the first arg into the result register and then add the second arg into it
+                    //In the other cases, use lea to perform the addition
                     else {
                         Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                        writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+
+                        writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                     }
 
                     break;
