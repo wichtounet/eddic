@@ -1218,10 +1218,12 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintIntegerBody(writer);
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
@@ -1243,12 +1245,14 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
@@ -1294,10 +1298,12 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintStringBody(writer);
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
@@ -1318,12 +1324,14 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
