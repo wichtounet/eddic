@@ -25,6 +25,10 @@ Val GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
+Val GetConstantValue::operator()(const ast::Minus& minus) const {
+    return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
+}
+
 Val GetConstantValue::operator()(const ast::VariableValue& value) const {
     Type type = value.Content->var->type();
     assert(type.isConst());
