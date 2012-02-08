@@ -81,17 +81,22 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
             negatedValue
         |   plusValue
         |   primaryValue;
-   
+    
     negatedValue = 
             lexer.subtraction
          >> primaryValue;
+   
+    negatedConstantValue = 
+            lexer.subtraction
+         >> integer;
   
     plusValue %=
             lexer.addition
          >> primaryValue;
     
     primaryValue = 
-            constant 
+            integer
+        |   litteral
         |   functionCall
         |   prefix_operation
         |   suffix_operation
@@ -127,8 +132,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
             qi::eps 
         >> lexer.litteral;
 
-    constant %= 
-            integer 
+    constant = 
+            negatedConstantValue
+        |   integer 
         |   litteral;
     
     functionCall %=
@@ -144,5 +150,4 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     suffix_operation %=
             lexer.word
         >>  qi::adapttokens[suffix_op];
-
 }

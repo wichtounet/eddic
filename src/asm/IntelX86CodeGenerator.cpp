@@ -26,6 +26,9 @@
 
 using namespace eddic;
 
+using eddic::tac::isVariable;
+using eddic::tac::isInt;
+
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : writer(w) {}
 
 namespace eddic { namespace as { 
@@ -184,11 +187,14 @@ struct StatementCompiler : public boost::static_visitor<> {
             //If the variable is hold in a register, just move the register value
             if(registers.inRegister(variable)){
                 auto oldReg = registers[variable];
-                
-                writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
+               
+                //Only if the variable is not already on the same register 
+                if(oldReg != reg){
+                    writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
 
-                //There is nothing more in the old register
-                registers.remove(variable);
+                    //There is nothing more in the old register
+                    registers.remove(variable);
+                }
             } else {
                 auto position = variable->position();
 
@@ -206,6 +212,18 @@ struct StatementCompiler : public boost::static_visitor<> {
             
             //The variable is now held in the new register
             registers.setLocation(variable, reg);
+        }
+    }
+
+    void safeMove(std::shared_ptr<Variable> variable, Register reg){
+        if(registers.used(reg)){
+            if(registers[reg] != variable){
+                spills(reg);
+
+                move(variable, reg);
+            }
+        } else {
+            move(variable, reg);
         }
     }
 
@@ -514,6 +532,47 @@ struct StatementCompiler : public boost::static_visitor<> {
         writer.stream() << "mov " << reg << ", 1" << std::endl;
         writer.stream() << "intern" << ctr << ":" << std::endl;
     }
+
+    void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
+        tac::assertIntOrVariable(arg2);
+
+        if(isInt(arg2)){
+            int constant = boost::get<int>(arg2);
+
+            if(isPowerOfTwo(constant)){
+                writer.stream() << "sal " << arg(result) << ", " << powerOfTwo(constant) << std::endl;
+            } else if(constant == 3){
+                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 2 + " << arg(result) << "]" << std::endl;
+            } else if(constant == 5){
+                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 4 + " << arg(result) << "]" << std::endl;
+            } else if(constant == 9){
+                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 8 + " << arg(result) << "]" << std::endl;
+            } else {
+                writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
+            }
+        } else {
+            writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
+        }
+    }
+  
+    //Div eax by arg2 
+    void div(std::shared_ptr<tac::Quadruple> quadruple){
+        writer.stream() << "mov edx, eax" << std::endl;
+        writer.stream() << "sar edx, 31" << std::endl;
+
+        if(isInt(*quadruple->arg2)){
+            auto reg = getReg();
+            move(*quadruple->arg2, reg);
+
+            writer.stream() << "idiv " << reg << std::endl;
+
+            if(registers.reserved(reg)){
+                registers.release(reg);
+            }
+        } else {
+            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
+        }
+    }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         current = quadruple;
@@ -536,15 +595,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
 
                     //Optimize the special form a = a + b by using only one instruction
-                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, result)){
+                    if(*quadruple->arg1 == result){
                         Register reg = getReg(quadruple->result);
                         
                         //a = a + 1 => increment a
-                        if(tac::equals<int>(*quadruple->arg2, 1)){
+                        if(*quadruple->arg2 == 1){
                             writer.stream() << "inc " << reg << std::endl;
                         }
                         //a = a + -1 => decrement a
-                        else if(tac::equals<int>(*quadruple->arg2, -1)){
+                        else if(*quadruple->arg2 == -1){
                             writer.stream() << "dec " << reg << std::endl;
                         }
                         //In the other cases, perform a simple addition
@@ -553,15 +612,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                         }
                     } 
                     //Optimize the special form a = b + a by using only one instruction
-                    else if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, result)){
+                    else if(*quadruple->arg2 == result){
                         Register reg = getReg(quadruple->result);
                         
                         //a = 1 + a => increment a
-                        if(tac::equals<int>(*quadruple->arg1, 1)){
+                        if(*quadruple->arg1 == 1){
                             writer.stream() << "inc " << reg << std::endl;
                         }
                         //a = -1 + a => decrement a
-                        else if(tac::equals<int>(*quadruple->arg1, -1)){
+                        else if(*quadruple->arg1 == -1){
                             writer.stream() << "dec " << reg << std::endl;
                         }
                         //In the other cases, perform a simple addition
@@ -569,11 +628,10 @@ struct StatementCompiler : public boost::static_visitor<> {
                             writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                         }
                     } 
-                    //In the other cases, move the first arg into the result register and then add the second arg into it
+                    //In the other cases, use lea to perform the addition
                     else {
                         Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                        writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                     }
 
                     break;
@@ -583,15 +641,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto result = quadruple->result;
                     
                     //Optimize the special form a = a - b by using only one instruction
-                    if(tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, result)){
+                    if(*quadruple->arg1 == result){
                         Register reg = getReg(quadruple->result);
                         
                         //a = a - 1 => decrement a
-                        if(tac::equals<int>(*quadruple->arg2, 1)){
+                        if(*quadruple->arg2 == 1){
                             writer.stream() << "dec " << reg << std::endl;
                         }
                         //a = a - -1 => increment a
-                        else if(tac::equals<int>(*quadruple->arg2, -1)){
+                        else if(*quadruple->arg2 == -1){
                             writer.stream() << "inc " << reg << std::endl;
                         }
                         //In the other cases, perform a simple subtraction
@@ -608,133 +666,77 @@ struct StatementCompiler : public boost::static_visitor<> {
                     
                     break;
                 }
-                //TODO Simplify this generation
                 case tac::Operator::MUL:
                 {
-                    bool fast = false;
-
-                    //Form x = -1 * x
-                    if(tac::equals<int>(*quadruple->arg1, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg2, quadruple->result)){
-                        writer.stream() << "neg " << arg(quadruple->result) << std::endl;
-
-                        fast = true;
-                    } 
-                    //Form x = x * -1
-                    else if(tac::equals<int>(*quadruple->arg2, -1) && tac::equals<std::shared_ptr<Variable>>(*quadruple->arg1, quadruple->result)){
-                        writer.stream() << "neg " << arg(quadruple->result) << std::endl;
-
-                        fast = true;
+                    //Form  x = x * y
+                    if(*quadruple->arg1 == quadruple->result){
+                        mul(quadruple->result, *quadruple->arg2);
                     }
-
-                    //If arg 1 is in eax
-                    if(!fast){
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            if(registers.inRegister(*ptr, Register::EAX)){
-                                if((*ptr)->position().isTemporary() && !isNextLive(*ptr)){
-                                    //If the arg is a variable, it will be matched to a register automatically
-                                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
-                                    {
-                                        writer.stream() << "mul " << arg(*quadruple->arg2) << std::endl;
-                                    } //If it's an immediate value, we have to move it in a register
-                                    else if (boost::get<int>(&*quadruple->arg2)){
-                                        auto reg = getReg();
-
-                                        move(*quadruple->arg2, reg);
-                                        writer.stream() << "mul " << reg << std::endl;
-
-                                        if(registers.reserved(reg)){
-                                            registers.release(reg);
-                                        }
-                                    }
-
-                                    fast = true;
-                                }
-                            }
-                        }
+                    //Form x = y * x
+                    else if(*quadruple->arg2 == quadruple->result){
+                        mul(quadruple->result, *quadruple->arg1);
                     }
-
-                    //If arg 2 is in eax
-                    if(!fast){
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                            if(registers.inRegister(*ptr, Register::EAX)){
-                                if((*ptr)->position().isTemporary() && !isNextLive(*ptr)){
-                                    //If the arg is a variable, it will be matched to a register automatically
-                                    if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1))
-                                    {
-                                        writer.stream() << "mul " << arg(*quadruple->arg1) << std::endl;
-                                    } //If it's an immediate value, we have to move it in a register
-                                    else if (boost::get<int>(&*quadruple->arg1)){
-                                        auto reg = getReg();
-
-                                        move(*quadruple->arg1, reg);
-                                        writer.stream() << "mul " << reg << std::endl;
-
-                                        if(registers.reserved(reg)){
-                                            registers.release(reg);
-                                        }
-                                    }
-
-                                    fast = true;
-                                }
-                            }
-                        }
+                    //Form x = y * z (z: immediate)
+                    else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
                     }
-
-                    //Neither of the args is in a register
-                    if(!fast){
-                        spills(Register::EAX);
-
-                        registers.reserve(Register::EAX);
-                        copy(*quadruple->arg1, Register::EAX);
-                        
-                        //If the arg is a variable, it will be matched to a register automatically
-                        if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2))
-                        {
-                            writer.stream() << "mul " << arg(*quadruple->arg2) << std::endl;
-                        } //If it's an immediate value, we have to move it in a register
-                        else if (boost::get<int>(&*quadruple->arg2)){
-                            auto reg = getReg();
-
-                            move(*quadruple->arg2, reg);
-                            writer.stream() << "mul " << reg << std::endl;
-
-                            if(registers.reserved(reg)){
-                                registers.release(reg);
-                            }
-                        }
+                    //Form x = y * z (y: immediate)
+                    else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
                     }
-
-                    //result is in eax (no need to move it now)
-                    registers.setLocation(quadruple->result, Register::EAX);
+                    //Form x = y * z (both variables)
+                    else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+                        auto reg = getReg(quadruple->result, false);
+                        copy(*quadruple->arg1, reg);
+                        writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                    } else {
+                        //This case should never happen unless the optimizer has bugs
+                        assert(false);
+                    }
 
                     break;            
                 }
                 case tac::Operator::DIV:
-                    spills(Register::EAX);
-                    spills(Register::EDX);
+                    //Form x = x / y when y is power of two
+                    if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
+                        int constant = boost::get<int>(*quadruple->arg2);
 
-                    registers.reserve(Register::EAX);
+                        if(isPowerOfTwo(constant)){
+                            writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
+                            return;
+                        }
+                    }
+                    
+                    spills(Register::EDX);
                     registers.reserve(Register::EDX);
                     
-                    copy(*quadruple->arg1, Register::EAX);
-                    writer.stream() << "xor edx, edx" << std::endl;
+                    //Form x = x / y
+                    if(*quadruple->arg1 == quadruple->result){
+                        safeMove(quadruple->result, Register::EAX);
 
-                    //If the second arg is immediate, we have to move it in a register
-                    if(boost::get<int>(&*quadruple->arg2)){
-                        auto reg = getReg();
+                        div(quadruple);
+                    //Form x = y / z (y: variable)
+                    } else if(isVariable(*quadruple->arg1)){
+                        spills(Register::EAX);
+                        registers.reserve(Register::EAX);
+                        
+                        copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
+                        
+                        div(quadruple);
 
-                        move(*quadruple->arg2, reg);
-                        writer.stream() << "div " << reg << std::endl;
-
-                        if(registers.reserved(reg)){
-                            registers.release(reg);
-                        }
+                        registers.release(Register::EAX);
+                        registers.setLocation(quadruple->result, Register::EAX);
                     } else {
-                        writer.stream() << "div " << arg(*quadruple->arg2) << std::endl;
-                    }
+                        spills(Register::EAX);
+                        registers.reserve(Register::EAX);
+                        
+                        copy(*quadruple->arg1, Register::EAX);
+                        
+                        div(quadruple);
 
-                    //result is in eax (no need to move it now)
-                    registers.setLocation(quadruple->result, Register::EAX);
+                        registers.release(Register::EAX);
+                        registers.setLocation(quadruple->result, Register::EAX);
+                    }
                     
                     registers.release(Register::EDX);
                     
@@ -747,21 +749,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.reserve(Register::EDX);
                     
                     copy(*quadruple->arg1, Register::EAX);
-                    writer.stream() << "xor edx, edx" << std::endl;
 
-                    //If the second arg is immediate, we have to move it in a register
-                    if(boost::get<int>(&*quadruple->arg2)){
-                        auto reg = getReg();
-
-                        move(*quadruple->arg2, reg);
-                        writer.stream() << "div " << reg << std::endl;
-
-                        if(registers.reserved(reg)){
-                            registers.release(reg);
-                        }
-                    } else {
-                        writer.stream() << "div " << arg(*quadruple->arg2) << std::endl;
-                    }
+                    div(quadruple);
 
                     //result is in edx (no need to move it now)
                     registers.setLocation(quadruple->result, Register::EDX);
@@ -772,7 +761,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 case tac::Operator::MINUS:
                 {
                     //If arg is immediate, we have to move it in a register
-                    if(boost::get<int>(&*quadruple->arg1)){
+                    if(isInt(*quadruple->arg1)){
                         auto reg = getReg();
 
                         move(*quadruple->arg1, reg);
@@ -1206,10 +1195,12 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintIntegerBody(writer);
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
@@ -1231,12 +1222,14 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
@@ -1282,10 +1275,12 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintStringBody(writer);
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;
@@ -1306,12 +1301,14 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebx" << std::endl;
     writer.stream() << "push ecx" << std::endl;
     writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
     //Restore registers
+    writer.stream() << "pop esi" << std::endl;
     writer.stream() << "pop edx" << std::endl;
     writer.stream() << "pop ecx" << std::endl;
     writer.stream() << "pop ebx" << std::endl;

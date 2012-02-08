@@ -52,6 +52,10 @@ inline std::string toString(T number) {
 
 std::string execCommand(const std::string& command);
 
+bool isPowerOfTwo (int x);
+
+int powerOfTwo(int x);
+
 } //end of eddic
 
 #endif

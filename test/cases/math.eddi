@@ -1,0 +1,32 @@
+//Variables are global to avoid optimizations
+int a = 111;
+int b = 222;
+int c = -111;
+int d = -222;
+
+void main(){
+    print(a + b);
+    print("|");
+    print(b - a);
+    print("|");
+    print(a - b);
+    print("|");
+    print(0 * a);
+    print("|");
+    print(c * d);
+    print("|");
+    print(b / a);
+    print("|");
+    print(d / a);
+    print("|");
+    print(d / b);
+    print("|");
+    print(d / d);
+    print("|");
+    print(d / c);
+    print("|");
+    print(d % c);
+    print("|");
+    print(c % d);
+    print("|");
+}

@@ -22,3 +22,17 @@ std::string eddic::execCommand(const std::string& command) {
 
     return output.str();
 }
+
+bool eddic::isPowerOfTwo (int x){
+    return ((x > 0) && !(x & (x - 1)));
+}
+
+int eddic::powerOfTwo(int x){
+    int i = 0; 
+    while (x > 1){
+        x /= 2;
+        ++i;
+    }
+
+    return i;
+}
