@@ -554,6 +554,25 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
         }
     }
+  
+    //Div eax by arg2 
+    void div(std::shared_ptr<tac::Quadruple> quadruple){
+        writer.stream() << "mov edx, eax" << std::endl;
+        writer.stream() << "sar edx, 31" << std::endl;
+
+        if(isInt(*quadruple->arg2)){
+            auto reg = getReg();
+            move(*quadruple->arg2, reg);
+
+            writer.stream() << "idiv " << reg << std::endl;
+
+            if(registers.reserved(reg)){
+                registers.release(reg);
+            }
+        } else {
+            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
+        }
+    }
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         current = quadruple;
@@ -690,41 +709,22 @@ struct StatementCompiler : public boost::static_visitor<> {
                     
                     spills(Register::EDX);
                     registers.reserve(Register::EDX);
-                    writer.stream() << "xor edx, edx" << std::endl;
-
+                    
                     //Form x = x / y
                     if(*quadruple->arg1 == quadruple->result){
                         safeMove(quadruple->result, Register::EAX);
 
-                        if(isInt(*quadruple->arg2)){
-                            auto reg = getReg();
-                            move(*quadruple->arg2, reg);
-
-                            writer.stream() << "idiv " << reg << std::endl;
-
-                            if(registers.reserved(reg)){
-                                registers.release(reg);
-                            }
-                        } else {
-                            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
-                        }
+                        div(quadruple);
                     //Form x = y / z (y: variable)
                     } else if(isVariable(*quadruple->arg1)){
-                        safeMove(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
+                        spills(Register::EAX);
+                        registers.reserve(Register::EAX);
                         
-                        if(isInt(*quadruple->arg2)){
-                            auto reg = getReg();
-                            move(*quadruple->arg2, reg);
+                        copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
+                        
+                        div(quadruple);
 
-                            writer.stream() << "idiv " << reg << std::endl;
-
-                            if(registers.reserved(reg)){
-                                registers.release(reg);
-                            }
-                        } else {
-                            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
-                        }
-
+                        registers.release(Register::EAX);
                         registers.setLocation(quadruple->result, Register::EAX);
                     } else {
                         spills(Register::EAX);
@@ -732,19 +732,9 @@ struct StatementCompiler : public boost::static_visitor<> {
                         
                         copy(*quadruple->arg1, Register::EAX);
                         
-                        if(isInt(*quadruple->arg2)){
-                            auto reg = getReg();
-                            move(*quadruple->arg2, reg);
+                        div(quadruple);
 
-                            writer.stream() << "idiv " << reg << std::endl;
-
-                            if(registers.reserved(reg)){
-                                registers.release(reg);
-                            }
-                        } else {
-                            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
-                        }
-
+                        registers.release(Register::EAX);
                         registers.setLocation(quadruple->result, Register::EAX);
                     }
                     
@@ -759,21 +749,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.reserve(Register::EDX);
                     
                     copy(*quadruple->arg1, Register::EAX);
-                    writer.stream() << "xor edx, edx" << std::endl;
 
-                    //If the second arg is immediate, we have to move it in a register
-                    if(boost::get<int>(&*quadruple->arg2)){
-                        auto reg = getReg();
-
-                        move(*quadruple->arg2, reg);
-                        writer.stream() << "div " << reg << std::endl;
-
-                        if(registers.reserved(reg)){
-                            registers.release(reg);
-                        }
-                    } else {
-                        writer.stream() << "div " << arg(*quadruple->arg2) << std::endl;
-                    }
+                    div(quadruple);
 
                     //result is in edx (no need to move it now)
                     registers.setLocation(quadruple->result, Register::EDX);
