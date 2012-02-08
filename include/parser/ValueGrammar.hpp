@@ -30,6 +30,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
     qi::rule<lexer::Iterator, ast::Value()> unaryValue;
     qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
+    qi::rule<lexer::Iterator, ast::Minus()> negatedConstantValue;
     qi::rule<lexer::Iterator, ast::Plus()> plusValue;
     qi::rule<lexer::Iterator, ast::ComposedValue()> additiveValue;
     qi::rule<lexer::Iterator, ast::ComposedValue()> multiplicativeValue;
