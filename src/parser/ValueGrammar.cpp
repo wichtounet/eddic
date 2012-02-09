@@ -50,6 +50,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         ("++", ast::Operator::INC)
         ("--", ast::Operator::DEC)
         ;
+    
+    builtin_op.add
+        ("size", ast::BuiltinType::SIZE)
+        ("length", ast::BuiltinType::LENGTH)
+        ;
 
     //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
 
@@ -97,6 +102,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     primaryValue = 
             integer
         |   litteral
+        |   builtin_operator
         |   functionCall
         |   prefix_operation
         |   suffix_operation
@@ -136,6 +142,12 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
             negatedConstantValue
         |   integer 
         |   litteral;
+   
+    builtin_operator %=
+            qi::adapttokens[builtin_op]
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >   lexer.right_parenth;
     
     functionCall %=
             lexer.word

@@ -35,6 +35,7 @@ typedef boost::variant<
             False,
             ArrayValue,
             FunctionCall,
+            BuiltinOperator,
             SuffixOperation,
             PrefixOperation
         > Value;
@@ -46,6 +47,7 @@ typedef boost::variant<
 #include "ast/ComposedValue.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
+#include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"
 #include "ast/Plus.hpp"
 
