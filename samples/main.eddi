@@ -1,0 +1,3 @@
+void main(string[] args){
+    println(args[0]);
+}
