@@ -160,7 +160,7 @@ int Compiler::compileOnly(const std::string& file) {
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
             as::IntelX86CodeGenerator generator(writer);
-            generator.generate(tacProgram, pool); 
+            generator.generate(tacProgram, pool, functionTable); 
             writer.write(); 
 
             //If it's necessary, assemble and link the assembly
