@@ -8,8 +8,8 @@
 #include <iostream>
 
 #include "DebugVisitor.hpp"
-
 #include "VisitorUtils.hpp"
+#include "Variable.hpp"
 
 #include "ast/SourceFile.hpp"
 
@@ -192,8 +192,8 @@ void DebugVisitor::operator()(ast::False&) const {
     std::cout << indent() << "false" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::VariableValue&) const {
-    std::cout << indent() << "Variable" << std::endl; 
+void DebugVisitor::operator()(ast::VariableValue& value) const {
+    std::cout << indent() << "Variable [" << value.Content->var->name()  << "]" << std::endl; 
 }
 
 void DebugVisitor::operator()(ast::ArrayValue&) const {
