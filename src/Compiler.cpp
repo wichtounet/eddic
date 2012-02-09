@@ -129,6 +129,9 @@ int Compiler::compileOnly(const std::string& file) {
 
             //Check for warnings
             checkForWarnings(program, functionTable);
+
+            //Check that there is a main in the program
+            checkForMain(functionTable);
             
             //Optimize the AST
             optimize(program, functionTable, pool);
@@ -226,6 +229,12 @@ void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     DebugStopWatch<debug> timer("Check for warnings");
     WarningsEngine engine;
     engine.check(program, table);
+}
+
+void eddic::checkForMain(FunctionTable& table){
+    if(!table.exists("main")){
+        throw SemanticalException("Your program must contain a main function"); 
+    }
 }
 
 void eddic::clean(ast::SourceFile& program){
