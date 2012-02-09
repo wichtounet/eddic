@@ -1463,6 +1463,16 @@ void addAllocFunction(AssemblyFileWriter& writer){
     leaveFunction(writer);
 }
 
+void addTimeFunction(AssemblyFileWriter& writer){
+    defineFunction(writer, "_F4time");
+
+    writer.stream() << "xor eax, eax" << std::endl;
+    writer.stream() << "cpuid" << std::endl;
+    writer.stream() << "rdtsc" << std::endl;
+
+    leaveFunction(writer);
+}
+
 void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
    addPrintBoolFunction(writer);
@@ -1470,6 +1480,7 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintStringFunction(writer); 
    addConcatFunction(writer);
    addAllocFunction(writer);
+   addTimeFunction(writer);
 }
 
 void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
