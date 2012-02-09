@@ -86,7 +86,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             
             std::string name = functionCall.Content->functionName;
             
-            if(name == "println" || name == "print"){
+            if(name == "println" || name == "print" || name == "time"){
                 return;
             }
 
