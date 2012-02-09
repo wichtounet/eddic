@@ -525,12 +525,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         
         static int ctr = 0;
         ++ctr;
-
-        //TODO In the future avoid that to allow any value other than 0 as true
-        writer.stream() << "or " << reg << ", " << reg << std::endl;
-        writer.stream() << "jz " << "intern" << ctr << std::endl;
-        writer.stream() << "mov " << reg << ", 1" << std::endl;
-        writer.stream() << "intern" << ctr << ":" << std::endl;
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -1185,7 +1179,6 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << std::endl;
-    writer.stream() << "_F5printB:" << std::endl;
     writer.stream() << "_F5printI:" << std::endl;
     writer.stream() << "push ebp" << std::endl;
     writer.stream() << "mov ebp, esp" << std::endl;
@@ -1212,7 +1205,6 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     /* println version */
     
     writer.stream() << std::endl;
-    writer.stream() << "_F7printlnB:" << std::endl;
     writer.stream() << "_F7printlnI:" << std::endl;
     writer.stream() << "push ebp" << std::endl;
     writer.stream() << "mov ebp, esp" << std::endl;
@@ -1225,6 +1217,73 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     writer.stream() << "push esi" << std::endl;
 
     addPrintIntegerBody(writer);
+
+    writer.stream() << "call _F7println" << std::endl;
+
+    //Restore registers
+    writer.stream() << "pop esi" << std::endl;
+    writer.stream() << "pop edx" << std::endl;
+    writer.stream() << "pop ecx" << std::endl;
+    writer.stream() << "pop ebx" << std::endl;
+    writer.stream() << "pop eax" << std::endl;
+
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+}
+
+void addPrintBoolBody(AssemblyFileWriter& writer){
+    writer.stream() << "mov eax, [ebp-4] " << std::endl;
+    writer.stream() << "or eax, eax" << std::endl;
+    writer.stream() << "jne .true_print" << std::endl;
+    writer.stream() << "push 0" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << "jmp .end" << std::endl;
+    writer.stream() << ".true_print:" << std::endl;
+    writer.stream() << "push 1" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << ".end:" << std::endl;
+}
+
+void addPrintBoolFunction(AssemblyFileWriter& writer){
+    writer.stream() << std::endl;
+    writer.stream() << "_F5printB:" << std::endl;
+    writer.stream() << "push ebp" << std::endl;
+    writer.stream() << "mov ebp, esp" << std::endl;
+
+    //Save registers
+    writer.stream() << "push eax" << std::endl;
+    writer.stream() << "push ebx" << std::endl;
+    writer.stream() << "push ecx" << std::endl;
+    writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
+
+    addPrintBoolBody(writer);
+
+    //Restore registers
+    writer.stream() << "pop esi" << std::endl;
+    writer.stream() << "pop edx" << std::endl;
+    writer.stream() << "pop ecx" << std::endl;
+    writer.stream() << "pop ebx" << std::endl;
+    writer.stream() << "pop eax" << std::endl;
+
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+   
+    /* println version */
+    
+    writer.stream() << std::endl;
+    writer.stream() << "_F7printlnB:" << std::endl;
+    writer.stream() << "push ebp" << std::endl;
+    writer.stream() << "mov ebp, esp" << std::endl;
+
+    //Save registers
+    writer.stream() << "push eax" << std::endl;
+    writer.stream() << "push ebx" << std::endl;
+    writer.stream() << "push ecx" << std::endl;
+    writer.stream() << "push edx" << std::endl;
+    writer.stream() << "push esi" << std::endl;
+
+    addPrintBoolBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
@@ -1449,6 +1508,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
+   addPrintBoolFunction(writer);
    addPrintLineFunction(writer); 
    addPrintStringFunction(writer); 
    addConcatFunction(writer);
