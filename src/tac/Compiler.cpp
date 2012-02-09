@@ -180,22 +180,21 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                     } else if(variable->position().isParameter()){
                         auto t1 = function->context->newTemporary();
 
-                        //
+                        //The size of the array is at the address pointed by the variable
                         function->add(std::make_shared<tac::Quadruple>(t1, variable, tac::Operator::DOT, 0));
 
                         return {t1};
                     }
-
-                    assert(false);
                 }
+                    
+                assert(false);
 
                 break;
             case ast::BuiltinType::LENGTH:
-                //TODO
-                break;
+                return {visit(*this, value)[1]};
+            default:
+                assert(false);
         }
-
-        return {1};
     }
 
     result_type operator()(ast::FunctionCall& call) const {
