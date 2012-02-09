@@ -1132,43 +1132,37 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
 
     //If the user wants the args, we add support for them
     if(table.getFunction("main")->parameters.size() == 1){
-        writer.stream() << "pop ebx" << std::endl;                          //Get the number of args
-        writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //Compute the size of the array
+        writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
+        writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
         writer.stream() << "push ecx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;                  //eax = address of the array
+        writer.stream() << "call eddi_alloc" << std::endl;                  //eax = start address of the array
         writer.stream() << "add esp, 4" << std::endl;
 
-        writer.stream() << "mov esi, ebx" << std::endl;                     //esi = number of args
-        writer.stream() << "mov edi, eax" << std::endl;                     //edi = address of the array
+        writer.stream() << "lea esi, [eax + ecx - 4]" << std::endl;         //esi = last address of the array
+        writer.stream() << "mov edx, esi" << std::endl;                     //edx = last address of the array
+        
+        writer.stream() << "mov [esi], ebx" << std::endl;                   //Set the length of the array
+        writer.stream() << "sub esi, 8" << std::endl;                       //Move to the destination address of the first arg
 
         writer.stream() << ".copy_args:" << std::endl;
-        writer.stream() << "pop edx" << std::endl;                          //edx = address of current args
-        writer.stream() << "mov [edi+4], edx" << std::endl;                 //set the address of the string
+        writer.stream() << "pop edi" << std::endl;                          //edi = address of current args
+        writer.stream() << "mov [esi+4], edi" << std::endl;                 //set the address of the string
 
         /* Calculate the length of the string  */
-        writer.stream() << "push edi" << std::endl;
-        writer.stream() << "mov edi, edx" << std::endl;
-
         writer.stream() << "xor eax, eax" << std::endl;
         writer.stream() << "xor ecx, ecx" << std::endl;
         writer.stream() << "not ecx" << std::endl;
-        writer.stream() << "cld" << std::endl;
         writer.stream() << "repne scasb" << std::endl;
         writer.stream() << "not ecx" << std::endl;
         writer.stream() << "dec ecx" << std::endl;
-
-        writer.stream() << "pop edi" << std::endl;
         /* End of the calculation */
 
-        writer.stream() << "mov dword [edi], ecx" << std::endl;               //set the length of the string
-        writer.stream() << "add edi, 8" << std::endl;
+        writer.stream() << "mov dword [esi], ecx" << std::endl;               //set the length of the string
+        writer.stream() << "sub esi, 8" << std::endl;
         writer.stream() << "dec ebx" << std::endl;
         writer.stream() << "jnz .copy_args" << std::endl;
-        
-        writer.stream() << "mov [edi], esi" << std::endl;                   //Set the length of the array
 
-        //Push address of the array 
-        writer.stream() << "push edi" << std::endl;                         //Push the address of the array
+        writer.stream() << "push edx" << std::endl;
     }
 
     writer.stream() << "call main" << std::endl;
