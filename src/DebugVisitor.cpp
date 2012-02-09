@@ -114,6 +114,14 @@ void DebugVisitor::operator()(ast::FunctionCall& call) const {
     --level;
 }
 
+void DebugVisitor::operator()(ast::Builtin& builtin) const {
+    std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
+
+    ++level;
+    visit_each(*this, builtin.Content->values);
+    --level;
+}
+
 void DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
     std::cout << indent() << "Variable declaration" << std::endl; 
 
