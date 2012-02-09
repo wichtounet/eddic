@@ -36,6 +36,7 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::ComposedValue, false)
     ASSIGN(ast::Minus, false)
     ASSIGN(ast::Plus, false)
+    ASSIGN(ast::BuiltinOperator, false)
 
     //A call to a function returning an int is single argument
     bool operator()(ast::FunctionCall& call) const {
@@ -59,6 +60,7 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::Minus, false)
     ASSIGN(ast::Plus, false)
     ASSIGN(ast::FunctionCall, false)
+    ASSIGN(ast::BuiltinOperator, false)
     ASSIGN(ast::SuffixOperation, false)
     ASSIGN(ast::PrefixOperation, false)
 };
@@ -160,6 +162,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     }
     
     result_type operator()(ast::True&) const {
+        return {1};
+    }
+
+    result_type operator()(ast::BuiltinOperator& builtin) const {
+        //TODO
         return {1};
     }
 
