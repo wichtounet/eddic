@@ -1,0 +1,27 @@
+int globalArray[10];
+string globalArrayB[11];
+
+void main(){
+    println(size(globalArray));
+    println(size(globalArrayB));
+    
+    int array[12];
+    string arrayB[13];
+    
+    println(size(array));
+    println(size(arrayB));
+
+    test(array);
+    test(arrayB);
+    
+    test(globalArray);
+    test(globalArrayB);
+}
+
+void test(int[] parameterArray){
+    println(size(parameterArray));
+}
+
+void test(string[] parameterArray){
+    println(size(parameterArray));
+}
