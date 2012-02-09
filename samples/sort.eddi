@@ -11,7 +11,13 @@ void main(){
         println(a);
     }*/
 
+    int start = time();
     bubblesort();
+    int end = time();
+    int diff = start - end;
+    print("Bubble Sort took ");
+    print(diff);
+    println(" clock cycles");
 
     /*println("After sort");
 
