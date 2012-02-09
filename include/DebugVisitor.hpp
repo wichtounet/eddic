@@ -49,6 +49,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::ArrayAssignment& assign) const ;
     void operator()(ast::Litteral&) const ;
     void operator()(ast::FunctionCall&) const ;
+    void operator()(ast::BuiltinOperator&) const ;
     void operator()(ast::Integer& integer) const ;
     void operator()(ast::VariableValue&) const ;
     void operator()(ast::ArrayValue&) const ;

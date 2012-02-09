@@ -36,6 +36,7 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::ComposedValue, false)
     ASSIGN(ast::Minus, false)
     ASSIGN(ast::Plus, false)
+    ASSIGN(ast::BuiltinOperator, false)
 
     //A call to a function returning an int is single argument
     bool operator()(ast::FunctionCall& call) const {
@@ -59,6 +60,7 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::Minus, false)
     ASSIGN(ast::Plus, false)
     ASSIGN(ast::FunctionCall, false)
+    ASSIGN(ast::BuiltinOperator, false)
     ASSIGN(ast::SuffixOperation, false)
     ASSIGN(ast::PrefixOperation, false)
 };
@@ -161,6 +163,38 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     
     result_type operator()(ast::True&) const {
         return {1};
+    }
+
+    result_type operator()(ast::BuiltinOperator& builtin) const {
+        auto& value = builtin.Content->values[0];
+
+        switch(builtin.Content->type){
+            case ast::BuiltinType::SIZE:
+                if(auto* ptr = boost::get<ast::VariableValue>(&value)){
+                    auto variable = (*ptr).Content->var;
+
+                    if(variable->position().isGlobal()){
+                        return {variable->type().size()};
+                    } else if(variable->position().isStack()){
+                        return {variable->type().size()};
+                    } else if(variable->position().isParameter()){
+                        auto t1 = function->context->newTemporary();
+
+                        //The size of the array is at the address pointed by the variable
+                        function->add(std::make_shared<tac::Quadruple>(t1, variable, tac::Operator::DOT, 0));
+
+                        return {t1};
+                    }
+                }
+                    
+                assert(false);
+
+                break;
+            case ast::BuiltinType::LENGTH:
+                return {visit(*this, value)[1]};
+            default:
+                assert(false);
+        }
     }
 
     result_type operator()(ast::FunctionCall& call) const {

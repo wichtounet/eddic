@@ -96,6 +96,20 @@ BOOST_AUTO_TEST_CASE( math ){
     assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|");
 }
 
+BOOST_AUTO_TEST_CASE( builtin ){
+    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|");
+}
+
+BOOST_AUTO_TEST_CASE( args ){
+    assertCompiles("test/cases/args.eddi");
+
+    std::string out = eddic::execCommand("./a.out"); 
+    BOOST_CHECK_EQUAL ("./a.out|", out);
+    
+    out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
+    BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
+}
+    
 /* Unit test for bug fixes regression */
 BOOST_AUTO_TEST_CASE( while_bug ){
     assertOutputEquals("while_bug.eddi", "W1W2W3W4W5");

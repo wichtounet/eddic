@@ -22,6 +22,9 @@ struct False;
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
+struct ASTBuiltinOperator;
+typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
+
 struct ASTVariableValue;
 typedef Deferred<ASTVariableValue> VariableValue;
 
