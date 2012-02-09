@@ -1,6 +1,8 @@
 int globalArray[10];
 string globalArrayB[11];
 
+const string ccc = "asdfasdfiasdf";
+
 void main(){
     println(size(globalArray));
     println(size(globalArrayB));
@@ -16,6 +18,18 @@ void main(){
     
     test(globalArray);
     test(globalArrayB);
+
+    println("Test length()");
+
+    println(length("asdf"));
+
+    string value = "idididid";
+    println(length(value));
+    
+    println(length(ccc));
+    println(length("asdf" + "1111"));
+    println(length(arrayB[0]));
+    println(length(test()));
 }
 
 void test(int[] parameterArray){
@@ -24,4 +38,8 @@ void test(int[] parameterArray){
 
 void test(string[] parameterArray){
     println(size(parameterArray));
+}
+
+string test(){
+    return "999";
 }
