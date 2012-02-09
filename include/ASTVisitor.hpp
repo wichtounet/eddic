@@ -73,6 +73,11 @@ void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
 }
 
+#define AUTO_RECURSE_BUILTIN_OPERATORS()\
+void operator()(ast::BuiltinOperator& builtin){\
+    visit_each(*this, builtin.Content->values);\
+}
+
 #define AUTO_RECURSE_COMPOSED_VALUES()\
 void operator()(ast::ComposedValue& value){\
     visit(*this, value.Content->first);\
