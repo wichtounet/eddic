@@ -1,38 +1,38 @@
-int array[10];
+int array[10000];
 
 void main(){
-    for(int i = 0; i < size(array); i = i + 1){
+    for(int i = 0; i < size(array); i++){
         array[i] = size(array) - i;
     }
 
-    println("Before sort");
+    /*println("Before sort");
 
     foreach(int a in array){
         println(a);
-    }
+    }*/
 
     bubblesort();
 
-    println("After sort");
+    /*println("After sort");
 
     foreach(int a in array){
         println(a);
-    }
+    }*/
 }
 
 void bubblesort(){
-    int swapped = 1;
+    bool swapped = true;
 
-    while(swapped == 1){
-        swapped = 0;
+    while(swapped){
+        swapped = false;
 
-        for(int i = 1; i < size(array); i = i + 1){
+        for(int i = 1; i < size(array); i++){
             if(array[i - 1] > array[i]){
                 int a = array[i];
                 array[i] = array[i - 1];
                 array[i - 1] = a; 
 
-                swapped = 1;
+                swapped = true;
             }
         }
     }
