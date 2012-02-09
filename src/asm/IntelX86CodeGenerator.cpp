@@ -1137,7 +1137,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
     //If the number is negative, we print the - and then the number
     writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jge loop" << std::endl;
+    writer.stream() << "jge .loop" << std::endl;
 
     writer.stream() << "neg eax" << std::endl;
     writer.stream() << "push eax" << std::endl; //We push eax to not loose it from print_string
@@ -1159,12 +1159,12 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "push edx" << std::endl;
     writer.stream() << "inc esi" << std::endl;
     writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jz   next" << std::endl;
-    writer.stream() << "jmp loop" << std::endl;
+    writer.stream() << "jz .next" << std::endl;
+    writer.stream() << "jmp .loop" << std::endl;
 
     writer.stream() << ".next" << ":" << std::endl;
     writer.stream() << "cmp esi, 0" << std::endl;
-    writer.stream() << "jz   exit" << std::endl;
+    writer.stream() << "jz .exit" << std::endl;
     writer.stream() << "dec esi" << std::endl;
 
     writer.stream() << "mov eax, 4" << std::endl;
@@ -1175,7 +1175,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
     writer.stream() << "add esp, 4" << std::endl;
 
-    writer.stream() << "jmp next" << ctr << std::endl;
+    writer.stream() << "jmp .next" << std::endl;
 
     writer.stream() << ".exit" << ":" << std::endl;
 }
@@ -1338,13 +1338,13 @@ void addConcatFunction(AssemblyFileWriter& writer){
 
     writer.stream() << ".copy_concat_1:" << std::endl;
     writer.stream() << "cmp ebx, 0" << std::endl;
-    writer.stream() << "je end_concat_1"  << std::endl;
+    writer.stream() << "je .end_concat_1"  << std::endl;
     writer.stream() << "mov byte al, [edx]" << std::endl;
     writer.stream() << "mov byte [ecx], al" << std::endl;
     writer.stream() << "add ecx, 1" << std::endl;
     writer.stream() << "add edx, 1" << std::endl;
     writer.stream() << "sub ebx, 1" << std::endl;
-    writer.stream() << "jmp copy_concat_1" << std::endl;
+    writer.stream() << "jmp .copy_concat_1" << std::endl;
     writer.stream() << ".end_concat_1" << ":" << std::endl;
 
     writer.stream() << "mov ebx, [ebp + 8]" << std::endl;
@@ -1352,13 +1352,13 @@ void addConcatFunction(AssemblyFileWriter& writer){
 
     writer.stream() << ".copy_concat_2:" << std::endl;
     writer.stream() << "cmp ebx, 0" << std::endl;
-    writer.stream() << "je end_concat_2"  << std::endl;
+    writer.stream() << "je .end_concat_2"  << std::endl;
     writer.stream() << "mov byte al, [edx]" << std::endl;
     writer.stream() << "mov byte [ecx], al" << std::endl;
     writer.stream() << "add ecx, 1" << std::endl;
     writer.stream() << "add edx, 1" << std::endl;
     writer.stream() << "sub ebx, 1" << std::endl;
-    writer.stream() << "jmp copy_concat_2" << std::endl;
+    writer.stream() << "jmp .copy_concat_2" << std::endl;
     writer.stream() << ".end_concat_2:" << std::endl;
 
     writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
@@ -1386,7 +1386,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
     writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
 
     writer.stream() << "cmp ecx, ebx" << std::endl;
-    writer.stream() << "jle alloc_normal" << std::endl;
+    writer.stream() << "jle .alloc_normal" << std::endl;
 
     //Get the current address
     writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
