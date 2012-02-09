@@ -522,15 +522,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         writer.stream() << set << " " << toSubRegister(reg) << std::endl;
-        
-        static int ctr = 0;
-        ++ctr;
-
-        //TODO In the future avoid that to allow any value other than 0 as true
-        writer.stream() << "or " << reg << ", " << reg << std::endl;
-        writer.stream() << "jz " << "intern" << ctr << std::endl;
-        writer.stream() << "mov " << reg << ", 1" << std::endl;
-        writer.stream() << "intern" << ctr << ":" << std::endl;
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -1061,11 +1052,24 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, 
     }
 }
 
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    writer.stream() << std::endl << function->getName() << ":" << std::endl;
-    
+void enterFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebp" << std::endl;
     writer.stream() << "mov ebp, esp" << std::endl;
+}
+
+void defineFunction(AssemblyFileWriter& writer, const std::string& function){
+    writer.stream() << std::endl << function << ":" << std::endl;
+    
+    enterFunction(writer);
+}
+
+void leaveFunction(AssemblyFileWriter& writer){
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+}
+
+void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+    defineFunction(writer, function->getName());
 
     auto size = function->context->size();
     //Only if necessary, allocates size on the stack for the local variables
@@ -1114,9 +1118,8 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
     if(size > 0){
         writer.stream() << "add esp, " << size << std::endl;
     }
-    
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+   
+    leaveFunction(writer); 
 }
 
 void as::IntelX86CodeGenerator::writeRuntimeSupport(){
@@ -1183,75 +1186,96 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "exit" << ctr << ":" << std::endl;
 }
 
-void addPrintIntegerFunction(AssemblyFileWriter& writer){
-    writer.stream() << std::endl;
-    writer.stream() << "_F5printB:" << std::endl;
-    writer.stream() << "_F5printI:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+void save(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
+    for(auto& reg : registers){
+        writer.stream() << "push " << reg << std::endl;
+    }
+}
 
-    //Save registers
-    writer.stream() << "push eax" << std::endl;
-    writer.stream() << "push ebx" << std::endl;
-    writer.stream() << "push ecx" << std::endl;
-    writer.stream() << "push edx" << std::endl;
-    writer.stream() << "push esi" << std::endl;
+void restore(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
+    auto it = registers.rbegin();
+    auto end = registers.rend();
+
+    while(it != end){
+        writer.stream() << "pop " << *it << std::endl;
+        ++it;
+    }
+}
+
+void addPrintIntegerFunction(AssemblyFileWriter& writer){
+    defineFunction(writer, "_F5printI");
+
+    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintIntegerBody(writer);
 
-    //Restore registers
-    writer.stream() << "pop esi" << std::endl;
-    writer.stream() << "pop edx" << std::endl;
-    writer.stream() << "pop ecx" << std::endl;
-    writer.stream() << "pop ebx" << std::endl;
-    writer.stream() << "pop eax" << std::endl;
+    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
    
     /* println version */
     
-    writer.stream() << std::endl;
-    writer.stream() << "_F7printlnB:" << std::endl;
-    writer.stream() << "_F7printlnI:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+    defineFunction(writer, "_F7printlnI");
 
-    //Save registers
-    writer.stream() << "push eax" << std::endl;
-    writer.stream() << "push ebx" << std::endl;
-    writer.stream() << "push ecx" << std::endl;
-    writer.stream() << "push edx" << std::endl;
-    writer.stream() << "push esi" << std::endl;
+    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    //Restore registers
-    writer.stream() << "pop esi" << std::endl;
-    writer.stream() << "pop edx" << std::endl;
-    writer.stream() << "pop ecx" << std::endl;
-    writer.stream() << "pop ebx" << std::endl;
-    writer.stream() << "pop eax" << std::endl;
+    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
+}
+
+void addPrintBoolBody(AssemblyFileWriter& writer){
+    writer.stream() << "mov eax, [ebp-4] " << std::endl;
+    writer.stream() << "or eax, eax" << std::endl;
+    writer.stream() << "jne .true_print" << std::endl;
+    writer.stream() << "push 0" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << "jmp .end" << std::endl;
+    writer.stream() << ".true_print:" << std::endl;
+    writer.stream() << "push 1" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << ".end:" << std::endl;
+}
+
+void addPrintBoolFunction(AssemblyFileWriter& writer){
+    defineFunction(writer, "_F5printB");
+
+    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+
+    addPrintBoolBody(writer);
+
+    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+
+    leaveFunction(writer);
+   
+    /* println version */
+    
+    defineFunction(writer, "_F7printlnB");
+
+    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+
+    addPrintBoolBody(writer);
+
+    writer.stream() << "call _F7println" << std::endl;
+
+    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+
+    leaveFunction(writer);
 }
 
 void addPrintLineFunction(AssemblyFileWriter& writer){
-    writer.stream() << std::endl;
-    writer.stream() << "_F7println:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+    defineFunction(writer, "_F7println");
 
     writer.stream() << "push S1" << std::endl;
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "add esp, 8" << std::endl;
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
 }
 
 void addPrintStringBody(AssemblyFileWriter& writer){
@@ -1265,64 +1289,33 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 }
 
 void addPrintStringFunction(AssemblyFileWriter& writer){
-    writer.stream() << std::endl;
-    writer.stream() << "_F5printS:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+    defineFunction(writer, "_F5printS");
     
-    //Save registers
-    writer.stream() << "push eax" << std::endl;
-    writer.stream() << "push ebx" << std::endl;
-    writer.stream() << "push ecx" << std::endl;
-    writer.stream() << "push edx" << std::endl;
-    writer.stream() << "push esi" << std::endl;
+    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintStringBody(writer);
 
-    //Restore registers
-    writer.stream() << "pop esi" << std::endl;
-    writer.stream() << "pop edx" << std::endl;
-    writer.stream() << "pop ecx" << std::endl;
-    writer.stream() << "pop ebx" << std::endl;
-    writer.stream() << "pop eax" << std::endl;
+    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
    
     /* println version */
     
-    writer.stream() << std::endl;
-    writer.stream() << "_F7printlnS:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+    defineFunction(writer, "_F7printlnS");
     
-    //Save registers
-    writer.stream() << "push eax" << std::endl;
-    writer.stream() << "push ebx" << std::endl;
-    writer.stream() << "push ecx" << std::endl;
-    writer.stream() << "push edx" << std::endl;
-    writer.stream() << "push esi" << std::endl;
+    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    //Restore registers
-    writer.stream() << "pop esi" << std::endl;
-    writer.stream() << "pop edx" << std::endl;
-    writer.stream() << "pop ecx" << std::endl;
-    writer.stream() << "pop ebx" << std::endl;
-    writer.stream() << "pop eax" << std::endl;
+    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
 }
 
 void addConcatFunction(AssemblyFileWriter& writer){
-    writer.stream() << std::endl;
-    writer.stream() << "concat:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+    defineFunction(writer, "concat");
 
     writer.stream() << "mov edx, [ebp + 16]" << std::endl;
     writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
@@ -1370,20 +1363,13 @@ void addConcatFunction(AssemblyFileWriter& writer){
 
     writer.stream() << "mov eax, [ebp - 4]" << std::endl;
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
 }
 
 void addAllocFunction(AssemblyFileWriter& writer){
-    writer.stream() << std::endl;
-    writer.stream() << "eddi_alloc:" << std::endl;
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
+    defineFunction(writer, "eddi_alloc");
 
-    //Save registers
-    writer.stream() << "push ebx" << std::endl;
-    writer.stream() << "push ecx" << std::endl;
-    writer.stream() << "push edx" << std::endl;
+    save(writer, {"ebx", "ecx", "edx"});
 
     writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
     writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
@@ -1438,17 +1424,14 @@ void addAllocFunction(AssemblyFileWriter& writer){
 
     writer.stream() << "alloc_end:" << std::endl;
 
-    //Restore registers
-    writer.stream() << "pop edx" << std::endl;
-    writer.stream() << "pop ecx" << std::endl;
-    writer.stream() << "pop ebx" << std::endl;
+    restore(writer, {"ebx", "ecx", "edx"});
 
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
+    leaveFunction(writer);
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
+   addPrintBoolFunction(writer);
    addPrintLineFunction(writer); 
    addPrintStringFunction(writer); 
    addConcatFunction(writer);
