@@ -114,7 +114,7 @@ void DebugVisitor::operator()(ast::FunctionCall& call) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Builtin& builtin) const {
+void DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
     std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
 
     ++level;
