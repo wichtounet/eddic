@@ -522,9 +522,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         writer.stream() << set << " " << toSubRegister(reg) << std::endl;
-        
-        static int ctr = 0;
-        ++ctr;
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
