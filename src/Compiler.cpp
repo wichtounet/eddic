@@ -129,6 +129,9 @@ int Compiler::compileOnly(const std::string& file) {
 
             //Check for warnings
             checkForWarnings(program, functionTable);
+
+            //Check that there is a main in the program
+            checkForMain(functionTable);
             
             //Optimize the AST
             optimize(program, functionTable, pool);
@@ -157,7 +160,7 @@ int Compiler::compileOnly(const std::string& file) {
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
             as::IntelX86CodeGenerator generator(writer);
-            generator.generate(tacProgram, pool); 
+            generator.generate(tacProgram, pool, functionTable); 
             writer.write(); 
 
             //If it's necessary, assemble and link the assembly
@@ -226,6 +229,26 @@ void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     DebugStopWatch<debug> timer("Check for warnings");
     WarningsEngine engine;
     engine.check(program, table);
+}
+
+void eddic::checkForMain(FunctionTable& table){
+    if(!table.exists("main")){
+        throw SemanticalException("Your program must contain a main function"); 
+    }
+
+    auto function = table.getFunction("main");
+
+    if(function->parameters.size() > 1){
+        throw SemanticalException("The signature of your main function is not valid");
+    }
+
+    if(function->parameters.size() == 1){
+        auto type = function->parameters[0].paramType;
+       
+        if(type.base() != BaseType::STRING || !type.isArray()){
+            throw SemanticalException("The signature of your main function is not valid");
+        }
+    }
 }
 
 void eddic::clean(ast::SourceFile& program){

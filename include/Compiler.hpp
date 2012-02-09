@@ -32,6 +32,7 @@ void includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& pars
 void checkTypes(ast::SourceFile& program);
 void checkStrings(ast::SourceFile& program, StringPool& pool);
 
+void checkForMain(FunctionTable& table);
 void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 
 void transform(ast::SourceFile& program);
