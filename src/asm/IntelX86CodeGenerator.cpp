@@ -1084,15 +1084,16 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
             writer.stream() << "mov dword [ebp + " << position << "], " << var->type().size() << std::endl;
 
             if(var->type().base() == BaseType::INT){
-                for(unsigned int i = 0; i < var->type().size(); ++i){
-                    writer.stream() << "mov dword [ebp + " << (position -= 4) << "], 0" << std::endl;
-                }
+                writer.stream() << "mov ecx, " << var->type().size() << std::endl;
             } else if(var->type().base() == BaseType::STRING){
-                for(unsigned int i = 0; i < var->type().size(); ++i){
-                    writer.stream() << "mov dword [ebp + " << (position -= 4) << "], 0" << std::endl;
-                    writer.stream() << "mov dword [ebp + " << (position -= 4) << "], 0" << std::endl;
-                }
+                writer.stream() << "mov ecx, " << (var->type().size() * 2) << std::endl;
             }
+            
+            writer.stream() << "mov eax, 0" << std::endl;
+            writer.stream() << "lea edi, [ebp + " << position << " - 4]" << std::endl;
+            writer.stream() << "std" << std::endl;
+            writer.stream() << "rep stosd" << std::endl;
+            writer.stream() << "cld" << std::endl;
         }
     }
 
