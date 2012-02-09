@@ -235,6 +235,20 @@ void eddic::checkForMain(FunctionTable& table){
     if(!table.exists("main")){
         throw SemanticalException("Your program must contain a main function"); 
     }
+
+    auto function = table.getFunction("main");
+
+    if(function->parameters.size() > 1){
+        throw SemanticalException("The signature of your main function is not valid");
+    }
+
+    if(function->parameters.size() == 1){
+        auto type = function->parameters[0].paramType;
+       
+        if(type.base() != BaseType::STRING || !type.isArray()){
+            throw SemanticalException("The signature of your main function is not valid");
+        }
+    }
 }
 
 void eddic::clean(ast::SourceFile& program){
