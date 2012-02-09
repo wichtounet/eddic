@@ -201,6 +201,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::BuiltinOperator& builtin){
+        //TODO
+    }
+
     void operator()(ast::VariableValue&){
         //Nothing to check here
     }
