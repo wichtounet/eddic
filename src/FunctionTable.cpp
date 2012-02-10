@@ -9,7 +9,12 @@
 
 using namespace eddic;
 
-FunctionTable::FunctionTable(){}
+FunctionTable::FunctionTable(){
+    auto timeFunction = std::make_shared<Function>(Type(BaseType::INT, false), "time");
+    timeFunction->mangledName = "_F4timeAI";
+    
+    functions[timeFunction->mangledName] = timeFunction;
+}
 
 void FunctionTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;

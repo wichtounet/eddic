@@ -1463,6 +1463,62 @@ void addAllocFunction(AssemblyFileWriter& writer){
     leaveFunction(writer);
 }
 
+void addTimeFunction(AssemblyFileWriter& writer){
+    defineFunction(writer, "_F4timeAI");
+
+    writer.stream() << "xor eax, eax" << std::endl;
+    writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
+    writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
+
+    writer.stream() << "mov esi, [ebp + 8]" << std::endl;
+    writer.stream() << "mov [esi - 4], eax" << std::endl;
+    writer.stream() << "mov [esi - 8], edx" << std::endl;
+
+    leaveFunction(writer);
+}
+
+void addDurationFunction(AssemblyFileWriter& writer){
+    defineFunction(writer, "_F8durationAIAI");
+
+    writer.stream() << "mov esi, [ebp + 12]" << std::endl;          //Start time stamp
+    writer.stream() << "mov edi, [ebp + 8]" << std::endl;           //End time stamp
+
+    //Print the high order bytes
+    writer.stream() << "mov eax, [esi - 8]" << std::endl;
+    writer.stream() << "mov ebx, [edi - 8]" << std::endl;
+    writer.stream() << "sub eax, ebx" << std::endl;
+   
+    //if the first diff is 0, do not print 0
+    writer.stream() << "cmp eax, 0" << std::endl;
+    writer.stream() << "jz .second" << std::endl;
+
+    //If it's negative, we print the positive only 
+    writer.stream() << "cmp eax, 0" << std::endl;
+    writer.stream() << "jge .push_first" << std::endl;
+    writer.stream() << "neg eax" << std::endl;
+    
+    writer.stream() << ".push_first:" << std::endl; 
+    writer.stream() << "push eax" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+
+    //Print the low order bytes
+    writer.stream() << ".second:" << std::endl;
+    writer.stream() << "mov eax, [esi - 4]" << std::endl;
+    writer.stream() << "mov ebx, [edi - 4]" << std::endl;
+    writer.stream() << "sub eax, ebx" << std::endl;
+   
+    //If it's negative, we print the positive only 
+    writer.stream() << "cmp eax, 0" << std::endl;
+    writer.stream() << "jge .push_second" << std::endl;
+    writer.stream() << "neg eax" << std::endl;
+   
+    writer.stream() << ".push_second:" << std::endl; 
+    writer.stream() << "push eax" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+
+    leaveFunction(writer);
+}
+
 void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
    addPrintBoolFunction(writer);
@@ -1470,6 +1526,8 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintStringFunction(writer); 
    addConcatFunction(writer);
    addAllocFunction(writer);
+   addTimeFunction(writer);
+   addDurationFunction(writer);
 }
 
 void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
