@@ -33,11 +33,18 @@ class DependencyVisitor : public boost::static_visitor<> {
     private:
         parser::SpiritParser& parser;
         ast::SourceFile& source;
+        std::vector<ast::FirstLevelBlock> blocks;
 
     public:
         DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& s) : parser(p), source(s) {}
 
-        AUTO_RECURSE_PROGRAM()
+        void operator()(ast::SourceFile& program){
+            visit_each(*this, program.Content->blocks);
+
+            for(ast::FirstLevelBlock& block : blocks){
+                source.Content->blocks.push_back(block);
+            }
+        }
     
         void operator()(ast::StandardImport& import){
             auto headerFile = "stdlib/" + import.header + ".eddi";
@@ -51,7 +58,7 @@ class DependencyVisitor : public boost::static_visitor<> {
                 includeDependencies(dependency, parser); 
 
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){
-                    source.Content->blocks.push_back(block);
+                    blocks.push_back(block);
                 }
             } else {
                 throw SemanticalException("The header " + import.header + " cannot be imported");
@@ -72,7 +79,7 @@ class DependencyVisitor : public boost::static_visitor<> {
                 includeDependencies(dependency, parser); 
 
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){
-                    source.Content->blocks.push_back(block);
+                    blocks.push_back(block);
                 }
             } else {
                 throw SemanticalException("The file " + file + " cannot be imported");
