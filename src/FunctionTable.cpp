@@ -10,10 +10,8 @@
 using namespace eddic;
 
 FunctionTable::FunctionTable(){
-    Type ret = Type(BaseType::INT, false);
-
-    auto timeFunction = std::make_shared<Function>(ret, "time");
-    timeFunction->mangledName = "_F4time";
+    auto timeFunction = std::make_shared<Function>(Type(BaseType::INT, false), "time");
+    timeFunction->mangledName = "_F4timeAI";
     
     functions[timeFunction->mangledName] = timeFunction;
 }
