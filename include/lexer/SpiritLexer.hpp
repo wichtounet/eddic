@@ -58,7 +58,7 @@ class SpiritLexer : public lex::lexer<L> {
             const_ = "const";
             include = "include";
 
-            word = "[a-zA-Z]+";
+            identifier = "[a-zA-Z_]?[a-zA-Z0-9_]+";
             integer = "[0-9]+";
             litteral = "\\\"[^\\\"]*\\\"";
 
@@ -122,7 +122,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += and_ | or_;
             this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
-            this->self += integer | word | litteral;
+            this->self += integer | identifier | litteral;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
@@ -134,7 +134,7 @@ class SpiritLexer : public lex::lexer<L> {
         typedef lex::token_def<int> IntegerToken;
         typedef lex::token_def<char> CharToken;
 
-        StringToken word, litteral;
+        StringToken identifier, litteral;
         IntegerToken integer;
         
         CharToken addition, subtraction, multiplication, division, modulo;

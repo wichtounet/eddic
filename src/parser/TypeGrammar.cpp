@@ -12,13 +12,13 @@ using namespace eddic;
 parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer) : TypeGrammar::base_type(type, "Type Grammar") {
     arrayType %=
             qi::eps
-        >>  lexer.word
+        >>  lexer.identifier
         >>  lexer.left_bracket
         >>  lexer.right_bracket;
 
     simpleType %=
             qi::eps
-        >>  lexer.word;
+        >>  lexer.identifier;
 
     type %=
             arrayType

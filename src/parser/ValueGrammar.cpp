@@ -126,10 +126,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
    
     variable %= 
             qi::eps
-        >>  lexer.word;
+        >>  lexer.identifier;
    
     arrayValue %=
-            lexer.word
+            lexer.identifier
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket;
@@ -150,16 +150,16 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         >   lexer.right_parenth;
     
     functionCall %=
-            lexer.word
+            lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
     prefix_operation %=
             qi::adapttokens[prefix_op]
-        >>  lexer.word;
+        >>  lexer.identifier;
 
     suffix_operation %=
-            lexer.word
+            lexer.identifier
         >>  qi::adapttokens[suffix_op];
 }
