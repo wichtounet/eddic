@@ -53,6 +53,7 @@ TEST_SAMPLE(includes)
 TEST_SAMPLE(optimize)
 TEST_SAMPLE(problem)
 TEST_SAMPLE(sort)
+TEST_SAMPLE(identifiers)
 
 /* Specific tests */ 
 

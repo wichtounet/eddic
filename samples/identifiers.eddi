@@ -1,0 +1,21 @@
+int ga = 1000;
+string __3gb = "Global Variable b"; 
+
+int defaultA;
+string __defaultB;
+
+int __3globalArrayA[10];
+string __g3lobalArrayB[10];
+
+int __globalUnused = 2222;
+
+void main(){
+    int __asdf999dddd_adsfdafds333 = 0;
+}
+
+void __asdf333(){
+    int a = 5;
+    int _1 = 3;
+    int __a = 9;
+    string asdf = "";
+}
