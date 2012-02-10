@@ -93,6 +93,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::unordered_set<std::shared_ptr<tac::BasicBlock>> blockUsage;
 
     Registers<Register> registers;
+    std::unordered_set<std::shared_ptr<Variable>> written;
 
     tac::Statement current;
     tac::Statement next;
@@ -108,6 +109,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     //Called at the beginning of each basic block
     void reset(){
         registers.reset();
+        written.clear();
 
         last = ended = false;
     }
@@ -231,32 +233,80 @@ struct StatementCompiler : public boost::static_visitor<> {
         //If the register is not used, there is nothing to spills
         if(registers.used(reg)){
             auto variable = registers[reg];
-            auto position = variable->position();
 
-            if(position.isStack()){
-                writer.stream() << "mov [ebp + " << (-1 * position.offset()) << "], " << reg << std::endl; 
-            } else if(position.isParameter()){
-                writer.stream() << "mov [ebp + " << position.offset() << "], " << reg << std::endl; 
-            } else if(position.isGlobal()){
-                writer.stream() << "mov [V" << position.name() << "], " << reg << std::endl;
-            } else if(position.isTemporary()){
-                //If the variable is live, move it to another register, else do nothing
-                if(isLive(variable)){
-                    registers.remove(variable);
-                    registers.reserve(reg);
-                    
-                    Register newReg = getReg(variable, false);
-                    writer.stream() << "mov " << newReg << ", " << reg << std::endl;
+            //If the variable has not been written, there is no need to spill it
+            if(written.find(variable) != written.end()){
+                auto position = variable->position();
+                if(position.isStack()){
+                    writer.stream() << "mov [ebp + " << (-1 * position.offset()) << "], " << reg << std::endl; 
+                } else if(position.isParameter()){
+                    writer.stream() << "mov [ebp + " << position.offset() << "], " << reg << std::endl; 
+                } else if(position.isGlobal()){
+                    writer.stream() << "mov [V" << position.name() << "], " << reg << std::endl;
+                } else if(position.isTemporary()){
+                    //If the variable is live, move it to another register, else do nothing
+                    if(isLive(variable)){
+                        registers.remove(variable);
+                        registers.reserve(reg);
 
-                    registers.release(reg);
+                        Register newReg = getReg(variable, false);
+                        writer.stream() << "mov " << newReg << ", " << reg << std::endl;
 
-                    return; //Return here to avoid erasing variable from variables
+                        registers.release(reg);
+
+                        return; //Return here to avoid erasing variable from variables
+                    }
                 }
             }
             
             //The variable is no more contained in the register
             registers.remove(variable);
+
+            //The variable has not been written now
+            written.erase(variable);
         }
+    }
+
+    Register getFreeReg(){
+        //Try to get a free register 
+        for(auto reg : registers){
+            if(!registers.used(reg)){
+                return reg;
+            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
+                registers.remove(registers[reg]);
+
+                return reg;
+            }
+        }
+       
+        //There are no free register, take one
+        auto reg = registers.first();
+        bool found = false;
+
+        //First, try to take a register that doesn't need to be spilled (variable has not modified)
+        for(auto remaining : registers){
+            if(!registers.reserved(remaining)){
+                if(written.find(registers[remaining]) == written.end()){
+                    reg = remaining;
+                    found = true;
+                }
+            }
+        }
+       
+        //If there is no registers that doesn't need to be spilled, take the first one not reserved 
+        if(!found){
+            for(auto remaining : registers){
+                if(!registers.reserved(remaining)){
+                    reg = remaining;
+                    found = true;
+                }
+            }
+        }
+
+        assert(found);
+        spills(reg);
+        
+        return reg; 
     }
     
     Register getReg(std::shared_ptr<Variable> variable, bool doMove){
@@ -265,41 +315,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             return registers[variable];
         }
        
-        //Try to get a free register 
-        for(auto reg : registers){
-            if(!registers.used(reg)){
-                if(doMove){
-                    move(variable, reg);
-                }
-                
-                registers.setLocation(variable, reg);
-                
-                return reg;
-            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
-                registers.remove(registers[reg]);
-                
-                if(doMove){
-                    move(variable, reg);
-                }
-
-                registers.setLocation(variable, reg);
-
-                return reg;
-            }
-        }
-
-        //There are no free register, take one
-        auto reg = registers.first();
-        bool found = false;
-        for(auto remaining : registers){
-            if(!registers.reserved(remaining)){
-                reg = remaining;
-                found = true;
-            }
-        }
-
-        assert(found);
-        spills(reg);
+        Register reg = getFreeReg();
 
         if(doMove){
             move(variable, reg);
@@ -319,24 +335,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     Register getReg(){
-        //Try to get a free register 
-        for(auto reg : registers){
-            if(!registers.used(reg)){
-                registers.reserve(reg);
-                
-                return reg;
-            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
-                registers.remove(registers[reg]);
-
-                registers.reserve(reg);
-
-                return reg;
-            }
-        }
-
-        //There are no free register, take one
-        auto reg = registers.first();
-        spills(reg);
+        Register reg = getFreeReg();
 
         registers.reserve(reg);
 
@@ -442,10 +441,12 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         if(call->return_){
             registers.setLocation(call->return_, Register::EAX);
+            written.insert(call->return_);
         }
 
         if(call->return2_){
             registers.setLocation(call->return2_, Register::EBX);
+            written.insert(call->return2_);
         }
     }
    
@@ -522,6 +523,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
 
         writer.stream() << set << " " << toSubRegister(reg) << std::endl;
+                    
+        written.insert(quadruple->result);
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -579,6 +582,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                 Register reg = getRegNoMove(quadruple->result);
                 writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;            
             }
+
+            written.insert(quadruple->result);
         } else {
             switch(*quadruple->op){
                 case tac::Operator::ADD:
@@ -624,6 +629,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                         Register reg = getRegNoMove(quadruple->result);
                         writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                     }
+            
+                    written.insert(quadruple->result);
 
                     break;
                 }
@@ -655,6 +662,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                         writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                     
+                    written.insert(quadruple->result);
+                    
                     break;
                 }
                 case tac::Operator::MUL:
@@ -684,6 +693,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                         //This case should never happen unless the optimizer has bugs
                         assert(false);
                     }
+                    
+                    written.insert(quadruple->result);
 
                     break;            
                 }
@@ -694,6 +705,9 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                         if(isPowerOfTwo(constant)){
                             writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
+                            
+                            written.insert(quadruple->result);
+                            
                             return;
                         }
                     }
@@ -730,6 +744,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     }
                     
                     registers.release(Register::EDX);
+                            
+                    written.insert(quadruple->result);
                     
                     break;            
                 case tac::Operator::MOD:
@@ -747,6 +763,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     registers.setLocation(quadruple->result, Register::EDX);
 
                     registers.release(Register::EAX);
+                    
+                    written.insert(quadruple->result);
 
                     break;            
                 case tac::Operator::MINUS:
@@ -764,6 +782,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     } else {
                         writer.stream() << "neg " << arg(*quadruple->arg1) << std::endl;
                     }
+                    
+                    written.insert(quadruple->result);
 
                     break;
                 }
@@ -795,6 +815,8 @@ struct StatementCompiler : public boost::static_visitor<> {
    
                    Register reg = getRegNoMove(quadruple->result);
                    writer.stream() << "mov " << reg << ", " << toString(variable, offset) << std::endl;
+        
+                   written.insert(quadruple->result);
 
                    break;
                 }
@@ -815,6 +837,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                     Register reg = getRegNoMove(quadruple->result);
 
                     writer.stream() << "mov " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
+                   
+                    written.insert(quadruple->result);
                     
                     break;            
                 }
