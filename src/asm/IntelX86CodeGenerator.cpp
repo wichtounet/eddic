@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "AssemblyFileWriter.hpp"
+#include "FunctionTable.hpp"
 
 #include "asm/IntelX86CodeGenerator.hpp"
 

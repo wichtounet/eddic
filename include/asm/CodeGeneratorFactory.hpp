@@ -8,6 +8,8 @@
 #ifndef CODE_GENERATOR_FACTORY_H
 #define CODE_GENERATOR_FACTORY_H
 
+#include <memory>
+
 #include "Platform.hpp"
 
 #include "asm/CodeGenerator.hpp"
@@ -18,7 +20,7 @@ namespace as {
 
 class CodeGeneratorFactory {
     public:
-        CodeGenerator get(Platform platform, AssemblyFileWriter& writer);
+        std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer);
 };
 
 } //end of as
