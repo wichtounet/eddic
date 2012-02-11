@@ -11,7 +11,7 @@
 
 #include <boost/variant.hpp>
 
-#include "asm/IntelX86CodeGenerator.hpp"
+#include "asm/IntelCodeGenerator.hpp"
 #include "asm/Registers.hpp"
 
 #include "tac/Printer.hpp"
@@ -29,7 +29,7 @@ using namespace eddic;
 using eddic::tac::isVariable;
 using eddic::tac::isInt;
 
-as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : writer(w) {}
+as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w) : writer(w) {}
 
 namespace eddic { namespace as { 
 
@@ -1051,7 +1051,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
 }}
 
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
+void as::IntelCodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
@@ -1092,7 +1092,7 @@ void leaveFunction(AssemblyFileWriter& writer){
     writer.stream() << "ret" << std::endl;
 }
 
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+void as::IntelCodeGenerator::compile(std::shared_ptr<tac::Function> function){
     defineFunction(writer, function->getName());
 
     auto size = function->context->size();
@@ -1147,7 +1147,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
     leaveFunction(writer); 
 }
 
-void as::IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
+void as::IntelCodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -1543,7 +1543,7 @@ void addDurationFunction(AssemblyFileWriter& writer){
     leaveFunction(writer);
 }
 
-void as::IntelX86CodeGenerator::addStandardFunctions(){
+void as::IntelCodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
    addPrintBoolFunction(writer);
    addPrintLineFunction(writer); 
@@ -1554,7 +1554,7 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
    addDurationFunction(writer);
 }
 
-void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
+void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
     writer.stream() << std::endl << "section .data" << std::endl;
      
     for(auto it : context->getVariables()){
@@ -1597,7 +1597,7 @@ void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext
     }
 }
 
-void as::IntelX86CodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table){
+void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table){
     writeRuntimeSupport(table); 
 
     resetNumbering();

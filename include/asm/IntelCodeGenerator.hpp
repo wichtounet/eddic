@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ASM_INTEL_X86_CODE_GENERATOR_H
-#define ASM_INTEL_X86_CODE_GENERATOR_H
+#ifndef ASM_INTEL_CODE_GENERATOR_H
+#define ASM_INTEL_CODE_GENERATOR_H
 
 #include <string>
 
@@ -23,9 +23,9 @@ namespace as {
 
 struct StatementCompiler;
 
-class IntelX86CodeGenerator {
+class IntelCodeGenerator {
     public:
-        IntelX86CodeGenerator(AssemblyFileWriter& writer);
+        IntelCodeGenerator(AssemblyFileWriter& writer);
 
         void addStandardFunctions();
         void writeRuntimeSupport(FunctionTable& table);

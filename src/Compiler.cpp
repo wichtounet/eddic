@@ -51,7 +51,7 @@
 #include "tac/Printer.hpp"
 
 //Code generation
-#include "asm/IntelX86CodeGenerator.hpp"
+#include "asm/IntelCodeGenerator.hpp"
 
 #ifdef DEBUG
 static const bool debug = true;
@@ -173,7 +173,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
-            as::IntelX86CodeGenerator generator(writer);
+            as::IntelCodeGenerator generator(writer);
             generator.generate(tacProgram, pool, functionTable); 
             writer.write(); 
 
