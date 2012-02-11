@@ -12,6 +12,8 @@
 #include <boost/variant.hpp>
 
 #include "asm/IntelCodeGenerator.hpp"
+#include "asm/CodeGeneratorFactory.hpp"
+
 #include "asm/Registers.hpp"
 
 #include "tac/Printer.hpp"
@@ -1598,6 +1600,9 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
 }
 
 void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table, Platform platform){
+    CodeGeneratorFactory factory;
+    auto generator = factory.get(platform, writer);
+
     writeRuntimeSupport(table); 
 
     resetNumbering();
