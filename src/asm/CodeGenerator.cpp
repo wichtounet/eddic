@@ -34,6 +34,20 @@ using eddic::tac::isInt;
 
 as::CodeGenerator::CodeGenerator(AssemblyFileWriter& w) : writer(w){}
 
+void as::CodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table){
+    resetNumbering();
+
+    writeRuntimeSupport(table); 
+
+    for(auto& function : program.functions){
+        compile(function);
+    }
+
+    addStandardFunctions();
+
+    addGlobalVariables(program.context, pool);
+}
+
 namespace eddic { namespace as { 
 
 enum Register {

@@ -27,6 +27,10 @@ class CodeGenerator {
     public:
         CodeGenerator(AssemblyFileWriter& writer);
         
+        //Entry point
+        void generate(tac::Program& program, StringPool& pool, FunctionTable& table);
+
+    protected:
         virtual void writeRuntimeSupport(FunctionTable& table) = 0;
         virtual void addStandardFunctions() = 0;
         
