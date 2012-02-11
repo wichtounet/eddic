@@ -8,6 +8,8 @@
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
 
+#include "tac/Program.hpp"
+
 #include <memory>
 
 namespace eddic {
@@ -19,6 +21,8 @@ class StringPool;
 
 namespace as {
 
+class StatementCompiler;
+
 class CodeGenerator {
     public:
         CodeGenerator(AssemblyFileWriter& writer);
@@ -27,6 +31,11 @@ class CodeGenerator {
         virtual void addStandardFunctions() = 0;
         
         void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
+        
+        void compile(std::shared_ptr<tac::Function> function);
+        void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
+        void computeLiveness(std::shared_ptr<tac::Function> function);
+        void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
 
     protected:
         AssemblyFileWriter& writer;

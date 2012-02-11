@@ -16,6 +16,7 @@ using namespace eddic;
 
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : CodeGenerator(w) {}
 
+//TODO Remove that when the migration for 64 bits has been achieved
 namespace {
 
 void enterFunction(AssemblyFileWriter& writer){

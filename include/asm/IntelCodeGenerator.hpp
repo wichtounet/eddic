@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ASM_INTEL_CODE_GENERATOR_H
-#define ASM_INTEL_CODE_GENERATOR_H
+#ifndef INTEL_CODE_GENERATOR_H
+#define INTEL_CODE_GENERATOR_H
 
 #include <string>
 
@@ -28,11 +28,6 @@ struct StatementCompiler;
 class IntelCodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer);
-
-        void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
-        void computeLiveness(std::shared_ptr<tac::Function> function);
-        void compile(std::shared_ptr<tac::Function> function);
-        void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
         
         void generate(tac::Program& program, StringPool& pool, FunctionTable& table, Platform platform);
 
