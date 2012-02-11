@@ -12,6 +12,8 @@
 
 #include "tac/Program.hpp"
 
+#include "Platform.hpp"
+
 namespace eddic {
 
 class AssemblyFileWriter;
