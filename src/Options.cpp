@@ -41,6 +41,9 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
+            
+            ("32", "Force the compilation for 32 bits platform")
+            ("64", "Force the compilation for 64 bits platform")
            
             ("input", po::value<std::string>(), "Input file");
 

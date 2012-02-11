@@ -76,6 +76,14 @@ int Compiler::compile(const std::string& file) {
         platform = Platform::INTEL_X86_64;
     }
 
+    if(options.count("32")){
+        platform = Platform::INTEL_X86;
+    }
+    
+    if(options.count("64")){
+        platform = Platform::INTEL_X86_64;
+    }
+
     StopWatch timer;
     
     int code = compileOnly(file, platform);
