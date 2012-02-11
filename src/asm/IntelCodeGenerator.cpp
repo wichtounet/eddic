@@ -1603,7 +1603,7 @@ void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, F
     CodeGeneratorFactory factory;
     auto generator = factory.get(platform, writer);
 
-    writeRuntimeSupport(table); 
+    generator.writeRuntimeSupport(table); 
 
     resetNumbering();
 

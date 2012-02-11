@@ -17,6 +17,8 @@ namespace as {
 class IntelX86CodeGenerator : public CodeGenerator {
     public:
         IntelX86CodeGenerator(AssemblyFileWriter& writer);
+        
+        void writeRuntimeSupport(FunctionTable& table);
 };
 
 } //end of as

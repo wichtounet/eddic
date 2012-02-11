@@ -1,4 +1,3 @@
-
 //=======================================================================
 // Copyright Baptiste Wicht 2011.
 // Distributed under the Boost Software License, Version 1.0.
@@ -18,6 +17,8 @@ namespace as {
 class IntelX86_64CodeGenerator : public CodeGenerator {
     public:
         IntelX86_64CodeGenerator(AssemblyFileWriter& writer);
+        
+        void writeRuntimeSupport(FunctionTable& table);
 };
 
 } //end of as

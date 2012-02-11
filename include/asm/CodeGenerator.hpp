@@ -11,12 +11,15 @@
 namespace eddic {
 
 class AssemblyFileWriter;
+class FunctionTable;
 
 namespace as {
 
 class CodeGenerator {
     public:
         CodeGenerator(AssemblyFileWriter& writer);
+        
+        virtual void writeRuntimeSupport(FunctionTable& table) = 0;
 
     protected:
         AssemblyFileWriter& writer;

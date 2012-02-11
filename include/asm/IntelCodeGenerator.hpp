@@ -30,7 +30,6 @@ class IntelCodeGenerator {
         IntelCodeGenerator(AssemblyFileWriter& writer);
 
         void addStandardFunctions();
-        void writeRuntimeSupport(FunctionTable& table);
         void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
         void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
         void computeLiveness(std::shared_ptr<tac::Function> function);

@@ -10,3 +10,7 @@
 using namespace eddic;
 
 as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : CodeGenerator(w) {}
+
+void as::IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
+    //TODO
+}
