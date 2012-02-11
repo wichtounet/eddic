@@ -1508,49 +1508,6 @@ void as::IntelCodeGenerator::addStandardFunctions(){
    addDurationFunction(writer);
 }
 
-void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
-    writer.stream() << std::endl << "section .data" << std::endl;
-     
-    for(auto it : context->getVariables()){
-        Type type = it.second->type();
-        
-        //The const variables are not stored
-        if(type.isConst()){
-            continue;
-        }
-
-        if(type.isArray()){
-            writer.stream() << "V" << it.second->position().name() << ":" <<std::endl;
-            writer.stream() << "%rep " << type.size() << std::endl;
-
-            if(type.base() == BaseType::INT){
-                writer.stream() << "dd 0" << std::endl;
-            } else if(type.base() == BaseType::STRING){
-                writer.stream() << "dd S3" << std::endl;
-                writer.stream() << "dd 0" << std::endl;
-            }
-
-            writer.stream() << "%endrep" << std::endl;
-            writer.stream() << "dd " << type.size() << std::endl;
-        } else {
-            if (type.base() == BaseType::INT) {
-                writer.stream() << "V" << it.second->position().name() << " dd " << boost::get<int>(it.second->val()) << std::endl;
-            } else if (type.base() == BaseType::STRING) {
-                auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-  
-                //If that's not the case, there is a problem with the pool 
-                assert(value.first.size() > 0);
-                
-                writer.stream() << "V" << it.second->position().name() << " dd " << pool.label(value.first) << ", " << value.second << std::endl;
-            }
-        }
-    }
-    
-    for (auto it : pool.getPool()){
-        writer.stream() << it.second << " dd " << it.first  << std::endl;
-    }
-}
-
 void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table, Platform platform){
     CodeGeneratorFactory factory;
     auto generator = factory.get(platform, writer);
@@ -1565,5 +1522,5 @@ void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, F
 
     addStandardFunctions();
 
-    addGlobalVariables(program.context, pool);
+    generator->addGlobalVariables(program.context, pool);
 }
