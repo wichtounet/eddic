@@ -60,6 +60,12 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         if(options.count("warning-all")){
             WarningUnused = true;
         }
+
+        if(options.count("64") && options.count("32")){
+            std::cout << "Invalid command line options : a compilation cannot be both 32 and 64 bits" << std::endl;
+
+            return false;
+        }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
