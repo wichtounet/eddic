@@ -93,6 +93,9 @@ int Compiler::compile(const std::string& file) {
     return code;
 }
 
+void assemble(Platform platform, const std::string& output);
+void assembleWithDebug(Platform platform, const std::string& output);
+
 int Compiler::compileOnly(const std::string& file, Platform platform) {
     std::string output = options["output"].as<std::string>();
 
@@ -177,11 +180,9 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
                 if(options.count("debug")){
-                    exec("nasm -g -f elf32 -o output.o output.asm");
-                    exec("ld -m elf_i386 output.o -o " + output);
+                    assembleWithDebug(platform, output);
                 } else {
-                    exec("nasm -f elf32 -o output.o output.asm");
-                    exec("ld -S -m elf_i386 output.o -o " + output);
+                    assemble(platform, output);
                 }
 
                 //Remove temporary files
@@ -198,6 +199,36 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     }
 
     return code;
+}
+
+void assemble(Platform platform, const std::string& output){
+    switch(platform){
+        case Platform::INTEL_X86:
+            exec("nasm -f elf32 -o output.o output.asm");
+            exec("ld -S -m elf_i386 output.o -o " + output);
+
+            break;
+        case Platform::INTEL_X86_64:
+            exec("nasm -f elf64 -o output.o output.asm");
+            exec("ld -S -m elf_x86_64 output.o -o " + output);
+
+            break;
+   } 
+}
+
+void assembleWithDebug(Platform platform, const std::string& output){
+    switch(platform){
+        case Platform::INTEL_X86:
+            exec("nasm -g -f elf32 -o output.o output.asm");
+            exec("ld -m elf_i386 output.o -o " + output);
+
+            break;
+        case Platform::INTEL_X86_64:
+            exec("nasm -g -f elf64 -o output.o output.asm");
+            exec("ld -m elf_x86_64 output.o -o " + output);
+
+        break;
+   } 
 }
 
 void eddic::defineDefaultValues(ast::SourceFile& program){
