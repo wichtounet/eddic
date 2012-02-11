@@ -35,7 +35,7 @@ class IntelCodeGenerator {
         void compile(std::shared_ptr<tac::Function> function);
         void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
         
-        void generate(tac::Program& program, StringPool& pool, FunctionTable& table);
+        void generate(tac::Program& program, StringPool& pool, FunctionTable& table, Platform platform);
 
     private:
         AssemblyFileWriter& writer;

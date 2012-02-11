@@ -174,7 +174,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
             as::IntelCodeGenerator generator(writer);
-            generator.generate(tacProgram, pool, functionTable); 
+            generator.generate(tacProgram, pool, functionTable, platform); 
             writer.write(); 
 
             //If it's necessary, assemble and link the assembly

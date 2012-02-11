@@ -1597,7 +1597,7 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
     }
 }
 
-void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table){
+void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table, Platform platform){
     writeRuntimeSupport(table); 
 
     resetNumbering();
