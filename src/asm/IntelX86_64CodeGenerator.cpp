@@ -14,3 +14,7 @@ as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : 
 void as::IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     //TODO
 }
+
+void as::IntelX86_64CodeGenerator::addStandardFunctions(){
+    //TODO
+}

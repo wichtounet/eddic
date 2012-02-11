@@ -24,6 +24,7 @@ class CodeGenerator {
         CodeGenerator(AssemblyFileWriter& writer);
         
         virtual void writeRuntimeSupport(FunctionTable& table) = 0;
+        virtual void addStandardFunctions() = 0;
         
         void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
 

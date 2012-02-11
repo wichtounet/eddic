@@ -19,6 +19,7 @@ class IntelX86_64CodeGenerator : public CodeGenerator {
         IntelX86_64CodeGenerator(AssemblyFileWriter& writer);
         
         void writeRuntimeSupport(FunctionTable& table);
+        void addStandardFunctions();
 };
 
 } //end of as
