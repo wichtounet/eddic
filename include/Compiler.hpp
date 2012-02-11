@@ -12,6 +12,8 @@
 
 #include "ast/source_def.hpp"
 
+#include "Platform.hpp"
+
 namespace eddic {
 
 namespace parser {
@@ -47,7 +49,7 @@ void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool
  */
 struct Compiler {
     int compile (const std::string& file);
-    int compileOnly (const std::string& file);
+    int compileOnly (const std::string& file, Platform platform);
 };
 
 /*!

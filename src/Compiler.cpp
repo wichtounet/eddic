@@ -69,20 +69,23 @@ void exec(const std::string& command);
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
 
+    //32 bits by default
+    Platform platform = Platform::INTEL_X86;
+
     if(TargetDetermined && Target64){
-        std::cout << "Warning : Looks like you're running a 64 bit system. This compiler only outputs 32 bits assembly." << std::endl; 
+        platform = Platform::INTEL_X86_64;
     }
 
     StopWatch timer;
     
-    int code = compileOnly(file);
+    int code = compileOnly(file, platform);
 
     std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
 
     return code;
 }
 
-int Compiler::compileOnly(const std::string& file) {
+int Compiler::compileOnly(const std::string& file, Platform platform) {
     std::string output = options["output"].as<std::string>();
 
     int code = 0;

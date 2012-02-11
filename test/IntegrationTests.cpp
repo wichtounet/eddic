@@ -10,6 +10,7 @@
 #include "Options.hpp"
 #include "Compiler.hpp"
 #include "Utils.hpp"
+#include "Platform.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Eddic Tests
@@ -25,7 +26,8 @@ void assertCompiles(const std::string& file){
 
     eddic::Compiler compiler;
 
-    int code = compiler.compileOnly(file);
+    eddic::Platform platform = eddic::Platform::INTEL_X86;
+    int code = compiler.compileOnly(file, platform);
 
     BOOST_CHECK_EQUAL (code, 0);
 }
