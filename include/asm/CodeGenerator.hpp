@@ -14,32 +14,18 @@
 
 namespace eddic {
 
-class AssemblyFileWriter;
 class FunctionTable;
-class GlobalContext;
 class StringPool;
+class AssemblyFileWriter;
 
 namespace as {
-
-class StatementCompiler;
 
 class CodeGenerator {
     public:
         CodeGenerator(AssemblyFileWriter& writer);
         
         //Entry point
-        void generate(tac::Program& program, StringPool& pool, FunctionTable& table);
-
-    protected:
-        virtual void writeRuntimeSupport(FunctionTable& table) = 0;
-        virtual void addStandardFunctions() = 0;
-        
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
-        
-        void compile(std::shared_ptr<tac::Function> function);
-        void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
-        void computeLiveness(std::shared_ptr<tac::Function> function);
-        void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
+        virtual void generate(tac::Program& program, StringPool& pool, FunctionTable& table) = 0;
 
     protected:
         AssemblyFileWriter& writer;

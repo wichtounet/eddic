@@ -18,4 +18,6 @@ std::shared_ptr<as::CodeGenerator> eddic::as::CodeGeneratorFactory::get(Platform
         case Platform::INTEL_X86_64:
             return std::make_shared<as::IntelX86_64CodeGenerator>(writer);
     }
+
+    assert(false);
 }

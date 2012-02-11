@@ -8,13 +8,13 @@
 #ifndef INTEL_X86_64_CODE_GENERATOR_H
 #define INTEL_X86_64_CODE_GENERATOR_H
 
-#include "asm/CodeGenerator.hpp"
+#include "asm/IntelCodeGenerator.hpp"
 
 namespace eddic {
 
 namespace as {
 
-class IntelX86_64CodeGenerator : public CodeGenerator {
+class IntelX86_64CodeGenerator : public IntelCodeGenerator {
     public:
         IntelX86_64CodeGenerator(AssemblyFileWriter& writer);
         
