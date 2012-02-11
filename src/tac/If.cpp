@@ -11,4 +11,4 @@ using namespace eddic;
 
 tac::If::If(){}
 tac::If::If(Argument a1, const std::string& l) : arg1(a1), label(l) {}
-tac::If::If(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), arg2(a2), op(o), label(l) {}
+tac::If::If(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), op(o), arg2(a2), label(l) {}
