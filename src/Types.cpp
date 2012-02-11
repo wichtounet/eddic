@@ -12,8 +12,8 @@
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool constant) : type(base), array(false), m_size(0), const_(constant) {}
-Type::Type(BaseType base, unsigned int size, bool constant) : type(base), array(true), m_size(size), const_(constant) {}
+Type::Type(BaseType base, bool constant) : type(base), array(false), const_(constant), m_size(0) {}
+Type::Type(BaseType base, unsigned int size, bool constant) : type(base), array(true), const_(constant), m_size(size) {}
 
 BaseType Type::base() const {
     return type;
