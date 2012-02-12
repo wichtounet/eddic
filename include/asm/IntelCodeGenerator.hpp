@@ -8,11 +8,12 @@
 #ifndef INTEL_CODE_GENERATOR_H
 #define INTEL_CODE_GENERATOR_H
 
+#include <memory>
+#include <string>
+
 #include "tac/Program.hpp"
 
 #include "asm/CodeGenerator.hpp"
-
-#include <memory>
 
 namespace eddic {
 
@@ -31,9 +32,16 @@ class IntelCodeGenerator : public CodeGenerator {
     protected:
         virtual void writeRuntimeSupport(FunctionTable& table) = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool) = 0;
         virtual void compile(std::shared_ptr<tac::Function> function) = 0;
 
+        virtual void defineDataSection() = 0;
+        virtual void declareIntArray(const std::string& name, unsigned int size) = 0;
+        virtual void declareStringArray(const std::string& name, unsigned int size) = 0;
+        virtual void declareIntVariable(const std::string& name, int value) = 0;
+        virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
+        virtual void declareString(const std::string& label, const std::string& value) = 0;
+
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
 };
 
 } //end of as

@@ -20,8 +20,14 @@ class IntelX86_64CodeGenerator : public IntelCodeGenerator {
         
         void writeRuntimeSupport(FunctionTable& table);
         void addStandardFunctions();
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
         void compile(std::shared_ptr<tac::Function> function);
+        
+        void defineDataSection();
+        void declareIntArray(const std::string& name, unsigned int size);
+        void declareStringArray(const std::string& name, unsigned int size);
+        void declareIntVariable(const std::string& name, int value);
+        void declareStringVariable(const std::string& name, const std::string& label, int size);
+        void declareString(const std::string& label, const std::string& value);
 };
 
 } //end of as

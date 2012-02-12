@@ -12,12 +12,10 @@
 
 #include <boost/variant.hpp>
 
-#include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-#include "StringPool.hpp"
 #include "Utils.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
@@ -1124,49 +1122,6 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
     leaveFunction(writer); 
 }
 
-void as::IntelX86CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
-    writer.stream() << std::endl << "section .data" << std::endl;
-     
-    for(auto it : context->getVariables()){
-        Type type = it.second->type();
-        
-        //The const variables are not stored
-        if(type.isConst()){
-            continue;
-        }
-
-        if(type.isArray()){
-            writer.stream() << "V" << it.second->position().name() << ":" <<std::endl;
-            writer.stream() << "%rep " << type.size() << std::endl;
-
-            if(type.base() == BaseType::INT){
-                writer.stream() << "dd 0" << std::endl;
-            } else if(type.base() == BaseType::STRING){
-                writer.stream() << "dd S3" << std::endl;
-                writer.stream() << "dd 0" << std::endl;
-            }
-
-            writer.stream() << "%endrep" << std::endl;
-            writer.stream() << "dd " << type.size() << std::endl;
-        } else {
-            if (type.base() == BaseType::INT) {
-                writer.stream() << "V" << it.second->position().name() << " dd " << boost::get<int>(it.second->val()) << std::endl;
-            } else if (type.base() == BaseType::STRING) {
-                auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-  
-                //If that's not the case, there is a problem with the pool 
-                assert(value.first.size() > 0);
-                
-                writer.stream() << "V" << it.second->position().name() << " dd " << pool.label(value.first) << ", " << value.second << std::endl;
-            }
-        }
-    }
-    
-    for (auto it : pool.getPool()){
-        writer.stream() << it.second << " dd " << it.first  << std::endl;
-    }
-}
-
 void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
     compiler.reset();
 
@@ -1192,9 +1147,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, 
     }
 }
 
-}} //end of eddic::as
-
-void as::IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
+void IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -1240,6 +1193,39 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "mov eax, 1" << std::endl;
     writer.stream() << "xor ebx, ebx" << std::endl;
     writer.stream() << "int 80h" << std::endl;
+}
+
+void IntelX86CodeGenerator::defineDataSection(){
+    writer.stream() << std::endl << "section .data" << std::endl;
+}
+
+void IntelX86CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
+    writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "%rep " << size << std::endl;
+    writer.stream() << "dd 0" << std::endl;
+    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "dd " << size << std::endl;
+}
+
+void IntelX86CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
+    writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "%rep " << size << std::endl;
+    writer.stream() << "dd S3" << std::endl;
+    writer.stream() << "dd 0" << std::endl;
+    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "dd " << size << std::endl;
+}
+
+void IntelX86CodeGenerator::declareIntVariable(const std::string& name, int value){
+    writer.stream() << "V" << name << " dd " << value << std::endl;
+}
+
+void IntelX86CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
+    writer.stream() << "V" << name << " dd " << label << ", " << size << std::endl;
+}
+
+void IntelX86CodeGenerator::declareString(const std::string& label, const std::string& value){
+    writer.stream() << label << " dd " << value << std::endl;
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
@@ -1290,8 +1276,6 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
     writer.stream() << ".exit" << ":" << std::endl;
 }
-
-namespace eddic { namespace as {
 
 void save(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
     for(auto& reg : registers){

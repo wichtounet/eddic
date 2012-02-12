@@ -16,7 +16,9 @@ using namespace eddic;
 
 as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
-void as::IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
+namespace eddic { namespace as {
+
+void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -64,14 +66,45 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "int 80h" << std::endl;
 }
 
-void as::IntelX86_64CodeGenerator::addStandardFunctions(){
+void IntelX86_64CodeGenerator::defineDataSection(){
+    writer.stream() << std::endl << "section .data" << std::endl;
+}
+
+void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
+    writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "%rep " << size << std::endl;
+    writer.stream() << "dq 0" << std::endl;
+    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "dq " << size << std::endl;
+}
+
+void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
+    writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "%rep " << size << std::endl;
+    writer.stream() << "dq S3" << std::endl;
+    writer.stream() << "dq 0" << std::endl;
+    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "dq " << size << std::endl;
+}
+
+void IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
+    writer.stream() << "V" << name << " dq " << value << std::endl;
+}
+
+void IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
+    writer.stream() << "V" << name << " dq " << label << ", " << size << std::endl;
+}
+
+void IntelX86_64CodeGenerator::declareString(const std::string& label, const std::string& value){
+    writer.stream() << label << " dq " << value << std::endl;
+}
+
+void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     //TODO
 }
 
-void as::IntelX86_64CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
+void IntelX86_64CodeGenerator::addStandardFunctions(){
     //TODO
 }
 
-void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    //TODO
-}
+}} //end of eddic::as
