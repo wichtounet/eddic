@@ -16,14 +16,20 @@ namespace as {
 
 class StatementCompiler;
 
+/*!
+ * \class IntelX86CodeGenerator
+ * \brief Code generator for Intel X86 platform. 
+ */
 class IntelX86CodeGenerator : public IntelCodeGenerator {
     public:
         IntelX86CodeGenerator(AssemblyFileWriter& writer);
-        
+
+    protected:        
         void writeRuntimeSupport(FunctionTable& table);
         void addStandardFunctions();
         void compile(std::shared_ptr<tac::Function> function);
 
+        /* Functions for global variables */
         void defineDataSection();
         void declareIntArray(const std::string& name, unsigned int size);
         void declareStringArray(const std::string& name, unsigned int size);

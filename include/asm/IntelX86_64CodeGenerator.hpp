@@ -14,14 +14,20 @@ namespace eddic {
 
 namespace as {
 
+/*!
+ * \class IntelX86_64CodeGenerator
+ * \brief Code generator for Intel X86_64 platform. 
+ */
 class IntelX86_64CodeGenerator : public IntelCodeGenerator {
     public:
         IntelX86_64CodeGenerator(AssemblyFileWriter& writer);
         
+    protected:        
         void writeRuntimeSupport(FunctionTable& table);
         void addStandardFunctions();
         void compile(std::shared_ptr<tac::Function> function);
         
+        /* Functions for global variables */
         void defineDataSection();
         void declareIntArray(const std::string& name, unsigned int size);
         void declareStringArray(const std::string& name, unsigned int size);

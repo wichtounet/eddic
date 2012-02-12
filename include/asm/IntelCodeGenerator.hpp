@@ -22,11 +22,14 @@ class GlobalContext;
 
 namespace as {
 
+/*!
+ * \class IntelCodeGenerator
+ * \brief Base class for code generator on Intel platform. 
+ */
 class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer);
         
-        //Entry point
         void generate(tac::Program& program, StringPool& pool, FunctionTable& table);
 
     protected:
