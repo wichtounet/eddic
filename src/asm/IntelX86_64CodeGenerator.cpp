@@ -18,3 +18,11 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
     //TODO
 }
+
+void as::IntelX86_64CodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
+    //TODO
+}
+
+void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+    //TODO
+}

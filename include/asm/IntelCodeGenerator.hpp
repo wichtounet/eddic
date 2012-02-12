@@ -21,8 +21,6 @@ class GlobalContext;
 
 namespace as {
 
-class StatementCompiler;
-
 class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer);
@@ -33,13 +31,9 @@ class IntelCodeGenerator : public CodeGenerator {
     protected:
         virtual void writeRuntimeSupport(FunctionTable& table) = 0;
         virtual void addStandardFunctions() = 0;
-        
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
-        
-        void compile(std::shared_ptr<tac::Function> function);
-        void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
-        void computeLiveness(std::shared_ptr<tac::Function> function);
-        void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
+        virtual void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool) = 0;
+        virtual void compile(std::shared_ptr<tac::Function> function) = 0;
+
 };
 
 } //end of as

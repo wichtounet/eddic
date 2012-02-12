@@ -20,6 +20,8 @@ class IntelX86_64CodeGenerator : public IntelCodeGenerator {
         
         void writeRuntimeSupport(FunctionTable& table);
         void addStandardFunctions();
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
+        void compile(std::shared_ptr<tac::Function> function);
 };
 
 } //end of as
