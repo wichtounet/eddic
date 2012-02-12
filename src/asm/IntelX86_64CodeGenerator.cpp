@@ -16,7 +16,48 @@ using namespace eddic;
 
 as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
+namespace {
+
+enum Register {
+    RAX,
+    RBX,
+    RCX,
+    RDX,
+
+    R1, 
+    R2, 
+    R3,
+    R4, 
+    R5,
+    R6,
+    R7,
+    R8,
+
+    RSP, //Extended stack pointer
+    RBP, //Extended base pointer
+
+    RSI, //Extended source index
+    RDI, //Extended destination index
+    
+    REGISTER_COUNT  
+};
+
+std::string regToString(Register reg){
+    static std::string registers[Register::REGISTER_COUNT] = {
+        "rax", "rbx", "rcx", "rdx", 
+        "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
+        "rsp", "rbp", "rsi", "rdi"};
+
+    return registers[reg];
+}
+    
+} //end of anonymous namespace
+
 namespace eddic { namespace as {
+
+void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+    //TODO
+}
 
 void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "section .text" << std::endl << std::endl;
@@ -97,10 +138,6 @@ void IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, co
 
 void IntelX86_64CodeGenerator::declareString(const std::string& label, const std::string& value){
     writer.stream() << label << " dq " << value << std::endl;
-}
-
-void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    //TODO
 }
 
 void IntelX86_64CodeGenerator::addStandardFunctions(){

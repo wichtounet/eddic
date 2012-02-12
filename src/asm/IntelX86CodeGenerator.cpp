@@ -33,7 +33,7 @@ using eddic::tac::isInt;
 
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
-namespace eddic { namespace as {
+namespace {
 
 enum Register {
     EAX,
@@ -55,6 +55,10 @@ std::string regToString(Register reg){
 
     return registers[reg];
 }
+
+} //end of anonymous namespace
+
+namespace eddic { namespace as {
 
 std::ostream& operator<<(std::ostream& os, Register reg){
     os << regToString(reg);
