@@ -50,6 +50,7 @@ struct IntelStatementCompiler {
     //Platform dependent (because of registers) 
     virtual std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset) = 0;
     virtual std::string toString(std::shared_ptr<Variable> variable, int offset) = 0;
+    virtual void allocateStackSpace(unsigned int space) = 0;
     
     void copy(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
@@ -409,7 +410,7 @@ struct IntelStatementCompiler {
         }
     }
 
-    void compile(std::shared_ptr<tac::If>& if_){
+    void compile(std::shared_ptr<tac::If> if_){
         current = if_;
 
         if(if_->op){
@@ -441,6 +442,36 @@ struct IntelStatementCompiler {
             writer.stream() << "jnz " << labels[if_->block] << std::endl;
         }
     }
+    
+    void compile(std::shared_ptr<tac::Goto> goto_){
+        current = goto_;
+
+        //The basic block must be ended before the jump
+        endBasicBlock();
+
+        writer.stream() << "jmp " << labels[goto_->block] << std::endl; 
+    }
+
+    void compile(std::shared_ptr<tac::Call> call){
+        current = call;
+
+        writer.stream() << "call " << call->function << std::endl;
+        
+        if(call->params > 0){
+            allocateStackSpace(call->params);
+        }
+
+        if(call->return_){
+            registers.setLocation(call->return_, Register::EAX);
+            written.insert(call->return_);
+        }
+
+        if(call->return2_){
+            registers.setLocation(call->return2_, Register::EBX);
+            written.insert(call->return2_);
+        }
+    }
+
 };
 
 } //end of as

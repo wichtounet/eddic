@@ -150,33 +150,8 @@ struct StatementCompiler : public IntelStatementCompiler<Register>, public boost
         assert(false);
     }
 
-    void operator()(std::shared_ptr<tac::Goto>& goto_){
-        current = goto_;
-
-        //The basic block must be ended before the jump
-        endBasicBlock();
-
-        writer.stream() << "jmp " << labels[goto_->block] << std::endl; 
-    }
-
-    void operator()(std::shared_ptr<tac::Call>& call){
-        current = call;
-
-        writer.stream() << "call " << call->function << std::endl;
-        
-        if(call->params > 0){
-            writer.stream() << "add esp, " << call->params << std::endl;
-        }
-
-        if(call->return_){
-            registers.setLocation(call->return_, Register::EAX);
-            written.insert(call->return_);
-        }
-
-        if(call->return2_){
-            registers.setLocation(call->return2_, Register::EBX);
-            written.insert(call->return2_);
-        }
+    void allocateStackSpace(unsigned int space){
+        writer.stream() << "add esp, " << space << std::endl;
     }
 
     void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
@@ -610,6 +585,14 @@ struct StatementCompiler : public IntelStatementCompiler<Register>, public boost
 
     void operator()(std::shared_ptr<tac::If>& if_){
         compile(if_);
+    }
+
+    void operator()(std::shared_ptr<tac::Goto>& goto_){
+        compile(goto_);
+    }
+
+    void operator()(std::shared_ptr<tac::Call>& call){
+        compile(call);
     }
 
     void operator()(tac::NoOp&){
