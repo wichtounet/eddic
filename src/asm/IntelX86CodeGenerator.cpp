@@ -51,26 +51,9 @@ enum Register {
 };
 
 std::string regToString(Register reg){
-    switch(reg){
-        case EAX:
-            return "eax";
-        case EBX:
-            return "ebx";
-        case ECX:
-            return "ecx";
-        case EDX:
-            return "edx";
-        case ESP:
-            return "esp";
-        case EBP:
-            return "ebp";
-        case ESI:
-            return "esi";
-        case EDI:
-            return "edi";
-        default:
-            assert(false); //Not a register
-    }
+    static std::string registers[Register::REGISTER_COUNT] = {"eax", "ebx", "ecx", "edx", "esp", "ebp", "esi", "edi"};
+
+    return registers[reg];
 }
 
 std::ostream& operator<<(std::ostream& os, Register reg){
