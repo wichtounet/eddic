@@ -50,6 +50,21 @@ std::string regToString(Register reg){
 
     return registers[reg];
 }
+
+std::ostream& operator<<(std::ostream& os, Register reg){
+    os << regToString(reg);
+
+    return os;
+}
+
+std::string operator+(const char* left, Register right) {
+    return left + regToString(right);
+}
+
+std::string operator+(std::string left, Register right) {
+    return left + regToString(right);
+}
+
     
 } //end of anonymous namespace
 

@@ -56,10 +56,6 @@ std::string regToString(Register reg){
     return registers[reg];
 }
 
-} //end of anonymous namespace
-
-namespace eddic { namespace as {
-
 std::ostream& operator<<(std::ostream& os, Register reg){
     os << regToString(reg);
 
@@ -73,6 +69,10 @@ std::string operator+(const char* left, Register right) {
 std::string operator+(std::string left, Register right) {
     return left + regToString(right);
 }
+
+} //end of anonymous namespace
+
+namespace eddic { namespace as {
 
 void enterFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebp" << std::endl;
