@@ -56,10 +56,9 @@ std::string regToString(Register reg){
     return registers[reg];
 }
 
+//TODO Find a way to avoid duplication of this code in both generators
 std::ostream& operator<<(std::ostream& os, Register reg){
-    os << regToString(reg);
-
-    return os;
+    return os << regToString(reg);
 }
 
 std::string operator+(const char* left, Register right) {
