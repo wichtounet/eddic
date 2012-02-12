@@ -69,10 +69,6 @@ std::string operator+(std::string left, Register right) {
     return left + regToString(right);
 }
 
-} //end of anonymous namespace
-
-namespace eddic { namespace as {
-
 void enterFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebp" << std::endl;
     writer.stream() << "mov ebp, esp" << std::endl;
@@ -88,6 +84,10 @@ void leaveFunction(AssemblyFileWriter& writer){
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;
 }
+
+} //end of anonymous namespace
+
+namespace eddic { namespace as {
 
 struct StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;

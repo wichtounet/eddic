@@ -64,6 +64,21 @@ std::string operator+(std::string left, Register right) {
     return left + regToString(right);
 }
 
+void enterFunction(AssemblyFileWriter& writer){
+    writer.stream() << "push rbp" << std::endl;
+    writer.stream() << "mov rbp, rsp" << std::endl;
+}
+
+void defineFunction(AssemblyFileWriter& writer, const std::string& function){
+    writer.stream() << std::endl << function << ":" << std::endl;
+    
+    enterFunction(writer);
+}
+
+void leaveFunction(AssemblyFileWriter& writer){
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+}
     
 } //end of anonymous namespace
 
