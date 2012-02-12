@@ -51,19 +51,6 @@ std::string regToString(Register reg){
     return registers[reg];
 }
 
-//TODO Find a way to avoid duplication of this code in both generators
-std::ostream& operator<<(std::ostream& os, Register reg){
-    return os << regToString(reg);
-}
-
-std::string operator+(const char* left, Register right) {
-    return left + regToString(right);
-}
-
-std::string operator+(std::string left, Register right) {
-    return left + regToString(right);
-}
-
 void enterFunction(AssemblyFileWriter& writer){
     writer.stream() << "push rbp" << std::endl;
     writer.stream() << "mov rbp, rsp" << std::endl;
