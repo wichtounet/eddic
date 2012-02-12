@@ -5,10 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <memory>
 #include <iostream>
-#include <unordered_set>
-#include <unordered_map>
 
 #include <boost/variant.hpp>
 
@@ -22,7 +19,7 @@
 #include "FunctionTable.hpp"
 
 #include "asm/IntelX86CodeGenerator.hpp"
-#include "asm/Registers.hpp"
+#include "asm/IntelStatementCompiler.hpp"
 
 #include "tac/Utils.hpp"
 
@@ -89,262 +86,8 @@ void leaveFunction(AssemblyFileWriter& writer){
 
 namespace eddic { namespace as {
 
-struct StatementCompiler : public boost::static_visitor<> {
-    AssemblyFileWriter& writer;
-    std::shared_ptr<tac::Function> function;
-
-    std::unordered_map<std::shared_ptr<tac::BasicBlock>, std::string> labels;
-    std::unordered_set<std::shared_ptr<tac::BasicBlock>> blockUsage;
-
-    Registers<Register> registers;
-    std::unordered_set<std::shared_ptr<Variable>> written;
-
-    tac::Statement current;
-    tac::Statement next;
-
-    bool last;
-    bool ended;
-
-    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : writer(w), function(f), 
-            registers({EDI, ESI, ECX, EDX, EBX, EAX}, std::make_shared<Variable>("__fake__", Type(BaseType::INT, false), Position(PositionType::TEMPORARY))){
-        last = ended = false;
-    }
-
-    //Called at the beginning of each basic block
-    void reset(){
-        registers.reset();
-        written.clear();
-
-        last = ended = false;
-    }
-
-    void setNext(tac::Statement statement){
-        next = statement;
-    }
-
-    bool isLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
-        if(liveness.find(variable) != liveness.end()){
-            return liveness[variable];   
-        } else {
-            return !variable->position().isTemporary();
-        }
-    }
-
-    bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
-        if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
-            return isLive((*ptr)->liveness, variable);
-        } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
-            return isLive((*ptr)->liveness, variable);
-        } 
-
-        assert(false); //No liveness calculations in the other cases
-    }
-
-    bool isNextLive(std::shared_ptr<Variable> variable){
-        if(last){
-            return !variable->position().isTemporary();
-        } else {             
-            return isLive(variable, next);
-        }
-    }   
-
-    bool isLive(std::shared_ptr<Variable> variable){
-        return isLive(variable, current);
-    }
-
-    void copy(tac::Argument argument, Register reg){
-        if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
-        } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
-        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            auto variable = *ptr;
-
-            //If the variable is hold in a register, just move the register value
-            if(registers.inRegister(variable)){
-                auto oldReg = registers[variable];
-                
-                writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
-            } else {
-                auto position = variable->position();
-
-                if(position.isStack()){
-                    writer.stream() << "mov " << reg << ", [ebp + " << (-1 * position.offset()) << "]" << std::endl; 
-                } else if(position.isParameter()){
-                    writer.stream() << "mov " << reg << ", [ebp + " << position.offset() << "]" << std::endl; 
-                } else if(position.isGlobal()){
-                    writer.stream() << "mov " << reg << ", [V" << position.name() << "]" << std::endl;
-                } else if(position.isTemporary()){
-                    //The temporary should have been handled by the preceding condition (hold in a register)
-                    assert(false);
-                }
-            } 
-        }
-    }
-
-    void move(tac::Argument argument, Register reg){
-        if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
-        } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
-        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            auto variable = *ptr;
-
-            //If the variable is hold in a register, just move the register value
-            if(registers.inRegister(variable)){
-                auto oldReg = registers[variable];
-               
-                //Only if the variable is not already on the same register 
-                if(oldReg != reg){
-                    writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
-
-                    //There is nothing more in the old register
-                    registers.remove(variable);
-                }
-            } else {
-                auto position = variable->position();
-
-                if(position.isStack()){
-                    writer.stream() << "mov " << reg << ", [ebp + " << (-1 * position.offset()) << "]" << std::endl; 
-                } else if(position.isParameter()){
-                    writer.stream() << "mov " << reg << ", [ebp + " << position.offset() << "]" << std::endl; 
-                } else if(position.isGlobal()){
-                    writer.stream() << "mov " << reg << ", [V" << position.name() << "]" << std::endl;
-                } else if(position.isTemporary()){
-                    //The temporary should have been handled by the preceding condition (hold in a register)
-                    assert(false);
-                }
-            } 
-            
-            //The variable is now held in the new register
-            registers.setLocation(variable, reg);
-        }
-    }
-
-    void safeMove(std::shared_ptr<Variable> variable, Register reg){
-        if(registers.used(reg)){
-            if(registers[reg] != variable){
-                spills(reg);
-
-                move(variable, reg);
-            }
-        } else {
-            move(variable, reg);
-        }
-    }
-
-    void spills(Register reg){
-        //If the register is not used, there is nothing to spills
-        if(registers.used(reg)){
-            auto variable = registers[reg];
-
-            //If the variable has not been written, there is no need to spill it
-            if(written.find(variable) != written.end()){
-                auto position = variable->position();
-                if(position.isStack()){
-                    writer.stream() << "mov [ebp + " << (-1 * position.offset()) << "], " << reg << std::endl; 
-                } else if(position.isParameter()){
-                    writer.stream() << "mov [ebp + " << position.offset() << "], " << reg << std::endl; 
-                } else if(position.isGlobal()){
-                    writer.stream() << "mov [V" << position.name() << "], " << reg << std::endl;
-                } else if(position.isTemporary()){
-                    //If the variable is live, move it to another register, else do nothing
-                    if(isLive(variable)){
-                        registers.remove(variable);
-                        registers.reserve(reg);
-
-                        Register newReg = getReg(variable, false);
-                        writer.stream() << "mov " << newReg << ", " << reg << std::endl;
-
-                        registers.release(reg);
-
-                        return; //Return here to avoid erasing variable from variables
-                    }
-                }
-            }
-            
-            //The variable is no more contained in the register
-            registers.remove(variable);
-
-            //The variable has not been written now
-            written.erase(variable);
-        }
-    }
-
-    Register getFreeReg(){
-        //Try to get a free register 
-        for(auto reg : registers){
-            if(!registers.used(reg)){
-                return reg;
-            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
-                registers.remove(registers[reg]);
-
-                return reg;
-            }
-        }
-       
-        //There are no free register, take one
-        auto reg = registers.first();
-        bool found = false;
-
-        //First, try to take a register that doesn't need to be spilled (variable has not modified)
-        for(auto remaining : registers){
-            if(!registers.reserved(remaining)){
-                if(written.find(registers[remaining]) == written.end()){
-                    reg = remaining;
-                    found = true;
-                }
-            }
-        }
-       
-        //If there is no registers that doesn't need to be spilled, take the first one not reserved 
-        if(!found){
-            for(auto remaining : registers){
-                if(!registers.reserved(remaining)){
-                    reg = remaining;
-                    found = true;
-                }
-            }
-        }
-
-        assert(found);
-        spills(reg);
-        
-        return reg; 
-    }
-    
-    Register getReg(std::shared_ptr<Variable> variable, bool doMove){
-        //The variable is already in a register
-        if(registers.inRegister(variable)){
-            return registers[variable];
-        }
-       
-        Register reg = getFreeReg();
-
-        if(doMove){
-            move(variable, reg);
-        }
-
-        registers.setLocation(variable, reg);
-
-        return reg;
-    }
-    
-    Register getRegNoMove(std::shared_ptr<Variable> variable){
-        return getReg(variable, false);
-    }
-
-    Register getReg(std::shared_ptr<Variable> variable){
-        return getReg(variable, true);
-    }
-    
-    Register getReg(){
-        Register reg = getFreeReg();
-
-        registers.reserve(reg);
-
-        return reg;
-    }
+struct StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
+    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {EDI, ESI, ECX, EDX, EBX, EAX}, f) {}
     
     std::string toString(std::shared_ptr<Variable> variable, int offset){
         auto position = variable->position();
@@ -355,7 +98,6 @@ struct StatementCompiler : public boost::static_visitor<> {
             //The case of array is special because only the address is passed, not the complete array
             if(variable->type().isArray())
             {
-                //TODO This register allocation is not safe
                 Register reg = getReg();
 
                 writer.stream() << "mov " << reg << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
@@ -392,7 +134,6 @@ struct StatementCompiler : public boost::static_visitor<> {
         if(position.isStack()){
             return "[ebp + " + ::toString(-1 * (position.offset())) + "]";//TODO Verify
         } else if(position.isParameter()){
-            //TODO This register allocation is not safe
             Register reg = getReg();
             
             writer.stream() << "mov " << reg << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
@@ -404,22 +145,6 @@ struct StatementCompiler : public boost::static_visitor<> {
             return "[" + offsetReg + "+V" + position.name() + "]";
         } else if(position.isTemporary()){
             assert(false); //We are in da shit
-        }
-
-        assert(false);
-    }
-
-    std::string arg(tac::Argument argument){
-        if(auto* ptr = boost::get<int>(&argument)){
-            return ::toString(*ptr);
-        } else if(auto* ptr = boost::get<std::string>(&argument)){
-            return *ptr;//TODO Verify that
-        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            if((*ptr)->position().isTemporary()){
-                return regToString(getReg(*ptr, false));
-            } else {
-                return regToString(getReg(*ptr, true));
-            }
         }
 
         assert(false);
@@ -484,34 +209,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         ended = true;
     }
 
-    std::string toSubRegister(Register reg){
-        switch(reg){
-            case Register::EAX:
-                return "ah";
-            case Register::EBX:
-                return "bh";
-            case Register::ECX:
-                return "ch";
-            case Register::EDX:
-                return "dh";
-            case Register::EDI:
-                return "di";
-            case Register::ESI:
-                return "si";
-            default:
-                assert(false);
-        }
-    }
-
     void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
-        //We use EAX in order to avoid esi and edi that have not 8 byte version
-        spills(Register::EAX);
-
-        Register reg = Register::EAX;
-
-        registers.setLocation(quadruple->result, reg);
-        
-        writer.stream() << "xor " << reg << ", " << reg << std::endl;
+        Register reg = getRegNoMove(quadruple->result);
 
         //The first argument is not important, it can be immediate, but the second must be a register
         if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
@@ -526,7 +225,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             writer.stream() << "cmp " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
         }
 
-        writer.stream() << set << " " << toSubRegister(reg) << std::endl;
+        writer.stream() << set << " " << reg << ", 1" << std::endl;
                     
         written.insert(quadruple->result);
     }
@@ -792,22 +491,22 @@ struct StatementCompiler : public boost::static_visitor<> {
                     break;
                 }
                 case tac::Operator::GREATER:
-                    setIfCc("setg", quadruple);
+                    setIfCc("cmovg", quadruple);
                     break;
                 case tac::Operator::GREATER_EQUALS:
-                    setIfCc("setge", quadruple);
+                    setIfCc("cmovge", quadruple);
                     break;
                 case tac::Operator::LESS:
-                    setIfCc("setl", quadruple);
+                    setIfCc("cmovl", quadruple);
                     break;
                 case tac::Operator::LESS_EQUALS:
-                    setIfCc("setle", quadruple);
+                    setIfCc("cmovle", quadruple);
                     break;
                 case tac::Operator::EQUALS:
-                    setIfCc("sete", quadruple);
+                    setIfCc("cmove", quadruple);
                     break;
                 case tac::Operator::NOT_EQUALS:
-                    setIfCc("setne", quadruple);
+                    setIfCc("cmovne", quadruple);
                     break;
                 case tac::Operator::DOT:
                 {
