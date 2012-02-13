@@ -76,69 +76,24 @@ namespace eddic { namespace as {
 struct StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
     StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {EDI, ESI, ECX, EDX, EBX, EAX}, f) {}
     
-    std::string toString(std::shared_ptr<Variable> variable, int offset){
-        auto position = variable->position();
-
-        if(position.isStack()){
-            return "[ebp + " + ::toString(-position.offset() + offset) + "]";
-        } else if(position.isParameter()){
-            //The case of array is special because only the address is passed, not the complete array
-            if(variable->type().isArray())
-            {
-                Register reg = getReg();
-
-                writer.stream() << "mov " << reg << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
-
-                registers.release(reg);
-
-                return "[" + reg + "+" + ::toString(offset) + "]";
-            } 
-            //In the other cases, the value is passed, so we can compute the offset directly
-            else {
-                return "[ebp + " + ::toString(position.offset() + offset) + "]";
-            }
-        } else if(position.isGlobal()){
-            return "[V" + position.name() + "+" + ::toString(offset) + "]";
-        } else if(position.isTemporary()){
-            assert(false); //We are in da shit
-        }
-
-        assert(false);
-    }
-    
-    std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
-        if(auto* ptr = boost::get<int>(&offset)){
-            return toString(variable, *ptr);
-        }
-        
-        assert(boost::get<std::shared_ptr<Variable>>(&offset));
-
-        auto* offsetVariable = boost::get<std::shared_ptr<Variable>>(&offset);
-        auto position = variable->position();
-
-        auto offsetReg = getReg(*offsetVariable);
-        
-        if(position.isStack()){
-            return "[ebp + " + ::toString(-1 * (position.offset())) + "]";//TODO Verify
-        } else if(position.isParameter()){
-            Register reg = getReg();
-            
-            writer.stream() << "mov " << reg << ", [ebp + " << ::toString(position.offset()) << "]" << std::endl;
-
-            registers.release(reg);
-
-            return "[" + reg + "+" + offsetReg + "]";
-        } else if(position.isGlobal()){
-            return "[" + offsetReg + "+V" + position.name() + "]";
-        } else if(position.isTemporary()){
-            assert(false); //We are in da shit
-        }
-
-        assert(false);
+    std::string getMnemonicSize(){
+        return "dword";
     }
 
-    void allocateStackSpace(unsigned int space){
-        writer.stream() << "add esp, " << space << std::endl;
+    Register getReturnRegister1(){
+        return Register::EAX;
+    }
+
+    Register getReturnRegister2(){
+        return Register::EBX;
+    }
+
+    Register getBasePointerRegister(){
+        return Register::EBP;
+    }
+
+    Register getStackPointerRegister(){
+        return Register::ESP;
     }
 
     void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
@@ -161,31 +116,9 @@ struct StatementCompiler : public IntelStatementCompiler<Register>, public boost
                     
         written.insert(quadruple->result);
     }
-
-    void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
-        tac::assertIntOrVariable(arg2);
-
-        if(isInt(arg2)){
-            int constant = boost::get<int>(arg2);
-
-            if(isPowerOfTwo(constant)){
-                writer.stream() << "sal " << arg(result) << ", " << powerOfTwo(constant) << std::endl;
-            } else if(constant == 3){
-                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 2 + " << arg(result) << "]" << std::endl;
-            } else if(constant == 5){
-                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 4 + " << arg(result) << "]" << std::endl;
-            } else if(constant == 9){
-                writer.stream() << "lea " << arg(result) << ", [" << arg(result) << " * 8 + " << arg(result) << "]" << std::endl;
-            } else {
-                writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
-            }
-        } else {
-            writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
-        }
-    }
   
     //Div eax by arg2 
-    void div(std::shared_ptr<tac::Quadruple> quadruple){
+    void divEax(std::shared_ptr<tac::Quadruple> quadruple){
         writer.stream() << "mov edx, eax" << std::endl;
         writer.stream() << "sar edx, 31" << std::endl;
 
@@ -203,367 +136,60 @@ struct StatementCompiler : public IntelStatementCompiler<Register>, public boost
         }
     }
     
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        current = quadruple;
-        
-        if(!quadruple->op){
-            //The fastest way to set a register to 0 is to use xorl
-            if(tac::equals<int>(*quadruple->arg1, 0)){
-                Register reg = getRegNoMove(quadruple->result);
-                writer.stream() << "xor " << reg << ", " << reg << std::endl;            
-            } 
-            //In all the others cases, just move the value to the register
-            else {
-                Register reg = getRegNoMove(quadruple->result);
-                writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;            
-            }
+    void div(std::shared_ptr<tac::Quadruple> quadruple){
+        spills(Register::EDX);
+        registers.reserve(Register::EDX);
 
-            written.insert(quadruple->result);
+        //Form x = x / y
+        if(*quadruple->arg1 == quadruple->result){
+            safeMove(quadruple->result, Register::EAX);
+
+            divEax(quadruple);
+            //Form x = y / z (y: variable)
+        } else if(isVariable(*quadruple->arg1)){
+            spills(Register::EAX);
+            registers.reserve(Register::EAX);
+
+            copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
+
+            divEax(quadruple);
+
+            registers.release(Register::EAX);
+            registers.setLocation(quadruple->result, Register::EAX);
         } else {
-            switch(*quadruple->op){
-                case tac::Operator::ADD:
-                {
-                    auto result = quadruple->result;
+            spills(Register::EAX);
+            registers.reserve(Register::EAX);
 
-                    //Optimize the special form a = a + b by using only one instruction
-                    if(*quadruple->arg1 == result){
-                        Register reg = getReg(quadruple->result);
-                        
-                        //a = a + 1 => increment a
-                        if(*quadruple->arg2 == 1){
-                            writer.stream() << "inc " << reg << std::endl;
-                        }
-                        //a = a + -1 => decrement a
-                        else if(*quadruple->arg2 == -1){
-                            writer.stream() << "dec " << reg << std::endl;
-                        }
-                        //In the other cases, perform a simple addition
-                        else {
-                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                        }
-                    } 
-                    //Optimize the special form a = b + a by using only one instruction
-                    else if(*quadruple->arg2 == result){
-                        Register reg = getReg(quadruple->result);
-                        
-                        //a = 1 + a => increment a
-                        if(*quadruple->arg1 == 1){
-                            writer.stream() << "inc " << reg << std::endl;
-                        }
-                        //a = -1 + a => decrement a
-                        else if(*quadruple->arg1 == -1){
-                            writer.stream() << "dec " << reg << std::endl;
-                        }
-                        //In the other cases, perform a simple addition
-                        else {
-                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                        }
-                    } 
-                    //In the other cases, use lea to perform the addition
-                    else {
-                        Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
-                    }
-            
-                    written.insert(quadruple->result);
+            copy(*quadruple->arg1, Register::EAX);
 
-                    break;
-                }
-                case tac::Operator::SUB:
-                {
-                    auto result = quadruple->result;
-                    
-                    //Optimize the special form a = a - b by using only one instruction
-                    if(*quadruple->arg1 == result){
-                        Register reg = getReg(quadruple->result);
-                        
-                        //a = a - 1 => decrement a
-                        if(*quadruple->arg2 == 1){
-                            writer.stream() << "dec " << reg << std::endl;
-                        }
-                        //a = a - -1 => increment a
-                        else if(*quadruple->arg2 == -1){
-                            writer.stream() << "inc " << reg << std::endl;
-                        }
-                        //In the other cases, perform a simple subtraction
-                        else {
-                            writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                        }
-                    } 
-                    //In the other cases, move the first arg into the result register and then subtract the second arg into it
-                    else {
-                        Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                        writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                    }
-                    
-                    written.insert(quadruple->result);
-                    
-                    break;
-                }
-                case tac::Operator::MUL:
-                {
-                    //Form  x = x * y
-                    if(*quadruple->arg1 == quadruple->result){
-                        mul(quadruple->result, *quadruple->arg2);
-                    }
-                    //Form x = y * x
-                    else if(*quadruple->arg2 == quadruple->result){
-                        mul(quadruple->result, *quadruple->arg1);
-                    }
-                    //Form x = y * z (z: immediate)
-                    else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
-                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-                    }
-                    //Form x = y * z (y: immediate)
-                    else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
-                    }
-                    //Form x = y * z (both variables)
-                    else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                        auto reg = getReg(quadruple->result, false);
-                        copy(*quadruple->arg1, reg);
-                        writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                    } else {
-                        //This case should never happen unless the optimizer has bugs
-                        assert(false);
-                    }
-                    
-                    written.insert(quadruple->result);
+            divEax(quadruple);
 
-                    break;            
-                }
-                case tac::Operator::DIV:
-                    //Form x = x / y when y is power of two
-                    if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
-                        int constant = boost::get<int>(*quadruple->arg2);
-
-                        if(isPowerOfTwo(constant)){
-                            writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
-                            
-                            written.insert(quadruple->result);
-                            
-                            return;
-                        }
-                    }
-                    
-                    spills(Register::EDX);
-                    registers.reserve(Register::EDX);
-                    
-                    //Form x = x / y
-                    if(*quadruple->arg1 == quadruple->result){
-                        safeMove(quadruple->result, Register::EAX);
-
-                        div(quadruple);
-                    //Form x = y / z (y: variable)
-                    } else if(isVariable(*quadruple->arg1)){
-                        spills(Register::EAX);
-                        registers.reserve(Register::EAX);
-                        
-                        copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
-                        
-                        div(quadruple);
-
-                        registers.release(Register::EAX);
-                        registers.setLocation(quadruple->result, Register::EAX);
-                    } else {
-                        spills(Register::EAX);
-                        registers.reserve(Register::EAX);
-                        
-                        copy(*quadruple->arg1, Register::EAX);
-                        
-                        div(quadruple);
-
-                        registers.release(Register::EAX);
-                        registers.setLocation(quadruple->result, Register::EAX);
-                    }
-                    
-                    registers.release(Register::EDX);
-                            
-                    written.insert(quadruple->result);
-                    
-                    break;            
-                case tac::Operator::MOD:
-                    spills(Register::EAX);
-                    spills(Register::EDX);
-
-                    registers.reserve(Register::EAX);
-                    registers.reserve(Register::EDX);
-                    
-                    copy(*quadruple->arg1, Register::EAX);
-
-                    div(quadruple);
-
-                    //result is in edx (no need to move it now)
-                    registers.setLocation(quadruple->result, Register::EDX);
-
-                    registers.release(Register::EAX);
-                    
-                    written.insert(quadruple->result);
-
-                    break;            
-                case tac::Operator::MINUS:
-                {
-                    //If arg is immediate, we have to move it in a register
-                    if(isInt(*quadruple->arg1)){
-                        auto reg = getReg();
-
-                        move(*quadruple->arg1, reg);
-                        writer.stream() << "neg " << reg << std::endl;
-
-                        if(registers.reserved(reg)){
-                            registers.release(reg);
-                        }
-                    } else {
-                        writer.stream() << "neg " << arg(*quadruple->arg1) << std::endl;
-                    }
-                    
-                    written.insert(quadruple->result);
-
-                    break;
-                }
-                case tac::Operator::GREATER:
-                    setIfCc("cmovg", quadruple);
-                    break;
-                case tac::Operator::GREATER_EQUALS:
-                    setIfCc("cmovge", quadruple);
-                    break;
-                case tac::Operator::LESS:
-                    setIfCc("cmovl", quadruple);
-                    break;
-                case tac::Operator::LESS_EQUALS:
-                    setIfCc("cmovle", quadruple);
-                    break;
-                case tac::Operator::EQUALS:
-                    setIfCc("cmove", quadruple);
-                    break;
-                case tac::Operator::NOT_EQUALS:
-                    setIfCc("cmovne", quadruple);
-                    break;
-                case tac::Operator::DOT:
-                {
-                   assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-                   assert(boost::get<int>(&*quadruple->arg2));
-
-                   int offset = boost::get<int>(*quadruple->arg2);
-                   auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-   
-                   Register reg = getRegNoMove(quadruple->result);
-                   writer.stream() << "mov " << reg << ", " << toString(variable, offset) << std::endl;
-        
-                   written.insert(quadruple->result);
-
-                   break;
-                }
-                case tac::Operator::DOT_ASSIGN:
-                {
-                    assert(boost::get<int>(&*quadruple->arg1));
-
-                    int offset = boost::get<int>(*quadruple->arg1);
-
-                    writer.stream() << "mov dword " << toString(quadruple->result, offset) << ", " << arg(*quadruple->arg2) << std::endl;
-
-                    break;
-                }
-                case tac::Operator::ARRAY:
-                {
-                    assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-
-                    Register reg = getRegNoMove(quadruple->result);
-
-                    writer.stream() << "mov " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
-                   
-                    written.insert(quadruple->result);
-                    
-                    break;            
-                }
-                case tac::Operator::ARRAY_ASSIGN:
-                    writer.stream() << "mov dword " << toString(quadruple->result, *quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-
-                    break;
-                case tac::Operator::PARAM:
-                {
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        if((*ptr)->type().isArray()){
-                            auto position = (*ptr)->position();
-
-                            if(position.isGlobal()){
-                                Register reg = getReg();
-                                
-                                auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
-
-                                writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
-                                writer.stream() << "add " << reg << ", " << offset << std::endl;
-                                writer.stream() << "push " << reg << std::endl;
-
-                                registers.release(reg);
-                            } else if(position.isStack()){
-                                Register reg = getReg();
-
-                                writer.stream() << "mov " << reg << ", ebp" << std::endl;
-                                writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
-                                writer.stream() << "push " << reg << std::endl;
-                                
-                                registers.release(reg);
-                            } else if(position.isParameter()){
-                                writer.stream() << "push dword [ebp + " << position.offset() << "]" << std::endl;
-                            }
-                        } else {
-                            writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
-                        }
-                    } else {
-                        writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
-                    }
-
-                    break;
-                }
-                case tac::Operator::RETURN:
-                {
-                    //A return without args is the same as exiting from the function
-                    if(quadruple->arg1){
-                        spillsIfNecessary(Register::EAX, *quadruple->arg1);
-
-                        bool necessary = true;
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            if(registers.inRegister(*ptr, Register::EAX)){
-                                necessary = false;
-                            }
-                        }    
-
-                        if(necessary){
-                            writer.stream() << "mov eax, " << arg(*quadruple->arg1) << std::endl;
-                        }
-
-                        if(quadruple->arg2){
-                            spillsIfNecessary(Register::EBX, *quadruple->arg2);
-
-                            necessary = true;
-                            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                                if(registers.inRegister(*ptr, Register::EBX)){
-                                    necessary = false;
-                                }
-                            }    
-
-                            if(necessary){
-                                writer.stream() << "mov ebx, " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        }
-                    }
-        
-                    if(function->context->size() > 0){
-                        writer.stream() << "add esp, " << function->context->size() << std::endl;
-                    }
-
-                    //The basic block must be ended before the jump
-                    endBasicBlock();
-
-                    writer.stream() << "leave" << std::endl;
-                    writer.stream() << "ret" << std::endl;
-
-                    break;
-                }
-            }
+            registers.release(Register::EAX);
+            registers.setLocation(quadruple->result, Register::EAX);
         }
+
+        registers.release(Register::EDX);
+    }
+    
+    void mod(std::shared_ptr<tac::Quadruple> quadruple){
+        spills(Register::EAX);
+        spills(Register::EDX);
+
+        registers.reserve(Register::EAX);
+        registers.reserve(Register::EDX);
+
+        copy(*quadruple->arg1, Register::EAX);
+
+        div(quadruple);
+
+        //result is in edx (no need to move it now)
+        registers.setLocation(quadruple->result, Register::EDX);
+
+        registers.release(Register::EAX);
+    }
+    
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        compile(quadruple);
     }
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
