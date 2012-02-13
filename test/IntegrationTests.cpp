@@ -22,7 +22,8 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
 }
 
 void assertCompiles(const std::string& file){
-    eddic::parseOptions(0, {});
+    const char* options[1] = {"-32"};
+    eddic::parseOptions(1, options);
 
     eddic::Compiler compiler;
 
