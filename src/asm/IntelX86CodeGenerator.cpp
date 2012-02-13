@@ -73,8 +73,8 @@ void leaveFunction(AssemblyFileWriter& writer){
 
 namespace eddic { namespace as {
 
-struct StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
-    StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {EDI, ESI, ECX, EDX, EBX, EAX}, f) {}
+struct IntelX86StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
+    IntelX86StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {EDI, ESI, ECX, EDX, EBX, EAX}, f) {}
     
     std::string getMnemonicSize(){
         return "dword";
@@ -94,27 +94,6 @@ struct StatementCompiler : public IntelStatementCompiler<Register>, public boost
 
     Register getStackPointerRegister(){
         return Register::ESP;
-    }
-
-    void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
-        Register reg = getRegNoMove(quadruple->result);
-
-        //The first argument is not important, it can be immediate, but the second must be a register
-        if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-            auto reg = getReg();
-
-            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
-
-            writer.stream() << "cmp " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-
-            registers.release(reg);
-        } else {
-            writer.stream() << "cmp " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-        }
-
-        writer.stream() << set << " " << reg << ", 1" << std::endl;
-                    
-        written.insert(quadruple->result);
     }
   
     //Div eax by arg2 
@@ -250,7 +229,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
         }
     }
 
-    StatementCompiler compiler(writer, function);
+    IntelX86StatementCompiler compiler(writer, function);
 
     tac::computeBlockUsage(function, compiler.blockUsage);
 
@@ -272,7 +251,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
     leaveFunction(writer); 
 }
 
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler){
+void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, IntelX86StatementCompiler& compiler){
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){

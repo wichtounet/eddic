@@ -14,7 +14,7 @@ namespace eddic {
 
 namespace as {
 
-class StatementCompiler;
+class IntelX86StatementCompiler;
 
 /*!
  * \class IntelX86CodeGenerator
@@ -37,11 +37,10 @@ class IntelX86CodeGenerator : public IntelCodeGenerator {
         void declareStringVariable(const std::string& name, const std::string& label, int size);
         void declareString(const std::string& label, const std::string& value);
         
-        
-        
-        void computeBlockUsage(std::shared_ptr<tac::Function> function, StatementCompiler& compiler);
+    private:        
+        void compile(std::shared_ptr<tac::BasicBlock> block, IntelX86StatementCompiler& compiler);
+        void computeBlockUsage(std::shared_ptr<tac::Function> function, IntelX86StatementCompiler& compiler);
         void computeLiveness(std::shared_ptr<tac::Function> function);
-        void compile(std::shared_ptr<tac::BasicBlock> block, StatementCompiler& compiler);
 };
 
 } //end of as

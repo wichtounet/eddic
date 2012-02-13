@@ -35,6 +35,8 @@ class IntelCodeGenerator : public CodeGenerator {
         void generate(tac::Program& program, StringPool& pool, FunctionTable& table);
 
     protected:
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
+        
         virtual void writeRuntimeSupport(FunctionTable& table) = 0;
         virtual void addStandardFunctions() = 0;
         virtual void compile(std::shared_ptr<tac::Function> function) = 0;
@@ -45,8 +47,6 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareIntVariable(const std::string& name, int value) = 0;
         virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
         virtual void declareString(const std::string& label, const std::string& value) = 0;
-
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
 };
 
 //Provide utility for registers
