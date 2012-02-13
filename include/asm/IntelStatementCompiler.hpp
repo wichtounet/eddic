@@ -47,7 +47,6 @@ struct IntelStatementCompiler {
         last = ended = false;        
     } 
     
-    virtual void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple) = 0;
     virtual void div(std::shared_ptr<tac::Quadruple> quadruple) = 0;
     virtual void mod(std::shared_ptr<tac::Quadruple> quadruple) = 0;
     
@@ -232,6 +231,31 @@ struct IntelStatementCompiler {
             //The variable has not been written now
             written.erase(variable);
         }
+    }
+
+    void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
+        Register reg = getRegNoMove(quadruple->result);
+
+        //The first argument is not important, it can be immediate, but the second must be a register
+        if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
+            auto reg = getReg();
+
+            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
+
+            writer.stream() << "cmp " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+
+            registers.release(reg);
+        } else {
+            writer.stream() << "cmp " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+        }
+
+        //TODO Find a better way to achieve that
+        Register valueReg = getReg();
+        writer.stream() << "mov " << valueReg << ", 1" << std::endl;
+        writer.stream() << set << " " << reg << ", " << valueReg << std::endl;
+        registers.release(valueReg);
+
+        written.insert(quadruple->result);
     }
 
     //Called at the beginning of each basic block
@@ -828,7 +852,7 @@ struct IntelStatementCompiler {
                                 
                                 registers.release(reg);
                             } else if(position.isParameter()){
-                                writer.stream() << "push " << getMnemonicSize() << getBasePointerRegister() << " [ + " << position.offset() << "]" << std::endl;
+                                writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
                             }
                         } else {
                             writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
