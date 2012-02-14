@@ -14,8 +14,6 @@ namespace eddic {
 
 namespace as {
 
-class IntelX86StatementCompiler;
-
 /*!
  * \class IntelX86CodeGenerator
  * \brief Code generator for Intel X86 platform. 
@@ -36,9 +34,6 @@ class IntelX86CodeGenerator : public IntelCodeGenerator {
         void declareIntVariable(const std::string& name, int value);
         void declareStringVariable(const std::string& name, const std::string& label, int size);
         void declareString(const std::string& label, const std::string& value);
-        
-    private:        
-        void compile(std::shared_ptr<tac::BasicBlock> block, IntelX86StatementCompiler& compiler);
 };
 
 } //end of as

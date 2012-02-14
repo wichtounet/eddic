@@ -20,7 +20,7 @@ using namespace eddic;
 
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
-namespace {
+namespace x86 {
 
 enum Register {
     EAX,
@@ -59,7 +59,9 @@ void leaveFunction(AssemblyFileWriter& writer){
     writer.stream() << "ret" << std::endl;
 }
 
-} //end of anonymous namespace
+} //end of x86 namespace
+
+using namespace x86;
 
 namespace eddic { namespace as {
 
@@ -186,7 +188,40 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register>, publ
     }
 };
 
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+}} //end of eddic::as
+
+namespace { //anonymous namespace
+
+void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86StatementCompiler& compiler){
+    compiler.reset();
+
+    if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
+        writer.stream() << block->label << ":" << std::endl;
+    }
+
+    for(unsigned int i = 0; i < block->statements.size(); ++i){
+        auto& statement = block->statements[i];
+
+        if(i == block->statements.size() - 1){
+            compiler.setLast(true);
+        } else {
+            compiler.setNext(block->statements[i+1]);
+        }
+        
+        visit(compiler, statement);
+    }
+
+    //If the basic block has not been ended
+    if(!compiler.ended){
+        compiler.endBasicBlock();
+    }
+}
+ 
+} //end of anonymous space
+
+namespace eddic { namespace as {
+
+void IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     defineFunction(writer, function->getName());
 
     auto size = function->context->size();
@@ -230,7 +265,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
 
     //Then we compile each of them
     for(auto& block : function->getBasicBlocks()){
-        compile(block, compiler);
+        ::compile(writer, block, compiler);
     }
     
     //Only if necessary, deallocates size on the stack for the local variables
@@ -239,31 +274,6 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
     }
    
     leaveFunction(writer); 
-}
-
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, IntelX86StatementCompiler& compiler){
-    compiler.reset();
-
-    if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
-        writer.stream() << block->label << ":" << std::endl;
-    }
-
-    for(unsigned int i = 0; i < block->statements.size(); ++i){
-        auto& statement = block->statements[i];
-
-        if(i == block->statements.size() - 1){
-            compiler.setLast(true);
-        } else {
-            compiler.setNext(block->statements[i+1]);
-        }
-        
-        visit(compiler, statement);
-    }
-
-    //If the basic block has not been ended
-    if(!compiler.ended){
-        compiler.endBasicBlock();
-    }
 }
 
 void IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
