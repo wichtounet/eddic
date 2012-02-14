@@ -452,6 +452,7 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
     writer.stream() << ".true_print:" << std::endl;
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << "sub esp, 4" << std::endl;
     writer.stream() << ".end:" << std::endl;
 }
 
