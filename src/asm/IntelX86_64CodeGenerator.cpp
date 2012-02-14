@@ -28,14 +28,14 @@ enum Register {
     RCX,
     RDX,
 
-    R1, 
-    R2, 
-    R3,
-    R4, 
-    R5,
-    R6,
-    R7,
-    R8,
+    R8, 
+    R9, 
+    R10,
+    R11, 
+    R12,
+    R13,
+    R14,
+    R15,
 
     RSP, //Extended stack pointer
     RBP, //Extended base pointer
@@ -49,7 +49,7 @@ enum Register {
 std::string regToString(Register reg){
     static std::string registers[Register::REGISTER_COUNT] = {
         "rax", "rbx", "rcx", "rdx", 
-        "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
+        "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
         "rsp", "rbp", "rsi", "rdi"};
 
     return registers[reg];
@@ -78,7 +78,7 @@ using namespace x86_64;
 namespace eddic { namespace as {
 
 struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
-    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {RDI, RSI, RCX, RDX, R1, R2, R3, R4, R5, R6, R7, R8, RBX, RAX}, f) {}
+    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {RDI, RSI, RCX, RDX, R8, R9, R10, R11, R12, R13, R14, R15, RBX, RAX}, f) {}
     
     std::string getMnemonicSize(){
         return "qword";
@@ -559,7 +559,7 @@ void addConcatFunction(AssemblyFileWriter& writer){
     writer.stream() << "call eddi_alloc" << std::endl;
     writer.stream() << "add rsp, 8" << std::endl;
 
-    writer.stream() << "mov r1, rax" << std::endl;
+    writer.stream() << "mov r8, rax" << std::endl;
     writer.stream() << "mov rcx, rax" << std::endl;
     writer.stream() << "xor rax, rax" << std::endl;
 
@@ -595,7 +595,7 @@ void addConcatFunction(AssemblyFileWriter& writer){
     writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
     writer.stream() << "add rbx, rcx" << std::endl;
 
-    writer.stream() << "mov rax, r1" << std::endl;
+    writer.stream() << "mov rax, r8" << std::endl;
 
     leaveFunction(writer);
 }
