@@ -53,6 +53,9 @@
 //Code generation
 #include "asm/CodeGeneratorFactory.hpp"
 
+//32 bits by default
+eddic::Platform eddic::platform = Platform::INTEL_X86;
+
 #ifdef DEBUG
 static const bool debug = true;
 #else
@@ -68,9 +71,6 @@ void exec(const std::string& command);
 
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
-
-    //32 bits by default
-    Platform platform = Platform::INTEL_X86;
 
     if(TargetDetermined && Target64){
         platform = Platform::INTEL_X86_64;

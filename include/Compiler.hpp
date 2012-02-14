@@ -16,6 +16,8 @@
 
 namespace eddic {
 
+extern Platform platform;
+
 namespace parser {
     class SpiritParser;
 }
