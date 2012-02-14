@@ -8,8 +8,12 @@
 #include <iostream>
 
 #include "AssemblyFileWriter.hpp"
+#include "FunctionContext.hpp"
 #include "FunctionTable.hpp"
+#include "Labels.hpp"
+#include "VisitorUtils.hpp"
 
+#include "asm/IntelStatementCompiler.hpp"
 #include "asm/IntelX86_64CodeGenerator.hpp"
 
 using namespace eddic;
@@ -71,8 +75,207 @@ void leaveFunction(AssemblyFileWriter& writer){
 
 namespace eddic { namespace as {
 
-void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
-    //TODO
+struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
+    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {RDI, RSI, RCX, RDX, R1, R2, R3, R4, R5, R6, R7, R8, RBX, RAX}, f) {}
+    
+    std::string getMnemonicSize(){
+        return "qword";
+    }
+
+    Register getReturnRegister1(){
+        return Register::RAX;
+    }
+
+    Register getReturnRegister2(){
+        return Register::RBX;
+    }
+
+    Register getBasePointerRegister(){
+        return Register::RBP;
+    }
+
+    Register getStackPointerRegister(){
+        return Register::RSP;
+    }
+  
+    //Div eax by arg2 
+    void divEax(std::shared_ptr<tac::Quadruple> quadruple){
+        writer.stream() << "mov rdx, rax" << std::endl;
+        writer.stream() << "sar rdx, 31" << std::endl;
+
+        if(isInt(*quadruple->arg2)){
+            auto reg = getReg();
+            move(*quadruple->arg2, reg);
+
+            writer.stream() << "idiv " << reg << std::endl;
+
+            if(registers.reserved(reg)){
+                registers.release(reg);
+            }
+        } else {
+            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
+        }
+    }
+    
+    void div(std::shared_ptr<tac::Quadruple> quadruple){
+        spills(Register::RDX);
+        registers.reserve(Register::RDX);
+
+        //Form x = x / y
+        if(*quadruple->arg1 == quadruple->result){
+            safeMove(quadruple->result, Register::RAX);
+
+            divEax(quadruple);
+            //Form x = y / z (y: variable)
+        } else if(isVariable(*quadruple->arg1)){
+            spills(Register::RAX);
+            registers.reserve(Register::RAX);
+
+            copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::RAX);
+
+            divEax(quadruple);
+
+            registers.release(Register::RAX);
+            registers.setLocation(quadruple->result, Register::RAX);
+        } else {
+            spills(Register::RAX);
+            registers.reserve(Register::RAX);
+
+            copy(*quadruple->arg1, Register::RAX);
+
+            divEax(quadruple);
+
+            registers.release(Register::RAX);
+            registers.setLocation(quadruple->result, Register::RAX);
+        }
+
+        registers.release(Register::RDX);
+    }
+    
+    void mod(std::shared_ptr<tac::Quadruple> quadruple){
+        spills(Register::RAX);
+        spills(Register::RDX);
+
+        registers.reserve(Register::RAX);
+        registers.reserve(Register::RDX);
+
+        copy(*quadruple->arg1, Register::RAX);
+
+        divEax(quadruple);
+
+        //result is in edx (no need to move it now)
+        registers.setLocation(quadruple->result, Register::RDX);
+
+        registers.release(Register::RAX);
+    }
+    
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        compile(quadruple);
+    }
+    
+    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        compile(ifFalse);
+    }
+
+    void operator()(std::shared_ptr<tac::If>& if_){
+        compile(if_);
+    }
+
+    void operator()(std::shared_ptr<tac::Goto>& goto_){
+        compile(goto_);
+    }
+
+    void operator()(std::shared_ptr<tac::Call>& call){
+        compile(call);
+    }
+
+    void operator()(tac::NoOp&){
+        //It's a no-op
+    }
+
+    void operator()(std::string&){
+        assert(false); //There is no more label after the basic blocks have been extracted
+    }
+};
+
+void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+    defineFunction(writer, function->getName());
+
+    auto size = function->context->size();
+    //Only if necessary, allocates size on the stack for the local variables
+    if(size > 0){
+        writer.stream() << "sub rsp, " << size << std::endl;
+    }
+    
+    auto iter = function->context->begin();
+    auto end = function->context->end();
+
+    for(; iter != end; iter++){
+        auto var = iter->second;
+        if(var->type().isArray() && var->position().isStack()){
+            int position = -var->position().offset();
+
+            writer.stream() << "mov qword [rbp + " << position << "], " << var->type().size() << std::endl;
+
+            if(var->type().base() == BaseType::INT){
+                writer.stream() << "mov rcx, " << var->type().size() << std::endl;
+            } else if(var->type().base() == BaseType::STRING){
+                writer.stream() << "mov rcx, " << (var->type().size() * 2) << std::endl;
+            }
+            
+            writer.stream() << "xor rax, rax" << std::endl;
+            writer.stream() << "lea rdi, [rbp + " << position << " - 4]" << std::endl;
+            writer.stream() << "std" << std::endl;
+            writer.stream() << "rep stosq" << std::endl;
+            writer.stream() << "cld" << std::endl;
+        }
+    }
+
+    IntelX86_64StatementCompiler compiler(writer, function);
+
+    tac::computeBlockUsage(function, compiler.blockUsage);
+
+    //First we computes a label for each basic block
+    for(auto& block : function->getBasicBlocks()){
+        compiler.labels[block] = newLabel();
+    }
+
+    //Then we compile each of them
+    for(auto& block : function->getBasicBlocks()){
+        compile(block, compiler);
+    }
+    
+    //Only if necessary, deallocates size on the stack for the local variables
+    if(size > 0){
+        writer.stream() << "add esp, " << size << std::endl;
+    }
+   
+    leaveFunction(writer); 
+}
+
+void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, IntelX86_64StatementCompiler& compiler){
+    compiler.reset();
+
+    if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
+        writer.stream() << compiler.labels[block] << ":" << std::endl;
+    }
+
+    for(unsigned int i = 0; i < block->statements.size(); ++i){
+        auto& statement = block->statements[i];
+
+        if(i == block->statements.size() - 1){
+            compiler.setLast(true);
+        } else {
+            compiler.setNext(block->statements[i+1]);
+        }
+        
+        visit(compiler, statement);
+    }
+
+    //If the basic block has not been ended
+    if(!compiler.ended){
+        compiler.endBasicBlock();
+    }
 }
 
 void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
