@@ -7,26 +7,16 @@
 
 #include <iostream>
 
-#include <boost/variant.hpp>
-
-#include "FunctionContext.hpp"
 #include "AssemblyFileWriter.hpp"
-#include "Types.hpp"
-#include "Variable.hpp"
-#include "Utils.hpp"
+#include "FunctionContext.hpp"
+#include "FunctionTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
-#include "FunctionTable.hpp"
 
-#include "asm/IntelX86CodeGenerator.hpp"
 #include "asm/IntelStatementCompiler.hpp"
-
-#include "tac/Utils.hpp"
+#include "asm/IntelX86CodeGenerator.hpp"
 
 using namespace eddic;
-
-using eddic::tac::isVariable;
-using eddic::tac::isInt;
 
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
