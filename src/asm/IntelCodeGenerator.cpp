@@ -44,7 +44,7 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
             if(type.base() == BaseType::INT){
                 declareIntArray(it.second->name(), type.size());
             } else if(type.base() == BaseType::STRING){
-                declareIntArray(it.second->name(), type.size());
+                declareStringArray(it.second->name(), type.size());
             }
         } else {
             if (type.base() == BaseType::INT) {
