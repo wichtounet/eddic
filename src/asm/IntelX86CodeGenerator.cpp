@@ -347,6 +347,10 @@ void IntelX86CodeGenerator::declareString(const std::string& label, const std::s
     writer.stream() << label << " dd " << value << std::endl;
 }
 
+}} //end of eddic::as
+
+namespace { //anonymous namespace
+
 void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "mov eax, [ebp+8]" << std::endl;
     writer.stream() << "xor esi, esi" << std::endl;
@@ -695,7 +699,7 @@ void addDurationFunction(AssemblyFileWriter& writer){
     leaveFunction(writer);
 }
 
-}} //end of eddic::as
+} //end of anonymous namespace
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
