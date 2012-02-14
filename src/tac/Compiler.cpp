@@ -141,7 +141,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
 }
 
 int getStringOffset(std::shared_ptr<Variable> variable){
-    return variable->position().isGlobal() ? 4 : -4;
+    return variable->position().isGlobal() ? size(BaseType::INT) : -size(BaseType::INT);
 }
 
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
@@ -300,7 +300,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 auto t3 = array.Content->context->newTemporary();
                 
                 //Assign the second part of the string
-                function->add(std::make_shared<tac::Quadruple>(t3, index, tac::Operator::ADD, -4));
+                function->add(std::make_shared<tac::Quadruple>(t3, index, tac::Operator::ADD, -size(BaseType::INT)));
                 function->add(std::make_shared<tac::Quadruple>(t2, array.Content->var, tac::Operator::ARRAY, t3));
                 
                 return {t1, t2};
@@ -425,7 +425,7 @@ struct AssignValueToArray : public AbstractVisitor {
         function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
 
         auto temp1 = function->context->newTemporary();
-        function->add(std::make_shared<tac::Quadruple>(temp1, index, tac::Operator::ADD, -4));
+        function->add(std::make_shared<tac::Quadruple>(temp1, index, tac::Operator::ADD, -size(BaseType::INT)));
         function->add(std::make_shared<tac::Quadruple>(variable, temp1, tac::Operator::ARRAY_ASSIGN, arguments[1]));
     }
 };
@@ -587,12 +587,12 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
         arguments.clear();
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Call>("concat", 16, v1, v2)); 
+            function->add(std::make_shared<tac::Call>("concat", 2 * size(BaseType::STRING), v1, v2)); 
         } else {
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
             
-            function->add(std::make_shared<tac::Call>("concat", 16, t1, t2)); 
+            function->add(std::make_shared<tac::Call>("concat", 2 * size(BaseType::STRING), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -836,7 +836,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 auto t1 = function->context->newTemporary();
 
                 //Assign the second part of the string
-                function->add(std::make_shared<tac::Quadruple>(t1, indexTemp, tac::Operator::ADD, -4));
+                function->add(std::make_shared<tac::Quadruple>(t1, indexTemp, tac::Operator::ADD, -size(BaseType::INT)));
                 function->add(std::make_shared<tac::Quadruple>(stringTemp, arrayVar, tac::Operator::ARRAY, t1));
                 function->add(std::make_shared<tac::Quadruple>(var, getStringOffset(var), tac::Operator::DOT_ASSIGN, stringTemp));
             }
