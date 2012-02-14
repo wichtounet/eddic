@@ -39,8 +39,6 @@ class IntelX86CodeGenerator : public IntelCodeGenerator {
         
     private:        
         void compile(std::shared_ptr<tac::BasicBlock> block, IntelX86StatementCompiler& compiler);
-        void computeBlockUsage(std::shared_ptr<tac::Function> function, IntelX86StatementCompiler& compiler);
-        void computeLiveness(std::shared_ptr<tac::Function> function);
 };
 
 } //end of as
