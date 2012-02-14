@@ -159,7 +159,7 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register>, publ
 
         copy(*quadruple->arg1, Register::EAX);
 
-        div(quadruple);
+        divEax(quadruple);
 
         //result is in edx (no need to move it now)
         registers.setLocation(quadruple->result, Register::EDX);
