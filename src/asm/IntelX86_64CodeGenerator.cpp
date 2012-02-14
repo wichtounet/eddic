@@ -293,7 +293,7 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
         writer.stream() << "call eddi_alloc" << std::endl;                  //eax = start address of the array
         writer.stream() << "add rsp, 8" << std::endl;
 
-        writer.stream() << "lea rsi, [rax + rcx - 4]" << std::endl;         //esi = last address of the array
+        writer.stream() << "lea rsi, [rax + rcx - 8]" << std::endl;         //esi = last address of the array
         writer.stream() << "mov rdx, rsi" << std::endl;                     //edx = last address of the array
         
         writer.stream() << "mov [rsi], rbx" << std::endl;                   //Set the length of the array
@@ -301,7 +301,7 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
 
         writer.stream() << ".copy_args:" << std::endl;
         writer.stream() << "pop rdi" << std::endl;                          //edi = address of current args
-        writer.stream() << "mov [rsi+4], rdi" << std::endl;                 //set the address of the string
+        writer.stream() << "mov [rsi+8], rdi" << std::endl;                 //set the address of the string
 
         /* Calculate the length of the string  */
         writer.stream() << "xor rax, rax" << std::endl;
@@ -364,7 +364,7 @@ void IntelX86_64CodeGenerator::declareString(const std::string& label, const std
 namespace { //anonymous namespace
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [rbp+8]" << std::endl;
+    writer.stream() << "mov rax, [rbp+16]" << std::endl;
     writer.stream() << "xor rsi, rsi" << std::endl;
 
     //If the number is negative, we print the - and then the number
@@ -453,7 +453,7 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintBoolBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [ebp-4] " << std::endl;
+    writer.stream() << "mov rax, [ebp + 16] " << std::endl;
     writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jne .true_print" << std::endl;
     writer.stream() << "push 0" << std::endl;
@@ -507,8 +507,8 @@ void addPrintStringBody(AssemblyFileWriter& writer){
     writer.stream() << "mov rsi, 0" << std::endl;
     writer.stream() << "mov rax, 4" << std::endl;
     writer.stream() << "mov rbx, 1" << std::endl;
-    writer.stream() << "mov rcx, [ebp + 12]" << std::endl;
-    writer.stream() << "mov rdx, [ebp + 8]" << std::endl;
+    writer.stream() << "mov rcx, [ebp + 24]" << std::endl;
+    writer.stream() << "mov rdx, [ebp + 16]" << std::endl;
     writer.stream() << "int 80h" << std::endl;
 }
 
@@ -541,20 +541,20 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
 void addConcatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "concat");
 
-    writer.stream() << "mov rdx, [rbp + 16]" << std::endl;
-    writer.stream() << "mov rcx, [rbp + 8]" << std::endl;
+    writer.stream() << "mov rdx, [rbp + 32]" << std::endl;
+    writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
     writer.stream() << "add rdx, rcx" << std::endl;
 
     writer.stream() << "push rdx" << std::endl;
     writer.stream() << "call eddi_alloc" << std::endl;
     writer.stream() << "add rsp, 8" << std::endl;
 
-    writer.stream() << "mov [rbp - 4], rax" << std::endl;
+    writer.stream() << "mov r1, rax" << std::endl;
     writer.stream() << "mov rcx, rax" << std::endl;
     writer.stream() << "xor rax, rax" << std::endl;
 
-    writer.stream() << "mov rbx, [rbp + 16]" << std::endl;
-    writer.stream() << "mov rdx, [rbp + 20]" << std::endl;
+    writer.stream() << "mov rbx, [rbp + 32]" << std::endl;
+    writer.stream() << "mov rdx, [rbp + 40]" << std::endl;
 
     writer.stream() << ".copy_concat_1:" << std::endl;
     writer.stream() << "cmp rbx, 0" << std::endl;
@@ -567,8 +567,8 @@ void addConcatFunction(AssemblyFileWriter& writer){
     writer.stream() << "jmp .copy_concat_1" << std::endl;
     writer.stream() << ".end_concat_1" << ":" << std::endl;
 
-    writer.stream() << "mov rbx, [rbp + 8]" << std::endl;
-    writer.stream() << "mov rdx, [rbp + 12]" << std::endl;
+    writer.stream() << "mov rbx, [rbp + 16]" << std::endl;
+    writer.stream() << "mov rdx, [rbp + 24]" << std::endl;
 
     writer.stream() << ".copy_concat_2:" << std::endl;
     writer.stream() << "cmp rbx, 0" << std::endl;
@@ -581,11 +581,11 @@ void addConcatFunction(AssemblyFileWriter& writer){
     writer.stream() << "jmp .copy_concat_2" << std::endl;
     writer.stream() << ".end_concat_2:" << std::endl;
 
-    writer.stream() << "mov rbx, [rbp + 16]" << std::endl;
-    writer.stream() << "mov rcx, [rbp + 8]" << std::endl;
+    writer.stream() << "mov rbx, [rbp + 32]" << std::endl;
+    writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
     writer.stream() << "add rbx, rcx" << std::endl;
 
-    writer.stream() << "mov rax, [rbp - 4]" << std::endl;
+    writer.stream() << "mov rax, r1" << std::endl;
 
     leaveFunction(writer);
 }
@@ -595,7 +595,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
 
     save(writer, {"rbx", "rcx", "rdx"});
 
-    writer.stream() << "mov rcx, [rbp + 8]" << std::endl;
+    writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
     writer.stream() << "mov rbx, [Veddi_remaining]" << std::endl;
 
     writer.stream() << "cmp rcx, rbx" << std::endl;
@@ -660,7 +660,7 @@ void addTimeFunction(AssemblyFileWriter& writer){
     writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
     writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
 
-    writer.stream() << "mov rsi, [rbp + 8]" << std::endl;
+    writer.stream() << "mov rsi, [rbp + 16]" << std::endl;
     writer.stream() << "mov [rsi - 4], eax" << std::endl;
     writer.stream() << "mov [rsi - 8], edx" << std::endl;
 
@@ -670,8 +670,8 @@ void addTimeFunction(AssemblyFileWriter& writer){
 void addDurationFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F8durationAIAI");
 
-    writer.stream() << "mov rsi, [rbp + 12]" << std::endl;          //Start time stamp
-    writer.stream() << "mov rdi, [rbp + 8]" << std::endl;           //End time stamp
+    writer.stream() << "mov rsi, [rbp + 24]" << std::endl;          //Start time stamp
+    writer.stream() << "mov rdi, [rbp + 16]" << std::endl;           //End time stamp
 
     //Print the high order bytes
     writer.stream() << "mov rax, [rsi - 8]" << std::endl;
