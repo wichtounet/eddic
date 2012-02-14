@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <unordered_set>
-#include <unordered_map>
 
 #include "Utils.hpp"
 #include "Registers.hpp"
@@ -31,7 +30,6 @@ struct IntelStatementCompiler {
     AssemblyFileWriter& writer;
     Registers<Register> registers;
 
-    std::unordered_map<std::shared_ptr<tac::BasicBlock>, std::string> labels;
     std::unordered_set<std::shared_ptr<tac::BasicBlock>> blockUsage;
 
     std::unordered_set<std::shared_ptr<Variable>> written;
@@ -484,28 +482,28 @@ struct IntelStatementCompiler {
 
             switch(*ifFalse->op){
                 case tac::BinaryOperator::EQUALS:
-                    writer.stream() << "jne " << labels[ifFalse->block] << std::endl;
+                    writer.stream() << "jne " << ifFalse->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::NOT_EQUALS:
-                    writer.stream() << "je " << labels[ifFalse->block] << std::endl;
+                    writer.stream() << "je " << ifFalse->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::LESS:
-                    writer.stream() << "jge " << labels[ifFalse->block] << std::endl;
+                    writer.stream() << "jge " << ifFalse->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::LESS_EQUALS:
-                    writer.stream() << "jg " << labels[ifFalse->block] << std::endl;
+                    writer.stream() << "jg " << ifFalse->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::GREATER:
-                    writer.stream() << "jle " << labels[ifFalse->block] << std::endl;
+                    writer.stream() << "jle " << ifFalse->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::GREATER_EQUALS:
-                    writer.stream() << "jl " << labels[ifFalse->block] << std::endl;
+                    writer.stream() << "jl " << ifFalse->block->label << std::endl;
                     break;
             }
         } else {
             compareUnary(ifFalse);
 
-            writer.stream() << "jz " << labels[ifFalse->block] << std::endl;
+            writer.stream() << "jz " << ifFalse->block->label << std::endl;
         }
     }
 
@@ -517,28 +515,28 @@ struct IntelStatementCompiler {
 
             switch(*if_->op){
                 case tac::BinaryOperator::EQUALS:
-                    writer.stream() << "je " << labels[if_->block] << std::endl;
+                    writer.stream() << "je " << if_->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::NOT_EQUALS:
-                    writer.stream() << "jne " << labels[if_->block] << std::endl;
+                    writer.stream() << "jne " << if_->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::LESS:
-                    writer.stream() << "jl " << labels[if_->block] << std::endl;
+                    writer.stream() << "jl " << if_->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::LESS_EQUALS:
-                    writer.stream() << "jle " << labels[if_->block] << std::endl;
+                    writer.stream() << "jle " << if_->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::GREATER:
-                    writer.stream() << "jg " << labels[if_->block] << std::endl;
+                    writer.stream() << "jg " << if_->block->label << std::endl;
                     break;
                 case tac::BinaryOperator::GREATER_EQUALS:
-                    writer.stream() << "jge " << labels[if_->block] << std::endl;
+                    writer.stream() << "jge " << if_->block->label << std::endl;
                     break;
             }
         } else {
             compareUnary(if_);
 
-            writer.stream() << "jnz " << labels[if_->block] << std::endl;
+            writer.stream() << "jnz " << if_->block->label << std::endl;
         }
     }
     
@@ -548,7 +546,7 @@ struct IntelStatementCompiler {
         //The basic block must be ended before the jump
         endBasicBlock();
 
-        writer.stream() << "jmp " << labels[goto_->block] << std::endl; 
+        writer.stream() << "jmp " << goto_->block->label << std::endl; 
     }
 
     void compile(std::shared_ptr<tac::Call> call){

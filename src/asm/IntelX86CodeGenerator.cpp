@@ -225,7 +225,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function)
 
     //First we computes a label for each basic block
     for(auto& block : function->getBasicBlocks()){
-        compiler.labels[block] = newLabel();
+        block->label = newLabel();
     }
 
     //Then we compile each of them
@@ -245,7 +245,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> block, 
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
-        writer.stream() << compiler.labels[block] << ":" << std::endl;
+        writer.stream() << block->label << ":" << std::endl;
     }
 
     for(unsigned int i = 0; i < block->statements.size(); ++i){

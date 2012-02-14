@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-tac::BasicBlock::BasicBlock(unsigned int i) : index(i) {}
+tac::BasicBlock::BasicBlock(unsigned int i) : index(i), label("") {}
 
 void tac::BasicBlock::add(tac::Statement statement){
     statements.push_back(statement);

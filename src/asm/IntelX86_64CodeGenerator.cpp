@@ -236,8 +236,8 @@ void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> functi
     tac::computeBlockUsage(function, compiler.blockUsage);
 
     //First we computes a label for each basic block
-    for(auto& block : function->getBasicBlocks()){
-        compiler.labels[block] = newLabel();
+    for(auto block : function->getBasicBlocks()){
+        block->label = newLabel();
     }
 
     //Then we compile each of them
@@ -247,7 +247,7 @@ void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> functi
     
     //Only if necessary, deallocates size on the stack for the local variables
     if(size > 0){
-        writer.stream() << "add esp, " << size << std::endl;
+        writer.stream() << "add rsp, " << size << std::endl;
     }
    
     leaveFunction(writer); 
@@ -257,7 +257,7 @@ void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::BasicBlock> bloc
     compiler.reset();
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
-        writer.stream() << compiler.labels[block] << ":" << std::endl;
+        writer.stream() << block->label << ":" << std::endl;
     }
 
     for(unsigned int i = 0; i < block->statements.size(); ++i){
