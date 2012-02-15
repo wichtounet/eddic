@@ -378,7 +378,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "xor rsi, rsi" << std::endl;
 
     //If the number is negative, we print the - and then the number
-    writer.stream() << "cmp rax, 0" << std::endl;
+    writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jge .loop" << std::endl;
 
     writer.stream() << "neg rax" << std::endl;
@@ -391,7 +391,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 
     //Divide rax until there is nothing to divide
     writer.stream() << ".loop" << ":" << std::endl;
-    writer.stream() << "mov rdx, 0" << std::endl;
+    writer.stream() << "xor rdx, rdx" << std::endl;
     writer.stream() << "mov rbx, 10" << std::endl;
     writer.stream() << "div rbx" << std::endl;
     writer.stream() << "add rdx, 48" << std::endl;
