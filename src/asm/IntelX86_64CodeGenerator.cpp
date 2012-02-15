@@ -330,10 +330,13 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
         writer.stream() << "push rdx" << std::endl;
     }
 
+    //Give control to the user function
     writer.stream() << "call main" << std::endl;
-    writer.stream() << "mov rax, 1" << std::endl;
-    writer.stream() << "xor rbx, rbx" << std::endl;
-    writer.stream() << "int 80h" << std::endl;
+
+    //Exit from the program
+    writer.stream() << "mov rax, 60" << std::endl;  //syscall 60 is exit
+    writer.stream() << "xor rdi, rdi" << std::endl; //exit code (0 = success)
+    writer.stream() << "syscall" << std::endl;
 }
 
 void IntelX86_64CodeGenerator::defineDataSection(){
@@ -375,7 +378,7 @@ namespace { //anonymous namespace
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "mov rax, [rbp+16]" << std::endl;
-    writer.stream() << "xor rsi, rsi" << std::endl;
+    writer.stream() << "xor r8, r8" << std::endl;
 
     //If the number is negative, we print the - and then the number
     writer.stream() << "or rax, rax" << std::endl;
@@ -396,22 +399,22 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "div rbx" << std::endl;
     writer.stream() << "add rdx, 48" << std::endl;
     writer.stream() << "push rdx" << std::endl;
-    writer.stream() << "inc rsi" << std::endl;
+    writer.stream() << "inc r8" << std::endl;
     writer.stream() << "cmp rax, 0" << std::endl;
     writer.stream() << "jz .next" << std::endl;
     writer.stream() << "jmp .loop" << std::endl;
 
     //Print each of the char, one by one
     writer.stream() << ".next" << ":" << std::endl;
-    writer.stream() << "cmp rsi, 0" << std::endl;
+    writer.stream() << "cmp r8, 0" << std::endl;
     writer.stream() << "jz .exit" << std::endl;
-    writer.stream() << "dec rsi" << std::endl;
+    writer.stream() << "dec r8" << std::endl;
 
-    writer.stream() << "mov rax, 4" << std::endl;
-    writer.stream() << "mov rcx, rsp" << std::endl;
-    writer.stream() << "mov rbx, 1" << std::endl;
-    writer.stream() << "mov rdx, 1" << std::endl;
-    writer.stream() << "int 80h" << std::endl;
+    writer.stream() << "mov rax, 1" << std::endl;       //syscall 1 = write
+    writer.stream() << "mov rdi, 1" << std::endl;       //stdout
+    writer.stream() << "mov rsi, rsp" << std::endl;     //read from the stack
+    writer.stream() << "mov rdx, 1" << std::endl;       //length
+    writer.stream() << "syscall" << std::endl;          //syscall
 
     writer.stream() << "add rsp, 8" << std::endl;
 
@@ -514,12 +517,11 @@ void addPrintLineFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintStringBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rsi, 0" << std::endl;
-    writer.stream() << "mov rax, 4" << std::endl;
-    writer.stream() << "mov rbx, 1" << std::endl;
-    writer.stream() << "mov rcx, [rbp + 24]" << std::endl;
-    writer.stream() << "mov rdx, [rbp + 16]" << std::endl;
-    writer.stream() << "int 80h" << std::endl;
+    writer.stream() << "mov rax, 1" << std::endl;           //syscall 1 = write
+    writer.stream() << "mov rdi, 1" << std::endl;           //stdout
+    writer.stream() << "mov rsi, [rbp + 24]" << std::endl;  //length
+    writer.stream() << "mov rdx, [rbp + 16]" << std::endl;  //source
+    writer.stream() << "syscall" << std::endl;
 }
 
 void addPrintStringFunction(AssemblyFileWriter& writer){
@@ -612,18 +614,18 @@ void addAllocFunction(AssemblyFileWriter& writer){
     writer.stream() << "jle .alloc_normal" << std::endl;
 
     //Get the current address
-    writer.stream() << "mov rax, 45" << std::endl;          //45 = sys_brk
-    writer.stream() << "xor rbx, rbx" << std::endl;         //get end
-    writer.stream() << "int 80h" << std::endl;
+    writer.stream() << "mov rax, 12" << std::endl;          //syscall 12 = sys_brk
+    writer.stream() << "xor rdi, rdi" << std::endl;         //get end
+    writer.stream() << "syscall" << std::endl;
 
     //%eax is the current address 
     writer.stream() << "mov rsi, rax" << std::endl;
 
     //Alloc new block of 16384K from the current address
-    writer.stream() << "mov rbx, rax" << std::endl;
-    writer.stream() << "add rbx, 16384" << std::endl;
-    writer.stream() << "mov rax, 45" << std::endl;          //45 = sys_brk
-    writer.stream() << "int 80h" << std::endl;
+    writer.stream() << "mov rdi, rax" << std::endl;
+    writer.stream() << "add rdi, 16384" << std::endl;       //rdi = first parameter
+    writer.stream() << "mov rax, 12" << std::endl;          //syscall 12 = sys_brk
+    writer.stream() << "syscall" << std::endl;
 
     //zero'd the new block
     writer.stream() << "mov rdi, rax" << std::endl;         //edi = start of block
