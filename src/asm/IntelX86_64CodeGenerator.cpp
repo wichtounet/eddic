@@ -442,11 +442,11 @@ void restore(AssemblyFileWriter& writer, const std::vector<std::string>& registe
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    save(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     addPrintIntegerBody(writer);
 
-    restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     leaveFunction(writer);
    
@@ -454,13 +454,13 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    save(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     leaveFunction(writer);
 }
@@ -527,11 +527,11 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 void addPrintStringFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printS");
     
-    save(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    save(writer, {"rax", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
-    restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    restore(writer, {"rax", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
    
@@ -539,13 +539,13 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnS");
     
-    save(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    save(writer, {"rax", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi"});
+    restore(writer, {"rax", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
 }
