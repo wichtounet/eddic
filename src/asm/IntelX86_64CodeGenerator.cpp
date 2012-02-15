@@ -408,7 +408,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "dec rsi" << std::endl;
 
     writer.stream() << "mov rax, 4" << std::endl;
-    writer.stream() << "mov rcx, esp" << std::endl;
+    writer.stream() << "mov rcx, rsp" << std::endl;
     writer.stream() << "mov rbx, 1" << std::endl;
     writer.stream() << "mov rdx, 1" << std::endl;
     writer.stream() << "int 80h" << std::endl;
