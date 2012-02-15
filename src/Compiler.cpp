@@ -174,9 +174,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
 
-            tac::Printer printer;
-            printer.print(tacProgram);
-    
             as::CodeGeneratorFactory factory;
             auto generator = factory.get(platform, writer);
             generator->generate(tacProgram, pool, functionTable); 
