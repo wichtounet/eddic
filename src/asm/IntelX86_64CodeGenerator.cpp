@@ -322,9 +322,9 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(FunctionTable& table){
         writer.stream() << "dec rcx" << std::endl;
         /* End of the calculation */
 
-        writer.stream() << "mov dword [rsi], ecx" << std::endl;               //set the length of the string
+        writer.stream() << "mov qword [rsi], rcx" << std::endl;               //set the length of the string
         writer.stream() << "sub rsi, 8" << std::endl;
-        writer.stream() << "dec erx" << std::endl;
+        writer.stream() << "dec rbx" << std::endl;
         writer.stream() << "jnz .copy_args" << std::endl;
 
         writer.stream() << "push rdx" << std::endl;
