@@ -605,7 +605,7 @@ void addConcatFunction(AssemblyFileWriter& writer){
 void addAllocFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "eddi_alloc");
 
-    save(writer, {"rbx", "rcx", "rdx"});
+    save(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
 
     writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
     writer.stream() << "mov rbx, [Veddi_remaining]" << std::endl;
@@ -660,7 +660,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
 
     writer.stream() << ".alloc_end:" << std::endl;
 
-    restore(writer, {"rbx", "rcx", "rdx"});
+    restore(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
 
     leaveFunction(writer);
 }
