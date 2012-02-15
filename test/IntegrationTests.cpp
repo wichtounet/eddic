@@ -18,11 +18,12 @@
 
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
-    assertCompiles("samples/" #file ".eddi");\
+    assertCompiles("samples/" #file ".eddi", "-32");\
+    assertCompiles("samples/" #file ".eddi", "-64");\
 }
 
-void assertCompiles(const std::string& file){
-    const char* options[1] = {"-32"};
+void assertCompiles(const std::string& file, const std::string& param){
+    const char* options[1] = {param.c_str()};
     eddic::parseOptions(1, options);
 
     eddic::Compiler compiler;
@@ -33,8 +34,8 @@ void assertCompiles(const std::string& file){
     BOOST_CHECK_EQUAL (code, 0);
 }
 
-void assertOutputEquals(const std::string& file, const std::string& output){
-    assertCompiles("test/cases/" + file);
+void assertOutputEquals(const std::string& file, const std::string& output, const std::string& param){
+    assertCompiles("test/cases/" + file, param);
 
     std::string out = eddic::execCommand("./a.out"); 
     
@@ -61,53 +62,72 @@ TEST_SAMPLE(identifiers)
 /* Specific tests */ 
 
 BOOST_AUTO_TEST_CASE( if_ ){
-    assertOutputEquals("if.eddi", "Cool");
+    assertOutputEquals("if.eddi", "Cool", "-32");
+    assertOutputEquals("if.eddi", "Cool", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
-    assertOutputEquals("while.eddi", "01234");
+    assertOutputEquals("while.eddi", "01234", "-32");
+    assertOutputEquals("while.eddi", "01234", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( for_ ){
-    assertOutputEquals("for.eddi", "01234");
+    assertOutputEquals("for.eddi", "01234", "-32");
+    assertOutputEquals("for.eddi", "01234", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( foreach_ ){
-    assertOutputEquals("foreach.eddi", "012345");
+    assertOutputEquals("foreach.eddi", "012345", "-32");
+    assertOutputEquals("foreach.eddi", "012345", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
-    assertOutputEquals("globals.eddi", "1000a2000aa");
+    assertOutputEquals("globals.eddi", "1000a2000aa", "-32");
+    assertOutputEquals("globals.eddi", "1000a2000aa", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( void_functions ){
-    assertOutputEquals("void.eddi", "4445");
+    assertOutputEquals("void.eddi", "4445", "-32");
+    assertOutputEquals("void.eddi", "4445", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( string_functions ){
-    assertOutputEquals("return_string.eddi", "abcdef");
+    assertOutputEquals("return_string.eddi", "abcdef", "-32");
+    assertOutputEquals("return_string.eddi", "abcdef", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( int_functions ){
-    assertOutputEquals("return_int.eddi", "484");
+    assertOutputEquals("return_int.eddi", "484", "-32");
+    assertOutputEquals("return_int.eddi", "484", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( recursive_functions ){
-    assertOutputEquals("recursive.eddi", "362880");
+    assertOutputEquals("recursive.eddi", "362880", "-32");
+    assertOutputEquals("recursive.eddi", "362880", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( math ){
-    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|");
+    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "-32");
+    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
-    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|");
+    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-32");
+    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( args ){
-    assertCompiles("test/cases/args.eddi");
+    assertCompiles("test/cases/args.eddi", "-32");
 
     std::string out = eddic::execCommand("./a.out"); 
+    BOOST_CHECK_EQUAL ("./a.out|", out);
+    
+    out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
+    BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
+    
+    assertCompiles("test/cases/args.eddi", "-64");
+
+    out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
     
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
@@ -116,5 +136,6 @@ BOOST_AUTO_TEST_CASE( args ){
     
 /* Unit test for bug fixes regression */
 BOOST_AUTO_TEST_CASE( while_bug ){
-    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5");
+    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "-32");
+    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "-64");
 }
