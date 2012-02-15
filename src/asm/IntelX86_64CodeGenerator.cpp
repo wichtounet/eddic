@@ -463,7 +463,7 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintBoolBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [ebp + 16] " << std::endl;
+    writer.stream() << "mov rax, [rbp + 16] " << std::endl;
     writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jne .true_print" << std::endl;
     writer.stream() << "push 0" << std::endl;
@@ -508,7 +508,7 @@ void addPrintLineFunction(AssemblyFileWriter& writer){
     writer.stream() << "push S1" << std::endl;
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
+    writer.stream() << "add rsp, 16" << std::endl;
 
     leaveFunction(writer);
 }
@@ -517,8 +517,8 @@ void addPrintStringBody(AssemblyFileWriter& writer){
     writer.stream() << "mov rsi, 0" << std::endl;
     writer.stream() << "mov rax, 4" << std::endl;
     writer.stream() << "mov rbx, 1" << std::endl;
-    writer.stream() << "mov rcx, [ebp + 24]" << std::endl;
-    writer.stream() << "mov rdx, [ebp + 16]" << std::endl;
+    writer.stream() << "mov rcx, [rbp + 24]" << std::endl;
+    writer.stream() << "mov rdx, [rbp + 16]" << std::endl;
     writer.stream() << "int 80h" << std::endl;
 }
 
