@@ -51,7 +51,10 @@
 #include "tac/Printer.hpp"
 
 //Code generation
-#include "asm/IntelX86CodeGenerator.hpp"
+#include "asm/CodeGeneratorFactory.hpp"
+
+//32 bits by default
+eddic::Platform eddic::platform = Platform::INTEL_X86;
 
 #ifdef DEBUG
 static const bool debug = true;
@@ -70,19 +73,30 @@ int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
 
     if(TargetDetermined && Target64){
-        std::cout << "Warning : Looks like you're running a 64 bit system. This compiler only outputs 32 bits assembly." << std::endl; 
+        platform = Platform::INTEL_X86_64;
+    }
+
+    if(options.count("32")){
+        platform = Platform::INTEL_X86;
+    }
+    
+    if(options.count("64")){
+        platform = Platform::INTEL_X86_64;
     }
 
     StopWatch timer;
     
-    int code = compileOnly(file);
+    int code = compileOnly(file, platform);
 
     std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
 
     return code;
 }
 
-int Compiler::compileOnly(const std::string& file) {
+void assemble(Platform platform, const std::string& output);
+void assembleWithDebug(Platform platform, const std::string& output);
+
+int Compiler::compileOnly(const std::string& file, Platform platform) {
     std::string output = options["output"].as<std::string>();
 
     int code = 0;
@@ -159,18 +173,18 @@ int Compiler::compileOnly(const std::string& file) {
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
-            as::IntelX86CodeGenerator generator(writer);
-            generator.generate(tacProgram, pool, functionTable); 
+
+            as::CodeGeneratorFactory factory;
+            auto generator = factory.get(platform, writer);
+            generator->generate(tacProgram, pool, functionTable); 
             writer.write(); 
 
             //If it's necessary, assemble and link the assembly
             if(!options.count("assembly")){
                 if(options.count("debug")){
-                    exec("nasm -g -f elf32 -o output.o output.asm");
-                    exec("ld -m elf_i386 output.o -o " + output);
+                    assembleWithDebug(platform, output);
                 } else {
-                    exec("nasm -f elf32 -o output.o output.asm");
-                    exec("ld -S -m elf_i386 output.o -o " + output);
+                    assemble(platform, output);
                 }
 
                 //Remove temporary files
@@ -187,6 +201,36 @@ int Compiler::compileOnly(const std::string& file) {
     }
 
     return code;
+}
+
+void assemble(Platform platform, const std::string& output){
+    switch(platform){
+        case Platform::INTEL_X86:
+            exec("nasm -f elf32 -o output.o output.asm");
+            exec("ld -S -m elf_i386 output.o -o " + output);
+
+            break;
+        case Platform::INTEL_X86_64:
+            exec("nasm -f elf64 -o output.o output.asm");
+            exec("ld -S -m elf_x86_64 output.o -o " + output);
+
+            break;
+   } 
+}
+
+void assembleWithDebug(Platform platform, const std::string& output){
+    switch(platform){
+        case Platform::INTEL_X86:
+            exec("nasm -g -f elf32 -o output.o output.asm");
+            exec("ld -m elf_i386 output.o -o " + output);
+
+            break;
+        case Platform::INTEL_X86_64:
+            exec("nasm -g -f elf64 -o output.o output.asm");
+            exec("ld -m elf_x86_64 output.o -o " + output);
+
+        break;
+   } 
 }
 
 void eddic::defineDefaultValues(ast::SourceFile& program){

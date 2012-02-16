@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef INTEL_X86_CODE_GENERATOR_H
-#define INTEL_X86_CODE_GENERATOR_H
+#ifndef INTEL_X86_64_CODE_GENERATOR_H
+#define INTEL_X86_64_CODE_GENERATOR_H
 
 #include "asm/IntelCodeGenerator.hpp"
 
@@ -15,18 +15,18 @@ namespace eddic {
 namespace as {
 
 /*!
- * \class IntelX86CodeGenerator
- * \brief Code generator for Intel X86 platform. 
+ * \class IntelX86_64CodeGenerator
+ * \brief Code generator for Intel X86_64 platform. 
  */
-class IntelX86CodeGenerator : public IntelCodeGenerator {
+class IntelX86_64CodeGenerator : public IntelCodeGenerator {
     public:
-        IntelX86CodeGenerator(AssemblyFileWriter& writer);
-
+        IntelX86_64CodeGenerator(AssemblyFileWriter& writer);
+        
     protected:        
         void writeRuntimeSupport(FunctionTable& table);
         void addStandardFunctions();
         void compile(std::shared_ptr<tac::Function> function);
-
+        
         /* Functions for global variables */
         void defineDataSection();
         void declareIntArray(const std::string& name, unsigned int size);
