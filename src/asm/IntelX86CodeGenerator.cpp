@@ -542,51 +542,26 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
 void addConcatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "concat");
 
-    writer.stream() << "mov edx, [ebp + 16]" << std::endl;
+    writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
     writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
-    writer.stream() << "add edx, ecx" << std::endl;
+    writer.stream() << "add ebx, ecx" << std::endl;             //ebx = number of bytes = return 2
 
-    writer.stream() << "push edx" << std::endl;
+    //alloc the total number of bytes
+    writer.stream() << "push ebx" << std::endl;
     writer.stream() << "call eddi_alloc" << std::endl;
-    writer.stream() << "add esp, 4" << std::endl;
+    writer.stream() << "add esp, 8" << std::endl;
 
-    writer.stream() << "mov [ebp - 4], eax" << std::endl;
-    writer.stream() << "mov ecx, eax" << std::endl;
-    writer.stream() << "mov eax, 0" << std::endl;
+    writer.stream() << "mov edi, eax" << std::endl;             //destination address for the movsb
+    
+    writer.stream() << "mov ecx, [ebp + 16]" << std::endl;      //number of bytes of the source
+    writer.stream() << "mov esi, [ebp + 20]" << std::endl;      //source address
 
-    writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
-    writer.stream() << "mov edx, [ebp + 20]" << std::endl;
+    writer.stream() << "rep movsb" << std::endl;                //copy the first part of the string into the destination
 
-    writer.stream() << ".copy_concat_1:" << std::endl;
-    writer.stream() << "cmp ebx, 0" << std::endl;
-    writer.stream() << "je .end_concat_1"  << std::endl;
-    writer.stream() << "mov byte al, [edx]" << std::endl;
-    writer.stream() << "mov byte [ecx], al" << std::endl;
-    writer.stream() << "add ecx, 1" << std::endl;
-    writer.stream() << "add edx, 1" << std::endl;
-    writer.stream() << "sub ebx, 1" << std::endl;
-    writer.stream() << "jmp .copy_concat_1" << std::endl;
-    writer.stream() << ".end_concat_1" << ":" << std::endl;
+    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;      //number of bytes of the source
+    writer.stream() << "mov esi, [ebp + 12]" << std::endl;      //source address
 
-    writer.stream() << "mov ebx, [ebp + 8]" << std::endl;
-    writer.stream() << "mov edx, [ebp + 12]" << std::endl;
-
-    writer.stream() << ".copy_concat_2:" << std::endl;
-    writer.stream() << "cmp ebx, 0" << std::endl;
-    writer.stream() << "je .end_concat_2"  << std::endl;
-    writer.stream() << "mov byte al, [edx]" << std::endl;
-    writer.stream() << "mov byte [ecx], al" << std::endl;
-    writer.stream() << "add ecx, 1" << std::endl;
-    writer.stream() << "add edx, 1" << std::endl;
-    writer.stream() << "sub ebx, 1" << std::endl;
-    writer.stream() << "jmp .copy_concat_2" << std::endl;
-    writer.stream() << ".end_concat_2:" << std::endl;
-
-    writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
-    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
-    writer.stream() << "add ebx, ecx" << std::endl;
-
-    writer.stream() << "mov eax, [ebp - 4]" << std::endl;
+    writer.stream() << "rep movsb" << std::endl;                //copy the second part of the string into the destination
 
     leaveFunction(writer);
 }
