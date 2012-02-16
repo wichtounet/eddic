@@ -21,6 +21,7 @@ namespace tac {
 class BasicBlock {
     public:
         unsigned int index;
+        std::string label;
 
         BasicBlock(unsigned int index);
 

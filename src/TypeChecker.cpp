@@ -201,6 +201,32 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::BuiltinOperator& builtin){
+        for_each(builtin.Content->values.begin(), builtin.Content->values.end(), 
+            [&](ast::Value& value){ visit(*this, value); });
+       
+        if(builtin.Content->values.size() < 1){
+            throw SemanticalException("Too few arguments to the builtin operator");
+        }
+       
+        if(builtin.Content->values.size() > 1){
+            throw SemanticalException("Too many arguments to the builtin operator");
+        }
+        
+        GetTypeVisitor visitor;
+        Type type = visit(visitor, builtin.Content->values[0]);
+
+        if(builtin.Content->type == ast::BuiltinType::SIZE){
+            if(!type.isArray()){
+                throw SemanticalException("The builtin size() operator takes only array as arguments");
+            }
+        } else if(builtin.Content->type == ast::BuiltinType::LENGTH){
+            if(type.isArray() || type.base() != BaseType::STRING){
+                throw SemanticalException("The builtin length() operator takes only string as arguments");
+            }
+        }
+    }
+
     void operator()(ast::VariableValue&){
         //Nothing to check here
     }

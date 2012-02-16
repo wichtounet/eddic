@@ -70,6 +70,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_FOREACH()
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_BINARY_CONDITION()
+        AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_MINUS_PLUS_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
@@ -85,7 +86,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             
             std::string name = functionCall.Content->functionName;
             
-            if(name == "println" || name == "print"){
+            if(name == "println" || name == "print" || name == "duration"){
                 return;
             }
 

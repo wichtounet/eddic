@@ -1,39 +1,48 @@
-const int SIZE = 1000;
 int array[1000];
 
 void main(){
-    for(int i = 0; i < SIZE; i = i + 1){
-        array[i] = SIZE - i;
+    for(int i = 0; i < size(array); i++){
+        array[i] = size(array) - i;
     }
 
-    println("Before sort");
+    /*println("Before sort");
 
-    /*foreach(int a in array){
+    foreach(int a in array){
         println(a);
     }*/
 
-    sort();
+    int start[2];
+    time(start);
+    
+    bubblesort();
+    
+    int end[2];
+    time(end);
 
-    println("After sort");
+    print("Bubble Sort took ");
+    duration(start, end);
+    println(" clock cycles");
 
-    /*foreach(int a in array){
+    /*println("After sort");
+
+    foreach(int a in array){
         println(a);
     }*/
 }
 
-void sort(){
-    int swapped = 1;
+void bubblesort(){
+    bool swapped = true;
 
-    while(swapped == 1){
-        swapped = 0;
+    while(swapped){
+        swapped = false;
 
-        for(int i = 1; i < SIZE; i = i + 1){
+        for(int i = 1; i < size(array); i++){
             if(array[i - 1] > array[i]){
                 int a = array[i];
                 array[i] = array[i - 1];
                 array[i - 1] = a; 
 
-                swapped = 1;
+                swapped = true;
             }
         }
     }

@@ -11,4 +11,4 @@ using namespace eddic;
 
 tac::IfFalse::IfFalse(){}
 tac::IfFalse::IfFalse(Argument a1, const std::string& l) : arg1(a1), label(l) {}
-tac::IfFalse::IfFalse(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), arg2(a2), op(o), label(l) {}
+tac::IfFalse::IfFalse(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), op(o), arg2(a2), label(l) {}

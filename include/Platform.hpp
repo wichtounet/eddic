@@ -5,12 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/Function.hpp"
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
-using namespace eddic;
+#include <string>
 
-tac::BasicBlock::BasicBlock(unsigned int i) : index(i), label("") {}
+namespace eddic {
 
-void tac::BasicBlock::add(tac::Statement statement){
-    statements.push_back(statement);
-}
+enum class Platform : unsigned int {
+    INTEL_X86,
+    INTEL_X86_64
+};
+
+} //end of eddic
+
+#endif

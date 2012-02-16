@@ -19,6 +19,13 @@ void main(){
     int o = (3 + 10) * (3 * 3 * 7) - 300 * 2;
     print(o);
     print(r);
+    
+    int ca = a;
+    int cb = b;
+    int ccb = cb;
+    println(ca);
+    println(cb);
+    println(ccb);
 
     println("tests");
 
@@ -47,4 +54,17 @@ void main(){
     } else {
         println(333);
     }
+}
+
+void copy(int a, int b){
+    int c = a;
+    int d = b;
+
+    int e = c + d;
+}
+
+void uselessassign(){
+    int a = 6;
+    a = 7;
+    a = 9;
 }

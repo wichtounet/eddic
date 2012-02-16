@@ -9,11 +9,12 @@
 
 #include "Types.hpp"
 #include "SemanticalException.hpp"
+#include "Compiler.hpp"
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool constant) : type(base), array(false), m_size(0), const_(constant) {}
-Type::Type(BaseType base, unsigned int size, bool constant) : type(base), array(true), m_size(size), const_(constant) {}
+Type::Type(BaseType base, bool constant) : type(base), array(false), const_(constant), m_size(0) {}
+Type::Type(BaseType base, unsigned int size, bool constant) : type(base), array(true), const_(constant), m_size(size) {}
 
 BaseType Type::base() const {
     return type;
@@ -41,10 +42,18 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
     return !(lhs == rhs); 
 }
 
-const int typeSizes[(int) BaseType::COUNT] = { 8, 4, 4, 0 };
-
 int eddic::size(BaseType type){
-    return typeSizes[(unsigned int) type];
+    static int typeSizes32[(int) BaseType::COUNT] = { 8, 4, 4, 0 };
+    static int typeSizes64[(int) BaseType::COUNT] = { 16, 8, 8, 0 };
+
+    switch(platform){
+        case Platform::INTEL_X86:
+            return typeSizes32[(unsigned int) type];
+        case Platform::INTEL_X86_64:
+            return typeSizes64[(unsigned int) type];
+    }
+
+    assert(false);
 }
 
 int eddic::size(Type type){

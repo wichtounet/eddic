@@ -1,0 +1,55 @@
+int globalArray[10];
+string globalArrayB[11];
+
+const string ccc = "asdfasdfiasdf";
+
+void main(){
+    print(size(globalArray));
+    print("|");
+    print(size(globalArrayB));
+    print("|");
+    
+    int array[12];
+    string arrayB[13];
+    
+    print(size(array));
+    print("|");
+    print(size(arrayB));
+    print("|");
+
+    test(array);
+    test(arrayB);
+    
+    test(globalArray);
+    test(globalArrayB);
+
+    print(length("asdf"));
+    print("|");
+
+    string value = "idididid";
+    print(length(value));
+    print("|");
+    
+    print(length(ccc));
+    print("|");
+    print(length("asdf" + "1111"));
+    print("|");
+    print(length(arrayB[0]));
+    print("|");
+    print(length(test()));
+    print("|");
+}
+
+void test(int[] parameterArray){
+    print(size(parameterArray));
+    print("|");
+}
+
+void test(string[] parameterArray){
+    print(size(parameterArray));
+    print("|");
+}
+
+string test(){
+    return "999";
+}

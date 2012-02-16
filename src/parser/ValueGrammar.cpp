@@ -50,6 +50,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         ("++", ast::Operator::INC)
         ("--", ast::Operator::DEC)
         ;
+    
+    builtin_op.add
+        ("size", ast::BuiltinType::SIZE)
+        ("length", ast::BuiltinType::LENGTH)
+        ;
 
     //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
 
@@ -81,17 +86,23 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
             negatedValue
         |   plusValue
         |   primaryValue;
-   
+    
     negatedValue = 
             lexer.subtraction
          >> primaryValue;
+   
+    negatedConstantValue = 
+            lexer.subtraction
+         >> integer;
   
     plusValue %=
             lexer.addition
          >> primaryValue;
     
     primaryValue = 
-            constant 
+            integer
+        |   litteral
+        |   builtin_operator
         |   functionCall
         |   prefix_operation
         |   suffix_operation
@@ -115,10 +126,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
    
     variable %= 
             qi::eps
-        >>  lexer.word;
+        >>  lexer.identifier;
    
     arrayValue %=
-            lexer.word
+            lexer.identifier
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket;
@@ -127,22 +138,28 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
             qi::eps 
         >> lexer.litteral;
 
-    constant %= 
-            integer 
+    constant = 
+            negatedConstantValue
+        |   integer 
         |   litteral;
+   
+    builtin_operator %=
+            qi::adapttokens[builtin_op]
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >   lexer.right_parenth;
     
     functionCall %=
-            lexer.word
+            lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
     prefix_operation %=
             qi::adapttokens[prefix_op]
-        >>  lexer.word;
+        >>  lexer.identifier;
 
     suffix_operation %=
-            lexer.word
+            lexer.identifier
         >>  qi::adapttokens[suffix_op];
-
 }

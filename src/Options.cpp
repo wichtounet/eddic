@@ -24,6 +24,16 @@ po::variables_map eddic::options;
 
 po::options_description desc("Usage : edic [options]");
 
+std::pair<std::string, std::string> numeric_parser(const std::string& s){
+    if (s.find("-32") == 0) {
+        return make_pair("32", std::string("true"));
+    } else if (s.find("-64") == 0) {
+        return make_pair("64", std::string("true"));
+    } else {
+        return make_pair(std::string(), std::string());
+    }
+}
+
 bool eddic::parseOptions(int argc, const char* argv[]) {
     try {
         desc.add_options()
@@ -41,13 +51,16 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
+            
+            ("32", po::value<std::string>(), "Force the compilation for 32 bits platform")
+            ("64", po::value<std::string>(), "Force the compilation for 64 bits platform")
            
             ("input", po::value<std::string>(), "Input file");
 
         po::positional_options_description p;
         p.add("input", -1);
 
-        po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), options);
+        po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), options);
         po::notify(options);
 
         if(options.count("optimize-all")){
@@ -56,6 +69,12 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         if(options.count("warning-all")){
             WarningUnused = true;
+        }
+
+        if(options.count("64") && options.count("32")){
+            std::cout << "Invalid command line options : a compilation cannot be both 32 and 64 bits" << std::endl;
+
+            return false;
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
@@ -79,5 +98,5 @@ void eddic::printHelp(){
 }
 
 void eddic::printVersion(){
-    std::cout << "eddic version 0.7.1" << std::endl;
+    std::cout << "eddic version 0.8" << std::endl;
 }

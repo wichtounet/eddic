@@ -59,6 +59,19 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return functionCall;
     }
 
+    ast::Value operator()(ast::BuiltinOperator& builtin) const {
+        auto start = builtin.Content->values.begin();
+        auto end = builtin.Content->values.end();
+
+        while(start != end){
+            *start = visit(*this, *start);
+
+            ++start;
+        }
+
+        return builtin;
+    }
+
     //No transformations
     template<typename T>
     ast::Value operator()(T& value) const {
@@ -189,6 +202,17 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionCall& functionCall) const {
         auto start = functionCall.Content->values.begin();
         auto end = functionCall.Content->values.end();
+
+        while(start != end){
+            *start = visit(transformer, *start);
+
+            ++start;
+        }
+    }
+    
+    void operator()(ast::BuiltinOperator& builtin) const {
+        auto start = builtin.Content->values.begin();
+        auto end = builtin.Content->values.end();
 
         while(start != end){
             *start = visit(transformer, *start);

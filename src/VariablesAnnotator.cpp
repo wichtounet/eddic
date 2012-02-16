@@ -39,6 +39,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
+    AUTO_RECURSE_BUILTIN_OPERATORS()
    
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context

@@ -22,6 +22,7 @@ ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::ArrayValue, false)
 ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::FunctionCall, false)
 ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::SuffixOperation, false)
 ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::PrefixOperation, false)
+ASSIGN_INSIDE_CONST(IsConstantVisitor, ast::BuiltinOperator, false)
 
 bool IsConstantVisitor::operator()(ast::Minus& value) const {
     return visit(*this, value.Content->value);

@@ -70,8 +70,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     foreach_ = 
             lexer.foreach_ 
         >>  lexer.left_parenth 
-        >>  lexer.word 
-        >>  lexer.word 
+        >>  lexer.identifier 
+        >>  lexer.identifier 
         >>  lexer.from_ 
         >>  lexer.integer 
         >>  lexer.to_ 
@@ -84,10 +84,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     foreachin_ = 
             lexer.foreach_ 
         >>  lexer.left_parenth 
-        >>  lexer.word 
-        >>  lexer.word 
+        >>  lexer.identifier 
+        >>  lexer.identifier 
         >>  lexer.in_ 
-        >>  lexer.word 
+        >>  lexer.identifier 
         >>  lexer.right_parenth 
         >>  lexer.left_brace 
         >>  *(instruction)
@@ -104,24 +104,24 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
 
     declaration %= 
             const_
-        >>  lexer.word 
-        >>  lexer.word 
+        >>  lexer.identifier 
+        >>  lexer.identifier 
         >>  -(lexer.assign >> value);
     
     arrayDeclaration %= 
-            lexer.word 
-        >>  lexer.word 
+            lexer.identifier 
+        >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer
         >>  lexer.right_bracket;
     
     assignment %= 
-            lexer.word 
+            lexer.identifier 
         >>  lexer.assign 
         >>  value;
 
     compound_assignment %=
-            lexer.word
+            lexer.identifier
         >>  qi::adapttokens[compound_op]
         >>  value;
 
@@ -131,7 +131,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.stop;
     
     arrayAssignment %= 
-            lexer.word 
+            lexer.identifier 
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket
@@ -140,23 +140,23 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     
     globalDeclaration %= 
             const_
-        >>  lexer.word 
-        >>  lexer.word 
+        >>  lexer.identifier 
+        >>  lexer.identifier 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;
     
     globalArrayDeclaration %= 
-            lexer.word 
-        >>  lexer.word 
+            lexer.identifier 
+        >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer
         >>  lexer.right_bracket
         >>  lexer.stop;
 
     swap %= 
-            lexer.word 
+            lexer.identifier 
         >>  lexer.swap 
-        >>  lexer.word;
+        >>  lexer.identifier;
     
     instruction %= 
             (value.functionCall > lexer.stop)
@@ -187,11 +187,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     
     arg %= 
             type 
-        >>  lexer.word;
+        >>  lexer.identifier;
     
     function %= 
-            lexer.word 
-        >>  lexer.word
+            lexer.identifier 
+        >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( arg >> *( lexer.comma > arg))
         >>  lexer.right_parenth
@@ -202,7 +202,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     standardImport %= 
             lexer.include
         >>  lexer.less
-        >>  lexer.word
+        >>  lexer.identifier
         >>  lexer.greater;
 
     import %=

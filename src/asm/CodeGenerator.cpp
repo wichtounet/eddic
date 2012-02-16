@@ -5,12 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/Function.hpp"
+#include "asm/CodeGenerator.hpp"
 
 using namespace eddic;
 
-tac::BasicBlock::BasicBlock(unsigned int i) : index(i), label("") {}
-
-void tac::BasicBlock::add(tac::Statement statement){
-    statements.push_back(statement);
-}
+as::CodeGenerator::CodeGenerator(AssemblyFileWriter& w) : writer(w){}

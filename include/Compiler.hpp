@@ -12,7 +12,11 @@
 
 #include "ast/source_def.hpp"
 
+#include "Platform.hpp"
+
 namespace eddic {
+
+extern Platform platform;
 
 namespace parser {
     class SpiritParser;
@@ -32,6 +36,7 @@ void includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& pars
 void checkTypes(ast::SourceFile& program);
 void checkStrings(ast::SourceFile& program, StringPool& pool);
 
+void checkForMain(FunctionTable& table);
 void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
 
 void transform(ast::SourceFile& program);
@@ -46,7 +51,7 @@ void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool
  */
 struct Compiler {
     int compile (const std::string& file);
-    int compileOnly (const std::string& file);
+    int compileOnly (const std::string& file, Platform platform);
 };
 
 /*!
