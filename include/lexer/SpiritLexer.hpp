@@ -46,6 +46,7 @@ class SpiritLexer : public lex::lexer<L> {
             //Define keywords
             for_ = "for";
             while_ = "while";
+            do_ = "do";
             if_ = "if";
             else_ = "else";
             false_ = "false";
@@ -148,7 +149,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken assign, swap;
         
         //Keywords
-        ConsumedToken if_, else_, for_, while_, from_, in_, to_, foreach_, return_;
+        ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
         ConsumedToken const_, include;
 
