@@ -44,6 +44,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::Return()> return_;
     qi::rule<lexer::Iterator, ast::ArrayAssignment()> arrayAssignment;
     qi::rule<lexer::Iterator, ast::While()> while_;
+    qi::rule<lexer::Iterator, ast::DoWhile()> do_while_;
     qi::rule<lexer::Iterator, ast::For()> for_;
     qi::rule<lexer::Iterator, ast::Foreach()> foreach_;
     qi::rule<lexer::Iterator, ast::ForeachIn()> foreachin_;
