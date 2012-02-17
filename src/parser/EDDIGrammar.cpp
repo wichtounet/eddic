@@ -103,10 +103,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >   lexer.right_brace;
     
     do_while_ %=
-            lexer.do_while_ 
+            lexer.do_ 
         >   lexer.left_brace 
         >   *(instruction)
         >   lexer.right_brace
+        >   lexer.while_  
         >   lexer.left_parenth 
         >   value 
         >   lexer.right_parenth;
