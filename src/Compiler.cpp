@@ -39,7 +39,7 @@
 #include "ast/OptimizationEngine.hpp"
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
-#include "DebugVisitor.hpp"
+#include "ast/DebugVisitor.hpp"
 
 //Three Address Code
 #include "tac/Program.hpp"
