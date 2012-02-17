@@ -782,6 +782,17 @@ class CompilerVisitor : public boost::static_visitor<> {
             function->add(endLabel);
         }
 
+        void operator()(ast::DoWhile& while_){
+            std::string startLabel = newLabel();
+            std::string endLabel = newLabel();
+
+            function->add(startLabel);
+
+            visit_each(*this, while_.Content->instructions);
+
+            visit(JumpIfTrueVisitor(function, startLabel), while_.Content->condition);
+        }
+
         void operator()(ast::For for_){
             visit_optional(*this, for_.Content->start);
 
