@@ -199,6 +199,11 @@ struct CleanerVisitor : public boost::static_visitor<> {
         visit_each(*this, while_.Content->instructions);
     }
 
+    void operator()(ast::DoWhile& while_){
+        while_.Content->condition = visit(transformer, while_.Content->condition);
+        visit_each(*this, while_.Content->instructions);
+    }
+
     void operator()(ast::FunctionCall& functionCall) const {
         auto start = functionCall.Content->values.begin();
         auto end = functionCall.Content->values.end();
