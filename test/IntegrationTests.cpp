@@ -71,6 +71,11 @@ BOOST_AUTO_TEST_CASE( while_ ){
     assertOutputEquals("while.eddi", "01234", "-64");
 }
 
+BOOST_AUTO_TEST_CASE( do_while_ ){
+    assertOutputEquals("do_while.eddi", "01234", "-32");
+    assertOutputEquals("do_while.eddi", "01234", "-64");
+}
+
 BOOST_AUTO_TEST_CASE( for_ ){
     assertOutputEquals("for.eddi", "01234", "-32");
     assertOutputEquals("for.eddi", "01234", "-64");
