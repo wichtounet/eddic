@@ -28,7 +28,7 @@
 #include "DefaultValues.hpp"
 #include "ast/ContextAnnotator.hpp"
 #include "FunctionsAnnotator.hpp"
-#include "VariablesAnnotator.hpp"
+#include "ast/VariablesAnnotator.hpp"
 
 //Checkers
 #include "StringChecker.hpp"
@@ -247,7 +247,7 @@ void eddic::defineContexts(ast::SourceFile& program){
 
 void eddic::defineVariables(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate variables");
-    VariablesAnnotator annotator;
+    ast::VariablesAnnotator annotator;
     annotator.annotate(program);
 }
 

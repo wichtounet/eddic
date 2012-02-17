@@ -10,7 +10,8 @@
 
 #include <boost/variant/variant.hpp>
 
-#include "VariablesAnnotator.hpp"
+#include "ast/VariablesAnnotator.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -28,8 +29,6 @@
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -257,7 +256,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void VariablesAnnotator::annotate(ast::SourceFile& program) const {
+void ast::VariablesAnnotator::annotate(ast::SourceFile& program) const {
     VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

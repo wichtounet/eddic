@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+namespace ast {
+
 /*!
  * \class VariablesAnnotator
  * \brief Check the variables of the AST
@@ -24,6 +26,8 @@ struct VariablesAnnotator {
      */
     void annotate(ast::SourceFile& program) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 
