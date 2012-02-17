@@ -32,7 +32,7 @@
 
 //Checkers
 #include "StringChecker.hpp"
-#include "TypeChecker.hpp"
+#include "ast/TypeChecker.hpp"
 
 //Visitors
 #include "DependenciesResolver.hpp"
@@ -265,7 +265,7 @@ void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
 
 void eddic::checkTypes(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Types checking");
-    TypeChecker checker;
+    ast::TypeChecker checker;
     checker.check(program); 
 }
 

@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+namespace ast {
+
 /*!
  * \class TypeChecker
  * \brief A checker for type safety in the program. 
@@ -19,6 +21,8 @@ namespace eddic {
 struct TypeChecker {
     void check(ast::SourceFile& program) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 

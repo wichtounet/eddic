@@ -6,11 +6,11 @@
 //=======================================================================
 
 #include <algorithm>
-
 #include <memory>
 #include <boost/variant/variant.hpp>
 
-#include "TypeChecker.hpp"
+#include "ast/TypeChecker.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "Compiler.hpp"
 
@@ -27,8 +27,6 @@
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -236,7 +234,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TypeChecker::check(ast::SourceFile& program) const {
+void ast::TypeChecker::check(ast::SourceFile& program) const {
     CheckerVisitor visitor;
     visit_non_variant(visitor, program);
 }
