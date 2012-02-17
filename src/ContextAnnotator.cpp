@@ -68,6 +68,16 @@ class AnnotateVisitor : public boost::static_visitor<> {
             currentContext = currentContext->parent();
         }
 
+        void operator()(ast::DoWhile& while_){
+            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            
+            visit(*this, while_.Content->condition);
+
+            visit_each(*this, while_.Content->instructions);
+            
+            currentContext = currentContext->parent();
+        }
+
         void operator()(ast::For& for_){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
           
