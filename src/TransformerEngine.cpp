@@ -322,6 +322,11 @@ struct TransformerVisitor : public boost::static_visitor<> {
         transform(while_.Content->instructions);
     }
 
+    void operator()(ast::DoWhile& while_) const {
+        visit(*this, while_.Content->condition);
+        transform(while_.Content->instructions);
+    }
+
     //No transformations
     template<typename T>
     void operator()(T&) const {
