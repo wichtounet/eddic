@@ -36,7 +36,7 @@
 
 //Visitors
 #include "DependenciesResolver.hpp"
-#include "OptimizationEngine.hpp"
+#include "ast/OptimizationEngine.hpp"
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
 #include "DebugVisitor.hpp"
@@ -309,7 +309,7 @@ void eddic::transform(ast::SourceFile& program){
 
 void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
     DebugStopWatch<debug> timer("Optimization");
-    OptimizationEngine engine;
+    ast::OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
 }
 

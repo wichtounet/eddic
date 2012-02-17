@@ -5,9 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "OptimizationEngine.hpp"
-
 #include <boost/variant/static_visitor.hpp>
+
+#include "ast/OptimizationEngine.hpp"
+#include "ast/SourceFile.hpp"
 
 #include "Types.hpp"
 #include "Options.hpp"
@@ -18,8 +19,6 @@
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -296,7 +295,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
+void ast::OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }
