@@ -37,7 +37,7 @@
 //Visitors
 #include "DependenciesResolver.hpp"
 #include "OptimizationEngine.hpp"
-#include "TransformerEngine.hpp"
+#include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
 #include "DebugVisitor.hpp"
 
@@ -297,13 +297,13 @@ void eddic::checkForMain(FunctionTable& table){
 
 void eddic::clean(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Cleaning");
-    TransformerEngine engine;
+    ast::TransformerEngine engine;
     engine.clean(program);
 }
 
 void eddic::transform(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Transformation");
-    TransformerEngine engine;
+    ast::TransformerEngine engine;
     engine.transform(program);
 }
 

@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+namespace ast {
+
 /*!
  * \struct TransformerEngine
  * \brief Transforms the AST.
@@ -20,9 +22,11 @@ namespace eddic {
  * to remove some not-composed values introduced by the parsing phase.    
  */
 struct TransformerEngine {
-    void clean(ast::SourceFile& program) const;
-    void transform(ast::SourceFile& program) const;
+    void clean(SourceFile& program) const;
+    void transform(SourceFile& program) const;
 };
+
+} //end of ast
 
 } //end of eddic
 
