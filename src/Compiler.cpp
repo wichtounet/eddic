@@ -38,7 +38,7 @@
 #include "DependenciesResolver.hpp"
 #include "OptimizationEngine.hpp"
 #include "TransformerEngine.hpp"
-#include "WarningsEngine.hpp"
+#include "ast/WarningsEngine.hpp"
 #include "DebugVisitor.hpp"
 
 //Three Address Code
@@ -271,7 +271,7 @@ void eddic::checkTypes(ast::SourceFile& program){
 
 void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     DebugStopWatch<debug> timer("Check for warnings");
-    WarningsEngine engine;
+    ast::WarningsEngine engine;
     engine.check(program, table);
 }
 
