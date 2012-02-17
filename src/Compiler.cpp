@@ -26,7 +26,7 @@
 
 //Annotators
 #include "DefaultValues.hpp"
-#include "ContextAnnotator.hpp"
+#include "ast/ContextAnnotator.hpp"
 #include "FunctionsAnnotator.hpp"
 #include "VariablesAnnotator.hpp"
 
@@ -241,7 +241,7 @@ void eddic::defineDefaultValues(ast::SourceFile& program){
 
 void eddic::defineContexts(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate contexts");
-    ContextAnnotator annotator;
+    ast::ContextAnnotator annotator;
     annotator.annotate(program);
 }
 

@@ -6,13 +6,10 @@
 //=======================================================================
 
 #include <algorithm>
-
 #include <memory>
-
 #include <boost/variant/variant.hpp>
 
-#include "ContextAnnotator.hpp"
-
+#include "ast/ContextAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 
 #include "Context.hpp"
@@ -223,7 +220,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 };
 
-void ContextAnnotator::annotate(ast::SourceFile& program) const {
+void ast::ContextAnnotator::annotate(ast::SourceFile& program) const {
     AnnotateVisitor visitor;
     visitor(program);
 }

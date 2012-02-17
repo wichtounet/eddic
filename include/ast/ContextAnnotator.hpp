@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+namespace ast {
+
 /*!
  * \class ContextAnnotator
  * \brief Generate all the symbol tables and reference them in the AST.   
@@ -19,6 +21,8 @@ namespace eddic {
 struct ContextAnnotator {
     void annotate(ast::SourceFile& program) const;
 };
+
+} //end of ast
 
 } //end of eddic
 
