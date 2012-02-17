@@ -7,11 +7,10 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "StringChecker.hpp"
-
+#include "ast/StringChecker.hpp"
 #include "ast/SourceFile.hpp"
-#include "StringPool.hpp"
 
+#include "StringPool.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 
@@ -49,7 +48,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void StringChecker::check(ast::SourceFile& program, StringPool& pool) const {
+void ast::StringChecker::check(ast::SourceFile& program, StringPool& pool) const {
    StringCheckerVisitor visitor(pool);
    visitor(program); 
 }

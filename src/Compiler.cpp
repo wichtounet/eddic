@@ -31,7 +31,7 @@
 #include "ast/VariablesAnnotator.hpp"
 
 //Checkers
-#include "StringChecker.hpp"
+#include "ast/StringChecker.hpp"
 #include "ast/TypeChecker.hpp"
 
 //Visitors
@@ -259,7 +259,7 @@ void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTab
 
 void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
     DebugStopWatch<debug> timer("Strings checking");
-    StringChecker checker;
+    ast::StringChecker checker;
     checker.check(program, pool);
 }
 

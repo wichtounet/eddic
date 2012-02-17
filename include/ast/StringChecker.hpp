@@ -14,6 +14,8 @@ namespace eddic {
 
 class StringPool;
 
+namespace ast {
+
 //TODO Should perhaps be renamed
 /*!
  * \struct StringChecker
@@ -22,6 +24,8 @@ class StringPool;
 struct StringChecker {
    void check(ast::SourceFile& program, StringPool& pool) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 
