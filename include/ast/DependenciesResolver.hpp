@@ -16,6 +16,8 @@ namespace parser {
     class SpiritParser;
 }
 
+namespace ast {
+
 /*!
  * \struct DependenciesResolver
  * \brief Utility class to resolve all the imports in a program.   
@@ -28,6 +30,8 @@ struct DependenciesResolver {
     private:
         parser::SpiritParser& parser;
 };
+
+} //end of ast
 
 } //end of eddic
 

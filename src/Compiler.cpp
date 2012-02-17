@@ -35,7 +35,7 @@
 #include "ast/TypeChecker.hpp"
 
 //Visitors
-#include "DependenciesResolver.hpp"
+#include "ast/DependenciesResolver.hpp"
 #include "ast/OptimizationEngine.hpp"
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
@@ -315,7 +315,7 @@ void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, Str
 
 void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
     DebugStopWatch<debug> timer("Resolve dependencies");
-    DependenciesResolver resolver(parser);
+    ast::DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
 }
 
