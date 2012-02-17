@@ -27,7 +27,7 @@
 //Annotators
 #include "DefaultValues.hpp"
 #include "ast/ContextAnnotator.hpp"
-#include "FunctionsAnnotator.hpp"
+#include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
 
 //Checkers
@@ -253,7 +253,7 @@ void eddic::defineVariables(ast::SourceFile& program){
 
 void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
     DebugStopWatch<debug> timer("Annotate functions");
-    FunctionsAnnotator annotator;
+    ast::FunctionsAnnotator annotator;
     annotator.annotate(program, functionTable);
 }
 
