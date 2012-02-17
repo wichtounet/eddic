@@ -83,6 +83,22 @@ void DebugVisitor::operator()(ast::ForeachIn& for_) const {
 
 void DebugVisitor::operator()(ast::While& while_) const {
     std::cout << indent() << "While" << std::endl; 
+    std::cout << indent() << "Condition:" << std::endl;
+    ++level;
+    visit(*this, while_.Content->condition);    
+    --level;
+
+    ++level;
+    visit_each(*this, while_.Content->instructions);    
+    --level;
+}
+
+void DebugVisitor::operator()(ast::DoWhile& while_) const {
+    std::cout << indent() << "Do while" << std::endl; 
+    std::cout << indent() << "Condition:" << std::endl;
+    ++level;
+    visit(*this, while_.Content->condition);    
+    --level;
 
     ++level;
     visit_each(*this, while_.Content->instructions);    

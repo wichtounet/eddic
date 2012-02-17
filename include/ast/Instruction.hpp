@@ -29,6 +29,9 @@ namespace ast {
 struct ASTWhile;
 typedef Deferred<ASTWhile> While; 
 
+struct ASTDoWhile;
+typedef Deferred<ASTDoWhile> DoWhile; 
+
 struct ASTFor;
 typedef Deferred<ASTFor> For; 
 
@@ -52,6 +55,7 @@ typedef boost::variant<
             Return,
             If, 
             While, 
+            DoWhile, 
             Foreach,
             ForeachIn, 
             SuffixOperation,
@@ -65,6 +69,7 @@ typedef boost::variant<
 
 #include "ast/If.hpp"
 #include "ast/While.hpp"
+#include "ast/DoWhile.hpp"
 #include "ast/For.hpp"
 #include "ast/Foreach.hpp"
 #include "ast/ForeachIn.hpp"

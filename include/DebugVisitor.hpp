@@ -37,6 +37,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::Foreach& for_) const ;
     void operator()(ast::ForeachIn& for_) const ;
     void operator()(ast::While& while_) const ;
+    void operator()(ast::DoWhile& while_) const ;
     void operator()(ast::Swap&) const ;
     void operator()(ast::If& if_) const ;
     void operator()(ast::VariableDeclaration& declaration) const ;

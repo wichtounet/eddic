@@ -39,6 +39,10 @@ void operator()(ast::For& for_){\
 void operator()(ast::While& while_){\
     visit(*this, while_.Content->condition);\
     visit_each(*this, while_.Content->instructions);\
+}\
+void operator()(ast::DoWhile& while_){\
+    visit(*this, while_.Content->condition);\
+    visit_each(*this, while_.Content->instructions);\
 }
 
 #define AUTO_RECURSE_FOREACH()\

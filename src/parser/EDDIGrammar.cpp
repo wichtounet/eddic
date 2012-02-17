@@ -101,6 +101,17 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >   lexer.left_brace 
         >   *(instruction)
         >   lexer.right_brace;
+    
+    do_while_ %=
+            lexer.do_ 
+        >   lexer.left_brace 
+        >   *(instruction)
+        >   lexer.right_brace
+        >   lexer.while_  
+        >   lexer.left_parenth 
+        >   value 
+        >   lexer.right_parenth
+        >   lexer.stop;
 
     declaration %= 
             const_
@@ -170,6 +181,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         |   if_
         |   for_
         |   while_
+        |   do_while_
         |   foreach_
         |   foreachin_
         |   return_

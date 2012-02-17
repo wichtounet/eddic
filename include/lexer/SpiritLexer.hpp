@@ -46,6 +46,7 @@ class SpiritLexer : public lex::lexer<L> {
             //Define keywords
             for_ = "for";
             while_ = "while";
+            do_ = "do";
             if_ = "if";
             else_ = "else";
             false_ = "false";
@@ -120,7 +121,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += increment | decrement;
             this->self += and_ | or_;
-            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
+            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += integer | identifier | litteral;
 
@@ -148,7 +149,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken assign, swap;
         
         //Keywords
-        ConsumedToken if_, else_, for_, while_, from_, in_, to_, foreach_, return_;
+        ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
         ConsumedToken const_, include;
 
