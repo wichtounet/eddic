@@ -121,7 +121,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += increment | decrement;
             this->self += and_ | or_;
-            this->self += for_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
+            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += integer | identifier | litteral;
 

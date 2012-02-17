@@ -31,9 +31,9 @@ void main(){
 }
 
 void bubblesort(){
-    bool swapped = true;
+    bool swapped = false;
 
-    while(swapped){
+    do {
         swapped = false;
 
         for(int i = 1; i < size(array); i++){
@@ -45,5 +45,5 @@ void bubblesort(){
                 swapped = true;
             }
         }
-    }
+    } while(swapped);
 }
