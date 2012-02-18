@@ -41,12 +41,23 @@ void ast::DebugVisitor::operator()(ast::StandardImport& import) const {
     std::cout << indent() << "include <" << import.header << ">" << std::endl;
 }
 
+template<typename Visitor, typename Container>
+void print_each_sub(Visitor& visitor, Container& container){
+    visitor.level++;
+    visit_each(visitor, container);    
+    visitor.level--;
+}
+
+template<typename Visitor, typename Container>
+void print_sub(Visitor& visitor, Container& container){
+    visitor.level++;
+    visit(visitor, container);    
+    visitor.level--;
+}
+
 void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
     std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
-
-    ++level;
-    visit_each(*this, declaration.Content->instructions);    
-    --level;
+    print_each_sub(*this, declaration.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {
@@ -59,50 +70,31 @@ void ast::DebugVisitor::operator()(ast::GlobalArrayDeclaration&) const {
 
 void ast::DebugVisitor::operator()(ast::For& for_) const {
     std::cout << indent() << "For" << std::endl; 
-
-    ++level;
-    visit_each(*this, for_.Content->instructions);    
-    --level;
+    print_each_sub(*this, for_.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::Foreach& for_) const {
     std::cout << indent() << "Foreach" << std::endl; 
-
-    ++level;
-    visit_each(*this, for_.Content->instructions);    
-    --level;
+    print_each_sub(*this, for_.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::ForeachIn& for_) const {
     std::cout << indent() << "Foreach in " << std::endl; 
-
-    ++level;
-    visit_each(*this, for_.Content->instructions);    
-    --level;
+    print_each_sub(*this, for_.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::While& while_) const {
     std::cout << indent() << "While" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
-    ++level;
-    visit(*this, while_.Content->condition);    
-    --level;
-
-    ++level;
-    visit_each(*this, while_.Content->instructions);    
-    --level;
+    print_sub(*this, while_.Content->condition);
+    print_each_sub(*this, while_.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::DoWhile& while_) const {
     std::cout << indent() << "Do while" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
-    ++level;
-    visit(*this, while_.Content->condition);    
-    --level;
-
-    ++level;
-    visit_each(*this, while_.Content->instructions);    
-    --level;
+    print_sub(*this, while_.Content->condition);
+    print_each_sub(*this, while_.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::Swap&) const {
@@ -112,39 +104,26 @@ void ast::DebugVisitor::operator()(ast::Swap&) const {
 void ast::DebugVisitor::operator()(ast::If& if_) const {
     std::cout << indent() << "If" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
-    ++level;
-    visit(*this, if_.Content->condition);    
-    --level;
-
+    print_sub(*this, if_.Content->condition);
     std::cout << indent() << "Body:" << std::endl;
-    ++level;
-    visit_each(*this, if_.Content->instructions);    
-    --level;
+    print_each_sub(*this, if_.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::FunctionCall& call) const {
     std::cout << indent() << "FunctionCall " << call.Content->functionName << std::endl; 
-
-    ++level;
-    visit_each(*this, call.Content->values);
-    --level;
+    print_each_sub(*this, call.Content->values);
 }
 
 void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
     std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
-
-    ++level;
-    visit_each(*this, builtin.Content->values);
-    --level;
+    print_each_sub(*this, builtin.Content->values);
 }
 
 void ast::DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
     std::cout << indent() << "Variable declaration" << std::endl; 
 
     if(declaration.Content->value){
-        ++level;
-        visit(*this, *declaration.Content->value);
-        --level;
+        print_sub(*this, *declaration.Content->value);
     }
 }
 
@@ -162,34 +141,22 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
     std::cout << indent() << "Variable assignment" << std::endl; 
-
-    ++level;
-    visit(*this, assign.Content->value);
-    --level;
+    print_sub(*this, assign.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
     std::cout << indent() << "Compound variable assignment [operator = " << (int) assign.Content->op << " ]" << std::endl; 
-
-    ++level;
-    visit(*this, assign.Content->value);
-    --level;
+    print_sub(*this, assign.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
-
-    ++level;
-    visit(*this, return_.Content->value);
-    --level;
+    print_sub(*this, return_.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     std::cout << indent() << "Array assignment" << std::endl; 
-
-    ++level;
-    visit(*this, assign.Content->value);
-    --level;
+    print_sub(*this, assign.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::Litteral& litteral) const {
@@ -229,14 +196,10 @@ void ast::DebugVisitor::operator()(ast::ComposedValue& value) const {
 
 void ast::DebugVisitor::operator()(ast::Minus& value) const {
     std::cout << indent() << "Unary +" << std::endl; 
-    ++level;
-    visit(*this, value.Content->value);
-    --level;
+    print_sub(*this, value.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::Plus& value) const {
     std::cout << indent() << "Unary -" << std::endl; 
-    ++level;
-    visit(*this, value.Content->value);
-    --level;
+    print_sub(*this, value.Content->value);
 }

@@ -53,25 +53,24 @@ class AnnotateVisitor : public boost::static_visitor<> {
     
             currentContext = currentContext->parent();
         }
-
-        void operator()(ast::While& while_){
+            
+        template<typename Loop>            
+        void annotateWhileLoop(Loop& loop){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
             
-            visit(*this, while_.Content->condition);
+            visit(*this, loop.Content->condition);
 
-            visit_each(*this, while_.Content->instructions);
+            visit_each(*this, loop.Content->instructions);
             
             currentContext = currentContext->parent();
         }
 
-        void operator()(ast::DoWhile& while_){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
-            
-            visit(*this, while_.Content->condition);
+        void operator()(ast::While& while_){
+            annotateWhileLoop(while_);
+        }
 
-            visit_each(*this, while_.Content->instructions);
-            
-            currentContext = currentContext->parent();
+        void operator()(ast::DoWhile& while_){
+            annotateWhileLoop(while_);
         }
 
         void operator()(ast::For& for_){
@@ -86,20 +85,21 @@ class AnnotateVisitor : public boost::static_visitor<> {
             currentContext = currentContext->parent();
         }
 
-        void operator()(ast::Foreach& foreach){
-            foreach.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+        template<typename Loop>
+        void annotateSimpleLoop(Loop& loop){
+            loop.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
 
-            visit_each(*this, foreach.Content->instructions);
+            visit_each(*this, loop.Content->instructions);
              
             currentContext = currentContext->parent();
         }
+
+        void operator()(ast::Foreach& foreach){
+            annotateSimpleLoop(foreach);
+        }
         
         void operator()(ast::ForeachIn& foreach){
-            foreach.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
-
-            visit_each(*this, foreach.Content->instructions);
-             
-            currentContext = currentContext->parent();
+            annotateSimpleLoop(foreach);
         }
 
         void operator()(ast::If& if_){
@@ -117,7 +117,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::ElseIf& elseIf){
             currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
-           
+
             visit(*this, elseIf.condition);
             
             visit_each(*this, elseIf.instructions);
