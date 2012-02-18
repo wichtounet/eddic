@@ -454,14 +454,19 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
     }
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        optimize_optional(quadruple->arg1);
+        //Do not replace a variable by a constant when used in offset
+        if(!quadruple->op || (*quadruple->op != tac::Operator::ARRAY && *quadruple->op != tac::Operator::DOT)){
+            optimize_optional(quadruple->arg1);
+        }
+
+        //optimize_optional(quadruple->arg1);
         optimize_optional(quadruple->arg2);
         
         if(!quadruple->op){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(!(*ptr)->position().isTemporary()){
+                //if(!(*ptr)->position().isTemporary()){
                     constants[quadruple->result] = *ptr;
-                }
+                //}
             } else {
                 //The result is not constant at this point
                 constants.erase(quadruple->result);
