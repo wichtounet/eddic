@@ -14,6 +14,7 @@
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/IsConstantVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -21,13 +22,8 @@
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-
-#include "Compiler.hpp"
-#include "Options.hpp"
 #include "Utils.hpp"
-
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 
 using namespace eddic;
 

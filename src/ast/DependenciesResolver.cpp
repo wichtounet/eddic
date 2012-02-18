@@ -10,10 +10,10 @@
 
 #include "ast/DependenciesResolver.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 
 #include "parser/SpiritParser.hpp"
 

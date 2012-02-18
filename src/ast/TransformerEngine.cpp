@@ -9,9 +9,9 @@
 
 #include "ast/TransformerEngine.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
 using namespace eddic;

@@ -11,13 +11,13 @@
 #include "ast/SourceFile.hpp"
 #include "ast/IsConstantVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "Types.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 #include "Variable.hpp"
 
 using namespace eddic;

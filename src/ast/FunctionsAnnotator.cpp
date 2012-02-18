@@ -8,10 +8,10 @@
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "FunctionTable.hpp"
 #include "SemanticalException.hpp"
-#include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"

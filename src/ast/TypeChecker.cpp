@@ -12,6 +12,7 @@
 #include "ast/TypeChecker.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "Compiler.hpp"
 #include "SemanticalException.hpp"
@@ -22,7 +23,6 @@
 #include "Variable.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 
 using namespace eddic;
 

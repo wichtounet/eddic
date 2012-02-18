@@ -12,6 +12,7 @@
 
 #include "ast/WarningsEngine.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -19,12 +20,9 @@
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-
 #include "Compiler.hpp"
 #include "Options.hpp"
-
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 
 using namespace eddic;
 

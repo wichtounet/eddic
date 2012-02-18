@@ -9,10 +9,10 @@
 
 #include "ast/StringChecker.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "StringPool.hpp"
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 
 using namespace eddic;
 

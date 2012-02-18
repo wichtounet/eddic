@@ -11,14 +11,13 @@
 
 #include "ast/ContextAnnotator.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "BlockContext.hpp"
-
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 
 using namespace eddic;
 

@@ -9,11 +9,10 @@
 
 #include "ast/DefaultValues.hpp"
 #include "ast/SourceFile.hpp"
-
-#include "ASTVisitor.hpp"
-#include "VisitorUtils.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "Types.hpp"
+#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
