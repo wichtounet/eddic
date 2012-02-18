@@ -12,6 +12,7 @@
 
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
@@ -24,7 +25,6 @@
 
 #include "Compiler.hpp"
 #include "Options.hpp"
-#include "TypeTransformer.hpp"
 #include "Utils.hpp"
 
 #include "VisitorUtils.hpp"
@@ -43,7 +43,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = visit(TypeTransformer(), parameter.parameterType);
+            Type type = visit(ast::TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }

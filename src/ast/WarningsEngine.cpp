@@ -23,7 +23,6 @@
 
 #include "Compiler.hpp"
 #include "Options.hpp"
-#include "TypeTransformer.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"

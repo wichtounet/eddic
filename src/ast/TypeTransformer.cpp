@@ -5,14 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "TypeTransformer.hpp"
+#include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 
-Type TypeTransformer::operator()(ast::SimpleType& type) const {
-    return Type(stringToBaseType(type.type), false);
+eddic::Type ast::TypeTransformer::operator()(ast::SimpleType& type) const {
+    return eddic::Type(stringToBaseType(type.type), false);
 }
 
-Type TypeTransformer::operator()(ast::ArrayType& type) const {
-    return Type(stringToBaseType(type.type), 0, false);//TODO Find a better way to declare a array type
+eddic::Type ast::TypeTransformer::operator()(ast::ArrayType& type) const {
+    return eddic::Type(stringToBaseType(type.type), 0, false);//TODO Find a better way to declare a array type
 }

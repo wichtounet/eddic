@@ -7,13 +7,13 @@
 
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "FunctionTable.hpp"
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
-#include "TypeTransformer.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"
 #include "Compiler.hpp"
@@ -37,7 +37,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = visit(TypeTransformer(), param.parameterType);
+                Type paramType = visit(ast::TypeTransformer(), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
