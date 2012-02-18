@@ -300,7 +300,11 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
     }
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        optimize_optional(quadruple->arg1);
+        //Do not replace a variable by a constant when used in offset
+        if(!quadruple->op || (*quadruple->op != tac::Operator::ARRAY && *quadruple->op != tac::Operator::DOT)){
+            optimize_optional(quadruple->arg1);
+        }
+        
         optimize_optional(quadruple->arg2);
 
         if(!quadruple->op){
