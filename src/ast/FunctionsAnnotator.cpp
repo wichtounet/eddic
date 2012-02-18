@@ -10,7 +10,6 @@
 #include "ast/TypeTransformer.hpp"
 
 #include "FunctionTable.hpp"
-#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"

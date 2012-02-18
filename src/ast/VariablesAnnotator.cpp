@@ -15,7 +15,6 @@
 #include "ast/TypeTransformer.hpp"
 #include "ast/IsConstantVisitor.hpp"
 
-#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"

@@ -13,7 +13,6 @@
 #include "ast/WarningsEngine.hpp"
 #include "ast/SourceFile.hpp"
 
-#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"

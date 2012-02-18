@@ -10,7 +10,6 @@
 #include "ast/TransformerEngine.hpp"
 #include "ast/SourceFile.hpp"
 
-#include "GetTypeVisitor.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"

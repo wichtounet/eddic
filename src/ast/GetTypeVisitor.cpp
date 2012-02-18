@@ -5,36 +5,36 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "GetTypeVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/Value.hpp"
+
 #include "Context.hpp"
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
 
-#include "ast/Value.hpp"
-
 using namespace eddic;
 
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Litteral, Type(BaseType::STRING, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, Type(BaseType::STRING, false))
 
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Integer, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Minus, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::Plus, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::SuffixOperation, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::PrefixOperation, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::BuiltinOperator, Type(BaseType::INT, false)) //At this time, all the builtin operators return an int
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Minus, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Plus, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::SuffixOperation, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::PrefixOperation, Type(BaseType::INT, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, Type(BaseType::INT, false)) //At this time, all the builtin operators return an int
 
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::False, Type(BaseType::BOOL, false))
-ASSIGN_INSIDE_CONST_CONST(GetTypeVisitor, ast::True, Type(BaseType::BOOL, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, Type(BaseType::BOOL, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, Type(BaseType::BOOL, false))
 
-Type GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
+Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
 
-Type GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+Type ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
     return Type(array.Content->context->getVariable(array.Content->arrayName)->type().base(), false);
 }
 
-Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
+Type ast::GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){
@@ -47,7 +47,7 @@ Type GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     }
 }
 
-Type GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
+Type ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     std::string name = call.Content->functionName;
 
     assert(name != "println" && name != "print");

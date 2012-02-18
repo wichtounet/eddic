@@ -10,12 +10,12 @@
 #include "ast/OptimizationEngine.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/IsConstantVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 #include "Types.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
-#include "GetTypeVisitor.hpp"
 #include "VisitorUtils.hpp"
 #include "ASTVisitor.hpp"
 #include "Variable.hpp"
@@ -68,7 +68,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 
             //If the value is constant, we can replace it with the results of the computation
             if(ast::IsConstantVisitor()(value)){
-                Type type = GetTypeVisitor()(value);
+                Type type = ast::GetTypeVisitor()(value);
 
                 if(type.base() == BaseType::STRING){
                     if (OptimizeStrings) {

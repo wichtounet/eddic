@@ -11,7 +11,6 @@
 #include "Variable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
-#include "GetTypeVisitor.hpp"
 #include "mangling.hpp"
 #include "Labels.hpp"
 
@@ -19,6 +18,7 @@
 #include "tac/Program.hpp"
 
 #include "ast/SourceFile.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
@@ -310,7 +310,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     }
 
     result_type operator()(ast::ComposedValue& value) const {
-        Type type = GetTypeVisitor()(value);
+        Type type = ast::GetTypeVisitor()(value);
 
         if(type.base() == BaseType::INT){
             return {performIntOperation(value, function)};
@@ -393,7 +393,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::ComposedValue& value) const {
-        auto type = GetTypeVisitor()(value);
+        auto type = ast::GetTypeVisitor()(value);
         
         complexAssign(type, value);
     }
@@ -906,7 +906,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 
     int total = 0;
     for(auto& value : functionCall.Content->values){
-        Type type = visit(GetTypeVisitor(), value);   
+        Type type = visit(ast::GetTypeVisitor(), value);   
 
         if(type.isArray()){
             //Passing an array is just passing an adress
