@@ -278,13 +278,13 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
     ConstantPropagation() : optimized(false) {}
 
-    std::unordered_map<std::shared_ptr<Variable>, int> constants;
+    std::unordered_map<std::shared_ptr<Variable>, int> int_constants;
 
     void optimize(tac::Argument* arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-            if(constants.find(*ptr) != constants.end()){
+            if(int_constants.find(*ptr) != int_constants.end()){
                 optimized = true;
-                *arg = constants[*ptr];
+                *arg = int_constants[*ptr];
             }
         }
     }
@@ -301,14 +301,14 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
         if(!quadruple->op){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                constants[quadruple->result] = *ptr;
+                int_constants[quadruple->result] = *ptr;
             } else {
                 //The result is not constant at this point
-                constants.erase(quadruple->result);
+                int_constants.erase(quadruple->result);
             }
         } else {
             //The result is not constant at this point
-            constants.erase(quadruple->result);
+            int_constants.erase(quadruple->result);
         }
 
         return quadruple;
