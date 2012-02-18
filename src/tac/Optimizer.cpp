@@ -353,6 +353,84 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
     }
 };
 
+struct Offset {
+    std::shared_ptr<Variable> variable;
+    int offset;
+
+    bool operator==(const Offset& b) const {
+        return variable == b.variable && offset == b.offset;
+    }
+};
+
+template <class T>
+inline void hash_combine(std::size_t& seed, const T& v){
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+}
+
+struct OffsetHash : std::unary_function<Offset, std::size_t> {
+    std::size_t operator()(const Offset& p) const {
+        std::size_t seed = 0;
+        hash_combine(seed, p.variable);
+        hash_combine(seed, p.offset);
+        return seed;
+    }
+};
+
+struct OffsetConstantPropagation : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    OffsetConstantPropagation() : optimized(false) {}
+
+    std::unordered_map<Offset, int, OffsetHash> int_constants;
+    std::unordered_map<Offset, std::string, OffsetHash> string_constants;
+
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        //Store the value assigned to result+arg1
+        if(quadruple->op && *quadruple->op == tac::Operator::DOT_ASSIGN){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
+                Offset offset;
+                offset.variable = quadruple->result;
+                offset.offset = *ptr;
+                
+                if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                    int_constants[offset] = *ptr;
+                } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg2)){
+                    string_constants[offset] = *ptr;
+                } else {
+                    //The result is not constant at this point
+                    int_constants.erase(offset);
+                    string_constants.erase(offset);
+                }
+            }
+        }
+        
+        //If constant replace the value assigned to result by the value stored for arg1+arg2
+        if(quadruple->op && *quadruple->op == tac::Operator::DOT){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                Offset offset;
+                offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                offset.offset = *ptr;
+               
+                if(int_constants.find(offset) != int_constants.end()){
+                    optimized = true;
+                    return std::make_shared<tac::Quadruple>(quadruple->result, int_constants[offset]);
+                } else if(string_constants.find(offset) != string_constants.end()){
+                    optimized = true;
+                    return std::make_shared<tac::Quadruple>(quadruple->result, string_constants[offset]); 
+                }
+            }
+        }
+
+        return quadruple;
+    }
+
+    template<typename T>
+    tac::Statement operator()(T& statement){ 
+        return statement;
+    }
+};
+
 struct CopyPropagation : public boost::static_visitor<tac::Statement> {
     bool optimized;
 
@@ -922,24 +1000,27 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Constant propagation
         optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
+
+        //Offset Constant propagation
+        optimized |= debug<Debug, 5>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
         
         //Copy propagation
-        optimized |= debug<Debug, 5>(apply_to_basic_blocks<CopyPropagation>(program));
+        optimized |= debug<Debug, 6>(apply_to_basic_blocks<CopyPropagation>(program));
 
         //Propagate math
-        optimized |= debug<Debug, 6>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
+        optimized |= debug<Debug, 7>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
+        optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
+        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 9>(remove_dead_basic_blocks(program));
+        optimized |= debug<Debug, 10>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= debug<Debug, 10>(remove_needless_jumps(program));
+        optimized |= debug<Debug, 11>(remove_needless_jumps(program));
 
         //Merge basic blocks
         optimized |= debug<Debug, 11>(merge_basic_blocks(program));
