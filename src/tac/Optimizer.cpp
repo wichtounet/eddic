@@ -279,12 +279,16 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
     ConstantPropagation() : optimized(false) {}
 
     std::unordered_map<std::shared_ptr<Variable>, int> int_constants;
+    std::unordered_map<std::shared_ptr<Variable>, std::string> string_constants;
 
     void optimize(tac::Argument* arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
             if(int_constants.find(*ptr) != int_constants.end()){
                 optimized = true;
                 *arg = int_constants[*ptr];
+            } else if(string_constants.find(*ptr) != string_constants.end()){
+                optimized = true;
+                *arg = string_constants[*ptr];
             }
         }
     }
@@ -302,13 +306,22 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         if(!quadruple->op){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 int_constants[quadruple->result] = *ptr;
+            } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
+                string_constants[quadruple->result] = *ptr;
             } else {
                 //The result is not constant at this point
                 int_constants.erase(quadruple->result);
+                string_constants.erase(quadruple->result);
             }
         } else {
-            //The result is not constant at this point
-            int_constants.erase(quadruple->result);
+            auto op = *quadruple->op;
+
+            //Check if the operator erase the contents of the result variable
+            if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
+                //The result is not constant at this point
+                int_constants.erase(quadruple->result);
+                string_constants.erase(quadruple->result);
+            }
         }
 
         return quadruple;
