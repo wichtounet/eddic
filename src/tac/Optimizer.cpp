@@ -501,6 +501,53 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
     }
 };
 
+struct OffsetCopyPropagation : public boost::static_visitor<tac::Statement> {
+    bool optimized;
+
+    OffsetCopyPropagation() : optimized(false) {}
+
+    std::unordered_map<Offset, std::shared_ptr<Variable>, OffsetHash> constants;
+
+    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+        //Store the value assigned to result+arg1
+        if(quadruple->op && *quadruple->op == tac::Operator::DOT_ASSIGN){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
+                Offset offset;
+                offset.variable = quadruple->result;
+                offset.offset = *ptr;
+                
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    constants[offset] = *ptr;
+                } else {
+                    //The result is not constant at this point
+                    constants.erase(offset);
+                }
+            }
+        }
+        
+        //If constant replace the value assigned to result by the value stored for arg1+arg2
+        if(quadruple->op && *quadruple->op == tac::Operator::DOT){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                Offset offset;
+                offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                offset.offset = *ptr;
+               
+                if(constants.find(offset) != constants.end()){
+                    optimized = true;
+                    return std::make_shared<tac::Quadruple>(quadruple->result, constants[offset]);
+                }
+            }
+        }
+
+        return quadruple;
+    }
+
+    template<typename T>
+    tac::Statement operator()(T& statement){ 
+        return statement;
+    }
+};
+
 struct RemoveAssign : public boost::static_visitor<bool> {
     bool optimized;
     Pass pass;
@@ -1006,23 +1053,26 @@ void tac::Optimizer::optimize(tac::Program& program) const {
         
         //Copy propagation
         optimized |= debug<Debug, 6>(apply_to_basic_blocks<CopyPropagation>(program));
+        
+        //Offset Copy propagation
+        optimized |= debug<Debug, 7>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
 
         //Propagate math
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
+        optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
+        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
+        optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 10>(remove_dead_basic_blocks(program));
+        optimized |= debug<Debug, 11>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= debug<Debug, 11>(remove_needless_jumps(program));
+        optimized |= debug<Debug, 12>(remove_needless_jumps(program));
 
         //Merge basic blocks
-        optimized |= debug<Debug, 11>(merge_basic_blocks(program));
+        optimized |= debug<Debug, 13>(merge_basic_blocks(program));
     } while (optimized);
 }
