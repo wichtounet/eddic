@@ -10,26 +10,26 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
-#include "GetConstantValue.hpp"
-#include "Variable.hpp"
-
+#include "ast/GetConstantValue.hpp"
 #include "ast/Value.hpp"
+
+#include "Variable.hpp"
 
 using namespace eddic;
 
-Val GetConstantValue::operator()(const ast::Litteral& litteral) const {
+Val ast::GetConstantValue::operator()(const ast::Litteral& litteral) const {
     return make_pair(litteral.value, litteral.value.size() - 2);
 }
 
-Val GetConstantValue::operator()(const ast::Integer& integer) const {
+Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
-Val GetConstantValue::operator()(const ast::Minus& minus) const {
+Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
     return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
 }
 
-Val GetConstantValue::operator()(const ast::VariableValue& value) const {
+Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
     Type type = value.Content->var->type();
     assert(type.isConst());
         

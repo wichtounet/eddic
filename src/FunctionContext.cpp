@@ -5,13 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/apply_visitor.hpp>
-
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
-#include "GetConstantValue.hpp"
 #include "VisitorUtils.hpp"
+
+#include "ast/GetConstantValue.hpp"
 
 using namespace eddic;
 
@@ -47,7 +46,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 
     Position position(PositionType::CONST);
 
-    auto val = visit(GetConstantValue(), value);
+    auto val = visit(ast::GetConstantValue(), value);
 
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }

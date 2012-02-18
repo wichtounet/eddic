@@ -12,7 +12,6 @@
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "GetTypeVisitor.hpp"
-#include "GetConstantValue.hpp"
 #include "mangling.hpp"
 #include "Labels.hpp"
 
