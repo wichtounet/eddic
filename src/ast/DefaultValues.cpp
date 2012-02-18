@@ -7,14 +7,12 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "DefaultValues.hpp"
-
-#include "ASTVisitor.hpp"
-#include "VisitorUtils.hpp"
+#include "ast/DefaultValues.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "Types.hpp"
-
-#include "ast/SourceFile.hpp"
+#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -69,7 +67,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     }
 };
 
-void DefaultValues::fill(ast::SourceFile& program) const {
+void ast::DefaultValues::fill(ast::SourceFile& program) const {
     SetDefaultValues visitor;
     visitor(program);
 }

@@ -5,20 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TYPE_CHECKER_H
-#define TYPE_CHECKER_H
+#ifndef OPTIMIZATION_ENGINE_H
+#define OPTIMIZATION_ENGINE_H
 
 #include "ast/source_def.hpp"
 
 namespace eddic {
 
+class FunctionTable;
+class StringPool;
+
+namespace ast {
+
 /*!
- * \class TypeChecker
- * \brief A checker for type safety in the program. 
+ * \class OptimizationEngine
+ * \brief This optimizer edit the AST in order to optimize it for runtime performances and for size.  
  */
-struct TypeChecker {
-    void check(ast::SourceFile& program) const ;
+struct OptimizationEngine {
+    void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 

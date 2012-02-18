@@ -5,21 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "OptimizationEngine.hpp"
-
 #include <boost/variant/static_visitor.hpp>
+
+#include "ast/OptimizationEngine.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/IsConstantVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "Types.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
-#include "IsConstantVisitor.hpp"
-#include "GetTypeVisitor.hpp"
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
 #include "Variable.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -68,8 +67,8 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             assert(value.Content->operations.size() > 0); //Should have been transformed before
 
             //If the value is constant, we can replace it with the results of the computation
-            if(IsConstantVisitor()(value)){
-                Type type = GetTypeVisitor()(value);
+            if(ast::IsConstantVisitor()(value)){
+                Type type = ast::GetTypeVisitor()(value);
 
                 if(type.base() == BaseType::STRING){
                     if (OptimizeStrings) {
@@ -296,7 +295,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
+void ast::OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

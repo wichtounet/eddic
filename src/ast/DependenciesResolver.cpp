@@ -8,15 +8,14 @@
 #include <iostream>
 #include <fstream>
 
-#include "DependenciesResolver.hpp"
-
+#include "ast/DependenciesResolver.hpp"
 #include "ast/SourceFile.hpp"
-
-#include "parser/SpiritParser.hpp"
+#include "ast/ASTVisitor.hpp"
 
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
+
+#include "parser/SpiritParser.hpp"
 
 using namespace eddic;
 
@@ -25,7 +24,7 @@ bool exists(const std::string& file){
    return ifile; 
 }
 
-DependenciesResolver::DependenciesResolver(parser::SpiritParser& p) : parser(p) {}
+ast::DependenciesResolver::DependenciesResolver(parser::SpiritParser& p) : parser(p) {}
 
 void includeDependencies(ast::SourceFile& program, parser::SpiritParser& parser);
 
@@ -97,6 +96,6 @@ void includeDependencies(ast::SourceFile& program, parser::SpiritParser& parser)
     visitor(program);
 }
 
-void DependenciesResolver::resolve(ast::SourceFile& program) const {
+void ast::DependenciesResolver::resolve(ast::SourceFile& program) const {
     includeDependencies(program, parser);
 }

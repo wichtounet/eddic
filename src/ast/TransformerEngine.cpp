@@ -5,16 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "TransformerEngine.hpp"
-
 #include <boost/variant/static_visitor.hpp>
 
-#include "GetTypeVisitor.hpp"
-#include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
-#include "Variable.hpp"
-
+#include "ast/TransformerEngine.hpp"
 #include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
+
+#include "VisitorUtils.hpp"
+#include "Variable.hpp"
 
 using namespace eddic;
 
@@ -334,12 +332,12 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 };
 
-void TransformerEngine::clean(ast::SourceFile& program) const {
+void ast::TransformerEngine::clean(ast::SourceFile& program) const {
     CleanerVisitor visitor;
     visitor(program);
 }
 
-void TransformerEngine::transform(ast::SourceFile& program) const {
+void ast::TransformerEngine::transform(ast::SourceFile& program) const {
     TransformerVisitor visitor;
     visitor(program);
 }

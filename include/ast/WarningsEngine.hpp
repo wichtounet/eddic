@@ -5,23 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef OPTIMIZATION_ENGINE_H
-#define OPTIMIZATION_ENGINE_H
+#ifndef WARNINGS_ENGINE_H
+#define WARNINGS_ENGINE_H
 
 #include "ast/source_def.hpp"
 
 namespace eddic {
 
 class FunctionTable;
-class StringPool;
+
+namespace ast {
 
 /*!
- * \class OptimizationEngine
- * \brief This optimizer edit the AST in order to optimize it for runtime performances and for size.  
+ * \class WarningsEngine
+ * \brief A simple warnings engine checking the whole program for possible problems.  
  */
-struct OptimizationEngine {
-    void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const ;
+struct WarningsEngine {
+    void check(SourceFile& program, FunctionTable& functionTable) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 

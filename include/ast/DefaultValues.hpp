@@ -5,14 +5,25 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "TypeTransformer.hpp"
+#ifndef DEFAULT_VALUES_H
+#define DEFAULT_VALUES_H
 
-using namespace eddic;
+#include "ast/source_def.hpp"
 
-Type TypeTransformer::operator()(ast::SimpleType& type) const {
-    return Type(stringToBaseType(type.type), false);
-}
+namespace eddic {
 
-Type TypeTransformer::operator()(ast::ArrayType& type) const {
-    return Type(stringToBaseType(type.type), 0, false);//TODO Find a better way to declare a array type
-}
+namespace ast {
+    
+/*!
+ * \class DefaultValues
+ * \brief Fill the AST with default values for local and global variables.  
+ */
+struct DefaultValues {
+    void fill(SourceFile& program) const ;
+};
+
+} //end of ast
+
+} //end of eddic
+
+#endif

@@ -5,18 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <algorithm>
-#include <functional>
-#include <utility>
-
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/get.hpp>
-
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
-#include "GetConstantValue.hpp"
+
+#include "ast/GetConstantValue.hpp"
 
 using namespace eddic;
 
@@ -41,7 +35,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
-    auto val = visit(GetConstantValue(), value);
+    auto val = visit(ast::GetConstantValue(), value);
      
     if(type.isConst()){
         Position position(PositionType::CONST);

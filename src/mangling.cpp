@@ -10,8 +10,9 @@
 
 #include "mangling.hpp"
 #include "Utils.hpp"
+
 #include "VisitorUtils.hpp"
-#include "GetTypeVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
@@ -56,7 +57,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     ss << functionName.length();
     ss << functionName;
 
-    GetTypeVisitor visitor;
+    ast::GetTypeVisitor visitor;
 
     for(auto& value : values){
         Type type = visit(visitor, value);

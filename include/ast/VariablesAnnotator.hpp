@@ -5,20 +5,29 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef DEFAULT_VALUES_H
-#define DEFAULT_VALUES_H
+#ifndef VARIABLES_ANNOTATOR_H
+#define VARIABLES_ANNOTATOR_H
 
 #include "ast/source_def.hpp"
 
 namespace eddic {
-    
+
+namespace ast {
+
 /*!
- * \class DefaultValues
- * \brief Fill the AST with default values for local and global variables.  
+ * \class VariablesAnnotator
+ * \brief Check the variables of the AST
  */
-struct DefaultValues {
-    void fill(ast::SourceFile& program) const ;
+struct VariablesAnnotator {
+    /*!
+     * \brief Annotate the program
+     * 
+     * After this phase, all the variables are resolved as entry to the symbol table. 
+     */
+    void annotate(ast::SourceFile& program) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 

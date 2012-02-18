@@ -5,25 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VARIABLES_ANNOTATOR_H
-#define VARIABLES_ANNOTATOR_H
+#ifndef STRING_CHECKER_H
+#define STRING_CHECKER_H
 
 #include "ast/source_def.hpp"
 
 namespace eddic {
 
+class StringPool;
+
+namespace ast {
+
+//TODO Should perhaps be renamed
 /*!
- * \class VariablesAnnotator
- * \brief Check the variables of the AST
+ * \struct StringChecker
+ * \brief Fill the string pool with the strings in the AST and replace each string by its pool index.   
  */
-struct VariablesAnnotator {
-    /*!
-     * \brief Annotate the program
-     * 
-     * After this phase, all the variables are resolved as entry to the symbol table. 
-     */
-    void annotate(ast::SourceFile& program) const ;
+struct StringChecker {
+   void check(ast::SourceFile& program, StringPool& pool) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 

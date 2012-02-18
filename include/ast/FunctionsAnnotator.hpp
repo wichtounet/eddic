@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef WARNINGS_ENGINE_H
-#define WARNINGS_ENGINE_H
+#ifndef FUNCTIONS_ANNOTATOR_H
+#define FUNCTIONS_ANNOTATOR_H
 
 #include "ast/source_def.hpp"
 
@@ -14,13 +14,17 @@ namespace eddic {
 
 class FunctionTable;
 
+namespace ast {
+
 /*!
- * \class WarningsEngine
- * \brief A simple warnings engine checking the whole program for possible problems.  
+ * \struct FunctionsAnnotator
+ * \brief Annotate the AST with function references.  
  */
-struct WarningsEngine {
-    void check(ast::SourceFile& program, FunctionTable& functionTable) const ;
+struct FunctionsAnnotator {
+   void annotate(ast::SourceFile& program, FunctionTable& functionTable) const ;
 };
+
+} //end of ast
 
 } //end of eddic
 

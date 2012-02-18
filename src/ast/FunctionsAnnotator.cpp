@@ -5,18 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FunctionsAnnotator.hpp"
+#include "ast/FunctionsAnnotator.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/TypeTransformer.hpp"
+#include "ast/ASTVisitor.hpp"
+
 #include "FunctionTable.hpp"
-#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
-#include "ASTVisitor.hpp"
 #include "VisitorUtils.hpp"
-#include "TypeTransformer.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"
 #include "Compiler.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -37,7 +36,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = visit(TypeTransformer(), param.parameterType);
+                Type paramType = visit(ast::TypeTransformer(), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
@@ -115,7 +114,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void FunctionsAnnotator::annotate(ast::SourceFile& program, FunctionTable& functionTable) const {
+void ast::FunctionsAnnotator::annotate(ast::SourceFile& program, FunctionTable& functionTable) const {
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

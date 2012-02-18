@@ -5,29 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef DEPENDENCIES_RESOLVER_H
-#define DEPENDENCIES_RESOLVER_H
+#ifndef CONTEXT_ANNOTATOR_H
+#define CONTEXT_ANNOTATOR_H
 
 #include "ast/source_def.hpp"
 
 namespace eddic {
 
-namespace parser {
-    class SpiritParser;
-}
+namespace ast {
 
 /*!
- * \struct DependenciesResolver
- * \brief Utility class to resolve all the imports in a program.   
+ * \class ContextAnnotator
+ * \brief Generate all the symbol tables and reference them in the AST.   
  */
-struct DependenciesResolver {
-    DependenciesResolver(parser::SpiritParser& parser);
-
-    void resolve(ast::SourceFile& program) const;
-
-    private:
-        parser::SpiritParser& parser;
+struct ContextAnnotator {
+    void annotate(ast::SourceFile& program) const;
 };
+
+} //end of ast
 
 } //end of eddic
 

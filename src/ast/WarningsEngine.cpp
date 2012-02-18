@@ -10,24 +10,19 @@
 #include <memory>
 #include <boost/variant/variant.hpp>
 
-#include "WarningsEngine.hpp"
+#include "ast/WarningsEngine.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
-#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-
 #include "Compiler.hpp"
 #include "Options.hpp"
-#include "TypeTransformer.hpp"
-
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -90,7 +85,7 @@ struct Inspector : public boost::static_visitor<> {
         }
 };
 
-void WarningsEngine::check(ast::SourceFile& program, FunctionTable& table) const {
+void ast::WarningsEngine::check(ast::SourceFile& program, FunctionTable& table) const {
     if(WarningUnused){
         Inspector inspector(table);
         visit_non_variant(inspector, program);

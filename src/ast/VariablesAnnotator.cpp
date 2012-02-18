@@ -10,26 +10,20 @@
 
 #include <boost/variant/variant.hpp>
 
-#include "VariablesAnnotator.hpp"
+#include "ast/VariablesAnnotator.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/TypeTransformer.hpp"
+#include "ast/IsConstantVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
 
-#include "IsConstantVisitor.hpp"
-#include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-
-#include "Compiler.hpp"
-#include "Options.hpp"
-#include "TypeTransformer.hpp"
 #include "Utils.hpp"
-
 #include "VisitorUtils.hpp"
-#include "ASTVisitor.hpp"
-
-#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -44,7 +38,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = visit(TypeTransformer(), parameter.parameterType);
+            Type type = visit(ast::TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -57,7 +51,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!visit(IsConstantVisitor(), *declaration.Content->value)){
+        if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
@@ -169,7 +163,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         Type type(baseType, declaration.Content->const_);
 
         if(type.isConst()){
-            if(!visit(IsConstantVisitor(), *declaration.Content->value)){
+            if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
                 throw SemanticalException("The value must be constant");
             }
             
@@ -257,7 +251,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void VariablesAnnotator::annotate(ast::SourceFile& program) const {
+void ast::VariablesAnnotator::annotate(ast::SourceFile& program) const {
     VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

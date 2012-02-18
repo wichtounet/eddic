@@ -7,17 +7,17 @@
 
 #include <iostream>
 
-#include "DebugVisitor.hpp"
+#include "ast/DebugVisitor.hpp"
+#include "ast/SourceFile.hpp"
+
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
-#include "ast/SourceFile.hpp"
-
 using namespace eddic;
     
-DebugVisitor::DebugVisitor() : level(0) {}
+ast::DebugVisitor::DebugVisitor() : level(0) {}
 
-std::string DebugVisitor::indent() const {
+std::string ast::DebugVisitor::indent() const {
     std::string acc = "";
     for(int i = 0; i < level; ++i){
         acc += "\t";
@@ -25,7 +25,7 @@ std::string DebugVisitor::indent() const {
     return acc;
 }
 
-void DebugVisitor::operator()(ast::SourceFile& program) const {
+void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
     std::cout << indent() << "SourceFile" << std::endl; 
 
     ++level;
@@ -33,15 +33,15 @@ void DebugVisitor::operator()(ast::SourceFile& program) const {
     visit_each(*this, program.Content->blocks);
 }
 
-void DebugVisitor::operator()(ast::Import& import) const {
+void ast::DebugVisitor::operator()(ast::Import& import) const {
     std::cout << indent() << "include \"" << import.file << "\"" << std::endl;
 }
 
-void DebugVisitor::operator()(ast::StandardImport& import) const {
+void ast::DebugVisitor::operator()(ast::StandardImport& import) const {
     std::cout << indent() << "include <" << import.header << ">" << std::endl;
 }
 
-void DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
+void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
     std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
 
     ++level;
@@ -49,15 +49,15 @@ void DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {
+void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {
     std::cout << indent() << "Global Variable" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::GlobalArrayDeclaration&) const {
+void ast::DebugVisitor::operator()(ast::GlobalArrayDeclaration&) const {
     std::cout << indent() << "Global Array" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::For& for_) const {
+void ast::DebugVisitor::operator()(ast::For& for_) const {
     std::cout << indent() << "For" << std::endl; 
 
     ++level;
@@ -65,7 +65,7 @@ void DebugVisitor::operator()(ast::For& for_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Foreach& for_) const {
+void ast::DebugVisitor::operator()(ast::Foreach& for_) const {
     std::cout << indent() << "Foreach" << std::endl; 
 
     ++level;
@@ -73,7 +73,7 @@ void DebugVisitor::operator()(ast::Foreach& for_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::ForeachIn& for_) const {
+void ast::DebugVisitor::operator()(ast::ForeachIn& for_) const {
     std::cout << indent() << "Foreach in " << std::endl; 
 
     ++level;
@@ -81,7 +81,7 @@ void DebugVisitor::operator()(ast::ForeachIn& for_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::While& while_) const {
+void ast::DebugVisitor::operator()(ast::While& while_) const {
     std::cout << indent() << "While" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
     ++level;
@@ -93,7 +93,7 @@ void DebugVisitor::operator()(ast::While& while_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::DoWhile& while_) const {
+void ast::DebugVisitor::operator()(ast::DoWhile& while_) const {
     std::cout << indent() << "Do while" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
     ++level;
@@ -105,11 +105,11 @@ void DebugVisitor::operator()(ast::DoWhile& while_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Swap&) const {
+void ast::DebugVisitor::operator()(ast::Swap&) const {
     std::cout << indent() << "Swap" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::If& if_) const {
+void ast::DebugVisitor::operator()(ast::If& if_) const {
     std::cout << indent() << "If" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
     ++level;
@@ -122,7 +122,7 @@ void DebugVisitor::operator()(ast::If& if_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::FunctionCall& call) const {
+void ast::DebugVisitor::operator()(ast::FunctionCall& call) const {
     std::cout << indent() << "FunctionCall " << call.Content->functionName << std::endl; 
 
     ++level;
@@ -130,7 +130,7 @@ void DebugVisitor::operator()(ast::FunctionCall& call) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
+void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
     std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
 
     ++level;
@@ -138,7 +138,7 @@ void DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
+void ast::DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
     std::cout << indent() << "Variable declaration" << std::endl; 
 
     if(declaration.Content->value){
@@ -148,19 +148,19 @@ void DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
     }
 }
 
-void DebugVisitor::operator()(ast::ArrayDeclaration&) const {
+void ast::DebugVisitor::operator()(ast::ArrayDeclaration&) const {
     std::cout << indent() << "Array declaration" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::SuffixOperation& op) const {
+void ast::DebugVisitor::operator()(ast::SuffixOperation& op) const {
     std::cout << indent() << op.Content->variableName << "(suffix)" << (int)op.Content->op << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::PrefixOperation& op) const {
+void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
     std::cout << indent() << (int)op.Content->op << "(prefix)" << op.Content->variableName << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::Assignment& assign) const {
+void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
     std::cout << indent() << "Variable assignment" << std::endl; 
 
     ++level;
@@ -168,7 +168,7 @@ void DebugVisitor::operator()(ast::Assignment& assign) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
+void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
     std::cout << indent() << "Compound variable assignment [operator = " << (int) assign.Content->op << " ]" << std::endl; 
 
     ++level;
@@ -176,7 +176,7 @@ void DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Return& return_) const {
+void ast::DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
 
     ++level;
@@ -184,7 +184,7 @@ void DebugVisitor::operator()(ast::Return& return_) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
+void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     std::cout << indent() << "Array assignment" << std::endl; 
 
     ++level;
@@ -192,31 +192,31 @@ void DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Litteral& litteral) const {
+void ast::DebugVisitor::operator()(ast::Litteral& litteral) const {
     std::cout << indent() << "Litteral [" << litteral.value << "]" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::Integer& integer) const {
+void ast::DebugVisitor::operator()(ast::Integer& integer) const {
     std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::True&) const {
+void ast::DebugVisitor::operator()(ast::True&) const {
     std::cout << indent() << "true" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::False&) const {
+void ast::DebugVisitor::operator()(ast::False&) const {
     std::cout << indent() << "false" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::VariableValue& value) const {
+void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
     std::cout << indent() << "Variable [" << value.Content->var->name()  << "]" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::ArrayValue&) const {
+void ast::DebugVisitor::operator()(ast::ArrayValue&) const {
     std::cout << indent() << "Array value" << std::endl; 
 }
 
-void DebugVisitor::operator()(ast::ComposedValue& value) const {
+void ast::DebugVisitor::operator()(ast::ComposedValue& value) const {
     std::cout << indent() << "Composed value [" << value.Content->operations.size() << "]" << std::endl; 
     ++level;
     visit(*this, value.Content->first);
@@ -227,14 +227,14 @@ void DebugVisitor::operator()(ast::ComposedValue& value) const {
     --level;
 }
 
-void DebugVisitor::operator()(ast::Minus& value) const {
+void ast::DebugVisitor::operator()(ast::Minus& value) const {
     std::cout << indent() << "Unary +" << std::endl; 
     ++level;
     visit(*this, value.Content->value);
     --level;
 }
 
-void DebugVisitor::operator()(ast::Plus& value) const {
+void ast::DebugVisitor::operator()(ast::Plus& value) const {
     std::cout << indent() << "Unary -" << std::endl; 
     ++level;
     visit(*this, value.Content->value);
