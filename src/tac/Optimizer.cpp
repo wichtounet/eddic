@@ -389,8 +389,13 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
                 constants.erase(quadruple->result);
             }
         } else {
-            //The result is not constant at this point
-            constants.erase(quadruple->result);
+            auto op = *quadruple->op;
+
+            //Check if the operator erase the contents of the result variable
+            if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
+                //The result is not constant at this point
+                constants.erase(quadruple->result);
+            }
         }
 
         return quadruple;
