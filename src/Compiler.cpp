@@ -25,7 +25,7 @@
 #include "ast/SourceFile.hpp"
 
 //Annotators
-#include "DefaultValues.hpp"
+#include "ast/DefaultValues.hpp"
 #include "ast/ContextAnnotator.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
@@ -235,7 +235,7 @@ void assembleWithDebug(Platform platform, const std::string& output){
 
 void eddic::defineDefaultValues(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate with default values");
-    DefaultValues values;
+    ast::DefaultValues values;
     values.fill(program);
 }
 
