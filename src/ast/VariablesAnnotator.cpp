@@ -13,8 +13,8 @@
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
+#include "ast/IsConstantVisitor.hpp"
 
-#include "IsConstantVisitor.hpp"
 #include "GetTypeVisitor.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -56,7 +56,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
         }
     
-        if(!visit(IsConstantVisitor(), *declaration.Content->value)){
+        if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant");
         }
 
@@ -168,7 +168,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         Type type(baseType, declaration.Content->const_);
 
         if(type.isConst()){
-            if(!visit(IsConstantVisitor(), *declaration.Content->value)){
+            if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
                 throw SemanticalException("The value must be constant");
             }
             

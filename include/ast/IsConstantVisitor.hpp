@@ -14,25 +14,29 @@
 
 namespace eddic {
 
+namespace ast {
+
 /*!
  * \struct IsConstantVisitor
  * \brief AST Visitor to test if a node is constant. 
  */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
-    bool operator()(ast::Litteral& litteral) const;
-    bool operator()(ast::Integer& litteral) const;
-    bool operator()(ast::Plus& plus) const;
-    bool operator()(ast::True& true_) const;
-    bool operator()(ast::False& false_) const;
-    bool operator()(ast::Minus& minus) const;
-    bool operator()(ast::VariableValue& variable) const;
-    bool operator()(ast::ArrayValue& variable) const;
-    bool operator()(ast::ComposedValue& value) const; 
-    bool operator()(ast::FunctionCall& value) const; 
-    bool operator()(ast::BuiltinOperator& value) const; 
-    bool operator()(ast::SuffixOperation& value) const; 
-    bool operator()(ast::PrefixOperation& value) const; 
+    bool operator()(Litteral& litteral) const;
+    bool operator()(Integer& litteral) const;
+    bool operator()(Plus& plus) const;
+    bool operator()(True& true_) const;
+    bool operator()(False& false_) const;
+    bool operator()(Minus& minus) const;
+    bool operator()(VariableValue& variable) const;
+    bool operator()(ArrayValue& variable) const;
+    bool operator()(ComposedValue& value) const; 
+    bool operator()(FunctionCall& value) const; 
+    bool operator()(BuiltinOperator& value) const; 
+    bool operator()(SuffixOperation& value) const; 
+    bool operator()(PrefixOperation& value) const; 
 };
+
+} //end of ast
 
 } //end of eddic
 
