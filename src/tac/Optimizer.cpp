@@ -12,11 +12,12 @@
 #include <boost/variant.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include "VisitorUtils.hpp"
-
 #include "tac/Optimizer.hpp"
 #include "tac/Program.hpp"
 #include "tac/Utils.hpp"
+
+#include "VisitorUtils.hpp"
+#include "StringPool.hpp"
 
 using namespace eddic;
 
@@ -937,6 +938,87 @@ bool remove_dead_basic_blocks(tac::Program& program){
     return optimized;
 }
 
+template<typename T>
+bool isQuadruple(T& statement){
+    return boost::get<std::shared_ptr<tac::Quadruple>>(&statement);
+}
+
+bool isParam(std::shared_ptr<tac::Quadruple> quadruple){
+    return quadruple->op && *quadruple->op == tac::Operator::PARAM;
+}
+
+bool optimize_concat(tac::Program& program, StringPool& pool){
+    bool optimized = false;
+    
+    for(auto& function : program.functions){
+        auto& blocks = function->getBasicBlocks();
+        
+        //we start at 1 because the first block cannot start with a call to concat
+        for(unsigned int i = 1; i < blocks.size(); ++i){
+            auto& block = blocks[i];
+
+            if(block->statements.size() > 0){
+                if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&block->statements[0])){
+                    if((*ptr)->function == "concat"){
+                        //The params are on the previous block
+                        auto& paramBlock = blocks[i - 1]; 
+
+                        //Must have at least four params
+                        if(paramBlock->statements.size() >= 4){
+                            auto size = paramBlock->statements.size();
+                            auto& statement1 = paramBlock->statements[size - 4];
+                            auto& statement2 = paramBlock->statements[size - 3];
+                            auto& statement3 = paramBlock->statements[size - 2];
+                            auto& statement4 = paramBlock->statements[size - 1];
+
+                            if(isQuadruple(statement1) && isQuadruple(statement2) && isQuadruple(statement3) && isQuadruple(statement4)){
+                                auto& quadruple1 = boost::get<std::shared_ptr<tac::Quadruple>>(statement1);
+                                auto& quadruple2 = boost::get<std::shared_ptr<tac::Quadruple>>(statement2);
+                                auto& quadruple3 = boost::get<std::shared_ptr<tac::Quadruple>>(statement3);
+                                auto& quadruple4 = boost::get<std::shared_ptr<tac::Quadruple>>(statement4);
+
+                                if(isParam(quadruple1) && isParam(quadruple2) && isParam(quadruple3) && isParam(quadruple4)){
+                                    if(boost::get<std::string>(&*quadruple1->arg1) && boost::get<std::string>(&*quadruple3->arg1)){
+                                        std::string firstValue = pool.value(boost::get<std::string>(*quadruple1->arg1));
+                                        std::string secondValue = pool.value(boost::get<std::string>(*quadruple3->arg1));
+                                       
+                                        //Remove the quotes
+                                        firstValue.resize(firstValue.size() - 1);
+                                        secondValue.erase(0, 1);
+                                        
+                                        //Compute the reuslt of the concatenation
+                                        std::string result = firstValue + secondValue;
+
+                                        std::string label = pool.label(result);
+                                        int length = result.length() - 2;
+
+                                        auto ret1 = (*ptr)->return_;
+                                        auto ret2 = (*ptr)->return2_;
+
+                                        //remove the call to concat
+                                        block->statements.erase(block->statements.begin());
+                                       
+                                        //Insert assign with the concatenated value 
+                                        block->statements.insert(block->statements.begin(), std::make_shared<tac::Quadruple>(ret1, label));
+                                        block->statements.insert(block->statements.begin()+1, std::make_shared<tac::Quadruple>(ret2, length));
+
+                                        //Remove the four params from the previous basic block
+                                        paramBlock->statements.erase(paramBlock->statements.end() - 4, paramBlock->statements.end());
+
+                                        optimized = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return optimized;
+}
+
 bool remove_needless_jumps(tac::Program& program){
     bool optimized = false;
 
@@ -1036,7 +1118,7 @@ bool debug(bool b){
 
 }
 
-void tac::Optimizer::optimize(tac::Program& program) const {
+void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
     bool optimized;
     do {
         optimized = false;
@@ -1070,14 +1152,17 @@ void tac::Optimizer::optimize(tac::Program& program) const {
 
         //Remove unused assignations
         optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
+       
+        //Optimize concatenations 
+        optimized |= debug<Debug, 11>(optimize_concat(program, pool));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 11>(remove_dead_basic_blocks(program));
+        optimized |= debug<Debug, 12>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= debug<Debug, 12>(remove_needless_jumps(program));
+        optimized |= debug<Debug, 13>(remove_needless_jumps(program));
 
         //Merge basic blocks
-        optimized |= debug<Debug, 13>(merge_basic_blocks(program));
+        optimized |= debug<Debug, 14>(merge_basic_blocks(program));
     } while (optimized);
 }
