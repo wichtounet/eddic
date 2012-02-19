@@ -18,12 +18,13 @@
 
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
+#include "DebugStopWatch.hpp"
 
 using namespace eddic;
 
 namespace {
 
-static const bool Debug = false;
+static const bool Debug = true;
 
 //Use for two pass optimization
 enum class Pass : unsigned int {
@@ -780,6 +781,7 @@ struct MathPropagation : public boost::static_visitor<void> {
 
 template<typename Visitor>
 bool apply_to_all(tac::Program& program){
+    DebugStopWatch<Debug> timer("apply to all");
     Visitor visitor;
 
     for(auto& function : program.functions){
@@ -795,6 +797,7 @@ bool apply_to_all(tac::Program& program){
 
 template<typename Visitor>
 bool apply_to_basic_blocks(tac::Program& program){
+    DebugStopWatch<Debug> timer("apply to basic blocks");
     bool optimized = false;
 
     for(auto& function : program.functions){
@@ -815,6 +818,7 @@ bool apply_to_basic_blocks(tac::Program& program){
 template<typename Visitor>
 typename boost::disable_if<boost::is_void<typename Visitor::result_type>, bool>::type 
 apply_to_basic_blocks_two_pass(tac::Program& program){
+    DebugStopWatch<Debug> timer("apply to basic blocks two phase");
     bool optimized = false;
 
     for(auto& function : program.functions){
@@ -855,6 +859,7 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
 template<typename Visitor>
 inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, bool>::type
 apply_to_basic_blocks_two_pass(tac::Program& program){
+    DebugStopWatch<Debug> timer("apply to basic blocks two phase");
     bool optimized = false;
 
     for(auto& function : program.functions){
@@ -891,6 +896,7 @@ unsigned int index(const std::vector<T>& vector, T& search){
 }
 
 bool remove_dead_basic_blocks(tac::Program& program){
+    DebugStopWatch<Debug> timer("Remove dead basic blocks");
     bool optimized = false;
 
     for(auto& function : program.functions){
@@ -948,6 +954,7 @@ bool isParam(std::shared_ptr<tac::Quadruple> quadruple){
 }
 
 bool optimize_concat(tac::Program& program, StringPool& pool){
+    DebugStopWatch<Debug> timer("Optimize concat");
     bool optimized = false;
     
     for(auto& function : program.functions){
@@ -1020,6 +1027,7 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
 }
 
 bool remove_needless_jumps(tac::Program& program){
+    DebugStopWatch<Debug> timer("Remove needless jumps");
     bool optimized = false;
 
     for(auto& function : program.functions){
@@ -1048,6 +1056,7 @@ bool remove_needless_jumps(tac::Program& program){
 }
 
 bool merge_basic_blocks(tac::Program& program){
+    DebugStopWatch<Debug> timer("Merge basic blocks");
     bool optimized = false;
 
     std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
