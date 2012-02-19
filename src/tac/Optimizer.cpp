@@ -81,12 +81,12 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
                     } 
 
                     //a = b - b => a = 0
-                    if(*quadruple->arg1 == *quadruple->arg2){
+                    else if(*quadruple->arg1 == *quadruple->arg2){
                         replaceRight(*this, quadruple, 0);
                     }
                     
                     //a = 0 - b => a = -b
-                    if(*quadruple->arg1 == 0){
+                    else if(*quadruple->arg1 == 0){
                         replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::MINUS);
                     }
 
@@ -98,13 +98,13 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
                         replaceRight(*this, quadruple, *quadruple->arg1);
                     }
                     
-                    if(*quadruple->arg1 == 0){
+                    else if(*quadruple->arg1 == 0){
                         replaceRight(*this, quadruple, 0);
                     } else if(*quadruple->arg2 == 0){
                         replaceRight(*this, quadruple, 0);
                     }
                     
-                    if(*quadruple->arg1 == -1){
+                    else if(*quadruple->arg1 == -1){
                         replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::MINUS);
                     } else if(*quadruple->arg2 == -1){
                         replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::MINUS);
@@ -116,16 +116,16 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
                         replaceRight(*this, quadruple, *quadruple->arg1);
                     }
 
-                    if(*quadruple->arg1 == 0){
+                    else if(*quadruple->arg1 == 0){
                         replaceRight(*this, quadruple, 0);
                     }
 
                     //a = b / b => a = 1
-                    if(*quadruple->arg1 == *quadruple->arg2){
+                    else if(*quadruple->arg1 == *quadruple->arg2){
                         replaceRight(*this, quadruple, 1);
                     }
                     
-                    if(*quadruple->arg2 == 1){
+                    else if(*quadruple->arg2 == 1){
                         replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::MINUS);
                     }
 
