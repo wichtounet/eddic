@@ -57,6 +57,12 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return functionCall;
     }
 
+    ast::Value operator()(ast::Assignment& assignment) const {
+        assignment.Content->value = visit(*this, assignment.Content->value);
+
+        return assignment;
+    }
+
     ast::Value operator()(ast::BuiltinOperator& builtin) const {
         auto start = builtin.Content->values.begin();
         auto end = builtin.Content->values.end();
