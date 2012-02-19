@@ -32,12 +32,30 @@ enum class Pass : unsigned int {
     OPTIMIZE
 };
 
-struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
+template<typename T>
+inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg){
+    visitor.optimized = true;
+
+    quadruple->op.reset();
+    quadruple->arg1 = arg;
+    quadruple->arg2.reset();
+}
+
+template<typename T>
+inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg, tac::Operator op){
+    visitor.optimized = true;
+
+    quadruple->op = op;
+    quadruple->arg1 = arg;
+    quadruple->arg2.reset();
+}
+
+struct ArithmeticIdentities : public boost::static_visitor<void> {
     bool optimized;
 
     ArithmeticIdentities() : optimized(false) {}
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         bool old = optimized;
         optimized = true;
 
@@ -45,64 +63,64 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
             switch(*quadruple->op){
                 case tac::Operator::ADD:
                     if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
+                        replaceRight(*this, quadruple, *quadruple->arg2);
                     } else if(*quadruple->arg2 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
+                        replaceRight(*this, quadruple, *quadruple->arg1);
                     }
 
                     break;
                 case tac::Operator::SUB:
                     if(*quadruple->arg2 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
+                        replaceRight(*this, quadruple, *quadruple->arg1);
                     } 
 
                     //a = b - b => a = 0
                     if(*quadruple->arg1 == *quadruple->arg2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
+                        replaceRight(*this, quadruple, 0);
                     }
                     
                     //a = 0 - b => a = -b
                     if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
+                        replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::MINUS);
                     }
 
                     break;
                 case tac::Operator::MUL:
                     if(*quadruple->arg1 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
+                        replaceRight(*this, quadruple, *quadruple->arg2);
                     } else if(*quadruple->arg2 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
+                        replaceRight(*this, quadruple, *quadruple->arg1);
                     }
                     
                     if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
+                        replaceRight(*this, quadruple, 0);
                     } else if(*quadruple->arg2 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
+                        replaceRight(*this, quadruple, 0);
                     }
                     
                     if(*quadruple->arg1 == -1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
+                        replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::MINUS);
                     } else if(*quadruple->arg2 == -1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
+                        replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::MINUS);
                     }
 
                     break;
                 case tac::Operator::DIV:
                     if(*quadruple->arg2 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
+                        replaceRight(*this, quadruple, *quadruple->arg1);
                     }
 
                     if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
+                        replaceRight(*this, quadruple, 0);
                     }
 
                     //a = b / b => a = 1
                     if(*quadruple->arg1 == *quadruple->arg2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 1);
+                        replaceRight(*this, quadruple, 1);
                     }
                     
                     if(*quadruple->arg2 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
+                        replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::MINUS);
                     }
 
                     break;
@@ -112,12 +130,12 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
         }
 
         optimized = old;
-        return quadruple;
+        //return quadruple;
     }
 
     template<typename T>
-    tac::Statement operator()(T& statement) const { 
-        return statement;
+    void operator()(T&) const { 
+        //Nothing to optimize
     }
 };
 
@@ -778,10 +796,10 @@ struct MathPropagation : public boost::static_visitor<void> {
     }
 };
 
-
 template<typename Visitor>
 bool apply_to_all(tac::Program& program){
     DebugStopWatch<Debug> timer("apply to all");
+
     Visitor visitor;
 
     for(auto& function : program.functions){
@@ -789,6 +807,23 @@ bool apply_to_all(tac::Program& program){
             for(auto& statement : block->statements){
                 statement = visit(visitor, statement);
             }
+        }
+    }
+
+    return visitor.optimized;
+}
+
+template<typename Visitor>
+bool apply_to_all_clean(tac::Program& program){
+    DebugStopWatch<Debug> timer("apply to all clean");
+
+    Visitor visitor;
+
+    for(auto& function : program.functions){
+        for(auto& block : function->getBasicBlocks()){
+            //for(auto& statement : block->statements){
+                visit_each(visitor, block->statements);
+            //}
         }
     }
 
@@ -1133,7 +1168,7 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         optimized = false;
 
         //Optimize using arithmetic identities
-        optimized |= debug<Debug, 1>(apply_to_all<ArithmeticIdentities>(program));
+        optimized |= debug<Debug, 1>(apply_to_all_clean<ArithmeticIdentities>(program));
         
         //Reduce arithtmetic instructions in strength
         optimized |= debug<Debug, 2>(apply_to_all<ReduceInStrength>(program));
