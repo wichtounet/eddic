@@ -800,24 +800,6 @@ struct MathPropagation : public boost::static_visitor<void> {
     }
 };
 
-//TODO Delete this function
-template<typename Visitor>
-bool apply_to_all(tac::Program& program){
-    DebugStopWatch<Debug> timer("apply to all");
-
-    Visitor visitor;
-
-    for(auto& function : program.functions){
-        for(auto& block : function->getBasicBlocks()){
-            for(auto& statement : block->statements){
-                statement = visit(visitor, statement);
-            }
-        }
-    }
-
-    return visitor.optimized;
-}
-
 template<typename Visitor>
 bool apply_to_all_clean(tac::Program& program){
     DebugStopWatch<Debug> timer("apply to all clean");
