@@ -170,43 +170,42 @@ struct ReduceInStrength : public boost::static_visitor<void> {
     }
 };
 
-struct ConstantFolding : public boost::static_visitor<tac::Statement> {
+struct ConstantFolding : public boost::static_visitor<void> {
     bool optimized;
 
     ConstantFolding() : optimized(false) {}
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        bool old = optimized;
-        optimized = true;
-        
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(quadruple->op){
             if(quadruple->arg1 && tac::isInt(*quadruple->arg1)){
                 if(*quadruple->op == tac::Operator::MINUS){
-                    return std::make_shared<tac::Quadruple>(quadruple->result, -1 * boost::get<int>(*quadruple->arg1));
+                    replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1));
                 } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
                     int lhs = boost::get<int>(*quadruple->arg1); 
                     int rhs = boost::get<int>(*quadruple->arg2); 
 
                     switch(*quadruple->op){
                         case tac::Operator::ADD:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs + rhs);
+                            replaceRight(*this, quadruple, lhs + rhs);
+                            break;
                         case tac::Operator::SUB:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs - rhs);
+                            replaceRight(*this, quadruple, lhs - rhs);
+                            break;
                         case tac::Operator::MUL:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs * rhs);
+                            replaceRight(*this, quadruple, lhs * rhs);
+                            break;
                         case tac::Operator::DIV:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs / rhs);
+                            replaceRight(*this, quadruple, lhs / rhs);
+                            break;
                         case tac::Operator::MOD:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs % rhs);
+                            replaceRight(*this, quadruple, lhs % rhs);
+                            break;
                         default:
                             break;
                     }
                 }
             }
         }
-
-        optimized = old;
-        return quadruple;
     }
 
     template<typename T>
@@ -232,10 +231,16 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
         }
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         if(ifFalse->op){
             if(tac::isInt(ifFalse->arg1) && tac::isInt(*ifFalse->arg2)){
                 bool value = computeValue(ifFalse);
+
+                ifFalse->op.reset();
+                ifFalse->arg1 = value ? 1 : 0;
+                ifFalse->arg2.reset();
+
+/*
 
                 //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
 
@@ -252,17 +257,21 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
 
                     return goto_; 
                 }
+                */
             }
         }
-
-        return ifFalse;
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::If>& if_){
+    void operator()(std::shared_ptr<tac::If>& if_){
         if(if_->op){
             if(tac::isInt(if_->arg1) && tac::isInt(*if_->arg2)){
                 bool value = computeValue(if_);
 
+                if_->op.reset();
+                if_->arg1 = value ? 1 : 0;
+                if_->arg2.reset();
+
+/*
                 //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
 
                 //replace if true by goto
@@ -277,16 +286,14 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
                 //replace if false by no-op 
                 else {
                     return tac::NoOp();
-                }
+                }*/
             }
         }
-
-        return if_;
     }
 
     template<typename T>
-    tac::Statement operator()(T& statement) const { 
-        return statement;
+    void operator()(T&) const { 
+        //Nothing to optimize
     }
 };
 
@@ -1170,7 +1177,7 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         optimized |= debug<Debug, 2>(apply_to_all_clean<ReduceInStrength>(program));
 
         //Constant folding
-        optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
+        optimized |= debug<Debug, 3>(apply_to_all_clean<ConstantFolding>(program));
 
         //Constant propagation
         optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
