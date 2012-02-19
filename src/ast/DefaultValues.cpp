@@ -26,7 +26,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            Type type = stringToType(declaration.Content->variableType);
+            Type type = newType(declaration.Content->variableType);
 
             switch(type.base()){
                 case BaseType::INT:{

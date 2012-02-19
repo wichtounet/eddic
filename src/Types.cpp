@@ -13,8 +13,7 @@
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool constant) : type(base), array(false), const_(constant), m_size(0) {}
-Type::Type(BaseType base, unsigned int size, bool constant) : type(base), array(true), const_(constant), m_size(size) {}
+Type::Type(BaseType base, bool a, unsigned int size, bool constant) : type(base), array(a), const_(constant), m_size(size) {}
 
 BaseType Type::base() const {
     return type;
@@ -68,7 +67,7 @@ bool eddic::isType(const std::string& type){
     return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
 }
 
-BaseType eddic::stringToBaseType(const std::string& type){
+BaseType stringToBaseType(const std::string& type){
     if (type == "int") {
         return BaseType::INT;
     } else if (type == "bool") {
@@ -84,26 +83,29 @@ BaseType eddic::stringToBaseType(const std::string& type){
     throw SemanticalException("Invalid type");
 }
 
-Type eddic::stringToType(const std::string& type){
-    if (type == "int") {
-        return Type(BaseType::INT, false);
-    } else if (type == "bool"){
-        return Type(BaseType::BOOL, false);
-    } else if (type == "string"){
-        return Type(BaseType::STRING, false);
-    } else if (type == "float"){
-        return Type(BaseType::FLOAT, false);
-    } else if(type == "int[]") {
-        return Type(BaseType::INT, 0, false);       //Use a more proper way to set that it's an array type
-    } else if(type == "bool[]") {
-        return Type(BaseType::BOOL, 0, false);      //Use a more proper way to set that it's an array type
-    } else if(type == "string[]") {
-        return Type(BaseType::STRING, 0, false);    //Use a more proper way to set that it's an array type
-    } else if(type == "float[]") {
-        return Type(BaseType::FLOAT, 0, false);     //Use a more proper way to set that it's an array type
-    } else if(type == "void") {
-        return Type(BaseType::VOID, false);
-    }
+Type eddic::newType(const std::string& type){
+    if(type.find("[]") != std::string::npos){
+        std::string baseType = type;
+        baseType.resize(baseType.size() - 2);
 
-    throw SemanticalException("Invalid type");
+        return newArrayType(baseType);
+    } 
+
+    return newSimpleType(type);
+}
+
+Type eddic::newSimpleType(BaseType baseType, bool const_){
+    return Type(baseType, false, 0, const_);
+}
+
+Type eddic::newSimpleType(const std::string& baseType, bool const_){
+    return Type(stringToBaseType(baseType), false, 0, const_);
+}
+
+Type eddic::newArrayType(BaseType baseType, int size){
+    return Type(baseType, true, size, false);
+}
+
+Type eddic::newArrayType(const std::string& baseType, int size){
+    return Type(stringToBaseType(baseType), true, size, false);
 }

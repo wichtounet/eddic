@@ -41,7 +41,7 @@ struct IntelStatementCompiler {
     tac::Statement next;
    
     IntelStatementCompiler(AssemblyFileWriter& w, std::vector<Register> r, std::shared_ptr<tac::Function> f) : function(f), writer(w), 
-            registers(r, std::make_shared<Variable>("__fake__", Type(BaseType::INT, false), Position(PositionType::TEMPORARY))) {
+            registers(r, std::make_shared<Variable>("__fake__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))) {
         last = ended = false;        
     } 
     

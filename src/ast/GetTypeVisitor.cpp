@@ -14,17 +14,17 @@
 
 using namespace eddic;
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, Type(BaseType::STRING, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Minus, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Plus, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::SuffixOperation, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::PrefixOperation, Type(BaseType::INT, false))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, Type(BaseType::INT, false)) //At this time, all the builtin operators return an int
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, newSimpleType(BaseType::INT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Minus, newSimpleType(BaseType::INT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Plus, newSimpleType(BaseType::INT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::SuffixOperation, newSimpleType(BaseType::INT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::PrefixOperation, newSimpleType(BaseType::INT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, newSimpleType(BaseType::INT)) //At this time, all the builtin operators return an int
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, Type(BaseType::BOOL, false))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, Type(BaseType::BOOL, false))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, newSimpleType(BaseType::BOOL))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, newSimpleType(BaseType::BOOL))
 
 Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
@@ -35,16 +35,16 @@ Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return Type(array.Content->context->getVariable(array.Content->arrayName)->type().base(), false);
+    return newSimpleType(array.Content->context->getVariable(array.Content->arrayName)->type().base());
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){
-        return Type(BaseType::BOOL, false);
+        return newSimpleType(BaseType::BOOL);
     } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        return Type(BaseType::BOOL, false);
+        return newSimpleType(BaseType::BOOL);
     } else {
         //No need to recurse into operations because type are enforced in the check variables phase
         return visit(*this, value.Content->first);

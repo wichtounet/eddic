@@ -10,9 +10,9 @@
 using namespace eddic;
 
 eddic::Type ast::TypeTransformer::operator()(ast::SimpleType& type) const {
-    return eddic::Type(stringToBaseType(type.type), false);
+    return newSimpleType(type.type);
 }
 
 eddic::Type ast::TypeTransformer::operator()(ast::ArrayType& type) const {
-    return eddic::Type(stringToBaseType(type.type), 0, false);//TODO Find a better way to declare a array type
+    return newArrayType(type.type);
 }

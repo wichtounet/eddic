@@ -35,9 +35,8 @@ class Type {
         unsigned int m_size;
     
     public:
-        Type(BaseType base, bool constant);
-        Type(BaseType base, unsigned int size, bool constant);
-        
+        Type(BaseType type, bool array, unsigned int size, bool const_);
+
         BaseType base() const;
         bool isArray() const;
         bool isConst() const;
@@ -50,13 +49,18 @@ class Type {
 bool operator==(const Type& lhs, const Type& rhs);
 bool operator!=(const Type& lhs, const Type& rhs);
 
+Type newType(const std::string& type);
+
+Type newSimpleType(BaseType baseType, bool const_ = false);
+Type newSimpleType(const std::string& baseType, bool const_ = false);
+
+Type newArrayType(BaseType baseType, int size = 0);
+Type newArrayType(const std::string& baseType, int size = 0);
+
 int size(BaseType type);
 int size(Type type);
 
 bool isType(const std::string& type);
-
-BaseType stringToBaseType(const std::string& type);
-Type stringToType(const std::string& type);
 
 } //end of eddic
 
