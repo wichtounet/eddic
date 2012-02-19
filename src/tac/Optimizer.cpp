@@ -239,12 +239,6 @@ struct ConstantFolding : public boost::static_visitor<void> {
                 ifFalse->op.reset();
                 ifFalse->arg1 = value ? 1 : 0;
                 ifFalse->arg2.reset();
-
-/*
-
-                //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
-
-                */
             }
         }
     }
