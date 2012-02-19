@@ -165,7 +165,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             allocator.allocate(tacProgram);
 
             tac::Optimizer optimizer;
-            optimizer.optimize(tacProgram);
+            optimizer.optimize(tacProgram, pool);
 
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;

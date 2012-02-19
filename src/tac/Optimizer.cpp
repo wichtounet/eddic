@@ -12,11 +12,12 @@
 #include <boost/variant.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include "VisitorUtils.hpp"
-
 #include "tac/Optimizer.hpp"
 #include "tac/Program.hpp"
 #include "tac/Utils.hpp"
+
+#include "VisitorUtils.hpp"
+#include "StringPool.hpp"
 
 using namespace eddic;
 
@@ -1036,7 +1037,7 @@ bool debug(bool b){
 
 }
 
-void tac::Optimizer::optimize(tac::Program& program) const {
+void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
     bool optimized;
     do {
         optimized = false;
