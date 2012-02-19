@@ -682,11 +682,8 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
             
             return true;
         } else {
-            if(removed.find(quadruple) != removed.end()){
-                return false;
-            }
-
-            return true;
+            //keep if not found
+            return removed.find(quadruple) == removed.end();
         }
     }
 
@@ -723,13 +720,13 @@ struct MathPropagation : public boost::static_visitor<void> {
     std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::Quadruple>> assigns;
     std::unordered_map<std::shared_ptr<Variable>, int> usage;
     
-    void collect(tac::Argument* arg){
+    inline void collect(tac::Argument* arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
             usage[*ptr] += 1;
         }
     }
 
-    void collect(boost::optional<tac::Argument>& arg){
+    inline void collect(boost::optional<tac::Argument>& arg){
         if(arg){
             collect(&*arg);
         }
@@ -761,7 +758,7 @@ struct MathPropagation : public boost::static_visitor<void> {
     }
 
     template<typename T>
-    void collectUsageFromBranch(T& if_){
+    inline void collectUsageFromBranch(T& if_){
         if(pass == Pass::DATA_MINING){
             collect(&if_->arg1);
             collect(if_->arg2);
@@ -826,23 +823,13 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
             Visitor visitor;
             visitor.pass = Pass::DATA_MINING;
 
-            auto it = block->statements.begin();
-            auto end = block->statements.end();
-
-            while(it != end){
-                bool keep = visit(visitor, *it);
-                
-                if(!keep){
-                    it = block->statements.erase(it);   
-                }
-
-                it++;
-            }
+            //In the first pass, don't care about the return value
+            visit_each(visitor, block->statements);
 
             visitor.pass = Pass::OPTIMIZE;
 
-            it = block->statements.begin();
-            end = block->statements.end();
+            auto it = block->statements.begin();
+            auto end = block->statements.end();
             
             block->statements.erase(
                 std::remove_if(it, end,
