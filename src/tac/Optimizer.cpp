@@ -244,19 +244,6 @@ struct ConstantFolding : public boost::static_visitor<void> {
 
                 //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
 
-                //replace if_false true by no-op
-                if(value){
-                    return tac::NoOp();
-                } 
-                //replace if_false false by goto 
-                else {
-                    auto goto_ = std::make_shared<tac::Goto>();
-
-                    goto_->label = ifFalse->label;
-                    goto_->block = ifFalse->block;
-
-                    return goto_; 
-                }
                 */
             }
         }
@@ -270,23 +257,6 @@ struct ConstantFolding : public boost::static_visitor<void> {
                 if_->op.reset();
                 if_->arg1 = value ? 1 : 0;
                 if_->arg2.reset();
-
-/*
-                //TODO Do the replacing by NoOp or Goto in another pass of optimization, only constant folding there
-
-                //replace if true by goto
-                if(value){
-                    auto goto_ = std::make_shared<tac::Goto>();
-
-                    goto_->label = if_->label;
-                    goto_->block = if_->block;
-
-                    return goto_; 
-                }
-                //replace if false by no-op 
-                else {
-                    return tac::NoOp();
-                }*/
             }
         }
     }
@@ -927,6 +897,55 @@ bool remove_dead_basic_blocks(tac::Program& program){
     return optimized;
 }
 
+bool optimize_branches(tac::Program& program){
+    DebugStopWatch<Debug> timer("Optimize branches");
+    bool optimized = false;
+    
+    for(auto& function : program.functions){
+        for(auto& block : function->getBasicBlocks()){
+            for(auto& statement : block->statements){
+                if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                    if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){
+                        int value = boost::get<int>((*ptr)->arg1);
+                        
+                        if(value == 0){
+                            auto goto_ = std::make_shared<tac::Goto>();
+
+                            goto_->label = (*ptr)->label;
+                            goto_->block = (*ptr)->block;
+
+                            statement = goto_;
+                            optimized = true;
+                        } else if(value == 1){
+                            statement = tac::NoOp();
+                            optimized = true;
+                        }
+                    }
+                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+                    if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){
+                        int value = boost::get<int>((*ptr)->arg1);
+                        
+                        if(value == 0){
+                            statement = tac::NoOp();
+                            optimized = true;
+                        } else if(value == 1){
+                            auto goto_ = std::make_shared<tac::Goto>();
+
+                            goto_->label = (*ptr)->label;
+                            goto_->block = (*ptr)->block;
+
+                            statement = goto_;
+                            optimized = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return optimized;
+}
+
 template<typename T>
 bool isQuadruple(T& statement){
     return boost::get<std::shared_ptr<tac::Quadruple>>(&statement);
@@ -1145,16 +1164,19 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         //Remove unused assignations
         optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
        
+        //Optimize branches 
+        optimized |= debug<Debug, 11>(optimize_branches(program));
+       
         //Optimize concatenations 
-        optimized |= debug<Debug, 11>(optimize_concat(program, pool));
+        optimized |= debug<Debug, 12>(optimize_concat(program, pool));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 12>(remove_dead_basic_blocks(program));
+        optimized |= debug<Debug, 13>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= debug<Debug, 13>(remove_needless_jumps(program));
+        optimized |= debug<Debug, 14>(remove_needless_jumps(program));
 
         //Merge basic blocks
-        optimized |= debug<Debug, 14>(merge_basic_blocks(program));
+        optimized |= debug<Debug, 15>(merge_basic_blocks(program));
     } while (optimized);
 }
