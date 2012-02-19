@@ -25,6 +25,9 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 struct ASTBuiltinOperator;
 typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
 
+struct ASTAssignment;
+typedef Deferred<ASTAssignment> Assignment;
+
 struct ASTVariableValue;
 typedef Deferred<ASTVariableValue> VariableValue;
 

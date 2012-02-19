@@ -71,6 +71,11 @@ BOOST_AUTO_TEST_CASE( while_ ){
     assertOutputEquals("while.eddi", "01234", "-64");
 }
 
+BOOST_AUTO_TEST_CASE( do_while_ ){
+    assertOutputEquals("do_while.eddi", "01234", "-32");
+    assertOutputEquals("do_while.eddi", "01234", "-64");
+}
+
 BOOST_AUTO_TEST_CASE( for_ ){
     assertOutputEquals("for.eddi", "01234", "-32");
     assertOutputEquals("for.eddi", "01234", "-64");
@@ -114,6 +119,11 @@ BOOST_AUTO_TEST_CASE( math ){
 BOOST_AUTO_TEST_CASE( builtin ){
     assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-32");
     assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-64");
+}
+
+BOOST_AUTO_TEST_CASE( assign_value ){
+    assertOutputEquals("assign_value.eddi", "66779921", "-32");
+    assertOutputEquals("assign_value.eddi", "66779921", "-64");
 }
 
 BOOST_AUTO_TEST_CASE( args ){

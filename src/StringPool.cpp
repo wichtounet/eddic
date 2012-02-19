@@ -5,9 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "StringPool.hpp"
-
 #include <sstream>
+#include <cassert>
+
+#include "StringPool.hpp"
 
 using namespace eddic;
 
@@ -26,6 +27,17 @@ std::string StringPool::label(const std::string& value) {
     }
 
     return pool[value];
+}
+
+std::string StringPool::value(const std::string& label) {
+    for (auto it : pool){
+        if(it.second == label){
+            return it.first;
+        }
+    }
+
+    //This method should not be called on not-existing label
+    assert(false);
 }
 
 std::unordered_map<std::string, std::string> StringPool::getPool() const {

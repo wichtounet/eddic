@@ -5,22 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_OPTIMIZER_H
-#define TAC_OPTIMIZER_H
+#ifndef TYPE_CHECKER_H
+#define TYPE_CHECKER_H
+
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
-class StringPool;
+namespace ast {
 
-namespace tac {
-
-class Program;
-
-struct Optimizer {
-    void optimize(tac::Program& program, StringPool& pool) const ;
+/*!
+ * \class TypeChecker
+ * \brief A checker for type safety in the program. 
+ */
+struct TypeChecker {
+    void check(ast::SourceFile& program) const ;
 };
 
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

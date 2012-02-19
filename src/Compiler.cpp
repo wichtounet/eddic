@@ -25,21 +25,21 @@
 #include "ast/SourceFile.hpp"
 
 //Annotators
-#include "DefaultValues.hpp"
-#include "ContextAnnotator.hpp"
-#include "FunctionsAnnotator.hpp"
-#include "VariablesAnnotator.hpp"
+#include "ast/DefaultValues.hpp"
+#include "ast/ContextAnnotator.hpp"
+#include "ast/FunctionsAnnotator.hpp"
+#include "ast/VariablesAnnotator.hpp"
 
 //Checkers
-#include "StringChecker.hpp"
-#include "TypeChecker.hpp"
+#include "ast/StringChecker.hpp"
+#include "ast/TypeChecker.hpp"
 
 //Visitors
-#include "DependenciesResolver.hpp"
-#include "OptimizationEngine.hpp"
-#include "TransformerEngine.hpp"
-#include "WarningsEngine.hpp"
-#include "DebugVisitor.hpp"
+#include "ast/DependenciesResolver.hpp"
+#include "ast/OptimizationEngine.hpp"
+#include "ast/TransformerEngine.hpp"
+#include "ast/WarningsEngine.hpp"
+#include "ast/DebugVisitor.hpp"
 
 //Three Address Code
 #include "tac/Program.hpp"
@@ -165,7 +165,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             allocator.allocate(tacProgram);
 
             tac::Optimizer optimizer;
-            optimizer.optimize(tacProgram);
+            optimizer.optimize(tacProgram, pool);
 
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
@@ -235,43 +235,43 @@ void assembleWithDebug(Platform platform, const std::string& output){
 
 void eddic::defineDefaultValues(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate with default values");
-    DefaultValues values;
+    ast::DefaultValues values;
     values.fill(program);
 }
 
 void eddic::defineContexts(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate contexts");
-    ContextAnnotator annotator;
+    ast::ContextAnnotator annotator;
     annotator.annotate(program);
 }
 
 void eddic::defineVariables(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate variables");
-    VariablesAnnotator annotator;
+    ast::VariablesAnnotator annotator;
     annotator.annotate(program);
 }
 
 void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
     DebugStopWatch<debug> timer("Annotate functions");
-    FunctionsAnnotator annotator;
+    ast::FunctionsAnnotator annotator;
     annotator.annotate(program, functionTable);
 }
 
 void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
     DebugStopWatch<debug> timer("Strings checking");
-    StringChecker checker;
+    ast::StringChecker checker;
     checker.check(program, pool);
 }
 
 void eddic::checkTypes(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Types checking");
-    TypeChecker checker;
+    ast::TypeChecker checker;
     checker.check(program); 
 }
 
 void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     DebugStopWatch<debug> timer("Check for warnings");
-    WarningsEngine engine;
+    ast::WarningsEngine engine;
     engine.check(program, table);
 }
 
@@ -297,25 +297,25 @@ void eddic::checkForMain(FunctionTable& table){
 
 void eddic::clean(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Cleaning");
-    TransformerEngine engine;
+    ast::TransformerEngine engine;
     engine.clean(program);
 }
 
 void eddic::transform(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Transformation");
-    TransformerEngine engine;
+    ast::TransformerEngine engine;
     engine.transform(program);
 }
 
 void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
     DebugStopWatch<debug> timer("Optimization");
-    OptimizationEngine engine;
+    ast::OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
 }
 
 void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
     DebugStopWatch<debug> timer("Resolve dependencies");
-    DependenciesResolver resolver(parser);
+    ast::DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
 }
 

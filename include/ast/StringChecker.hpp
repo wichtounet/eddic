@@ -5,22 +5,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_OPTIMIZER_H
-#define TAC_OPTIMIZER_H
+#ifndef STRING_CHECKER_H
+#define STRING_CHECKER_H
+
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
 class StringPool;
 
-namespace tac {
+namespace ast {
 
-class Program;
-
-struct Optimizer {
-    void optimize(tac::Program& program, StringPool& pool) const ;
+//TODO Should perhaps be renamed
+/*!
+ * \struct StringChecker
+ * \brief Fill the string pool with the strings in the AST and replace each string by its pool index.   
+ */
+struct StringChecker {
+   void check(ast::SourceFile& program, StringPool& pool) const ;
 };
 
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

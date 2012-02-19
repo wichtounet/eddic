@@ -1,0 +1,16 @@
+void main(){
+    int a = 5;
+
+    int b = a = 6;
+    print(a);
+    print(b);
+    b = a = 7;
+    print(a);
+    print(b);
+    a = b = 9;
+    print(a);
+    print(b);
+    a = (b = 1) + 1;
+    print(a);
+    print(b);
+}

@@ -5,22 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_OPTIMIZER_H
-#define TAC_OPTIMIZER_H
+#ifndef DEFAULT_VALUES_H
+#define DEFAULT_VALUES_H
+
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
-class StringPool;
-
-namespace tac {
-
-class Program;
-
-struct Optimizer {
-    void optimize(tac::Program& program, StringPool& pool) const ;
+namespace ast {
+    
+/*!
+ * \class DefaultValues
+ * \brief Fill the AST with default values for local and global variables.  
+ */
+struct DefaultValues {
+    void fill(SourceFile& program) const ;
 };
 
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

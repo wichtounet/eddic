@@ -267,13 +267,34 @@ void IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     for(auto& block : function->getBasicBlocks()){
         ::compile(writer, block, compiler);
     }
-    
+ 
+    if(function->getBasicBlocks().size() > 0){
+        auto& lastBasicBlock = function->getBasicBlocks().back();
+        
+        if(lastBasicBlock->statements.size() > 0){
+            auto lastStatement = lastBasicBlock->statements.back();
+            
+            if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&lastStatement)){
+                if((*ptr)->op && *(*ptr)->op != tac::Operator::RETURN){
+                    //Only if necessary, deallocates size on the stack for the local variables
+                    if(size > 0){
+                        writer.stream() << "add esp, " << size << std::endl;
+                    }
+
+                    leaveFunction(writer);
+
+                    return;
+                }
+            }
+        }
+    }
+                    
     //Only if necessary, deallocates size on the stack for the local variables
     if(size > 0){
         writer.stream() << "add esp, " << size << std::endl;
     }
-   
-    leaveFunction(writer); 
+
+    leaveFunction(writer);
 }
 
 void IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){

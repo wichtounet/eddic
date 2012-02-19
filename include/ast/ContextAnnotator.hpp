@@ -5,22 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_OPTIMIZER_H
-#define TAC_OPTIMIZER_H
+#ifndef CONTEXT_ANNOTATOR_H
+#define CONTEXT_ANNOTATOR_H
+
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
-class StringPool;
+namespace ast {
 
-namespace tac {
-
-class Program;
-
-struct Optimizer {
-    void optimize(tac::Program& program, StringPool& pool) const ;
+/*!
+ * \class ContextAnnotator
+ * \brief Generate all the symbol tables and reference them in the AST.   
+ */
+struct ContextAnnotator {
+    void annotate(ast::SourceFile& program) const;
 };
 
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

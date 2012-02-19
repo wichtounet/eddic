@@ -5,22 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_OPTIMIZER_H
-#define TAC_OPTIMIZER_H
+#ifndef WARNINGS_ENGINE_H
+#define WARNINGS_ENGINE_H
+
+#include "ast/source_def.hpp"
 
 namespace eddic {
 
-class StringPool;
+class FunctionTable;
 
-namespace tac {
+namespace ast {
 
-class Program;
-
-struct Optimizer {
-    void optimize(tac::Program& program, StringPool& pool) const ;
+/*!
+ * \class WarningsEngine
+ * \brief A simple warnings engine checking the whole program for possible problems.  
+ */
+struct WarningsEngine {
+    void check(SourceFile& program, FunctionTable& functionTable) const ;
 };
 
-} //end of tac
+} //end of ast
 
 } //end of eddic
 

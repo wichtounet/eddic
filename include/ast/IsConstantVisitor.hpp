@@ -1,0 +1,44 @@
+//=======================================================================
+// Copyright Baptiste Wicht 2011.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+//=======================================================================
+
+#ifndef IS_CONSTANT_VISITOR_H
+#define IS_CONSTANT_VISITOR_H
+
+#include <boost/variant/static_visitor.hpp>
+
+#include "ast/values_def.hpp"
+
+namespace eddic {
+
+namespace ast {
+
+/*!
+ * \struct IsConstantVisitor
+ * \brief AST Visitor to test if a node is constant. 
+ */
+struct IsConstantVisitor : public boost::static_visitor<bool> {
+    bool operator()(Litteral& litteral) const;
+    bool operator()(Integer& litteral) const;
+    bool operator()(Plus& plus) const;
+    bool operator()(True& true_) const;
+    bool operator()(False& false_) const;
+    bool operator()(Minus& minus) const;
+    bool operator()(VariableValue& variable) const;
+    bool operator()(ArrayValue& variable) const;
+    bool operator()(ComposedValue& value) const; 
+    bool operator()(FunctionCall& value) const; 
+    bool operator()(BuiltinOperator& value) const; 
+    bool operator()(SuffixOperation& value) const; 
+    bool operator()(PrefixOperation& value) const; 
+    bool operator()(Assignment& assign) const; 
+};
+
+} //end of ast
+
+} //end of eddic
+
+#endif
