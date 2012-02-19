@@ -43,8 +43,8 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
 }
 
 int eddic::size(BaseType type){
-    static int typeSizes32[(int) BaseType::COUNT] = { 8, 4, 4, 0 };
-    static int typeSizes64[(int) BaseType::COUNT] = { 16, 8, 8, 0 };
+    static int typeSizes32[(int) BaseType::COUNT] = { 8, 4, 4, 4, 0 };
+    static int typeSizes64[(int) BaseType::COUNT] = { 16, 8, 8, 4, 0 };
 
     switch(platform){
         case Platform::INTEL_X86:
@@ -65,7 +65,7 @@ int eddic::size(Type type){
 }
 
 bool eddic::isType(const std::string& type){
-    return type == "int" || type == "void" || type == "string" || type == "bool";
+    return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
 }
 
 BaseType eddic::stringToBaseType(const std::string& type){
@@ -73,6 +73,8 @@ BaseType eddic::stringToBaseType(const std::string& type){
         return BaseType::INT;
     } else if (type == "bool") {
         return BaseType::BOOL;
+    } else if (type == "float"){
+        return BaseType::FLOAT;
     } else if (type == "string"){
         return BaseType::STRING;
     } else if(type == "void") {
@@ -89,12 +91,16 @@ Type eddic::stringToType(const std::string& type){
         return Type(BaseType::BOOL, false);
     } else if (type == "string"){
         return Type(BaseType::STRING, false);
+    } else if (type == "float"){
+        return Type(BaseType::FLOAT, false);
     } else if(type == "int[]") {
         return Type(BaseType::INT, 0, false);       //Use a more proper way to set that it's an array type
     } else if(type == "bool[]") {
         return Type(BaseType::BOOL, 0, false);      //Use a more proper way to set that it's an array type
     } else if(type == "string[]") {
         return Type(BaseType::STRING, 0, false);    //Use a more proper way to set that it's an array type
+    } else if(type == "float[]") {
+        return Type(BaseType::FLOAT, 0, false);     //Use a more proper way to set that it's an array type
     } else if(type == "void") {
         return Type(BaseType::VOID, false);
     }

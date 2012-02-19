@@ -16,6 +16,7 @@ enum class BaseType : unsigned int {
     STRING,
     INT,
     BOOL,
+    FLOAT,
     VOID, 
 
     COUNT
