@@ -121,6 +121,11 @@ BOOST_AUTO_TEST_CASE( builtin ){
     assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-64");
 }
 
+BOOST_AUTO_TEST_CASE( assign_value ){
+    assertOutputEquals("assign_value.eddi", "66779921", "-32");
+    assertOutputEquals("assign_value.eddi", "66779921", "-64");
+}
+
 BOOST_AUTO_TEST_CASE( args ){
     assertCompiles("test/cases/args.eddi", "-32");
 
