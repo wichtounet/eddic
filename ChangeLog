@@ -1,3 +1,36 @@
+eddic 0.8.1 - 2012.02.19
+
+* Add the do while loop to the language
+* Implement constant and copy propagation for offset (e.g. (e)-8 = 4)
+* Can now use the assignment as a value (e.g. a = b = 5)
+* Optimize concat that are found to be constant after optimizations
+
+eddic 0.8 - 2012.02.16
+
+* Support for 64bit generation
+* Support command line arguments
+* Add builtin operators size() and length()
+* Switch from AT&T Syntax to Intel Syntax in the generated assembly
+* Implement copy propagation in the optimization engine
+* Improvement on the generated assembly (use of string instructions for example)
+
+eddic 0.7.1 - 2012.02.03
+
+* Add logical operators (&& and ||) for boolean conditions
+* Add the bool type to the language
+* Add of increment and decrement operators (postfix and prefix versions)
+* Add of compound operators to the language (*=, +=, /=, -=, %=)
+
+eddic 0.7 - 2012.01.10
+
+* Use Three-Address-Code as intermediate representations
+* Use a better optimization engine on the TAC code
+* Add minus and plus unary operators
+* Implement const variables
+* Allow a source file to include another file
+* Use of Doxygen
+* Use of more complete units tests
+
 eddic 0.6.1 - 2011.11.21
 
 * The functions can now return int or strings
