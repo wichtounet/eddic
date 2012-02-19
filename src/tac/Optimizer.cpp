@@ -50,15 +50,21 @@ inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple,
     quadruple->arg2.reset();
 }
 
+template<typename T>
+inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg1, tac::Operator op, tac::Argument arg2){
+    visitor.optimized = true;
+
+    quadruple->op = op;
+    quadruple->arg1 = arg1;
+    quadruple->arg2 = arg2;
+}
+
 struct ArithmeticIdentities : public boost::static_visitor<void> {
     bool optimized;
 
     ArithmeticIdentities() : optimized(false) {}
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        bool old = optimized;
-        optimized = true;
-
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::ADD:
@@ -128,9 +134,6 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
                     break;
             }
         }
-
-        optimized = old;
-        //return quadruple;
     }
 
     template<typename T>
@@ -139,22 +142,19 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
     }
 };
 
-struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
+struct ReduceInStrength : public boost::static_visitor<void> {
     bool optimized;
 
     ReduceInStrength() : optimized(false) {}
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        bool old = optimized;
-        optimized = true;
-
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(quadruple->op){
             switch(*quadruple->op){
                 case tac::Operator::MUL:
                     if(*quadruple->arg1 == 2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
+                        replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
                     } else if(*quadruple->arg2 == 2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
+                        replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
                     }
 
                     break;
@@ -162,14 +162,11 @@ struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
                     break;
             }
         }
-
-        optimized = old;
-        return quadruple;
     }
 
     template<typename T>
-    tac::Statement operator()(T& statement) const { 
-        return statement;
+    void operator()(T&) const { 
+        //Nothing to optimize
     }
 };
 
@@ -796,6 +793,7 @@ struct MathPropagation : public boost::static_visitor<void> {
     }
 };
 
+//TODO Delete this function
 template<typename Visitor>
 bool apply_to_all(tac::Program& program){
     DebugStopWatch<Debug> timer("apply to all");
@@ -821,9 +819,7 @@ bool apply_to_all_clean(tac::Program& program){
 
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
-            //for(auto& statement : block->statements){
-                visit_each(visitor, block->statements);
-            //}
+            visit_each(visitor, block->statements);
         }
     }
 
@@ -1171,7 +1167,7 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         optimized |= debug<Debug, 1>(apply_to_all_clean<ArithmeticIdentities>(program));
         
         //Reduce arithtmetic instructions in strength
-        optimized |= debug<Debug, 2>(apply_to_all<ReduceInStrength>(program));
+        optimized |= debug<Debug, 2>(apply_to_all_clean<ReduceInStrength>(program));
 
         //Constant folding
         optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
