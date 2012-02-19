@@ -981,15 +981,16 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
                                     if(boost::get<std::string>(&*quadruple1->arg1) && boost::get<std::string>(&*quadruple3->arg1)){
                                         std::string firstValue = pool.value(boost::get<std::string>(*quadruple1->arg1));
                                         std::string secondValue = pool.value(boost::get<std::string>(*quadruple3->arg1));
-                                        
+                                       
                                         //Remove the quotes
                                         firstValue.resize(firstValue.size() - 1);
                                         secondValue.erase(0, 1);
-
+                                        
+                                        //Compute the reuslt of the concatenation
                                         std::string result = firstValue + secondValue;
 
                                         std::string label = pool.label(result);
-                                        int length = result.length();
+                                        int length = result.length() - 2;
 
                                         auto ret1 = (*ptr)->return_;
                                         auto ret2 = (*ptr)->return2_;
