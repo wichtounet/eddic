@@ -100,7 +100,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
          >> primaryValue;
     
     primaryValue = 
-            integer
+            assignment
+        |   integer
         |   litteral
         |   builtin_operator
         |   functionCall
