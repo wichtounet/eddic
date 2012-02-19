@@ -447,7 +447,7 @@ struct OffsetConstantPropagation : public boost::static_visitor<void> {
     }
 };
 
-struct CopyPropagation : public boost::static_visitor<tac::Statement> {
+struct CopyPropagation : public boost::static_visitor<void> {
     bool optimized;
 
     CopyPropagation() : optimized(false) {}
@@ -469,7 +469,7 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
         }
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Do not replace a variable by a constant when used in offset
         if(!quadruple->op || (*quadruple->op != tac::Operator::ARRAY && *quadruple->op != tac::Operator::DOT)){
             optimize_optional(quadruple->arg1);
@@ -493,40 +493,36 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
                 constants.erase(quadruple->result);
             }
         }
-
-        return quadruple;
     }
 
     template<typename T>
-    tac::Statement optimizeBranch(T& if_){
+    void optimizeBranch(T& if_){
         optimize(&if_->arg1);
         optimize_optional(if_->arg2);
-
-        return if_;
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        return optimizeBranch(ifFalse);
+    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        optimizeBranch(ifFalse);
     }
     
-    tac::Statement operator()(std::shared_ptr<tac::If>& if_){
-        return optimizeBranch(if_);
+    void operator()(std::shared_ptr<tac::If>& if_){
+        optimizeBranch(if_);
     }
 
     template<typename T>
-    tac::Statement operator()(T& statement){ 
-        return statement;
+    void operator()(T&){ 
+        //Nothing to optimize
     }
 };
 
-struct OffsetCopyPropagation : public boost::static_visitor<tac::Statement> {
+struct OffsetCopyPropagation : public boost::static_visitor<void> {
     bool optimized;
 
     OffsetCopyPropagation() : optimized(false) {}
 
     std::unordered_map<Offset, std::shared_ptr<Variable>, OffsetHash> constants;
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Store the value assigned to result+arg1
         if(quadruple->op && *quadruple->op == tac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
@@ -551,18 +547,15 @@ struct OffsetCopyPropagation : public boost::static_visitor<tac::Statement> {
                 offset.offset = *ptr;
                
                 if(constants.find(offset) != constants.end()){
-                    optimized = true;
-                    return std::make_shared<tac::Quadruple>(quadruple->result, constants[offset]);
+                    replaceRight(*this, quadruple, constants[offset]);
                 }
             }
         }
-
-        return quadruple;
     }
 
     template<typename T>
-    tac::Statement operator()(T& statement){ 
-        return statement;
+    void operator()(T&){ 
+        //Nothing to optimize here
     }
 };
 
@@ -802,26 +795,6 @@ bool apply_to_all_clean(tac::Program& program){
     }
 
     return visitor.optimized;
-}
-
-template<typename Visitor>
-bool apply_to_basic_blocks(tac::Program& program){
-    DebugStopWatch<Debug> timer("apply to basic blocks");
-    bool optimized = false;
-
-    for(auto& function : program.functions){
-        for(auto& block : function->getBasicBlocks()){
-            Visitor visitor;
-
-            for(auto& statement : block->statements){
-                statement = visit(visitor, statement);
-            }
-
-            optimized |= visitor.optimized;
-        }
-    }
-
-    return optimized;
 }
 
 template<typename Visitor>
@@ -1175,10 +1148,10 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         optimized |= debug<Debug, 5>(apply_to_basic_blocks_clean<OffsetConstantPropagation>(program));
         
         //Copy propagation
-        optimized |= debug<Debug, 6>(apply_to_basic_blocks<CopyPropagation>(program));
+        optimized |= debug<Debug, 6>(apply_to_basic_blocks_clean<CopyPropagation>(program));
         
         //Offset Copy propagation
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
+        optimized |= debug<Debug, 7>(apply_to_basic_blocks_clean<OffsetCopyPropagation>(program));
 
         //Propagate math
         optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
