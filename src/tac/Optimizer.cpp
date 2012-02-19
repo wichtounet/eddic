@@ -867,15 +867,11 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
             Visitor visitor;
             visitor.pass = Pass::DATA_MINING;
 
-            for(auto& statement : block->statements){
-                visit(visitor, statement);
-            }
+            visit_each(visitor, block->statements);
 
             visitor.pass = Pass::OPTIMIZE;
 
-            for(auto& statement : block->statements){
-                visit(visitor, statement);
-            }
+            visit_each(visitor, block->statements);
 
             optimized |= visitor.optimized;
         }
