@@ -297,7 +297,7 @@ struct ConstantFolding : public boost::static_visitor<void> {
     }
 };
 
-struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
+struct ConstantPropagation : public boost::static_visitor<void> {
     bool optimized;
 
     ConstantPropagation() : optimized(false) {}
@@ -323,7 +323,7 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
         }
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Do not replace a variable by a constant when used in offset
         if(!quadruple->op || (*quadruple->op != tac::Operator::ARRAY && *quadruple->op != tac::Operator::DOT)){
             optimize_optional(quadruple->arg1);
@@ -351,29 +351,25 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
                 string_constants.erase(quadruple->result);
             }
         }
-
-        return quadruple;
     }
 
     template<typename T>
-    tac::Statement optimizeBranch(T& if_){
+    void optimizeBranch(T& if_){
         optimize(&if_->arg1);
         optimize_optional(if_->arg2);
-
-        return if_;
     }
 
-    tac::Statement operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        return optimizeBranch(ifFalse);
+    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+        optimizeBranch(ifFalse);
     }
     
-    tac::Statement operator()(std::shared_ptr<tac::If>& if_){
-        return optimizeBranch(if_);
+    void operator()(std::shared_ptr<tac::If>& if_){
+        optimizeBranch(if_);
     }
 
     template<typename T>
-    tac::Statement operator()(T& statement){ 
-        return statement;
+    void operator()(T&){ 
+        //Nothing to optimize here
     }
 };
 
@@ -836,6 +832,24 @@ bool apply_to_basic_blocks(tac::Program& program){
 }
 
 template<typename Visitor>
+bool apply_to_basic_blocks_clean(tac::Program& program){
+    DebugStopWatch<Debug> timer("apply to basic blocks");
+    bool optimized = false;
+
+    for(auto& function : program.functions){
+        for(auto& block : function->getBasicBlocks()){
+            Visitor visitor;
+
+            visit_each(visitor, block->statements);
+
+            optimized |= visitor.optimized;
+        }
+    }
+
+    return optimized;
+}
+
+template<typename Visitor>
 typename boost::disable_if<boost::is_void<typename Visitor::result_type>, bool>::type 
 apply_to_basic_blocks_two_pass(tac::Program& program){
     DebugStopWatch<Debug> timer("apply to basic blocks two phase");
@@ -1162,7 +1176,7 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         optimized |= debug<Debug, 3>(apply_to_all_clean<ConstantFolding>(program));
 
         //Constant propagation
-        optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
+        optimized |= debug<Debug, 4>(apply_to_basic_blocks_clean<ConstantPropagation>(program));
 
         //Offset Constant propagation
         optimized |= debug<Debug, 5>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
