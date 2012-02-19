@@ -26,7 +26,7 @@ using namespace eddic;
 namespace {
 
 static const bool DebugPerf = false;
-static const bool Debug = true;
+static const bool Debug = false;
 
 //Use for two pass optimization
 enum class Pass : unsigned int {
@@ -1132,9 +1132,6 @@ bool debug(bool b){
 void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
     bool optimized;
     do {
-        tac::Printer printer;
-        printer.print(program);
-
         optimized = false;
 
         //Optimize using arithmetic identities
