@@ -100,7 +100,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
          >> primaryValue;
     
     primaryValue = 
-            integer
+            assignment
+        |   integer
         |   litteral
         |   builtin_operator
         |   functionCall
@@ -154,6 +155,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
+    
+    assignment %= 
+            lexer.identifier 
+        >>  lexer.assign 
+        >>  value;
     
     prefix_operation %=
             qi::adapttokens[prefix_op]

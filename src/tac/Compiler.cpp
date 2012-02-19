@@ -36,6 +36,7 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::Minus, false)
     ASSIGN(ast::Plus, false)
     ASSIGN(ast::BuiltinOperator, false)
+    ASSIGN(ast::Assignment, false)
 
     //A call to a function returning an int is single argument
     bool operator()(ast::FunctionCall& call) const {
@@ -62,6 +63,7 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::BuiltinOperator, false)
     ASSIGN(ast::SuffixOperation, false)
     ASSIGN(ast::PrefixOperation, false)
+    ASSIGN(ast::Assignment, false)
 };
 
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
@@ -143,6 +145,8 @@ int getStringOffset(std::shared_ptr<Variable> variable){
     return variable->position().isGlobal() ? size(BaseType::INT) : -size(BaseType::INT);
 }
 
+void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
+
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
     
@@ -221,6 +225,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
+    result_type operator()(ast::Assignment& assignment) const {
+        auto variable = assignment.Content->context->getVariable(assignment.Content->variableName);
+
+        assign(function, variable, assignment.Content->value);
+
+        return {variable};
+    }
+            
     result_type operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
 
@@ -443,6 +455,10 @@ struct AssignValueToVariable : public AbstractVisitor {
         function->add(std::make_shared<tac::Quadruple>(variable, getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
     }
 };
+
+void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
+    visit(AssignValueToVariable(function, variable), value);
+}
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
     JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
@@ -700,7 +716,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            visit(AssignValueToVariable(function, assignment.Content->context->getVariable(assignment.Content->variableName)), assignment.Content->value);
+            assign(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->value);
         }
 
         void operator()(ast::CompoundAssignment&){

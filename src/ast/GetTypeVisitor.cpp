@@ -30,6 +30,10 @@ Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
 
+Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
+    return assign.Content->context->getVariable(assign.Content->variableName)->type();
+}
+
 Type ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
     return Type(array.Content->context->getVariable(array.Content->arrayName)->type().base(), false);
 }

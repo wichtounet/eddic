@@ -125,11 +125,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.left_bracket
         >>  lexer.integer
         >>  lexer.right_bracket;
-    
-    assignment %= 
-            lexer.identifier 
-        >>  lexer.assign 
-        >>  value;
 
     compound_assignment %=
             lexer.identifier
@@ -171,7 +166,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     
     instruction %= 
             (value.functionCall > lexer.stop)
-        |   (assignment > lexer.stop)
+        |   (value.assignment > lexer.stop)
         |   (compound_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
@@ -189,7 +184,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
 
     //TODO Check that to see if it's complete and correct
     repeatable_instruction = 
-            assignment 
+            value.assignment 
         |   swap 
         |   compound_assignment
         |   value.suffix_operation
