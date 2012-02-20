@@ -128,11 +128,11 @@ struct IntelStatementCompiler {
     
     void copy(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         } else if(auto* ptr = boost::get<double>(&argument)){
-            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -160,11 +160,11 @@ struct IntelStatementCompiler {
     
     void move(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         } else if(auto* ptr = boost::get<double>(&argument)){
-            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -399,7 +399,7 @@ struct IntelStatementCompiler {
         if(auto* ptr = boost::get<int>(&argument)){
             return ::toString(*ptr);
         } else if(auto* ptr = boost::get<double>(&argument)){
-            return ::toString(*ptr);
+            return "__float64__(" + ::toString(*ptr) + ")";
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
