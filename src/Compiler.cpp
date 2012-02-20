@@ -149,12 +149,17 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             
             //Optimize the AST
             optimize(program, functionTable, pool);
+
+            ast::DebugVisitor()(program);
     
             tac::Program tacProgram;
 
             //Generate Three-Address-Code language
             tac::Compiler compiler;
             compiler.compile(program, pool, tacProgram);
+
+            tac::Printer printer;
+            printer.print(tacProgram);
 
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;

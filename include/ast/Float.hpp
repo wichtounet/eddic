@@ -21,7 +21,7 @@ namespace ast {
  * \brief The AST node for a float.    
  */
 struct Float : public TerminalNode {
-    float value;
+    double value;
 };
 
 } //end of ast
@@ -31,7 +31,7 @@ struct Float : public TerminalNode {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Float, 
-    (float, value)
+    (double, value)
 )
 
 #endif

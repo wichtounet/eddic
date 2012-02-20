@@ -27,6 +27,10 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
    std::string operator()(int& integer) const {
         return toString(integer);
    }
+   
+   std::string operator()(double& float_) const {
+        return toString(float_);
+   }
 
    std::string operator()(std::string& str) const {
         return str;

@@ -163,7 +163,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     }
     
     result_type operator()(ast::Float& float_) const {
-        return {1};//TODO Use float
+        return {float_.value};
     }
     
     result_type operator()(ast::False&) const {
@@ -386,6 +386,9 @@ struct AbstractVisitor : public boost::static_visitor<> {
                 break;
             case BaseType::STRING:
                 stringAssign(ToArgumentsVisitor(function)(value));
+                break;
+            case BaseType::FLOAT://TODO Handle floats
+                intAssign(ToArgumentsVisitor(function)(value));
                 break;
             default:
                 throw SemanticalException("Invalid variable type");   
