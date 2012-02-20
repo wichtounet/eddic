@@ -127,13 +127,7 @@ struct IntelStatementCompiler {
     }
     
     void copy(tac::Argument argument, Register reg){
-        if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
-        } else if(auto* ptr = boost::get<double>(&argument)){
-            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
-        } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
-        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
             //If the variable is hold in a register, just move the register value
@@ -155,17 +149,14 @@ struct IntelStatementCompiler {
                     assert(false);
                 }
             } 
+        } else {
+            //If it's a constant (int, double, string), just move it
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         }
     }
     
     void move(tac::Argument argument, Register reg){
-        if(auto* ptr = boost::get<int>(&argument)){
-            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
-        } else if(auto* ptr = boost::get<double>(&argument)){
-            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
-        } else if(auto* ptr = boost::get<std::string>(&argument)){
-            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
-        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
             //If the variable is hold in a register, just move the register value
@@ -196,6 +187,9 @@ struct IntelStatementCompiler {
             
             //The variable is now held in the new register
             registers.setLocation(variable, reg);
+        } else {
+            //If it's a constant (int, double, string), just move it
+            writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         }
     }
     
