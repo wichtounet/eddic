@@ -211,6 +211,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         switch(type.base()){
             case BaseType::BOOL:
+            case BaseType::FLOAT:
             case BaseType::INT:{
                 auto t1 = function->context->newTemporary();
 
@@ -248,6 +249,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
            
            if(type.base() == BaseType::INT || type.base() == BaseType::BOOL){
                return {boost::get<int>(val)};
+           } else if (type.base() == BaseType::FLOAT){
+               return {boost::get<double>(val)};        
            } else if (type.base() == BaseType::STRING){
                 auto value = boost::get<std::pair<std::string, int>>(val);
 
@@ -256,7 +259,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         } else if(type.isArray()){
             return {value.Content->var};
         } else {
-            if(type.base() == BaseType::INT || type.base() == BaseType::BOOL){
+            if(type.base() == BaseType::INT || type.base() == BaseType::BOOL || type.base() == BaseType::FLOAT){
                 return {value.Content->var};
             } else {
                 auto temp = value.Content->context->newTemporary();
@@ -302,6 +305,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         switch(array.Content->var->type().base()){
             case BaseType::BOOL:
+            case BaseType::FLOAT:
             case BaseType::INT: {
                 auto temp = array.Content->context->newTemporary();
                 function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
@@ -330,7 +334,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::ComposedValue& value) const {
         Type type = ast::GetTypeVisitor()(value);
 
-        if(type.base() == BaseType::INT){
+        if(type.base() == BaseType::INT || type.base() == BaseType::FLOAT){
             return {performIntOperation(value, function)};
         } else if(type.base() == BaseType::BOOL){
             return {performBoolOperation(value, function)};
@@ -387,7 +391,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
             case BaseType::STRING:
                 stringAssign(ToArgumentsVisitor(function)(value));
                 break;
-            case BaseType::FLOAT://TODO Handle floats
+            case BaseType::FLOAT://Floats are handling in a single assignment
                 intAssign(ToArgumentsVisitor(function)(value));
                 break;
             default:

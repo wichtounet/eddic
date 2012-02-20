@@ -26,7 +26,7 @@ class Operand;
 
 typedef std::shared_ptr<Operand> OperandPtr;
 
-typedef boost::variant<int, std::pair<std::string, int>> Val;
+typedef boost::variant<int, double, std::pair<std::string, int>> Val;
 
 /*!
  * \class Variable
