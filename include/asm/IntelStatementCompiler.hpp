@@ -160,7 +160,17 @@ struct IntelStatementCompiler {
     }
     
     void move(tac::Argument argument, FloatRegister reg){
-        //TODO
+        //TODO Complete and verify
+        if(boost::get<double>(&argument)){
+            Register gpreg = getReg();
+            
+            writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
+            writer.stream() << "movss " << reg << ", " << reg << std::endl;
+
+            registers.release(gpreg);
+        } else {
+            writer.stream() << "movss " << reg << ", " << arg(argument) << std::endl;
+        }
     }
     
     void move(tac::Argument argument, Register reg){
@@ -437,11 +447,21 @@ struct IntelStatementCompiler {
         return getReg(float_registers);
     }
 
+    inline std::string toFloatString(double arg){
+        std::string str = ::toString(arg);
+
+        if(str.find(".") == std::string::npos){
+            return str + ".0";
+        }
+
+        return str;
+    }
+
     std::string arg(tac::Argument argument){
         if(auto* ptr = boost::get<int>(&argument)){
             return ::toString(*ptr);
         } else if(auto* ptr = boost::get<double>(&argument)){
-            return "__float64__(" + ::toString(*ptr) + ")";
+            return "__float64__(" + toFloatString(*ptr) + ")";
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
@@ -655,7 +675,7 @@ struct IntelStatementCompiler {
         if(!quadruple->op){
             if(isFloatVar(quadruple->result)){
                 FloatRegister reg = getFloatRegNoMove(quadruple->result);
-                writer.stream() << "movss " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                move(*quadruple->arg1, reg);
             } else {
                 //The fastest way to set a register to 0 is to use xorl
                 if(tac::equals<int>(*quadruple->arg1, 0)){
