@@ -22,13 +22,14 @@ namespace eddic {
 
 namespace as {
 
-template<typename Register>
+template<typename Register, typename FloatRegister>
 struct IntelStatementCompiler {
     //The current function being compiled
     std::shared_ptr<tac::Function> function;
     
     AssemblyFileWriter& writer;
     Registers<Register> registers;
+    Registers<FloatRegister> float_registers;
 
     std::unordered_set<std::shared_ptr<tac::BasicBlock>> blockUsage;
 
@@ -40,8 +41,9 @@ struct IntelStatementCompiler {
     tac::Statement current;
     tac::Statement next;
    
-    IntelStatementCompiler(AssemblyFileWriter& w, std::vector<Register> r, std::shared_ptr<tac::Function> f) : function(f), writer(w), 
-            registers(r, std::make_shared<Variable>("__fake__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))) {
+    IntelStatementCompiler(AssemblyFileWriter& w, std::vector<Register> r, std::vector<FloatRegister> fr, std::shared_ptr<tac::Function> f) : function(f), writer(w), 
+            registers(r, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
+            float_registers(fr, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))) {
         last = ended = false;        
     } 
     
@@ -127,6 +129,8 @@ struct IntelStatementCompiler {
     void copy(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
             writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
+        } else if(auto* ptr = boost::get<double>(&argument)){
+            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
@@ -156,6 +160,8 @@ struct IntelStatementCompiler {
     
     void move(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<int>(&argument)){
+            writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
+        } else if(auto* ptr = boost::get<double>(&argument)){
             writer.stream() << "mov " << reg << ", " << ::toString(*ptr) << std::endl;
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
@@ -392,8 +398,10 @@ struct IntelStatementCompiler {
     std::string arg(tac::Argument argument){
         if(auto* ptr = boost::get<int>(&argument)){
             return ::toString(*ptr);
+        } else if(auto* ptr = boost::get<double>(&argument)){
+            return ::toString(*ptr);
         } else if(auto* ptr = boost::get<std::string>(&argument)){
-            return *ptr;//TODO Verify that
+            return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             if((*ptr)->position().isTemporary()){
                 return regToString(getReg(*ptr, false));

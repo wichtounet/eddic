@@ -49,7 +49,7 @@ class Registers {
 
     private:
         std::vector<Reg> registers;   
-        std::shared_ptr<Variable> descriptors[Reg::REGISTER_COUNT];
+        std::shared_ptr<Variable> descriptors[(int) Reg::REGISTER_COUNT];
         std::unordered_map<std::shared_ptr<Variable>, Reg> variables;
 
         std::shared_ptr<Variable> retainVariable;
@@ -77,7 +77,7 @@ Reg Registers<Reg>::first() const {
 
 template<typename Reg>
 bool Registers<Reg>::used(Reg reg) {
-    return descriptors[reg].get() != 0;
+    return descriptors[(int) reg].get() != 0;
 }
 
 template<typename Reg>
@@ -94,14 +94,14 @@ std::shared_ptr<Variable> Registers<Reg>::operator[](Reg reg){
     assert(used(reg));
     assert(!reserved(reg));
 
-    return descriptors[reg];
+    return descriptors[(int) reg];
 }
 
 template<typename Reg>
 void Registers<Reg>::reset(){
     variables.clear();
 
-    for(unsigned int i = 0; i < Reg::REGISTER_COUNT; ++i){
+    for(unsigned int i = 0; i < (int) Reg::REGISTER_COUNT; ++i){
         descriptors[i] = nullptr;
     }
 }
@@ -110,11 +110,11 @@ template<typename Reg>
 void Registers<Reg>::setLocation(std::shared_ptr<Variable> variable, Reg reg){
     //Make sure that there is no other refernce to this variable
     if(inRegister(variable)){
-        descriptors[(*this)[variable]] = nullptr;
+        descriptors[(int) (*this)[variable]] = nullptr;
     }
 
     variables[variable] = reg;
-    descriptors[reg] = variable;
+    descriptors[(int) reg] = variable;
     
     assert((*this)[(*this)[variable]] == variable);
 }
@@ -124,7 +124,7 @@ void Registers<Reg>::remove(std::shared_ptr<Variable> variable){
     assert(inRegister(variable));
     assert((*this)[(*this)[variable]] == variable);
 
-    descriptors[(*this)[variable]] = nullptr;
+    descriptors[(int) (*this)[variable]] = nullptr;
     variables.erase(variable);
 }
         
@@ -142,19 +142,19 @@ template<typename Reg>
 void Registers<Reg>::reserve(Reg reg){
     assert(!used(reg));
 
-    descriptors[reg] = retainVariable;
+    descriptors[(int) reg] = retainVariable;
 }
 
 template<typename Reg>
 void Registers<Reg>::release(Reg reg){
-   assert(descriptors[reg] == retainVariable);
+   assert(descriptors[(int) reg] == retainVariable);
    
-   descriptors[reg] = nullptr; 
+   descriptors[(int) reg] = nullptr; 
 }
 
 template<typename Reg>
 bool Registers<Reg>::reserved(Reg reg){
-   return descriptors[reg] == retainVariable; 
+   return descriptors[(int) reg] == retainVariable; 
 }
 
 } //end of as

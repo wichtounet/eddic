@@ -22,7 +22,7 @@ as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelC
 
 namespace x86 {
 
-enum Register {
+enum class Register : unsigned int {
     EAX,
     EBX,
     ECX,
@@ -37,10 +37,17 @@ enum Register {
     REGISTER_COUNT  
 };
 
-std::string regToString(Register reg){
-    static std::string registers[Register::REGISTER_COUNT] = {"eax", "ebx", "ecx", "edx", "esp", "ebp", "esi", "edi"};
+enum class FloatRegister : unsigned int {
+    XMM0, //Just to avoid a warning
+    //TODO
 
-    return registers[reg];
+    REGISTER_COUNT
+};
+
+std::string regToString(Register reg){
+    static std::string registers[(int) Register::REGISTER_COUNT] = {"eax", "ebx", "ecx", "edx", "esp", "ebp", "esi", "edi"};
+
+    return registers[(int) reg];
 }
 
 void enterFunction(AssemblyFileWriter& writer){
@@ -65,8 +72,9 @@ using namespace x86;
 
 namespace eddic { namespace as {
 
-struct IntelX86StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
-    IntelX86StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {EDI, ESI, ECX, EDX, EBX, EAX}, f) {}
+struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, FloatRegister>, public boost::static_visitor<> {
+    IntelX86StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, 
+        {Register::EDI, Register::ESI, Register::ECX, Register::EDX, Register::EBX, Register::EAX}, {}, f) {}
     
     std::string getMnemonicSize(){
         return "dword";

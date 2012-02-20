@@ -22,7 +22,7 @@ as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : 
 
 namespace x86_64 {
 
-enum Register {
+enum class Register : unsigned int {
     RAX,
     RBX,
     RCX,
@@ -46,13 +46,26 @@ enum Register {
     REGISTER_COUNT  
 };
 
+enum class FloatRegister : unsigned int {
+    XMM0,
+    XMM1,
+    XMM2,
+    XMM3,
+    XMM4,
+    XMM5,
+    XMM6,
+    XMM7,
+
+    REGISTER_COUNT
+};
+
 std::string regToString(Register reg){
-    static std::string registers[Register::REGISTER_COUNT] = {
+    static std::string registers[(int) Register::REGISTER_COUNT] = {
         "rax", "rbx", "rcx", "rdx", 
         "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
         "rsp", "rbp", "rsi", "rdi"};
 
-    return registers[reg];
+    return registers[(int) reg];
 }
 
 void enterFunction(AssemblyFileWriter& writer){
@@ -77,8 +90,11 @@ using namespace x86_64;
 
 namespace eddic { namespace as {
 
-struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register>, public boost::static_visitor<> {
-    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, {RDI, RSI, RCX, RDX, R8, R9, R10, R11, R12, R13, R14, R15, RBX, RAX}, f) {}
+struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, FloatRegister>, public boost::static_visitor<> {
+    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : 
+        IntelStatementCompiler(w, {Register::RDI, Register::RSI, Register::RCX, Register::RDX, Register::R8, Register::R9, 
+        Register::R10, Register::R11, Register::R12, Register::R13, Register::R14, Register::R15, Register::RBX, Register::RAX}, 
+        {FloatRegister::XMM0, FloatRegister::XMM1, FloatRegister::XMM2, FloatRegister::XMM3, FloatRegister::XMM4, FloatRegister::XMM5, FloatRegister::XMM6, FloatRegister::XMM7}, f) {}
     
     std::string getMnemonicSize(){
         return "qword";
