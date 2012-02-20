@@ -102,6 +102,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     primaryValue = 
             assignment
         |   integer
+        |   float_
         |   litteral
         |   builtin_operator
         |   functionCall

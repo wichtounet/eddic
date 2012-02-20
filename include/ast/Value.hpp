@@ -27,6 +27,7 @@ namespace ast {
 
 typedef boost::variant<
             Integer, 
+            Float,
             Litteral, 
             VariableValue,
             ComposedValue,
