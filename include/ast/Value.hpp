@@ -13,6 +13,7 @@
 #include "ast/values_def.hpp"
 
 #include "ast/Integer.hpp"
+#include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
 #include "ast/True.hpp"

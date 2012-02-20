@@ -124,6 +124,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     integer %= 
             qi::eps 
         >>  lexer.integer;
+
+    float_ %= 
+            qi::eps 
+        >>  lexer.float_;
    
     variable %= 
             qi::eps

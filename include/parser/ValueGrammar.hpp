@@ -39,6 +39,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::ComposedValue()> logicalOrValue;
     qi::rule<lexer::Iterator, ast::Value()> constant;
     qi::rule<lexer::Iterator, ast::Integer()> integer;
+    qi::rule<lexer::Iterator, ast::Float()> float_;
     qi::rule<lexer::Iterator, ast::Litteral()> litteral;
     qi::rule<lexer::Iterator, ast::VariableValue()> variable;
     qi::rule<lexer::Iterator, ast::ArrayValue()> arrayValue;
