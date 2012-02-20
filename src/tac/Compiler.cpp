@@ -27,6 +27,7 @@ namespace {
 struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::VariableValue, true)
     ASSIGN(ast::Integer, true)
+    ASSIGN(ast::Float, true)
     ASSIGN(ast::True, true)
     ASSIGN(ast::False, true)
     
@@ -51,6 +52,7 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
 struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     ASSIGN(ast::VariableValue, true)
     ASSIGN(ast::Integer, true)
+    ASSIGN(ast::Float, true)
     ASSIGN(ast::True, true)
     ASSIGN(ast::False, true)
     ASSIGN(ast::Litteral, true)
@@ -158,6 +160,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     result_type operator()(ast::Integer& integer) const {
         return {integer.value};
+    }
+    
+    result_type operator()(ast::Float& float_) const {
+        return {1};//TODO Use float
     }
     
     result_type operator()(ast::False&) const {
