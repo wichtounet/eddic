@@ -50,6 +50,12 @@ std::string regToString(Register reg){
     return registers[(int) reg];
 }
 
+std::string regToString(FloatRegister reg){
+    static std::string registers[(int) FloatRegister::REGISTER_COUNT] = {"xmm0"};//TODO
+
+    return registers[(int) reg];
+}
+
 void enterFunction(AssemblyFileWriter& writer){
     writer.stream() << "push ebp" << std::endl;
     writer.stream() << "mov ebp, esp" << std::endl;

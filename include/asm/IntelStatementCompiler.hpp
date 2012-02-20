@@ -126,6 +126,10 @@ struct IntelStatementCompiler {
         assert(false);
     }
     
+    void copy(tac::Argument argument, FloatRegister reg){
+        //TODO
+    }
+    
     void copy(tac::Argument argument, Register reg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
@@ -153,6 +157,10 @@ struct IntelStatementCompiler {
             //If it's a constant (int, double, string), just move it
             writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;
         }
+    }
+    
+    void move(tac::Argument argument, FloatRegister reg){
+        //TODO
     }
     
     void move(tac::Argument argument, Register reg){
@@ -193,6 +201,10 @@ struct IntelStatementCompiler {
         }
     }
     
+    void spills(FloatRegister reg){
+        //TODO
+    }
+    
     void spills(Register reg){
         //If the register is not used, there is nothing to spills
         if(registers.used(reg)){
@@ -213,7 +225,7 @@ struct IntelStatementCompiler {
                         registers.remove(variable);
                         registers.reserve(reg);
 
-                        Register newReg = getReg(variable, false);
+                        Register newReg = getRegNoMove(variable);
                         writer.stream() << "mov " << newReg << ", " << reg << std::endl;
 
                         registers.release(reg);
@@ -302,7 +314,8 @@ struct IntelStatementCompiler {
         return isLive(variable, current);
     }
 
-    void safeMove(std::shared_ptr<Variable> variable, Register reg){
+    template<typename Reg>
+    void safeMove(Registers<Reg> registers, std::shared_ptr<Variable> variable, Reg reg){
         if(registers.used(reg)){
             if(registers[reg] != variable){
                 spills(reg);
@@ -314,7 +327,8 @@ struct IntelStatementCompiler {
         }
     }
 
-    Register getFreeReg(){
+    template<typename Reg>
+    Reg getFreeReg(Registers<Reg> registers){
         //Try to get a free register 
         for(auto reg : registers){
             if(!registers.used(reg)){
@@ -355,14 +369,15 @@ struct IntelStatementCompiler {
         
         return reg; 
     }
-    
-    Register getReg(std::shared_ptr<Variable> variable, bool doMove){
+   
+    template<typename Reg> 
+    Reg getReg(Registers<Reg> registers, std::shared_ptr<Variable> variable, bool doMove){
         //The variable is already in a register
         if(registers.inRegister(variable)){
             return registers[variable];
         }
        
-        Register reg = getFreeReg();
+        Reg reg = getFreeReg(registers);
 
         if(doMove){
             move(variable, reg);
@@ -373,20 +388,53 @@ struct IntelStatementCompiler {
         return reg;
     }
     
-    Register getRegNoMove(std::shared_ptr<Variable> variable){
-        return getReg(variable, false);
-    }
-
-    Register getReg(std::shared_ptr<Variable> variable){
-        return getReg(variable, true);
-    }
-    
-    Register getReg(){
-        Register reg = getFreeReg();
+    template<typename Reg>
+    Reg getReg(Registers<Reg>& registers){
+        Reg reg = getFreeReg();
 
         registers.reserve(reg);
 
         return reg;
+    }
+    
+    void safeMove(std::shared_ptr<Variable> variable, Register reg){
+        return safeMove(registers, variable, reg);
+    }
+
+    void safeMove(std::shared_ptr<Variable> variable, FloatRegister reg){
+        return safeMove(registers, variable, reg);
+    }
+    
+    Register getFreeReg(){
+        return getFreeReg(registers); 
+    }
+    
+    FloatRegister getFreeFloatReg(){
+        return getFreeReg(float_registers); 
+    }
+    
+    FloatRegister getFloatRegNoMove(std::shared_ptr<Variable> variable){
+        return getReg(float_registers, variable, false);
+    }
+
+    FloatRegister getFloatReg(std::shared_ptr<Variable> variable){
+        return getReg(float_registers, variable, true);
+    }
+    
+    Register getRegNoMove(std::shared_ptr<Variable> variable){
+        return getReg(registers, variable, false);
+    }
+
+    Register getReg(std::shared_ptr<Variable> variable){
+        return getReg(registers, variable, true);
+    }
+
+    Register getReg(){
+        return getReg(registers);
+    }
+    
+    FloatRegister getFloatReg(){
+        return getReg(float_registers);
     }
 
     std::string arg(tac::Argument argument){
@@ -398,9 +446,9 @@ struct IntelStatementCompiler {
             return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             if((*ptr)->position().isTemporary()){
-                return regToString(getReg(*ptr, false));
+                return regToString(getRegNoMove(*ptr));
             } else {
-                return regToString(getReg(*ptr, true));
+                return regToString(getReg(*ptr));
             }
         }
 
@@ -593,19 +641,32 @@ struct IntelStatementCompiler {
         }
     }
 
+    bool isFloatVar(std::shared_ptr<Variable> variable){
+        return variable->type().base() == BaseType::FLOAT;
+    }
+    
+    bool isIntVar(std::shared_ptr<Variable> variable){
+        return variable->type().base() == BaseType::INT;
+    }
+
     void compile(std::shared_ptr<tac::Quadruple> quadruple){
         current = quadruple;
         
         if(!quadruple->op){
-            //The fastest way to set a register to 0 is to use xorl
-            if(tac::equals<int>(*quadruple->arg1, 0)){
-                Register reg = getRegNoMove(quadruple->result);
-                writer.stream() << "xor " << reg << ", " << reg << std::endl;            
-            } 
-            //In all the others cases, just move the value to the register
-            else {
-                Register reg = getRegNoMove(quadruple->result);
-                writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;            
+            if(isFloatVar(quadruple->result)){
+                FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                writer.stream() << "movss " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+            } else {
+                //The fastest way to set a register to 0 is to use xorl
+                if(tac::equals<int>(*quadruple->arg1, 0)){
+                    Register reg = getRegNoMove(quadruple->result);
+                    writer.stream() << "xor " << reg << ", " << reg << std::endl;            
+                } 
+                //In all the others cases, just move the value to the register
+                else {
+                    Register reg = getRegNoMove(quadruple->result);
+                    writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;            
+                }
             }
 
             written.insert(quadruple->result);
@@ -711,7 +772,7 @@ struct IntelStatementCompiler {
                     }
                     //Form x = y * z (both variables)
                     else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                        auto reg = getReg(quadruple->result, false);
+                        auto reg = getRegNoMove(quadruple->result);
                         copy(*quadruple->arg1, reg);
                         writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     } else {

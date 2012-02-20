@@ -68,6 +68,13 @@ std::string regToString(Register reg){
     return registers[(int) reg];
 }
 
+std::string regToString(FloatRegister reg){
+    static std::string registers[(int) FloatRegister::REGISTER_COUNT] = {
+        "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
+
+    return registers[(int) reg];
+}
+
 void enterFunction(AssemblyFileWriter& writer){
     writer.stream() << "push rbp" << std::endl;
     writer.stream() << "mov rbp, rsp" << std::endl;
