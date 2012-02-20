@@ -25,6 +25,7 @@ namespace ast {
 struct GetTypeVisitor : public boost::static_visitor<eddic::Type> {
     eddic::Type operator()(const ast::Litteral& litteral) const;
     eddic::Type operator()(const ast::Integer& litteral) const;
+    eddic::Type operator()(const ast::Float& litteral) const;
     eddic::Type operator()(const ast::VariableValue& variable) const;
     eddic::Type operator()(const ast::ArrayValue& variable) const;
     eddic::Type operator()(const ast::ComposedValue& value) const; 

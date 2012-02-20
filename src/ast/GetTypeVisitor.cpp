@@ -17,14 +17,28 @@ using namespace eddic;
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, newSimpleType(BaseType::INT))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Minus, newSimpleType(BaseType::INT))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Plus, newSimpleType(BaseType::INT))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::SuffixOperation, newSimpleType(BaseType::INT))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::PrefixOperation, newSimpleType(BaseType::INT))
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, newSimpleType(BaseType::INT)) //At this time, all the builtin operators return an int
+
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, newSimpleType(BaseType::FLOAT))
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, newSimpleType(BaseType::BOOL))
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, newSimpleType(BaseType::BOOL))
+
+Type ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
+   return visit(*this, minus.Content->value); 
+}
+
+Type ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
+   return visit(*this, minus.Content->value); 
+}
+
+Type ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
+   return operation.Content->variable->type(); 
+}
+
+Type ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
+   return operation.Content->variable->type(); 
+}
 
 Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
@@ -53,8 +67,6 @@ Type ast::GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
 
 Type ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     std::string name = call.Content->functionName;
-
-    assert(name != "println" && name != "print");
 
     return call.Content->function->returnType;
 }
