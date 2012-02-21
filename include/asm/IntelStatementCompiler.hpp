@@ -57,6 +57,14 @@ struct IntelStatementCompiler {
     virtual Register getStackPointerRegister() = 0;
     virtual Register getBasePointerRegister() = 0;
 
+    bool isFloatVar(std::shared_ptr<Variable> variable){
+        return variable->type().base() == BaseType::FLOAT;
+    }
+    
+    bool isIntVar(std::shared_ptr<Variable> variable){
+        return variable->type().base() == BaseType::INT;
+    }
+
     void allocateStackSpace(unsigned int space){
         writer.stream() << "add " << getStackPointerRegister() << ", " << space << std::endl;
     }
@@ -127,7 +135,38 @@ struct IntelStatementCompiler {
     }
     
     void copy(tac::Argument argument, FloatRegister reg){
-        //TODO
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            auto variable = *ptr;
+
+            //If the variable is hold in a register, just move the register value
+            if(registers.inRegister(variable)){
+                auto oldReg = registers[variable];
+                
+                writer.stream() << "movss " << reg << ", " << oldReg << std::endl;
+            } else {
+                auto position = variable->position();
+
+                if(position.isStack()){
+                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                } else if(position.isParameter()){
+                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                } else if(position.isGlobal()){
+                    writer.stream() << "movss " << reg << ", [V" << position.name() << "]" << std::endl;
+                } else if(position.isTemporary()){
+                    //The temporary should have been handled by the preceding condition (hold in a register)
+                    assert(false);
+                }
+            } 
+        } else if(boost::get<double>(&argument)){
+            Register gpreg = getReg();
+            
+            writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
+            writer.stream() << "movss " << reg << ", " << gpreg << std::endl;
+
+            registers.release(gpreg);
+        } else {
+            assert(false);
+        }
     }
     
     void copy(tac::Argument argument, Register reg){
@@ -161,15 +200,46 @@ struct IntelStatementCompiler {
     
     void move(tac::Argument argument, FloatRegister reg){
         //TODO Complete and verify
-        if(boost::get<double>(&argument)){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            auto variable = *ptr;
+
+            //If the variable is hold in a register, just move the register value
+            if(float_registers.inRegister(variable)){
+                auto oldReg = float_registers[variable];
+               
+                //Only if the variable is not already on the same register 
+                if(oldReg != reg){
+                    writer.stream() << "movss " << reg << ", " << oldReg << std::endl;
+
+                    //There is nothing more in the old register
+                    float_registers.remove(variable);
+                }
+            } else {
+                auto position = variable->position();
+
+                if(position.isStack()){
+                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                } else if(position.isParameter()){
+                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                } else if(position.isGlobal()){
+                    writer.stream() << "movss " << reg << ", [V" << position.name() << "]" << std::endl;
+                } else if(position.isTemporary()){
+                    //The temporary should have been handled by the preceding condition (hold in a register)
+                    assert(false);
+                }
+            }
+            
+            //The variable is now held in the new register
+            float_registers.setLocation(variable, reg);
+        } else if(boost::get<double>(&argument)){
             Register gpreg = getReg();
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
-            writer.stream() << "movss " << reg << ", " << reg << std::endl;
+            writer.stream() << "movss " << reg << ", " << gpreg << std::endl;
 
             registers.release(gpreg);
         } else {
-            writer.stream() << "movss " << reg << ", " << arg(argument) << std::endl;
+            assert(false);
         }
     }
     
@@ -325,7 +395,7 @@ struct IntelStatementCompiler {
     }
 
     template<typename Reg>
-    void safeMove(Registers<Reg> registers, std::shared_ptr<Variable> variable, Reg reg){
+    void safeMove(Registers<Reg>& registers, std::shared_ptr<Variable> variable, Reg reg){
         if(registers.used(reg)){
             if(registers[reg] != variable){
                 spills(reg);
@@ -338,9 +408,9 @@ struct IntelStatementCompiler {
     }
 
     template<typename Reg>
-    Reg getFreeReg(Registers<Reg> registers){
+    Reg getFreeReg(Registers<Reg>& registers){
         //Try to get a free register 
-        for(auto reg : registers){
+        for(Reg reg : registers){
             if(!registers.used(reg)){
                 return reg;
             } else if(!registers.reserved(reg) && !isLive(registers[reg])){
@@ -351,11 +421,11 @@ struct IntelStatementCompiler {
         }
        
         //There are no free register, take one
-        auto reg = registers.first();
+        Reg reg = registers.first();
         bool found = false;
 
         //First, try to take a register that doesn't need to be spilled (variable has not modified)
-        for(auto remaining : registers){
+        for(Reg remaining : registers){
             if(!registers.reserved(remaining)){
                 if(written.find(registers[remaining]) == written.end()){
                     reg = remaining;
@@ -366,7 +436,7 @@ struct IntelStatementCompiler {
        
         //If there is no registers that doesn't need to be spilled, take the first one not reserved 
         if(!found){
-            for(auto remaining : registers){
+            for(Reg remaining : registers){
                 if(!registers.reserved(remaining)){
                     reg = remaining;
                     found = true;
@@ -381,7 +451,7 @@ struct IntelStatementCompiler {
     }
    
     template<typename Reg> 
-    Reg getReg(Registers<Reg> registers, std::shared_ptr<Variable> variable, bool doMove){
+    Reg getReg(Registers<Reg>& registers, std::shared_ptr<Variable> variable, bool doMove){
         //The variable is already in a register
         if(registers.inRegister(variable)){
             return registers[variable];
@@ -392,6 +462,8 @@ struct IntelStatementCompiler {
         if(doMove){
             move(variable, reg);
         }
+
+        std::cout << variable->name() << " in register " << reg << std::endl;
 
         registers.setLocation(variable, reg);
 
@@ -465,10 +537,18 @@ struct IntelStatementCompiler {
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            if((*ptr)->position().isTemporary()){
-                return regToString(getRegNoMove(*ptr));
+            if(isFloatVar(*ptr)){
+                if((*ptr)->position().isTemporary()){
+                    return regToString(getFloatRegNoMove(*ptr));
+                } else {
+                    return regToString(getFloatReg(*ptr));
+                }
             } else {
-                return regToString(getReg(*ptr));
+                if((*ptr)->position().isTemporary()){
+                    return regToString(getRegNoMove(*ptr));
+                } else {
+                    return regToString(getReg(*ptr));
+                }
             }
         }
 
@@ -661,21 +741,13 @@ struct IntelStatementCompiler {
         }
     }
 
-    bool isFloatVar(std::shared_ptr<Variable> variable){
-        return variable->type().base() == BaseType::FLOAT;
-    }
-    
-    bool isIntVar(std::shared_ptr<Variable> variable){
-        return variable->type().base() == BaseType::INT;
-    }
-
     void compile(std::shared_ptr<tac::Quadruple> quadruple){
         current = quadruple;
         
         if(!quadruple->op){
             if(isFloatVar(quadruple->result)){
                 FloatRegister reg = getFloatRegNoMove(quadruple->result);
-                move(*quadruple->arg1, reg);
+                copy(*quadruple->arg1, reg);
             } else {
                 //The fastest way to set a register to 0 is to use xorl
                 if(tac::equals<int>(*quadruple->arg1, 0)){
@@ -708,7 +780,7 @@ struct IntelStatementCompiler {
                         //In the other forms, use two instructions
                         else {
                             FloatRegister reg = getFloatRegNoMove(result);
-                            move(*quadruple->arg1, reg);//TODO Handle immediate second operand
+                            copy(*quadruple->arg1, reg);//TODO Handle immediate second operand
                             writer.stream() << "addss " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
                     } else {
