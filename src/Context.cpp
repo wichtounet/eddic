@@ -41,6 +41,11 @@ std::shared_ptr<Variable> Context::newTemporary(){
     assert(false);
 }
 
+std::shared_ptr<Variable> Context::newFloatTemporary(){
+    //By default this method is not implemented for a context
+    assert(false);
+}
+
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
     auto iter = variables.find(variable);
     auto end = variables.end();

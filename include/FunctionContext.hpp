@@ -42,6 +42,8 @@ class FunctionContext : public Context {
         std::shared_ptr<Variable> newParameter(const std::string& a, Type type);
 
         std::shared_ptr<Variable> newTemporary();
+        std::shared_ptr<Variable> newFloatTemporary();
+
         void storeTemporary(std::shared_ptr<Variable> temp);
 };
 

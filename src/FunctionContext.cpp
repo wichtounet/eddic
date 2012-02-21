@@ -63,6 +63,14 @@ std::shared_ptr<Variable> FunctionContext::newTemporary(){
     return variables[name] = std::make_shared<Variable>(name, newSimpleType(BaseType::INT), position); 
 }
 
+std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
+    Position position(PositionType::TEMPORARY);
+
+    std::string name = "t_" + toString(temporary++);
+
+    return variables[name] = std::make_shared<Variable>(name, newSimpleType(BaseType::FLOAT), position); 
+}
+
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
     Position position(PositionType::STACK, currentPosition);
 

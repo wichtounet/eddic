@@ -34,3 +34,7 @@ std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable,
 std::shared_ptr<Variable> BlockContext::newTemporary(){
     return m_functionContext->newTemporary();
 }
+
+std::shared_ptr<Variable> BlockContext::newFloatTemporary(){
+    return m_functionContext->newFloatTemporary();
+}

@@ -48,6 +48,7 @@ class Context {
         virtual void removeVariable(const std::string& variable);
 
         virtual std::shared_ptr<Variable> newTemporary();
+        virtual std::shared_ptr<Variable> newFloatTemporary();
 
         bool exists(const std::string& a) const;
         std::shared_ptr<Variable> getVariable(const std::string& variable) const;
