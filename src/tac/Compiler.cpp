@@ -72,13 +72,11 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
-std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     tac::Argument left = moveToArgument(value.Content->first, function);
     tac::Argument right;
-
-    auto t1 = function->context->newTemporary(); 
 
     //Apply all the operations in chain
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
@@ -94,6 +92,14 @@ std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::sh
     }
 
     return t1;
+}
+
+std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+    return performOperation(value, function, function->context->newTemporary());
+}
+
+std::shared_ptr<Variable> performFloatOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+    return performOperation(value, function, function->context->newFloatTemporary());
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function);
@@ -334,8 +340,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::ComposedValue& value) const {
         Type type = ast::GetTypeVisitor()(value);
 
-        if(type.base() == BaseType::INT || type.base() == BaseType::FLOAT){
+        if(type.base() == BaseType::INT){
             return {performIntOperation(value, function)};
+        } else if(type.base() == BaseType::FLOAT){
+            return {performFloatOperation(value, function)};
         } else if(type.base() == BaseType::BOOL){
             return {performBoolOperation(value, function)};
         } else {
