@@ -696,44 +696,61 @@ struct IntelStatementCompiler {
                 {
                     auto result = quadruple->result;
 
-                    //Optimize the special form a = a + b by using only one instruction
-                    if(*quadruple->arg1 == result){
-                        Register reg = getReg(quadruple->result);
-                        
-                        //a = a + 1 => increment a
-                        if(*quadruple->arg2 == 1){
-                            writer.stream() << "inc " << reg << std::endl;
+                    if(isFloatVar(result)){
+                        //Optimize the special form a = a + b
+                        if(*quadruple->arg1 == result){
+                            assert(false); //TODO
                         }
-                        //a = a + -1 => decrement a
-                        else if(*quadruple->arg2 == -1){
-                            writer.stream() << "dec " << reg << std::endl;
-                        }
-                        //In the other cases, perform a simple addition
+                        //Optimize the special form a = b + a by using only one instruction
+                        else if(*quadruple->arg2 == result){
+                            assert(false); //TODO
+                        } 
+                        //In the other forms, use two instructions
                         else {
-                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            FloatRegister reg = getFloatRegNoMove(result);
+                            move(*quadruple->arg1, reg);//TODO Handle immediate second operand
+                            writer.stream() << "addss " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
-                    } 
-                    //Optimize the special form a = b + a by using only one instruction
-                    else if(*quadruple->arg2 == result){
-                        Register reg = getReg(quadruple->result);
-                        
-                        //a = 1 + a => increment a
-                        if(*quadruple->arg1 == 1){
-                            writer.stream() << "inc " << reg << std::endl;
-                        }
-                        //a = -1 + a => decrement a
-                        else if(*quadruple->arg1 == -1){
-                            writer.stream() << "dec " << reg << std::endl;
-                        }
-                        //In the other cases, perform a simple addition
+                    } else {
+                        //Optimize the special form a = a + b by using only one instruction
+                        if(*quadruple->arg1 == result){
+                            Register reg = getReg(quadruple->result);
+
+                            //a = a + 1 => increment a
+                            if(*quadruple->arg2 == 1){
+                                writer.stream() << "inc " << reg << std::endl;
+                            }
+                            //a = a + -1 => decrement a
+                            else if(*quadruple->arg2 == -1){
+                                writer.stream() << "dec " << reg << std::endl;
+                            }
+                            //In the other cases, perform a simple addition
+                            else {
+                                writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
+                        } 
+                        //Optimize the special form a = b + a by using only one instruction
+                        else if(*quadruple->arg2 == result){
+                            Register reg = getReg(quadruple->result);
+
+                            //a = 1 + a => increment a
+                            if(*quadruple->arg1 == 1){
+                                writer.stream() << "inc " << reg << std::endl;
+                            }
+                            //a = -1 + a => decrement a
+                            else if(*quadruple->arg1 == -1){
+                                writer.stream() << "dec " << reg << std::endl;
+                            }
+                            //In the other cases, perform a simple addition
+                            else {
+                                writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                            }
+                        } 
+                        //In the other cases, use lea to perform the addition
                         else {
-                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                            Register reg = getRegNoMove(quadruple->result);
+                            writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                         }
-                    } 
-                    //In the other cases, use lea to perform the addition
-                    else {
-                        Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                     }
             
                     written.insert(quadruple->result);
