@@ -3,5 +3,5 @@ void main(){
     float b = 3.0;
     float c = a + b;
 
-	//println(c);
+	println(c);
 }
