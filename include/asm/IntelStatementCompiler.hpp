@@ -596,9 +596,9 @@ struct IntelStatementCompiler {
             spills(reg);
         }
     }
-    
-    void endBasicBlock(){
-        //End the basic block
+
+    template<typename Reg>
+    void spillsAll(Registers<Reg> registers){
         for(auto reg : registers){
             //The register can be reserved if the ending occurs in a special break case
             if(!registers.reserved(reg) && registers.used(reg)){
@@ -609,6 +609,11 @@ struct IntelStatementCompiler {
                 }
             }
         }
+    }
+    
+    void endBasicBlock(){
+        spillsAll(registers);
+        spillsAll(float_registers);
 
         ended = true;
     }
