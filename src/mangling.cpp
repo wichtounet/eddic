@@ -23,6 +23,8 @@ std::string eddic::mangle(Type type){
         return type.isArray() ? "AS" : "S";
     } else if(type.base() == BaseType::BOOL){
         return type.isArray() ? "AB" : "B";
+    } else if(type.base() == BaseType::FLOAT){
+        return type.isArray() ? "AF" : "F";
     }
 
     assert(false); //Type not handled
@@ -109,6 +111,8 @@ std::string eddic::unmangle(std::string mangled){
             function << "string";
         } else if(current == 'B'){
             function << "bool";
+        } else if(current == 'F'){
+            function << "float";
         } 
 
         if(array){
