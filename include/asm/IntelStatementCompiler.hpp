@@ -1047,32 +1047,41 @@ struct IntelStatementCompiler {
                 case tac::Operator::PARAM:
                 {
                     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        if((*ptr)->type().isArray()){
-                            auto position = (*ptr)->position();
+                        if(isFloatVar(*ptr)){
+                            Register reg = getReg();
 
-                            if(position.isGlobal()){
-                                Register reg = getReg();
-                                
-                                auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+                            writer.stream() << "mov " << reg << ", " << arg(*ptr) << std::endl;
+                            writer.stream() << "push " << reg << std::endl;
 
-                                writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
-                                writer.stream() << "add " << reg << ", " << offset << std::endl;
-                                writer.stream() << "push " << reg << std::endl;
-
-                                registers.release(reg);
-                            } else if(position.isStack()){
-                                Register reg = getReg();
-
-                                writer.stream() << "mov " << reg << ", " << getBasePointerRegister() << std::endl;
-                                writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
-                                writer.stream() << "push " << reg << std::endl;
-                                
-                                registers.release(reg);
-                            } else if(position.isParameter()){
-                                writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
-                            }
+                            registers.release(reg);
                         } else {
-                            writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
+                            if((*ptr)->type().isArray()){
+                                auto position = (*ptr)->position();
+
+                                if(position.isGlobal()){
+                                    Register reg = getReg();
+
+                                    auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+
+                                    writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
+                                    writer.stream() << "add " << reg << ", " << offset << std::endl;
+                                    writer.stream() << "push " << reg << std::endl;
+
+                                    registers.release(reg);
+                                } else if(position.isStack()){
+                                    Register reg = getReg();
+
+                                    writer.stream() << "mov " << reg << ", " << getBasePointerRegister() << std::endl;
+                                    writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
+                                    writer.stream() << "push " << reg << std::endl;
+
+                                    registers.release(reg);
+                                } else if(position.isParameter()){
+                                    writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
+                                }
+                            } else {
+                                writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
+                            }
                         }
                     } else {
                         writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
