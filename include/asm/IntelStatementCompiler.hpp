@@ -139,8 +139,8 @@ struct IntelStatementCompiler {
             auto variable = *ptr;
 
             //If the variable is hold in a register, just move the register value
-            if(registers.inRegister(variable)){
-                auto oldReg = registers[variable];
+            if(float_registers.inRegister(variable)){
+                auto oldReg = float_registers[variable];
                 
                 writer.stream() << "movss " << reg << ", " << oldReg << std::endl;
             } else {
@@ -282,7 +282,41 @@ struct IntelStatementCompiler {
     }
     
     void spills(FloatRegister reg){
-        //TODO
+        //If the register is not used, there is nothing to spills
+        if(float_registers.used(reg)){
+            auto variable = float_registers[reg];
+
+            //If the variable has not been written, there is no need to spill it
+            if(written.find(variable) != written.end()){
+                auto position = variable->position();
+                if(position.isStack()){
+                    writer.stream() << "movss [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "], " << reg << std::endl; 
+                } else if(position.isParameter()){
+                    writer.stream() << "movss [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "], " << reg << std::endl; 
+                } else if(position.isGlobal()){
+                    writer.stream() << "movss [V" << position.name() << "], " << reg << std::endl;
+                } else if(position.isTemporary()){
+                    //If the variable is live, move it to another register, else do nothing
+                    if(isLive(variable)){
+                        float_registers.remove(variable);
+                        float_registers.reserve(reg);
+
+                        auto newReg = getFloatRegNoMove(variable);
+                        writer.stream() << "movss " << newReg << ", " << reg << std::endl;
+
+                        float_registers.release(reg);
+
+                        return; //Return here to avoid erasing variable from variables
+                    }
+                }
+            }
+            
+            //The variable is no more contained in the register
+            float_registers.remove(variable);
+
+            //The variable has not been written now
+            written.erase(variable);
+        }
     }
     
     void spills(Register reg){
@@ -462,8 +496,6 @@ struct IntelStatementCompiler {
         if(doMove){
             move(variable, reg);
         }
-
-        std::cout << variable->name() << " in register " << reg << std::endl;
 
         registers.setLocation(variable, reg);
 

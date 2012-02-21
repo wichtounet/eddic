@@ -158,9 +158,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             tac::Compiler compiler;
             compiler.compile(program, pool, tacProgram);
 
-            tac::Printer printer;
-            printer.print(tacProgram);
-
             //Separate into basic blocks
             tac::BasicBlockExtractor extractor;
             extractor.extract(tacProgram);
@@ -175,6 +172,9 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
             liveness.compute(tacProgram);
+
+            tac::Printer printer;
+            printer.print(tacProgram);
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
