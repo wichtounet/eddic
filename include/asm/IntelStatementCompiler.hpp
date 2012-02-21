@@ -783,8 +783,16 @@ struct IntelStatementCompiler {
         
         if(!quadruple->op){
             if(isFloatVar(quadruple->result)){
-                FloatRegister reg = getFloatRegNoMove(quadruple->result);
-                copy(*quadruple->arg1, reg);
+                //The fastest way to set a register to 0 is to use pxor
+                if(tac::equals<int>(*quadruple->arg1, 0)){
+                    FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                    writer.stream() << "pxor " << reg << ", " << reg << std::endl;            
+                } 
+                //In all the others cases, just move the value to the register
+                else {
+                    FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                    copy(*quadruple->arg1, reg);
+                }
             } else {
                 //The fastest way to set a register to 0 is to use xorl
                 if(tac::equals<int>(*quadruple->arg1, 0)){
@@ -808,11 +816,13 @@ struct IntelStatementCompiler {
                     if(isFloatVar(result)){
                         //Optimize the special form a = a + b
                         if(*quadruple->arg1 == result){
-                            assert(false); //TODO
+                            FloatRegister reg = getFloatRegNoMove(result);
+                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
                         //Optimize the special form a = b + a by using only one instruction
                         else if(*quadruple->arg2 == result){
-                            assert(false); //TODO
+                            FloatRegister reg = getFloatRegNoMove(result);
+                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                         } 
                         //In the other forms, use two instructions
                         else {
