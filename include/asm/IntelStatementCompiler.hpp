@@ -162,7 +162,6 @@ struct IntelStatementCompiler {
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
             writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
-            writer.stream() << "punpcklqdq " << reg << ", " << reg << std::endl;
 
             registers.release(gpreg);
         } else {
@@ -237,7 +236,6 @@ struct IntelStatementCompiler {
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
             writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
-            writer.stream() << "punpcklqdq " << reg << ", " << reg << std::endl;
 
             registers.release(gpreg);
         } else {
@@ -820,7 +818,7 @@ struct IntelStatementCompiler {
                         else {
                             FloatRegister reg = getFloatRegNoMove(result);
                             copy(*quadruple->arg1, reg);//TODO Handle immediate second operand
-                            writer.stream() << "addss " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
                     } else {
                         //Optimize the special form a = a + b by using only one instruction
