@@ -142,16 +142,16 @@ struct IntelStatementCompiler {
             if(float_registers.inRegister(variable)){
                 auto oldReg = float_registers[variable];
                 
-                writer.stream() << "movss " << reg << ", " << oldReg << std::endl;
+                writer.stream() << "movsd " << reg << ", " << oldReg << std::endl;
             } else {
                 auto position = variable->position();
 
                 if(position.isStack()){
-                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "movss " << reg << ", [V" << position.name() << "]" << std::endl;
+                    writer.stream() << "movsd " << reg << ", [V" << position.name() << "]" << std::endl;
                 } else if(position.isTemporary()){
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
@@ -161,7 +161,8 @@ struct IntelStatementCompiler {
             Register gpreg = getReg();
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
-            writer.stream() << "movss " << reg << ", " << gpreg << std::endl;
+            writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
+            writer.stream() << "punpcklqdq " << reg << ", " << reg << std::endl;
 
             registers.release(gpreg);
         } else {
@@ -209,7 +210,7 @@ struct IntelStatementCompiler {
                
                 //Only if the variable is not already on the same register 
                 if(oldReg != reg){
-                    writer.stream() << "movss " << reg << ", " << oldReg << std::endl;
+                    writer.stream() << "movsd " << reg << ", " << oldReg << std::endl;
 
                     //There is nothing more in the old register
                     float_registers.remove(variable);
@@ -218,11 +219,11 @@ struct IntelStatementCompiler {
                 auto position = variable->position();
 
                 if(position.isStack()){
-                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "movss " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "movss " << reg << ", [V" << position.name() << "]" << std::endl;
+                    writer.stream() << "movsd " << reg << ", [V" << position.name() << "]" << std::endl;
                 } else if(position.isTemporary()){
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
@@ -235,7 +236,8 @@ struct IntelStatementCompiler {
             Register gpreg = getReg();
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
-            writer.stream() << "movss " << reg << ", " << gpreg << std::endl;
+            writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
+            writer.stream() << "punpcklqdq " << reg << ", " << reg << std::endl;
 
             registers.release(gpreg);
         } else {
@@ -290,11 +292,11 @@ struct IntelStatementCompiler {
             if(written.find(variable) != written.end()){
                 auto position = variable->position();
                 if(position.isStack()){
-                    writer.stream() << "movss [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "], " << reg << std::endl; 
+                    writer.stream() << "movsd [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "], " << reg << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "movss [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "], " << reg << std::endl; 
+                    writer.stream() << "movsd [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "], " << reg << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "movss [V" << position.name() << "], " << reg << std::endl;
+                    writer.stream() << "movsd [V" << position.name() << "], " << reg << std::endl;
                 } else if(position.isTemporary()){
                     //If the variable is live, move it to another register, else do nothing
                     if(isLive(variable)){
@@ -302,7 +304,7 @@ struct IntelStatementCompiler {
                         float_registers.reserve(reg);
 
                         auto newReg = getFloatRegNoMove(variable);
-                        writer.stream() << "movss " << newReg << ", " << reg << std::endl;
+                        writer.stream() << "movsd " << newReg << ", " << reg << std::endl;
 
                         float_registers.release(reg);
 
