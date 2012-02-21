@@ -509,6 +509,37 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     leaveFunction(writer);
 }
 
+void addPrintFloatBody(AssemblyFileWriter& writer){
+    writer.stream() << "mov rax, [rbp + 16] " << std::endl;
+    writer.stream() << "movq xmm0, rax" << std::endl;
+}
+
+void addPrintFloatFunction(AssemblyFileWriter& writer){
+    defineFunction(writer, "_F5printF");
+
+    save(writer, {"rax"});
+
+    addPrintFloatBody(writer);
+
+    restore(writer, {"rax"});
+
+    leaveFunction(writer);
+   
+    /* println version */
+    
+    defineFunction(writer, "_F7printlnF");
+
+    save(writer, {"rax"});
+
+    addPrintFloatBody(writer);
+
+    writer.stream() << "call _F7println" << std::endl;
+
+    restore(writer, {"rax"});
+
+    leaveFunction(writer);
+}
+
 void addPrintBoolBody(AssemblyFileWriter& writer){
     writer.stream() << "mov rax, [rbp + 16] " << std::endl;
     writer.stream() << "or rax, rax" << std::endl;
@@ -747,6 +778,7 @@ void addDurationFunction(AssemblyFileWriter& writer){
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
    addPrintIntegerFunction(writer); 
    addPrintBoolFunction(writer);
+   addPrintFloatFunction(writer);
    addPrintLineFunction(writer); 
    addPrintStringFunction(writer); 
    addConcatFunction(writer);

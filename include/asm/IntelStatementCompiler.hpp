@@ -1050,7 +1050,7 @@ struct IntelStatementCompiler {
                         if(isFloatVar(*ptr)){
                             Register reg = getReg();
 
-                            writer.stream() << "mov " << reg << ", " << arg(*ptr) << std::endl;
+                            writer.stream() << "movq " << reg << ", " << arg(*ptr) << std::endl;
                             writer.stream() << "push " << reg << std::endl;
 
                             registers.release(reg);
