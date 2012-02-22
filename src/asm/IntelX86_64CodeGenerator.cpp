@@ -421,6 +421,24 @@ void IntelX86_64CodeGenerator::declareString(const std::string& label, const std
 
 namespace { //anonymous namespace
 
+void saveFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
+    for(auto& reg : registers){
+        writer.stream() << "sub rsp, 8" << std::endl;
+        writer.stream() << "movq [rsp], " << reg << std::endl;
+    }
+}
+
+void restoreFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
+    auto it = registers.rbegin();
+    auto end = registers.rend();
+
+    while(it != end){
+        writer.stream() << "movq " << *it << ", [rsp]" << std::endl;
+        writer.stream() << "add rsp, 8" << std::endl;
+        ++it;
+    }
+}
+
 void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "mov rax, [rbp+16]" << std::endl;
     writer.stream() << "xor r8, r8" << std::endl;
@@ -495,27 +513,23 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [rbp+16]" << std::endl;
-    writer.stream() << "movq xmm0, rax" << std::endl;
+    writer.stream() << "movq xmm0, [rbp+16]" << std::endl;  //Get the floating point to display
     
-    //writer.stream() << "movsd xmm1, xmm0" << std::endl;
-    writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
-    writer.stream() << "movq xmm1, rbx" << std::endl;
+    writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;   //Get the integer part into rbx
+    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;   //Move the integer part into xmm1
 
-    writer.stream() << "or rbx, rbx" << std::endl;
-    writer.stream() << "jge .print_first" << std::endl;
-    writer.stream() << "neg rbx" << std::endl;
-    writer.stream() << ".print_first:" << std::endl;
-
+    //Print the integer part
     writer.stream() << "push rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
     writer.stream() << "add rsp, 8" << std::endl;
 
+    //Print the dot char
     writer.stream() << "push S4" << std::endl;
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "add rsp, 16" << std::endl;
-    
+   
+    //Remove the integer part from the floating point 
     writer.stream() << "subsd xmm0, xmm1" << std::endl;
     
     writer.stream() << "mov rcx, __float64__(10000.0)" << std::endl;
@@ -523,11 +537,6 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     
     writer.stream() << "mulsd xmm0, xmm2" << std::endl;
     writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
-    
-    writer.stream() << "or rbx, rbx" << std::endl;
-    writer.stream() << "jge .print_second" << std::endl;
-    writer.stream() << "neg rbx" << std::endl;
-    writer.stream() << ".print_second:" << std::endl;
     
     writer.stream() << "push rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
@@ -538,9 +547,11 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printF");
 
     as::save(writer, {"rax", "rbx"});
+    saveFloat64(writer, {"xmm0", "xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
 
+    restoreFloat64(writer, {"xmm0", "xmm1", "xmm2"});
     as::restore(writer, {"rax", "rbx"});
 
     leaveFunction(writer);
@@ -550,11 +561,13 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F7printlnF");
 
     as::save(writer, {"rax", "rbx"});
+    saveFloat64(writer, {"xmm0", "xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
+    restoreFloat64(writer, {"xmm0", "xmm1", "xmm2"});
     as::restore(writer, {"rax", "rbx"});
 
     leaveFunction(writer);
