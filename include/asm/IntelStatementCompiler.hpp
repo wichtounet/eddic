@@ -922,30 +922,49 @@ struct IntelStatementCompiler {
                 }
                 case tac::Operator::MUL:
                 {
-                    //Form  x = x * y
-                    if(*quadruple->arg1 == quadruple->result){
-                        mul(quadruple->result, *quadruple->arg2);
-                    }
-                    //Form x = y * x
-                    else if(*quadruple->arg2 == quadruple->result){
-                        mul(quadruple->result, *quadruple->arg1);
-                    }
-                    //Form x = y * z (z: immediate)
-                    else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
-                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-                    }
-                    //Form x = y * z (y: immediate)
-                    else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
-                    }
-                    //Form x = y * z (both variables)
-                    else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                        auto reg = getRegNoMove(quadruple->result);
-                        copy(*quadruple->arg1, reg);
-                        writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                    if(isFloatVar(quadruple->result)){
+                        //Form  x = x * y
+                        if(*quadruple->arg1 == quadruple->result){
+                            FloatRegister reg = getFloatReg(quadruple->result);
+                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                        //Form x = y * x
+                        else if(*quadruple->arg2 == quadruple->result){
+                            FloatRegister reg = getFloatReg(quadruple->result);
+                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                        } 
+                        //General form
+                        else  {
+                            FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                            copy(*quadruple->arg1, reg);
+                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
                     } else {
-                        //This case should never happen unless the optimizer has bugs
-                        assert(false);
+                        //Form  x = x * y
+                        if(*quadruple->arg1 == quadruple->result){
+                            mul(quadruple->result, *quadruple->arg2);
+                        }
+                        //Form x = y * x
+                        else if(*quadruple->arg2 == quadruple->result){
+                            mul(quadruple->result, *quadruple->arg1);
+                        }
+                        //Form x = y * z (z: immediate)
+                        else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
+                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                        //Form x = y * z (y: immediate)
+                        else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
+                        }
+                        //Form x = y * z (both variables)
+                        else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+                            auto reg = getRegNoMove(quadruple->result);
+                            copy(*quadruple->arg1, reg);
+                            writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        } else {
+                            //This case should never happen unless the optimizer has bugs
+                            assert(false);
+                        }
                     }
                     
                     written.insert(quadruple->result);

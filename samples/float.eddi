@@ -8,4 +8,6 @@ void main(){
     println(c);
     c = b - d;
     println(c);
+    c = a * d;
+    println(c);
 }
