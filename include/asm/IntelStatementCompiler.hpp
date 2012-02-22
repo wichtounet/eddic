@@ -908,11 +908,27 @@ struct IntelStatementCompiler {
                         //Optimize the special form a = a - b
                         if(*quadruple->arg1 == result){
                             FloatRegister reg = getFloatReg(result);
-                            writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         } else {
                             FloatRegister reg = getFloatRegNoMove(result);
                             copy(*quadruple->arg1, reg);
-                            writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
                     } else {
                         //Optimize the special form a = a - b by using only one instruction
