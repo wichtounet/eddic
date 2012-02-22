@@ -4,6 +4,8 @@ void main(){
     float d = 5.0;
     float c = a + b;
 	println(c);
+    c = b + 2.75;
+    println(c);
     c = b - a;
     println(c);
     c = b - d;

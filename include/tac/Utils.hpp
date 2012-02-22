@@ -30,6 +30,11 @@ inline bool isInt(T& variant){
 }
 
 template<typename T>
+inline bool isFloat(T& variant){
+    return boost::get<double>(&variant);
+}
+
+template<typename T>
 inline bool isVariable(T& variant){
     return boost::get<std::shared_ptr<Variable>>(&variant);
 }

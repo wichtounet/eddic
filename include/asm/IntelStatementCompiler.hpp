@@ -504,7 +504,7 @@ struct IntelStatementCompiler {
     
     template<typename Reg>
     Reg getReg(Registers<Reg>& registers){
-        Reg reg = getFreeReg();
+        Reg reg = getFreeReg(registers);
 
         registers.reserve(reg);
 
@@ -816,19 +816,43 @@ struct IntelStatementCompiler {
                     if(isFloatVar(result)){
                         //Optimize the special form a = a + b
                         if(*quadruple->arg1 == result){
-                            FloatRegister reg = getFloatRegNoMove(result);
-                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            FloatRegister reg = getFloatReg(result);
+
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
                         //Optimize the special form a = b + a by using only one instruction
                         else if(*quadruple->arg2 == result){
-                            FloatRegister reg = getFloatRegNoMove(result);
-                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                            FloatRegister reg = getFloatReg(result);
+
+                            if(tac::isFloat(*quadruple->arg1)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg1, reg2);
+                                writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                            }
                         } 
                         //In the other forms, use two instructions
                         else {
                             FloatRegister reg = getFloatRegNoMove(result);
-                            copy(*quadruple->arg1, reg);//TODO Handle immediate second operand
-                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            copy(*quadruple->arg1, reg);
+                            
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
                     } else {
                         //Optimize the special form a = a + b by using only one instruction
