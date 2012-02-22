@@ -510,18 +510,43 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [rbp + 16] " << std::endl;
+    writer.stream() << "mov rax, [rbp+16]" << std::endl;
     writer.stream() << "movq xmm0, rax" << std::endl;
+    
+    //writer.stream() << "movsd xmm1, xmm0" << std::endl;
+    writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
+    writer.stream() << "movq xmm1, rbx" << std::endl;
+
+    writer.stream() << "push rbx" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << "add rsp, 8" << std::endl;
+
+    writer.stream() << "push S4" << std::endl;
+    writer.stream() << "push 1" << std::endl;
+    writer.stream() << "call _F5printS" << std::endl;
+    writer.stream() << "add rsp, 16" << std::endl;
+    
+    writer.stream() << "subsd xmm0, xmm1" << std::endl;
+    
+    writer.stream() << "mov rcx, __float64__(10000.0)" << std::endl;
+    writer.stream() << "movq xmm2, rcx" << std::endl;
+    
+    writer.stream() << "mulsd xmm0, xmm2" << std::endl;
+    writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
+    
+    writer.stream() << "push rbx" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << "add rsp, 8" << std::endl;
 }
 
 void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printF");
 
-    save(writer, {"rax"});
+    save(writer, {"rax", "rbx"});
 
     addPrintFloatBody(writer);
 
-    restore(writer, {"rax"});
+    restore(writer, {"rax", "rbx"});
 
     leaveFunction(writer);
    
@@ -529,13 +554,13 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnF");
 
-    save(writer, {"rax"});
+    save(writer, {"rax", "rbx"});
 
     addPrintFloatBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax"});
+    restore(writer, {"rax", "rbx"});
 
     leaveFunction(writer);
 }

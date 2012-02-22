@@ -16,6 +16,7 @@ StringPool::StringPool() : currentString(0) {
     label("`\\n`");   //Carriage return special label for println
     label("\"-\"");     //- special label for print_integer with negative number
     label("\"\"");      //- special label for default string value
+    label("\".\"");     //- special label for printing floating point numbers
 }
 
 std::string StringPool::label(const std::string& value) {
