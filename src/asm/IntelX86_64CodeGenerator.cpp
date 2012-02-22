@@ -15,6 +15,7 @@
 
 #include "asm/IntelStatementCompiler.hpp"
 #include "asm/IntelX86_64CodeGenerator.hpp"
+#include "asm/IntelAssemblyUtils.hpp"
 
 using namespace eddic;
 
@@ -467,30 +468,14 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << ".exit" << ":" << std::endl;
 }
 
-void save(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
-    for(auto& reg : registers){
-        writer.stream() << "push " << reg << std::endl;
-    }
-}
-
-void restore(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
-    auto it = registers.rbegin();
-    auto end = registers.rend();
-
-    while(it != end){
-        writer.stream() << "pop " << *it << std::endl;
-        ++it;
-    }
-}
-
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     addPrintIntegerBody(writer);
 
-    restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     leaveFunction(writer);
    
@@ -498,13 +483,13 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
 
     leaveFunction(writer);
 }
@@ -552,11 +537,11 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
 void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printF");
 
-    save(writer, {"rax", "rbx"});
+    as::save(writer, {"rax", "rbx"});
 
     addPrintFloatBody(writer);
 
-    restore(writer, {"rax", "rbx"});
+    as::restore(writer, {"rax", "rbx"});
 
     leaveFunction(writer);
    
@@ -564,13 +549,13 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnF");
 
-    save(writer, {"rax", "rbx"});
+    as::save(writer, {"rax", "rbx"});
 
     addPrintFloatBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax", "rbx"});
+    as::restore(writer, {"rax", "rbx"});
 
     leaveFunction(writer);
 }
@@ -592,11 +577,11 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
 void addPrintBoolFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printB");
 
-    save(writer, {"rax"});
+    as::save(writer, {"rax"});
 
     addPrintBoolBody(writer);
 
-    restore(writer, {"rax"});
+    as::restore(writer, {"rax"});
 
     leaveFunction(writer);
    
@@ -604,13 +589,13 @@ void addPrintBoolFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnB");
 
-    save(writer, {"rax"});
+    as::save(writer, {"rax"});
 
     addPrintBoolBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax"});
+    as::restore(writer, {"rax"});
 
     leaveFunction(writer);
 }
@@ -637,11 +622,11 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 void addPrintStringFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printS");
     
-    save(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::save(writer, {"rax", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
-    restore(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::restore(writer, {"rax", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
    
@@ -649,13 +634,13 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnS");
     
-    save(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::save(writer, {"rax", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::restore(writer, {"rax", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
 }
@@ -690,7 +675,7 @@ void addConcatFunction(AssemblyFileWriter& writer){
 void addAllocFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "eddi_alloc");
 
-    save(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
+    as::save(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
 
     writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
     writer.stream() << "mov rbx, [Veddi_remaining]" << std::endl;
@@ -745,7 +730,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
 
     writer.stream() << ".alloc_end:" << std::endl;
 
-    restore(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
+    as::restore(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
 
     leaveFunction(writer);
 }

@@ -15,6 +15,7 @@
 
 #include "asm/IntelStatementCompiler.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
+#include "asm/IntelAssemblyUtils.hpp"
 
 using namespace eddic;
 
@@ -445,30 +446,14 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << ".exit" << ":" << std::endl;
 }
 
-void save(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
-    for(auto& reg : registers){
-        writer.stream() << "push " << reg << std::endl;
-    }
-}
-
-void restore(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
-    auto it = registers.rbegin();
-    auto end = registers.rend();
-
-    while(it != end){
-        writer.stream() << "pop " << *it << std::endl;
-        ++it;
-    }
-}
-
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintIntegerBody(writer);
 
-    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     leaveFunction(writer);
    
@@ -476,13 +461,13 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     leaveFunction(writer);
 }
@@ -504,11 +489,11 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
 void addPrintBoolFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printB");
 
-    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintBoolBody(writer);
 
-    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     leaveFunction(writer);
    
@@ -516,13 +501,13 @@ void addPrintBoolFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnB");
 
-    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintBoolBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     leaveFunction(writer);
 }
@@ -551,11 +536,11 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 void addPrintStringFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printS");
     
-    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintStringBody(writer);
 
-    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     leaveFunction(writer);
    
@@ -563,13 +548,13 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnS");
     
-    save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
     leaveFunction(writer);
 }
@@ -604,7 +589,7 @@ void addConcatFunction(AssemblyFileWriter& writer){
 void addAllocFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "eddi_alloc");
 
-    save(writer, {"ebx", "ecx", "edx"});
+    as::save(writer, {"ebx", "ecx", "edx"});
 
     writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
     writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
@@ -659,7 +644,7 @@ void addAllocFunction(AssemblyFileWriter& writer){
 
     writer.stream() << ".alloc_end:" << std::endl;
 
-    restore(writer, {"ebx", "ecx", "edx"});
+    as::restore(writer, {"ebx", "ecx", "edx"});
 
     leaveFunction(writer);
 }
