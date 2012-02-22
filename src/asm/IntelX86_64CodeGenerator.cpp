@@ -517,6 +517,11 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
     writer.stream() << "movq xmm1, rbx" << std::endl;
 
+    writer.stream() << "or rbx, rbx" << std::endl;
+    writer.stream() << "jge .print_first" << std::endl;
+    writer.stream() << "neg rbx" << std::endl;
+    writer.stream() << ".print_first:" << std::endl;
+
     writer.stream() << "push rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
     writer.stream() << "add rsp, 8" << std::endl;
@@ -533,6 +538,11 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     
     writer.stream() << "mulsd xmm0, xmm2" << std::endl;
     writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
+    
+    writer.stream() << "or rbx, rbx" << std::endl;
+    writer.stream() << "jge .print_second" << std::endl;
+    writer.stream() << "neg rbx" << std::endl;
+    writer.stream() << ".print_second:" << std::endl;
     
     writer.stream() << "push rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
