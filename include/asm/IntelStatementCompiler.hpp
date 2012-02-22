@@ -879,29 +879,41 @@ struct IntelStatementCompiler {
                 case tac::Operator::SUB:
                 {
                     auto result = quadruple->result;
-                    
-                    //Optimize the special form a = a - b by using only one instruction
-                    if(*quadruple->arg1 == result){
-                        Register reg = getReg(quadruple->result);
-                        
-                        //a = a - 1 => decrement a
-                        if(*quadruple->arg2 == 1){
-                            writer.stream() << "dec " << reg << std::endl;
+
+                    if(isFloatVar(result)){
+                        //Optimize the special form a = a - b
+                        if(*quadruple->arg1 == result){
+                            FloatRegister reg = getFloatReg(result);
+                            writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        } else {
+                            FloatRegister reg = getFloatRegNoMove(result);
+                            copy(*quadruple->arg1, reg);
+                            writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
-                        //a = a - -1 => increment a
-                        else if(*quadruple->arg2 == -1){
-                            writer.stream() << "inc " << reg << std::endl;
-                        }
-                        //In the other cases, perform a simple subtraction
+                    } else {
+                        //Optimize the special form a = a - b by using only one instruction
+                        if(*quadruple->arg1 == result){
+                            Register reg = getReg(quadruple->result);
+
+                            //a = a - 1 => decrement a
+                            if(*quadruple->arg2 == 1){
+                                writer.stream() << "dec " << reg << std::endl;
+                            }
+                            //a = a - -1 => increment a
+                            else if(*quadruple->arg2 == -1){
+                                writer.stream() << "inc " << reg << std::endl;
+                            }
+                            //In the other cases, perform a simple subtraction
+                            else {
+                                writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
+                        } 
+                        //In the other cases, move the first arg into the result register and then subtract the second arg into it
                         else {
+                            Register reg = getRegNoMove(quadruple->result);
+                            writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                             writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
-                    } 
-                    //In the other cases, move the first arg into the result register and then subtract the second arg into it
-                    else {
-                        Register reg = getRegNoMove(quadruple->result);
-                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                        writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                     
                     written.insert(quadruple->result);
