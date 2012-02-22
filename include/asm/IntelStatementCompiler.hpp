@@ -966,18 +966,40 @@ struct IntelStatementCompiler {
                         //Form  x = x * y
                         if(*quadruple->arg1 == quadruple->result){
                             FloatRegister reg = getFloatReg(quadruple->result);
-                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
                         //Form x = y * x
                         else if(*quadruple->arg2 == quadruple->result){
                             FloatRegister reg = getFloatReg(quadruple->result);
-                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         } 
                         //General form
                         else  {
                             FloatRegister reg = getFloatRegNoMove(quadruple->result);
                             copy(*quadruple->arg1, reg);
-                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
                     } else {
                         //Form  x = x * y
