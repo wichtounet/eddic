@@ -16,4 +16,6 @@ void main(){
     println(c);
     c = c * 3.33;
     println(c);
+    c = d / 0.345;
+    println(c);
 }

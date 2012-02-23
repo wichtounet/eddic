@@ -1034,20 +1034,48 @@ struct IntelStatementCompiler {
                     break;            
                 }
                 case tac::Operator::DIV:
-                    //Form x = x / y when y is power of two
-                    if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
-                        int constant = boost::get<int>(*quadruple->arg2);
-
-                        if(isPowerOfTwo(constant)){
-                            writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
-                            
-                            written.insert(quadruple->result);
-                            
-                            return;
+                    if(isFloatVar(quadruple->result)){
+                        //Form x = x / y
+                        if(*quadruple->arg1 == quadruple->result){
+                            FloatRegister reg = getFloatReg(quadruple->result);
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
+                        } 
+                        //General form
+                        else {
+                            FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                            copy(*quadruple->arg1, reg);
+                            if(tac::isFloat(*quadruple->arg2)){
+                                FloatRegister reg2 = getFloatReg();
+                                copy(*quadruple->arg2, reg2);
+                                writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
+                                float_registers.release(reg2);
+                            } else {
+                                writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
+                    } else {
+                        //Form x = x / y when y is power of two
+                        if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
+                            int constant = boost::get<int>(*quadruple->arg2);
+
+                            if(isPowerOfTwo(constant)){
+                                writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
+
+                                written.insert(quadruple->result);
+
+                                return;
+                            }
+                        }
+
+                        div(quadruple);
                     }
-                   
-                    div(quadruple);
 
                     written.insert(quadruple->result);
                     
