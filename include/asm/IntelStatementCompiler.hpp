@@ -796,6 +796,8 @@ struct IntelStatementCompiler {
                 }
 
                 written.insert(quadruple->result);
+
+                break;
             }
             case tac::Operator::FASSIGN:
             {
@@ -811,6 +813,8 @@ struct IntelStatementCompiler {
                 }
 
                 written.insert(quadruple->result);
+
+                break;
             }
             case tac::Operator::ADD:
             {
