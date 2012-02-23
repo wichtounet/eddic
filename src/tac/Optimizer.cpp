@@ -40,74 +40,72 @@ struct ArithmeticIdentities : public boost::static_visitor<tac::Statement> {
         bool old = optimized;
         optimized = true;
 
-        if(quadruple->op){
-            switch(*quadruple->op){
-                case tac::Operator::ADD:
-                    if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
-                    } else if(*quadruple->arg2 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
-                    }
+        switch(quadruple->op){
+            case tac::Operator::ADD:
+                if(*quadruple->arg1 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ASSIGN);
+                } else if(*quadruple->arg2 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ASSIGN);
+                }
 
-                    break;
-                case tac::Operator::SUB:
-                    if(*quadruple->arg2 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
-                    } 
+                break;
+            case tac::Operator::SUB:
+                if(*quadruple->arg2 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ASSIGN);
+                } 
 
-                    //a = b - b => a = 0
-                    if(*quadruple->arg1 == *quadruple->arg2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
-                    }
-                    
-                    //a = 0 - b => a = -b
-                    if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
-                    }
+                //a = b - b => a = 0
+                if(*quadruple->arg1 == *quadruple->arg2){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, 0, tac::Operator::ASSIGN);
+                }
+                
+                //a = 0 - b => a = -b
+                if(*quadruple->arg1 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
+                }
 
-                    break;
-                case tac::Operator::MUL:
-                    if(*quadruple->arg1 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2);
-                    } else if(*quadruple->arg2 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
-                    }
-                    
-                    if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
-                    } else if(*quadruple->arg2 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
-                    }
-                    
-                    if(*quadruple->arg1 == -1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
-                    } else if(*quadruple->arg2 == -1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
-                    }
+                break;
+            case tac::Operator::MUL:
+                if(*quadruple->arg1 == 1){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ASSIGN);
+                } else if(*quadruple->arg2 == 1){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ASSIGN);
+                }
+                
+                if(*quadruple->arg1 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, 0, tac::Operator::ASSIGN);
+                } else if(*quadruple->arg2 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, 0, tac::Operator::ASSIGN);
+                }
+                
+                if(*quadruple->arg1 == -1){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::MINUS);
+                } else if(*quadruple->arg2 == -1){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
+                }
 
-                    break;
-                case tac::Operator::DIV:
-                    if(*quadruple->arg2 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1);
-                    }
+                break;
+            case tac::Operator::DIV:
+                if(*quadruple->arg2 == 1){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ASSIGN);
+                }
 
-                    if(*quadruple->arg1 == 0){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 0);
-                    }
+                if(*quadruple->arg1 == 0){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, 0, tac::Operator::ASSIGN);
+                }
 
-                    //a = b / b => a = 1
-                    if(*quadruple->arg1 == *quadruple->arg2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, 1);
-                    }
-                    
-                    if(*quadruple->arg2 == 1){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
-                    }
+                //a = b / b => a = 1
+                if(*quadruple->arg1 == *quadruple->arg2){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, 1, tac::Operator::ASSIGN);
+                }
+                
+                if(*quadruple->arg2 == 1){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::MINUS);
+                }
 
-                    break;
-                default:
-                    break;
-            }
+                break;
+            default:
+                break;
         }
 
         optimized = old;
@@ -129,19 +127,17 @@ struct ReduceInStrength : public boost::static_visitor<tac::Statement> {
         bool old = optimized;
         optimized = true;
 
-        if(quadruple->op){
-            switch(*quadruple->op){
-                case tac::Operator::MUL:
-                    if(*quadruple->arg1 == 2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
-                    } else if(*quadruple->arg2 == 2){
-                        return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
-                    }
+        switch(quadruple->op){
+            case tac::Operator::MUL:
+                if(*quadruple->arg1 == 2){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
+                } else if(*quadruple->arg2 == 2){
+                    return std::make_shared<tac::Quadruple>(quadruple->result, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
+                }
 
-                    break;
-                default:
-                    break;
-            }
+                break;
+            default:
+                break;
         }
 
         optimized = old;
@@ -163,28 +159,26 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
         bool old = optimized;
         optimized = true;
         
-        if(quadruple->op){
-            if(quadruple->arg1 && tac::isInt(*quadruple->arg1)){
-                if(*quadruple->op == tac::Operator::MINUS){
-                    return std::make_shared<tac::Quadruple>(quadruple->result, -1 * boost::get<int>(*quadruple->arg1));
-                } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
-                    int lhs = boost::get<int>(*quadruple->arg1); 
-                    int rhs = boost::get<int>(*quadruple->arg2); 
+        if(quadruple->arg1 && tac::isInt(*quadruple->arg1)){
+            if(quadruple->op == tac::Operator::MINUS){
+                return std::make_shared<tac::Quadruple>(quadruple->result, -1 * boost::get<int>(*quadruple->arg1), tac::Operator::ASSIGN);
+            } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
+                int lhs = boost::get<int>(*quadruple->arg1); 
+                int rhs = boost::get<int>(*quadruple->arg2); 
 
-                    switch(*quadruple->op){
-                        case tac::Operator::ADD:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs + rhs);
-                        case tac::Operator::SUB:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs - rhs);
-                        case tac::Operator::MUL:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs * rhs);
-                        case tac::Operator::DIV:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs / rhs);
-                        case tac::Operator::MOD:
-                            return std::make_shared<tac::Quadruple>(quadruple->result, lhs % rhs);
-                        default:
-                            break;
-                    }
+                switch(quadruple->op){
+                    case tac::Operator::ADD:
+                        return std::make_shared<tac::Quadruple>(quadruple->result, lhs + rhs, tac::Operator::ASSIGN);
+                    case tac::Operator::SUB:
+                        return std::make_shared<tac::Quadruple>(quadruple->result, lhs - rhs, tac::Operator::ASSIGN);
+                    case tac::Operator::MUL:
+                        return std::make_shared<tac::Quadruple>(quadruple->result, lhs * rhs, tac::Operator::ASSIGN);
+                    case tac::Operator::DIV:
+                        return std::make_shared<tac::Quadruple>(quadruple->result, lhs / rhs, tac::Operator::ASSIGN);
+                    case tac::Operator::MOD:
+                        return std::make_shared<tac::Quadruple>(quadruple->result, lhs % rhs, tac::Operator::ASSIGN);
+                    default:
+                        break;
                 }
             }
         }
@@ -302,13 +296,13 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Do not replace a variable by a constant when used in offset
-        if(!quadruple->op || (*quadruple->op != tac::Operator::ARRAY && *quadruple->op != tac::Operator::DOT)){
+        if(quadruple->op == tac::Operator::ASSIGN || (quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT)){
             optimize_optional(quadruple->arg1);
         }
         
         optimize_optional(quadruple->arg2);
 
-        if(!quadruple->op){
+        if(quadruple->op == tac::Operator::ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 int_constants[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
@@ -319,7 +313,7 @@ struct ConstantPropagation : public boost::static_visitor<tac::Statement> {
                 string_constants.erase(quadruple->result);
             }
         } else {
-            auto op = *quadruple->op;
+            auto op = quadruple->op;
 
             //Check if the operator erase the contents of the result variable
             if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
@@ -388,7 +382,7 @@ struct OffsetConstantPropagation : public boost::static_visitor<tac::Statement> 
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Store the value assigned to result+arg1
-        if(quadruple->op && *quadruple->op == tac::Operator::DOT_ASSIGN){
+        if(quadruple->op == tac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 Offset offset;
                 offset.variable = quadruple->result;
@@ -407,7 +401,7 @@ struct OffsetConstantPropagation : public boost::static_visitor<tac::Statement> 
         }
         
         //If constant replace the value assigned to result by the value stored for arg1+arg2
-        if(quadruple->op && *quadruple->op == tac::Operator::DOT){
+        if(quadruple->op == tac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                 Offset offset;
                 offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
@@ -415,10 +409,10 @@ struct OffsetConstantPropagation : public boost::static_visitor<tac::Statement> 
                
                 if(int_constants.find(offset) != int_constants.end()){
                     optimized = true;
-                    return std::make_shared<tac::Quadruple>(quadruple->result, int_constants[offset]);
+                    return std::make_shared<tac::Quadruple>(quadruple->result, int_constants[offset], tac::Operator::ASSIGN);
                 } else if(string_constants.find(offset) != string_constants.end()){
                     optimized = true;
-                    return std::make_shared<tac::Quadruple>(quadruple->result, string_constants[offset]); 
+                    return std::make_shared<tac::Quadruple>(quadruple->result, string_constants[offset], tac::Operator::ASSIGN); 
                 }
             }
         }
@@ -456,14 +450,14 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Do not replace a variable by a constant when used in offset
-        if(!quadruple->op || (*quadruple->op != tac::Operator::ARRAY && *quadruple->op != tac::Operator::DOT)){
+        if(quadruple->op == tac::Operator::ASSIGN || (quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT)){
             optimize_optional(quadruple->arg1);
         }
 
         //optimize_optional(quadruple->arg1);
         optimize_optional(quadruple->arg2);
         
-        if(!quadruple->op){
+        if(quadruple->op == tac::Operator::ASSIGN){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                 //if(!(*ptr)->position().isTemporary()){
                     constants[quadruple->result] = *ptr;
@@ -473,7 +467,7 @@ struct CopyPropagation : public boost::static_visitor<tac::Statement> {
                 constants.erase(quadruple->result);
             }
         } else {
-            auto op = *quadruple->op;
+            auto op = quadruple->op;
 
             //Check if the operator erase the contents of the result variable
             if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
@@ -516,7 +510,7 @@ struct OffsetCopyPropagation : public boost::static_visitor<tac::Statement> {
 
     tac::Statement operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Store the value assigned to result+arg1
-        if(quadruple->op && *quadruple->op == tac::Operator::DOT_ASSIGN){
+        if(quadruple->op == tac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 Offset offset;
                 offset.variable = quadruple->result;
@@ -532,7 +526,7 @@ struct OffsetCopyPropagation : public boost::static_visitor<tac::Statement> {
         }
         
         //If constant replace the value assigned to result by the value stored for arg1+arg2
-        if(quadruple->op && *quadruple->op == tac::Operator::DOT){
+        if(quadruple->op == tac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                 Offset offset;
                 offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
@@ -540,7 +534,7 @@ struct OffsetCopyPropagation : public boost::static_visitor<tac::Statement> {
                
                 if(constants.find(offset) != constants.end()){
                     optimized = true;
-                    return std::make_shared<tac::Quadruple>(quadruple->result, constants[offset]);
+                    return std::make_shared<tac::Quadruple>(quadruple->result, constants[offset], tac::Operator::ASSIGN);
                 }
             }
         }
@@ -582,12 +576,12 @@ struct RemoveAssign : public boost::static_visitor<bool> {
             return true;
         } else {
             //These operators are not erasing result
-            if(quadruple->op && (*quadruple->op == tac::Operator::PARAM || *quadruple->op == tac::Operator::DOT_ASSIGN || *quadruple->op == tac::Operator::ARRAY_ASSIGN)){
+            if(quadruple->op == tac::Operator::PARAM || quadruple->op == tac::Operator::DOT_ASSIGN || quadruple->op == tac::Operator::ARRAY_ASSIGN){
                 return true;
             }
 
             //x = x is never useful
-            if(!quadruple->op && *quadruple->arg1 == quadruple->result){
+            if(quadruple->op == tac::Operator::ASSIGN && *quadruple->arg1 == quadruple->result){
                 optimized = true;
                 return false;
             }
@@ -658,7 +652,7 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
             collect(quadruple->arg2);
             
             //These operators are not erasing result
-            if(quadruple->op && (*quadruple->op == tac::Operator::PARAM || *quadruple->op == tac::Operator::DOT_ASSIGN || *quadruple->op == tac::Operator::ARRAY_ASSIGN)){
+            if(quadruple->op == tac::Operator::PARAM || quadruple->op == tac::Operator::DOT_ASSIGN || quadruple->op == tac::Operator::ARRAY_ASSIGN){
                 return true;
             }
             
@@ -739,7 +733,7 @@ struct MathPropagation : public boost::static_visitor<void> {
                 assigns[quadruple->result] = quadruple;
             }
 
-            if(!quadruple->op){
+            if(quadruple->op == tac::Operator::ASSIGN){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                     //We only duplicate the math operation if the variable is used once to not add overhead
                     if(usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
@@ -944,7 +938,7 @@ bool isQuadruple(T& statement){
 }
 
 bool isParam(std::shared_ptr<tac::Quadruple> quadruple){
-    return quadruple->op && *quadruple->op == tac::Operator::PARAM;
+    return quadruple->op == tac::Operator::PARAM;
 }
 
 bool optimize_concat(tac::Program& program, StringPool& pool){
@@ -999,8 +993,8 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
                                         block->statements.erase(block->statements.begin());
                                        
                                         //Insert assign with the concatenated value 
-                                        block->statements.insert(block->statements.begin(), std::make_shared<tac::Quadruple>(ret1, label));
-                                        block->statements.insert(block->statements.begin()+1, std::make_shared<tac::Quadruple>(ret2, length));
+                                        block->statements.insert(block->statements.begin(), std::make_shared<tac::Quadruple>(ret1, label, tac::Operator::ASSIGN));
+                                        block->statements.insert(block->statements.begin()+1, std::make_shared<tac::Quadruple>(ret2, length, tac::Operator::ASSIGN));
 
                                         //Remove the four params from the previous basic block
                                         paramBlock->statements.erase(paramBlock->statements.end() - 4, paramBlock->statements.end());

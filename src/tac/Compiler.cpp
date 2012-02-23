@@ -141,7 +141,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     
     auto position = array->position();
     if(position.isGlobal() || position.isStack()){
-        function->add(std::make_shared<tac::Quadruple>(t1, array->type().size()));
+        function->add(std::make_shared<tac::Quadruple>(t1, array->type().size(), tac::Operator::ASSIGN));
     } else if(position.isParameter()){
         function->add(std::make_shared<tac::Quadruple>(t1, array, tac::Operator::ARRAY, 0));
     }
@@ -295,7 +295,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         auto temp = value.Content->context->newTemporary();
 
-        function->add(std::make_shared<tac::Quadruple>(temp, var));
+        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
 
         if(value.Content->op == ast::Operator::INC){
             function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
@@ -468,11 +468,11 @@ struct AssignValueToVariable : public AbstractVisitor {
     std::shared_ptr<Variable> variable;
 
     void intAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0]));
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
     }
 
     void stringAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0]));
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
         function->add(std::make_shared<tac::Quadruple>(variable, getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
     }
 };
@@ -762,9 +762,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto t1 = swap.Content->context->newTemporary();
 
             if(lhs_var->type().base() == BaseType::INT || lhs_var->type().base() == BaseType::BOOL || lhs_var->type().base() == BaseType::STRING){
-                function->add(std::make_shared<tac::Quadruple>(t1, rhs_var));  
-                function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var));  
-                function->add(std::make_shared<tac::Quadruple>(lhs_var, t1));  
+                function->add(std::make_shared<tac::Quadruple>(t1, rhs_var, tac::Operator::ASSIGN));  
+                function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var, tac::Operator::ASSIGN));  
+                function->add(std::make_shared<tac::Quadruple>(lhs_var, t1, tac::Operator::ASSIGN));  
                 
                 if( lhs_var->type().base() == BaseType::STRING){
                     auto t2 = swap.Content->context->newTemporary();
@@ -865,7 +865,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto stringTemp = foreach.Content->context->newTemporary();
 
             //Init the index to 0
-            function->add(std::make_shared<tac::Quadruple>(iterVar, 0));
+            function->add(std::make_shared<tac::Quadruple>(iterVar, 0, tac::Operator::ASSIGN));
 
             function->add(startLabel);
 
@@ -973,11 +973,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
             visit(JumpIfFalseVisitor(function, falseLabel), operation.get<1>());
         }
 
-        function->add(std::make_shared<tac::Quadruple>(t1, 1));
+        function->add(std::make_shared<tac::Quadruple>(t1, 1, tac::Operator::ASSIGN));
         function->add(std::make_shared<tac::Goto>(endLabel));
 
         function->add(falseLabel);
-        function->add(std::make_shared<tac::Quadruple>(t1, 0));
+        function->add(std::make_shared<tac::Quadruple>(t1, 0, tac::Operator::ASSIGN));
 
         function->add(endLabel);
     } 
@@ -992,11 +992,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
             visit(JumpIfTrueVisitor(function, trueLabel), operation.get<1>());
         }
 
-        function->add(std::make_shared<tac::Quadruple>(t1, 0));
+        function->add(std::make_shared<tac::Quadruple>(t1, 0, tac::Operator::ASSIGN));
         function->add(std::make_shared<tac::Goto>(endLabel));
 
         function->add(trueLabel);
-        function->add(std::make_shared<tac::Quadruple>(t1, 1));
+        function->add(std::make_shared<tac::Quadruple>(t1, 1, tac::Operator::ASSIGN));
 
         function->add(endLabel);
     }

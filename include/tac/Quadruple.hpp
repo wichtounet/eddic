@@ -24,9 +24,9 @@ namespace tac {
 
 struct Quadruple {
     std::shared_ptr<Variable> result;
-    tac::Operator op;
     boost::optional<tac::Argument> arg1;
     boost::optional<tac::Argument> arg2;
+    tac::Operator op;
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 

@@ -290,7 +290,7 @@ void IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
             auto lastStatement = lastBasicBlock->statements.back();
             
             if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&lastStatement)){
-                if((*ptr)->op && *(*ptr)->op != tac::Operator::RETURN){
+                if((*ptr)->op != tac::Operator::RETURN){
                     //Only if necessary, deallocates size on the stack for the local variables
                     if(size > 0){
                         writer.stream() << "add esp, " << size << std::endl;
