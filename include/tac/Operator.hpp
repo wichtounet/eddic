@@ -15,11 +15,18 @@ namespace eddic {
 namespace tac {
 
 enum class Operator : unsigned int {
+    /* Integer operators */
     ADD,
     SUB,
     MUL,
     DIV,
     MOD,
+
+    /* Float operators  */
+    FADD,
+    FSUB,
+    FMUL,
+    FDIV,
 
     /* relational operators */
     EQUALS,
