@@ -217,9 +217,15 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         switch(type.base()){
             case BaseType::BOOL:
-            case BaseType::FLOAT:
             case BaseType::INT:{
                 auto t1 = function->context->newTemporary();
+
+                executeCall(call, function, t1, {});
+
+                return {t1};
+            }
+            case BaseType::FLOAT:{
+                auto t1 = function->context->newFloatTemporary();
 
                 executeCall(call, function, t1, {});
 
@@ -425,14 +431,6 @@ struct AbstractVisitor : public boost::static_visitor<> {
 
         complexAssign(type, array);
     }
-
-    void operator()(ast::ComposedValue& value) const {
-        auto type = ast::GetTypeVisitor()(value);
-        
-        complexAssign(type, value);
-    }
-
-    /* Only int */
 
     template<typename T>
     void operator()(T& value) const {
