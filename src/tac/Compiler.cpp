@@ -72,7 +72,7 @@ void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Func
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
-std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1){
+std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     tac::Argument left = moveToArgument(value.Content->first, function);
@@ -85,9 +85,9 @@ std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::share
         right = moveToArgument(operation.get<1>(), function);
        
         if (i == 0){
-            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toOperator(operation.get<0>()), right));
+            function->add(std::make_shared<tac::Quadruple>(t1, left, f(operation.get<0>()), right));
         } else {
-            function->add(std::make_shared<tac::Quadruple>(t1, t1, tac::toOperator(operation.get<0>()), right));
+            function->add(std::make_shared<tac::Quadruple>(t1, t1, f(operation.get<0>()), right));
         }
     }
 
@@ -95,11 +95,11 @@ std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::share
 }
 
 std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
-    return performOperation(value, function, function->context->newTemporary());
+    return performOperation(value, function, function->context->newTemporary(), &tac::toOperator);
 }
 
 std::shared_ptr<Variable> performFloatOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
-    return performOperation(value, function, function->context->newFloatTemporary());
+    return performOperation(value, function, function->context->newFloatTemporary(), &tac::toFloatOperator);
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function);
