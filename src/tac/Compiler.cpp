@@ -377,6 +377,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     
     virtual void intAssign(std::vector<tac::Argument> arguments) const = 0;
+    virtual void floatAssign(std::vector<tac::Argument> arguments) const = 0;
     virtual void stringAssign(std::vector<tac::Argument> arguments) const = 0;
    
     /* Litterals are always strings */
@@ -399,8 +400,8 @@ struct AbstractVisitor : public boost::static_visitor<> {
             case BaseType::STRING:
                 stringAssign(ToArgumentsVisitor(function)(value));
                 break;
-            case BaseType::FLOAT://Floats are handling in a single assignment
-                intAssign(ToArgumentsVisitor(function)(value));
+            case BaseType::FLOAT:
+                floatAssign(ToArgumentsVisitor(function)(value));
                 break;
             default:
                 throw SemanticalException("Invalid variable type");   
@@ -435,7 +436,9 @@ struct AbstractVisitor : public boost::static_visitor<> {
 
     template<typename T>
     void operator()(T& value) const {
-        intAssign(ToArgumentsVisitor(function)(value));
+        auto type = ast::GetTypeVisitor()(value);
+        
+        complexAssign(type, value);
     }
 };
 
@@ -446,6 +449,12 @@ struct AssignValueToArray : public AbstractVisitor {
     ast::Value& indexValue;
 
     void intAssign(std::vector<tac::Argument> arguments) const {
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+
+        function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
+    }
+    
+    void floatAssign(std::vector<tac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
         function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
@@ -469,6 +478,10 @@ struct AssignValueToVariable : public AbstractVisitor {
 
     void intAssign(std::vector<tac::Argument> arguments) const {
         function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
+    }
+    
+    void floatAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::FASSIGN));
     }
 
     void stringAssign(std::vector<tac::Argument> arguments) const {

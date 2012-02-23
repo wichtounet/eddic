@@ -69,7 +69,9 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         if(quadruple->op == tac::Operator::ASSIGN){
-            std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << std::endl;
+            std::cout << "\t" << quadruple->result->name() << " = (normal) " << printArgument(*quadruple->arg1) << std::endl;
+        } else if(quadruple->op == tac::Operator::FASSIGN){
+            std::cout << "\t" << quadruple->result->name() << " = (float) " << printArgument(*quadruple->arg1) << std::endl;
         } else {
             tac::Operator op = quadruple->op;
 
