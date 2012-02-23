@@ -15,6 +15,10 @@ namespace eddic {
 namespace tac {
 
 enum class Operator : unsigned int {
+    /* Assignment operators  */
+    ASSIGN,
+    FASSIGN,
+
     /* Integer operators */
     ADD,
     SUB,
