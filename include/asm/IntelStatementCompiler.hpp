@@ -813,87 +813,44 @@ struct IntelStatementCompiler {
                 {
                     auto result = quadruple->result;
 
-                    if(isFloatVar(result)){
-                        //Optimize the special form a = a + b
-                        if(*quadruple->arg1 == result){
-                            FloatRegister reg = getFloatReg(result);
+                    //Optimize the special form a = a + b by using only one instruction
+                    if(*quadruple->arg1 == result){
+                        Register reg = getReg(quadruple->result);
 
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
+                        //a = a + 1 => increment a
+                        if(*quadruple->arg2 == 1){
+                            writer.stream() << "inc " << reg << std::endl;
                         }
-                        //Optimize the special form a = b + a by using only one instruction
-                        else if(*quadruple->arg2 == result){
-                            FloatRegister reg = getFloatReg(result);
-
-                            if(tac::isFloat(*quadruple->arg1)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg1, reg2);
-                                writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                            }
-                        } 
-                        //In the other forms, use two instructions
+                        //a = a + -1 => decrement a
+                        else if(*quadruple->arg2 == -1){
+                            writer.stream() << "dec " << reg << std::endl;
+                        }
+                        //In the other cases, perform a simple addition
                         else {
-                            FloatRegister reg = getFloatRegNoMove(result);
-                            copy(*quadruple->arg1, reg);
-                            
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
+                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
-                    } else {
-                        //Optimize the special form a = a + b by using only one instruction
-                        if(*quadruple->arg1 == result){
-                            Register reg = getReg(quadruple->result);
+                    } 
+                    //Optimize the special form a = b + a by using only one instruction
+                    else if(*quadruple->arg2 == result){
+                        Register reg = getReg(quadruple->result);
 
-                            //a = a + 1 => increment a
-                            if(*quadruple->arg2 == 1){
-                                writer.stream() << "inc " << reg << std::endl;
-                            }
-                            //a = a + -1 => decrement a
-                            else if(*quadruple->arg2 == -1){
-                                writer.stream() << "dec " << reg << std::endl;
-                            }
-                            //In the other cases, perform a simple addition
-                            else {
-                                writer.stream() << "add " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        } 
-                        //Optimize the special form a = b + a by using only one instruction
-                        else if(*quadruple->arg2 == result){
-                            Register reg = getReg(quadruple->result);
-
-                            //a = 1 + a => increment a
-                            if(*quadruple->arg1 == 1){
-                                writer.stream() << "inc " << reg << std::endl;
-                            }
-                            //a = -1 + a => decrement a
-                            else if(*quadruple->arg1 == -1){
-                                writer.stream() << "dec " << reg << std::endl;
-                            }
-                            //In the other cases, perform a simple addition
-                            else {
-                                writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                            }
-                        } 
-                        //In the other cases, use lea to perform the addition
+                        //a = 1 + a => increment a
+                        if(*quadruple->arg1 == 1){
+                            writer.stream() << "inc " << reg << std::endl;
+                        }
+                        //a = -1 + a => decrement a
+                        else if(*quadruple->arg1 == -1){
+                            writer.stream() << "dec " << reg << std::endl;
+                        }
+                        //In the other cases, perform a simple addition
                         else {
-                            Register reg = getRegNoMove(quadruple->result);
-                            writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
+                            writer.stream() << "add " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                         }
+                    } 
+                    //In the other cases, use lea to perform the addition
+                    else {
+                        Register reg = getRegNoMove(quadruple->result);
+                        writer.stream() << "lea " << reg << ", [" << arg(*quadruple->arg1) << " + " << arg(*quadruple->arg2) << "]" << std::endl;
                     }
             
                     written.insert(quadruple->result);
@@ -904,56 +861,28 @@ struct IntelStatementCompiler {
                 {
                     auto result = quadruple->result;
 
-                    if(isFloatVar(result)){
-                        //Optimize the special form a = a - b
-                        if(*quadruple->arg1 == result){
-                            FloatRegister reg = getFloatReg(result);
-                            
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        } else {
-                            FloatRegister reg = getFloatRegNoMove(result);
-                            copy(*quadruple->arg1, reg);
-                            
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        }
-                    } else {
-                        //Optimize the special form a = a - b by using only one instruction
-                        if(*quadruple->arg1 == result){
-                            Register reg = getReg(quadruple->result);
+                    //Optimize the special form a = a - b by using only one instruction
+                    if(*quadruple->arg1 == result){
+                        Register reg = getReg(quadruple->result);
 
-                            //a = a - 1 => decrement a
-                            if(*quadruple->arg2 == 1){
-                                writer.stream() << "dec " << reg << std::endl;
-                            }
-                            //a = a - -1 => increment a
-                            else if(*quadruple->arg2 == -1){
-                                writer.stream() << "inc " << reg << std::endl;
-                            }
-                            //In the other cases, perform a simple subtraction
-                            else {
-                                writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        } 
-                        //In the other cases, move the first arg into the result register and then subtract the second arg into it
+                        //a = a - 1 => decrement a
+                        if(*quadruple->arg2 == 1){
+                            writer.stream() << "dec " << reg << std::endl;
+                        }
+                        //a = a - -1 => increment a
+                        else if(*quadruple->arg2 == -1){
+                            writer.stream() << "inc " << reg << std::endl;
+                        }
+                        //In the other cases, perform a simple subtraction
                         else {
-                            Register reg = getRegNoMove(quadruple->result);
-                            writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
                             writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                         }
+                    } 
+                    //In the other cases, move the first arg into the result register and then subtract the second arg into it
+                    else {
+                        Register reg = getRegNoMove(quadruple->result);
+                        writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                        writer.stream() << "sub " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                     
                     written.insert(quadruple->result);
@@ -962,71 +891,30 @@ struct IntelStatementCompiler {
                 }
                 case tac::Operator::MUL:
                 {
-                    if(isFloatVar(quadruple->result)){
-                        //Form  x = x * y
-                        if(*quadruple->arg1 == quadruple->result){
-                            FloatRegister reg = getFloatReg(quadruple->result);
-                            
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        }
-                        //Form x = y * x
-                        else if(*quadruple->arg2 == quadruple->result){
-                            FloatRegister reg = getFloatReg(quadruple->result);
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        } 
-                        //General form
-                        else  {
-                            FloatRegister reg = getFloatRegNoMove(quadruple->result);
-                            copy(*quadruple->arg1, reg);
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        }
+                    //Form  x = x * y
+                    if(*quadruple->arg1 == quadruple->result){
+                        mul(quadruple->result, *quadruple->arg2);
+                    }
+                    //Form x = y * x
+                    else if(*quadruple->arg2 == quadruple->result){
+                        mul(quadruple->result, *quadruple->arg1);
+                    }
+                    //Form x = y * z (z: immediate)
+                    else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+                    }
+                    //Form x = y * z (y: immediate)
+                    else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+                        writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
+                    }
+                    //Form x = y * z (both variables)
+                    else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+                        auto reg = getRegNoMove(quadruple->result);
+                        copy(*quadruple->arg1, reg);
+                        writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     } else {
-                        //Form  x = x * y
-                        if(*quadruple->arg1 == quadruple->result){
-                            mul(quadruple->result, *quadruple->arg2);
-                        }
-                        //Form x = y * x
-                        else if(*quadruple->arg2 == quadruple->result){
-                            mul(quadruple->result, *quadruple->arg1);
-                        }
-                        //Form x = y * z (z: immediate)
-                        else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
-                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
-                        }
-                        //Form x = y * z (y: immediate)
-                        else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                            writer.stream() << "imul " << arg(quadruple->result) << ", " << arg(*quadruple->arg2) << ", " << arg(*quadruple->arg1) << std::endl;
-                        }
-                        //Form x = y * z (both variables)
-                        else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                            auto reg = getRegNoMove(quadruple->result);
-                            copy(*quadruple->arg1, reg);
-                            writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                        } else {
-                            //This case should never happen unless the optimizer has bugs
-                            assert(false);
-                        }
+                        //This case should never happen unless the optimizer has bugs
+                        assert(false);
                     }
                     
                     written.insert(quadruple->result);
@@ -1034,48 +922,20 @@ struct IntelStatementCompiler {
                     break;            
                 }
                 case tac::Operator::DIV:
-                    if(isFloatVar(quadruple->result)){
-                        //Form x = x / y
-                        if(*quadruple->arg1 == quadruple->result){
-                            FloatRegister reg = getFloatReg(quadruple->result);
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
-                        } 
-                        //General form
-                        else {
-                            FloatRegister reg = getFloatRegNoMove(quadruple->result);
-                            copy(*quadruple->arg1, reg);
-                            if(tac::isFloat(*quadruple->arg2)){
-                                FloatRegister reg2 = getFloatReg();
-                                copy(*quadruple->arg2, reg2);
-                                writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
-                                float_registers.release(reg2);
-                            } else {
-                                writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                            }
+                    //Form x = x / y when y is power of two
+                    if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
+                        int constant = boost::get<int>(*quadruple->arg2);
+
+                        if(isPowerOfTwo(constant)){
+                            writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
+
+                            written.insert(quadruple->result);
+
+                            return;
                         }
-                    } else {
-                        //Form x = x / y when y is power of two
-                        if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
-                            int constant = boost::get<int>(*quadruple->arg2);
-
-                            if(isPowerOfTwo(constant)){
-                                writer.stream() << "sar " << arg(quadruple->result) << ", " << powerOfTwo(constant) << std::endl;
-
-                                written.insert(quadruple->result);
-
-                                return;
-                            }
-                        }
-
-                        div(quadruple);
                     }
+
+                    div(quadruple);
 
                     written.insert(quadruple->result);
                     
@@ -1085,6 +945,162 @@ struct IntelStatementCompiler {
                     
                     written.insert(quadruple->result);
 
+                    break;
+                case tac::Operator::FADD:
+                {
+                    auto result = quadruple->result;
+                        
+                    //Optimize the special form a = a + b
+                    if(*quadruple->arg1 == result){
+                        FloatRegister reg = getFloatReg(result);
+
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    }
+                    //Optimize the special form a = b + a by using only one instruction
+                    else if(*quadruple->arg2 == result){
+                        FloatRegister reg = getFloatReg(result);
+
+                        if(tac::isFloat(*quadruple->arg1)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg1, reg2);
+                            writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                        }
+                    } 
+                    //In the other forms, use two instructions
+                    else {
+                        FloatRegister reg = getFloatRegNoMove(result);
+                        copy(*quadruple->arg1, reg);
+
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    }
+            
+                    written.insert(quadruple->result);
+
+                    break;
+                }
+                case tac::Operator::FSUB:
+                {
+                    auto result = quadruple->result;
+
+                    //Optimize the special form a = a - b
+                    if(*quadruple->arg1 == result){
+                        FloatRegister reg = getFloatReg(result);
+
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    } else {
+                        FloatRegister reg = getFloatRegNoMove(result);
+                        copy(*quadruple->arg1, reg);
+
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    }
+                    
+                    written.insert(quadruple->result);
+                    
+                    break;
+                }
+                case tac::Operator::FMUL:
+                    //Form  x = x * y
+                    if(*quadruple->arg1 == quadruple->result){
+                        FloatRegister reg = getFloatReg(quadruple->result);
+
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    }
+                    //Form x = y * x
+                    else if(*quadruple->arg2 == quadruple->result){
+                        FloatRegister reg = getFloatReg(quadruple->result);
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    } 
+                    //General form
+                    else  {
+                        FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                        copy(*quadruple->arg1, reg);
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    }
+                    
+                    written.insert(quadruple->result);
+
+                    break;            
+                case tac::Operator::FDIV:
+                    //Form x = x / y
+                    if(*quadruple->arg1 == quadruple->result){
+                        FloatRegister reg = getFloatReg(quadruple->result);
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    } 
+                    //General form
+                    else {
+                        FloatRegister reg = getFloatRegNoMove(quadruple->result);
+                        copy(*quadruple->arg1, reg);
+                        if(tac::isFloat(*quadruple->arg2)){
+                            FloatRegister reg2 = getFloatReg();
+                            copy(*quadruple->arg2, reg2);
+                            writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
+                            float_registers.release(reg2);
+                        } else {
+                            writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        }
+                    }
+                    
+                    written.insert(quadruple->result);
+                    
                     break;            
                 case tac::Operator::MINUS:
                 {
