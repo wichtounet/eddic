@@ -50,6 +50,7 @@ enum class Operator : unsigned int {
 };
 
 tac::Operator toOperator(ast::Operator op);
+tac::Operator toFloatOperator(ast::Operator op);
 
 } //end of tac
 

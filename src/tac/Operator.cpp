@@ -27,3 +27,18 @@ tac::Operator tac::toOperator(ast::Operator op){
             assert(false);
     }
 }
+
+tac::Operator tac::toFloatOperator(ast::Operator op){
+    switch(op){
+        case ast::Operator::ADD:
+            return tac::Operator::FADD;
+        case ast::Operator::SUB:
+            return tac::Operator::FSUB;
+        case ast::Operator::DIV:
+            return tac::Operator::FDIV;
+        case ast::Operator::MUL:
+            return tac::Operator::FMUL;
+        default:
+            assert(false);
+    }
+}
