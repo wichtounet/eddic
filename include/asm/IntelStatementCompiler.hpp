@@ -746,7 +746,12 @@ struct IntelStatementCompiler {
         }
 
         if(call->return_){
-            registers.setLocation(call->return_, getReturnRegister1());
+            if(call->return_->type().base() == BaseType::FLOAT){
+                float_registers.setLocation(call->return_, FloatRegister::XMM7);
+            } else {
+                registers.setLocation(call->return_, getReturnRegister1());
+            }
+                
             written.insert(call->return_);
         }
 
@@ -1227,6 +1232,11 @@ struct IntelStatementCompiler {
                             writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
                         }
                     }
+                } else if(boost::get<double>(&*quadruple->arg1)){
+                    Register reg = getReg();
+                    writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                    writer.stream() << "push " << reg << std::endl;
+                    registers.release(reg);
                 } else {
                     writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
                 }
@@ -1237,34 +1247,47 @@ struct IntelStatementCompiler {
             {
                 //A return without args is the same as exiting from the function
                 if(quadruple->arg1){
-                    Register reg1 = getReturnRegister1();
-                    Register reg2 = getReturnRegister2();
+                    if(isFloat(*quadruple->arg1)){
+                        spills(FloatRegister::XMM7);
+                        move(*quadruple->arg1, FloatRegister::XMM7);
+                    } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && isFloatVar(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1))){
+                        auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
-                    spillsIfNecessary(reg1, *quadruple->arg1);
-
-                    bool necessary = true;
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        if(registers.inRegister(*ptr, reg1)){
-                            necessary = false;
+                        FloatRegister reg = getFloatReg(variable);
+                        if(reg != FloatRegister::XMM7){
+                            spills(FloatRegister::XMM7);
+                            writer.stream() << "movsd xmm7, " << reg << std::endl;
                         }
-                    }    
+                    } else {
+                        Register reg1 = getReturnRegister1();
+                        Register reg2 = getReturnRegister2();
 
-                    if(necessary){
-                        writer.stream() << "mov " << reg1 << ", " << arg(*quadruple->arg1) << std::endl;
-                    }
+                        spillsIfNecessary(reg1, *quadruple->arg1);
 
-                    if(quadruple->arg2){
-                        spillsIfNecessary(reg2, *quadruple->arg2);
-
-                        necessary = true;
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                            if(registers.inRegister(*ptr, reg2)){
+                        bool necessary = true;
+                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                            if(registers.inRegister(*ptr, reg1)){
                                 necessary = false;
                             }
                         }    
 
                         if(necessary){
-                            writer.stream() << "mov " << reg2 << ", " << arg(*quadruple->arg2) << std::endl;
+                            writer.stream() << "mov " << reg1 << ", " << arg(*quadruple->arg1) << std::endl;
+                        }
+
+                        if(quadruple->arg2){
+                            spillsIfNecessary(reg2, *quadruple->arg2);
+
+                            necessary = true;
+                            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                                if(registers.inRegister(*ptr, reg2)){
+                                    necessary = false;
+                                }
+                            }    
+
+                            if(necessary){
+                                writer.stream() << "mov " << reg2 << ", " << arg(*quadruple->arg2) << std::endl;
+                            }
                         }
                     }
                 }

@@ -18,4 +18,12 @@ void main(){
     println(c);
     c = d / 0.345;
     println(c);
+
+    println(test(2.0888, 1.00222));
+}
+
+float test(float a, float b){
+    float c = a + b;
+    println(c);
+    return c;
 }

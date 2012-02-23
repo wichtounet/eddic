@@ -39,8 +39,14 @@ enum class Register : unsigned int {
 };
 
 enum class FloatRegister : unsigned int {
-    XMM0, //Just to avoid a warning
-    //TODO
+    XMM0,
+    XMM1,
+    XMM2,
+    XMM3,
+    XMM4,
+    XMM5,
+    XMM6,
+    XMM7,
 
     REGISTER_COUNT
 };
