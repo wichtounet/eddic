@@ -612,8 +612,8 @@ struct IntelStatementCompiler {
     }
     
     void endBasicBlock(){
-        //spillsAll(registers);
-        //spillsAll(float_registers);
+        spillsAll(registers);
+        spillsAll(float_registers);
 
         ended = true;
     }
