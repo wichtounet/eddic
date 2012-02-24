@@ -192,6 +192,32 @@ struct CheckerVisitor : public boost::static_visitor<> {
             if(type != operationType){
                 throw SemanticalException("Incompatible type");
             }
+                
+            auto op = operation.get<0>();
+            
+            if(type.base() == BaseType::INT){
+                if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD){
+                    throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int");
+                }
+            }
+
+            if(type.base() == BaseType::FLOAT){
+                if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD){
+                    throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float");
+                }
+            }
+            
+            if(type.base() == BaseType::STRING){
+                if(op != ast::Operator::ADD){
+                    throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string");
+                }
+            }
+            
+            if(type.base() == BaseType::BOOL){
+                if(op != ast::Operator::AND && op != ast::Operator::OR){
+                    throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool");
+                }
+            }
         }
     }
 
