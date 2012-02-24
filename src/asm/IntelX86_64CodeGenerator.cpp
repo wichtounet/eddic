@@ -537,7 +537,21 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     
     writer.stream() << "mulsd xmm0, xmm2" << std::endl;
     writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
+    writer.stream() << "mov rax, rbx" << std::endl;
+
+    //Handle numbers with 0 at the beginning of the decimal part
+    writer.stream() << "or rax, rax" << std::endl;
+    writer.stream() << "je .end" << std::endl;
+    writer.stream() << ".start:" << std::endl;
+    writer.stream() << "cmp rax, 1000" << std::endl;
+    writer.stream() << "jge .end" << std::endl;
+    writer.stream() << "push 0" << std::endl;
+    writer.stream() << "call _F5printI" << std::endl;
+    writer.stream() << "add rsp, 8" << std::endl;
+    writer.stream() << "imul rax, 10" << std::endl;
+    writer.stream() << "jmp .start" << std::endl;
     
+    writer.stream() << ".end:" << std::endl;
     writer.stream() << "push rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
     writer.stream() << "add rsp, 8" << std::endl;
