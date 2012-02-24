@@ -25,5 +25,7 @@ void main(){
 float test(float a, float b){
     float c = a + b;
     println(c);
-    return c;
+    float d = a * b;
+    println(d);
+    return c + d;
 }
