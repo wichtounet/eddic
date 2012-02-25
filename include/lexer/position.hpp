@@ -31,7 +31,7 @@ namespace boost { namespace spirit { namespace qi
         template <typename Context, typename Iterator>
         struct attribute
         {
-            typedef boost::spirit::classic::file_position_base<std::string> type;
+            typedef eddic::ast::Position type;
         };
 
         template <typename Iterator, typename Context
@@ -41,7 +41,15 @@ namespace boost { namespace spirit { namespace qi
         {
             qi::skip_over(first, last, skipper);
             
-            attr = position_begin.get_position();
+            auto& pos = position_begin.get_position();
+
+            eddic::ast::Position position;
+            position.theLine = position_begin.get_currentline();
+            position.file = pos.file;
+            position.column = pos.column;
+            position.line = pos.line;
+
+            attr = position;
 
             return true;
         }

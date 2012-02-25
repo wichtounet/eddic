@@ -11,11 +11,11 @@
 #include <vector>
 
 #include <boost/variant/variant.hpp>
-
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/home/support/attributes.hpp>
 #include <boost/spirit/home/classic/iterator.hpp>
 
+#include "ast/Position.hpp"
 #include "ast/Deferred.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
@@ -51,7 +51,7 @@ typedef boost::variant<
 struct ASTSourceFile {
     std::shared_ptr<GlobalContext> context;
 
-    boost::spirit::classic::file_position_base<std::string> position;
+    Position position;
     std::vector<FirstLevelBlock> blocks;
 
     mutable long references;
@@ -71,7 +71,7 @@ typedef Deferred<ASTSourceFile> SourceFile;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SourceFile, 
-    (boost::spirit::classic::file_position_base<std::string>, Content->position)
+    (eddic::ast::Position, Content->position)
     (std::vector<eddic::ast::FirstLevelBlock>, Content->blocks)
 )
 
