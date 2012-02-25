@@ -114,10 +114,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
         TIMER_END(parsing)
 
         if(parsing){
-            std::cout << program.Content->position.line << std::endl;
-            std::cout << program.Content->position.file << std::endl;
-            std::cout << program.Content->position.column << std::endl;
-
             //Symbol tables
             FunctionTable functionTable;
             StringPool pool;
