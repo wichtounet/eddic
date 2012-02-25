@@ -43,13 +43,10 @@ namespace boost { namespace spirit { namespace qi
             
             auto& pos = position_begin.get_position();
 
-            eddic::ast::Position position;
-            position.theLine = position_begin.get_currentline();
-            position.file = pos.file;
-            position.column = pos.column;
-            position.line = pos.line;
-
-            attr = position;
+            attr.theLine = position_begin.get_currentline();
+            attr.file = pos.file;
+            attr.column = pos.column;
+            attr.line = pos.line;
 
             return true;
         }
