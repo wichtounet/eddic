@@ -61,6 +61,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     
     ValueGrammar value;
     TypeGrammar type;
+
     const lexer::pos_iterator_type& position_begin;
 };
 

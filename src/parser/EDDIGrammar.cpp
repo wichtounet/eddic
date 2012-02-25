@@ -13,8 +13,8 @@ using namespace eddic;
 
 parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
-        value(lexer), 
-        type(lexer),
+        value(lexer, position_begin), 
+        type(lexer, position_begin),
         position_begin(position_begin){
     
     compound_op.add

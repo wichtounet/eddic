@@ -10,7 +10,10 @@
 
 using namespace eddic;
 
-parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
+parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
+        ValueGrammar::base_type(value, "Value Grammar"),
+        position_begin(position_begin){
+
     /* Match operators into symbols */
     //TODO Find a way to avoid duplication of these things
     additive_op.add
