@@ -199,7 +199,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     function %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( arg >> *( lexer.comma > arg))
