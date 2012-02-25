@@ -7,13 +7,15 @@
 
 #include "parser/EDDIGrammar.hpp"
 #include "lexer/adapttokens.hpp"
+#include "lexer/position.hpp"
 
 using namespace eddic;
 
-parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
+parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
         value(lexer), 
-        type(lexer){
+        type(lexer),
+        position_begin(position_begin){
     
     compound_op.add
         ("+=", ast::Operator::ADD)
@@ -218,6 +220,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
 
     program %=
             qi::eps 
+        >>  qi::position(position_begin)
         >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import);
 
     //Name the rules
