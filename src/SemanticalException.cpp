@@ -18,7 +18,7 @@ const char* SemanticalException::what() const throw() {
     return m_message.c_str();
 }
         
-const SemanticalException::std::string& message(){
+const std::string& SemanticalException::message(){
     return m_message;
 }
 

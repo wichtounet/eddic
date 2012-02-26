@@ -7,6 +7,7 @@
 
 #include "parser/ValueGrammar.hpp"
 #include "lexer/adapttokens.hpp"
+#include "lexer/position.hpp"
 
 using namespace eddic;
 
@@ -160,7 +161,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >   lexer.right_parenth;
     
     assignment %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.assign 
         >>  value;
     

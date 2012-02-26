@@ -86,7 +86,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
 
         if(var->position().isParameter()){
-            throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName);
+            throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName, assignment.Content->position);
         }
     }
 

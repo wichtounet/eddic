@@ -129,7 +129,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_bracket;
 
     compound_assignment %=
-            lexer.identifier
+            qi::position(position_begin)
+        >>  lexer.identifier
         >>  qi::adapttokens[compound_op]
         >>  value;
 
