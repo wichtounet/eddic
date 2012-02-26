@@ -31,8 +31,8 @@ class SemanticalException: public std::exception {
 
         ~SemanticalException() throw();
 
-        const std::string& message();
-        boost::optional<eddic::ast::Position> position();
+        const std::string& message() const;
+        boost::optional<eddic::ast::Position> position() const;
 
         virtual const char* what() const throw();
 };

@@ -18,10 +18,10 @@ const char* SemanticalException::what() const throw() {
     return m_message.c_str();
 }
         
-const std::string& SemanticalException::message(){
+const std::string& SemanticalException::message() const {
     return m_message;
 }
 
-boost::optional<eddic::ast::Position> SemanticalException::position(){
+boost::optional<eddic::ast::Position> SemanticalException::position() const {
     return m_position;
 }
