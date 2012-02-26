@@ -22,7 +22,9 @@
 #include "AssemblyFileWriter.hpp"
 
 #include "parser/SpiritParser.hpp"
+
 #include "ast/SourceFile.hpp"
+#include "ast/Position.hpp"
 
 //Annotators
 #include "ast/DefaultValues.hpp"
@@ -335,4 +337,8 @@ void exec(const std::string& command) {
 
 void eddic::warn(const std::string& warning){
     std::cout << "warning: " << warning << std::endl;
+}
+
+void eddic::warn(eddic::ast::Position& position, const std::string& warning){
+    std::cout << position.file << ":" << position.line << ": warning " << warning << std::endl;
 }

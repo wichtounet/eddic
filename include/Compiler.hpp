@@ -22,6 +22,10 @@ namespace parser {
     class SpiritParser;
 }
 
+namespace ast {
+    struct Position;
+}
+
 class StringPool;
 class FunctionTable;
 
@@ -59,6 +63,8 @@ struct Compiler {
  * \param warning The warning message to produce.  
  */
 void warn(const std::string& warning);
+
+void warn(ast::Position& position, const std::string& warning);
 
 } //end of eddic
 

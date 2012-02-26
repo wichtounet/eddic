@@ -65,7 +65,7 @@ struct Inspector : public boost::static_visitor<> {
             int references = functionTable.referenceCount(declaration.Content->mangledName);
 
             if(declaration.Content->functionName != "main" && references == 0){
-                warn(declaration.Content->position.file + ":" + toString(declaration.Content->position.line) + " : unused function '" + declaration.Content->functionName + "'");
+                warn(declaration.Content->position, " : unused function '" + declaration.Content->functionName + "'");
             }
         }
         
