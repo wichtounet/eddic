@@ -64,7 +64,7 @@ struct Compiler {
  */
 void warn(const std::string& warning);
 
-void warn(ast::Position& position, const std::string& warning);
+void warn(const ast::Position& position, const std::string& warning);
 
 } //end of eddic
 

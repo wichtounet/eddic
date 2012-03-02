@@ -13,6 +13,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -28,6 +29,7 @@ namespace ast {
 struct ASTArrayDeclaration {
     std::shared_ptr<Context> context;
 
+    Position position;
     std::string arrayType;
     std::string arrayName;
     int arraySize;
@@ -49,6 +51,7 @@ typedef Deferred<ASTArrayDeclaration> ArrayDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayDeclaration, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->arrayType)
     (std::string, Content->arrayName)
     (int, Content->arraySize)

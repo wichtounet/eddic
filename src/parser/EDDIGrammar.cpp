@@ -116,13 +116,15 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   lexer.stop;
 
     declaration %= 
-            const_
+            qi::position(position_begin)
+        >>  const_
         >>  lexer.identifier 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value);
     
     arrayDeclaration %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer
@@ -148,14 +150,16 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  value;
     
     globalDeclaration %= 
-            const_
+            qi::position(position_begin)
+        >>  const_
         >>  lexer.identifier 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;
     
     globalArrayDeclaration %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer

@@ -28,6 +28,7 @@ namespace ast {
 struct ASTGlobalVariableDeclaration {
     std::shared_ptr<Context> context;
 
+    Position position;
     bool constant;    
     std::string variableType;
     std::string variableName;
@@ -50,6 +51,7 @@ typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalVariableDeclaration, 
+    (eddic::ast::Position, Content->position)
     (bool, Content->constant)
     (std::string, Content->variableType)
     (std::string, Content->variableName)
