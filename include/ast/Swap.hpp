@@ -28,6 +28,8 @@ namespace ast {
  */
 struct ASTSwap {
     std::shared_ptr<Context> context;
+
+    Position position;
     std::string lhs;
     std::string rhs;
     std::shared_ptr<Variable> lhs_var;
@@ -50,6 +52,7 @@ typedef Deferred<ASTSwap> Swap;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Swap, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->lhs)
     (std::string, Content->rhs)
 )

@@ -28,6 +28,7 @@ struct ASTCompoundAssignment {
     std::string variableName;
     Value value;
     ast::Operator op;
+    Position position;
 
     mutable long references;
     ASTCompoundAssignment() : references(0) {}
@@ -46,6 +47,7 @@ typedef Deferred<ASTCompoundAssignment> CompoundAssignment;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::CompoundAssignment, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
     (eddic::ast::Operator, Content->op)
     (eddic::ast::Value, Content->value)

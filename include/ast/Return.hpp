@@ -14,6 +14,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
+#include "ast/Position.hpp"
 
 #include "FunctionTable.hpp"
 
@@ -32,6 +33,7 @@ struct ASTReturn {
     std::shared_ptr<Function> function;
     std::shared_ptr<FunctionContext> context;
 
+    Position position;
     Value value;
 
     mutable long references;
@@ -51,6 +53,7 @@ typedef Deferred<ASTReturn> Return;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Return, 
+    (eddic::ast::Position, Content->position)
     (eddic::ast::Value, Content->value)
 )
 

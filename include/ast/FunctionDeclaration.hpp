@@ -12,6 +12,7 @@
 
 #include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -26,6 +27,8 @@ namespace ast {
  */
 struct ASTFunctionDeclaration { 
     std::shared_ptr<FunctionContext> context;
+
+    Position position;
     std::string returnType;
     std::string functionName;
     std::string mangledName;
@@ -49,6 +52,7 @@ typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionDeclaration, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->returnType)
     (std::string, Content->functionName)
     (std::vector<eddic::ast::FunctionParameter>, Content->parameters)

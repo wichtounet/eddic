@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "ast/Deferred.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -27,6 +28,7 @@ namespace ast {
 struct ASTArrayValue {
     std::shared_ptr<Context> context;
 
+    Position position;
     std::string arrayName;
     std::shared_ptr<Variable> var;
     Value indexValue;
@@ -48,6 +50,7 @@ typedef Deferred<ASTArrayValue> ArrayValue;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayValue, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->arrayName)
     (eddic::ast::Value, Content->indexValue)
 )

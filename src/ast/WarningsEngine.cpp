@@ -13,6 +13,7 @@
 #include "ast/WarningsEngine.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/Position.hpp"
 
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -23,15 +24,58 @@
 #include "Compiler.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
+#include "Utils.hpp"
 
 using namespace eddic;
 
-struct Inspector : public boost::static_visitor<> {
-    private:
-        FunctionTable& functionTable;
+namespace {
 
+typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;  
+
+struct Collector : public boost::static_visitor<> {
     public:
-        Inspector(FunctionTable& table) : functionTable(table) {}
+        AUTO_RECURSE_PROGRAM()
+
+        void operator()(ast::FunctionDeclaration& function){
+            for(auto& param : function.Content->parameters){
+                positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
+            }
+            
+            visit_each(*this, function.Content->instructions);
+        }
+        
+        void operator()(ast::GlobalVariableDeclaration& declaration){
+            positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
+        }
+
+        void operator()(ast::GlobalArrayDeclaration& declaration){
+            positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+        }
+        
+        void operator()(ast::ArrayDeclaration& declaration){
+            positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+        }
+        
+        void operator()(ast::VariableDeclaration& declaration){
+            positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
+        }
+        
+        template<typename T>
+        void operator()(T&){
+            //Nothing
+        }
+
+        const ast::Position& getPosition(std::shared_ptr<Variable> var){
+            return positions[var];   
+        }
+
+    private:
+        Positions positions;  
+};
+
+struct Inspector : public boost::static_visitor<> {
+    public:
+        Inspector(FunctionTable& table, Collector& collector) : functionTable(table), collector(collector) {}
 
         void check(std::shared_ptr<Context> context){
             auto iter = context->begin();
@@ -42,11 +86,11 @@ struct Inspector : public boost::static_visitor<> {
 
                 if(var->referenceCount() == 0){
                     if(var->position().isStack()){
-                        warn("unused variable '" + var->name() + "'");
+                        warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
                     } else if(var->position().isGlobal()){
-                        warn("unused global variable '" + var->name() + "'");
+                        warn(collector.getPosition(var), "unused global variable '" + var->name() + "'");
                     } else if(var->position().isParameter()){
-                        warn("unused parameter '" + var->name() + "'");
+                        warn(collector.getPosition(var), "unused parameter '" + var->name() + "'");
                     }
                 }
             }
@@ -64,30 +108,28 @@ struct Inspector : public boost::static_visitor<> {
             int references = functionTable.referenceCount(declaration.Content->mangledName);
 
             if(declaration.Content->functionName != "main" && references == 0){
-                warn("unused function '" + declaration.Content->functionName + "'");
+                warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
             }
         }
-        
-        void operator()(ast::Import&){
-            //Nothing to warn about there
-        }
 
-        void operator()(ast::StandardImport&){
-            //Nothing to warn about there
-        }
-
-        void operator()(ast::GlobalVariableDeclaration&){
+        template<typename T>
+        void operator()(T&){
             //Nothing to check there
         }
-
-        void operator()(ast::GlobalArrayDeclaration&){
-            //Nothing to check there
-        }
+    
+    private:
+        FunctionTable& functionTable;
+        Collector& collector;
 };
+
+} //end of anonymous namespace
 
 void ast::WarningsEngine::check(ast::SourceFile& program, FunctionTable& table) const {
     if(WarningUnused){
-        Inspector inspector(table);
+        Collector collector;
+        visit_non_variant(collector, program);
+
+        Inspector inspector(table, collector);
         visit_non_variant(inspector, program);
     }
 }

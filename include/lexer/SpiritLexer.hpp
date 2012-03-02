@@ -26,11 +26,6 @@ namespace lexer {
 
 namespace spirit = boost::spirit;
 namespace lex = boost::spirit::lex;
-    
-typedef std::string::iterator base_iterator_type;
-typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-typedef boost::spirit::lex::lexertl::token<pos_iterator_type> Tok;
-typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
 /*!
  * \class SimpleLexer
@@ -156,6 +151,11 @@ class SpiritLexer : public lex::lexer<L> {
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
 };
+
+typedef std::string::iterator base_iterator_type;
+typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
+typedef boost::spirit::lex::lexertl::token<pos_iterator_type> Tok;
+typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 
 //Typedef for the parsers
 typedef lexer::lexer_type::iterator_type Iterator;

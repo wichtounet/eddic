@@ -24,7 +24,7 @@ namespace parser {
  * \brief Grammar representing values in EDDI language.
  */
 struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
-    ValueGrammar(const lexer::Lexer& lexer);
+    ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
     
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
@@ -59,6 +59,8 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::symbols<char, ast::Operator> prefix_op;
 
     qi::symbols<char, ast::BuiltinType> builtin_op;
+    
+    const lexer::pos_iterator_type& position_begin;
 };
 
 } //end of parser

@@ -22,7 +22,9 @@
 #include "AssemblyFileWriter.hpp"
 
 #include "parser/SpiritParser.hpp"
+
 #include "ast/SourceFile.hpp"
+#include "ast/Position.hpp"
 
 //Annotators
 #include "ast/DefaultValues.hpp"
@@ -196,7 +198,14 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             }
         }
     } catch (const SemanticalException& e) {
-        std::cout << e.what() << std::endl;
+        if(e.position()){
+            auto& position = *e.position();
+
+            std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
+        } else {
+            std::cout << e.what() << std::endl;
+        }
+
         code = 1;
     }
 
@@ -335,4 +344,8 @@ void exec(const std::string& command) {
 
 void eddic::warn(const std::string& warning){
     std::cout << "warning: " << warning << std::endl;
+}
+
+void eddic::warn(const eddic::ast::Position& position, const std::string& warning){
+    std::cout << position.file << ":" << position.line << ": warning: " << warning << std::endl;
 }

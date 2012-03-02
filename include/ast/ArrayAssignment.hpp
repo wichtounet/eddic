@@ -29,6 +29,7 @@ namespace ast {
 struct ASTArrayAssignment {
     std::shared_ptr<Context> context;
 
+    Position position;
     std::string variableName;
     Value indexValue;
     Value value;
@@ -50,6 +51,7 @@ typedef Deferred<ASTArrayAssignment> ArrayAssignment;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayAssignment, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
     (eddic::ast::Value, Content->indexValue)
     (eddic::ast::Value, Content->value)

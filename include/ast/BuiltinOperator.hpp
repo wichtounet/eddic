@@ -13,6 +13,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -29,6 +30,7 @@ enum class BuiltinType : unsigned int {
  * Should only be used from the Deferred version (eddic::ast::FunctionCall).
  */
 struct ASTBuiltinOperator {
+    Position position;
     BuiltinType type;
     std::vector<Value> values;
 
@@ -49,6 +51,7 @@ typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::BuiltinOperator, 
+    (eddic::ast::Position, Content->position)
     (eddic::ast::BuiltinType, Content->type)
     (std::vector<eddic::ast::Value>, Content->values)
 )

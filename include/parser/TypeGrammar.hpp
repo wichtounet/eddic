@@ -24,11 +24,13 @@ namespace parser {
  * \brief Grammar representing types in EDDI language.
  */
 struct TypeGrammar : qi::grammar<lexer::Iterator, ast::Type()> {
-    TypeGrammar(const lexer::Lexer& lexer);
+    TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
 
     qi::rule<lexer::Iterator, ast::Type()> type;
     qi::rule<lexer::Iterator, ast::ArrayType()> arrayType;
     qi::rule<lexer::Iterator, ast::SimpleType()> simpleType;
+    
+    const lexer::pos_iterator_type& position_begin;
 };
 
 } //end of parser

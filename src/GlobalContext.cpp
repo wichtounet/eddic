@@ -22,7 +22,10 @@ GlobalContext::GlobalContext() : Context(NULL) {
     Val zero = 0;
     
     variables["eddi_remaining"] = std::make_shared<Variable>("eddi_remaining", stringToType("int"), Position(PositionType::GLOBAL, "eddi_remaining"), zero);
+    variables["eddi_remaining"]->addReference(); //In order to not display a warning
+
     variables["eddi_current"] = std::make_shared<Variable>("eddi_current", stringToType("int"), Position(PositionType::GLOBAL, "eddi_current"), zero);
+    variables["eddi_current"]->addReference(); //In order to not display a warning
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){

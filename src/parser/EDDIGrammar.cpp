@@ -7,13 +7,15 @@
 
 #include "parser/EDDIGrammar.hpp"
 #include "lexer/adapttokens.hpp"
+#include "lexer/position.hpp"
 
 using namespace eddic;
 
-parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
+parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         EddiGrammar::base_type(program, "EDDI Grammar"), 
-        value(lexer), 
-        type(lexer){
+        value(lexer, position_begin), 
+        type(lexer, position_begin),
+        position_begin(position_begin){
     
     compound_op.add
         ("+=", ast::Operator::ADD)
@@ -68,7 +70,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >   lexer.right_brace;
     
     foreach_ = 
-            lexer.foreach_ 
+            qi::position(position_begin)
+        >>  lexer.foreach_ 
         >>  lexer.left_parenth 
         >>  lexer.identifier 
         >>  lexer.identifier 
@@ -82,7 +85,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.right_brace;
     
     foreachin_ = 
-            lexer.foreach_ 
+            qi::position(position_begin)
+        >>  lexer.foreach_ 
         >>  lexer.left_parenth 
         >>  lexer.identifier 
         >>  lexer.identifier 
@@ -114,30 +118,35 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >   lexer.stop;
 
     declaration %= 
-            const_
+            qi::position(position_begin)
+        >>  const_
         >>  lexer.identifier 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value);
     
     arrayDeclaration %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer
         >>  lexer.right_bracket;
 
     compound_assignment %=
-            lexer.identifier
+            qi::position(position_begin)
+        >>  lexer.identifier
         >>  qi::adapttokens[compound_op]
         >>  value;
 
     return_ %=
-            lexer.return_
+            qi::position(position_begin)
+        >>  lexer.return_
         >>  value
         >>  lexer.stop;
     
     arrayAssignment %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket
@@ -145,14 +154,16 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  value;
     
     globalDeclaration %= 
-            const_
+            qi::position(position_begin)
+        >>  const_
         >>  lexer.identifier 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;
     
     globalArrayDeclaration %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer
@@ -160,7 +171,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.stop;
 
     swap %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.swap 
         >>  lexer.identifier;
     
@@ -197,7 +209,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.identifier;
     
     function %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( arg >> *( lexer.comma > arg))
@@ -218,6 +231,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
 
     program %=
             qi::eps 
+        >>  qi::position(position_begin)
         >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import);
 
     //Name the rules
