@@ -29,6 +29,7 @@ namespace ast {
 struct ASTForeachIn {
     std::shared_ptr<Context> context;
 
+    ast::Position position;
     std::string variableType;
     std::string variableName;
     std::string arrayName;
@@ -56,6 +57,7 @@ typedef Deferred<ASTForeachIn> ForeachIn;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ForeachIn, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->variableType)
     (std::string, Content->variableName)
     (std::string, Content->arrayName)

@@ -70,7 +70,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   lexer.right_brace;
     
     foreach_ = 
-            lexer.foreach_ 
+            qi::position(position_begin)
+        >>  lexer.foreach_ 
         >>  lexer.left_parenth 
         >>  lexer.identifier 
         >>  lexer.identifier 
@@ -84,7 +85,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_brace;
     
     foreachin_ = 
-            lexer.foreach_ 
+            qi::position(position_begin)
+        >>  lexer.foreach_ 
         >>  lexer.left_parenth 
         >>  lexer.identifier 
         >>  lexer.identifier 
@@ -142,7 +144,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.stop;
     
     arrayAssignment %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket
@@ -167,7 +170,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.stop;
 
     swap %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.swap 
         >>  lexer.identifier;
     

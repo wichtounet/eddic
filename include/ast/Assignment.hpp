@@ -30,9 +30,9 @@ namespace ast {
 struct ASTAssignment {
     std::shared_ptr<Context> context;
 
+    Position position;
     std::string variableName;
     Value value;
-    Position position;
 
     mutable long references;
     ASTAssignment() : references(0) {}

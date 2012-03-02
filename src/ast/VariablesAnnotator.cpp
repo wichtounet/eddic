@@ -48,11 +48,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
-            throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared");
+            throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
     
         if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-            throw SemanticalException("The value must be constant");
+            throw SemanticalException("The value must be constant", declaration.Content->position);
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->variableType); 
@@ -62,7 +62,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared");
+            throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
@@ -73,7 +73,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::Foreach& foreach){
         if(foreach.Content->context->exists(foreach.Content->variableName)){
-            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared");
+            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
         }
 
         foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
@@ -83,11 +83,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::ForeachIn& foreach){
         if(foreach.Content->context->exists(foreach.Content->variableName)){
-            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared");
+            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
         }
         
         if(!foreach.Content->context->exists(foreach.Content->arrayName)){
-            throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared");
+            throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
         }
 
         static int generated = 0;
@@ -101,7 +101,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Assignment& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {
-            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
+            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
         }
 
         visit(*this, assignment.Content->value);
@@ -111,7 +111,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::CompoundAssignment& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {
-            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared");
+            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
         }
 
         visit(*this, assignment.Content->value);
@@ -121,7 +121,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::SuffixOperation& operation){
         if (!operation.Content->context->exists(operation.Content->variableName)) {
-            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared");
+            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared", operation.Content->position);
         }
 
         operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
@@ -130,7 +130,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::PrefixOperation& operation){
         if (!operation.Content->context->exists(operation.Content->variableName)) {
-            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared");
+            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared", operation.Content->position);
         }
 
         operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
@@ -143,7 +143,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::ArrayAssignment& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {
-            throw SemanticalException("Array " + assignment.Content->variableName + " has not  been declared");
+            throw SemanticalException("Array " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
         }
 
         visit(*this, assignment.Content->indexValue);
@@ -154,7 +154,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::VariableDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
-            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared");
+            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
         
         visit(*this, *declaration.Content->value);
@@ -164,7 +164,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         if(type.isConst()){
             if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                throw SemanticalException("The value must be constant");
+                throw SemanticalException("The value must be constant", declaration.Content->position);
             }
             
             declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
@@ -175,7 +175,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::ArrayDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared");
+            throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
         BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
@@ -186,11 +186,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::Swap& swap){
         if (swap.Content->lhs == swap.Content->rhs) {
-            throw SemanticalException("Cannot swap a variable with itself");
+            throw SemanticalException("Cannot swap a variable with itself", swap.Content->position);
         }
 
         if (!swap.Content->context->exists(swap.Content->lhs) || !swap.Content->context->exists(swap.Content->rhs)) {
-            throw SemanticalException("Variable has not been declared in the swap");
+            throw SemanticalException("Variable has not been declared in the swap", swap.Content->position);
         }
 
         swap.Content->lhs_var = swap.Content->context->getVariable(swap.Content->lhs);
@@ -203,7 +203,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
-            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared");
+            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
         }
 
         //Reference the variable
@@ -213,7 +213,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::ArrayValue& array){
         if (!array.Content->context->exists(array.Content->arrayName)) {
-            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared");
+            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared", array.Content->position);
         }
         
         //Reference the variable
