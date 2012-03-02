@@ -204,7 +204,9 @@ struct CheckerVisitor : public boost::static_visitor<> {
             }
 
             if(type.base() == BaseType::FLOAT){
-                if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD){
+                if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
+                    op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
+                        op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
                     throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float");
                 }
             }
