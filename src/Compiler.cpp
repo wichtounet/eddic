@@ -173,9 +173,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             tac::LivenessAnalyzer liveness;
             liveness.compute(tacProgram);
 
-            tac::Printer printer;
-            printer.print(tacProgram);
-
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
 
@@ -350,5 +347,5 @@ void eddic::warn(const std::string& warning){
 }
 
 void eddic::warn(eddic::ast::Position& position, const std::string& warning){
-    std::cout << position.file << ":" << position.line << ": warning " << warning << std::endl;
+    std::cout << position.file << ":" << position.line << ": warning: " << warning << std::endl;
 }
