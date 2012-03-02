@@ -16,6 +16,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -33,6 +34,8 @@ typedef std::vector<Operation> Operations;
  */
 struct ASTComposedValue {
     std::shared_ptr<Context> context;
+
+    Position position;
     Value first;
     Operations operations;
 
@@ -53,6 +56,7 @@ typedef Deferred<ASTComposedValue> ComposedValue;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ComposedValue, 
+    (eddic::ast::Position, Content->position)
     (eddic::ast::Value, Content->first)
     (eddic::ast::Operations, Content->operations)
 )

@@ -67,23 +67,28 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     value = logicalOrValue.alias();
     
     logicalOrValue %=
-            logicalAndValue
+            qi::position(position_begin)
+        >>  logicalAndValue
         >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
     
     logicalAndValue %=
-            relationalValue
+            qi::position(position_begin)
+        >>  relationalValue
         >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
    
     relationalValue %=
-            additiveValue
+            qi::position(position_begin)
+        >>  additiveValue
         >>  *(qi::adapttokens[relational_op] > additiveValue);  
     
     additiveValue %=
-            multiplicativeValue
+            qi::position(position_begin)
+        >>  multiplicativeValue
         >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
    
     multiplicativeValue %=
-            unaryValue
+            qi::position(position_begin)
+        >>  unaryValue
         >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
     
     unaryValue %= 
@@ -150,13 +155,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   litteral;
    
     builtin_operator %=
-            qi::adapttokens[builtin_op]
+            qi::position(position_begin)
+        >>  qi::adapttokens[builtin_op]
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
     functionCall %=
-            lexer.identifier
+            qi::position(position_begin)
+        >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;

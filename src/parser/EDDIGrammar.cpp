@@ -139,7 +139,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  value;
 
     return_ %=
-            lexer.return_
+            qi::position(position_begin)
+        >>  lexer.return_
         >>  value
         >>  lexer.stop;
     
