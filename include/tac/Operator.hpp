@@ -39,6 +39,14 @@ enum class Operator : unsigned int {
     GREATER_EQUALS,
     LESS,
     LESS_EQUALS,
+    
+    /* float relational operators */
+    FE,
+    FNE,
+    FG,
+    FGE,
+    FLE,
+    FL,
 
     MINUS,          //result = -arg1
     
