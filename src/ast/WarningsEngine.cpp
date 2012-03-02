@@ -111,20 +111,9 @@ struct Inspector : public boost::static_visitor<> {
                 warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
             }
         }
-        
-        void operator()(ast::Import&){
-            //Nothing to warn about there
-        }
 
-        void operator()(ast::StandardImport&){
-            //Nothing to warn about there
-        }
-
-        void operator()(ast::GlobalVariableDeclaration&){
-            //Nothing to check there
-        }
-
-        void operator()(ast::GlobalArrayDeclaration&){
+        template<typename T>
+        void operator()(T&){
             //Nothing to check there
         }
     
