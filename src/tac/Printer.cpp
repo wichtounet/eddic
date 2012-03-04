@@ -75,14 +75,22 @@ struct DebugVisitor : public boost::static_visitor<> {
         } else {
             tac::Operator op = quadruple->op;
 
-            if(op == tac::Operator::ADD || op == tac::Operator::FADD){
+            if(op == tac::Operator::ADD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " + " << printArgument(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::SUB || op == tac::Operator::FSUB){
+            } else if(op == tac::Operator::FADD){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " + (float) " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::SUB){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " - " << printArgument(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::MUL || op == tac::Operator::FMUL){
+            } else if(op == tac::Operator::FSUB){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " - (float) " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::MUL){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " * " << printArgument(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::DIV || op == tac::Operator::FDIV){
+            } else if(op == tac::Operator::FMUL){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " * (float) " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::DIV){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " / " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::FDIV){
+                std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " / (float) " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MOD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " % " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::EQUALS || op == tac::Operator::FE){
