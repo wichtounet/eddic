@@ -288,9 +288,17 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         auto var = value.Content->variable;
 
         if(value.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            if(var->type().base() == BaseType::FLOAT){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+            } else {
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            }
         } else if(value.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            if(var->type().base() == BaseType::FLOAT){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+            } else {
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            }
         }
 
         return {var};
@@ -299,17 +307,31 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::SuffixOperation& value) const {
         auto var = value.Content->variable;
 
-        auto temp = value.Content->context->newTemporary();
+        if(var->type().base() == BaseType::FLOAT){
+            auto temp = value.Content->context->newFloatTemporary();
 
-        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
+            function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::FASSIGN));
 
-        if(value.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-        } else if(value.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            if(value.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+            } else if(value.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+            }
+
+            return {temp};
+        } else {
+            auto temp = value.Content->context->newTemporary();
+
+            function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
+
+            if(value.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            } else if(value.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            }
+
+            return {temp};
         }
-
-        return {temp};
     }
 
     result_type operator()(ast::ArrayValue& array) const {
@@ -819,11 +841,19 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::SuffixOperation& operation){
             auto var = operation.Content->variable;
-
+        
             if(operation.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+                if(var->type().base() == BaseType::FLOAT){
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+                } else {
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+                }
             } else if(operation.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+                if(var->type().base() == BaseType::FLOAT){
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+                } else {
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+                }
             }
         }
         
@@ -831,9 +861,17 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto var = operation.Content->variable;
 
             if(operation.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+                if(var->type().base() == BaseType::FLOAT){
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+                } else {
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+                }
             } else if(operation.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+                if(var->type().base() == BaseType::FLOAT){
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+                } else {
+                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+                }
             }
         }
 
