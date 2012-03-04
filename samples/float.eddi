@@ -22,7 +22,15 @@ void main(){
     println(test(2.0888, 1.00222));
 
     if(a > b){
+        println("Bouh");
+    } else {
         println("Hoorray");
+    }
+
+    if(a < b){
+        println("Hoorray");
+    } else {
+        println("Bouh");
     }
 }
 
