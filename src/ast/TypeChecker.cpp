@@ -101,8 +101,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::SuffixOperation& operation){
         auto var = operation.Content->variable;
         
-        if(var->type().isArray() || var->type().base() != BaseType::INT){
-            throw SemanticalException("The variable " + var->name() + " is not of type int, cannot increment or decrement it");
+        if(var->type().isArray() || (var->type().base() != BaseType::INT && var->type().base() != BaseType::FLOAT)){
+            throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it");
         }
 
         if(var->type().isConst()){
@@ -113,8 +113,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::PrefixOperation& operation){
         auto var = operation.Content->variable;
         
-        if(var->type().isArray() || var->type().base() != BaseType::INT){
-            throw SemanticalException("The variable " + var->name() + " is not of type int, cannot increment or decrement it");
+        if(var->type().isArray() || (var->type().base() != BaseType::INT && var->type().base() != BaseType::FLOAT)){
+            throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it");
         }
         
         if(var->type().isConst()){

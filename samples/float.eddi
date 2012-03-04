@@ -32,6 +32,10 @@ void main(){
     } else {
         println("Hoorray");
     }
+
+    for(float i = 0.0; i < 5.0; i++){
+        println("inc");
+    }
 }
 
 float test(float a, float b){
