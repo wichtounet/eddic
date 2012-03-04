@@ -548,8 +548,20 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
             
             auto left = moveToArgument(value.Content->first, function);
             auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+        
+            Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+            Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-            function->add(std::make_shared<tac::If>(tac::toBinaryOperator(op), left, right, label));
+            assert(typeLeft == typeRight);
+
+            if(typeLeft.base() == BaseType::INT){
+                function->add(std::make_shared<tac::If>(tac::toBinaryOperator(op), left, right, label));
+            } else if(typeRight.base() == BaseType::FLOAT){
+                function->add(std::make_shared<tac::If>(tac::toFloatBinaryOperator(op), left, right, label));
+            } else {
+                assert(false);
+            }
+
         } 
         //A bool value
         else { //Perform int operations
@@ -601,8 +613,19 @@ void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
 
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+            
+        Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+        Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-        function->add(std::make_shared<tac::IfFalse>(tac::toBinaryOperator(op), left, right, label));
+        assert(typeLeft == typeRight);
+
+        if(typeLeft.base() == BaseType::INT){
+            function->add(std::make_shared<tac::IfFalse>(tac::toBinaryOperator(op), left, right, label));
+        } else if(typeRight.base() == BaseType::FLOAT){
+            function->add(std::make_shared<tac::IfFalse>(tac::toFloatBinaryOperator(op), left, right, label));
+        } else {
+            assert(false);
+        }
     } 
     //A bool value
     else { //Perform int operations

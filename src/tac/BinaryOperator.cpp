@@ -28,3 +28,21 @@ tac::BinaryOperator eddic::tac::toBinaryOperator(ast::Operator op){
 
     assert(false); //Not handled
 }
+
+tac::BinaryOperator eddic::tac::toFloatBinaryOperator(ast::Operator op){
+    if(op == ast::Operator::NOT_EQUALS){
+        return tac::BinaryOperator::FNE;
+    } else if(op == ast::Operator::EQUALS){
+        return tac::BinaryOperator::FE;
+    } else if(op == ast::Operator::GREATER_EQUALS){
+        return tac::BinaryOperator::FGE;
+    } else if(op == ast::Operator::GREATER){
+        return tac::BinaryOperator::FG;
+    } else if(op == ast::Operator::LESS_EQUALS){
+        return tac::BinaryOperator::FLE;
+    } else if(op == ast::Operator::LESS){
+        return tac::BinaryOperator::FL;
+    }
+
+    assert(false); //Not handled
+}
