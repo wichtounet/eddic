@@ -780,6 +780,9 @@ struct IntelStatementCompiler {
                         writer.stream() << "jae " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
+                    default:
+                        assert(false);
+                        break;
                 }
             } else {
                 compareBinary(if_);
@@ -802,6 +805,9 @@ struct IntelStatementCompiler {
                         break;
                     case tac::BinaryOperator::GREATER_EQUALS:
                         writer.stream() << "jge " << if_->block->label << std::endl;
+                        break;
+                    default:
+                        assert(false);
                         break;
                 }
             }
@@ -1236,6 +1242,24 @@ struct IntelStatementCompiler {
                 setIfCc("cmove", quadruple);
                 break;
             case tac::Operator::NOT_EQUALS:
+                setIfCc("cmovne", quadruple);
+                break;
+            case tac::Operator::FG:
+                setIfCc("cmova", quadruple);
+                break;
+            case tac::Operator::FGE:
+                setIfCc("cmovae", quadruple);
+                break;
+            case tac::Operator::FL:
+                setIfCc("cmovb", quadruple);
+                break;
+            case tac::Operator::FLE:
+                setIfCc("cmovbe", quadruple);
+                break;
+            case tac::Operator::FE:
+                setIfCc("cmove", quadruple);
+                break;
+            case tac::Operator::FNE:
                 setIfCc("cmovne", quadruple);
                 break;
             case tac::Operator::DOT:
