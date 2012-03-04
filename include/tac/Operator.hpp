@@ -64,6 +64,9 @@ enum class Operator : unsigned int {
 tac::Operator toOperator(ast::Operator op);
 tac::Operator toFloatOperator(ast::Operator op);
 
+tac::Operator toRelationalOperator(ast::Operator op);
+tac::Operator toFloatRelationalOperator(ast::Operator op);
+
 } //end of tac
 
 } //end of eddic

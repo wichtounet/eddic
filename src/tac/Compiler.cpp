@@ -1018,30 +1018,18 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
 
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+        
+        Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+        Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-        //Simplify that
-        switch(op){
-            case ast::Operator::EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::EQUALS, right));
-                break;
-            case ast::Operator::NOT_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::NOT_EQUALS, right));
-                break;
-            case ast::Operator::LESS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS, right));
-                break;
-            case ast::Operator::LESS_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS_EQUALS, right));
-                break;
-            case ast::Operator::GREATER:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER, right));
-                break;
-            case ast::Operator::GREATER_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER_EQUALS, right));
-                break;
-            default:
-                //Not a relational operator
-                assert(false);
+        assert(typeLeft == typeRight);
+
+        if(typeLeft.base() == BaseType::INT){
+            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toRelationalOperator(op), right));
+        } else if(typeRight.base() == BaseType::FLOAT){
+            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toFloatRelationalOperator(op), right));
+        } else {
+            assert(false);
         }
     } 
     else { 
