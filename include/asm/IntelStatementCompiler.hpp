@@ -647,7 +647,7 @@ struct IntelStatementCompiler {
             //The basic block must be ended before the jump
             endBasicBlock();
 
-            writer.stream() << "comisd " << arg(if_->arg1) << ", " << arg(*if_->arg2) << std::endl;
+            writer.stream() << "ucomisd " << arg(if_->arg1) << ", " << arg(*if_->arg2) << std::endl;
         }
     }
 
