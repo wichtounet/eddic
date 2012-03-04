@@ -639,6 +639,17 @@ struct IntelStatementCompiler {
             writer.stream() << "cmp " << arg(if_->arg1) << ", " << arg(*if_->arg2) << std::endl;
         }
     }
+    
+    template<typename T>
+    void compareFloatBinary(T& if_){
+        //If both args are variables
+        if(isVariable(if_->arg1) && isVariable(*if_->arg2)){
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
+            writer.stream() << "comisd " << arg(if_->arg1) << ", " << arg(*if_->arg2) << std::endl;
+        }
+    }
 
     template<typename T>
     void compareUnary(T& if_){
@@ -661,31 +672,73 @@ struct IntelStatementCompiler {
         }
     }
 
+    bool isFloatOperator(tac::BinaryOperator op){
+        return op >= tac::BinaryOperator::FE && op <= tac::BinaryOperator::FL;
+    }
+
     void compile(std::shared_ptr<tac::IfFalse> ifFalse){
         current = ifFalse;
 
         if(ifFalse->op){
-            compareBinary(ifFalse);
-
-            switch(*ifFalse->op){
-                case tac::BinaryOperator::EQUALS:
-                    writer.stream() << "jne " << ifFalse->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::NOT_EQUALS:
-                    writer.stream() << "je " << ifFalse->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::LESS:
-                    writer.stream() << "jge " << ifFalse->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::LESS_EQUALS:
-                    writer.stream() << "jg " << ifFalse->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::GREATER:
-                    writer.stream() << "jle " << ifFalse->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::GREATER_EQUALS:
-                    writer.stream() << "jl " << ifFalse->block->label << std::endl;
-                    break;
+            //Depending on the type of the operator, do a float or a int comparison
+            if(isFloatOperator(*ifFalse->op)){
+                compareFloatBinary(ifFalse);
+                
+                switch(*ifFalse->op){
+                    case tac::BinaryOperator::FE:
+                        writer.stream() << "jne " << ifFalse->block->label << std::endl;
+                        writer.stream() << "jp " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FNE:
+                        writer.stream() << "je " << ifFalse->block->label << std::endl;
+                        writer.stream() << "jp " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FL:
+                        writer.stream() << "jae " << ifFalse->block->label << std::endl;
+                        writer.stream() << "jp " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FLE:
+                        writer.stream() << "ja " << ifFalse->block->label << std::endl;
+                        writer.stream() << "jp " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FG:
+                        writer.stream() << "jbe " << ifFalse->block->label << std::endl;
+                        writer.stream() << "jp " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FGE:
+                        writer.stream() << "jb " << ifFalse->block->label << std::endl;
+                        writer.stream() << "jp " << ifFalse->block->label << std::endl;
+                        break;
+                    default:
+                        assert(false);
+                        break;
+                }
+            } else {
+                compareBinary(ifFalse);
+            
+                switch(*ifFalse->op){
+                    case tac::BinaryOperator::EQUALS:
+                        writer.stream() << "jne " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::NOT_EQUALS:
+                        writer.stream() << "je " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::LESS:
+                        writer.stream() << "jge " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::LESS_EQUALS:
+                        writer.stream() << "jg " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::GREATER:
+                        writer.stream() << "jle " << ifFalse->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::GREATER_EQUALS:
+                        writer.stream() << "jl " << ifFalse->block->label << std::endl;
+                        break;
+                    default:
+                        assert(false);
+                        break;
+                }
             }
         } else {
             compareUnary(ifFalse);
@@ -698,28 +751,61 @@ struct IntelStatementCompiler {
         current = if_;
 
         if(if_->op){
-            compareBinary(if_);
-
-            switch(*if_->op){
-                case tac::BinaryOperator::EQUALS:
-                    writer.stream() << "je " << if_->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::NOT_EQUALS:
-                    writer.stream() << "jne " << if_->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::LESS:
-                    writer.stream() << "jl " << if_->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::LESS_EQUALS:
-                    writer.stream() << "jle " << if_->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::GREATER:
-                    writer.stream() << "jg " << if_->block->label << std::endl;
-                    break;
-                case tac::BinaryOperator::GREATER_EQUALS:
-                    writer.stream() << "jge " << if_->block->label << std::endl;
-                    break;
+            //Depending on the type of the operator, do a float or a int comparison
+            if(isFloatOperator(*if_->op)){
+                compareFloatBinary(if_);
+            
+                switch(*if_->op){
+                    case tac::BinaryOperator::FE:
+                        writer.stream() << "je " << if_->block->label << std::endl;
+                        writer.stream() << "jp " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FNE:
+                        writer.stream() << "jne " << if_->block->label << std::endl;
+                        writer.stream() << "jp " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FL:
+                        writer.stream() << "jb " << if_->block->label << std::endl;
+                        writer.stream() << "jp " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FLE:
+                        writer.stream() << "jbe " << if_->block->label << std::endl;
+                        writer.stream() << "jp " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FG:
+                        writer.stream() << "ja " << if_->block->label << std::endl;
+                        writer.stream() << "jp " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::FGE:
+                        writer.stream() << "jae " << if_->block->label << std::endl;
+                        writer.stream() << "jp " << if_->block->label << std::endl;
+                        break;
+                }
+            } else {
+                compareBinary(if_);
+            
+                switch(*if_->op){
+                    case tac::BinaryOperator::EQUALS:
+                        writer.stream() << "je " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::NOT_EQUALS:
+                        writer.stream() << "jne " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::LESS:
+                        writer.stream() << "jl " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::LESS_EQUALS:
+                        writer.stream() << "jle " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::GREATER:
+                        writer.stream() << "jg " << if_->block->label << std::endl;
+                        break;
+                    case tac::BinaryOperator::GREATER_EQUALS:
+                        writer.stream() << "jge " << if_->block->label << std::endl;
+                        break;
+                }
             }
+
         } else {
             compareUnary(if_);
 
