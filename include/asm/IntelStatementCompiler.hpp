@@ -648,6 +648,17 @@ struct IntelStatementCompiler {
             endBasicBlock();
 
             writer.stream() << "ucomisd " << arg(if_->arg1) << ", " << arg(*if_->arg2) << std::endl;
+        } else if(isVariable(if_->arg1) && isFloat(*if_->arg2)){
+            auto reg = getFloatReg();
+
+            copy(*if_->arg2, reg);
+
+            writer.stream() << "ucomisd " << arg(if_->arg1) << ", " << reg << std::endl;
+
+            //The basic block must be ended before the jump
+            endBasicBlock();
+            
+            float_registers.release(reg);
         }
     }
 
