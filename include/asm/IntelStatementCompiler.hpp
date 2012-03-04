@@ -653,12 +653,25 @@ struct IntelStatementCompiler {
 
             copy(*if_->arg2, reg);
 
+            //The basic block must be ended before the jump
+            endBasicBlock();
+
             writer.stream() << "ucomisd " << arg(if_->arg1) << ", " << reg << std::endl;
+            
+            float_registers.release(reg);
+        } else if(isFloat(if_->arg1) && isVariable(*if_->arg2)){
+            auto reg = getFloatReg();
+
+            copy(if_->arg1, reg);
 
             //The basic block must be ended before the jump
             endBasicBlock();
+
+            writer.stream() << "ucomisd " << reg << ", " << arg(*if_->arg2) << std::endl;
             
             float_registers.release(reg);
+        } else {
+            assert(false); //Comparisons of constant should have been handled by the optimizer
         }
     }
 
