@@ -396,6 +396,14 @@ void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned
     writer.stream() << "dq " << size << std::endl;
 }
 
+void IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
+    writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "%rep " << size << std::endl;
+    writer.stream() << "dq __float64__(0.0)" << std::endl;
+    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "dq " << size << std::endl;
+}
+
 void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "%rep " << size << std::endl;
