@@ -78,6 +78,8 @@ struct IntelStatementCompiler {
     std::string toString(std::shared_ptr<Variable> variable, int offset){
         auto position = variable->position();
 
+        assert(!position.isTemporary());
+
         if(position.isStack()){
             return "[" + regToString(getBasePointerRegister()) + " + " + ::toString(-position.offset() + offset) + "]";
         } else if(position.isParameter()){
@@ -98,11 +100,9 @@ struct IntelStatementCompiler {
             }
         } else if(position.isGlobal()){
             return "[V" + position.name() + "+" + ::toString(offset) + "]";
-        } else if(position.isTemporary()){
-            assert(false); //We are in da shit
-        }
+        } 
 
-        assert(false);
+        assert(false && "Should never get there");
     }
     
     std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
@@ -117,6 +117,8 @@ struct IntelStatementCompiler {
 
         auto offsetReg = getReg(*offsetVariable);
         
+        assert(!position.isTemporary());
+        
         if(position.isStack()){
             return "[" + regToString(getBasePointerRegister()) + " + " + ::toString(-1 * (position.offset())) + "]";//TODO Verify
         } else if(position.isParameter()){
@@ -129,11 +131,9 @@ struct IntelStatementCompiler {
             return "[" + reg + "+" + offsetReg + "]";
         } else if(position.isGlobal()){
             return "[" + offsetReg + "+V" + position.name() + "]";
-        } else if(position.isTemporary()){
-            assert(false); //We are in da shit
-        }
+        } 
 
-        assert(false);
+        assert(false && "Should never get there");
     }
 
     std::string getFloatMove(){
@@ -141,6 +141,8 @@ struct IntelStatementCompiler {
     }
     
     void copy(tac::Argument argument, FloatRegister reg){
+        assert(isVariable(argument) || isFloat(argument));
+
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -151,6 +153,9 @@ struct IntelStatementCompiler {
                 writer.stream() << "movsd " << reg << ", " << oldReg << std::endl;
             } else {
                 auto position = variable->position();
+                
+                //The temporary should have been handled by the preceding condition (hold in a register)
+                assert(!position.isTemporary());
 
                 if(position.isStack()){
                     writer.stream() << getFloatMove() << " " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
@@ -158,10 +163,7 @@ struct IntelStatementCompiler {
                     writer.stream() << getFloatMove() << " " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
                     writer.stream() << getFloatMove() << " " << reg << ", [V" << position.name() << "]" << std::endl;
-                } else if(position.isTemporary()){
-                    //The temporary should have been handled by the preceding condition (hold in a register)
-                    assert(false);
-                }
+                } 
             }
         } else if(boost::get<double>(&argument)){
             Register gpreg = getReg();
@@ -170,8 +172,6 @@ struct IntelStatementCompiler {
             writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
 
             registers.release(gpreg);
-        } else {
-            assert(false);
         }
     }
     
@@ -186,6 +186,9 @@ struct IntelStatementCompiler {
                 writer.stream() << "mov " << reg << ", " << oldReg << std::endl;
             } else {
                 auto position = variable->position();
+                
+                //The temporary should have been handled by the preceding condition (hold in a register)
+                assert(!position.isTemporary());
 
                 if(position.isStack()){
                     writer.stream() << "mov " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
@@ -193,10 +196,7 @@ struct IntelStatementCompiler {
                     writer.stream() << "mov " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
                     writer.stream() << "mov " << reg << ", [V" << position.name() << "]" << std::endl;
-                } else if(position.isTemporary()){
-                    //The temporary should have been handled by the preceding condition (hold in a register)
-                    assert(false);
-                }
+                } 
             } 
         } else {
             //If it's a constant (int, double, string), just move it
@@ -205,7 +205,8 @@ struct IntelStatementCompiler {
     }
     
     void move(tac::Argument argument, FloatRegister reg){
-        //TODO Complete and verify
+        assert(isVariable(argument) || isFloat(argument));
+
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -223,16 +224,16 @@ struct IntelStatementCompiler {
             } else {
                 auto position = variable->position();
 
+                //The temporary should have been handled by the preceding condition (hold in a register)
+                assert(!position.isTemporary());
+
                 if(position.isStack()){
                     writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
                     writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
                     writer.stream() << "movsd " << reg << ", [V" << position.name() << "]" << std::endl;
-                } else if(position.isTemporary()){
-                    //The temporary should have been handled by the preceding condition (hold in a register)
-                    assert(false);
-                }
+                } 
             }
             
             //The variable is now held in the new register
@@ -244,8 +245,6 @@ struct IntelStatementCompiler {
             writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
 
             registers.release(gpreg);
-        } else {
-            assert(false);
         }
     }
     
@@ -267,15 +266,15 @@ struct IntelStatementCompiler {
             } else {
                 auto position = variable->position();
 
+                //The temporary should have been handled by the preceding condition (hold in a register)
+                assert(!position.isTemporary());
+
                 if(position.isStack()){
                     writer.stream() << "mov " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
                     writer.stream() << "mov " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
                     writer.stream() << "mov " << reg << ", [V" << position.name() << "]" << std::endl;
-                } else if(position.isTemporary()){
-                    //The temporary should have been handled by the preceding condition (hold in a register)
-                    assert(false);
                 }
             } 
             
@@ -413,13 +412,13 @@ struct IntelStatementCompiler {
     }
 
     bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
+        assert(tac::is<tac::Quadruple>(statement) || tac::is<tac::IfFalse>(statement));
+
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+        } else {
             return isLive((*ptr)->liveness, variable);
         } 
-
-        assert(false); //No liveness calculations in the other cases
     }
 
     bool isNextLive(std::shared_ptr<Variable> variable){
@@ -590,7 +589,7 @@ struct IntelStatementCompiler {
             }
         }
 
-        assert(false);
+        assert(false && "Should never get there");
     }
    
     void spillsIfNecessary(Register reg, tac::Argument arg){
@@ -648,6 +647,9 @@ struct IntelStatementCompiler {
     
     template<typename T>
     void compareFloatBinary(T& if_){
+        //Comparisons of constant should have been handled by the optimizer
+        assert(!(isFloat(if_->arg1) && isFloat(*if_->arg2))); 
+
         //If both args are variables
         if(isVariable(if_->arg1) && isVariable(*if_->arg2)){
             //The basic block must be ended before the jump
@@ -676,9 +678,7 @@ struct IntelStatementCompiler {
             writer.stream() << "ucomisd " << reg << ", " << arg(*if_->arg2) << std::endl;
             
             float_registers.release(reg);
-        } else {
-            assert(false); //Comparisons of constant should have been handled by the optimizer
-        }
+        } 
     }
 
     template<typename T>
@@ -740,7 +740,7 @@ struct IntelStatementCompiler {
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
                     default:
-                        assert(false);
+                        assert(false && "This operation is not a float operator");
                         break;
                 }
             } else {
@@ -766,7 +766,7 @@ struct IntelStatementCompiler {
                         writer.stream() << "jl " << ifFalse->block->label << std::endl;
                         break;
                     default:
-                        assert(false);
+                        assert(false && "This operation is not a float operator");
                         break;
                 }
             }
@@ -811,7 +811,7 @@ struct IntelStatementCompiler {
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
                     default:
-                        assert(false);
+                        assert(false && "This operation is not a float operator");
                         break;
                 }
             } else {
@@ -837,7 +837,7 @@ struct IntelStatementCompiler {
                         writer.stream() << "jge " << if_->block->label << std::endl;
                         break;
                     default:
-                        assert(false);
+                        assert(false && "This operation is not a float operator");
                         break;
                 }
             }
@@ -1025,6 +1025,9 @@ struct IntelStatementCompiler {
             }
             case tac::Operator::MUL:
             {
+                //This case should never happen unless the optimized has bugs
+                assert(!(isInt(*quadruple->arg1) && isInt(*quadruple->arg2)));
+
                 //Form  x = x * y
                 if(*quadruple->arg1 == quadruple->result){
                     mul(quadruple->result, *quadruple->arg2);
@@ -1046,9 +1049,6 @@ struct IntelStatementCompiler {
                     auto reg = getRegNoMove(quadruple->result);
                     copy(*quadruple->arg1, reg);
                     writer.stream() << "imul " << reg << ", " << arg(*quadruple->arg2) << std::endl;
-                } else {
-                    //This case should never happen unless the optimizer has bugs
-                    assert(false);
                 }
                 
                 written.insert(quadruple->result);
