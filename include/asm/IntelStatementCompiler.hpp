@@ -140,6 +140,26 @@ struct IntelStatementCompiler {
         return "movsd ";
     }
     
+    std::string getFloatAdd(){
+        return "addsd ";
+    }
+    
+    std::string getFloatSub(){
+        return "subsd ";
+    }
+    
+    std::string getFloatMul(){
+        return "mulsd ";
+    }
+    
+    std::string getFloatDiv(){
+        return "divsd ";
+    }
+    
+    std::string getSizedMove(){
+        return "movq ";
+    }
+    
     void copy(tac::Argument argument, FloatRegister reg){
         assert(isVariable(argument) || isFloat(argument));
 
@@ -150,7 +170,7 @@ struct IntelStatementCompiler {
             if(float_registers.inRegister(variable)){
                 auto oldReg = float_registers[variable];
                 
-                writer.stream() << "movsd " << reg << ", " << oldReg << std::endl;
+                writer.stream() << getFloatMove() << reg << ", " << oldReg << std::endl;
             } else {
                 auto position = variable->position();
                 
@@ -158,18 +178,18 @@ struct IntelStatementCompiler {
                 assert(!position.isTemporary());
 
                 if(position.isStack()){
-                    writer.stream() << getFloatMove() << " " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << getFloatMove() << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << getFloatMove() << " " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << getFloatMove() << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << getFloatMove() << " " << reg << ", [V" << position.name() << "]" << std::endl;
+                    writer.stream() << getFloatMove() << reg << ", [V" << position.name() << "]" << std::endl;
                 } 
             }
         } else if(boost::get<double>(&argument)){
             Register gpreg = getReg();
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
-            writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
+            writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
 
             registers.release(gpreg);
         }
@@ -216,7 +236,7 @@ struct IntelStatementCompiler {
                
                 //Only if the variable is not already on the same register 
                 if(oldReg != reg){
-                    writer.stream() << "movsd " << reg << ", " << oldReg << std::endl;
+                    writer.stream() << getFloatMove() << reg << ", " << oldReg << std::endl;
 
                     //There is nothing more in the old register
                     float_registers.remove(variable);
@@ -228,11 +248,11 @@ struct IntelStatementCompiler {
                 assert(!position.isTemporary());
 
                 if(position.isStack()){
-                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << getFloatMove() << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << getFloatMove() << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "movsd " << reg << ", [V" << position.name() << "]" << std::endl;
+                    writer.stream() << getFloatMove() << reg << ", [V" << position.name() << "]" << std::endl;
                 } 
             }
             
@@ -295,11 +315,11 @@ struct IntelStatementCompiler {
             if(written.find(variable) != written.end()){
                 auto position = variable->position();
                 if(position.isStack()){
-                    writer.stream() << "movsd [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "], " << reg << std::endl; 
+                    writer.stream() << getFloatMove() << "[" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "], " << reg << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "movsd [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "], " << reg << std::endl; 
+                    writer.stream() << getFloatMove() << "[" + regToString(getBasePointerRegister()) + " + " << position.offset() << "], " << reg << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "movsd [V" << position.name() << "], " << reg << std::endl;
+                    writer.stream() << getFloatMove() << "[V" << position.name() << "], " << reg << std::endl;
                 } else if(position.isTemporary()){
                     //If the variable is live, move it to another register, else do nothing
                     if(isLive(variable)){
@@ -307,7 +327,7 @@ struct IntelStatementCompiler {
                         float_registers.reserve(reg);
 
                         auto newReg = getFloatRegNoMove(variable);
-                        writer.stream() << "movsd " << newReg << ", " << reg << std::endl;
+                        writer.stream() << getFloatMove() << newReg << ", " << reg << std::endl;
 
                         float_registers.release(reg);
 
@@ -412,13 +432,15 @@ struct IntelStatementCompiler {
     }
 
     bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
-        assert(tac::is<tac::Quadruple>(statement) || tac::is<tac::IfFalse>(statement));
+        assert(tac::is<std::shared_ptr<tac::Quadruple>>(statement) || tac::is<std::shared_ptr<tac::IfFalse>>(statement));
 
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else {
+        } else if (auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } 
+
+        return false;
     }
 
     bool isNextLive(std::shared_ptr<Variable> variable){
@@ -1091,10 +1113,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatAdd() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatAdd() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 }
                 //Optimize the special form a = b + a by using only one instruction
@@ -1104,10 +1126,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg1)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg1, reg2);
-                        writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatAdd() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg1) << std::endl;
+                        writer.stream() << getFloatAdd() << reg << ", " << arg(*quadruple->arg1) << std::endl;
                     }
                 } 
                 //In the other forms, use two instructions
@@ -1118,10 +1140,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "addsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatAdd() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "addsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatAdd() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 }
         
@@ -1140,10 +1162,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatSub() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatSub() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 } else {
                     FloatRegister reg = getFloatRegNoMove(result);
@@ -1152,10 +1174,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "subsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatSub() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "subsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatSub() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 }
                 
@@ -1171,10 +1193,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatMul() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatMul() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 }
                 //Form x = y * x
@@ -1183,10 +1205,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatMul() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatMul() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 } 
                 //General form
@@ -1196,10 +1218,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "mulsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatMul() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "mulsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatMul() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 }
                 
@@ -1213,10 +1235,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatDiv() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatDiv() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 } 
                 //General form
@@ -1226,10 +1248,10 @@ struct IntelStatementCompiler {
                     if(tac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
-                        writer.stream() << "divsd " << reg << ", " << reg2 << std::endl;
+                        writer.stream() << getFloatDiv() << reg << ", " << reg2 << std::endl;
                         float_registers.release(reg2);
                     } else {
-                        writer.stream() << "divsd " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+                        writer.stream() << getFloatDiv() << reg << ", " << arg(*quadruple->arg2) << std::endl;
                     }
                 }
                 
@@ -1324,7 +1346,7 @@ struct IntelStatementCompiler {
                 if(isFloatVar(quadruple->result)){
                     auto reg = getFloatRegNoMove(quadruple->result);
 
-                    writer.stream() << "movsd " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
+                    writer.stream() << getFloatMove() << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
                 } else {
                     auto reg = getRegNoMove(quadruple->result);
 
@@ -1341,7 +1363,7 @@ struct IntelStatementCompiler {
 
                     copy(*quadruple->arg2, reg);
 
-                    writer.stream() << "movsd " << " " << toString(quadruple->result, *quadruple->arg1) << ", " << reg << std::endl;
+                    writer.stream() << getFloatMove() << toString(quadruple->result, *quadruple->arg1) << ", " << reg << std::endl;
 
                     float_registers.release(reg);
                 } else {
@@ -1412,7 +1434,7 @@ struct IntelStatementCompiler {
                         FloatRegister reg = getFloatReg(variable);
                         if(reg != FloatRegister::XMM7){
                             spills(FloatRegister::XMM7);
-                            writer.stream() << "movsd xmm7, " << reg << std::endl;
+                            writer.stream() << getFloatMove() << "xmm7, " << reg << std::endl;
                         }
                     } else {
                         Register reg1 = getReturnRegister1();
