@@ -15,14 +15,11 @@
 
 using namespace eddic;
 
-bool eddic::OptimizeStrings;
-bool eddic::OptimizeUnused;
-
 bool eddic::WarningUnused;
 
 po::variables_map eddic::options;
 
-po::options_description desc("Usage : edic [options]");
+po::options_description desc("Usage : eddic [options] source.eddi");
 
 std::pair<std::string, std::string> numeric_parser(const std::string& s){
     if (s.find("-32") == 0) {
@@ -42,18 +39,20 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("keep,k", "Keep the assembly file")
             ("version", "Print the version of eddic")
             ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
+
+            ("ast", "Print the Abstract Syntax Tree representation of the source")
+            ("tac", "Print the Three Address Code representation of the source")
             
-            ("optimize-all", "Enable all optimizations")
-            ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
-            ("optimize-unused", po::bool_switch(&OptimizeUnused), "Enable the removal of unused variables and functions")
+            ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
+            ("tac-only", "Only print the Three Address Code representation of the source (do not continue compilation after printing)")
             
             ("debug,g", "Add debugging symbols")
 
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
             
-            ("32", po::value<std::string>(), "Force the compilation for 32 bits platform")
-            ("64", po::value<std::string>(), "Force the compilation for 64 bits platform")
+            ("32", "Force the compilation for 32 bits platform")
+            ("64", "Force the compilation for 64 bits platform")
            
             ("input", po::value<std::string>(), "Input file");
 
@@ -62,10 +61,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), options);
         po::notify(options);
-
-        if(options.count("optimize-all")){
-            OptimizeStrings = OptimizeUnused = true;
-        }
 
         if(options.count("warning-all")){
             WarningUnused = true;

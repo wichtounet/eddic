@@ -71,12 +71,10 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
                 Type type = ast::GetTypeVisitor()(value);
 
                 if(type.base() == BaseType::STRING){
-                    if (OptimizeStrings) {
-                        ast::Litteral litteral;
-                        litteral.value = GetStringValue()(value);
-                        litteral.label = pool.label(litteral.value);
-                        return litteral;
-                    }
+                    ast::Litteral litteral;
+                    litteral.value = GetStringValue()(value);
+                    litteral.label = pool.label(litteral.value);
+                    return litteral;
                 }
             }
 
@@ -145,13 +143,11 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
-            if(OptimizeUnused){
-                if(context->getVariable(variable)->referenceCount() <= 0){
-                    //Removing from the AST is not enough, because it is stored in the context now
-                    context->removeVariable(variable);
-                    
-                    return true;   
-                }
+            if(context->getVariable(variable)->referenceCount() <= 0){
+                //Removing from the AST is not enough, because it is stored in the context now
+                context->removeVariable(variable);
+
+                return true;   
             }
 
             return false;
@@ -170,10 +166,8 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool operator()(ast::FunctionDeclaration& declaration){
-            if(OptimizeUnused){
-                if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
-                    return true;
-                }
+            if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
+                return true;
             }
 
             return false;
