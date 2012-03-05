@@ -44,10 +44,16 @@ class Type {
 
         friend bool operator==(const Type& lhs, const Type& rhs);
         friend bool operator!=(const Type& lhs, const Type& rhs);
+
+        friend bool operator==(const Type& lhs, const BaseType& rhs);
+        friend bool operator!=(const Type& lhs, const BaseType& rhs);
 };
         
 bool operator==(const Type& lhs, const Type& rhs);
 bool operator!=(const Type& lhs, const Type& rhs);
+
+bool operator==(const Type& lhs, const BaseType& rhs);
+bool operator!=(const Type& lhs, const BaseType& rhs);
 
 Type newType(const std::string& type);
 

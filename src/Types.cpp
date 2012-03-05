@@ -41,6 +41,14 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
     return !(lhs == rhs); 
 }
 
+bool eddic::operator==(const Type& lhs, const BaseType& rhs){
+    return lhs.type == rhs && lhs.array == false; 
+}
+
+bool eddic::operator!=(const Type& lhs, const BaseType& rhs){
+    return !(lhs == rhs); 
+}
+
 int eddic::size(BaseType type){
     static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
     static int typeSizes64[BASETYPE_COUNT] = { 16, 8, 8, 8, 0 };
