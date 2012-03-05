@@ -36,6 +36,12 @@ void main(){
     for(float i = 0.0; i < 5.0; ++i){
         println("inc");
     }
+
+    float array[7];
+    
+    array[1] = 2.5;
+    
+    println(array[1]); 
 }
 
 float test(float a, float b){
