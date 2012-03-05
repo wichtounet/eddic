@@ -40,8 +40,10 @@ void main(){
     float array[7];
     
     array[1] = 2.5;
+    array[2] = 5.5;
     
     println(array[1]); 
+    println(array[2]); 
 }
 
 float test(float a, float b){

@@ -1315,17 +1315,33 @@ struct IntelStatementCompiler {
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
 
-                Register reg = getRegNoMove(quadruple->result);
+                if(isFloatVar(quadruple->result)){
+                    auto reg = getFloatRegNoMove(quadruple->result);
 
-                writer.stream() << "mov " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
+                    writer.stream() << "movsd " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
+                } else {
+                    auto reg = getRegNoMove(quadruple->result);
+
+                    writer.stream() << "mov " << reg << ", " << toString(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *quadruple->arg2) << std::endl;
+                }
                
                 written.insert(quadruple->result);
                 
                 break;            
             }
             case tac::Operator::ARRAY_ASSIGN:
-                writer.stream() << "mov " << getMnemonicSize() << " " << toString(quadruple->result, *quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+                if(quadruple->result->type().base() == BaseType::FLOAT){
+                    auto reg = getFloatReg();
 
+                    copy(*quadruple->arg2, reg);
+
+                    writer.stream() << "movsd " << " " << toString(quadruple->result, *quadruple->arg1) << ", " << reg << std::endl;
+
+                    float_registers.release(reg);
+                } else {
+                    writer.stream() << "mov " << getMnemonicSize() << " " << toString(quadruple->result, *quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+                }
+                
                 break;
             case tac::Operator::PARAM:
             {
