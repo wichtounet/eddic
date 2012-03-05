@@ -111,6 +111,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     primaryValue = 
             assignment
         |   integer
+        |   float_
         |   litteral
         |   builtin_operator
         |   functionCall
@@ -133,6 +134,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     integer %= 
             qi::eps 
         >>  lexer.integer;
+
+    float_ %= 
+            qi::eps 
+        >>  lexer.float_;
    
     variable %= 
             qi::position(position_begin)

@@ -55,6 +55,7 @@ class SpiritLexer : public lex::lexer<L> {
             include = "include";
 
             identifier = "[a-zA-Z_]?[a-zA-Z0-9_]+";
+            float_ = "[0-9]+\".\"[0-9]+";
             integer = "[0-9]+";
             litteral = "\\\"[^\\\"]*\\\"";
 
@@ -118,7 +119,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += and_ | or_;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
-            this->self += integer | identifier | litteral;
+            this->self += float_ | integer | identifier | litteral;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
@@ -129,9 +130,11 @@ class SpiritLexer : public lex::lexer<L> {
         typedef lex::token_def<std::string> StringToken;
         typedef lex::token_def<int> IntegerToken;
         typedef lex::token_def<char> CharToken;
+        typedef lex::token_def<double> FloatToken;
 
         StringToken identifier, litteral;
         IntegerToken integer;
+        FloatToken float_;
         
         CharToken addition, subtraction, multiplication, division, modulo;
         StringToken increment, decrement;

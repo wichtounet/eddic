@@ -16,6 +16,7 @@ StringPool::StringPool() : currentString(0) {
     label("`\\n`");   //Carriage return special label for println
     label("\"-\"");     //- special label for print_integer with negative number
     label("\"\"");      //- special label for default string value
+    label("\".\"");     //- special label for printing floating point numbers
 }
 
 std::string StringPool::label(const std::string& value) {
@@ -37,7 +38,7 @@ std::string StringPool::value(const std::string& label) {
     }
 
     //This method should not be called on not-existing label
-    assert(false);
+    assert(false && "The label does not exists");
 }
 
 std::unordered_map<std::string, std::string> StringPool::getPool() const {

@@ -1,0 +1,71 @@
+float global[5];
+
+void main(){
+    float a = 1.5;
+    float b = 3.0;
+    float d = 5.0;
+    float c = a + b;
+	println(c);
+    c = b + 2.75;
+    println(c);
+    c = b - a;
+    println(c);
+    c = b - d;
+    println(c);
+    c = a * d;
+    println(c);
+    c = d - 2.73;
+    println(c);
+    c = c * 3.33;
+    println(c);
+    c = d / 0.345;
+    println(c);
+
+    println(test(2.0888, 1.00222));
+
+    if(a < b){
+        println("Hoorray");
+    } else {
+        println("Bouh");
+    }
+
+    if(a > b){
+        println("Bouh");
+    } else {
+        println("Hoorray");
+    }
+
+    for(float i = 0.0; i < 5.0; ++i){
+        println("inc");
+    }
+
+    float array[7];
+    
+    array[1] = 2.5;
+    array[2] = 5.5;
+    
+    println(array[1]); 
+    println(array[2]); 
+    
+    global[1] = 2.5;
+    global[2] = 5.5;
+    
+    println(global[1]); 
+    println(global[2]); 
+
+    testArray(global);
+    testArray(array);
+}
+
+float test(float a, float b){
+    float c = a + b;
+    println(c);
+    float d = a * b;
+    println(d);
+    return c + d;
+}
+
+void testArray(float[] a){
+    println(a[1]);
+    println(a[2]);
+}

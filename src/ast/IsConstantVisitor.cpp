@@ -15,6 +15,7 @@ using namespace eddic;
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Litteral, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Integer, true)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Float, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::True, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::False, true)
 

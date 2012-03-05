@@ -5,39 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_OPERATOR_H
-#define AST_OPERATOR_H
+#ifndef ASM_INTEL_ASSEMBLY_UTILS_H
+#define ASM_INTEL_ASSEMBLY_UTILS_H
 
+#include <vector>
 #include <string>
 
 namespace eddic {
 
-namespace ast {
+class AssemblyFileWriter;
 
-enum class Operator : unsigned int {
-    ADD,
-    SUB,
-    DIV,
-    MUL,
-    MOD,
+namespace as {
 
-    AND,
-    OR,
+void save(AssemblyFileWriter& writer, const std::vector<std::string>& registers);
+void restore(AssemblyFileWriter& writer, const std::vector<std::string>& registers);
 
-    DEC,
-    INC,
-
-    EQUALS,
-    NOT_EQUALS,
-    LESS,
-    LESS_EQUALS,
-    GREATER,
-    GREATER_EQUALS
-};
-
-std::string toString(Operator op);
-
-} //end of ast
+} //end of tac
 
 } //end of eddic
 

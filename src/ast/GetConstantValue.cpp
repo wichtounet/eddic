@@ -25,6 +25,10 @@ Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
+Val ast::GetConstantValue::operator()(const ast::Float& float_) const {
+    return float_.value;
+}
+
 Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
     return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
 }
@@ -41,6 +45,5 @@ Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
         return boost::get<std::pair<std::string, int>>(val);
     }
 
-    //Type not managed
-    assert(false);
+    assert(false && "This variable is of a type that cannot be constant");
 }

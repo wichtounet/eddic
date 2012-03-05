@@ -54,10 +54,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant", declaration.Content->position);
         }
-
-        BaseType baseType = stringToBaseType(declaration.Content->variableType); 
-        Type type(baseType, declaration.Content->constant);
-        declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+        
+        declaration.Content->context->addVariable(declaration.Content->variableName, 
+                newSimpleType(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -65,10 +64,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, declaration.Content->arraySize, false);
-
-        declaration.Content->context->addVariable(declaration.Content->arrayName, type);
+        declaration.Content->context->addVariable(declaration.Content->arrayName, newArrayType(declaration.Content->arrayType, declaration.Content->arraySize));
     }
     
     void operator()(ast::Foreach& foreach){
@@ -76,7 +72,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
         }
 
-        foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
+        foreach.Content->context->addVariable(foreach.Content->variableName, newType(foreach.Content->variableType));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -92,9 +88,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         static int generated = 0;
 
-        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, stringToType(foreach.Content->variableType));
+        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, newType(foreach.Content->variableType));
         foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), stringToType("int"));
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), newType("int"));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -159,8 +155,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         visit(*this, *declaration.Content->value);
 
-        BaseType baseType = stringToBaseType(declaration.Content->variableType);
-        Type type(baseType, declaration.Content->const_);
+        Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
 
         if(type.isConst()){
             if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
@@ -178,9 +173,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        BaseType baseType = stringToBaseType(declaration.Content->arrayType); 
-        Type type(baseType, declaration.Content->arraySize, false);
-
+        Type type = newArrayType(declaration.Content->arrayType, declaration.Content->arraySize);
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     

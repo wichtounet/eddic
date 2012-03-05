@@ -50,9 +50,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     //Other values are not strings
     template<typename T> 
     std::string operator()(T&) const {
-        assert(false);
-
-        return ""; 
+        assert(false && "This type is not a string");
     }
 };
 
@@ -243,7 +241,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach&){
-            assert(false); //Should have been removed in transformation phase
+            assert(false && "Foreach should have been tranformed into a For"); 
         }
 
         void operator()(ast::ForeachIn& foreach){

@@ -5,40 +5,33 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_OPERATOR_H
-#define AST_OPERATOR_H
+#ifndef AST_FLOAT_H
+#define AST_FLOAT_H
 
-#include <string>
+#include <boost/fusion/include/adapt_struct.hpp>
+
+#include "ast/TerminalNode.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-enum class Operator : unsigned int {
-    ADD,
-    SUB,
-    DIV,
-    MUL,
-    MOD,
-
-    AND,
-    OR,
-
-    DEC,
-    INC,
-
-    EQUALS,
-    NOT_EQUALS,
-    LESS,
-    LESS_EQUALS,
-    GREATER,
-    GREATER_EQUALS
+/*!
+ * \class Float
+ * \brief The AST node for a float.    
+ */
+struct Float : public TerminalNode {
+    double value;
 };
-
-std::string toString(Operator op);
 
 } //end of ast
 
 } //end of eddic
+
+//Adapt the struct for the AST
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ast::Float, 
+    (double, value)
+)
 
 #endif

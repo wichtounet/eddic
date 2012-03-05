@@ -15,6 +15,7 @@ namespace eddic {
 namespace ast {
 
 struct Integer;
+struct Float;
 struct Litteral;
 struct True;
 struct False;

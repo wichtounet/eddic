@@ -22,6 +22,8 @@ struct D {                                                                  \
     D(const D & t_) : t(t_.t){}                                             \
                                                                             \
     D(int t_) : t(t_) {}                                                    \
+    D(unsigned int t_) : t((int) t_) {}                                     \
+    D(double t_) : t(t_) {}                                                 \
     D(const std::string& t_) : t(t_) {}                                     \
     D(std::shared_ptr<Variable> t_) : t(t_) {}                              \
                                                                             \
@@ -29,6 +31,8 @@ struct D {                                                                  \
     D& operator=(const T & rhs) { t = rhs; return *this;}                   \
                                                                             \
     D& operator=(int rhs) { t = rhs; return *this; }                        \
+    D& operator=(unsigned int rhs) { t = (int) rhs; return *this; }         \
+    D& operator=(double rhs) { t = rhs; return *this; }                     \
     D& operator=(const std::string& rhs) { t = rhs; return *this; }         \
     D& operator=(std::shared_ptr<Variable> rhs) { t = rhs; return *this; }  \
     operator const T &() const {return t; }                                 \
@@ -50,7 +54,7 @@ class Variable;
 } //end of eddic
 
 namespace eddi_detail {
-    typedef boost::variant<std::shared_ptr<eddic::Variable>, int, std::string> variant_t;
+    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, std::string> variant_t;
 
     struct equals_visitor : boost::static_visitor<bool> {
         template <typename T>
