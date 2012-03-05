@@ -52,7 +52,14 @@ struct IntelStatementCompiler {
     
     virtual std::string getMnemonicSize() = 0;
     virtual std::string getFloatPrefix() = 0;
-
+    
+    virtual std::string getFloatMove() = 0;
+    virtual std::string getFloatAdd() = 0;
+    virtual std::string getFloatSub() = 0;
+    virtual std::string getFloatMul() = 0;
+    virtual std::string getFloatDiv() = 0;
+    virtual std::string getSizedMove() = 0;
+    
     virtual Register getReturnRegister1() = 0;
     virtual Register getReturnRegister2() = 0;
     virtual Register getStackPointerRegister() = 0;
@@ -134,30 +141,6 @@ struct IntelStatementCompiler {
         } 
 
         assert(false && "Should never get there");
-    }
-
-    std::string getFloatMove(){
-        return "movsd ";
-    }
-    
-    std::string getFloatAdd(){
-        return "addsd ";
-    }
-    
-    std::string getFloatSub(){
-        return "subsd ";
-    }
-    
-    std::string getFloatMul(){
-        return "mulsd ";
-    }
-    
-    std::string getFloatDiv(){
-        return "divsd ";
-    }
-    
-    std::string getSizedMove(){
-        return "movq ";
     }
     
     void copy(tac::Argument argument, FloatRegister reg){
@@ -262,7 +245,7 @@ struct IntelStatementCompiler {
             Register gpreg = getReg();
             
             writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
-            writer.stream() << "movq " << reg << ", " << gpreg << std::endl;
+            writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
 
             registers.release(gpreg);
         }
@@ -1377,7 +1360,7 @@ struct IntelStatementCompiler {
                     if(!(*ptr)->type().isArray() && isFloatVar(*ptr)){
                         Register reg = getReg();
 
-                        writer.stream() << "movq " << reg << ", " << arg(*ptr) << std::endl;
+                        writer.stream() << getSizedMove() << reg << ", " << arg(*ptr) << std::endl;
                         writer.stream() << "push " << reg << std::endl;
 
                         registers.release(reg);

@@ -42,7 +42,7 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
 }
 
 int eddic::size(BaseType type){
-    static int typeSizes32[(int) BaseType::COUNT] = { 8, 4, 4, 8, 0 };
+    static int typeSizes32[(int) BaseType::COUNT] = {  8, 4, 4, 4, 0 };
     static int typeSizes64[(int) BaseType::COUNT] = { 16, 8, 8, 8, 0 };
 
     switch(platform){
@@ -51,6 +51,8 @@ int eddic::size(BaseType type){
         case Platform::INTEL_X86_64:
             return typeSizes64[(unsigned int) type];
     }
+
+    return -1;
 }
 
 int eddic::size(Type type){

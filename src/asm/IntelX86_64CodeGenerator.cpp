@@ -112,6 +112,30 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         return "__float64__";
     }
 
+    std::string getFloatMove(){
+        return "movsd ";
+    }
+    
+    std::string getFloatAdd(){
+        return "addsd ";
+    }
+    
+    std::string getFloatSub(){
+        return "subsd ";
+    }
+    
+    std::string getFloatMul(){
+        return "mulsd ";
+    }
+    
+    std::string getFloatDiv(){
+        return "divsd ";
+    }
+    
+    std::string getSizedMove(){
+        return "movq ";
+    }
+
     Register getReturnRegister1(){
         return Register::RAX;
     }
