@@ -14,6 +14,9 @@ namespace po = boost::program_options;
 
 namespace eddic {
 
+/*!
+ * \brief Bolean flag indicating if warnings are outputted for unused declarations. 
+ */
 extern bool WarningUnused;
 
 /*!
