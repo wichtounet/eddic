@@ -339,7 +339,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         switch(array.Content->var->type().base()){
             case BaseType::BOOL:
-            case BaseType::FLOAT:
+            case BaseType::FLOAT: {
+                auto temp = array.Content->context->newFloatTemporary();
+                function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
+
+                return {temp};
+
+            }   
             case BaseType::INT: {
                 auto temp = array.Content->context->newTemporary();
                 function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
