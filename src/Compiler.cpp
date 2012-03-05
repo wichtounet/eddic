@@ -150,8 +150,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //Optimize the AST
             optimize(program, functionTable, pool);
 
-            ast::DebugVisitor()(program);
-    
             tac::Program tacProgram;
 
             //Generate Three-Address-Code language
@@ -172,9 +170,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //Compute liveness of variables
             tac::LivenessAnalyzer liveness;
             liveness.compute(tacProgram);
-
-            tac::Printer printer;
-            printer.print(tacProgram);
 
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
