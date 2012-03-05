@@ -135,6 +135,10 @@ struct IntelStatementCompiler {
 
         assert(false);
     }
+
+    std::string getFloatMove(){
+        return "movsd ";
+    }
     
     void copy(tac::Argument argument, FloatRegister reg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
@@ -149,11 +153,11 @@ struct IntelStatementCompiler {
                 auto position = variable->position();
 
                 if(position.isStack()){
-                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
+                    writer.stream() << getFloatMove() << " " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << (-1 * position.offset()) << "]" << std::endl; 
                 } else if(position.isParameter()){
-                    writer.stream() << "movsd " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
+                    writer.stream() << getFloatMove() << " " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << position.offset() << "]" << std::endl; 
                 } else if(position.isGlobal()){
-                    writer.stream() << "movsd " << reg << ", [V" << position.name() << "]" << std::endl;
+                    writer.stream() << getFloatMove() << " " << reg << ", [V" << position.name() << "]" << std::endl;
                 } else if(position.isTemporary()){
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
