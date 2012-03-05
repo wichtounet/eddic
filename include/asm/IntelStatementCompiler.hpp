@@ -1346,7 +1346,7 @@ struct IntelStatementCompiler {
             case tac::Operator::PARAM:
             {
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    if(isFloatVar(*ptr)){
+                    if(!(*ptr)->type().isArray() && isFloatVar(*ptr)){
                         Register reg = getReg();
 
                         writer.stream() << "movq " << reg << ", " << arg(*ptr) << std::endl;

@@ -52,6 +52,9 @@ void main(){
     
     println(global[1]); 
     println(global[2]); 
+
+    testArray(global);
+    testArray(array);
 }
 
 float test(float a, float b){
@@ -60,4 +63,9 @@ float test(float a, float b){
     float d = a * b;
     println(d);
     return c + d;
+}
+
+void testArray(float[] a){
+    println(a[1]);
+    println(a[2]);
 }
