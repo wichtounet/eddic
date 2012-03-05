@@ -28,8 +28,6 @@ std::string eddic::mangle(Type type){
             return type.isArray() ? "AF" : "F";
         case BaseType::VOID:
             return "V";
-        case BaseType::COUNT:
-            assert(false && "Does not make sense");
     }
 }
 

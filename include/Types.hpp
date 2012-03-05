@@ -17,10 +17,10 @@ enum class BaseType : unsigned int {
     INT,
     BOOL,
     FLOAT,
-    VOID, 
-
-    COUNT
+    VOID 
 };
+
+#define BASETYPE_COUNT 5
 
 /*!
  * \struct Type
