@@ -115,6 +115,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
         TIMER_END(parsing)
 
+        //If the parsing was sucessfully
         if(parsing){
             //Symbol tables
             FunctionTable functionTable;
@@ -125,10 +126,10 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
             //Apply some cleaning transformations
             clean(program);
-           
+
             //Annotate the AST with more informations
             defineDefaultValues(program);
-            
+
             //Fill the string pool
             checkStrings(program, pool);
 
@@ -148,53 +149,71 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
             //Check that there is a main in the program
             checkForMain(functionTable);
-            
+
             //Optimize the AST
             optimize(program, functionTable, pool);
-    
-            tac::Program tacProgram;
 
-            //Generate Three-Address-Code language
-            tac::Compiler compiler;
-            compiler.compile(program, pool, tacProgram);
+            //If the user asked for it, print the Abstract Syntax Tree
+            if(options.count("ast") || options.count("ast-only")){
+                ast::DebugVisitor()(program);
+            }
 
-            //Separate into basic blocks
-            tac::BasicBlockExtractor extractor;
-            extractor.extract(tacProgram);
+            //If necessary, continue the compilation process
+            if(!options.count("ast-only")){
 
-            //Allocate storage for the temporaries that need to be stored
-            tac::TemporaryAllocator allocator;
-            allocator.allocate(tacProgram);
+                tac::Program tacProgram;
 
-            tac::Optimizer optimizer;
-            optimizer.optimize(tacProgram, pool);
+                //Generate Three-Address-Code language
+                tac::Compiler compiler;
+                compiler.compile(program, pool, tacProgram);
 
-            //Compute liveness of variables
-            tac::LivenessAnalyzer liveness;
-            liveness.compute(tacProgram);
+                //Separate into basic blocks
+                tac::BasicBlockExtractor extractor;
+                extractor.extract(tacProgram);
 
-            //Generate assembly from TAC
-            AssemblyFileWriter writer("output.asm");
+                //Allocate storage for the temporaries that need to be stored
+                tac::TemporaryAllocator allocator;
+                allocator.allocate(tacProgram);
 
-            as::CodeGeneratorFactory factory;
-            auto generator = factory.get(platform, writer);
-            generator->generate(tacProgram, pool, functionTable); 
-            writer.write(); 
+                tac::Optimizer optimizer;
+                optimizer.optimize(tacProgram, pool);
 
-            //If it's necessary, assemble and link the assembly
-            if(!options.count("assembly")){
-                if(options.count("debug")){
-                    assembleWithDebug(platform, output);
-                } else {
-                    assemble(platform, output);
+                //If asked by the user, print the Three Address code representation
+                if(options.count("tac") || options.count("tac-only")){
+                    tac::Printer printer;
+                    printer.print(tacProgram);
                 }
 
-                //Remove temporary files
-                if(!options.count("keep")){
-                    remove("output.asm");
-                }
+                //If necessary, continue the compilation process
+                if(!options.count("tac-only")){
+                    //Compute liveness of variables
+                    tac::LivenessAnalyzer liveness;
+                    liveness.compute(tacProgram);
 
-                remove("output.o");
+                    //Generate assembly from TAC
+                    AssemblyFileWriter writer("output.asm");
+
+                    as::CodeGeneratorFactory factory;
+                    auto generator = factory.get(platform, writer);
+                    generator->generate(tacProgram, pool, functionTable); 
+                    writer.write(); 
+
+                    //If it's necessary, assemble and link the assembly
+                    if(!options.count("assembly")){
+                        if(options.count("debug")){
+                            assembleWithDebug(platform, output);
+                        } else {
+                            assemble(platform, output);
+                        }
+
+                        //Remove temporary files
+                        if(!options.count("keep")){
+                            remove("output.asm");
+                        }
+
+                        remove("output.o");
+                    }
+                }
             }
         }
     } catch (const SemanticalException& e) {
