@@ -26,7 +26,7 @@ tac::BinaryOperator eddic::tac::toBinaryOperator(ast::Operator op){
         return tac::BinaryOperator::LESS;
     }
 
-    assert(false); //Not handled
+    assert(false && "Not an int binary operator"); 
 }
 
 tac::BinaryOperator eddic::tac::toFloatBinaryOperator(ast::Operator op){
@@ -44,5 +44,5 @@ tac::BinaryOperator eddic::tac::toFloatBinaryOperator(ast::Operator op){
         return tac::BinaryOperator::FL;
     }
 
-    assert(false); //Not handled
+    assert(false && "Not a float binary operator"); 
 }

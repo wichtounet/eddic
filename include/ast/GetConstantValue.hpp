@@ -37,7 +37,7 @@ struct GetConstantValue : public boost::static_visitor<Val> {
 
     template<typename T>
     Val operator()(const T&) const {
-        assert(false); //Everything else is not constant
+        assert(false && "Value not constant");
     }
 };
 

@@ -17,17 +17,20 @@
 using namespace eddic;
 
 std::string eddic::mangle(Type type){
-    if(type.base() == BaseType::INT){
-        return type.isArray() ? "AI" : "I";
-    } else if(type.base() == BaseType::STRING){
-        return type.isArray() ? "AS" : "S";
-    } else if(type.base() == BaseType::BOOL){
-        return type.isArray() ? "AB" : "B";
-    } else if(type.base() == BaseType::FLOAT){
-        return type.isArray() ? "AF" : "F";
+    switch(type.base()){
+        case BaseType::INT:
+            return type.isArray() ? "AI" : "I";
+        case BaseType::STRING:
+            return type.isArray() ? "AS" : "S";
+        case BaseType::BOOL:
+            return type.isArray() ? "AB" : "B";
+        case BaseType::FLOAT:
+            return type.isArray() ? "AF" : "F";
+        case BaseType::VOID:
+            return "V";
+        case BaseType::COUNT:
+            assert(false && "Does not make sense");
     }
-
-    assert(false); //Type not handled
 }
 
 std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){

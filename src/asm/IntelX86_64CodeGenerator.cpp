@@ -224,7 +224,7 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     }
 
     void operator()(std::string&){
-        assert(false); //There is no more label after the basic blocks have been extracted
+        assert(false && "No more labels should be there");
     }
 };
 

@@ -45,6 +45,5 @@ Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
         return boost::get<std::pair<std::string, int>>(val);
     }
 
-    //Type not managed
-    assert(false);
+    assert(false && "This variable is of a type that cannot be constant");
 }

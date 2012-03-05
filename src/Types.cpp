@@ -51,8 +51,6 @@ int eddic::size(BaseType type){
         case Platform::INTEL_X86_64:
             return typeSizes64[(unsigned int) type];
     }
-
-    assert(false);
 }
 
 int eddic::size(Type type){

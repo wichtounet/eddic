@@ -45,5 +45,5 @@ std::string eddic::ast::toString(Operator op){
             return ">=";
     }
 
-    assert(false);
+    assert(false && "This operator cannot be converted to string");
 }

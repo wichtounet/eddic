@@ -206,7 +206,7 @@ struct ConstantFolding : public boost::static_visitor<tac::Statement> {
             case tac::BinaryOperator::GREATER_EQUALS:
                 return left >= right;
             default:
-                assert(false);
+                assert(false && "This operator is not valid on int");
         }
     }
 
@@ -881,7 +881,7 @@ unsigned int index(const std::vector<T>& vector, T& search){
         }
     }
 
-    assert(false);
+    return -1;
 }
 
 bool remove_dead_basic_blocks(tac::Program& program){

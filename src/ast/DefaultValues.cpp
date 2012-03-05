@@ -28,6 +28,8 @@ struct SetDefaultValues : public boost::static_visitor<> {
         if(!declaration.Content->value){
             Type type = newType(declaration.Content->variableType);
 
+            assert(type.base() == BaseType::INT || type.base() == BaseType::FLOAT);
+
             switch(type.base()){
                 case BaseType::INT:{
                     ast::Integer integer;
@@ -47,7 +49,6 @@ struct SetDefaultValues : public boost::static_visitor<> {
                     break;
                 }
                 default:
-                    assert(false); //This type is not managed
                     break;
             }
         }

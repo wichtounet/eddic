@@ -24,7 +24,7 @@ tac::Operator tac::toOperator(ast::Operator op){
         case ast::Operator::MOD:
             return tac::Operator::MOD;
         default:
-            assert(false);
+            assert(false && "Not an int operator");
     }
 }
 
@@ -39,7 +39,7 @@ tac::Operator tac::toFloatOperator(ast::Operator op){
         case ast::Operator::MUL:
             return tac::Operator::FMUL;
         default:
-            assert(false);
+            assert(false && "Not a float operator");
     }
 }
 
@@ -58,8 +58,7 @@ tac::Operator tac::toRelationalOperator(ast::Operator op){
         case ast::Operator::GREATER_EQUALS:
             return tac::Operator::GREATER_EQUALS;
         default:
-            //Not a relational operator
-            assert(false);
+            assert(false && "Not a relational operator");
     }
 }
 
@@ -78,7 +77,6 @@ tac::Operator tac::toFloatRelationalOperator(ast::Operator op){
         case ast::Operator::GREATER_EQUALS:
             return tac::Operator::FGE;
         default:
-            //Not a relational operator
-            assert(false);
+            assert(false && "Not a float relational operator");
     }
 }

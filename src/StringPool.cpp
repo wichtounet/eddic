@@ -38,7 +38,7 @@ std::string StringPool::value(const std::string& label) {
     }
 
     //This method should not be called on not-existing label
-    assert(false);
+    assert(false && "The label does not exists");
 }
 
 std::unordered_map<std::string, std::string> StringPool::getPool() const {
