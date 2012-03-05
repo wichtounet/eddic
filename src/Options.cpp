@@ -42,6 +42,12 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("keep,k", "Keep the assembly file")
             ("version", "Print the version of eddic")
             ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
+
+            ("ast", "Print the Abstract Syntax Tree representation of the source")
+            ("tac", "Print the Three Address Code representation of the source")
+            
+            ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
+            ("tac-only", "Only print the Three Address Code representation of the source (do not continue compilation after printing)")
             
             ("optimize-all", "Enable all optimizations")
             ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
