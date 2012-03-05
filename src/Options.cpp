@@ -22,7 +22,7 @@ bool eddic::WarningUnused;
 
 po::variables_map eddic::options;
 
-po::options_description desc("Usage : edic [options]");
+po::options_description desc("Usage : eddic [options] source.eddi");
 
 std::pair<std::string, std::string> numeric_parser(const std::string& s){
     if (s.find("-32") == 0) {
