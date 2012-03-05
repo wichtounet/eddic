@@ -15,9 +15,6 @@
 
 using namespace eddic;
 
-bool eddic::OptimizeStrings;
-bool eddic::OptimizeUnused;
-
 bool eddic::WarningUnused;
 
 po::variables_map eddic::options;
@@ -49,10 +46,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
             ("tac-only", "Only print the Three Address Code representation of the source (do not continue compilation after printing)")
             
-            ("optimize-all", "Enable all optimizations")
-            ("optimize-strings", po::bool_switch(&OptimizeStrings), "Enable the optimizations on strings")
-            ("optimize-unused", po::bool_switch(&OptimizeUnused), "Enable the removal of unused variables and functions")
-            
             ("debug,g", "Add debugging symbols")
 
             ("warning-all", "Enable all the warnings")
@@ -68,10 +61,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), options);
         po::notify(options);
-
-        if(options.count("optimize-all")){
-            OptimizeStrings = OptimizeUnused = true;
-        }
 
         if(options.count("warning-all")){
             WarningUnused = true;

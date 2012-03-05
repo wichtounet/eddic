@@ -14,9 +14,6 @@ namespace po = boost::program_options;
 
 namespace eddic {
 
-extern bool OptimizeStrings;
-extern bool OptimizeUnused;
-
 extern bool WarningUnused;
 
 /*!
