@@ -108,6 +108,10 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         return "qword";
     }
 
+    std::string getFloatPrefix(){
+        return "__float64__";
+    }
+
     Register getReturnRegister1(){
         return Register::RAX;
     }

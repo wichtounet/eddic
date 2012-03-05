@@ -51,6 +51,7 @@ struct IntelStatementCompiler {
     virtual void mod(std::shared_ptr<tac::Quadruple> quadruple) = 0;
     
     virtual std::string getMnemonicSize() = 0;
+    virtual std::string getFloatPrefix() = 0;
 
     virtual Register getReturnRegister1() = 0;
     virtual Register getReturnRegister2() = 0;
@@ -65,6 +66,7 @@ struct IntelStatementCompiler {
         return variable->type().base() == BaseType::INT;
     }
 
+    //TODO Verify these two functions
     void allocateStackSpace(unsigned int space){
         writer.stream() << "add " << getStackPointerRegister() << ", " << space << std::endl;
     }
@@ -156,7 +158,7 @@ struct IntelStatementCompiler {
                     //The temporary should have been handled by the preceding condition (hold in a register)
                     assert(false);
                 }
-            } 
+            }
         } else if(boost::get<double>(&argument)){
             Register gpreg = getReg();
             
@@ -565,7 +567,7 @@ struct IntelStatementCompiler {
         if(auto* ptr = boost::get<int>(&argument)){
             return ::toString(*ptr);
         } else if(auto* ptr = boost::get<double>(&argument)){
-            return "__float64__(" + toFloatString(*ptr) + ")";
+            return getFloatPrefix() + "(" + toFloatString(*ptr) + ")";
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){

@@ -94,6 +94,10 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
         return "dword";
     }
 
+    std::string getFloatPrefix(){
+        return "__float32__";
+    }
+
     Register getReturnRegister1(){
         return Register::EAX;
     }
