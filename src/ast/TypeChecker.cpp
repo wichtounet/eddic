@@ -98,7 +98,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
         checkAssignment(assignment);
     }
 
-    void operator()(ast::SuffixOperation& operation){
+    template<typename Operation>
+    void checkSuffixOrPrefixOperation(Operation& operation){
         auto var = operation.Content->variable;
         
         if(var->type() != BaseType::INT && var->type() != BaseType::FLOAT){
@@ -110,16 +111,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::SuffixOperation& operation){
+        checkSuffixOrPrefixOperation(operation);
+    }
+
     void operator()(ast::PrefixOperation& operation){
-        auto var = operation.Content->variable;
-        
-        if(var->type() != BaseType::INT && var->type() != BaseType::FLOAT){
-            throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
-        }
-        
-        if(var->type().isConst()){
-            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", operation.Content->position);
-        }
+        checkSuffixOrPrefixOperation(operation);
     }
 
     void operator()(ast::Return& return_){
