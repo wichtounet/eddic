@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "VisitorUtils.hpp"
+
 #include "tac/IsParamSafeVisitor.hpp"
 
 using namespace eddic;
