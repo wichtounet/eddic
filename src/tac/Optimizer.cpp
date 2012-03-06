@@ -21,6 +21,7 @@
 #include "tac/ArithmeticIdentities.hpp"
 #include "tac/ReduceInStrength.hpp"
 #include "tac/ConstantFolding.hpp"
+#include "tac/ConstantPropagation.hpp"
 
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
@@ -37,82 +38,6 @@ static const bool Debug = false;
 enum class Pass : unsigned int {
     DATA_MINING,
     OPTIMIZE
-};
-
-struct ConstantPropagation : public boost::static_visitor<void> {
-    bool optimized;
-
-    ConstantPropagation() : optimized(false) {}
-
-    std::unordered_map<std::shared_ptr<Variable>, int> int_constants;
-    std::unordered_map<std::shared_ptr<Variable>, std::string> string_constants;
-
-    void optimize(tac::Argument* arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-            if(int_constants.find(*ptr) != int_constants.end()){
-                optimized = true;
-                *arg = int_constants[*ptr];
-            } else if(string_constants.find(*ptr) != string_constants.end()){
-                optimized = true;
-                *arg = string_constants[*ptr];
-            }
-        }
-    }
-
-    void optimize_optional(boost::optional<tac::Argument>& arg){
-        if(arg){
-            optimize(&*arg);
-        }
-    }
-
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        //Do not replace a variable by a constant when used in offset
-        if(quadruple->op == tac::Operator::ASSIGN || (quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT)){
-            optimize_optional(quadruple->arg1);
-        }
-        
-        optimize_optional(quadruple->arg2);
-
-        if(quadruple->op == tac::Operator::ASSIGN){
-            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                int_constants[quadruple->result] = *ptr;
-            } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
-                string_constants[quadruple->result] = *ptr;
-            } else {
-                //The result is not constant at this point
-                int_constants.erase(quadruple->result);
-                string_constants.erase(quadruple->result);
-            }
-        } else {
-            auto op = quadruple->op;
-
-            //Check if the operator erase the contents of the result variable
-            if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
-                //The result is not constant at this point
-                int_constants.erase(quadruple->result);
-                string_constants.erase(quadruple->result);
-            }
-        }
-    }
-
-    template<typename T>
-    void optimizeBranch(T& if_){
-        optimize(&if_->arg1);
-        optimize_optional(if_->arg2);
-    }
-
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        optimizeBranch(ifFalse);
-    }
-    
-    void operator()(std::shared_ptr<tac::If>& if_){
-        optimizeBranch(if_);
-    }
-
-    template<typename T>
-    void operator()(T&){ 
-        //Nothing to optimize here
-    }
 };
 
 struct Offset {
