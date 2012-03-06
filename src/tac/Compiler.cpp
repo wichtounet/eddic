@@ -154,6 +154,56 @@ int getStringOffset(std::shared_ptr<Variable> variable){
 }
 
 void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
+    
+template<typename Operation>
+void performPrefixOperation(const Operation& operation, std::shared_ptr<tac::Function> function){
+    auto var = operation.Content->variable;
+
+    if(operation.Content->op == ast::Operator::INC){
+        if(var->type() == BaseType::FLOAT){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+        } else {
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+        }
+    } else if(operation.Content->op == ast::Operator::DEC){
+        if(var->type() == BaseType::FLOAT){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+        } else {
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+        }
+    }
+}
+
+template<typename Operation>
+std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std::shared_ptr<tac::Function> function){
+    auto var = operation.Content->variable;
+
+    if(var->type() == BaseType::FLOAT){
+        auto temp = operation.Content->context->newFloatTemporary();
+
+        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::FASSIGN));
+
+        if(operation.Content->op == ast::Operator::INC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+        } else if(operation.Content->op == ast::Operator::DEC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+        }
+
+        return temp;
+    } else {
+        auto temp = operation.Content->context->newTemporary();
+
+        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
+
+        if(operation.Content->op == ast::Operator::INC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+        } else if(operation.Content->op == ast::Operator::DEC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+        }
+
+        return temp;
+    }
+}
 
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
@@ -286,54 +336,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
-    result_type operator()(ast::PrefixOperation& value) const {
-        auto var = value.Content->variable;
+    result_type operator()(ast::PrefixOperation& operation) const {
+        performPrefixOperation(operation, function);
 
-        if(value.Content->op == ast::Operator::INC){
-            if(var->type() == BaseType::FLOAT){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
-            } else {
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-            }
-        } else if(value.Content->op == ast::Operator::DEC){
-            if(var->type() == BaseType::FLOAT){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
-            } else {
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-            }
-        }
-
-        return {var};
+        return {operation.Content->variable};
     }
 
-    result_type operator()(ast::SuffixOperation& value) const {
-        auto var = value.Content->variable;
-
-        if(var->type() == BaseType::FLOAT){
-            auto temp = value.Content->context->newFloatTemporary();
-
-            function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::FASSIGN));
-
-            if(value.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
-            } else if(value.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
-            }
-
-            return {temp};
-        } else {
-            auto temp = value.Content->context->newTemporary();
-
-            function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
-
-            if(value.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-            } else if(value.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-            }
-
-            return {temp};
-        }
+    result_type operator()(ast::SuffixOperation& operation) const {
+        return {performSuffixOperation(operation, function)};
     }
 
     result_type operator()(ast::ArrayValue& array) const {
@@ -845,39 +855,12 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::SuffixOperation& operation){
-            auto var = operation.Content->variable;
-        
-            if(operation.Content->op == ast::Operator::INC){
-                if(var->type() == BaseType::FLOAT){
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
-                } else {
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-                }
-            } else if(operation.Content->op == ast::Operator::DEC){
-                if(var->type() == BaseType::FLOAT){
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
-                } else {
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-                }
-            }
+            //As we don't need the return value, we can make it prefix
+            performPrefixOperation(operation, function);
         }
         
         void operator()(ast::PrefixOperation& operation){
-            auto var = operation.Content->variable;
-
-            if(operation.Content->op == ast::Operator::INC){
-                if(var->type() == BaseType::FLOAT){
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
-                } else {
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-                }
-            } else if(operation.Content->op == ast::Operator::DEC){
-                if(var->type() == BaseType::FLOAT){
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
-                } else {
-                    function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-                }
-            }
+            performPrefixOperation(operation, function);
         }
 
         void operator()(ast::While& while_){
