@@ -23,6 +23,7 @@
 #include "tac/ConstantFolding.hpp"
 #include "tac/ConstantPropagation.hpp"
 #include "tac/CopyPropagation.hpp"
+#include "tac/RemoveAssign.hpp"
 
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
@@ -35,91 +36,9 @@ namespace {
 static const bool DebugPerf = false;
 static const bool Debug = false;
 
-//Use for two pass optimization
-enum class Pass : unsigned int {
-    DATA_MINING,
-    OPTIMIZE
-};
-
-struct RemoveAssign : public boost::static_visitor<bool> {
-    bool optimized;
-    Pass pass;
-
-    RemoveAssign() : optimized(false) {}
-
-    std::unordered_set<std::shared_ptr<Variable>> used;
-
-    void collect(tac::Argument* arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-            used.insert(*ptr);
-        }
-    }
-
-    void collect_optional(boost::optional<tac::Argument>& arg){
-        if(arg){
-            collect(&*arg);
-        }
-    }
-
-    bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        if(pass == Pass::DATA_MINING){
-            collect_optional(quadruple->arg1);
-            collect_optional(quadruple->arg2);
-            
-            return true;
-        } else {
-            //These operators are not erasing result
-            if(quadruple->op == tac::Operator::PARAM || quadruple->op == tac::Operator::DOT_ASSIGN || quadruple->op == tac::Operator::ARRAY_ASSIGN){
-                return true;
-            }
-
-            //x = x is never useful
-            if(quadruple->op == tac::Operator::ASSIGN && *quadruple->arg1 == quadruple->result){
-                optimized = true;
-                return false;
-            }
-
-            if(used.find(quadruple->result) == used.end()){
-                if(quadruple->result){
-                    //The other kind of variables can be used in other basic block
-                    if(quadruple->result->position().isTemporary()){
-                        optimized = true;
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
-    template<typename T>
-    bool collectUsageFromBranch(T& if_){
-        if(pass == Pass::DATA_MINING){
-            collect(&if_->arg1);
-            collect_optional(if_->arg2);
-        }
-
-        return true;
-    }
-    
-    bool operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        return collectUsageFromBranch(ifFalse);
-    }
-    
-    bool operator()(std::shared_ptr<tac::If>& if_){
-        return collectUsageFromBranch(if_);
-    }
-    
-    template<typename T>
-    bool operator()(T&){ 
-        return true;
-    }
-};
-
 struct RemoveMultipleAssign : public boost::static_visitor<bool> {
     bool optimized;
-    Pass pass;
+    tac::Pass pass;
 
     RemoveMultipleAssign() : optimized(false) {}
 
@@ -140,7 +59,7 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
     }
 
     bool operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        if(pass == Pass::DATA_MINING){
+        if(pass == tac::Pass::DATA_MINING){
             collect(quadruple->arg1);
             collect(quadruple->arg2);
             
@@ -171,7 +90,7 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
 
     template<typename T>
     bool collectUsageFromBranch(T& if_){
-        if(pass == Pass::DATA_MINING){
+        if(pass == tac::Pass::DATA_MINING){
             collect(&if_->arg1);
             collect(if_->arg2);
         }
@@ -195,7 +114,7 @@ struct RemoveMultipleAssign : public boost::static_visitor<bool> {
 
 struct MathPropagation : public boost::static_visitor<void> {
     bool optimized;
-    Pass pass;
+    tac::Pass pass;
 
     MathPropagation() : optimized(false) {}
 
@@ -215,7 +134,7 @@ struct MathPropagation : public boost::static_visitor<void> {
     }
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        if(pass == Pass::DATA_MINING){
+        if(pass == tac::Pass::DATA_MINING){
             collect(quadruple->arg1);
             collect(quadruple->arg2);
         } else {
@@ -241,7 +160,7 @@ struct MathPropagation : public boost::static_visitor<void> {
 
     template<typename T>
     inline void collectUsageFromBranch(T& if_){
-        if(pass == Pass::DATA_MINING){
+        if(pass == tac::Pass::DATA_MINING){
             collect(&if_->arg1);
             collect(if_->arg2);
         }
@@ -303,12 +222,12 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
-            visitor.pass = Pass::DATA_MINING;
+            visitor.pass = tac::Pass::DATA_MINING;
 
             //In the first pass, don't care about the return value
             visit_each(visitor, block->statements);
 
-            visitor.pass = Pass::OPTIMIZE;
+            visitor.pass = tac::Pass::OPTIMIZE;
 
             auto it = block->statements.begin();
             auto end = block->statements.end();
@@ -334,11 +253,11 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
-            visitor.pass = Pass::DATA_MINING;
+            visitor.pass = tac::Pass::DATA_MINING;
 
             visit_each(visitor, block->statements);
 
-            visitor.pass = Pass::OPTIMIZE;
+            visitor.pass = tac::Pass::OPTIMIZE;
 
             visit_each(visitor, block->statements);
 
