@@ -117,7 +117,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             StringPool pool;
 
             //Read dependencies
-            includeDependencies(program, parser);
+            ast::DependenciesResolver(parser).resolve(program);
 
             //Apply some cleaning transformations
             clean(program);
@@ -299,10 +299,4 @@ void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, Str
     DebugStopWatch<debug> timer("Optimization");
     ast::OptimizationEngine engine;
     engine.optimize(program, functionTable, pool);
-}
-
-void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
-    DebugStopWatch<debug> timer("Resolve dependencies");
-    ast::DependenciesResolver resolver(parser);
-    resolver.resolve(sourceFile);
 }
