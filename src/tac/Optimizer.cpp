@@ -15,7 +15,11 @@
 #include "tac/Optimizer.hpp"
 #include "tac/Program.hpp"
 #include "tac/Utils.hpp"
-#include "tac/Printer.hpp"
+#include "tac/OptimizerUtils.hpp"
+
+//The optimization visitors
+#include "tac/ArithmeticIdentities.hpp"
+#include "tac/ReduceInStrength.hpp"
 
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
@@ -32,140 +36,6 @@ static const bool Debug = false;
 enum class Pass : unsigned int {
     DATA_MINING,
     OPTIMIZE
-};
-
-template<typename T>
-inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg){
-    visitor.optimized = true;
-
-    quadruple->op = tac::Operator::ASSIGN;
-    quadruple->arg1 = arg;
-    quadruple->arg2.reset();
-}
-
-template<typename T>
-inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg, tac::Operator op){
-    visitor.optimized = true;
-
-    quadruple->op = op;
-    quadruple->arg1 = arg;
-    quadruple->arg2.reset();
-}
-
-template<typename T>
-inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg1, tac::Operator op, tac::Argument arg2){
-    visitor.optimized = true;
-
-    quadruple->op = op;
-    quadruple->arg1 = arg1;
-    quadruple->arg2 = arg2;
-}
-
-struct ArithmeticIdentities : public boost::static_visitor<void> {
-    bool optimized;
-
-    ArithmeticIdentities() : optimized(false) {}
-
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-            switch(quadruple->op){
-                case tac::Operator::ADD:
-                    if(*quadruple->arg1 == 0){
-                        replaceRight(*this, quadruple, *quadruple->arg2);
-                    } else if(*quadruple->arg2 == 0){
-                        replaceRight(*this, quadruple, *quadruple->arg1);
-                    }
-
-                    break;
-                case tac::Operator::SUB:
-                    if(*quadruple->arg2 == 0){
-                        replaceRight(*this, quadruple, *quadruple->arg1);
-                    } 
-
-                    //a = b - b => a = 0
-                    else if(*quadruple->arg1 == *quadruple->arg2){
-                        replaceRight(*this, quadruple, 0);
-                    }
-                    
-                    //a = 0 - b => a = -b
-                    else if(*quadruple->arg1 == 0){
-                        replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::MINUS);
-                    }
-
-                    break;
-                case tac::Operator::MUL:
-                    if(*quadruple->arg1 == 1){
-                        replaceRight(*this, quadruple, *quadruple->arg2);
-                    } else if(*quadruple->arg2 == 1){
-                        replaceRight(*this, quadruple, *quadruple->arg1);
-                    }
-                    
-                    else if(*quadruple->arg1 == 0){
-                        replaceRight(*this, quadruple, 0);
-                    } else if(*quadruple->arg2 == 0){
-                        replaceRight(*this, quadruple, 0);
-                    }
-                    
-                    else if(*quadruple->arg1 == -1){
-                        replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::MINUS);
-                    } else if(*quadruple->arg2 == -1){
-                        replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::MINUS);
-                    }
-
-                    break;
-                case tac::Operator::DIV:
-                    if(*quadruple->arg2 == 1){
-                        replaceRight(*this, quadruple, *quadruple->arg1);
-                    }
-
-                    else if(*quadruple->arg1 == 0){
-                        replaceRight(*this, quadruple, 0);
-                    }
-
-                    //a = b / b => a = 1
-                    else if(*quadruple->arg1 == *quadruple->arg2){
-                        replaceRight(*this, quadruple, 1);
-                    }
-                    
-                    else if(*quadruple->arg2 == 1){
-                        replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::MINUS);
-                    }
-
-                    break;
-                default:
-                    break;
-            }
-    }
-
-    template<typename T>
-    void operator()(T&) const { 
-        //Nothing to optimize
-    }
-};
-
-struct ReduceInStrength : public boost::static_visitor<void> {
-    bool optimized;
-
-    ReduceInStrength() : optimized(false) {}
-
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-            switch(quadruple->op){
-                case tac::Operator::MUL:
-                    if(*quadruple->arg1 == 2){
-                        replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
-                    } else if(*quadruple->arg2 == 2){
-                        replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
-                    }
-
-                    break;
-                default:
-                    break;
-            }
-    }
-
-    template<typename T>
-    void operator()(T&) const { 
-        //Nothing to optimize
-    }
 };
 
 struct ConstantFolding : public boost::static_visitor<void> {
