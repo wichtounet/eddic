@@ -548,6 +548,27 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
 };
 
+template<typename Control>
+void compare(ast::ComposedValue& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
+    //relational operations cannot be chained
+    assert(value.Content->operations.size() == 1);
+
+    auto left = moveToArgument(value.Content->first, function);
+    auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+
+    Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+    Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
+
+    assert(typeLeft == typeRight);
+    assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+
+    if(typeLeft == BaseType::INT){
+        function->add(std::make_shared<Control>(tac::toBinaryOperator(op), left, right, label));
+    } else if(typeLeft == BaseType::FLOAT){
+        function->add(std::make_shared<Control>(tac::toFloatBinaryOperator(op), left, right, label));
+    } 
+}
+
 struct JumpIfTrueVisitor : public boost::static_visitor<> {
     JumpIfTrueVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
     
@@ -583,23 +604,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
         }
         //Relational operators 
         else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-            //relational operations cannot be chained
-            assert(value.Content->operations.size() == 1);
-            
-            auto left = moveToArgument(value.Content->first, function);
-            auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
-        
-            Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-            Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
-
-            assert(typeLeft == typeRight);
-            assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
-
-            if(typeLeft == BaseType::INT){
-                function->add(std::make_shared<tac::If>(tac::toBinaryOperator(op), left, right, label));
-            } else if(typeLeft == BaseType::FLOAT){
-                function->add(std::make_shared<tac::If>(tac::toFloatBinaryOperator(op), left, right, label));
-            } 
+            compare<tac::If>(value, op, function, label);
         } 
         //A bool value
         else { //Perform int operations
@@ -646,23 +651,7 @@ void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        //relational operations cannot be chained
-        assert(value.Content->operations.size() == 1);
-
-        auto left = moveToArgument(value.Content->first, function);
-        auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
-            
-        Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
-
-        assert(typeLeft == typeRight);
-        assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
-
-        if(typeLeft == BaseType::INT){
-            function->add(std::make_shared<tac::IfFalse>(tac::toBinaryOperator(op), left, right, label));
-        } else if(typeRight == BaseType::FLOAT){
-            function->add(std::make_shared<tac::IfFalse>(tac::toFloatBinaryOperator(op), left, right, label));
-        } 
+        compare<tac::IfFalse>(value, op, function, label);
     } 
     //A bool value
     else { //Perform int operations
