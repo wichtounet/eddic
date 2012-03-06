@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 
 #include <boost/variant.hpp>
@@ -15,7 +14,6 @@
 #include "tac/Optimizer.hpp"
 #include "tac/Program.hpp"
 #include "tac/Utils.hpp"
-#include "tac/OptimizerUtils.hpp"
 
 //The optimization visitors
 #include "tac/ArithmeticIdentities.hpp"
@@ -27,6 +25,7 @@
 #include "tac/RemoveMultipleAssign.hpp"
 #include "tac/MathPropagation.hpp"
 
+#include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
 #include "DebugStopWatch.hpp"
@@ -124,17 +123,6 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
     }
 
     return optimized;
-}
-
-template<typename T>
-unsigned int index(const std::vector<T>& vector, T& search){
-    for(unsigned int i = 0; i < vector.size(); ++i){
-        if(vector[i] == search){
-            return i;
-        }
-    }
-
-    assert(false);
 }
 
 bool remove_dead_basic_blocks(tac::Program& program){
