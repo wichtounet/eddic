@@ -15,6 +15,7 @@
 #include "tac/Quadruple.hpp"
 #include "tac/If.hpp"
 #include "tac/IfFalse.hpp"
+#include "tac/OptimizerUtils.hpp"
 
 namespace eddic {
 
@@ -41,6 +42,24 @@ class ConstantPropagation : public boost::static_visitor<void> {
 
         void optimize(tac::Argument* arg);
         void optimize_optional(boost::optional<tac::Argument>& arg);
+};
+
+class OffsetConstantPropagation : public boost::static_visitor<void> {
+    public:
+        bool optimized;
+
+        OffsetConstantPropagation() : optimized(false) {}
+
+        void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
+
+        template<typename T>
+        void operator()(T&){ 
+            //Nothing to optimize here
+        }
+
+    private:
+        std::unordered_map<tac::Offset, int, tac::OffsetHash> int_constants;
+        std::unordered_map<tac::Offset, std::string, tac::OffsetHash> string_constants;
 };
 
 } //end of tac

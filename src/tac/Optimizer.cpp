@@ -40,56 +40,6 @@ enum class Pass : unsigned int {
     OPTIMIZE
 };
 
-struct OffsetConstantPropagation : public boost::static_visitor<void> {
-    bool optimized;
-
-    OffsetConstantPropagation() : optimized(false) {}
-
-    std::unordered_map<tac::Offset, int, tac::OffsetHash> int_constants;
-    std::unordered_map<tac::Offset, std::string, tac::OffsetHash> string_constants;
-
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        //Store the value assigned to result+arg1
-        if(quadruple->op == tac::Operator::DOT_ASSIGN){
-            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                tac::Offset offset;
-                offset.variable = quadruple->result;
-                offset.offset = *ptr;
-                
-                if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                    int_constants[offset] = *ptr;
-                } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg2)){
-                    string_constants[offset] = *ptr;
-                } else {
-                    //The result is not constant at this point
-                    int_constants.erase(offset);
-                    string_constants.erase(offset);
-                }
-            }
-        }
-        
-        //If constant replace the value assigned to result by the value stored for arg1+arg2
-        if(quadruple->op == tac::Operator::DOT){
-            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                tac::Offset offset;
-                offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                offset.offset = *ptr;
-               
-                if(int_constants.find(offset) != int_constants.end()){
-                    replaceRight(*this, quadruple, int_constants[offset]);
-                } else if(string_constants.find(offset) != string_constants.end()){
-                    replaceRight(*this, quadruple, string_constants[offset]);
-                }
-            }
-        }
-    }
-
-    template<typename T>
-    void operator()(T&){ 
-        //Nothing to optimize here
-    }
-};
-
 struct CopyPropagation : public boost::static_visitor<void> {
     bool optimized;
 
