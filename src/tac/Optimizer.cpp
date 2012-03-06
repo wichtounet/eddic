@@ -40,43 +40,19 @@ enum class Pass : unsigned int {
     OPTIMIZE
 };
 
-struct Offset {
-    std::shared_ptr<Variable> variable;
-    int offset;
-
-    bool operator==(const Offset& b) const {
-        return variable == b.variable && offset == b.offset;
-    }
-};
-
-template <class T>
-inline void hash_combine(std::size_t& seed, const T& v){
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-}
-
-struct OffsetHash : std::unary_function<Offset, std::size_t> {
-    std::size_t operator()(const Offset& p) const {
-        std::size_t seed = 0;
-        hash_combine(seed, p.variable);
-        hash_combine(seed, p.offset);
-        return seed;
-    }
-};
-
 struct OffsetConstantPropagation : public boost::static_visitor<void> {
     bool optimized;
 
     OffsetConstantPropagation() : optimized(false) {}
 
-    std::unordered_map<Offset, int, OffsetHash> int_constants;
-    std::unordered_map<Offset, std::string, OffsetHash> string_constants;
+    std::unordered_map<tac::Offset, int, tac::OffsetHash> int_constants;
+    std::unordered_map<tac::Offset, std::string, tac::OffsetHash> string_constants;
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Store the value assigned to result+arg1
         if(quadruple->op == tac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                Offset offset;
+                tac::Offset offset;
                 offset.variable = quadruple->result;
                 offset.offset = *ptr;
                 
@@ -95,7 +71,7 @@ struct OffsetConstantPropagation : public boost::static_visitor<void> {
         //If constant replace the value assigned to result by the value stored for arg1+arg2
         if(quadruple->op == tac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                Offset offset;
+                tac::Offset offset;
                 offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                 offset.offset = *ptr;
                
@@ -187,13 +163,13 @@ struct OffsetCopyPropagation : public boost::static_visitor<void> {
 
     OffsetCopyPropagation() : optimized(false) {}
 
-    std::unordered_map<Offset, std::shared_ptr<Variable>, OffsetHash> constants;
+    std::unordered_map<tac::Offset, std::shared_ptr<Variable>, tac::OffsetHash> constants;
 
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         //Store the value assigned to result+arg1
         if(quadruple->op == tac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                Offset offset;
+                tac::Offset offset;
                 offset.variable = quadruple->result;
                 offset.offset = *ptr;
                 
@@ -209,7 +185,7 @@ struct OffsetCopyPropagation : public boost::static_visitor<void> {
         //If constant replace the value assigned to result by the value stored for arg1+arg2
         if(quadruple->op == tac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                Offset offset;
+                tac::Offset offset;
                 offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                 offset.offset = *ptr;
                
