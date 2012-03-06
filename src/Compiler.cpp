@@ -24,7 +24,6 @@
 #include "parser/SpiritParser.hpp"
 
 #include "ast/SourceFile.hpp"
-#include "ast/Position.hpp"
 
 //Annotators
 #include "ast/DefaultValues.hpp"
@@ -359,12 +358,4 @@ void exec(const std::string& command) {
     if(result.size() > 0){
         std::cout << result << std::endl;
     }
-}
-
-void eddic::warn(const std::string& warning){
-    std::cout << "warning: " << warning << std::endl;
-}
-
-void eddic::warn(const eddic::ast::Position& position, const std::string& warning){
-    std::cout << position.file << ":" << position.line << ": warning: " << warning << std::endl;
 }

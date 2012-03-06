@@ -21,7 +21,7 @@
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-#include "Compiler.hpp"
+#include "Warnings.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"

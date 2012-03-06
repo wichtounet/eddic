@@ -58,14 +58,6 @@ struct Compiler {
     int compileOnly (const std::string& file, Platform platform);
 };
 
-/*!
- * \brief Produces a warning on the command line. 
- * \param warning The warning message to produce.  
- */
-void warn(const std::string& warning);
-
-void warn(const ast::Position& position, const std::string& warning);
-
 } //end of eddic
 
 #endif
