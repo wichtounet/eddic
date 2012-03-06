@@ -101,7 +101,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::SuffixOperation& operation){
         auto var = operation.Content->variable;
         
-        if(var->type().isArray() || (var->type().base() != BaseType::INT && var->type().base() != BaseType::FLOAT)){
+        if(var->type() != BaseType::INT && var->type() != BaseType::FLOAT){
             throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
         }
 
@@ -113,7 +113,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::PrefixOperation& operation){
         auto var = operation.Content->variable;
         
-        if(var->type().isArray() || (var->type().base() != BaseType::INT && var->type().base() != BaseType::FLOAT)){
+        if(var->type() != BaseType::INT && var->type() != BaseType::FLOAT){
             throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
         }
         
@@ -195,7 +195,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 
             auto op = operation.get<0>();
             
-            if(type.base() == BaseType::INT){
+            if(type == BaseType::INT){
                 if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
                     op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                         op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
@@ -203,7 +203,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 }
             }
 
-            if(type.base() == BaseType::FLOAT){
+            if(type == BaseType::FLOAT){
                 if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
                     op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                         op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
@@ -211,13 +211,13 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 }
             }
             
-            if(type.base() == BaseType::STRING){
+            if(type == BaseType::STRING){
                 if(op != ast::Operator::ADD){
                     throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string");
                 }
             }
             
-            if(type.base() == BaseType::BOOL){
+            if(type == BaseType::BOOL){
                 if(op != ast::Operator::AND && op != ast::Operator::OR){
                     throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool");
                 }
@@ -245,7 +245,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("The builtin size() operator takes only array as arguments", builtin.Content->position);
             }
         } else if(builtin.Content->type == ast::BuiltinType::LENGTH){
-            if(type.isArray() || type.base() != BaseType::STRING){
+            if(type != BaseType::STRING){
                 throw SemanticalException("The builtin length() operator takes only string as arguments", builtin.Content->position);
             }
         }

@@ -39,9 +39,9 @@ Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
         
     auto val = value.Content->var->val();
 
-    if(type.base() == BaseType::INT){
+    if(type == BaseType::INT){
         return boost::get<int>(val);
-    } else if(type.base() == BaseType::STRING){
+    } else if(type == BaseType::STRING){
         return boost::get<std::pair<std::string, int>>(val);
     }
 

@@ -28,7 +28,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
         if(!declaration.Content->value){
             Type type = newType(declaration.Content->variableType);
 
-            assert(type.base() == BaseType::INT || type.base() == BaseType::FLOAT);
+            assert(type == BaseType::INT || type == BaseType::FLOAT);
 
             switch(type.base()){
                 case BaseType::INT:{
