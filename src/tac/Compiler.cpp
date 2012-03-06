@@ -16,6 +16,8 @@
 
 #include "tac/Compiler.hpp"
 #include "tac/Program.hpp"
+#include "tac/IsSingleArgumentVisitor.hpp"
+#include "tac/IsParamSafeVisitor.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
@@ -23,50 +25,6 @@
 using namespace eddic;
 
 namespace {
-
-struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
-    ASSIGN(ast::VariableValue, true)
-    ASSIGN(ast::Integer, true)
-    ASSIGN(ast::Float, true)
-    ASSIGN(ast::True, true)
-    ASSIGN(ast::False, true)
-    
-    ASSIGN(ast::Litteral, false)
-    ASSIGN(ast::ArrayValue, false)
-    ASSIGN(ast::ComposedValue, false)
-    ASSIGN(ast::Minus, false)
-    ASSIGN(ast::Plus, false)
-    ASSIGN(ast::BuiltinOperator, false)
-    ASSIGN(ast::Assignment, false)
-
-    //A call to a function returning an int is single argument
-    bool operator()(ast::FunctionCall& call) const {
-        Type type = call.Content->function->returnType;
-
-        return type == BaseType::INT || type == BaseType::BOOL;
-    }
-};
-
-//TODO In some cases, it's possible that some of them can be param safe
-//Typically when their subcomponents are safe or constants
-struct IsParamSafeVisitor : public boost::static_visitor<bool> {
-    ASSIGN(ast::VariableValue, true)
-    ASSIGN(ast::Integer, true)
-    ASSIGN(ast::Float, true)
-    ASSIGN(ast::True, true)
-    ASSIGN(ast::False, true)
-    ASSIGN(ast::Litteral, true)
-    
-    ASSIGN(ast::ArrayValue, false)
-    ASSIGN(ast::ComposedValue, false)
-    ASSIGN(ast::Minus, false)
-    ASSIGN(ast::Plus, false)
-    ASSIGN(ast::FunctionCall, false)
-    ASSIGN(ast::BuiltinOperator, false)
-    ASSIGN(ast::SuffixOperation, false)
-    ASSIGN(ast::PrefixOperation, false)
-    ASSIGN(ast::Assignment, false)
-};
 
 void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
