@@ -227,12 +227,6 @@ void eddic::defineDefaultValues(ast::SourceFile& program){
     values.fill(program);
 }
 
-void eddic::defineContexts(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Annotate contexts");
-    ast::ContextAnnotator annotator;
-    annotator.annotate(program);
-}
-
 void eddic::defineVariables(ast::SourceFile& program){
     DebugStopWatch<debug> timer("Annotate variables");
     ast::VariablesAnnotator annotator;

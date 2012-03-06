@@ -27,7 +27,6 @@ class FunctionTable;
 
 void clean(ast::SourceFile& program);
 void defineDefaultValues(ast::SourceFile& program);
-void defineContexts(ast::SourceFile& program);
 void defineVariables(ast::SourceFile& program);
 void defineFunctions(ast::SourceFile& program, FunctionTable& table);
 
