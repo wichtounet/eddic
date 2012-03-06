@@ -9,17 +9,15 @@
 #include <cstdio>
 
 #include "Compiler.hpp"
-
 #include "Target.hpp"
-
 #include "Utils.hpp"
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
-
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
 #include "SemanticalException.hpp"
 #include "AssemblyFileWriter.hpp"
+#include "Assembler.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -67,8 +65,6 @@ static const bool debug = false;
 #define TIMER_END(name) if(debug){std::cout << #name << " took " << name_timer.elapsed() << "s" << std::endl;}
 
 using namespace eddic;
-
-void exec(const std::string& command);
 
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
@@ -159,7 +155,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
             //If necessary, continue the compilation process
             if(!options.count("ast-only")){
-
                 tac::Program tacProgram;
 
                 //Generate Three-Address-Code language
@@ -199,11 +194,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                     //If it's necessary, assemble and link the assembly
                     if(!options.count("assembly")){
-                        if(options.count("debug")){
-                            assembleWithDebug(platform, output);
-                        } else {
-                            assemble(platform, output);
-                        }
+                        assemble(platform, output, options.count("assembly"));
 
                         //Remove temporary files
                         if(!options.count("keep")){
@@ -228,36 +219,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     }
 
     return code;
-}
-
-void assemble(Platform platform, const std::string& output){
-    switch(platform){
-        case Platform::INTEL_X86:
-            exec("nasm -f elf32 -o output.o output.asm");
-            exec("ld -S -m elf_i386 output.o -o " + output);
-
-            break;
-        case Platform::INTEL_X86_64:
-            exec("nasm -f elf64 -o output.o output.asm");
-            exec("ld -S -m elf_x86_64 output.o -o " + output);
-
-            break;
-   } 
-}
-
-void assembleWithDebug(Platform platform, const std::string& output){
-    switch(platform){
-        case Platform::INTEL_X86:
-            exec("nasm -g -f elf32 -o output.o output.asm");
-            exec("ld -m elf_i386 output.o -o " + output);
-
-            break;
-        case Platform::INTEL_X86_64:
-            exec("nasm -g -f elf64 -o output.o output.asm");
-            exec("ld -m elf_x86_64 output.o -o " + output);
-
-        break;
-   } 
 }
 
 void eddic::defineDefaultValues(ast::SourceFile& program){
@@ -344,18 +305,4 @@ void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParse
     DebugStopWatch<debug> timer("Resolve dependencies");
     ast::DependenciesResolver resolver(parser);
     resolver.resolve(sourceFile);
-}
-
-void exec(const std::string& command) {
-    DebugStopWatch<debug> timer("Exec " + command);
-    
-    if(debug){
-        std::cout << "eddic : exec command : " << command << std::endl;
-    }
-
-    std::string result = execCommand(command);
-
-    if(result.size() > 0){
-        std::cout << result << std::endl;
-    }
 }

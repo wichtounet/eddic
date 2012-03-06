@@ -22,10 +22,6 @@ namespace parser {
     class SpiritParser;
 }
 
-namespace ast {
-    struct Position;
-}
-
 class StringPool;
 class FunctionTable;
 
