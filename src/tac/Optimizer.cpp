@@ -22,6 +22,7 @@
 #include "tac/ReduceInStrength.hpp"
 #include "tac/ConstantFolding.hpp"
 #include "tac/ConstantPropagation.hpp"
+#include "tac/CopyPropagation.hpp"
 
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
@@ -38,118 +39,6 @@ static const bool Debug = false;
 enum class Pass : unsigned int {
     DATA_MINING,
     OPTIMIZE
-};
-
-struct CopyPropagation : public boost::static_visitor<void> {
-    bool optimized;
-
-    CopyPropagation() : optimized(false) {}
-
-    std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> constants;
-
-    void optimize(tac::Argument* arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-            if(constants.find(*ptr) != constants.end() && constants[*ptr] != *ptr){
-                optimized = true;
-                *arg = constants[*ptr];
-            }
-        }
-    }
-
-    void optimize_optional(boost::optional<tac::Argument>& arg){
-        if(arg){
-            optimize(&*arg);
-        }
-    }
-
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        //Do not replace a variable by a constant when used in offset
-        if(quadruple->op == tac::Operator::ASSIGN || (quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT)){
-            optimize_optional(quadruple->arg1);
-        }
-
-        optimize_optional(quadruple->arg2);
-        
-        if(quadruple->op == tac::Operator::ASSIGN){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                constants[quadruple->result] = *ptr;
-            } else {
-                //The result is not constant at this point
-                constants.erase(quadruple->result);
-            }
-        } else {
-            auto op = quadruple->op;
-
-            //Check if the operator erase the contents of the result variable
-            if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
-                //The result is not constant at this point
-                constants.erase(quadruple->result);
-            }
-        }
-    }
-
-    template<typename T>
-    void optimizeBranch(T& if_){
-        optimize(&if_->arg1);
-        optimize_optional(if_->arg2);
-    }
-
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        optimizeBranch(ifFalse);
-    }
-    
-    void operator()(std::shared_ptr<tac::If>& if_){
-        optimizeBranch(if_);
-    }
-
-    template<typename T>
-    void operator()(T&){ 
-        //Nothing to optimize
-    }
-};
-
-struct OffsetCopyPropagation : public boost::static_visitor<void> {
-    bool optimized;
-
-    OffsetCopyPropagation() : optimized(false) {}
-
-    std::unordered_map<tac::Offset, std::shared_ptr<Variable>, tac::OffsetHash> constants;
-
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        //Store the value assigned to result+arg1
-        if(quadruple->op == tac::Operator::DOT_ASSIGN){
-            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                tac::Offset offset;
-                offset.variable = quadruple->result;
-                offset.offset = *ptr;
-                
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    constants[offset] = *ptr;
-                } else {
-                    //The result is not constant at this point
-                    constants.erase(offset);
-                }
-            }
-        }
-        
-        //If constant replace the value assigned to result by the value stored for arg1+arg2
-        if(quadruple->op == tac::Operator::DOT){
-            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                tac::Offset offset;
-                offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                offset.offset = *ptr;
-               
-                if(constants.find(offset) != constants.end()){
-                    replaceRight(*this, quadruple, constants[offset]);
-                }
-            }
-        }
-    }
-
-    template<typename T>
-    void operator()(T&){ 
-        //Nothing to optimize here
-    }
 };
 
 struct RemoveAssign : public boost::static_visitor<bool> {
