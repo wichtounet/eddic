@@ -38,7 +38,7 @@ bool ast::IsConstantVisitor::operator()(ast::VariableValue& variable) const {
     return variable.Content->var->type().isConst();
 }
 
-bool ast::IsConstantVisitor::operator()(ast::ComposedValue& value) const {
+bool ast::IsConstantVisitor::operator()(ast::Expression& value) const {
     if(visit(*this, value.Content->first)){
         for(auto& op : value.Content->operations){
             if(!visit(*this, op.get<1>())){

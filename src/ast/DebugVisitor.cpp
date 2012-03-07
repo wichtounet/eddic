@@ -187,8 +187,8 @@ void ast::DebugVisitor::operator()(ast::ArrayValue&) const {
     std::cout << indent() << "Array value" << std::endl; 
 }
 
-void ast::DebugVisitor::operator()(ast::ComposedValue& value) const {
-    std::cout << indent() << "Composed value [" << value.Content->operations.size() << "]" << std::endl; 
+void ast::DebugVisitor::operator()(ast::Expression& value) const {
+    std::cout << indent() << "Expression [" << value.Content->operations.size() << "]" << std::endl; 
     ++level;
     visit(*this, value.Content->first);
     for(auto& operation : value.Content->operations){

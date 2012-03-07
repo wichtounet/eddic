@@ -215,7 +215,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*this, array.Content->indexValue);
     }
 
-    void operator()(ast::ComposedValue& value){
+    void operator()(ast::Expression& value){
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 

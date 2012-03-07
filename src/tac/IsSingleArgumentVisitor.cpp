@@ -22,7 +22,7 @@ ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::False, true)
 
 ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::Litteral, false)
 ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::ArrayValue, false)
-ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::ComposedValue, false)
+ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::Expression, false)
 ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::Minus, false)
 ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::Plus, false)
 ASSIGN_INSIDE_CONST_CONST(tac::IsSingleArgumentVisitor, ast::BuiltinOperator, false)

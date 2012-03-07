@@ -174,7 +174,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::ComposedValue& value){
+    void operator()(ast::Expression& value){
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 

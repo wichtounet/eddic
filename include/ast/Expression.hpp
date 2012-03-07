@@ -28,11 +28,11 @@ typedef boost::tuple<Operator, Value> Operation;
 typedef std::vector<Operation> Operations;
 
 /*!
- * \class ASTComposedValue
+ * \class ASTExpression
  * \brief The AST node for a composed value.   
- * Should only be used from the Deferred version (eddic::ast::ComposedValue).
+ * Should only be used from the Deferred version (eddic::ast::Expression).
  */
-struct ASTComposedValue {
+struct ASTExpression {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -40,14 +40,14 @@ struct ASTComposedValue {
     Operations operations;
 
     mutable long references;
-    ASTComposedValue() : references(0) {}
+    ASTExpression() : references(0) {}
 };
 
 /*!
- * \typedef ComposedValue
+ * \typedef Expression
  * \brief The AST node for a composed value. 
  */
-typedef Deferred<ASTComposedValue> ComposedValue;
+typedef Deferred<ASTExpression> Expression;
 
 } //end of ast
 
@@ -55,7 +55,7 @@ typedef Deferred<ASTComposedValue> ComposedValue;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::ComposedValue, 
+    eddic::ast::Expression, 
     (eddic::ast::Position, Content->position)
     (eddic::ast::Value, Content->first)
     (eddic::ast::Operations, Content->operations)

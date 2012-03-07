@@ -30,7 +30,7 @@ typedef boost::variant<
             Float,
             Litteral, 
             VariableValue,
-            ComposedValue,
+            Expression,
             Minus,
             Plus,
             True,
@@ -47,7 +47,7 @@ typedef boost::variant<
 
 } //end of eddic
 
-#include "ast/ComposedValue.hpp"
+#include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"

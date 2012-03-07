@@ -23,7 +23,7 @@
 using namespace eddic;
 
 struct GetStringValue : public boost::static_visitor<std::string> {
-    std::string operator()(ast::ComposedValue& value) const {
+    std::string operator()(ast::Expression& value) const {
         std::string acc = visit(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
@@ -61,7 +61,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
     public:
         ValueOptimizer(StringPool& p) : pool(p) {}
 
-        ast::Value operator()(ast::ComposedValue& value) const {
+        ast::Value operator()(ast::Expression& value) const {
             assert(value.Content->operations.size() > 0); //Should have been transformed before
 
             //If the value is constant, we can replace it with the results of the computation

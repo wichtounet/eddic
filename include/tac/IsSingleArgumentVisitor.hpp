@@ -24,7 +24,7 @@ struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     bool operator()(const ast::False& value) const;
     bool operator()(const ast::Litteral& value) const;
     bool operator()(const ast::ArrayValue& value) const;
-    bool operator()(const ast::ComposedValue& value) const;
+    bool operator()(const ast::Expression& value) const;
     bool operator()(const ast::Minus& value) const;
     bool operator()(const ast::Plus& value) const;
     bool operator()(const ast::FunctionCall& value) const;
