@@ -26,7 +26,7 @@ namespace parser {
  * \brief Grammar representing the whole EDDI syntax.  
  */
 struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
-    EddiGrammar(const lexer::Lexer& lexer);
+    EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
 
     qi::rule<lexer::Iterator, ast::SourceFile()> program;
     qi::rule<lexer::Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
@@ -61,6 +61,8 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     
     ValueGrammar value;
     TypeGrammar type;
+
+    const lexer::pos_iterator_type& position_begin;
 };
 
 } //end of parser

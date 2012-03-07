@@ -16,6 +16,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct SetDefaultValues : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_DECLARATION()
@@ -26,7 +28,9 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            Type type = stringToType(declaration.Content->variableType);
+            Type type = newType(declaration.Content->variableType);
+
+            assert(type == BaseType::INT || type == BaseType::FLOAT);
 
             switch(type.base()){
                 case BaseType::INT:{
@@ -47,7 +51,6 @@ struct SetDefaultValues : public boost::static_visitor<> {
                     break;
                 }
                 default:
-                    assert(false); //This type is not managed
                     break;
             }
         }
@@ -67,7 +70,9 @@ struct SetDefaultValues : public boost::static_visitor<> {
     }
 };
 
-void ast::DefaultValues::fill(ast::SourceFile& program) const {
+} //end of anonymous namespace
+
+void ast::defineDefaultValues(ast::SourceFile& program){
     SetDefaultValues visitor;
     visitor(program);
 }

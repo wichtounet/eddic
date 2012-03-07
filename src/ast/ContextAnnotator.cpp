@@ -174,7 +174,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
             operation.Content->context = currentContext;
         }
 
-        void operator()(ast::ComposedValue& value){
+        void operator()(ast::Expression& value){
             value.Content->context = currentContext;
 
             visit(*this, value.Content->first);
@@ -219,7 +219,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::ContextAnnotator::annotate(ast::SourceFile& program) const {
+void ast::defineContexts(ast::SourceFile& program){
     AnnotateVisitor visitor;
     visitor(program);
 }

@@ -9,7 +9,10 @@
 
 using namespace eddic;
 
-parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer) : TypeGrammar::base_type(type, "Type Grammar") {
+parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
+        TypeGrammar::base_type(type, "Type Grammar"),
+        position_begin(position_begin){
+
     arrayType %=
             qi::eps
         >>  lexer.identifier

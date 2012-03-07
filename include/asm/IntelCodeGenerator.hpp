@@ -42,8 +42,11 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void compile(std::shared_ptr<tac::Function> function) = 0;
 
         virtual void defineDataSection() = 0;
+
         virtual void declareIntArray(const std::string& name, unsigned int size) = 0;
         virtual void declareStringArray(const std::string& name, unsigned int size) = 0;
+        virtual void declareFloatArray(const std::string& name, unsigned int size) = 0;
+
         virtual void declareIntVariable(const std::string& name, int value) = 0;
         virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
         virtual void declareString(const std::string& label, const std::string& value) = 0;

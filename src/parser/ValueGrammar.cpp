@@ -7,10 +7,14 @@
 
 #include "parser/ValueGrammar.hpp"
 #include "lexer/adapttokens.hpp"
+#include "lexer/position.hpp"
 
 using namespace eddic;
 
-parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::base_type(value, "Value Grammar") {
+parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
+        ValueGrammar::base_type(value, "Value Grammar"),
+        position_begin(position_begin){
+
     /* Match operators into symbols */
     //TODO Find a way to avoid duplication of these things
     additive_op.add
@@ -63,23 +67,28 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     value = logicalOrValue.alias();
     
     logicalOrValue %=
-            logicalAndValue
+            qi::position(position_begin)
+        >>  logicalAndValue
         >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
     
     logicalAndValue %=
-            relationalValue
+            qi::position(position_begin)
+        >>  relationalValue
         >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
    
     relationalValue %=
-            additiveValue
+            qi::position(position_begin)
+        >>  additiveValue
         >>  *(qi::adapttokens[relational_op] > additiveValue);  
     
     additiveValue %=
-            multiplicativeValue
+            qi::position(position_begin)
+        >>  multiplicativeValue
         >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
    
     multiplicativeValue %=
-            unaryValue
+            qi::position(position_begin)
+        >>  unaryValue
         >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
     
     unaryValue %= 
@@ -102,6 +111,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     primaryValue = 
             assignment
         |   integer
+        |   float_
         |   litteral
         |   builtin_operator
         |   functionCall
@@ -124,13 +134,18 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
     integer %= 
             qi::eps 
         >>  lexer.integer;
+
+    float_ %= 
+            qi::eps 
+        >>  lexer.float_;
    
     variable %= 
-            qi::eps
+            qi::position(position_begin)
         >>  lexer.identifier;
    
     arrayValue %=
-            lexer.identifier
+            qi::position(position_begin)
+        >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket;
@@ -145,27 +160,32 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : ValueGrammar::ba
         |   litteral;
    
     builtin_operator %=
-            qi::adapttokens[builtin_op]
+            qi::position(position_begin)
+        >>  qi::adapttokens[builtin_op]
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
     functionCall %=
-            lexer.identifier
+            qi::position(position_begin)
+        >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
     assignment %= 
-            lexer.identifier 
+            qi::position(position_begin)
+        >>  lexer.identifier 
         >>  lexer.assign 
         >>  value;
     
     prefix_operation %=
-            qi::adapttokens[prefix_op]
+            qi::position(position_begin)
+        >>  qi::adapttokens[prefix_op]
         >>  lexer.identifier;
 
     suffix_operation %=
-            lexer.identifier
+            qi::position(position_begin)
+        >>  lexer.identifier
         >>  qi::adapttokens[suffix_op];
 }

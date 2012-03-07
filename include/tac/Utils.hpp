@@ -24,9 +24,19 @@ inline bool equals(T& variant, V value){
     return boost::get<V>(&variant) && value == boost::get<V>(variant);
 }
 
+template<typename V, typename T>
+inline bool is(T& variant){
+    return boost::get<V>(&variant);
+}
+
 template<typename T>
 inline bool isInt(T& variant){
     return boost::get<int>(&variant);
+}
+
+template<typename T>
+inline bool isFloat(T& variant){
+    return boost::get<double>(&variant);
 }
 
 template<typename T>

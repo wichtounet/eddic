@@ -8,6 +8,8 @@
 #ifndef AST_OPERATOR_H
 #define AST_OPERATOR_H
 
+#include <string>
+
 namespace eddic {
 
 namespace ast {
@@ -32,6 +34,8 @@ enum class Operator : unsigned int {
     GREATER,
     GREATER_EQUALS
 };
+
+std::string toString(Operator op);
 
 } //end of ast
 

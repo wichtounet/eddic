@@ -23,7 +23,7 @@
 using namespace eddic;
 
 struct GetStringValue : public boost::static_visitor<std::string> {
-    std::string operator()(ast::ComposedValue& value) const {
+    std::string operator()(ast::Expression& value) const {
         std::string acc = visit(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
@@ -40,7 +40,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
 
     std::string operator()(ast::VariableValue& variable) const {
         Type type = variable.Content->var->type();
-        assert(type.isConst() && type.base() == BaseType::STRING);
+        assert(type.isConst() && type == BaseType::STRING);
 
         auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
@@ -50,9 +50,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     //Other values are not strings
     template<typename T> 
     std::string operator()(T&) const {
-        assert(false);
-
-        return ""; 
+        assert(false && "This type is not a string");
     }
 };
 
@@ -63,20 +61,18 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
     public:
         ValueOptimizer(StringPool& p) : pool(p) {}
 
-        ast::Value operator()(ast::ComposedValue& value) const {
+        ast::Value operator()(ast::Expression& value) const {
             assert(value.Content->operations.size() > 0); //Should have been transformed before
 
             //If the value is constant, we can replace it with the results of the computation
             if(ast::IsConstantVisitor()(value)){
                 Type type = ast::GetTypeVisitor()(value);
 
-                if(type.base() == BaseType::STRING){
-                    if (OptimizeStrings) {
-                        ast::Litteral litteral;
-                        litteral.value = GetStringValue()(value);
-                        litteral.label = pool.label(litteral.value);
-                        return litteral;
-                    }
+                if(type == BaseType::STRING){
+                    ast::Litteral litteral;
+                    litteral.value = GetStringValue()(value);
+                    litteral.label = pool.label(litteral.value);
+                    return litteral;
                 }
             }
 
@@ -108,11 +104,11 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             Type type = variable.Content->var->type();
 
             if(type.isConst()){
-                if(type.base() == BaseType::INT){
+                if(type == BaseType::INT){
                     ast::Integer integer;
                     integer.value = boost::get<int>(variable.Content->var->val());
                     return integer; 
-                } else if(type.base() == BaseType::STRING){
+                } else if(type == BaseType::STRING){
                     auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
                     ast::Litteral litteral;
@@ -145,13 +141,11 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
-            if(OptimizeUnused){
-                if(context->getVariable(variable)->referenceCount() <= 0){
-                    //Removing from the AST is not enough, because it is stored in the context now
-                    context->removeVariable(variable);
-                    
-                    return true;   
-                }
+            if(context->getVariable(variable)->referenceCount() <= 0){
+                //Removing from the AST is not enough, because it is stored in the context now
+                context->removeVariable(variable);
+
+                return true;   
             }
 
             return false;
@@ -170,10 +164,8 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool operator()(ast::FunctionDeclaration& declaration){
-            if(OptimizeUnused){
-                if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
-                    return true;
-                }
+            if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
+                return true;
             }
 
             return false;
@@ -249,7 +241,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach&){
-            assert(false); //Should have been removed in transformation phase
+            assert(false && "Foreach should have been tranformed into a For"); 
         }
 
         void operator()(ast::ForeachIn& foreach){
@@ -295,7 +287,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
+void ast::optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

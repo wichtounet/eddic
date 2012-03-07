@@ -19,5 +19,5 @@ std::shared_ptr<as::CodeGenerator> eddic::as::CodeGeneratorFactory::get(Platform
             return std::make_shared<as::IntelX86_64CodeGenerator>(writer);
     }
 
-    assert(false);
+    return nullptr;
 }

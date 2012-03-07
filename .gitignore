@@ -1,4 +1,5 @@
 doc
+stats
 bin
 bin/*
 *.o

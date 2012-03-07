@@ -26,6 +26,7 @@ namespace ast {
 struct ASTGlobalArrayDeclaration {
     std::shared_ptr<Context> context;
     
+    Position position;
     std::string arrayType;
     std::string arrayName;
     int arraySize;
@@ -47,6 +48,7 @@ typedef Deferred<ASTGlobalArrayDeclaration> GlobalArrayDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalArrayDeclaration, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->arrayType)
     (std::string, Content->arrayName)
     (int, Content->arraySize)

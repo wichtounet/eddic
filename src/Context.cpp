@@ -37,8 +37,11 @@ bool Context::exists(const std::string& variable) const {
 }
 
 std::shared_ptr<Variable> Context::newTemporary(){
-    //By default this method is not implemented for a context
-    assert(false);
+    assert(false && "Not implemented");
+}
+
+std::shared_ptr<Variable> Context::newFloatTemporary(){
+    assert(false && "Not implemented");
 }
 
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {

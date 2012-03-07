@@ -15,11 +15,22 @@ namespace eddic {
 namespace tac {
 
 enum class Operator : unsigned int {
+    /* Assignment operators  */
+    ASSIGN,
+    FASSIGN,
+
+    /* Integer operators */
     ADD,
     SUB,
     MUL,
     DIV,
     MOD,
+
+    /* Float operators  */
+    FADD,
+    FSUB,
+    FMUL,
+    FDIV,
 
     /* relational operators */
     EQUALS,
@@ -28,6 +39,14 @@ enum class Operator : unsigned int {
     GREATER_EQUALS,
     LESS,
     LESS_EQUALS,
+    
+    /* float relational operators */
+    FE,
+    FNE,
+    FG,
+    FGE,
+    FLE,
+    FL,
 
     MINUS,          //result = -arg1
     
@@ -43,6 +62,10 @@ enum class Operator : unsigned int {
 };
 
 tac::Operator toOperator(ast::Operator op);
+tac::Operator toFloatOperator(ast::Operator op);
+
+tac::Operator toRelationalOperator(ast::Operator op);
+tac::Operator toFloatRelationalOperator(ast::Operator op);
 
 } //end of tac
 

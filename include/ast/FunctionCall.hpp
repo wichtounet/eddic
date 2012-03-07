@@ -13,6 +13,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Position.hpp"
 
 #include "FunctionTable.hpp"
 
@@ -28,6 +29,7 @@ namespace ast {
 struct ASTFunctionCall {
     std::shared_ptr<Function> function;
 
+    Position position;
     std::string functionName;
     std::vector<Value> values;
 
@@ -48,6 +50,7 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionCall, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->functionName)
     (std::vector<eddic::ast::Value>, Content->values)
 )

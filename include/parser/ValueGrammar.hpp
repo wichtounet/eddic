@@ -24,7 +24,7 @@ namespace parser {
  * \brief Grammar representing values in EDDI language.
  */
 struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
-    ValueGrammar(const lexer::Lexer& lexer);
+    ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
     
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
@@ -32,13 +32,14 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
     qi::rule<lexer::Iterator, ast::Minus()> negatedConstantValue;
     qi::rule<lexer::Iterator, ast::Plus()> plusValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> additiveValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> multiplicativeValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> relationalValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> logicalAndValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> logicalOrValue;
+    qi::rule<lexer::Iterator, ast::Expression()> additiveValue;
+    qi::rule<lexer::Iterator, ast::Expression()> multiplicativeValue;
+    qi::rule<lexer::Iterator, ast::Expression()> relationalValue;
+    qi::rule<lexer::Iterator, ast::Expression()> logicalAndValue;
+    qi::rule<lexer::Iterator, ast::Expression()> logicalOrValue;
     qi::rule<lexer::Iterator, ast::Value()> constant;
     qi::rule<lexer::Iterator, ast::Integer()> integer;
+    qi::rule<lexer::Iterator, ast::Float()> float_;
     qi::rule<lexer::Iterator, ast::Litteral()> litteral;
     qi::rule<lexer::Iterator, ast::VariableValue()> variable;
     qi::rule<lexer::Iterator, ast::ArrayValue()> arrayValue;
@@ -59,6 +60,8 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::symbols<char, ast::Operator> prefix_op;
 
     qi::symbols<char, ast::BuiltinType> builtin_op;
+    
+    const lexer::pos_iterator_type& position_begin;
 };
 
 } //end of parser

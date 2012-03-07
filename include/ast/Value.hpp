@@ -13,6 +13,7 @@
 #include "ast/values_def.hpp"
 
 #include "ast/Integer.hpp"
+#include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
 #include "ast/True.hpp"
@@ -26,9 +27,10 @@ namespace ast {
 
 typedef boost::variant<
             Integer, 
+            Float,
             Litteral, 
             VariableValue,
-            ComposedValue,
+            Expression,
             Minus,
             Plus,
             True,
@@ -45,7 +47,7 @@ typedef boost::variant<
 
 } //end of eddic
 
-#include "ast/ComposedValue.hpp"
+#include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"

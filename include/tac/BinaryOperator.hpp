@@ -17,15 +17,25 @@ namespace eddic {
 namespace tac {
 
 enum class BinaryOperator : unsigned int {
+    /* relational operators */
     EQUALS,
     NOT_EQUALS,
+    GREATER,
+    GREATER_EQUALS,
     LESS,
     LESS_EQUALS,
-    GREATER,
-    GREATER_EQUALS
+    
+    /* float relational operators */
+    FE,
+    FNE,
+    FG,
+    FGE,
+    FLE,
+    FL
 };
 
 BinaryOperator toBinaryOperator(ast::Operator op);
+BinaryOperator toFloatBinaryOperator(ast::Operator op);
 
 } //end of tac
 

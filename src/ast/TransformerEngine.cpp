@@ -17,7 +17,7 @@
 using namespace eddic;
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
-    ast::Value operator()(ast::ComposedValue& value) const {
+    ast::Value operator()(ast::Expression& value) const {
         if(value.Content->operations.empty()){
             return visit(*this, value.Content->first);   
         }
@@ -95,7 +95,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         variable.Content->variableName = compound.Content->variableName;
         variable.Content->var = compound.Content->context->getVariable(compound.Content->variableName);
 
-        ast::ComposedValue composed;
+        ast::Expression composed;
         composed.Content->first = variable;
         composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
 
@@ -129,7 +129,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         v.Content->context = foreach.Content->context;
         v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
 
-        ast::ComposedValue cond;
+        ast::Expression cond;
         cond.Content->first = v;
         cond.Content->operations.push_back({ast::Operator::LESS_EQUALS, toValue});
 
@@ -140,7 +140,7 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         ast::Integer inc;
         inc.value = 1;
 
-        ast::ComposedValue addition;
+        ast::Expression addition;
         addition.Content->first = v;
         addition.Content->operations.push_back({ast::Operator::ADD, inc});
         
@@ -338,12 +338,12 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::TransformerEngine::clean(ast::SourceFile& program) const {
+void ast::cleanAST(ast::SourceFile& program){
     CleanerVisitor visitor;
     visitor(program);
 }
 
-void ast::TransformerEngine::transform(ast::SourceFile& program) const {
+void ast::transformAST(ast::SourceFile& program){
     TransformerVisitor visitor;
     visitor(program);
 }

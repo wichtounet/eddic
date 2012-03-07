@@ -16,6 +16,8 @@
 
 #include "tac/Compiler.hpp"
 #include "tac/Program.hpp"
+#include "tac/IsSingleArgumentVisitor.hpp"
+#include "tac/IsParamSafeVisitor.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
@@ -24,59 +26,15 @@ using namespace eddic;
 
 namespace {
 
-struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
-    ASSIGN(ast::VariableValue, true)
-    ASSIGN(ast::Integer, true)
-    ASSIGN(ast::True, true)
-    ASSIGN(ast::False, true)
-    
-    ASSIGN(ast::Litteral, false)
-    ASSIGN(ast::ArrayValue, false)
-    ASSIGN(ast::ComposedValue, false)
-    ASSIGN(ast::Minus, false)
-    ASSIGN(ast::Plus, false)
-    ASSIGN(ast::BuiltinOperator, false)
-    ASSIGN(ast::Assignment, false)
-
-    //A call to a function returning an int is single argument
-    bool operator()(ast::FunctionCall& call) const {
-        Type type = call.Content->function->returnType;
-
-        return type.base() == BaseType::INT || type.base() == BaseType::BOOL;
-    }
-};
-
-//TODO In some cases, it's possible that some of them can be param safe
-//Typically when their subcomponents are safe or constants
-struct IsParamSafeVisitor : public boost::static_visitor<bool> {
-    ASSIGN(ast::VariableValue, true)
-    ASSIGN(ast::Integer, true)
-    ASSIGN(ast::True, true)
-    ASSIGN(ast::False, true)
-    ASSIGN(ast::Litteral, true)
-    
-    ASSIGN(ast::ArrayValue, false)
-    ASSIGN(ast::ComposedValue, false)
-    ASSIGN(ast::Minus, false)
-    ASSIGN(ast::Plus, false)
-    ASSIGN(ast::FunctionCall, false)
-    ASSIGN(ast::BuiltinOperator, false)
-    ASSIGN(ast::SuffixOperation, false)
-    ASSIGN(ast::PrefixOperation, false)
-    ASSIGN(ast::Assignment, false)
-};
-
-void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
-std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     tac::Argument left = moveToArgument(value.Content->first, function);
     tac::Argument right;
-
-    auto t1 = function->context->newTemporary(); 
 
     //Apply all the operations in chain
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
@@ -85,16 +43,24 @@ std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::sh
         right = moveToArgument(operation.get<1>(), function);
        
         if (i == 0){
-            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toOperator(operation.get<0>()), right));
+            function->add(std::make_shared<tac::Quadruple>(t1, left, f(operation.get<0>()), right));
         } else {
-            function->add(std::make_shared<tac::Quadruple>(t1, t1, tac::toOperator(operation.get<0>()), right));
+            function->add(std::make_shared<tac::Quadruple>(t1, t1, f(operation.get<0>()), right));
         }
     }
 
     return t1;
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function);
+std::shared_ptr<Variable> performIntOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
+    return performOperation(value, function, function->context->newTemporary(), &tac::toOperator);
+}
+
+std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
+    return performOperation(value, function, function->context->newFloatTemporary(), &tac::toFloatOperator);
+}
+
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function);
 
 tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, tac::Argument index, std::shared_ptr<tac::Function> function){
     auto temp = function->context->newTemporary();
@@ -133,7 +99,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     
     auto position = array->position();
     if(position.isGlobal() || position.isStack()){
-        function->add(std::make_shared<tac::Quadruple>(t1, array->type().size()));
+        function->add(std::make_shared<tac::Quadruple>(t1, array->type().size(), tac::Operator::ASSIGN));
     } else if(position.isParameter()){
         function->add(std::make_shared<tac::Quadruple>(t1, array, tac::Operator::ARRAY, 0));
     }
@@ -146,6 +112,56 @@ int getStringOffset(std::shared_ptr<Variable> variable){
 }
 
 void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
+    
+template<typename Operation>
+void performPrefixOperation(const Operation& operation, std::shared_ptr<tac::Function> function){
+    auto var = operation.Content->variable;
+
+    if(operation.Content->op == ast::Operator::INC){
+        if(var->type() == BaseType::FLOAT){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+        } else {
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+        }
+    } else if(operation.Content->op == ast::Operator::DEC){
+        if(var->type() == BaseType::FLOAT){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+        } else {
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+        }
+    }
+}
+
+template<typename Operation>
+std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std::shared_ptr<tac::Function> function){
+    auto var = operation.Content->variable;
+
+    if(var->type() == BaseType::FLOAT){
+        auto temp = operation.Content->context->newFloatTemporary();
+
+        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::FASSIGN));
+
+        if(operation.Content->op == ast::Operator::INC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+        } else if(operation.Content->op == ast::Operator::DEC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+        }
+
+        return temp;
+    } else {
+        auto temp = operation.Content->context->newTemporary();
+
+        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
+
+        if(operation.Content->op == ast::Operator::INC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+        } else if(operation.Content->op == ast::Operator::DEC){
+            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+        }
+
+        return temp;
+    }
+}
 
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
@@ -160,6 +176,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         return {integer.value};
     }
     
+    result_type operator()(ast::Float& float_) const {
+        return {float_.value};
+    }
+    
     result_type operator()(ast::False&) const {
         return {0};
     }
@@ -172,32 +192,31 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         auto& value = builtin.Content->values[0];
 
         switch(builtin.Content->type){
-            case ast::BuiltinType::SIZE:
-                if(auto* ptr = boost::get<ast::VariableValue>(&value)){
-                    auto variable = (*ptr).Content->var;
+            case ast::BuiltinType::SIZE:{
+                assert(boost::get<ast::VariableValue>(&value));
+                
+                auto variable = boost::get<ast::VariableValue>(value).Content->var;
 
-                    if(variable->position().isGlobal()){
-                        return {variable->type().size()};
-                    } else if(variable->position().isStack()){
-                        return {variable->type().size()};
-                    } else if(variable->position().isParameter()){
-                        auto t1 = function->context->newTemporary();
+                if(variable->position().isGlobal()){
+                    return {variable->type().size()};
+                } else if(variable->position().isStack()){
+                    return {variable->type().size()};
+                } else if(variable->position().isParameter()){
+                    auto t1 = function->context->newTemporary();
 
-                        //The size of the array is at the address pointed by the variable
-                        function->add(std::make_shared<tac::Quadruple>(t1, variable, tac::Operator::DOT, 0));
+                    //The size of the array is at the address pointed by the variable
+                    function->add(std::make_shared<tac::Quadruple>(t1, variable, tac::Operator::DOT, 0));
 
-                        return {t1};
-                    }
+                    return {t1};
                 }
-                    
-                assert(false);
 
-                break;
+                assert(false && "The variable is not of a valid type");
+            }
             case ast::BuiltinType::LENGTH:
                 return {visit(*this, value)[1]};
-            default:
-                assert(false);
         }
+
+        assert(false && "This builtin operator is not handled");
     }
 
     result_type operator()(ast::FunctionCall& call) const {
@@ -207,6 +226,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             case BaseType::BOOL:
             case BaseType::INT:{
                 auto t1 = function->context->newTemporary();
+
+                executeCall(call, function, t1, {});
+
+                return {t1};
+            }
+            case BaseType::FLOAT:{
+                auto t1 = function->context->newFloatTemporary();
 
                 executeCall(call, function, t1, {});
 
@@ -239,18 +265,25 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         //If it's a const, we just have to replace it by its constant value
         if(type.isConst()){
            auto val = value.Content->var->val();
-           
-           if(type.base() == BaseType::INT || type.base() == BaseType::BOOL){
-               return {boost::get<int>(val)};
-           } else if (type.base() == BaseType::STRING){
-                auto value = boost::get<std::pair<std::string, int>>(val);
 
-                return {value.first, value.second};
+           switch(type.base()){
+               case BaseType::INT:
+               case BaseType::BOOL:
+                   return {boost::get<int>(val)};
+               case BaseType::FLOAT:
+                   return {boost::get<double>(val)};        
+               case BaseType::STRING:{
+                     auto value = boost::get<std::pair<std::string, int>>(val);
+
+                     return {value.first, value.second};
+                }
+                default:
+                    assert(false && "void is not a type");
            }
         } else if(type.isArray()){
             return {value.Content->var};
         } else {
-            if(type.base() == BaseType::INT || type.base() == BaseType::BOOL){
+            if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
                 return {value.Content->var};
             } else {
                 auto temp = value.Content->context->newTemporary();
@@ -259,42 +292,29 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {value.Content->var, temp};
             }
         }
-
-        assert(false);
     }
 
-    result_type operator()(ast::PrefixOperation& value) const {
-        auto var = value.Content->variable;
+    result_type operator()(ast::PrefixOperation& operation) const {
+        performPrefixOperation(operation, function);
 
-        if(value.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-        } else if(value.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-        }
-
-        return {var};
+        return {operation.Content->variable};
     }
 
-    result_type operator()(ast::SuffixOperation& value) const {
-        auto var = value.Content->variable;
-
-        auto temp = value.Content->context->newTemporary();
-
-        function->add(std::make_shared<tac::Quadruple>(temp, var));
-
-        if(value.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-        } else if(value.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-        }
-
-        return {temp};
+    result_type operator()(ast::SuffixOperation& operation) const {
+        return {performSuffixOperation(operation, function)};
     }
 
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
         switch(array.Content->var->type().base()){
+            case BaseType::FLOAT: {
+                auto temp = array.Content->context->newFloatTemporary();
+                function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
+
+                return {temp};
+
+            }   
             case BaseType::BOOL:
             case BaseType::INT: {
                 auto temp = array.Content->context->newTemporary();
@@ -317,16 +337,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {t1, t2};
             }
             default:
-                assert(false);
+                assert(false && "void is not a variable");
         }
     }
 
-    result_type operator()(ast::ComposedValue& value) const {
+    result_type operator()(ast::Expression& value) const {
         Type type = ast::GetTypeVisitor()(value);
 
-        if(type.base() == BaseType::INT){
+        if(type == BaseType::INT){
             return {performIntOperation(value, function)};
-        } else if(type.base() == BaseType::BOOL){
+        } else if(type == BaseType::FLOAT){
+            return {performFloatOperation(value, function)};
+        } else if(type == BaseType::BOOL){
             return {performBoolOperation(value, function)};
         } else {
             auto t1 = function->context->newTemporary();
@@ -359,6 +381,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     
     virtual void intAssign(std::vector<tac::Argument> arguments) const = 0;
+    virtual void floatAssign(std::vector<tac::Argument> arguments) const = 0;
     virtual void stringAssign(std::vector<tac::Argument> arguments) const = 0;
    
     /* Litterals are always strings */
@@ -380,6 +403,9 @@ struct AbstractVisitor : public boost::static_visitor<> {
                 break;
             case BaseType::STRING:
                 stringAssign(ToArgumentsVisitor(function)(value));
+                break;
+            case BaseType::FLOAT:
+                floatAssign(ToArgumentsVisitor(function)(value));
                 break;
             default:
                 throw SemanticalException("Invalid variable type");   
@@ -404,17 +430,11 @@ struct AbstractVisitor : public boost::static_visitor<> {
         complexAssign(type, array);
     }
 
-    void operator()(ast::ComposedValue& value) const {
+    template<typename T>
+    void operator()(T& value) const {
         auto type = ast::GetTypeVisitor()(value);
         
         complexAssign(type, value);
-    }
-
-    /* Only int */
-
-    template<typename T>
-    void operator()(T& value) const {
-        intAssign(ToArgumentsVisitor(function)(value));
     }
 };
 
@@ -425,6 +445,12 @@ struct AssignValueToArray : public AbstractVisitor {
     ast::Value& indexValue;
 
     void intAssign(std::vector<tac::Argument> arguments) const {
+        auto index = computeIndexOfArray(variable, indexValue, function); 
+
+        function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
+    }
+    
+    void floatAssign(std::vector<tac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
         function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
@@ -447,11 +473,15 @@ struct AssignValueToVariable : public AbstractVisitor {
     std::shared_ptr<Variable> variable;
 
     void intAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0]));
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
+    }
+    
+    void floatAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::FASSIGN));
     }
 
     void stringAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0]));
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
         function->add(std::make_shared<tac::Quadruple>(variable, getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
     }
 };
@@ -466,7 +496,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::ComposedValue& value) const ;
+    void operator()(ast::Expression& value) const ;
     
     template<typename T>
     void operator()(T& value) const {
@@ -476,13 +506,34 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
 };
 
+template<typename Control>
+void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
+    //relational operations cannot be chained
+    assert(value.Content->operations.size() == 1);
+
+    auto left = moveToArgument(value.Content->first, function);
+    auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+
+    Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+    Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
+
+    assert(typeLeft == typeRight);
+    assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+
+    if(typeLeft == BaseType::INT){
+        function->add(std::make_shared<Control>(tac::toBinaryOperator(op), left, right, label));
+    } else if(typeLeft == BaseType::FLOAT){
+        function->add(std::make_shared<Control>(tac::toFloatBinaryOperator(op), left, right, label));
+    } 
+}
+
 struct JumpIfTrueVisitor : public boost::static_visitor<> {
     JumpIfTrueVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
     
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::ComposedValue& value) const {
+    void operator()(ast::Expression& value) const {
         auto op = value.Content->operations[0].get<0>();
 
         //Logical and operators (&&)
@@ -511,13 +562,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
         }
         //Relational operators 
         else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-            //relational operations cannot be chained
-            assert(value.Content->operations.size() == 1);
-            
-            auto left = moveToArgument(value.Content->first, function);
-            auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
-
-            function->add(std::make_shared<tac::If>(tac::toBinaryOperator(op), left, right, label));
+            compare<tac::If>(value, op, function, label);
         } 
         //A bool value
         else { //Perform int operations
@@ -535,7 +580,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
     }
 };
 
-void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
+void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     //Logical and operators (&&)
@@ -564,13 +609,7 @@ void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        //relational operations cannot be chained
-        assert(value.Content->operations.size() == 1);
-
-        auto left = moveToArgument(value.Content->first, function);
-        auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
-
-        function->add(std::make_shared<tac::IfFalse>(tac::toBinaryOperator(op), left, right, label));
+        compare<tac::IfFalse>(value, op, function, label);
     } 
     //A bool value
     else { //Perform int operations
@@ -580,7 +619,7 @@ void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
     }
 }
 
-void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
+void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
     std::vector<tac::Argument> arguments;
@@ -721,7 +760,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::CompoundAssignment&){
             //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            assert(false);
+            assert(false && "Compound assignment should be transformed into Assignment");
         }
         
         void operator()(ast::ArrayAssignment& assignment){
@@ -740,12 +779,12 @@ class CompilerVisitor : public boost::static_visitor<> {
             
             auto t1 = swap.Content->context->newTemporary();
 
-            if(lhs_var->type().base() == BaseType::INT || lhs_var->type().base() == BaseType::BOOL || lhs_var->type().base() == BaseType::STRING){
-                function->add(std::make_shared<tac::Quadruple>(t1, rhs_var));  
-                function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var));  
-                function->add(std::make_shared<tac::Quadruple>(lhs_var, t1));  
+            if(lhs_var->type() == BaseType::INT || lhs_var->type() == BaseType::BOOL || lhs_var->type() == BaseType::STRING){
+                function->add(std::make_shared<tac::Quadruple>(t1, rhs_var, tac::Operator::ASSIGN));  
+                function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var, tac::Operator::ASSIGN));  
+                function->add(std::make_shared<tac::Quadruple>(lhs_var, t1, tac::Operator::ASSIGN));  
                 
-                if( lhs_var->type().base() == BaseType::STRING){
+                if( lhs_var->type() == BaseType::STRING){
                     auto t2 = swap.Content->context->newTemporary();
 
                     //t1 = 4(b)
@@ -763,23 +802,12 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::SuffixOperation& operation){
-            auto var = operation.Content->variable;
-
-            if(operation.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-            } else if(operation.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-            }
+            //As we don't need the return value, we can make it prefix
+            performPrefixOperation(operation, function);
         }
         
         void operator()(ast::PrefixOperation& operation){
-            auto var = operation.Content->variable;
-
-            if(operation.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
-            } else if(operation.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
-            }
+            performPrefixOperation(operation, function);
         }
 
         void operator()(ast::While& while_){
@@ -830,7 +858,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach&){
-            assert(false); //This node has been transformed into a for node
+            //This node has been transformed into a for node
+            assert(false && "Foreach should have been transformed into a For loop"); 
         }
        
         void operator()(ast::ForeachIn& foreach){
@@ -844,7 +873,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto stringTemp = foreach.Content->context->newTemporary();
 
             //Init the index to 0
-            function->add(std::make_shared<tac::Quadruple>(iterVar, 0));
+            function->add(std::make_shared<tac::Quadruple>(iterVar, 0, tac::Operator::ASSIGN));
 
             function->add(startLabel);
 
@@ -854,7 +883,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             
             auto indexTemp = computeIndexOfArray(arrayVar, iterVar, function);
 
-            if(var->type().base() == BaseType::INT || var->type().base() == BaseType::BOOL){
+            if(var->type() == BaseType::INT || var->type() == BaseType::BOOL){
                 function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
             } else {
                 function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
@@ -935,11 +964,14 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     function->add(std::make_shared<tac::Call>(functionName, total, return_, return2_));
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
     auto t1 = function->context->newTemporary(); 
    
     //The first operator defines the kind of operation 
     auto op = value.Content->operations[0].get<0>();
+
+    //Only these operators are valid there
+    assert(op == ast::Operator::AND || op == ast::Operator::OR || (op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS));
 
     //Logical and operators (&&)
     if(op == ast::Operator::AND){
@@ -952,11 +984,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
             visit(JumpIfFalseVisitor(function, falseLabel), operation.get<1>());
         }
 
-        function->add(std::make_shared<tac::Quadruple>(t1, 1));
+        function->add(std::make_shared<tac::Quadruple>(t1, 1, tac::Operator::ASSIGN));
         function->add(std::make_shared<tac::Goto>(endLabel));
 
         function->add(falseLabel);
-        function->add(std::make_shared<tac::Quadruple>(t1, 0));
+        function->add(std::make_shared<tac::Quadruple>(t1, 0, tac::Operator::ASSIGN));
 
         function->add(endLabel);
     } 
@@ -971,11 +1003,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
             visit(JumpIfTrueVisitor(function, trueLabel), operation.get<1>());
         }
 
-        function->add(std::make_shared<tac::Quadruple>(t1, 0));
+        function->add(std::make_shared<tac::Quadruple>(t1, 0, tac::Operator::ASSIGN));
         function->add(std::make_shared<tac::Goto>(endLabel));
 
         function->add(trueLabel);
-        function->add(std::make_shared<tac::Quadruple>(t1, 1));
+        function->add(std::make_shared<tac::Quadruple>(t1, 1, tac::Operator::ASSIGN));
 
         function->add(endLabel);
     }
@@ -986,35 +1018,19 @@ std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::s
 
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+        
+        Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+        Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-        //Simplify that
-        switch(op){
-            case ast::Operator::EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::EQUALS, right));
-                break;
-            case ast::Operator::NOT_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::NOT_EQUALS, right));
-                break;
-            case ast::Operator::LESS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS, right));
-                break;
-            case ast::Operator::LESS_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::LESS_EQUALS, right));
-                break;
-            case ast::Operator::GREATER:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER, right));
-                break;
-            case ast::Operator::GREATER_EQUALS:
-                function->add(std::make_shared<tac::Quadruple>(t1, left, tac::Operator::GREATER_EQUALS, right));
-                break;
-            default:
-                //Not a relational operator
-                assert(false);
+        assert(typeLeft == typeRight);
+        assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+
+        if(typeLeft == BaseType::INT){
+            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toRelationalOperator(op), right));
+        } else if(typeRight == BaseType::FLOAT){
+            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toFloatRelationalOperator(op), right));
         }
     } 
-    else { 
-        assert(false);
-    }
     
     return t1;
 }

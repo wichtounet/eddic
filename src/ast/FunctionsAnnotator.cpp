@@ -29,10 +29,10 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
-            auto signature = std::make_shared<Function>(stringToType(declaration.Content->returnType), declaration.Content->functionName);
+            auto signature = std::make_shared<Function>(newType(declaration.Content->returnType), declaration.Content->functionName);
 
             if(signature->returnType.isArray()){
-                throw SemanticalException("Cannot return array from function");
+                throw SemanticalException("Cannot return array from function", declaration.Content->position);
             }
 
             for(auto& param : declaration.Content->parameters){
@@ -43,7 +43,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
             if(functionTable.exists(signature->mangledName)){
-                throw SemanticalException("The function " + signature->name + " has already been defined");
+                throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
             }
 
             functionTable.addFunction(signature);
@@ -92,7 +92,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             std::string mangled = mangle(name, functionCall.Content->values);
 
             if(!functionTable.exists(mangled)){
-                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists");
+                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             } 
 
             functionTable.addReference(mangled);
@@ -114,7 +114,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::FunctionsAnnotator::annotate(ast::SourceFile& program, FunctionTable& functionTable) const {
+void ast::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

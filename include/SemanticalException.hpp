@@ -10,6 +10,10 @@
 
 #include <string>
 
+#include <boost/optional.hpp>
+
+#include "ast/Position.hpp"
+
 namespace eddic {
 
 /*!
@@ -19,10 +23,16 @@ namespace eddic {
 class SemanticalException: public std::exception {
     protected:
         std::string m_message;
+        boost::optional<eddic::ast::Position> m_position;
 
     public:
         SemanticalException(const std::string& message);
+        SemanticalException(const std::string& message, eddic::ast::Position& position);
+
         ~SemanticalException() throw();
+
+        const std::string& message() const;
+        boost::optional<eddic::ast::Position> position() const;
 
         virtual const char* what() const throw();
 };

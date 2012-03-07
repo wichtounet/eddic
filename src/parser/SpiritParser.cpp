@@ -19,8 +19,6 @@
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 
-#include <boost/spirit/include/classic_position_iterator.hpp>
-
 #include "lexer/SpiritLexer.hpp"
 
 #include "parser/SpiritParser.hpp"
@@ -47,7 +45,7 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
     lexer::pos_iterator_type position_end;
 
     lexer::Lexer lexer;
-    parser::EddiGrammar grammar(lexer); 
+    parser::EddiGrammar grammar(lexer, position_begin); 
     
     try {
         bool r = spirit::lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);

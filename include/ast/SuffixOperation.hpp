@@ -15,6 +15,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -25,6 +26,8 @@ namespace ast {
 
 struct ASTSuffixOperation {
     std::shared_ptr<Context> context;
+
+    Position position;
     std::string variableName;
     std::shared_ptr<Variable> variable;
     ast::Operator op;
@@ -42,6 +45,7 @@ typedef Deferred<ASTSuffixOperation> SuffixOperation;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SuffixOperation, 
+    (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
     (eddic::ast::Operator, Content->op)
 )
