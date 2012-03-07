@@ -15,6 +15,7 @@
 #include "tac/Quadruple.hpp"
 #include "tac/If.hpp"
 #include "tac/IfFalse.hpp"
+#include "tac/Param.hpp"
 #include "tac/OptimizerUtils.hpp"
 
 namespace eddic {
@@ -28,6 +29,7 @@ class ConstantPropagation : public boost::static_visitor<void> {
         ConstantPropagation() : optimized(false) {}
 
         void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<tac::Param>& param);
         void operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
         void operator()(std::shared_ptr<tac::If>& if_);
 

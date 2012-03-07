@@ -213,6 +213,10 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
         compile(quadruple);
     }
     
+    void operator()(std::shared_ptr<tac::Param>& param){
+        compile(param);
+    }
+    
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         compile(ifFalse);
     }

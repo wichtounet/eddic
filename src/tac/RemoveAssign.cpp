@@ -32,7 +32,7 @@ bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         return true;
     } else {
         //These operators are not erasing result
-        if(quadruple->op == tac::Operator::PARAM || quadruple->op == tac::Operator::DOT_ASSIGN || quadruple->op == tac::Operator::ARRAY_ASSIGN){
+        if(quadruple->op == tac::Operator::DOT_ASSIGN || quadruple->op == tac::Operator::ARRAY_ASSIGN){
             return true;
         }
 
@@ -54,6 +54,14 @@ bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
 
         return true;
     }
+}
+
+bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Param>& param){
+    if(pass == tac::Pass::DATA_MINING){
+        collect(&param->arg);
+    }
+
+    return true;
 }
 
 bool tac::RemoveAssign::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){

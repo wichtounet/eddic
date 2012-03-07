@@ -227,6 +227,10 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         compile(quadruple);
     }
     
+    void operator()(std::shared_ptr<tac::Param>& param){
+        compile(param);
+    }
+    
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
         compile(ifFalse);
     }

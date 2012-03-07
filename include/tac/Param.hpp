@@ -23,8 +23,8 @@ struct Param {
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
-    Param(const Quadruple& rhs) = delete;
-    Param& operator=(const Quadruple& rhs) = delete;
+    Param(const Param& rhs) = delete;
+    Param& operator=(const Param& rhs) = delete;
 
     Param();
 
