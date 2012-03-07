@@ -338,12 +338,12 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::TransformerEngine::clean(ast::SourceFile& program) const {
+void ast::cleanAST(ast::SourceFile& program){
     CleanerVisitor visitor;
     visitor(program);
 }
 
-void ast::TransformerEngine::transform(ast::SourceFile& program) const {
+void ast::transformAST(ast::SourceFile& program){
     TransformerVisitor visitor;
     visitor(program);
 }

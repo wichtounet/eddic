@@ -40,7 +40,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
 
     std::string operator()(ast::VariableValue& variable) const {
         Type type = variable.Content->var->type();
-        assert(type.isConst() && type.base() == BaseType::STRING);
+        assert(type.isConst() && type == BaseType::STRING);
 
         auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
@@ -68,7 +68,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             if(ast::IsConstantVisitor()(value)){
                 Type type = ast::GetTypeVisitor()(value);
 
-                if(type.base() == BaseType::STRING){
+                if(type == BaseType::STRING){
                     ast::Litteral litteral;
                     litteral.value = GetStringValue()(value);
                     litteral.label = pool.label(litteral.value);
@@ -104,11 +104,11 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             Type type = variable.Content->var->type();
 
             if(type.isConst()){
-                if(type.base() == BaseType::INT){
+                if(type == BaseType::INT){
                     ast::Integer integer;
                     integer.value = boost::get<int>(variable.Content->var->val());
                     return integer; 
-                } else if(type.base() == BaseType::STRING){
+                } else if(type == BaseType::STRING){
                     auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
                     ast::Litteral litteral;
@@ -287,7 +287,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
+void ast::optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

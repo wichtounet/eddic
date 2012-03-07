@@ -9,22 +9,19 @@
 #include <cstdio>
 
 #include "Compiler.hpp"
-
 #include "Target.hpp"
-
 #include "Utils.hpp"
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
-
 #include "StringPool.hpp"
 #include "FunctionTable.hpp"
 #include "SemanticalException.hpp"
 #include "AssemblyFileWriter.hpp"
+#include "Assembler.hpp"
 
 #include "parser/SpiritParser.hpp"
 
 #include "ast/SourceFile.hpp"
-#include "ast/Position.hpp"
 
 //Annotators
 #include "ast/DefaultValues.hpp"
@@ -69,8 +66,6 @@ static const bool debug = false;
 
 using namespace eddic;
 
-void exec(const std::string& command);
-
 int Compiler::compile(const std::string& file) {
     std::cout << "Compile " << file << std::endl;
 
@@ -94,9 +89,6 @@ int Compiler::compile(const std::string& file) {
 
     return code;
 }
-
-void assemble(Platform platform, const std::string& output);
-void assembleWithDebug(Platform platform, const std::string& output);
 
 int Compiler::compileOnly(const std::string& file, Platform platform) {
     std::string output = options["output"].as<std::string>();
@@ -122,36 +114,36 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             StringPool pool;
 
             //Read dependencies
-            includeDependencies(program, parser);
+            resolveDependencies(program, parser);
 
             //Apply some cleaning transformations
-            clean(program);
+            ast::cleanAST(program);
 
             //Annotate the AST with more informations
-            defineDefaultValues(program);
+            ast::defineDefaultValues(program);
 
             //Fill the string pool
-            checkStrings(program, pool);
+            ast::checkStrings(program, pool);
 
             //Add some more informations to the AST
-            defineContexts(program);
-            defineVariables(program);
-            defineFunctions(program, functionTable);
+            ast::defineContexts(program);
+            ast::defineVariables(program);
+            ast::defineFunctions(program, functionTable);
 
             //Transform the AST
-            transform(program);
+            ast::transformAST(program);
 
             //Static analysis
-            checkTypes(program);
+            ast::checkTypes(program);
 
             //Check for warnings
-            checkForWarnings(program, functionTable);
+            ast::checkForWarnings(program, functionTable);
 
             //Check that there is a main in the program
             checkForMain(functionTable);
 
             //Optimize the AST
-            optimize(program, functionTable, pool);
+            ast::optimizeAST(program, functionTable, pool);
 
             //If the user asked for it, print the Abstract Syntax Tree
             if(options.count("ast") || options.count("ast-only")){
@@ -160,7 +152,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
             //If necessary, continue the compilation process
             if(!options.count("ast-only")){
-
                 tac::Program tacProgram;
 
                 //Generate Three-Address-Code language
@@ -200,11 +191,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                     //If it's necessary, assemble and link the assembly
                     if(!options.count("assembly")){
-                        if(options.count("debug")){
-                            assembleWithDebug(platform, output);
-                        } else {
-                            assemble(platform, output);
-                        }
+                        assemble(platform, output, options.count("assembly"));
 
                         //Remove temporary files
                         if(!options.count("keep")){
@@ -231,78 +218,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     return code;
 }
 
-void assemble(Platform platform, const std::string& output){
-    switch(platform){
-        case Platform::INTEL_X86:
-            exec("nasm -f elf32 -o output.o output.asm");
-            exec("ld -S -m elf_i386 output.o -o " + output);
-
-            break;
-        case Platform::INTEL_X86_64:
-            exec("nasm -f elf64 -o output.o output.asm");
-            exec("ld -S -m elf_x86_64 output.o -o " + output);
-
-            break;
-   } 
-}
-
-void assembleWithDebug(Platform platform, const std::string& output){
-    switch(platform){
-        case Platform::INTEL_X86:
-            exec("nasm -g -f elf32 -o output.o output.asm");
-            exec("ld -m elf_i386 output.o -o " + output);
-
-            break;
-        case Platform::INTEL_X86_64:
-            exec("nasm -g -f elf64 -o output.o output.asm");
-            exec("ld -m elf_x86_64 output.o -o " + output);
-
-        break;
-   } 
-}
-
-void eddic::defineDefaultValues(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Annotate with default values");
-    ast::DefaultValues values;
-    values.fill(program);
-}
-
-void eddic::defineContexts(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Annotate contexts");
-    ast::ContextAnnotator annotator;
-    annotator.annotate(program);
-}
-
-void eddic::defineVariables(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Annotate variables");
-    ast::VariablesAnnotator annotator;
-    annotator.annotate(program);
-}
-
-void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
-    DebugStopWatch<debug> timer("Annotate functions");
-    ast::FunctionsAnnotator annotator;
-    annotator.annotate(program, functionTable);
-}
-
-void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
-    DebugStopWatch<debug> timer("Strings checking");
-    ast::StringChecker checker;
-    checker.check(program, pool);
-}
-
-void eddic::checkTypes(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Types checking");
-    ast::TypeChecker checker;
-    checker.check(program); 
-}
-
-void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
-    DebugStopWatch<debug> timer("Check for warnings");
-    ast::WarningsEngine engine;
-    engine.check(program, table);
-}
-
 void eddic::checkForMain(FunctionTable& table){
     if(!table.exists("main")){
         throw SemanticalException("Your program must contain a main function"); 
@@ -321,50 +236,4 @@ void eddic::checkForMain(FunctionTable& table){
             throw SemanticalException("The signature of your main function is not valid");
         }
     }
-}
-
-void eddic::clean(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Cleaning");
-    ast::TransformerEngine engine;
-    engine.clean(program);
-}
-
-void eddic::transform(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Transformation");
-    ast::TransformerEngine engine;
-    engine.transform(program);
-}
-
-void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
-    DebugStopWatch<debug> timer("Optimization");
-    ast::OptimizationEngine engine;
-    engine.optimize(program, functionTable, pool);
-}
-
-void eddic::includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser){
-    DebugStopWatch<debug> timer("Resolve dependencies");
-    ast::DependenciesResolver resolver(parser);
-    resolver.resolve(sourceFile);
-}
-
-void exec(const std::string& command) {
-    DebugStopWatch<debug> timer("Exec " + command);
-    
-    if(debug){
-        std::cout << "eddic : exec command : " << command << std::endl;
-    }
-
-    std::string result = execCommand(command);
-
-    if(result.size() > 0){
-        std::cout << result << std::endl;
-    }
-}
-
-void eddic::warn(const std::string& warning){
-    std::cout << "warning: " << warning << std::endl;
-}
-
-void eddic::warn(const eddic::ast::Position& position, const std::string& warning){
-    std::cout << position.file << ":" << position.line << ": warning: " << warning << std::endl;
 }

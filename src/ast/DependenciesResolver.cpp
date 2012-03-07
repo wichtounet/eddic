@@ -24,10 +24,6 @@ bool exists(const std::string& file){
    return ifile; 
 }
 
-ast::DependenciesResolver::DependenciesResolver(parser::SpiritParser& p) : parser(p) {}
-
-void includeDependencies(ast::SourceFile& program, parser::SpiritParser& parser);
-
 class DependencyVisitor : public boost::static_visitor<> {
     private:
         parser::SpiritParser& parser;
@@ -54,7 +50,7 @@ class DependencyVisitor : public boost::static_visitor<> {
            
             ast::SourceFile dependency; 
             if(parser.parse(headerFile, dependency)){
-                includeDependencies(dependency, parser); 
+                resolveDependencies(dependency, parser); 
 
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){
                     blocks.push_back(block);
@@ -75,7 +71,7 @@ class DependencyVisitor : public boost::static_visitor<> {
            
             ast::SourceFile dependency; 
             if(parser.parse(file, dependency)){
-                includeDependencies(dependency, parser); 
+                resolveDependencies(dependency, parser); 
 
                 for(ast::FirstLevelBlock& block : dependency.Content->blocks){
                     blocks.push_back(block);
@@ -91,11 +87,7 @@ class DependencyVisitor : public boost::static_visitor<> {
         }
 };
 
-void includeDependencies(ast::SourceFile& program, parser::SpiritParser& parser){
+void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser){
     DependencyVisitor visitor(parser, program);
     visitor(program);
-}
-
-void ast::DependenciesResolver::resolve(ast::SourceFile& program) const {
-    includeDependencies(program, parser);
 }

@@ -5,19 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef CONTEXT_ANNOTATOR_H
-#define CONTEXT_ANNOTATOR_H
+#include <iostream>
 
-#include "ast/source_def.hpp"
+#include "Warnings.hpp"
 
-namespace eddic {
+void eddic::warn(const std::string& warning){
+    std::cout << "warning: " << warning << std::endl;
+}
 
-namespace ast {
-
-void defineContexts(ast::SourceFile& program);
-
-} //end of ast
-
-} //end of eddic
-
-#endif
+void eddic::warn(const eddic::ast::Position& position, const std::string& warning){
+    std::cout << position.file << ":" << position.line << ": warning: " << warning << std::endl;
+}

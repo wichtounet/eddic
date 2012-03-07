@@ -21,7 +21,7 @@
 #include "FunctionContext.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
-#include "Compiler.hpp"
+#include "Warnings.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
@@ -124,7 +124,7 @@ struct Inspector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::WarningsEngine::check(ast::SourceFile& program, FunctionTable& table) const {
+void ast::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
     if(WarningUnused){
         Collector collector;
         visit_non_variant(collector, program);

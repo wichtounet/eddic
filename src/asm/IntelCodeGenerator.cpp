@@ -49,9 +49,9 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
                 declareStringArray(it.second->name(), type.size());
             }
         } else {
-            if (type.base() == BaseType::INT) {
+            if (type == BaseType::INT) {
                 declareIntVariable(it.second->position().name(), boost::get<int>(it.second->val()));
-            } else if (type.base() == BaseType::STRING) {
+            } else if (type == BaseType::STRING) {
                 auto value = boost::get<std::pair<std::string, int>>(it.second->val());
   
                 //If that's not the case, there is a problem with the pool 

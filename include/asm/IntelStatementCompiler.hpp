@@ -66,11 +66,11 @@ struct IntelStatementCompiler {
     virtual Register getBasePointerRegister() = 0;
 
     bool isFloatVar(std::shared_ptr<Variable> variable){
-        return variable->type().base() == BaseType::FLOAT;
+        return variable->type() == BaseType::FLOAT;
     }
     
     bool isIntVar(std::shared_ptr<Variable> variable){
-        return variable->type().base() == BaseType::INT;
+        return variable->type() == BaseType::INT;
     }
 
     //TODO Verify these two functions
@@ -873,7 +873,7 @@ struct IntelStatementCompiler {
         }
 
         if(call->return_){
-            if(call->return_->type().base() == BaseType::FLOAT){
+            if(call->return_->type() == BaseType::FLOAT){
                 float_registers.setLocation(call->return_, FloatRegister::XMM7);
             } else {
                 registers.setLocation(call->return_, getReturnRegister1());
@@ -1341,7 +1341,7 @@ struct IntelStatementCompiler {
                 break;            
             }
             case tac::Operator::ARRAY_ASSIGN:
-                if(quadruple->result->type().base() == BaseType::FLOAT){
+                if(quadruple->result->type() == BaseType::FLOAT){
                     auto reg = getFloatReg();
 
                     copy(*quadruple->arg2, reg);

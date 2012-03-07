@@ -5,23 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VARIABLES_ANNOTATOR_H
-#define VARIABLES_ANNOTATOR_H
+#ifndef ASSEMBLER_H
+#define ASSEMBLER_H
 
-#include "ast/source_def.hpp"
+#include <string>
+
+#include "Platform.hpp"
 
 namespace eddic {
 
-namespace ast {
-
 /*!
- * \brief Annotate the program
- * 
- * After this phase, all the variables are resolved as entry to the symbol table. 
+ * \brief Assemble and link the output.asm file and procude the output executable. 
+ * \param platform The target platform. 
+ * \param output The output file path.  
+ * \param debug The debug mode flag
  */
-void defineVariables(ast::SourceFile& program);
-
-} //end of ast
+void assemble(Platform platform, const std::string& output, bool debug);
 
 } //end of eddic
 

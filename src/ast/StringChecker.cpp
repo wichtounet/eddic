@@ -48,7 +48,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::StringChecker::check(ast::SourceFile& program, StringPool& pool) const {
+void ast::checkStrings(ast::SourceFile& program, StringPool& pool){
    StringCheckerVisitor visitor(pool);
    visitor(program); 
 }

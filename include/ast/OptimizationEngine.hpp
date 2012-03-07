@@ -17,13 +17,7 @@ class StringPool;
 
 namespace ast {
 
-/*!
- * \class OptimizationEngine
- * \brief This optimizer edit the AST in order to optimize it for runtime performances and for size.  
- */
-struct OptimizationEngine {
-    void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const ;
-};
+void optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
 } //end of ast
 

@@ -16,14 +16,7 @@ class StringPool;
 
 namespace ast {
 
-//TODO Should perhaps be renamed
-/*!
- * \struct StringChecker
- * \brief Fill the string pool with the strings in the AST and replace each string by its pool index.   
- */
-struct StringChecker {
-   void check(ast::SourceFile& program, StringPool& pool) const ;
-};
+void checkStrings(ast::SourceFile& program, StringPool& pool);
 
 } //end of ast
 

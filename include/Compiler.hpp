@@ -18,33 +18,8 @@ namespace eddic {
 
 extern Platform platform;
 
-namespace parser {
-    class SpiritParser;
-}
-
-namespace ast {
-    struct Position;
-}
-
-class StringPool;
 class FunctionTable;
-
-void clean(ast::SourceFile& program);
-void defineDefaultValues(ast::SourceFile& program);
-void defineContexts(ast::SourceFile& program);
-void defineVariables(ast::SourceFile& program);
-void defineFunctions(ast::SourceFile& program, FunctionTable& table);
-
-void includeDependencies(ast::SourceFile& sourceFile, parser::SpiritParser& parser);
-
-void checkTypes(ast::SourceFile& program);
-void checkStrings(ast::SourceFile& program, StringPool& pool);
-
 void checkForMain(FunctionTable& table);
-void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
-
-void transform(ast::SourceFile& program);
-void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
 /*!
  * \class Compiler
@@ -57,14 +32,6 @@ struct Compiler {
     int compile (const std::string& file);
     int compileOnly (const std::string& file, Platform platform);
 };
-
-/*!
- * \brief Produces a warning on the command line. 
- * \param warning The warning message to produce.  
- */
-void warn(const std::string& warning);
-
-void warn(const ast::Position& position, const std::string& warning);
 
 } //end of eddic
 

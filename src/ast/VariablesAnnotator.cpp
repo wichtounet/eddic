@@ -95,7 +95,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    void operator()(ast::Assignment& assignment){
+    template<typename A>
+    void annotateAssignment(A& assignment){
         if (!assignment.Content->context->exists(assignment.Content->variableName)) {
             throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
         }
@@ -103,34 +104,32 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*this, assignment.Content->value);
 
         assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
+    }
+
+    void operator()(ast::Assignment& assignment){
+        annotateAssignment(assignment);
     }
     
     void operator()(ast::CompoundAssignment& assignment){
-        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
-            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
+        annotateAssignment(assignment);
+    }
+
+    template<typename Operation>
+    void annotateSuffixOrPrefixOperation(Operation& operation){
+        if (!operation.Content->context->exists(operation.Content->variableName)) {
+            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared", operation.Content->position);
         }
 
-        visit(*this, assignment.Content->value);
-
-        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
+        operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
+        operation.Content->variable->addReference();
     }
     
     void operator()(ast::SuffixOperation& operation){
-        if (!operation.Content->context->exists(operation.Content->variableName)) {
-            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared", operation.Content->position);
-        }
-
-        operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
-        operation.Content->variable->addReference();
+        annotateSuffixOrPrefixOperation(operation);
     }
     
     void operator()(ast::PrefixOperation& operation){
-        if (!operation.Content->context->exists(operation.Content->variableName)) {
-            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared", operation.Content->position);
-        }
-
-        operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
-        operation.Content->variable->addReference();
+        annotateSuffixOrPrefixOperation(operation);
     }
 
     void operator()(ast::Return& return_){
@@ -244,7 +243,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::VariablesAnnotator::annotate(ast::SourceFile& program) const {
+void ast::defineVariables(ast::SourceFile& program){
     VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

@@ -219,7 +219,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::ContextAnnotator::annotate(ast::SourceFile& program) const {
+void ast::defineContexts(ast::SourceFile& program){
     AnnotateVisitor visitor;
     visitor(program);
 }
