@@ -52,7 +52,7 @@ Type ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
     return newSimpleType(array.Content->context->getVariable(array.Content->arrayName)->type().base());
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::ComposedValue& value) const {
+Type ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){

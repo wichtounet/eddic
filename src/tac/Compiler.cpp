@@ -26,11 +26,11 @@ using namespace eddic;
 
 namespace {
 
-void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
-std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
+std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
     assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
 
     tac::Argument left = moveToArgument(value.Content->first, function);
@@ -52,15 +52,15 @@ std::shared_ptr<Variable> performOperation(ast::ComposedValue& value, std::share
     return t1;
 }
 
-std::shared_ptr<Variable> performIntOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performIntOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
     return performOperation(value, function, function->context->newTemporary(), &tac::toOperator);
 }
 
-std::shared_ptr<Variable> performFloatOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
     return performOperation(value, function, function->context->newFloatTemporary(), &tac::toFloatOperator);
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function);
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function);
 
 tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, tac::Argument index, std::shared_ptr<tac::Function> function){
     auto temp = function->context->newTemporary();
@@ -341,7 +341,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
-    result_type operator()(ast::ComposedValue& value) const {
+    result_type operator()(ast::Expression& value) const {
         Type type = ast::GetTypeVisitor()(value);
 
         if(type == BaseType::INT){
@@ -496,7 +496,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::ComposedValue& value) const ;
+    void operator()(ast::Expression& value) const ;
     
     template<typename T>
     void operator()(T& value) const {
@@ -507,7 +507,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 };
 
 template<typename Control>
-void compare(ast::ComposedValue& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
+void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
     //relational operations cannot be chained
     assert(value.Content->operations.size() == 1);
 
@@ -533,7 +533,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
     mutable std::shared_ptr<tac::Function> function;
     std::string label;
    
-    void operator()(ast::ComposedValue& value) const {
+    void operator()(ast::Expression& value) const {
         auto op = value.Content->operations[0].get<0>();
 
         //Logical and operators (&&)
@@ -580,7 +580,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
     }
 };
 
-void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
+void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     //Logical and operators (&&)
@@ -619,7 +619,7 @@ void JumpIfFalseVisitor::operator()(ast::ComposedValue& value) const {
     }
 }
 
-void performStringOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
+void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
 
     std::vector<tac::Argument> arguments;
@@ -964,7 +964,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     function->add(std::make_shared<tac::Call>(functionName, total, return_, return2_));
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::ComposedValue& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
     auto t1 = function->context->newTemporary(); 
    
     //The first operator defines the kind of operation 

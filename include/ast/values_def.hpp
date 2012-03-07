@@ -32,8 +32,8 @@ typedef Deferred<ASTAssignment> Assignment;
 struct ASTVariableValue;
 typedef Deferred<ASTVariableValue> VariableValue;
 
-struct ASTComposedValue;
-typedef Deferred<ASTComposedValue> ComposedValue;
+struct ASTExpression;
+typedef Deferred<ASTExpression> Expression;
 
 struct ASTMinus;
 typedef Deferred<ASTMinus> Minus;

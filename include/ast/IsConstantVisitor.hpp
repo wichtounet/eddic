@@ -30,7 +30,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(Minus& minus) const;
     bool operator()(VariableValue& variable) const;
     bool operator()(ArrayValue& variable) const;
-    bool operator()(ComposedValue& value) const; 
+    bool operator()(Expression& value) const; 
     bool operator()(FunctionCall& value) const; 
     bool operator()(BuiltinOperator& value) const; 
     bool operator()(SuffixOperation& value) const; 

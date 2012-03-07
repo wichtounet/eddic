@@ -32,11 +32,11 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
     qi::rule<lexer::Iterator, ast::Minus()> negatedConstantValue;
     qi::rule<lexer::Iterator, ast::Plus()> plusValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> additiveValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> multiplicativeValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> relationalValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> logicalAndValue;
-    qi::rule<lexer::Iterator, ast::ComposedValue()> logicalOrValue;
+    qi::rule<lexer::Iterator, ast::Expression()> additiveValue;
+    qi::rule<lexer::Iterator, ast::Expression()> multiplicativeValue;
+    qi::rule<lexer::Iterator, ast::Expression()> relationalValue;
+    qi::rule<lexer::Iterator, ast::Expression()> logicalAndValue;
+    qi::rule<lexer::Iterator, ast::Expression()> logicalOrValue;
     qi::rule<lexer::Iterator, ast::Value()> constant;
     qi::rule<lexer::Iterator, ast::Integer()> integer;
     qi::rule<lexer::Iterator, ast::Float()> float_;

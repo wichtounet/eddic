@@ -83,7 +83,7 @@ void operator()(ast::BuiltinOperator& builtin){\
 }
 
 #define AUTO_RECURSE_COMPOSED_VALUES()\
-void operator()(ast::ComposedValue& value){\
+void operator()(ast::Expression& value){\
     visit(*this, value.Content->first);\
     for_each(value.Content->operations.begin(), value.Content->operations.end(), \
         [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });\
