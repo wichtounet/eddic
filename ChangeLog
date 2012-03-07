@@ -1,3 +1,13 @@
+eddic 0.9.0 - 2012.03.07
+
+* Add floating point support to the language
+* Collect the position of the tokens and use them to display precise error or warning positions
+* Add options to display AST and TAC representations to standard out
+* Improved performance of the optimization engine
+* Cleanup of the Compiler class
+* Dispatch some code to different source files
+* Remove some duplicated code
+
 eddic 0.8.1 - 2012.02.19
 
 * Add the do while loop to the language
