@@ -9,6 +9,7 @@
 
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+#include "FunctionTable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "mangling.hpp"
@@ -658,11 +659,12 @@ class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
         tac::Program& program;
+        FunctionTable& table;
 
         std::shared_ptr<tac::Function> function;
     
     public:
-        CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram) {}
+        CompilerVisitor(StringPool& p, tac::Program& tacProgram, FunctionTable& table) : pool(p), program(tacProgram), table(table) {}
         
         void operator()(ast::SourceFile& p){
             program.context = p.Content->context;
@@ -672,6 +674,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::FunctionDeclaration& f){
             function = std::make_shared<tac::Function>(f.Content->context, f.Content->mangledName);
+            function->definition = table.getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
@@ -941,6 +944,8 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
     }
 
+    auto context = function->context;
+
     for(auto& first : arguments){
         for(auto& arg : first){
             function->add(std::make_shared<tac::Param>(arg));   
@@ -1038,7 +1043,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
-    CompilerVisitor visitor(pool, tacProgram);
+void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, FunctionTable& table) const {
+    CompilerVisitor visitor(pool, tacProgram, table);
     visitor(program);
 }
