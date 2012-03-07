@@ -945,10 +945,14 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     }
 
     auto context = function->context;
+    auto parameters = function->definition->parameters;
+    int i = 0;
 
     for(auto& first : arguments){
+        std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
+
         for(auto& arg : first){
-            function->add(std::make_shared<tac::Param>(arg));   
+            function->add(std::make_shared<tac::Param>(arg, param, function->definition));   
         }
     }
     

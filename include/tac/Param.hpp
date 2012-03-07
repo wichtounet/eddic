@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include "FunctionTable.hpp"
+
 #include "tac/Argument.hpp"
 
 namespace eddic {
@@ -20,14 +22,16 @@ namespace tac {
 
 struct Param {
     tac::Argument arg;
+
     std::shared_ptr<Variable> param;
+    std::shared_ptr<Function> function;
 
     Param(const Param& rhs) = delete;
     Param& operator=(const Param& rhs) = delete;
 
     Param();
     Param(tac::Argument arg1);
-    Param(tac::Argument arg1, std::shared_ptr<Variable> param);
+    Param(tac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<Function> function);
 };
 
 } //end of tac

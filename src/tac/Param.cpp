@@ -11,4 +11,4 @@ using namespace eddic;
 
 tac::Param::Param(){}
 tac::Param::Param(tac::Argument a) : arg(a) {}
-tac::Param::Param(tac::Argument a, std::shared_ptr<Variable> param) : arg(a), param(param) {}
+tac::Param::Param(tac::Argument a, std::shared_ptr<Variable> param, std::shared_ptr<Function> function) : arg(a), param(param), function(function) {}
