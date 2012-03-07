@@ -182,7 +182,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(std::shared_ptr<tac::Param>& param){
-        std::cout << "\tparam " << printArgument(param->arg) << std::endl;
+        if(param->param){
+            std::cout << "\tparam (" << param->param->name() << ")" << printArgument(param->arg) << std::endl;
+        } else {
+            std::cout << "\tparam " << printArgument(param->arg) << std::endl;
+        }
     }
 
     void operator()(std::shared_ptr<tac::Goto>& goto_){
