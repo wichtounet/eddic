@@ -90,9 +90,6 @@ int Compiler::compile(const std::string& file) {
     return code;
 }
 
-void assemble(Platform platform, const std::string& output);
-void assembleWithDebug(Platform platform, const std::string& output);
-
 int Compiler::compileOnly(const std::string& file, Platform platform) {
     std::string output = options["output"].as<std::string>();
 
@@ -117,36 +114,36 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             StringPool pool;
 
             //Read dependencies
-            ast::DependenciesResolver(parser).resolve(program);
+            resolveDependencies(program, parser);
 
             //Apply some cleaning transformations
-            clean(program);
+            ast::cleanAST(program);
 
             //Annotate the AST with more informations
-            defineDefaultValues(program);
+            ast::defineDefaultValues(program);
 
             //Fill the string pool
-            checkStrings(program, pool);
+            ast::checkStrings(program, pool);
 
             //Add some more informations to the AST
-            defineContexts(program);
-            defineVariables(program);
-            defineFunctions(program, functionTable);
+            ast::defineContexts(program);
+            ast::defineVariables(program);
+            ast::defineFunctions(program, functionTable);
 
             //Transform the AST
-            transform(program);
+            ast::transformAST(program);
 
             //Static analysis
-            checkTypes(program);
+            ast::checkTypes(program);
 
             //Check for warnings
-            checkForWarnings(program, functionTable);
+            ast::checkForWarnings(program, functionTable);
 
             //Check that there is a main in the program
             checkForMain(functionTable);
 
             //Optimize the AST
-            optimize(program, functionTable, pool);
+            ast::optimizeAST(program, functionTable, pool);
 
             //If the user asked for it, print the Abstract Syntax Tree
             if(options.count("ast") || options.count("ast-only")){
@@ -221,42 +218,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     return code;
 }
 
-void eddic::defineDefaultValues(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Annotate with default values");
-    ast::DefaultValues values;
-    values.fill(program);
-}
-
-void eddic::defineVariables(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Annotate variables");
-    ast::VariablesAnnotator annotator;
-    annotator.annotate(program);
-}
-
-void eddic::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
-    DebugStopWatch<debug> timer("Annotate functions");
-    ast::FunctionsAnnotator annotator;
-    annotator.annotate(program, functionTable);
-}
-
-void eddic::checkStrings(ast::SourceFile& program, StringPool& pool){
-    DebugStopWatch<debug> timer("Strings checking");
-    ast::StringChecker checker;
-    checker.check(program, pool);
-}
-
-void eddic::checkTypes(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Types checking");
-    ast::TypeChecker checker;
-    checker.check(program); 
-}
-
-void eddic::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
-    DebugStopWatch<debug> timer("Check for warnings");
-    ast::WarningsEngine engine;
-    engine.check(program, table);
-}
-
 void eddic::checkForMain(FunctionTable& table){
     if(!table.exists("main")){
         throw SemanticalException("Your program must contain a main function"); 
@@ -275,22 +236,4 @@ void eddic::checkForMain(FunctionTable& table){
             throw SemanticalException("The signature of your main function is not valid");
         }
     }
-}
-
-void eddic::clean(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Cleaning");
-    ast::TransformerEngine engine;
-    engine.clean(program);
-}
-
-void eddic::transform(ast::SourceFile& program){
-    DebugStopWatch<debug> timer("Transformation");
-    ast::TransformerEngine engine;
-    engine.transform(program);
-}
-
-void eddic::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
-    DebugStopWatch<debug> timer("Optimization");
-    ast::OptimizationEngine engine;
-    engine.optimize(program, functionTable, pool);
 }

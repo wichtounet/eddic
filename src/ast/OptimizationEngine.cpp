@@ -287,7 +287,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::OptimizationEngine::optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool) const {
+void ast::optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

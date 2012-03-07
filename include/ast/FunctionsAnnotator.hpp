@@ -15,14 +15,8 @@ namespace eddic {
 class FunctionTable;
 
 namespace ast {
-
-/*!
- * \struct FunctionsAnnotator
- * \brief Annotate the AST with function references.  
- */
-struct FunctionsAnnotator {
-   void annotate(ast::SourceFile& program, FunctionTable& functionTable) const ;
-};
+    
+void defineFunctions(ast::SourceFile& program, FunctionTable& functionTable);
 
 } //end of ast
 

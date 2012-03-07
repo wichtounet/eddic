@@ -18,18 +18,7 @@ namespace parser {
 
 namespace ast {
 
-/*!
- * \struct DependenciesResolver
- * \brief Utility class to resolve all the imports in a program.   
- */
-struct DependenciesResolver {
-    DependenciesResolver(parser::SpiritParser& parser);
-
-    void resolve(ast::SourceFile& program) const;
-
-    private:
-        parser::SpiritParser& parser;
-};
+void resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser);
 
 } //end of ast
 

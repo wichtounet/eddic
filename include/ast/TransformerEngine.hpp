@@ -13,18 +13,9 @@
 namespace eddic {
 
 namespace ast {
-
-/*!
- * \struct TransformerEngine
- * \brief Transforms the AST.
- *
- * The main transformation is to transform a Foreach in a For loop. Another transformation is the cleanup of composed values
- * to remove some not-composed values introduced by the parsing phase.    
- */
-struct TransformerEngine {
-    void clean(SourceFile& program) const;
-    void transform(SourceFile& program) const;
-};
+    
+void cleanAST(SourceFile& program);
+void transformAST(SourceFile& program);
 
 } //end of ast
 

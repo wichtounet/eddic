@@ -18,26 +18,8 @@ namespace eddic {
 
 extern Platform platform;
 
-namespace parser {
-    class SpiritParser;
-}
-
-class StringPool;
 class FunctionTable;
-
-void clean(ast::SourceFile& program);
-void defineDefaultValues(ast::SourceFile& program);
-void defineVariables(ast::SourceFile& program);
-void defineFunctions(ast::SourceFile& program, FunctionTable& table);
-
-void checkTypes(ast::SourceFile& program);
-void checkStrings(ast::SourceFile& program, StringPool& pool);
-
 void checkForMain(FunctionTable& table);
-void checkForWarnings(ast::SourceFile& program, FunctionTable& table);
-
-void transform(ast::SourceFile& program);
-void optimize(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
 
 /*!
  * \class Compiler
