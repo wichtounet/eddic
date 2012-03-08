@@ -39,7 +39,7 @@ class RemoveAssign : public boost::static_visitor<bool> {
 
         template<typename T>
         bool operator()(T&) const { 
-            return false;
+            return true;
         }
     
         void collect(tac::Argument* arg);
