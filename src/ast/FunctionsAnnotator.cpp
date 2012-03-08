@@ -47,6 +47,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             functionTable.addFunction(signature);
+            functionTable.getFunction(signature->mangledName)->context = declaration.Content->context;
         }
 
         template<typename T>
