@@ -869,9 +869,21 @@ struct IntelStatementCompiler {
         current = call;
 
         writer.stream() << "call " << call->function << std::endl;
+
+        int total = 0;
+        for(auto& param : call->functionDefinition->parameters){
+            Type type = param.paramType; 
+
+            if(type.isArray()){
+                //Passing an array is just passing an adress
+                total += size(BaseType::INT);
+            } else {
+                total += size(type);
+            }
+        }
         
-        if(call->params > 0){
-            allocateStackSpace(call->params);
+        if(total > 0){
+            allocateStackSpace(total);
         }
 
         if(call->return_){

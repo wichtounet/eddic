@@ -644,12 +644,12 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Functio
         arguments.clear();
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Call>("concat", 2 * size(BaseType::STRING), v1, v2)); 
+            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
             
-            function->add(std::make_shared<tac::Call>("concat", 2 * size(BaseType::STRING), t1, t2)); 
+            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -988,18 +988,6 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     
         function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
     }
-
-    /*int total = 0;
-    for(auto& value : functionCall.Content->values){
-        Type type = visit(ast::GetTypeVisitor(), value);   
-
-        if(type.isArray()){
-            //Passing an array is just passing an adress
-            total += size(BaseType::INT);
-        } else {
-            total += size(type);
-        }
-    }*/
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){

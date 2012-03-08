@@ -10,6 +10,9 @@
 using namespace eddic;
 
 tac::Call::Call(){}
-tac::Call::Call(const std::string& f, std::shared_ptr<Function> function) : function(f), function(function) {}
-tac::Call::Call(const std::string& f, std::shared_ptr<Function> function, std::shared_ptr<Variable> r): function(f), function(function), return_(r) {}
-tac::Call::Call(const std::string& f, std::shared_ptr<Function> function, std::shared_ptr<Variable> r, std::shared_ptr<Variable> r2): function(f), function(function), return_(r), return2_(r2) {}
+tac::Call::Call(const std::string& f, std::shared_ptr<Function> functionDefinition) : 
+    function(f), functionDefinition(functionDefinition) {}
+tac::Call::Call(const std::string& f, std::shared_ptr<Function> functionDefinition, std::shared_ptr<Variable> r) :
+    function(f), functionDefinition(functionDefinition), return_(r) {}
+tac::Call::Call(const std::string& f, std::shared_ptr<Function> functionDefinition, std::shared_ptr<Variable> r, std::shared_ptr<Variable> r2) :
+    function(f), functionDefinition(functionDefinition), return_(r), return2_(r2) {}
