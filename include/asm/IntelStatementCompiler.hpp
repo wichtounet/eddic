@@ -916,6 +916,8 @@ struct IntelStatementCompiler {
     virtual Register getIntParamRegister(unsigned int position) = 0;
 
     void compile(std::shared_ptr<tac::Param> param){
+        current = param;
+        
         //It's a call to a standard function
         if(param->std_param.length() > 0){
            auto type = param->function->getParameterType(param->std_param);
