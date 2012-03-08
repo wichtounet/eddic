@@ -59,6 +59,10 @@ struct IntelStatementCompiler {
     virtual std::string getFloatMul() = 0;
     virtual std::string getFloatDiv() = 0;
     virtual std::string getSizedMove() = 0;
+   
+    /* Management of parameter passing in registers */ 
+    virtual unsigned int numberIntParamRegisters() = 0;
+    virtual Register getIntParamRegister(unsigned int position) = 0;
     
     virtual Register getReturnRegister1() = 0;
     virtual Register getReturnRegister2() = 0;
@@ -75,7 +79,7 @@ struct IntelStatementCompiler {
 
     //TODO Verify these two functions
     void allocateStackSpace(unsigned int space){
-        writer.stream() << "add " << getStackPointerRegister() << ", " << space << std::endl;
+        writer.stream() << "sub " << getStackPointerRegister() << ", " << space << std::endl;
     }
 
     void deallocateStackSpace(unsigned int space){
@@ -871,6 +875,7 @@ struct IntelStatementCompiler {
         writer.stream() << "call " << call->function << std::endl;
 
         int total = 0;
+        unsigned int maxInt = numberIntParamRegisters();
         for(auto& param : call->functionDefinition->parameters){
             Type type = param.paramType; 
 
@@ -878,12 +883,21 @@ struct IntelStatementCompiler {
                 //Passing an array is just passing an adress
                 total += size(BaseType::INT);
             } else {
-                total += size(type);
+                if(type == BaseType::INT){
+                    //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                    if(maxInt > 0){
+                        --maxInt;
+                    } else {
+                        total += size(type);
+                    }
+                } else {
+                    total += size(type);
+                }
             }
         }
         
         if(total > 0){
-            allocateStackSpace(total);
+            deallocateStackSpace(total);
         }
 
         if(call->return_){
@@ -923,9 +937,6 @@ struct IntelStatementCompiler {
             writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
         }
     }
-    
-    virtual unsigned int numberIntParamRegisters() = 0;
-    virtual Register getIntParamRegister(unsigned int position) = 0;
 
     void compile(std::shared_ptr<tac::Param> param){
         current = param;
