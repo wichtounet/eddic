@@ -185,7 +185,11 @@ struct DebugVisitor : public boost::static_visitor<> {
         if(param->param){
             std::cout << "\tparam (" << param->param->name() << ") " << printArgument(param->arg) << std::endl;
         } else {
-            std::cout << "\tparam " << printArgument(param->arg) << std::endl;
+            if(param->std_param.length() > 0){
+                std::cout << "\tparam (std::" << param->std_param << ") " << printArgument(param->arg) << std::endl;
+            } else {
+                std::cout << "\tparam " << printArgument(param->arg) << std::endl;
+            }
         }
     }
 
