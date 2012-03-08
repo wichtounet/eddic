@@ -910,51 +910,68 @@ struct IntelStatementCompiler {
         }
     }
     
+    virtual unsigned int numberIntParamRegisters() = 0;
+    virtual Register getIntParamRegister(unsigned int position) = 0;
+
     void compile(std::shared_ptr<tac::Param> param){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-            if(!(*ptr)->type().isArray() && isFloatVar(*ptr)){
+        //It's a call to a standard function
+        if(param->std_param.length() > 0){
+           auto type = param->function->getParameterType(param->std_param);
+           unsigned int position = param->function->getParameterPositionByType(param->std_param);
+           
+           if(type == BaseType::INT && position <= numberIntParamRegisters()){
+               Register reg = getIntParamRegister(position);
+
+               spills(reg);
+
+               writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;            
+           }
+        } else {
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+                if(!(*ptr)->type().isArray() && isFloatVar(*ptr)){
+                    Register reg = getReg();
+
+                    writer.stream() << getSizedMove() << reg << ", " << arg(*ptr) << std::endl;
+                    writer.stream() << "push " << reg << std::endl;
+
+                    registers.release(reg);
+                } else {
+                    if((*ptr)->type().isArray()){
+                        auto position = (*ptr)->position();
+
+                        if(position.isGlobal()){
+                            Register reg = getReg();
+
+                            auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+
+                            writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
+                            writer.stream() << "add " << reg << ", " << offset << std::endl;
+                            writer.stream() << "push " << reg << std::endl;
+
+                            registers.release(reg);
+                        } else if(position.isStack()){
+                            Register reg = getReg();
+
+                            writer.stream() << "mov " << reg << ", " << getBasePointerRegister() << std::endl;
+                            writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
+                            writer.stream() << "push " << reg << std::endl;
+
+                            registers.release(reg);
+                        } else if(position.isParameter()){
+                            writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
+                        }
+                    } else {
+                        writer.stream() << "push " << arg(param->arg) << std::endl;
+                    }
+                }
+            } else if(boost::get<double>(&param->arg)){
                 Register reg = getReg();
-
-                writer.stream() << getSizedMove() << reg << ", " << arg(*ptr) << std::endl;
+                writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;
                 writer.stream() << "push " << reg << std::endl;
-
                 registers.release(reg);
             } else {
-                if((*ptr)->type().isArray()){
-                    auto position = (*ptr)->position();
-
-                    if(position.isGlobal()){
-                        Register reg = getReg();
-
-                        auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
-
-                        writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
-                        writer.stream() << "add " << reg << ", " << offset << std::endl;
-                        writer.stream() << "push " << reg << std::endl;
-
-                        registers.release(reg);
-                    } else if(position.isStack()){
-                        Register reg = getReg();
-
-                        writer.stream() << "mov " << reg << ", " << getBasePointerRegister() << std::endl;
-                        writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
-                        writer.stream() << "push " << reg << std::endl;
-
-                        registers.release(reg);
-                    } else if(position.isParameter()){
-                        writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
-                    }
-                } else {
-                    writer.stream() << "push " << arg(param->arg) << std::endl;
-                }
+                writer.stream() << "push " << arg(param->arg) << std::endl;
             }
-        } else if(boost::get<double>(&param->arg)){
-            Register reg = getReg();
-            writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;
-            writer.stream() << "push " << reg << std::endl;
-            registers.release(reg);
-        } else {
-            writer.stream() << "push " << arg(param->arg) << std::endl;
         }
     }
 

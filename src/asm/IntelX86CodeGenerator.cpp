@@ -137,6 +137,16 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
     Register getStackPointerRegister(){
         return Register::ESP;
     }
+    
+    unsigned int numberIntParamRegisters(){
+        return 1;
+    }
+
+    Register getIntParamRegister(unsigned int position){
+        assert(position == 1);
+
+        return Register::ECX;
+    }
   
     //Div eax by arg2 
     void divEax(std::shared_ptr<tac::Quadruple> quadruple){

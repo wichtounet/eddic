@@ -151,6 +151,20 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     Register getStackPointerRegister(){
         return Register::RSP;
     }
+    
+    unsigned int numberIntParamRegisters(){
+        return 2;
+    }
+
+    Register getIntParamRegister(unsigned int position){
+        if(position == 1){
+            return Register::R14;
+        } else if(position == 2){
+            return Register::R15;
+        }
+
+        assert(position == 1 || position == 2);
+    }
   
     //Div eax by arg2 
     void divEax(std::shared_ptr<tac::Quadruple> quadruple){
