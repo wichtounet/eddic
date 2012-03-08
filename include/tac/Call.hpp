@@ -20,14 +20,15 @@ namespace tac {
 
 struct Call {
     std::string function;
-    int params;
     std::shared_ptr<Variable> return_;
     std::shared_ptr<Variable> return2_;
+    
+    std::shared_ptr<Function> function;
 
     Call();
-    Call(const std::string& function, int params);
-    Call(const std::string& function, int params, std::shared_ptr<Variable> return_);
-    Call(const std::string& function, int params, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+    Call(const std::string& function, std::shared_ptr<Function> function);
+    Call(const std::string& function, std::shared_ptr<Function> function, std::shared_ptr<Variable> return_);
+    Call(const std::string& function, std::shared_ptr<Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 };
 
 } //end of tac

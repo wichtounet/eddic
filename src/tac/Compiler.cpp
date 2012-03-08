@@ -975,16 +975,21 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
                 }
             }
         }
-
+        
+        function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
     } else {
+        //TODO Avoid this case by having each function referred in the function table
+
         for(auto& first : arguments){
             for(auto& arg : first){
                 function->add(std::make_shared<tac::Param>(arg));   
             }
         }
+    
+        function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
     }
 
-    int total = 0;
+    /*int total = 0;
     for(auto& value : functionCall.Content->values){
         Type type = visit(ast::GetTypeVisitor(), value);   
 
@@ -994,9 +999,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         } else {
             total += size(type);
         }
-    }
-
-    function->add(std::make_shared<tac::Call>(functionName, total, return_, return2_));
+    }*/
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
