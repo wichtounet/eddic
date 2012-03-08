@@ -946,9 +946,6 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     }
     
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
-    
-    std::cout << functionName << std::endl;
-
     auto definition = functionTable->getFunction(functionName);
 
     if(definition){
