@@ -27,7 +27,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::FunctionCall).
  */
 struct ASTFunctionCall {
-    std::shared_ptr<Function> function;
+    std::shared_ptr<eddic::Function> function;
 
     Position position;
     std::string functionName;

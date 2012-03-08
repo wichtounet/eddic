@@ -14,8 +14,11 @@
 #include <unordered_map>
 
 #include "Types.hpp"
+#include "Variable.hpp"
 
 namespace eddic {
+
+class FunctionContext;
 
 /*!
  * \class ParameterType
@@ -37,6 +40,7 @@ struct Function {
     std::string name;
     std::string mangledName;
     std::vector<ParameterType> parameters;
+    std::shared_ptr<FunctionContext> context;
     int references;
 
     Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
