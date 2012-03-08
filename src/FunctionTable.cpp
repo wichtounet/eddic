@@ -70,3 +70,31 @@ void FunctionTable::defineStandardFunctions(){
     concatFunction->parameters.push_back({"b", newSimpleType(BaseType::STRING)});
     addFunction(concatFunction);
 }
+
+Type Function::getParameterType(const std::string& name){
+    for(auto& p : parameters){
+        if(p.name == name){
+            return p.paramType;
+        }
+    }
+    
+    assert(false && "This parameter does not exists in the given function");
+}
+
+unsigned int Function::getParameterPositionByType(const std::string& name){
+    unsigned int position = 0;
+
+    auto type = getParameterType(name);
+    
+    for(auto& p : parameters){
+        if(p.paramType == type){
+            ++position; 
+        }
+
+        if(p.name == name){
+            return position;
+        }
+    }
+
+    assert(false && "The parameter does not exists in the function");
+}

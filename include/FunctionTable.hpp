@@ -44,6 +44,9 @@ struct Function {
     int references;
 
     Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
+
+    Type getParameterType(const std::string& name);
+    unsigned int getParameterPositionByType(const std::string& name);
 };
 
 /*!
