@@ -946,18 +946,28 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     }
     
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
+    
+    std::cout << functionName << std::endl;
 
     auto definition = functionTable->getFunction(functionName);
 
-    auto context = definition->context;
-    auto parameters = definition->parameters;
-    int i = 0;
+    if(definition){
+        auto context = definition->context;
+        auto parameters = definition->parameters;
+        int i = 0;
 
-    for(auto& first : arguments){
-        std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
+        for(auto& first : arguments){
+            std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
 
-        for(auto& arg : first){
-            function->add(std::make_shared<tac::Param>(arg, param, definition));   
+            for(auto& arg : first){
+                function->add(std::make_shared<tac::Param>(arg, param, definition));   
+            }
+        }
+    } else {
+        for(auto& first : arguments){
+            for(auto& arg : first){
+                function->add(std::make_shared<tac::Param>(arg));   
+            }
         }
     }
 
