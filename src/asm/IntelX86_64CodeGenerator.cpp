@@ -494,14 +494,14 @@ void restoreFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& 
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [rbp+16]" << std::endl;
+    //The parameter is in r14
     writer.stream() << "xor r8, r8" << std::endl;
 
     //If the number is negative, we print the - and then the number
-    writer.stream() << "or rax, rax" << std::endl;
+    writer.stream() << "or r14, r14" << std::endl;
     writer.stream() << "jge .loop" << std::endl;
 
-    writer.stream() << "neg rax" << std::endl;
+    writer.stream() << "neg r14" << std::endl;
 
     //Print "-" 
     writer.stream() << "push S2" << std::endl;
@@ -517,7 +517,7 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "add rdx, 48" << std::endl;
     writer.stream() << "push rdx" << std::endl;
     writer.stream() << "inc r8" << std::endl;
-    writer.stream() << "cmp rax, 0" << std::endl;
+    writer.stream() << "or r14, r14" << std::endl;
     writer.stream() << "jz .next" << std::endl;
     writer.stream() << "jmp .loop" << std::endl;
 
