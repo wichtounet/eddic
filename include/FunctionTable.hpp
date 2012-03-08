@@ -57,6 +57,9 @@ class FunctionTable {
     private:
         std::unordered_map<std::string, std::shared_ptr<Function>> functions;
 
+        void addPrintFunction(const std::string& function, BaseType parameterType);
+        void defineStandardFunctions();
+
     public:
         FunctionTable();
         FunctionTable(const FunctionTable& rhs) = delete;

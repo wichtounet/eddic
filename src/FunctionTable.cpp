@@ -10,10 +10,8 @@
 using namespace eddic;
 
 FunctionTable::FunctionTable(){
-    auto timeFunction = std::make_shared<Function>(newSimpleType(BaseType::INT), "time");
-    timeFunction->mangledName = "_F4timeAI";
-    
-    functions[timeFunction->mangledName] = timeFunction;
+    //Add the standard functions to the function table
+    defineStandardFunctions();
 }
 
 void FunctionTable::addFunction(std::shared_ptr<Function> function){
@@ -34,4 +32,41 @@ void FunctionTable::addReference(const std::string& function){
 
 int FunctionTable::referenceCount(const std::string& function){
     return functions[function]->references;
+}
+
+void FunctionTable::addPrintFunction(const std::string& function, BaseType parameterType){
+    auto printFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "print");
+    printFunction->mangledName = function;
+    printFunction->parameters.push_back({"a", newSimpleType(parameterType)});
+    addFunction(printFunction);
+}
+
+void FunctionTable::defineStandardFunctions(){
+    //Function time()
+    auto timeFunction = std::make_shared<Function>(newSimpleType(BaseType::INT), "time");
+    timeFunction->mangledName = "_F4timeAI";
+    addFunction(timeFunction);
+
+    //print string
+    addPrintFunction("_F5printS", BaseType::STRING);
+    addPrintFunction("_F7printlnS", BaseType::STRING);
+
+    //print integer
+    addPrintFunction("_F5printI", BaseType::INT);
+    addPrintFunction("_F7printlnI", BaseType::INT);
+
+    //print bool
+    addPrintFunction("_F5printB", BaseType::BOOL);
+    addPrintFunction("_F7printlnB", BaseType::BOOL);
+
+    //print float
+    addPrintFunction("_F5printF", BaseType::FLOAT);
+    addPrintFunction("_F7printlnF", BaseType::FLOAT);
+    
+    //concat function
+    auto concatFunction = std::make_shared<Function>(newSimpleType(BaseType::STRING), "concat");
+    concatFunction->mangledName = "_F6concatSS";
+    concatFunction->parameters.push_back({"a", newSimpleType(BaseType::STRING)});
+    concatFunction->parameters.push_back({"b", newSimpleType(BaseType::STRING)});
+    addFunction(concatFunction);
 }
