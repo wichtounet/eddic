@@ -9,6 +9,7 @@
 #define TAC_PARAM_H
 
 #include <memory>
+#include <unordered_map>
 
 #include "FunctionTable.hpp"
 
@@ -26,6 +27,8 @@ struct Param {
     std::shared_ptr<Variable> param;
     std::string std_param;
     std::shared_ptr<Function> function;
+    
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     Param(const Param& rhs) = delete;
     Param& operator=(const Param& rhs) = delete;
