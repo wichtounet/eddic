@@ -495,13 +495,14 @@ void restoreFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& 
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
     //The parameter is in r14
-    writer.stream() << "xor r8, r8" << std::endl;
+    writer.stream() << "mov rax, r14" << std::endl;//We move it to rax for rax is the register source division register
+    writer.stream() << "xor r14, r14" << std::endl;//We use r14 to be the counter (start with 0)
 
     //If the number is negative, we print the - and then the number
-    writer.stream() << "or r14, r14" << std::endl;
+    writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jge .loop" << std::endl;
 
-    writer.stream() << "neg r14" << std::endl;
+    writer.stream() << "neg rax" << std::endl;
 
     //Print "-" 
     writer.stream() << "push S2" << std::endl;
@@ -516,16 +517,16 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "div rbx" << std::endl;
     writer.stream() << "add rdx, 48" << std::endl;
     writer.stream() << "push rdx" << std::endl;
-    writer.stream() << "inc r8" << std::endl;
-    writer.stream() << "or r14, r14" << std::endl;
+    writer.stream() << "inc r14" << std::endl;
+    writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jz .next" << std::endl;
     writer.stream() << "jmp .loop" << std::endl;
 
     //Print each of the char, one by one
     writer.stream() << ".next" << ":" << std::endl;
-    writer.stream() << "cmp r8, 0" << std::endl;
+    writer.stream() << "or r14, r14" << std::endl;
     writer.stream() << "jz .exit" << std::endl;
-    writer.stream() << "dec r8" << std::endl;
+    writer.stream() << "dec r14" << std::endl;
 
     writer.stream() << "mov rax, 1" << std::endl;       //syscall 1 = write
     writer.stream() << "mov rdi, 1" << std::endl;       //stdout
@@ -543,11 +544,11 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
    
@@ -555,13 +556,13 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
 }
