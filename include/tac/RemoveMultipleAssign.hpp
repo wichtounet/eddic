@@ -16,6 +16,7 @@
 #include "tac/Quadruple.hpp"
 #include "tac/IfFalse.hpp"
 #include "tac/If.hpp"
+#include "tac/Param.hpp"
 
 #include "tac/Optimizer.hpp"
 #include "tac/OptimizerUtils.hpp"
@@ -32,12 +33,13 @@ class RemoveMultipleAssign : public boost::static_visitor<bool> {
         RemoveMultipleAssign() : optimized(false) {}
 
         bool operator()(std::shared_ptr<tac::Quadruple>& quadruple);
+        bool operator()(std::shared_ptr<tac::Param>& param);
         bool operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
         bool operator()(std::shared_ptr<tac::If>& if_);
 
         template<typename T>
         bool operator()(T&) const { 
-            return false;
+            return true;
         }
     
         void collect(tac::Argument* arg);

@@ -56,8 +56,6 @@ enum class Operator : unsigned int {
     ARRAY,          //result=arg1[arg2]
     ARRAY_ASSIGN,   //result[arg1]=arg2
 
-    PARAM,          //push a single value
-
     RETURN          //return from a function
 };
 

@@ -224,12 +224,8 @@ bool optimize_branches(tac::Program& program){
 }
 
 template<typename T>
-bool isQuadruple(T& statement){
-    return boost::get<std::shared_ptr<tac::Quadruple>>(&statement);
-}
-
-bool isParam(std::shared_ptr<tac::Quadruple> quadruple){
-    return quadruple->op == tac::Operator::PARAM;
+bool isParam(T& statement){
+    return boost::get<std::shared_ptr<tac::Param>>(&statement);
 }
 
 bool optimize_concat(tac::Program& program, StringPool& pool){
@@ -257,42 +253,38 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
                             auto& statement3 = paramBlock->statements[size - 2];
                             auto& statement4 = paramBlock->statements[size - 1];
 
-                            if(isQuadruple(statement1) && isQuadruple(statement2) && isQuadruple(statement3) && isQuadruple(statement4)){
-                                auto& quadruple1 = boost::get<std::shared_ptr<tac::Quadruple>>(statement1);
-                                auto& quadruple2 = boost::get<std::shared_ptr<tac::Quadruple>>(statement2);
-                                auto& quadruple3 = boost::get<std::shared_ptr<tac::Quadruple>>(statement3);
-                                auto& quadruple4 = boost::get<std::shared_ptr<tac::Quadruple>>(statement4);
+                            if(isParam(statement1) && isParam(statement2) && isParam(statement3) && isParam(statement4)){
+                                auto& quadruple1 = boost::get<std::shared_ptr<tac::Param>>(statement1);
+                                auto& quadruple3 = boost::get<std::shared_ptr<tac::Param>>(statement3);
 
-                                if(isParam(quadruple1) && isParam(quadruple2) && isParam(quadruple3) && isParam(quadruple4)){
-                                    if(boost::get<std::string>(&*quadruple1->arg1) && boost::get<std::string>(&*quadruple3->arg1)){
-                                        std::string firstValue = pool.value(boost::get<std::string>(*quadruple1->arg1));
-                                        std::string secondValue = pool.value(boost::get<std::string>(*quadruple3->arg1));
-                                       
-                                        //Remove the quotes
-                                        firstValue.resize(firstValue.size() - 1);
-                                        secondValue.erase(0, 1);
-                                        
-                                        //Compute the reuslt of the concatenation
-                                        std::string result = firstValue + secondValue;
+                                if(boost::get<std::string>(&quadruple1->arg) && boost::get<std::string>(&quadruple3->arg)){
+                                    std::string firstValue = pool.value(boost::get<std::string>(quadruple1->arg));
+                                    std::string secondValue = pool.value(boost::get<std::string>(quadruple3->arg));
+                                   
+                                    //Remove the quotes
+                                    firstValue.resize(firstValue.size() - 1);
+                                    secondValue.erase(0, 1);
+                                    
+                                    //Compute the reuslt of the concatenation
+                                    std::string result = firstValue + secondValue;
 
-                                        std::string label = pool.label(result);
-                                        int length = result.length() - 2;
+                                    std::string label = pool.label(result);
+                                    int length = result.length() - 2;
 
-                                        auto ret1 = (*ptr)->return_;
-                                        auto ret2 = (*ptr)->return2_;
+                                    auto ret1 = (*ptr)->return_;
+                                    auto ret2 = (*ptr)->return2_;
 
-                                        //remove the call to concat
-                                        block->statements.erase(block->statements.begin());
-                                       
-                                        //Insert assign with the concatenated value 
-                                        block->statements.insert(block->statements.begin(), std::make_shared<tac::Quadruple>(ret1, label, tac::Operator::ASSIGN));
-                                        block->statements.insert(block->statements.begin()+1, std::make_shared<tac::Quadruple>(ret2, length, tac::Operator::ASSIGN));
+                                    //remove the call to concat
+                                    block->statements.erase(block->statements.begin());
+                                   
+                                    //Insert assign with the concatenated value 
+                                    block->statements.insert(block->statements.begin(), std::make_shared<tac::Quadruple>(ret1, label, tac::Operator::ASSIGN));
+                                    block->statements.insert(block->statements.begin()+1, std::make_shared<tac::Quadruple>(ret2, length, tac::Operator::ASSIGN));
 
-                                        //Remove the four params from the previous basic block
-                                        paramBlock->statements.erase(paramBlock->statements.end() - 4, paramBlock->statements.end());
+                                    //Remove the four params from the previous basic block
+                                    paramBlock->statements.erase(paramBlock->statements.end() - 4, paramBlock->statements.end());
 
-                                        optimized = true;
-                                    }
+                                    optimized = true;
                                 }
                             }
                         }

@@ -59,6 +59,12 @@ struct IntelStatementCompiler {
     virtual std::string getFloatMul() = 0;
     virtual std::string getFloatDiv() = 0;
     virtual std::string getSizedMove() = 0;
+   
+    /* Management of parameter passing in registers */ 
+    virtual unsigned int numberIntParamRegisters() = 0;
+    virtual unsigned int numberFloatParamRegisters() = 0;
+    virtual Register getIntParamRegister(unsigned int position) = 0;
+    virtual FloatRegister getFloatParamRegister(unsigned int position) = 0;
     
     virtual Register getReturnRegister1() = 0;
     virtual Register getReturnRegister2() = 0;
@@ -75,7 +81,7 @@ struct IntelStatementCompiler {
 
     //TODO Verify these two functions
     void allocateStackSpace(unsigned int space){
-        writer.stream() << "add " << getStackPointerRegister() << ", " << space << std::endl;
+        writer.stream() << "sub " << getStackPointerRegister() << ", " << space << std::endl;
     }
 
     void deallocateStackSpace(unsigned int space){
@@ -415,11 +421,13 @@ struct IntelStatementCompiler {
     }
 
     bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
-        assert(tac::is<std::shared_ptr<tac::Quadruple>>(statement) || tac::is<std::shared_ptr<tac::IfFalse>>(statement));
+        assert(tac::is<std::shared_ptr<tac::Quadruple>>(statement) || tac::is<std::shared_ptr<tac::IfFalse>>(statement) || tac::is<std::shared_ptr<tac::Param>>(statement));
 
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } else if (auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+            return isLive((*ptr)->liveness, variable);
+        } else if (auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } 
 
@@ -867,9 +875,40 @@ struct IntelStatementCompiler {
         current = call;
 
         writer.stream() << "call " << call->function << std::endl;
+
+        int total = 0;
+        unsigned int maxInt = numberIntParamRegisters();
+        unsigned int maxFloat = numberFloatParamRegisters();
+
+        for(auto& param : call->functionDefinition->parameters){
+            Type type = param.paramType; 
+
+            if(type.isArray()){
+                //Passing an array is just passing an adress
+                total += size(BaseType::INT);
+            } else {
+                if(type == BaseType::INT){
+                    //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                    if(maxInt > 0){
+                        --maxInt;
+                    } else {
+                        total += size(type);
+                    }
+                } else if(type == BaseType::FLOAT){
+                    //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                    if(maxFloat > 0){
+                        --maxFloat;
+                    } else {
+                        total += size(type);
+                    }
+                } else {
+                    total += size(type);
+                }
+            }
+        }
         
-        if(call->params > 0){
-            allocateStackSpace(call->params);
+        if(total > 0){
+            deallocateStackSpace(total);
         }
 
         if(call->return_){
@@ -907,6 +946,92 @@ struct IntelStatementCompiler {
             }
         } else {
             writer.stream() << "imul " << arg(result) << ", " << arg(arg2) << std::endl; 
+        }
+    }
+
+    void compile(std::shared_ptr<tac::Param> param){
+        current = param;
+        
+        //It's a call to a standard function
+        if(param->std_param.length() > 0){
+            auto type = param->function->getParameterType(param->std_param);
+            unsigned int position = param->function->getParameterPositionByType(param->std_param);
+
+            if(type == BaseType::INT && position <= numberIntParamRegisters()){
+                Register reg = getIntParamRegister(position);
+
+                spills(reg);
+
+                writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;            
+
+                return;
+            }
+            
+            if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
+                FloatRegister reg = getFloatParamRegister(position);
+
+                spills(reg);
+        
+                if(boost::get<double>(&param->arg)){
+                    Register gpreg = getReg();
+
+                    writer.stream() << "mov " << gpreg << ", " << arg(param->arg) << std::endl;
+                    writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
+
+                    registers.release(gpreg);
+                } else {
+                    writer.stream() << getFloatMove() << reg << ", " << arg(param->arg) << std::endl;
+                }
+                
+                return;
+            }
+        } 
+       
+        //If the param as not been handled as register passing, push it on the stack 
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+            if(!(*ptr)->type().isArray() && isFloatVar(*ptr)){
+                Register reg = getReg();
+
+                writer.stream() << getSizedMove() << reg << ", " << arg(*ptr) << std::endl;
+                writer.stream() << "push " << reg << std::endl;
+
+                registers.release(reg);
+            } else {
+                if((*ptr)->type().isArray()){
+                    auto position = (*ptr)->position();
+
+                    if(position.isGlobal()){
+                        Register reg = getReg();
+
+                        auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+
+                        writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
+                        writer.stream() << "add " << reg << ", " << offset << std::endl;
+                        writer.stream() << "push " << reg << std::endl;
+
+                        registers.release(reg);
+                    } else if(position.isStack()){
+                        Register reg = getReg();
+
+                        writer.stream() << "mov " << reg << ", " << getBasePointerRegister() << std::endl;
+                        writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
+                        writer.stream() << "push " << reg << std::endl;
+
+                        registers.release(reg);
+                    } else if(position.isParameter()){
+                        writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
+                    }
+                } else {
+                    writer.stream() << "push " << arg(param->arg) << std::endl;
+                }
+            }
+        } else if(boost::get<double>(&param->arg)){
+            Register reg = getReg();
+            writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;
+            writer.stream() << "push " << reg << std::endl;
+            registers.release(reg);
+        } else {
+            writer.stream() << "push " << arg(param->arg) << std::endl;
         }
     }
 
@@ -1341,7 +1466,7 @@ struct IntelStatementCompiler {
                 break;            
             }
             case tac::Operator::ARRAY_ASSIGN:
-                if(quadruple->result->type() == BaseType::FLOAT){
+                if(quadruple->result->type().base() == BaseType::FLOAT){
                     auto reg = getFloatReg();
 
                     copy(*quadruple->arg2, reg);
@@ -1354,56 +1479,6 @@ struct IntelStatementCompiler {
                 }
                 
                 break;
-            case tac::Operator::PARAM:
-            {
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    if(!(*ptr)->type().isArray() && isFloatVar(*ptr)){
-                        Register reg = getReg();
-
-                        writer.stream() << getSizedMove() << reg << ", " << arg(*ptr) << std::endl;
-                        writer.stream() << "push " << reg << std::endl;
-
-                        registers.release(reg);
-                    } else {
-                        if((*ptr)->type().isArray()){
-                            auto position = (*ptr)->position();
-
-                            if(position.isGlobal()){
-                                Register reg = getReg();
-
-                                auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
-
-                                writer.stream() << "mov " << reg << ", V" << position.name() << std::endl;
-                                writer.stream() << "add " << reg << ", " << offset << std::endl;
-                                writer.stream() << "push " << reg << std::endl;
-
-                                registers.release(reg);
-                            } else if(position.isStack()){
-                                Register reg = getReg();
-
-                                writer.stream() << "mov " << reg << ", " << getBasePointerRegister() << std::endl;
-                                writer.stream() << "add " << reg << ", " << -position.offset() << std::endl;
-                                writer.stream() << "push " << reg << std::endl;
-
-                                registers.release(reg);
-                            } else if(position.isParameter()){
-                                writer.stream() << "push " << getMnemonicSize() << " [" << getBasePointerRegister() << " + " << position.offset() << "]" << std::endl;
-                            }
-                        } else {
-                            writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
-                        }
-                    }
-                } else if(boost::get<double>(&*quadruple->arg1)){
-                    Register reg = getReg();
-                    writer.stream() << "mov " << reg << ", " << arg(*quadruple->arg1) << std::endl;
-                    writer.stream() << "push " << reg << std::endl;
-                    registers.release(reg);
-                } else {
-                    writer.stream() << "push " << arg(*quadruple->arg1) << std::endl;
-                }
-
-                break;
-            }
             case tac::Operator::RETURN:
             {
                 //A return without args is the same as exiting from the function

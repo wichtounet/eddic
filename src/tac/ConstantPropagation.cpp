@@ -51,12 +51,16 @@ void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadr
         auto op = quadruple->op;
 
         //Check if the operator erase the contents of the result variable
-        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
+        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::RETURN){
             //The result is not constant at this point
             int_constants.erase(quadruple->result);
             string_constants.erase(quadruple->result);
         }
     }
+}
+
+void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Param>& param){
+    optimize(&param->arg);
 }
 
 void tac::ConstantPropagation::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){

@@ -45,7 +45,7 @@ void tac::CopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple
         auto op = quadruple->op;
 
         //Check if the operator erase the contents of the result variable
-        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
+        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::RETURN){
             //The result is not constant at this point
             constants.erase(quadruple->result);
         }
@@ -55,6 +55,10 @@ void tac::CopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple
 void tac::CopyPropagation::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
     optimize(&ifFalse->arg1);
     optimize_optional(ifFalse->arg2);
+}
+
+void tac::CopyPropagation::operator()(std::shared_ptr<tac::Param>& param){
+    optimize(&param->arg);
 }
 
 void tac::CopyPropagation::operator()(std::shared_ptr<tac::If>& if_){

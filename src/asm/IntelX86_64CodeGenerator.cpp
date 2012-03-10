@@ -151,6 +151,30 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     Register getStackPointerRegister(){
         return Register::RSP;
     }
+    
+    unsigned int numberIntParamRegisters(){
+        return 2;
+    }
+
+    Register getIntParamRegister(unsigned int position){
+        if(position == 1){
+            return Register::R14;
+        } else if(position == 2){
+            return Register::R15;
+        }
+
+        assert(position == 1 || position == 2);
+    }
+    
+    unsigned int numberFloatParamRegisters(){
+        return 1;
+    }
+
+    FloatRegister getFloatParamRegister(unsigned int position){
+        assert(position == 1);
+
+        return FloatRegister::XMM7;
+    }
   
     //Div eax by arg2 
     void divEax(std::shared_ptr<tac::Quadruple> quadruple){
@@ -225,6 +249,10 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         compile(quadruple);
+    }
+    
+    void operator()(std::shared_ptr<tac::Param>& param){
+        compile(param);
     }
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
@@ -476,8 +504,9 @@ void restoreFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& 
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [rbp+16]" << std::endl;
-    writer.stream() << "xor r8, r8" << std::endl;
+    //The parameter is in r14
+    writer.stream() << "mov rax, r14" << std::endl;//We move it to rax for rax is the register source division register
+    writer.stream() << "xor r14, r14" << std::endl;//We use r14 to be the counter (start with 0)
 
     //If the number is negative, we print the - and then the number
     writer.stream() << "or rax, rax" << std::endl;
@@ -498,16 +527,16 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << "div rbx" << std::endl;
     writer.stream() << "add rdx, 48" << std::endl;
     writer.stream() << "push rdx" << std::endl;
-    writer.stream() << "inc r8" << std::endl;
-    writer.stream() << "cmp rax, 0" << std::endl;
+    writer.stream() << "inc r14" << std::endl;
+    writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jz .next" << std::endl;
     writer.stream() << "jmp .loop" << std::endl;
 
     //Print each of the char, one by one
     writer.stream() << ".next" << ":" << std::endl;
-    writer.stream() << "cmp r8, 0" << std::endl;
+    writer.stream() << "or r14, r14" << std::endl;
     writer.stream() << "jz .exit" << std::endl;
-    writer.stream() << "dec r8" << std::endl;
+    writer.stream() << "dec r14" << std::endl;
 
     writer.stream() << "mov rax, 1" << std::endl;       //syscall 1 = write
     writer.stream() << "mov rdi, 1" << std::endl;       //stdout
@@ -525,11 +554,11 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
    
@@ -537,27 +566,24 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi", "r8"});
+    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "movq xmm0, [rbp+16]" << std::endl;  //Get the floating point to display
-    
-    writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;   //Get the integer part into rbx
+    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;   //Get the integer part into rbx
     writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;   //Move the integer part into xmm1
 
     //Print the integer part
-    writer.stream() << "push rbx" << std::endl;
+    writer.stream() << "mov r14, rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
 
     //Print the dot char
     writer.stream() << "push S4" << std::endl;
@@ -566,43 +592,41 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "add rsp, 16" << std::endl;
    
     //Remove the integer part from the floating point 
-    writer.stream() << "subsd xmm0, xmm1" << std::endl;
+    writer.stream() << "subsd xmm7, xmm1" << std::endl;
     
     writer.stream() << "mov rcx, __float64__(10000.0)" << std::endl;
     writer.stream() << "movq xmm2, rcx" << std::endl;
     
-    writer.stream() << "mulsd xmm0, xmm2" << std::endl;
-    writer.stream() << "cvttsd2si rbx, xmm0" << std::endl;
+    writer.stream() << "mulsd xmm7, xmm2" << std::endl;
+    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;
     writer.stream() << "mov rax, rbx" << std::endl;
 
     //Handle numbers with 0 at the beginning of the decimal part
     writer.stream() << "or rax, rax" << std::endl;
+    writer.stream() << "xor r14, r14" << std::endl;
     writer.stream() << "je .end" << std::endl;
     writer.stream() << ".start:" << std::endl;
     writer.stream() << "cmp rax, 1000" << std::endl;
     writer.stream() << "jge .end" << std::endl;
-    writer.stream() << "push 0" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
     writer.stream() << "imul rax, 10" << std::endl;
     writer.stream() << "jmp .start" << std::endl;
     
     writer.stream() << ".end:" << std::endl;
-    writer.stream() << "push rbx" << std::endl;
+    writer.stream() << "mov r14, rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
 }
 
 void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printF");
 
-    as::save(writer, {"rax", "rbx"});
-    saveFloat64(writer, {"xmm0", "xmm1", "xmm2"});
+    as::save(writer, {"rax", "rbx", "r14"});
+    saveFloat64(writer, {"xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
 
-    restoreFloat64(writer, {"xmm0", "xmm1", "xmm2"});
-    as::restore(writer, {"rax", "rbx"});
+    restoreFloat64(writer, {"xmm1", "xmm2"});
+    as::restore(writer, {"rax", "rbx", "r14"});
 
     leaveFunction(writer);
    
@@ -610,15 +634,15 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnF");
 
-    as::save(writer, {"rax", "rbx"});
-    saveFloat64(writer, {"xmm0", "xmm1", "xmm2"});
+    as::save(writer, {"rax", "rbx", "r14"});
+    saveFloat64(writer, {"xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    restoreFloat64(writer, {"xmm0", "xmm1", "xmm2"});
-    as::restore(writer, {"rax", "rbx"});
+    restoreFloat64(writer, {"xmm1", "xmm2"});
+    as::restore(writer, {"rax", "rbx", "r14"});
 
     leaveFunction(writer);
 }
@@ -627,13 +651,12 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
     writer.stream() << "mov rax, [rbp + 16] " << std::endl;
     writer.stream() << "or rax, rax" << std::endl;
     writer.stream() << "jne .true_print" << std::endl;
-    writer.stream() << "push 0" << std::endl;
+    writer.stream() << "xor r14, r14" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
     writer.stream() << "jmp .end" << std::endl;
     writer.stream() << ".true_print:" << std::endl;
-    writer.stream() << "push 1" << std::endl;
+    writer.stream() << "mov r14, 1" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
     writer.stream() << ".end:" << std::endl;
 }
 

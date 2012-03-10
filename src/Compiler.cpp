@@ -156,7 +156,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                 //Generate Three-Address-Code language
                 tac::Compiler compiler;
-                compiler.compile(program, pool, tacProgram);
+                compiler.compile(program, pool, tacProgram, functionTable);
 
                 //Separate into basic blocks
                 tac::BasicBlockExtractor extractor;

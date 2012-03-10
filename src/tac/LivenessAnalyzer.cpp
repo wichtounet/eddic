@@ -82,6 +82,10 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 if((*ptr)->result){
                     //TODO Take into account that the the result is overriden, so should no be live (warning with a = a + b)
                 }
+            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
+                updateLive(liveness, (*ptr)->arg);
+
+                (*ptr)->liveness = liveness;
             }
 
             ++sit;

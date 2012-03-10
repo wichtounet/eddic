@@ -137,6 +137,26 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
     Register getStackPointerRegister(){
         return Register::ESP;
     }
+    
+    unsigned int numberIntParamRegisters(){
+        return 1;
+    }
+
+    Register getIntParamRegister(unsigned int position){
+        assert(position == 1);
+
+        return Register::ECX;
+    }
+    
+    unsigned int numberFloatParamRegisters(){
+        return 1;
+    }
+
+    FloatRegister getFloatParamRegister(unsigned int position){
+        assert(position == 1);
+
+        return FloatRegister::XMM7;
+    }
   
     //Div eax by arg2 
     void divEax(std::shared_ptr<tac::Quadruple> quadruple){
@@ -211,6 +231,10 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
     
     void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         compile(quadruple);
+    }
+    
+    void operator()(std::shared_ptr<tac::Param>& param){
+        compile(param);
     }
     
     void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
@@ -534,15 +558,12 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "movd xmm0, [ebp+8]" << std::endl;  //Get the floating point to display
-    
-    writer.stream() << "cvttss2si ebx, xmm0" << std::endl;   //Get the integer part into rbx
+    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;   //Get the integer part into rbx
     writer.stream() << "cvtsi2ss xmm1, ebx" << std::endl;   //Move the integer part into xmm1
 
     //Print the integer part
-    writer.stream() << "push ebx" << std::endl;
+    writer.stream() << "mov ecx, ebx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add esp, 4" << std::endl;
 
     //Print the dot char
     writer.stream() << "push S4" << std::endl;
@@ -551,13 +572,13 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "add esp, 8" << std::endl;
    
     //Remove the integer part from the floating point 
-    writer.stream() << "subss xmm0, xmm1" << std::endl;
+    writer.stream() << "subss xmm7, xmm1" << std::endl;
     
     writer.stream() << "mov ecx, __float32__(10000.0)" << std::endl;
     writer.stream() << "movd xmm2, ecx" << std::endl;
     
-    writer.stream() << "mulss xmm0, xmm2" << std::endl;
-    writer.stream() << "cvttss2si ebx, xmm0" << std::endl;
+    writer.stream() << "mulss xmm7, xmm2" << std::endl;
+    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;
     writer.stream() << "mov eax, ebx" << std::endl;
 
     //Handle numbers with 0 at the beginning of the decimal part
@@ -566,16 +587,15 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << ".start:" << std::endl;
     writer.stream() << "cmp eax, 1000" << std::endl;
     writer.stream() << "jge .end" << std::endl;
-    writer.stream() << "push 0" << std::endl;
+    writer.stream() << "xor ecx, ecx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
     writer.stream() << "add esp, 4" << std::endl;
     writer.stream() << "imul eax, 10" << std::endl;
     writer.stream() << "jmp .start" << std::endl;
     
     writer.stream() << ".end:" << std::endl;
-    writer.stream() << "push ebx" << std::endl;
+    writer.stream() << "mov ecx, ebx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add esp, 4" << std::endl;
 }
 
 void addPrintFloatFunction(AssemblyFileWriter& writer){
@@ -587,7 +607,7 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     addPrintFloatBody(writer);
 
     restoreFloat32(writer, {"xmm0", "xmm1", "xmm2"});
-    as::restore(writer, {"eax", "ebx"});
+    as::restore(writer, {"eax", "ebx", "ecx"});
 
     leaveFunction(writer);
    
@@ -595,7 +615,7 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnF");
 
-    as::save(writer, {"eax", "ebx"});
+    as::save(writer, {"eax", "ebx", "ecx"});
     saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
@@ -603,7 +623,7 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
     writer.stream() << "call _F7println" << std::endl;
 
     restoreFloat32(writer, {"xmm0", "xmm1", "xmm2"});
-    as::restore(writer, {"eax", "ebx"});
+    as::restore(writer, {"eax", "ebx", "ecx"});
 
     leaveFunction(writer);
 }
@@ -612,24 +632,23 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
     writer.stream() << "mov eax, [ebp-4] " << std::endl;
     writer.stream() << "or eax, eax" << std::endl;
     writer.stream() << "jne .true_print" << std::endl;
-    writer.stream() << "push 0" << std::endl;
+    writer.stream() << "xor ecx, ecx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
     writer.stream() << "jmp .end" << std::endl;
     writer.stream() << ".true_print:" << std::endl;
-    writer.stream() << "push 1" << std::endl;
+    writer.stream() << "mov ecx, 1" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "sub esp, 4" << std::endl;
     writer.stream() << ".end:" << std::endl;
 }
 
 void addPrintBoolFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printB");
 
-    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ecx"});
 
     addPrintBoolBody(writer);
 
-    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ecx"});
 
     leaveFunction(writer);
    
@@ -637,13 +656,13 @@ void addPrintBoolFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnB");
 
-    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::save(writer, {"eax", "ecx"});
 
     addPrintBoolBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    as::restore(writer, {"eax", "ecx"});
 
     leaveFunction(writer);
 }

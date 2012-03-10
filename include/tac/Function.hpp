@@ -12,6 +12,8 @@
 #include <memory>
 #include <vector>
 
+#include "FunctionTable.hpp"
+
 #include "tac/BasicBlock.hpp"
 
 namespace eddic {
@@ -25,6 +27,8 @@ typedef std::shared_ptr<tac::BasicBlock> BlockPtr;
 class Function {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
+
+        std::shared_ptr<eddic::Function> definition;
         
         std::shared_ptr<FunctionContext> context;
 
