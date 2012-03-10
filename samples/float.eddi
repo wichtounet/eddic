@@ -1,6 +1,8 @@
 float global[5];
 
 void main(){
+    println(5.499);
+
     float a = 1.5;
     float b = 3.0;
     float d = 5.0;
@@ -43,6 +45,8 @@ void main(){
     
     array[1] = 2.5;
     array[2] = 5.5;
+
+    test(array[1], array[2]);
     
     println(array[1]); 
     println(array[2]); 

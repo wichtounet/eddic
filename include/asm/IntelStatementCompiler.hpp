@@ -62,7 +62,9 @@ struct IntelStatementCompiler {
    
     /* Management of parameter passing in registers */ 
     virtual unsigned int numberIntParamRegisters() = 0;
+    virtual unsigned int numberFloatParamRegisters() = 0;
     virtual Register getIntParamRegister(unsigned int position) = 0;
+    virtual FloatRegister getFloatParamRegister(unsigned int position) = 0;
     
     virtual Register getReturnRegister1() = 0;
     virtual Register getReturnRegister2() = 0;
@@ -876,6 +878,8 @@ struct IntelStatementCompiler {
 
         int total = 0;
         unsigned int maxInt = numberIntParamRegisters();
+        unsigned int maxFloat = numberFloatParamRegisters();
+
         for(auto& param : call->functionDefinition->parameters){
             Type type = param.paramType; 
 
@@ -887,6 +891,13 @@ struct IntelStatementCompiler {
                     //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                     if(maxInt > 0){
                         --maxInt;
+                    } else {
+                        total += size(type);
+                    }
+                } else if(type == BaseType::FLOAT){
+                    //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                    if(maxFloat > 0){
+                        --maxFloat;
                     } else {
                         total += size(type);
                     }
@@ -953,6 +964,25 @@ struct IntelStatementCompiler {
 
                 writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;            
 
+                return;
+            }
+            
+            if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
+                FloatRegister reg = getFloatParamRegister(position);
+
+                spills(reg);
+        
+                if(boost::get<double>(&param->arg)){
+                    Register gpreg = getReg();
+
+                    writer.stream() << "mov " << gpreg << ", " << arg(param->arg) << std::endl;
+                    writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
+
+                    registers.release(gpreg);
+                } else {
+                    writer.stream() << getFloatMove() << reg << ", " << arg(param->arg) << std::endl;
+                }
+                
                 return;
             }
         } 
