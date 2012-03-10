@@ -1466,7 +1466,7 @@ struct IntelStatementCompiler {
                 break;            
             }
             case tac::Operator::ARRAY_ASSIGN:
-                if(quadruple->result->type() == BaseType::FLOAT){
+                if(quadruple->result->type().base() == BaseType::FLOAT){
                     auto reg = getFloatReg();
 
                     copy(*quadruple->arg2, reg);
