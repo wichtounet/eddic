@@ -20,6 +20,14 @@ void tac::ReduceInStrength::operator()(std::shared_ptr<tac::Quadruple>& quadrupl
             }
 
             break;
+        case tac::Operator::FMUL:
+            if(*quadruple->arg1 == 2.0){
+                replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::FADD, *quadruple->arg2);
+            } else if(*quadruple->arg2 == 2.0){
+                replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::FADD, *quadruple->arg1);
+            }
+
+            break;
         default:
             break;
     }
