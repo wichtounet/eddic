@@ -3,6 +3,7 @@ float global[5];
 void main(){
     println(5.499);
     println(100f);
+    println(-100.0);
 
     float a = 1.5;
     println(a);
