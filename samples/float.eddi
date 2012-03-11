@@ -28,6 +28,10 @@ void main(){
     println(c);
     c = d / 0.345;
     println(c);
+    c = 1f + 2f;
+    println(c);
+    c = c + 5f;
+    println(c);
 
     println(test(2.0888, 1.00222));
 
