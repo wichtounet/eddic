@@ -17,11 +17,12 @@ namespace eddic {
  * \brief A type of position for a variable
  */
 enum class PositionType : unsigned int {
-    STACK,          /**< A variable on the stack  */ 
-    PARAMETER,      /**< A parameter */
-    GLOBAL,         /**< A global variable */
-    CONST,          /**< A const variable. Not stored. Will be replaced in each usage */
-    TEMPORARY       /**< A temporary, used only in three-address-code. Not stored. */
+    STACK,              /**< A variable on the stack  */ 
+    PARAMETER,          /**< A parameter */
+    GLOBAL,             /**< A global variable */
+    CONST,              /**< A const variable. Not stored. Will be replaced in each usage */
+    TEMPORARY,          /**< A temporary, used only in three-address-code. Not stored. */
+    PARAM_REGISTER      /**< A param stored in a register. */
 };
 
 /*!
@@ -44,6 +45,7 @@ class Position {
         bool isGlobal() const;
         bool isConst() const;
         bool isTemporary() const;
+        bool isParamRegister() const;
 
         int offset() const;
 
