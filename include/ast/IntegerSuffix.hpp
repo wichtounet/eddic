@@ -31,7 +31,7 @@ struct IntegerSuffix : public TerminalNode {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Integer, 
+    eddic::ast::IntegerSuffix, 
     (int, value)
     (std::string, suffix)
 )
