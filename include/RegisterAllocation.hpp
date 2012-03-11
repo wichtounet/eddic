@@ -5,15 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef PLATFORM_DESCRIPTOR_H
-#define PLATFORM_DESCRIPTOR_H
+#ifndef REGISTER_ALLOCATION_H
+#define REGISTER_ALLOCATION_H
 
 namespace eddic {
 
-struct PlatformDescriptor {
-    virtual unsigned int numberOfIntParamRegisters() = 0;  
-    virtual unsigned int numberOfFloatParamRegisters() = 0;  
-};
+class FunctionTable;
+
+void allocateParams(FunctionTable& functionTable);
 
 } //end of eddic
 

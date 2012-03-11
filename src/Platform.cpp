@@ -12,21 +12,21 @@
 using namespace eddic;
 
 struct X86Descriptor : public PlatformDescriptor {
-    int numberOfIntParamRegisters(){
+    unsigned int numberOfIntParamRegisters(){
         return 1;
     }
       
-    int numberOfFloatParamRegisters(){
+    unsigned int numberOfFloatParamRegisters(){
         return 1;
     }
 };
 
 struct X86_64Descriptor : public PlatformDescriptor {
-    int numberOfIntParamRegisters(){
+    unsigned int numberOfIntParamRegisters(){
         return 2;
     }
       
-    int numberOfFloatParamRegisters(){
+    unsigned int numberOfFloatParamRegisters(){
         return 1;
     }
 };
