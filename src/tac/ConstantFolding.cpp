@@ -15,26 +15,26 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::Quadruple>& quadruple
     if(quadruple->arg1){
         if(tac::isInt(*quadruple->arg1)){
             if(quadruple->op == tac::Operator::MINUS){
-                replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1));
+                replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1), tac::Operator::ASSIGN);
             } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
                 int lhs = boost::get<int>(*quadruple->arg1); 
                 int rhs = boost::get<int>(*quadruple->arg2); 
 
                 switch(quadruple->op){
                     case tac::Operator::ADD:
-                        replaceRight(*this, quadruple, lhs + rhs);
+                        replaceRight(*this, quadruple, lhs + rhs, tac::Operator::ASSIGN);
                         break;
                     case tac::Operator::SUB:
-                        replaceRight(*this, quadruple, lhs - rhs);
+                        replaceRight(*this, quadruple, lhs - rhs, tac::Operator::ASSIGN);
                         break;
                     case tac::Operator::MUL:
-                        replaceRight(*this, quadruple, lhs * rhs);
+                        replaceRight(*this, quadruple, lhs * rhs, tac::Operator::ASSIGN);
                         break;
                     case tac::Operator::DIV:
-                        replaceRight(*this, quadruple, lhs / rhs);
+                        replaceRight(*this, quadruple, lhs / rhs, tac::Operator::ASSIGN);
                         break;
                     case tac::Operator::MOD:
-                        replaceRight(*this, quadruple, lhs % rhs);
+                        replaceRight(*this, quadruple, lhs % rhs, tac::Operator::ASSIGN);
                         break;
                     default:
                         break;

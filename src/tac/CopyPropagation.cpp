@@ -91,7 +91,7 @@ void tac::OffsetCopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& qua
             offset.offset = *ptr;
 
             if(constants.find(offset) != constants.end()){
-                replaceRight(*this, quadruple, constants[offset]);
+                replaceRight(*this, quadruple, constants[offset], tac::Operator::ASSIGN);
             }
         }
     }

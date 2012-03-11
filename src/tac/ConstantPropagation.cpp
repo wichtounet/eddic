@@ -108,9 +108,9 @@ void tac::OffsetConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>&
             offset.offset = *ptr;
 
             if(int_constants.find(offset) != int_constants.end()){
-                replaceRight(*this, quadruple, int_constants[offset]);
+                replaceRight(*this, quadruple, int_constants[offset], tac::Operator::ASSIGN);
             } else if(string_constants.find(offset) != string_constants.end()){
-                replaceRight(*this, quadruple, string_constants[offset]);
+                replaceRight(*this, quadruple, string_constants[offset], tac::Operator::ASSIGN);
             }
         }
     }
