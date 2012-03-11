@@ -40,6 +40,7 @@ class ConstantPropagation : public boost::static_visitor<void> {
 
     private:
         std::unordered_map<std::shared_ptr<Variable>, int> int_constants;
+        std::unordered_map<std::shared_ptr<Variable>, double> float_constants;
         std::unordered_map<std::shared_ptr<Variable>, std::string> string_constants;
 
         void optimize(tac::Argument* arg);

@@ -19,6 +19,9 @@ void tac::ConstantPropagation::optimize(tac::Argument* arg){
         } else if(string_constants.find(*ptr) != string_constants.end()){
             optimized = true;
             *arg = string_constants[*ptr];
+        } else if(float_constants.find(*ptr) != float_constants.end()){
+            optimized = true;
+            *arg = float_constants[*ptr];
         }
     }
 }
@@ -31,21 +34,24 @@ void tac::ConstantPropagation::optimize_optional(boost::optional<tac::Argument>&
 
 void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
     //Do not replace a variable by a constant when used in offset
-    if(quadruple->op == tac::Operator::ASSIGN || (quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT)){
+    if(quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT){
         optimize_optional(quadruple->arg1);
     }
     
     optimize_optional(quadruple->arg2);
 
-    if(quadruple->op == tac::Operator::ASSIGN){
+    if(quadruple->op == tac::Operator::ASSIGN || quadruple->op == tac::Operator::FASSIGN){
         if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
             int_constants[quadruple->result] = *ptr;
+        } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
+            float_constants[quadruple->result] = *ptr;
         } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
             string_constants[quadruple->result] = *ptr;
         } else {
             //The result is not constant at this point
             int_constants.erase(quadruple->result);
             string_constants.erase(quadruple->result);
+            float_constants.erase(quadruple->result);
         }
     } else {
         auto op = quadruple->op;
@@ -55,6 +61,7 @@ void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadr
             //The result is not constant at this point
             int_constants.erase(quadruple->result);
             string_constants.erase(quadruple->result);
+            float_constants.erase(quadruple->result);
         }
     }
 }
