@@ -61,7 +61,7 @@ class SpiritLexer : public lex::lexer<L> {
             litteral = "\\\"[^\\\"]*\\\"";
 
             /* Suffixes  */
-            float_suffix = "f";
+            float_suffix = 'f';
 
             /* Constructs  */
             left_parenth = '('; 
@@ -124,8 +124,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += and_ | or_;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
-            this->self += float_ | integer | identifier | litteral;
-            this->self += float_suffix;
+            this->self += float_ | integer | float_suffix | identifier | litteral;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 

@@ -110,8 +110,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     primaryValue = 
             assignment
-        |   integer
         |   integer_suffix
+        |   integer
         |   float_
         |   litteral
         |   builtin_operator
