@@ -13,6 +13,7 @@
 #include "ast/values_def.hpp"
 
 #include "ast/Integer.hpp"
+#include "ast/IntegerSuffix.hpp"
 #include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
@@ -27,6 +28,7 @@ namespace ast {
 
 typedef boost::variant<
             Integer, 
+            IntegerSuffix, 
             Float,
             Litteral, 
             VariableValue,

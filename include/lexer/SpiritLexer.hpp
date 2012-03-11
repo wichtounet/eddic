@@ -38,7 +38,7 @@ template<typename L>
 class SpiritLexer : public lex::lexer<L> {
     public:
         SpiritLexer() {
-            //Define keywords
+            /* keywords  */
             for_ = "for";
             while_ = "while";
             do_ = "do";
@@ -54,11 +54,16 @@ class SpiritLexer : public lex::lexer<L> {
             const_ = "const";
             include = "include";
 
-            identifier = "[a-zA-Z_]?[a-zA-Z0-9_]+";
+            /* Raw values  */
+            identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
             float_ = "[0-9]+\".\"[0-9]+";
             integer = "[0-9]+";
             litteral = "\\\"[^\\\"]*\\\"";
 
+            /* Suffixes  */
+            float_suffix = 'f';
+
+            /* Constructs  */
             left_parenth = '('; 
             right_parenth = ')'; 
             left_brace = '{'; 
@@ -119,7 +124,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += and_ | or_;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
-            this->self += float_ | integer | identifier | litteral;
+            this->self += float_ | integer | float_suffix | identifier | litteral;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
@@ -141,6 +146,7 @@ class SpiritLexer : public lex::lexer<L> {
         StringToken compound_add, compound_sub, compound_mul, compound_div, compound_mod;
         StringToken equals, not_equals, greater, less, greater_equals, less_equals;
         StringToken and_, or_;
+        StringToken float_suffix;
 
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace, left_bracket, right_bracket;
         ConsumedToken stop, comma;

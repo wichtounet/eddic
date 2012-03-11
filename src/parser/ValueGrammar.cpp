@@ -110,6 +110,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     primaryValue = 
             assignment
+        |   integer_suffix
         |   integer
         |   float_
         |   litteral
@@ -134,6 +135,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     integer %= 
             qi::eps 
         >>  lexer.integer;
+
+    integer_suffix %=
+            qi::eps
+        >>  lexer.integer
+        >>  lexer.float_suffix; //For now, there is only float suffix
 
     float_ %= 
             qi::eps 

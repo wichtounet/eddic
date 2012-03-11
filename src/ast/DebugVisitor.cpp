@@ -167,6 +167,10 @@ void ast::DebugVisitor::operator()(ast::Integer& integer) const {
     std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
 }
 
+void ast::DebugVisitor::operator()(ast::IntegerSuffix& integer) const {
+    std::cout << indent() << "Float (suffix) [" << integer.value << "f]" << std::endl; 
+}
+
 void ast::DebugVisitor::operator()(ast::Float& float_) const {
     std::cout << indent() << "Float [" << float_.value << "]" << std::endl; 
 }
