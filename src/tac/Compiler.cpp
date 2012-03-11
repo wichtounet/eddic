@@ -179,6 +179,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         return {integer.value};
     }
     
+    result_type operator()(ast::IntegerSuffix& integer) const {
+        return {(double) integer.value};
+    }
+    
     result_type operator()(ast::Float& float_) const {
         return {float_.value};
     }
