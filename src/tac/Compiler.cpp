@@ -369,11 +369,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     result_type operator()(ast::Minus& value) const {
         tac::Argument arg = moveToArgument(value.Content->value, function);
+        
+        Type type = visit(ast::GetTypeVisitor(), value.Content->value);
 
-        auto t1 = function->context->newTemporary();
-        function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::MINUS));
+        if(type == BaseType::FLOAT){
+            auto t1 = function->context->newFloatTemporary();
+            function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::FMINUS));
 
-        return {t1};
+            return {t1};
+        } else {
+            auto t1 = function->context->newTemporary();
+            function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::MINUS));
+
+            return {t1};
+        }
     }
 
     //No operation to do
