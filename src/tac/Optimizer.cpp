@@ -38,7 +38,7 @@ static const bool DebugPerf = false;
 static const bool Debug = false;
 
 template<typename Visitor>
-bool apply_to_all_clean(tac::Program& program){
+bool apply_to_all(tac::Program& program){
     DebugStopWatch<DebugPerf> timer("apply to all clean");
 
     Visitor visitor;
@@ -53,7 +53,7 @@ bool apply_to_all_clean(tac::Program& program){
 }
 
 template<typename Visitor>
-bool apply_to_basic_blocks_clean(tac::Program& program){
+bool apply_to_basic_blocks(tac::Program& program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks");
     bool optimized = false;
 
@@ -404,25 +404,25 @@ void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
         optimized = false;
 
         //Optimize using arithmetic identities
-        optimized |= debug<Debug, 1>(apply_to_all_clean<ArithmeticIdentities>(program));
+        optimized |= debug<Debug, 1>(apply_to_all<ArithmeticIdentities>(program));
         
         //Reduce arithtmetic instructions in strength
-        optimized |= debug<Debug, 2>(apply_to_all_clean<ReduceInStrength>(program));
+        optimized |= debug<Debug, 2>(apply_to_all<ReduceInStrength>(program));
 
         //Constant folding
-        optimized |= debug<Debug, 3>(apply_to_all_clean<ConstantFolding>(program));
+        optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
 
         //Constant propagation
-        optimized |= debug<Debug, 4>(apply_to_basic_blocks_clean<ConstantPropagation>(program));
+        optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
 
         //Offset Constant propagation
-        optimized |= debug<Debug, 5>(apply_to_basic_blocks_clean<OffsetConstantPropagation>(program));
+        optimized |= debug<Debug, 5>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
         
         //Copy propagation
-        optimized |= debug<Debug, 6>(apply_to_basic_blocks_clean<CopyPropagation>(program));
+        optimized |= debug<Debug, 6>(apply_to_basic_blocks<CopyPropagation>(program));
         
         //Offset Copy propagation
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks_clean<OffsetCopyPropagation>(program));
+        optimized |= debug<Debug, 7>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
 
         //Propagate math
         optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<MathPropagation>(program));

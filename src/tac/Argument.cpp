@@ -17,6 +17,10 @@ bool eddic::tac::operator==(const tac::Argument& a, int b){
     return boost::get<int>(&a) && boost::get<int>(a) == b;
 }
 
+bool eddic::tac::operator==(const tac::Argument& a, double b){
+    return boost::get<double>(&a) && boost::get<double>(a) == b;
+}
+
 bool eddic::tac::operator==(const tac::Argument& a, const std::string& b){
     return boost::get<std::string>(&a) && boost::get<std::string>(a) == b;
 }

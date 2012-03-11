@@ -82,6 +82,7 @@ CUSTOM_STRONG_TYPEDEF(eddi_detail::variant_t, Argument)
 
 bool operator==(const Argument& a, const Argument& b);
 bool operator==(const Argument& a, int b);
+bool operator==(const Argument& a, double b);
 bool operator==(const Argument& a, std::shared_ptr<Variable> b);
 bool operator==(const Argument& a, const std::string& b);
 
