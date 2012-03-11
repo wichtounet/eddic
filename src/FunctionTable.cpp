@@ -14,11 +14,11 @@ FunctionTable::FunctionTable(){
     defineStandardFunctions();
 }
 
-FunctionMap::const_iterator begin(){
+FunctionMap::const_iterator FunctionTable::begin(){
     return functions.cbegin();
 }
 
-FunctionMap::const_iterator end(){
+FunctionMap::const_iterator FunctionTable::end(){
     return functions.cend();
 }
 
