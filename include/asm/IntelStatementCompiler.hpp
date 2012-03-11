@@ -949,6 +949,31 @@ struct IntelStatementCompiler {
         }
     }
 
+    void passInIntRegister(tac::Argument& argument, int position){
+        Register reg = getIntParamRegister(position);
+
+        spills(reg);
+
+        writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;            
+    }
+    
+    void passInFloatRegister(tac::Argument& argument, int position){
+        FloatRegister reg = getFloatParamRegister(position);
+
+        spills(reg);
+
+        if(boost::get<double>(&argument)){
+            Register gpreg = getReg();
+
+            writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
+            writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
+
+            registers.release(gpreg);
+        } else {
+            writer.stream() << getFloatMove() << reg << ", " << arg(argument) << std::endl;
+        }
+    }
+
     void compile(std::shared_ptr<tac::Param> param){
         current = param;
         
@@ -958,34 +983,34 @@ struct IntelStatementCompiler {
             unsigned int position = param->function->getParameterPositionByType(param->std_param);
 
             if(type == BaseType::INT && position <= numberIntParamRegisters()){
-                Register reg = getIntParamRegister(position);
-
-                spills(reg);
-
-                writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;            
+                passInIntRegister(param->arg, position);
 
                 return;
             }
             
             if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
-                FloatRegister reg = getFloatParamRegister(position);
-
-                spills(reg);
-        
-                if(boost::get<double>(&param->arg)){
-                    Register gpreg = getReg();
-
-                    writer.stream() << "mov " << gpreg << ", " << arg(param->arg) << std::endl;
-                    writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
-
-                    registers.release(gpreg);
-                } else {
-                    writer.stream() << getFloatMove() << reg << ", " << arg(param->arg) << std::endl;
-                }
+                passInFloatRegister(param->arg, position);
                 
                 return;
             }
         } 
+        //It's a call to a user function
+        else if(param->param){
+            auto type = param->param->type();
+            unsigned int position = param->function->getParameterPositionByType(param->std_param);
+
+            if(type == BaseType::INT && position <= numberIntParamRegisters()){
+                passInIntRegister(param->arg, position);
+
+                return;
+            }
+            
+            if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
+                passInFloatRegister(param->arg, position);
+                
+                return;
+            }
+        }
        
         //If the param as not been handled as register passing, push it on the stack 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
