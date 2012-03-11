@@ -71,7 +71,7 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::Quadruple>& quadruple
 namespace {
 
 template<typename T>
-bool computeValue(T& if_){
+bool computeValueInt(T& if_){
     int left = boost::get<int>(if_->arg1);
     int right = boost::get<int>(*if_->arg2);
 
@@ -93,12 +93,43 @@ bool computeValue(T& if_){
     }
 }
 
+template<typename T>
+bool computeValueFloat(T& if_){
+    double left = boost::get<double>(if_->arg1);
+    double right = boost::get<double>(*if_->arg2);
+
+    switch(*if_->op){
+        case tac::BinaryOperator::FE:
+            return left == right;
+        case tac::BinaryOperator::FNE:
+            return left != right;
+        case tac::BinaryOperator::FL:
+            return left < right;
+        case tac::BinaryOperator::FLE:
+            return left <= right;
+        case tac::BinaryOperator::FG:
+            return left > right;
+        case tac::BinaryOperator::FGE:
+            return left >= right;
+        default:
+            assert(false);
+    }
+}
+
 } //End of anonymous namespace
 
 void tac::ConstantFolding::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
     if(ifFalse->op){
         if(tac::isInt(ifFalse->arg1) && tac::isInt(*ifFalse->arg2)){
-            bool value = computeValue(ifFalse);
+            bool value = computeValueInt(ifFalse);
+
+            ifFalse->op.reset();
+            ifFalse->arg1 = value ? 1 : 0;
+            ifFalse->arg2.reset();
+
+            optimized = true;
+        } else if(tac::isFloat(ifFalse->arg1) && tac::isFloat(*ifFalse->arg2)){
+            bool value = computeValueFloat(ifFalse);
 
             ifFalse->op.reset();
             ifFalse->arg1 = value ? 1 : 0;
@@ -112,7 +143,15 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
 void tac::ConstantFolding::operator()(std::shared_ptr<tac::If>& if_){
     if(if_->op){
         if(tac::isInt(if_->arg1) && tac::isInt(*if_->arg2)){
-            bool value = computeValue(if_);
+            bool value = computeValueInt(if_);
+
+            if_->op.reset();
+            if_->arg1 = value ? 1 : 0;
+            if_->arg2.reset();
+
+            optimized = true;
+        } else if(tac::isFloat(if_->arg1) && tac::isFloat(*if_->arg2)){
+            bool value = computeValueFloat(if_);
 
             if_->op.reset();
             if_->arg1 = value ? 1 : 0;
