@@ -37,7 +37,7 @@ bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
         }
 
         //x = x is never useful
-        if(quadruple->op == tac::Operator::ASSIGN && *quadruple->arg1 == quadruple->result){
+        if((quadruple->op == tac::Operator::ASSIGN || quadruple->op == tac::Operator::FASSIGN) && *quadruple->arg1 == quadruple->result){
             optimized = true;
             return false;
         }
