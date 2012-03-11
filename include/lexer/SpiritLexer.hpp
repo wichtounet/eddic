@@ -55,7 +55,7 @@ class SpiritLexer : public lex::lexer<L> {
             include = "include";
 
             /* Raw values  */
-            identifier = "[a-zA-Z_]?[a-zA-Z0-9_]+";
+            identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
             float_ = "[0-9]+\".\"[0-9]+";
             integer = "[0-9]+";
             litteral = "\\\"[^\\\"]*\\\"";
