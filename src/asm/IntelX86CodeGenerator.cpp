@@ -425,17 +425,13 @@ void IntelX86CodeGenerator::defineDataSection(){
 
 void IntelX86CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "%rep " << size << std::endl;
-    writer.stream() << "dd 0" << std::endl;
-    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "times " << size << " dd 0" << std::endl;
     writer.stream() << "dd " << size << std::endl;
 }
 
 void IntelX86CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "%rep " << size << std::endl;
-    writer.stream() << "dd __float32__(0.0)" << std::endl;
-    writer.stream() << "%endrep" << std::endl;
+    writer.stream() << "times " << size << " dd __float32__(0.0)" << std::endl;
     writer.stream() << "dd " << size << std::endl;
 }
 
