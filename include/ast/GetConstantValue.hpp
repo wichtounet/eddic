@@ -31,6 +31,7 @@ namespace ast {
 struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const Litteral& litteral) const;
     Val operator()(const Integer& litteral) const;
+    Val operator()(const IntegerSuffix& litteral) const;
     Val operator()(const Float& litteral) const;
     Val operator()(const VariableValue& variable) const;
     Val operator()(const Minus& minus) const;

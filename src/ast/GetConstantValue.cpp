@@ -25,6 +25,10 @@ Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
+Val ast::GetConstantValue::operator()(const ast::IntegerSuffix& integer) const {
+    return (double) integer.value;
+}
+
 Val ast::GetConstantValue::operator()(const ast::Float& float_) const {
     return float_.value;
 }
