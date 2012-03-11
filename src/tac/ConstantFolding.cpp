@@ -12,31 +12,57 @@
 using namespace eddic;
     
 void tac::ConstantFolding::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-    if(quadruple->arg1 && tac::isInt(*quadruple->arg1)){
-        if(quadruple->op == tac::Operator::MINUS){
-            replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1));
-        } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
-            int lhs = boost::get<int>(*quadruple->arg1); 
-            int rhs = boost::get<int>(*quadruple->arg2); 
+    if(quadruple->arg1){
+        if(tac::isInt(*quadruple->arg1)){
+            if(quadruple->op == tac::Operator::MINUS){
+                replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1));
+            } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
+                int lhs = boost::get<int>(*quadruple->arg1); 
+                int rhs = boost::get<int>(*quadruple->arg2); 
 
-            switch(quadruple->op){
-                case tac::Operator::ADD:
-                    replaceRight(*this, quadruple, lhs + rhs);
-                    break;
-                case tac::Operator::SUB:
-                    replaceRight(*this, quadruple, lhs - rhs);
-                    break;
-                case tac::Operator::MUL:
-                    replaceRight(*this, quadruple, lhs * rhs);
-                    break;
-                case tac::Operator::DIV:
-                    replaceRight(*this, quadruple, lhs / rhs);
-                    break;
-                case tac::Operator::MOD:
-                    replaceRight(*this, quadruple, lhs % rhs);
-                    break;
-                default:
-                    break;
+                switch(quadruple->op){
+                    case tac::Operator::ADD:
+                        replaceRight(*this, quadruple, lhs + rhs);
+                        break;
+                    case tac::Operator::SUB:
+                        replaceRight(*this, quadruple, lhs - rhs);
+                        break;
+                    case tac::Operator::MUL:
+                        replaceRight(*this, quadruple, lhs * rhs);
+                        break;
+                    case tac::Operator::DIV:
+                        replaceRight(*this, quadruple, lhs / rhs);
+                        break;
+                    case tac::Operator::MOD:
+                        replaceRight(*this, quadruple, lhs % rhs);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } else if(tac::isFloat(*quadruple->arg1)){
+            if(quadruple->op == tac::Operator::FMINUS){
+                replaceRight(*this, quadruple, -1 * boost::get<double>(*quadruple->arg1), tac::Operator::FASSIGN);
+            } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
+                double lhs = boost::get<double>(*quadruple->arg1); 
+                double rhs = boost::get<double>(*quadruple->arg2); 
+
+                switch(quadruple->op){
+                    case tac::Operator::FADD:
+                        replaceRight(*this, quadruple, lhs + rhs, tac::Operator::FASSIGN);
+                        break;
+                    case tac::Operator::FSUB:
+                        replaceRight(*this, quadruple, lhs - rhs, tac::Operator::FASSIGN);
+                        break;
+                    case tac::Operator::FMUL:
+                        replaceRight(*this, quadruple, lhs * rhs, tac::Operator::FASSIGN);
+                        break;
+                    case tac::Operator::FDIV:
+                        replaceRight(*this, quadruple, lhs / rhs, tac::Operator::FASSIGN);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
