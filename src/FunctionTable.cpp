@@ -14,6 +14,14 @@ FunctionTable::FunctionTable(){
     defineStandardFunctions();
 }
 
+FunctionMap::const_iterator begin(){
+    return functions.cbegin();
+}
+
+FunctionMap::const_iterator end(){
+    return functions.cend();
+}
+
 void FunctionTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;
 }
