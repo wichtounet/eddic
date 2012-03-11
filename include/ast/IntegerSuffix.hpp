@@ -8,6 +8,8 @@
 #ifndef AST_INTEGER_SUFFIX_H
 #define AST_INTEGER_SUFFIX_H
 
+#include <string>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/TerminalNode.hpp"
