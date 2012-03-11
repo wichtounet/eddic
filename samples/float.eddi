@@ -5,7 +5,7 @@ void main(){
 
     float a = 1.5;
     float b = 3.0;
-    float d = 5.0;
+    float d = 5f;
     float c = a + b;
 	println(c);
     c = b + 2.75;
