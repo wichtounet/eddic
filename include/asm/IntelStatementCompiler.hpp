@@ -1368,20 +1368,10 @@ struct IntelStatementCompiler {
                 break;            
             case tac::Operator::MINUS:
             {
-                //TODO In the optimal case, there should be any -constant here...
-                //If arg is immediate, we have to move it in a register
-                if(isInt(*quadruple->arg1)){
-                    auto reg = getReg();
+                //Constants should have been replaced by the optimizer
+                assert(isVariable(*quadruple->arg1));
 
-                    move(*quadruple->arg1, reg);
-                    writer.stream() << "neg " << reg << std::endl;
-
-                    if(registers.reserved(reg)){
-                        registers.release(reg);
-                    }
-                } else {
-                    writer.stream() << "neg " << arg(*quadruple->arg1) << std::endl;
-                }
+                writer.stream() << "neg " << arg(*quadruple->arg1) << std::endl;
                 
                 written.insert(quadruple->result);
 
@@ -1389,17 +1379,6 @@ struct IntelStatementCompiler {
             }
             case tac::Operator::FMINUS:
             {
-                //TODO Only temporary
-                if(boost::get<double>(&*quadruple->arg1)){
-                    auto reg = getFloatRegNoMove(quadruple->result);
-
-                    copy(-1 * boost::get<double>(*quadruple->arg1), reg);
-
-                    written.insert(quadruple->result);
-
-                    break;
-                }
-
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
 
