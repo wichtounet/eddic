@@ -961,46 +961,37 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
     auto definition = functionTable->getFunction(functionName);
 
-    if(definition){
-        auto context = definition->context;
+    //All the functions should be in the function table
+    assert(definition);
 
-        //If it's a standard function, there are no context
-        if(!context){
-            auto parameters = definition->parameters;
-            int i = 0;
+    auto context = definition->context;
 
-            for(auto& first : arguments){
-                auto param = parameters[i++].name; 
-
-                for(auto& arg : first){
-                    function->add(std::make_shared<tac::Param>(arg, param, definition));   
-                }
-            }
-        } else {
-            auto parameters = definition->parameters;
-            int i = 0;
-
-            for(auto& first : arguments){
-                std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
-
-                for(auto& arg : first){
-                    function->add(std::make_shared<tac::Param>(arg, param, definition));   
-                }
-            }
-        }
-        
-        function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
-    } else {
-        //TODO Avoid this case by having each function referred in the function table
+    //If it's a standard function, there are no context
+    if(!context){
+        auto parameters = definition->parameters;
+        int i = 0;
 
         for(auto& first : arguments){
+            auto param = parameters[i++].name; 
+
             for(auto& arg : first){
-                function->add(std::make_shared<tac::Param>(arg));   
+                function->add(std::make_shared<tac::Param>(arg, param, definition));   
             }
         }
-    
-        function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
+    } else {
+        auto parameters = definition->parameters;
+        int i = 0;
+
+        for(auto& first : arguments){
+            std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
+
+            for(auto& arg : first){
+                function->add(std::make_shared<tac::Param>(arg, param, definition));   
+            }
+        }
     }
+
+    function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
