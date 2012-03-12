@@ -12,6 +12,7 @@
 #include "lexer/SpiritLexer.hpp"
 
 #include "ast/Value.hpp"
+#include "parser/TypeGrammar.hpp"
 
 namespace qi = boost::spirit::qi;
 
@@ -60,6 +61,8 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::symbols<char, ast::Operator> logical_or_op;
     qi::symbols<char, ast::Operator> suffix_op;
     qi::symbols<char, ast::Operator> prefix_op;
+    
+    TypeGrammar type;
 
     qi::symbols<char, ast::BuiltinType> builtin_op;
     

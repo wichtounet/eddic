@@ -13,6 +13,7 @@ using namespace eddic;
 
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         ValueGrammar::base_type(value, "Value Grammar"),
+        type(lexer, position_begin),
         position_begin(position_begin){
 
     /* Match operators into symbols */
@@ -107,6 +108,12 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     plusValue %=
             lexer.addition
          >> primaryValue;
+
+    castValue %=
+            lexer.left_parenth
+        >>  type.type
+        >>  lexer.right_parenth
+        >>  primaryValue;
     
     primaryValue = 
             assignment
