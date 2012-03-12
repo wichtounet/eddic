@@ -13,6 +13,8 @@
 
 #include "Utils.hpp"
 #include "Registers.hpp"
+#include "Compiler.hpp"
+#include "PlatformDescriptor.hpp"
 
 #include "tac/Utils.hpp"
 
@@ -61,8 +63,6 @@ struct IntelStatementCompiler {
     virtual std::string getSizedMove() = 0;
    
     /* Management of parameter passing in registers */ 
-    virtual unsigned int numberIntParamRegisters() = 0;
-    virtual unsigned int numberFloatParamRegisters() = 0;
     virtual Register getIntParamRegister(unsigned int position) = 0;
     virtual FloatRegister getFloatParamRegister(unsigned int position) = 0;
     
@@ -877,8 +877,10 @@ struct IntelStatementCompiler {
         writer.stream() << "call " << call->function << std::endl;
 
         int total = 0;
-        unsigned int maxInt = numberIntParamRegisters();
-        unsigned int maxFloat = numberFloatParamRegisters();
+    
+        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
         for(auto& param : call->functionDefinition->parameters){
             Type type = param.paramType; 
@@ -977,18 +979,22 @@ struct IntelStatementCompiler {
     void compile(std::shared_ptr<tac::Param> param){
         current = param;
         
+        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+        
         //It's a call to a standard function
         if(param->std_param.length() > 0){
             auto type = param->function->getParameterType(param->std_param);
             unsigned int position = param->function->getParameterPositionByType(param->std_param);
 
-            if(type == BaseType::INT && position <= numberIntParamRegisters()){
+            if(type == BaseType::INT && position <= maxInt){
                 passInIntRegister(param->arg, position);
 
                 return;
             }
             
-            if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
+            if(type == BaseType::FLOAT && position <= maxFloat){
                 passInFloatRegister(param->arg, position);
                 
                 return;
@@ -999,13 +1005,13 @@ struct IntelStatementCompiler {
             auto type = param->param->type();
             unsigned int position = param->function->getParameterPositionByType(param->param->name());
 
-            if(type == BaseType::INT && position <= numberIntParamRegisters()){
+            if(type == BaseType::INT && position <= maxInt){
                 passInIntRegister(param->arg, position);
 
                 return;
             }
             
-            if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
+            if(type == BaseType::FLOAT && position <= maxFloat){
                 passInFloatRegister(param->arg, position);
                 
                 return;

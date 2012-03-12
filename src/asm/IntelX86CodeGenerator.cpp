@@ -138,20 +138,12 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
         return Register::ESP;
     }
     
-    unsigned int numberIntParamRegisters(){
-        return 1;
-    }
-
     Register getIntParamRegister(unsigned int position){
         assert(position == 1);
 
         return Register::ECX;
     }
     
-    unsigned int numberFloatParamRegisters(){
-        return 1;
-    }
-
     FloatRegister getFloatParamRegister(unsigned int position){
         assert(position == 1);
 

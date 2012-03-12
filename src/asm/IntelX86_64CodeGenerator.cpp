@@ -151,10 +151,6 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     Register getStackPointerRegister(){
         return Register::RSP;
     }
-    
-    unsigned int numberIntParamRegisters(){
-        return 2;
-    }
 
     Register getIntParamRegister(unsigned int position){
         if(position == 1){
@@ -164,10 +160,6 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         }
 
         assert(position == 1 || position == 2);
-    }
-    
-    unsigned int numberFloatParamRegisters(){
-        return 1;
     }
 
     FloatRegister getFloatParamRegister(unsigned int position){
