@@ -955,14 +955,20 @@ struct IntelStatementCompiler {
             written.insert(call->return2_);
         }
 
-        //Restore the parameters in registers
+        //Restore the int parameters in registers
         for(auto reg : registers){
             if(registers.used(reg) && registers[reg]->position().isParamRegister()){
                 writer.stream() << "pop " << reg << std::endl;
             }
         }
-
-        //TODO Do the same for float_registers
+        
+        //Restore the float parameters in registers
+        for(auto reg : float_registers){
+            if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
+                writer.stream() << "movq " << reg << ", [" << getStackPointerRegister() << "]" << std::endl;
+                writer.stream() << "add " << getStackPointerRegister() << ", " << size(BaseType::FLOAT) << std::endl;
+            }
+        }
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -990,6 +996,7 @@ struct IntelStatementCompiler {
     void passInIntRegister(tac::Argument& argument, int position){
         Register reg = getIntParamRegister(position);
 
+        //If the parameter register is already used by a variable or a parent parameter
         if(registers.used(reg)){
             if(registers[reg]->position().isParamRegister()){
                 writer.stream() << "push " << reg << std::endl;
@@ -1004,7 +1011,19 @@ struct IntelStatementCompiler {
     void passInFloatRegister(tac::Argument& argument, int position){
         FloatRegister reg = getFloatParamRegister(position);
 
-        spills(reg);
+        //If the parameter register is already used by a variable or a parent parameter
+        if(float_registers.used(reg)){
+            if(float_registers[reg]->position().isParamRegister()){
+                Register gpreg = getReg();
+
+                writer.stream() << getSizedMove() << gpreg << ", " << reg << std::endl;
+                writer.stream() << "push " << gpreg << std::endl;
+
+                registers.release(gpreg);
+            } else {
+                spills(reg);
+            }
+        }
 
         if(boost::get<double>(&argument)){
             Register gpreg = getReg();
