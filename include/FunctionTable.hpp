@@ -49,6 +49,8 @@ struct Function {
     unsigned int getParameterPositionByType(const std::string& name);
 };
 
+typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
+
 /*!
  * \class FunctionTable
  * \brief The global function table. 
@@ -58,7 +60,7 @@ struct Function {
  */
 class FunctionTable {
     private:
-        std::unordered_map<std::string, std::shared_ptr<Function>> functions;
+        FunctionMap functions;
 
         void addPrintFunction(const std::string& function, BaseType parameterType);
         void defineStandardFunctions();
@@ -70,6 +72,9 @@ class FunctionTable {
         void addFunction(std::shared_ptr<Function> function);
         std::shared_ptr<Function> getFunction(const std::string& function);
         bool exists(const std::string& function);
+
+        FunctionMap::const_iterator begin();
+        FunctionMap::const_iterator end();
 
         void addReference(const std::string& function);
         int referenceCount(const std::string& function);

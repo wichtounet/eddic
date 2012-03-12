@@ -13,6 +13,8 @@
 
 #include "Utils.hpp"
 #include "Registers.hpp"
+#include "Compiler.hpp"
+#include "PlatformDescriptor.hpp"
 
 #include "tac/Utils.hpp"
 
@@ -61,8 +63,6 @@ struct IntelStatementCompiler {
     virtual std::string getSizedMove() = 0;
    
     /* Management of parameter passing in registers */ 
-    virtual unsigned int numberIntParamRegisters() = 0;
-    virtual unsigned int numberFloatParamRegisters() = 0;
     virtual Register getIntParamRegister(unsigned int position) = 0;
     virtual FloatRegister getFloatParamRegister(unsigned int position) = 0;
     
@@ -300,6 +300,11 @@ struct IntelStatementCompiler {
         if(float_registers.used(reg)){
             auto variable = float_registers[reg];
 
+            //Do no spills param stored in register
+            if(variable->position().isParamRegister()){
+                return;
+            }
+
             //If the variable has not been written, there is no need to spill it
             if(written.find(variable) != written.end()){
                 auto position = variable->position();
@@ -337,6 +342,11 @@ struct IntelStatementCompiler {
         //If the register is not used, there is nothing to spills
         if(registers.used(reg)){
             auto variable = registers[reg];
+            
+            //Do no spills param stored in register
+            if(variable->position().isParamRegister()){
+                return;
+            }
 
             //If the variable has not been written, there is no need to spill it
             if(written.find(variable) != written.end()){
@@ -399,9 +409,26 @@ struct IntelStatementCompiler {
     //Called at the beginning of each basic block
     void reset(){
         registers.reset();
+        float_registers.reset();
+
         written.clear();
 
         last = ended = false;
+    }
+
+    //Called just after the reset
+    void handleParameters(std::shared_ptr<Function> definition){
+        for(auto parameter : definition->parameters){
+            auto param = definition->context->getVariable(parameter.name);
+
+            if(param->position().isParamRegister()){
+                if(param->type() == BaseType::INT){
+                    registers.setLocation(param, getIntParamRegister(param->position().offset()));
+                } else if(param->type() == BaseType::FLOAT){
+                    float_registers.setLocation(param, getFloatParamRegister(param->position().offset()));
+                }
+            }
+        }
     }
 
     void setNext(tac::Statement statement){
@@ -465,7 +492,7 @@ struct IntelStatementCompiler {
         for(Reg reg : registers){
             if(!registers.used(reg)){
                 return reg;
-            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
+            } else if(!registers.reserved(reg) && !isLive(registers[reg]) && !registers[reg]->position().isParamRegister()){
                 registers.remove(registers[reg]);
 
                 return reg;
@@ -478,7 +505,7 @@ struct IntelStatementCompiler {
 
         //First, try to take a register that doesn't need to be spilled (variable has not modified)
         for(Reg remaining : registers){
-            if(!registers.reserved(remaining)){
+            if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
                 if(written.find(registers[remaining]) == written.end()){
                     reg = remaining;
                     found = true;
@@ -489,7 +516,7 @@ struct IntelStatementCompiler {
         //If there is no registers that doesn't need to be spilled, take the first one not reserved 
         if(!found){
             for(Reg remaining : registers){
-                if(!registers.reserved(remaining)){
+                if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
                     reg = remaining;
                     found = true;
                 }
@@ -877,8 +904,10 @@ struct IntelStatementCompiler {
         writer.stream() << "call " << call->function << std::endl;
 
         int total = 0;
-        unsigned int maxInt = numberIntParamRegisters();
-        unsigned int maxFloat = numberFloatParamRegisters();
+    
+        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
         for(auto& param : call->functionDefinition->parameters){
             Type type = param.paramType; 
@@ -925,6 +954,21 @@ struct IntelStatementCompiler {
             registers.setLocation(call->return2_, getReturnRegister2());
             written.insert(call->return2_);
         }
+
+        //Restore the int parameters in registers
+        for(auto reg : registers){
+            if(registers.used(reg) && registers[reg]->position().isParamRegister()){
+                writer.stream() << "pop " << reg << std::endl;
+            }
+        }
+        
+        //Restore the float parameters in registers
+        for(auto reg : float_registers){
+            if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
+                writer.stream() << "movq " << reg << ", [" << getStackPointerRegister() << "]" << std::endl;
+                writer.stream() << "add " << getStackPointerRegister() << ", " << size(BaseType::FLOAT) << std::endl;
+            }
+        }
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -949,43 +993,91 @@ struct IntelStatementCompiler {
         }
     }
 
+    void passInIntRegister(tac::Argument& argument, int position){
+        Register reg = getIntParamRegister(position);
+
+        //If the parameter register is already used by a variable or a parent parameter
+        if(registers.used(reg)){
+            if(registers[reg]->position().isParamRegister()){
+                writer.stream() << "push " << reg << std::endl;
+            } else {
+                spills(reg);
+            }
+        }
+
+        writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;            
+    }
+    
+    void passInFloatRegister(tac::Argument& argument, int position){
+        FloatRegister reg = getFloatParamRegister(position);
+
+        //If the parameter register is already used by a variable or a parent parameter
+        if(float_registers.used(reg)){
+            if(float_registers[reg]->position().isParamRegister()){
+                Register gpreg = getReg();
+
+                writer.stream() << getSizedMove() << gpreg << ", " << reg << std::endl;
+                writer.stream() << "push " << gpreg << std::endl;
+
+                registers.release(gpreg);
+            } else {
+                spills(reg);
+            }
+        }
+
+        if(boost::get<double>(&argument)){
+            Register gpreg = getReg();
+
+            writer.stream() << "mov " << gpreg << ", " << arg(argument) << std::endl;
+            writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
+
+            registers.release(gpreg);
+        } else {
+            writer.stream() << getFloatMove() << reg << ", " << arg(argument) << std::endl;
+        }
+    }
+
     void compile(std::shared_ptr<tac::Param> param){
         current = param;
+        
+        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
         
         //It's a call to a standard function
         if(param->std_param.length() > 0){
             auto type = param->function->getParameterType(param->std_param);
             unsigned int position = param->function->getParameterPositionByType(param->std_param);
 
-            if(type == BaseType::INT && position <= numberIntParamRegisters()){
-                Register reg = getIntParamRegister(position);
-
-                spills(reg);
-
-                writer.stream() << "mov " << reg << ", " << arg(param->arg) << std::endl;            
+            if(type == BaseType::INT && position <= maxInt){
+                passInIntRegister(param->arg, position);
 
                 return;
             }
             
-            if(type == BaseType::FLOAT && position <= numberFloatParamRegisters()){
-                FloatRegister reg = getFloatParamRegister(position);
-
-                spills(reg);
-        
-                if(boost::get<double>(&param->arg)){
-                    Register gpreg = getReg();
-
-                    writer.stream() << "mov " << gpreg << ", " << arg(param->arg) << std::endl;
-                    writer.stream() << getSizedMove() << reg << ", " << gpreg << std::endl;
-
-                    registers.release(gpreg);
-                } else {
-                    writer.stream() << getFloatMove() << reg << ", " << arg(param->arg) << std::endl;
-                }
+            if(type == BaseType::FLOAT && position <= maxFloat){
+                passInFloatRegister(param->arg, position);
                 
                 return;
             }
         } 
+        //It's a call to a user function
+        else if(param->param){
+            auto type = param->param->type();
+            unsigned int position = param->function->getParameterPositionByType(param->param->name());
+
+            if(type == BaseType::INT && position <= maxInt){
+                passInIntRegister(param->arg, position);
+
+                return;
+            }
+            
+            if(type == BaseType::FLOAT && position <= maxFloat){
+                passInFloatRegister(param->arg, position);
+                
+                return;
+            }
+        }
        
         //If the param as not been handled as register passing, push it on the stack 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){

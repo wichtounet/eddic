@@ -151,10 +151,6 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     Register getStackPointerRegister(){
         return Register::RSP;
     }
-    
-    unsigned int numberIntParamRegisters(){
-        return 2;
-    }
 
     Register getIntParamRegister(unsigned int position){
         if(position == 1){
@@ -163,11 +159,7 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
             return Register::R15;
         }
 
-        assert(position == 1 || position == 2);
-    }
-    
-    unsigned int numberFloatParamRegisters(){
-        return 1;
+        assert(false && "There are only two registers for int");
     }
 
     FloatRegister getFloatParamRegister(unsigned int position){
@@ -284,8 +276,9 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
 
 namespace { //anonymous namespace
 
-void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86_64StatementCompiler& compiler){
+void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86_64StatementCompiler& compiler, std::shared_ptr<Function> definition){
     compiler.reset();
+    compiler.handleParameters(definition);
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
         writer.stream() << block->label << ":" << std::endl;
@@ -357,7 +350,7 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
 
     //Then we compile each of them
     for(auto block : function->getBasicBlocks()){
-        ::compile(writer, block, compiler);
+        ::compile(writer, block, compiler, function->definition);
     }
  
     if(function->getBasicBlocks().size() > 0){
