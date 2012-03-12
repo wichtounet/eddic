@@ -29,6 +29,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
     qi::rule<lexer::Iterator, ast::Value()> unaryValue;
+    qi::rule<lexer::Iterator, ast::Cast()> castValue;
     qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
     qi::rule<lexer::Iterator, ast::Minus()> negatedConstantValue;
     qi::rule<lexer::Iterator, ast::Plus()> plusValue;

@@ -56,5 +56,6 @@ typedef boost::variant<
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"
 #include "ast/Plus.hpp"
+#include "ast/Cast.hpp"
 
 #endif
