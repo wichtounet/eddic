@@ -997,7 +997,7 @@ struct IntelStatementCompiler {
         //It's a call to a user function
         else if(param->param){
             auto type = param->param->type();
-            unsigned int position = param->function->getParameterPositionByType(param->std_param);
+            unsigned int position = param->function->getParameterPositionByType(param->param->name());
 
             if(type == BaseType::INT && position <= numberIntParamRegisters()){
                 passInIntRegister(param->arg, position);

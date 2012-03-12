@@ -29,9 +29,11 @@ void eddic::allocateParams(FunctionTable& functionTable){
                 auto param = function->context->getVariable(parameter.name);
 
                 if(type == BaseType::INT && position <= descriptor->numberOfIntParamRegisters()){
-                    //TODO Set the variable position to register
+                    Position paramPosition(PositionType::PARAM_REGISTER, position);
+                    param->setPosition(paramPosition);
                 } else if(type == BaseType::FLOAT && position <= descriptor->numberOfFloatParamRegisters()){
-                    //TODO Set the variable position to register
+                    Position paramPosition(PositionType::PARAM_REGISTER, position);
+                    param->setPosition(paramPosition);
                 }
             }
         }
