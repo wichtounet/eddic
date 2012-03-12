@@ -258,8 +258,9 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
 
 namespace { //anonymous namespace
 
-void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86StatementCompiler& compiler){
+void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86StatementCompiler& compiler, std::shared_ptr<Function> definition){
     compiler.reset();
+    compiler.handleParameters(definition);
 
     if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
         writer.stream() << block->label << ":" << std::endl;
@@ -331,7 +332,7 @@ void IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
 
     //Then we compile each of them
     for(auto& block : function->getBasicBlocks()){
-        ::compile(writer, block, compiler);
+        ::compile(writer, block, compiler, function->definition);
     }
  
     if(function->getBasicBlocks().size() > 0){

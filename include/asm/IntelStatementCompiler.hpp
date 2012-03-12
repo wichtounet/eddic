@@ -300,6 +300,11 @@ struct IntelStatementCompiler {
         if(float_registers.used(reg)){
             auto variable = float_registers[reg];
 
+            //Do no spills param stored in register
+            if(variable->position().isParamRegister()){
+                return;
+            }
+
             //If the variable has not been written, there is no need to spill it
             if(written.find(variable) != written.end()){
                 auto position = variable->position();
@@ -337,6 +342,11 @@ struct IntelStatementCompiler {
         //If the register is not used, there is nothing to spills
         if(registers.used(reg)){
             auto variable = registers[reg];
+            
+            //Do no spills param stored in register
+            if(variable->position().isParamRegister()){
+                return;
+            }
 
             //If the variable has not been written, there is no need to spill it
             if(written.find(variable) != written.end()){
@@ -399,9 +409,26 @@ struct IntelStatementCompiler {
     //Called at the beginning of each basic block
     void reset(){
         registers.reset();
+        float_registers.reset();
+
         written.clear();
 
         last = ended = false;
+    }
+
+    //Called just after the reset
+    void handleParameters(std::shared_ptr<Function> definition){
+        for(auto parameter : definition->parameters){
+            auto param = definition->context->getVariable(parameter.name);
+
+            if(param->position().isParamRegister()){
+                if(param->type() == BaseType::INT){
+                    registers.setLocation(param, getIntParamRegister(param->position().offset()));
+                } else if(param->type() == BaseType::FLOAT){
+                    float_registers.setLocation(param, getFloatParamRegister(param->position().offset()));
+                }
+            }
+        }
     }
 
     void setNext(tac::Statement statement){
@@ -465,7 +492,7 @@ struct IntelStatementCompiler {
         for(Reg reg : registers){
             if(!registers.used(reg)){
                 return reg;
-            } else if(!registers.reserved(reg) && !isLive(registers[reg])){
+            } else if(!registers.reserved(reg) && !isLive(registers[reg]) && !registers[reg]->position().isParamRegister()){
                 registers.remove(registers[reg]);
 
                 return reg;
@@ -478,7 +505,7 @@ struct IntelStatementCompiler {
 
         //First, try to take a register that doesn't need to be spilled (variable has not modified)
         for(Reg remaining : registers){
-            if(!registers.reserved(remaining)){
+            if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
                 if(written.find(registers[remaining]) == written.end()){
                     reg = remaining;
                     found = true;
@@ -489,7 +516,7 @@ struct IntelStatementCompiler {
         //If there is no registers that doesn't need to be spilled, take the first one not reserved 
         if(!found){
             for(Reg remaining : registers){
-                if(!registers.reserved(remaining)){
+                if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
                     reg = remaining;
                     found = true;
                 }
@@ -927,6 +954,15 @@ struct IntelStatementCompiler {
             registers.setLocation(call->return2_, getReturnRegister2());
             written.insert(call->return2_);
         }
+
+        //Restore the parameters in registers
+        for(auto reg : registers){
+            if(registers.used(reg) && registers[reg]->position().isParamRegister()){
+                writer.stream() << "pop " << reg << std::endl;
+            }
+        }
+
+        //TODO Do the same for float_registers
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -954,7 +990,13 @@ struct IntelStatementCompiler {
     void passInIntRegister(tac::Argument& argument, int position){
         Register reg = getIntParamRegister(position);
 
-        spills(reg);
+        if(registers.used(reg)){
+            if(registers[reg]->position().isParamRegister()){
+                writer.stream() << "push " << reg << std::endl;
+            } else {
+                spills(reg);
+            }
+        }
 
         writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;            
     }
