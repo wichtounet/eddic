@@ -1,8 +1,10 @@
 void main(){
     int a = 5;
     float b = (float) a;
+    float c = 333.879877;
 
     println(b);
     println((int) b);
     println((int) 4.33);
+    println((int) c);
 }
