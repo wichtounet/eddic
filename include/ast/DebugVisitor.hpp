@@ -59,6 +59,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(VariableValue&) const ;
     void operator()(ArrayValue&) const ;
     void operator()(Expression& value) const ;
+    void operator()(Cast& cast) const ;
     void operator()(Plus& value) const ;
     void operator()(Minus& value) const ;
     void operator()(False& value) const ;

@@ -25,6 +25,14 @@ std::string ast::DebugVisitor::indent() const {
     return acc;
 }
 
+std::string toStringType(ast::Type type){
+    if(auto* ptr = boost::get<ast::SimpleType>(&type)){
+        return ptr->type;
+    } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
+        return ptr->type + "[]";
+    }
+}
+
 void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
     std::cout << indent() << "SourceFile" << std::endl; 
 
@@ -210,4 +218,10 @@ void ast::DebugVisitor::operator()(ast::Minus& value) const {
 void ast::DebugVisitor::operator()(ast::Plus& value) const {
     std::cout << indent() << "Unary -" << std::endl; 
     print_sub(*this, value.Content->value);
+}
+
+void ast::DebugVisitor::operator()(ast::Cast& cast) const {
+    std::cout << indent() << "Cast " << std::endl; 
+    std::cout << indent() << "\tType: " << toStringType(cast.Content->type) << std::endl;
+    print_sub(*this, cast.Content->value);
 }
