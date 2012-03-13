@@ -39,6 +39,7 @@ typedef boost::variant<
             False,
             ArrayValue,
             FunctionCall,
+            Cast,
             BuiltinOperator,
             Assignment,
             SuffixOperation,
