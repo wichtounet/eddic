@@ -1,0 +1,8 @@
+void main(){
+    int a = 5;
+    float b = (float) a;
+
+    println(b);
+    println((int) b);
+    println((int) 4.33);
+}
