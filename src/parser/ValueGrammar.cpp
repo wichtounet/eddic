@@ -95,6 +95,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     unaryValue %= 
             negatedValue
         |   plusValue
+        |   castValue
         |   primaryValue;
     
     negatedValue = 
