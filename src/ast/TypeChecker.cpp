@@ -33,6 +33,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
+    AUTO_RECURSE_CAST_VALUES()
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);

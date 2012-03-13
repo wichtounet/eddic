@@ -96,6 +96,11 @@ void operator()(ast::Plus& value){\
 void operator()(ast::Minus& value){\
     visit(*this, value.Content->value);\
 }
+
+#define AUTO_RECURSE_CAST_VALUES()\
+void operator()(ast::Cast& cast){\
+    visit(*this, cast.Content->value);\
+}
         
 #define AUTO_RECURSE_ARRAY_VALUES()\
 void operator()(ast::ArrayValue& array){\
