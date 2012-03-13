@@ -16,6 +16,8 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::Quadruple>& quadruple
         if(tac::isInt(*quadruple->arg1)){
             if(quadruple->op == tac::Operator::MINUS){
                 replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1), tac::Operator::ASSIGN);
+            } else if(quadruple->op == tac::Operator::I2F){
+                replaceRight(*this, quadruple, (float) boost::get<int>(*quadruple->arg1), tac::Operator::FASSIGN);
             } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
                 int lhs = boost::get<int>(*quadruple->arg1); 
                 int rhs = boost::get<int>(*quadruple->arg2); 
@@ -43,6 +45,8 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::Quadruple>& quadruple
         } else if(tac::isFloat(*quadruple->arg1)){
             if(quadruple->op == tac::Operator::FMINUS){
                 replaceRight(*this, quadruple, -1 * boost::get<double>(*quadruple->arg1), tac::Operator::FASSIGN);
+            } else if(quadruple->op == tac::Operator::F2I){
+                replaceRight(*this, quadruple, (int) boost::get<double>(*quadruple->arg1), tac::Operator::ASSIGN);
             } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
                 double lhs = boost::get<double>(*quadruple->arg1); 
                 double rhs = boost::get<double>(*quadruple->arg2); 
