@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 #include "ast/Value.hpp"
 
 #include "Context.hpp"
@@ -31,6 +32,10 @@ Type ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
 
 Type ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
    return visit(*this, minus.Content->value); 
+}
+
+Type ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
+   return visit(ast::TypeTransformer(), cast.Content->type); 
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
