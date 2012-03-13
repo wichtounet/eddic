@@ -22,6 +22,7 @@
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 
@@ -383,6 +384,32 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
             return {t1};
         }
+    }
+    
+    result_type operator()(ast::Cast& cast) const {
+        tac::Argument arg = moveToArgument(cast.Content->value, function);
+        
+        Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
+        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+
+        if(srcType != destType){
+            if(destType == BaseType::FLOAT){
+                auto t1 = function->context->newFloatTemporary();
+
+                function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::I2F));
+
+                return {t1};
+            } else if(destType == BaseType::INT){
+                auto t1 = function->context->newTemporary();
+                
+                function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::F2I));
+
+                return {t1};
+            }
+        }
+
+        //If srcType == destType, there is nothing to do
+        return {arg};
     }
 
     //No operation to do
