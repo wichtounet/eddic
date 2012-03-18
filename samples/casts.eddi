@@ -2,6 +2,7 @@ void main(){
     int a = 5;
     float b = (float) a;
     float c = 333.879877;
+    float d = (float) c;
 
     println(b);
     println((int) b);

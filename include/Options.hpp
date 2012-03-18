@@ -20,6 +20,11 @@ namespace eddic {
 extern bool WarningUnused;
 
 /*!
+ * \brief Bolean flag indicating if warnings are outputted for casts.
+ */
+extern bool WarningCast;
+
+/*!
  * \brief The program options. 
  */
 extern po::variables_map options;
