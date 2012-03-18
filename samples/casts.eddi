@@ -7,4 +7,5 @@ void main(){
     println((int) b);
     println((int) 4.33);
     println((int) c);
+    println((float) a);
 }

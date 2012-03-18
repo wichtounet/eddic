@@ -115,6 +115,14 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     std::string getFloatMove(){
         return "movsd ";
     }
+
+    std::string getFloatToInteger(){
+        return "cvttsd2si ";
+    }
+
+    std::string getIntegerToFloat(){
+        return "cvtsi2sd ";
+    }
     
     std::string getFloatAdd(){
         return "addsd ";
@@ -445,7 +453,7 @@ void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned
 
 void IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "times " << size << " dq __float64(0.0)__" << std::endl;
+    writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
     writer.stream() << "dq " << size << std::endl;
 }
 
