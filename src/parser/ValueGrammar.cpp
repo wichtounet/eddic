@@ -111,7 +111,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
          >> primaryValue;
 
     castValue %=
-            lexer.left_parenth
+            qi::position(position_begin)
+        >>  lexer.left_parenth
         >>  type.type
         >>  lexer.right_parenth
         >>  primaryValue;

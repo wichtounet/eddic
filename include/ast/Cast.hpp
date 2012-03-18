@@ -12,6 +12,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Type.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -20,6 +21,7 @@ namespace ast {
 struct ASTCast {
     Value value;
     Type type;
+    Position position;
 
     mutable long references;
     ASTCast() : references(0) {}
@@ -34,6 +36,7 @@ typedef Deferred<ASTCast> Cast;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Cast, 
+    (eddic::ast::Position, Content->position)
     (eddic::ast::Type, Content->type)
     (eddic::ast::Value, Content->value)
 )
