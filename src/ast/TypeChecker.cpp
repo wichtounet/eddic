@@ -13,6 +13,7 @@
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "Compiler.hpp"
 #include "SemanticalException.hpp"
@@ -33,7 +34,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
-    AUTO_RECURSE_CAST_VALUES()
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);
@@ -172,6 +172,16 @@ struct CheckerVisitor : public boost::static_visitor<> {
         Type valueType = visit(ast::GetTypeVisitor(), array.Content->indexValue);
         if (valueType.base() != BaseType::INT || valueType.isArray()) {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
+        }
+    }
+    
+    void operator()(ast::Cast& cast){
+        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+
+        if(destType == BaseType::STRING){
+            throw SemanticalException("Cannot cast to string", cast.Content->position);
+        } else if(destType == BaseType::VOID){
+            throw SemanticalException("Cannot cast to void", cast.Content->position);
         }
     }
 
