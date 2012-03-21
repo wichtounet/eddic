@@ -9,4 +9,7 @@ void main(){
     println((int) 4.33);
     println((int) c);
     println((float) a);
+
+    float e = (float) a + 3.33;
+    println(e);
 }
