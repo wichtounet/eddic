@@ -56,6 +56,8 @@ struct IntelStatementCompiler {
     virtual std::string getFloatPrefix() = 0;
     
     virtual std::string getFloatMove() = 0;
+    virtual std::string getFloatToInteger() = 0;
+    virtual std::string getIntegerToFloat() = 0;
     virtual std::string getFloatAdd() = 0;
     virtual std::string getFloatSub() = 0;
     virtual std::string getFloatMul() = 0;
@@ -1458,6 +1460,34 @@ struct IntelStatementCompiler {
                 written.insert(quadruple->result);
                 
                 break;            
+            case tac::Operator::I2F:
+            {
+                //Constants should have been replaced by the optimizer
+                assert(isVariable(*quadruple->arg1));
+
+                auto reg = getReg(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1));
+                auto resultReg = getFloatRegNoMove(quadruple->result);
+
+                writer.stream() << getIntegerToFloat() << resultReg << ", " << reg << std::endl; 
+        
+                written.insert(quadruple->result);
+
+                break;
+            }
+            case tac::Operator::F2I:
+            {
+                //Constants should have been replaced by the optimizer
+                assert(isVariable(*quadruple->arg1));
+
+                auto reg = getFloatReg(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1));
+                auto resultReg = getRegNoMove(quadruple->result);
+
+                writer.stream() << getFloatToInteger() << resultReg << ", " << reg << std::endl; 
+        
+                written.insert(quadruple->result);
+
+                break;
+            }
             case tac::Operator::MINUS:
             {
                 //Constants should have been replaced by the optimizer

@@ -38,7 +38,7 @@ Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
-    Type type = value.Content->var->type();
+    eddic::Type type = value.Content->var->type();
     assert(type.isConst());
         
     auto val = value.Content->var->val();

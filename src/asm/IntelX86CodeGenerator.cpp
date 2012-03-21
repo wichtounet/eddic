@@ -101,6 +101,14 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
     std::string getFloatMove(){
         return "movss ";
     }
+
+    std::string getFloatToInteger(){
+        return "cvttss2si ";
+    }
+
+    std::string getIntegerToFloat(){
+        return "cvtsi2ss ";
+    }
     
     std::string getFloatAdd(){
         return "addss ";

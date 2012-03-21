@@ -50,11 +50,6 @@ void FunctionTable::addPrintFunction(const std::string& function, BaseType param
 }
 
 void FunctionTable::defineStandardFunctions(){
-    //Function time()
-    auto timeFunction = std::make_shared<Function>(newSimpleType(BaseType::INT), "time");
-    timeFunction->mangledName = "_F4timeAI";
-    addFunction(timeFunction);
-
     //print string
     addPrintFunction("_F5printS", BaseType::STRING);
     addPrintFunction("_F7printlnS", BaseType::STRING);
@@ -77,6 +72,19 @@ void FunctionTable::defineStandardFunctions(){
     concatFunction->parameters.push_back({"a", newSimpleType(BaseType::STRING)});
     concatFunction->parameters.push_back({"b", newSimpleType(BaseType::STRING)});
     addFunction(concatFunction);
+    
+    //time function
+    auto timeFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "time");
+    timeFunction->mangledName = "_F4timeAI";
+    timeFunction->parameters.push_back({"a", newArrayType(BaseType::INT)});
+    addFunction(timeFunction);
+    
+    //duration function
+    auto durationFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "duration");
+    durationFunction->mangledName = "_F8durationAIAI";
+    durationFunction->parameters.push_back({"a", newArrayType(BaseType::INT)});
+    durationFunction->parameters.push_back({"b", newArrayType(BaseType::INT)});
+    addFunction(durationFunction);
 }
 
 Type Function::getParameterType(const std::string& name){

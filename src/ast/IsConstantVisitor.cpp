@@ -35,6 +35,10 @@ bool ast::IsConstantVisitor::operator()(ast::Plus& value) const {
     return visit(*this, value.Content->value);
 }
 
+bool ast::IsConstantVisitor::operator()(ast::Cast& cast) const {
+    return visit(*this, cast.Content->value);
+}
+
 bool ast::IsConstantVisitor::operator()(ast::VariableValue& variable) const {
     return variable.Content->var->type().isConst();
 }

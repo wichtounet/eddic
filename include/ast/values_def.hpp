@@ -24,6 +24,9 @@ struct False;
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
+struct ASTCast;
+typedef Deferred<ASTCast> Cast;
+
 struct ASTBuiltinOperator;
 typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
 

@@ -37,6 +37,7 @@ struct GetTypeVisitor : public boost::static_visitor<eddic::Type> {
     eddic::Type operator()(const ast::Minus& value) const;
     eddic::Type operator()(const ast::True& value) const;
     eddic::Type operator()(const ast::False& value) const;
+    eddic::Type operator()(const ast::Cast& cast) const;
     eddic::Type operator()(const ast::SuffixOperation& value) const;
     eddic::Type operator()(const ast::PrefixOperation& value) const;
 };

@@ -39,6 +39,7 @@ typedef boost::variant<
             False,
             ArrayValue,
             FunctionCall,
+            Cast,
             BuiltinOperator,
             Assignment,
             SuffixOperation,
@@ -56,5 +57,6 @@ typedef boost::variant<
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"
 #include "ast/Plus.hpp"
+#include "ast/Cast.hpp"
 
 #endif
