@@ -14,6 +14,8 @@
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/Position.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "SemanticalException.hpp"
 #include "Context.hpp"
@@ -76,21 +78,36 @@ struct Collector : public boost::static_visitor<> {
 struct Inspector : public boost::static_visitor<> {
     public:
         Inspector(FunctionTable& table, Collector& collector) : functionTable(table), collector(collector) {}
+    
+        AUTO_RECURSE_GLOBAL_DECLARATION() 
+        AUTO_RECURSE_FUNCTION_CALLS()
+        AUTO_RECURSE_BUILTIN_OPERATORS()
+        AUTO_RECURSE_SIMPLE_LOOPS()
+        AUTO_RECURSE_FOREACH()
+        AUTO_RECURSE_BRANCHES()
+        AUTO_RECURSE_BINARY_CONDITION()
+        AUTO_RECURSE_COMPOSED_VALUES()
+        AUTO_RECURSE_RETURN_VALUES()
+        AUTO_RECURSE_ARRAY_VALUES()
+        AUTO_RECURSE_VARIABLE_OPERATIONS()
+        AUTO_RECURSE_ARRAY_ASSIGNMENT()
 
         void check(std::shared_ptr<Context> context){
-            auto iter = context->begin();
-            auto end = context->end();
+            if(WarningUnused){
+                auto iter = context->begin();
+                auto end = context->end();
 
-            for(; iter != end; iter++){
-                auto var = iter->second;
+                for(; iter != end; iter++){
+                    auto var = iter->second;
 
-                if(var->referenceCount() == 0){
-                    if(var->position().isStack()){
-                        warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
-                    } else if(var->position().isGlobal()){
-                        warn(collector.getPosition(var), "unused global variable '" + var->name() + "'");
-                    } else if(var->position().isParameter()){
-                        warn(collector.getPosition(var), "unused parameter '" + var->name() + "'");
+                    if(var->referenceCount() == 0){
+                        if(var->position().isStack()){
+                            warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
+                        } else if(var->position().isGlobal()){
+                            warn(collector.getPosition(var), "unused global variable '" + var->name() + "'");
+                        } else if(var->position().isParameter()){
+                            warn(collector.getPosition(var), "unused parameter '" + var->name() + "'");
+                        }
                     }
                 }
             }
@@ -105,10 +122,27 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
-            int references = functionTable.referenceCount(declaration.Content->mangledName);
+            if(WarningUnused){
+                int references = functionTable.referenceCount(declaration.Content->mangledName);
 
-            if(declaration.Content->functionName != "main" && references == 0){
-                warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                if(declaration.Content->functionName != "main" && references == 0){
+                    warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                }
+            }
+        
+            visit_each(*this, declaration.Content->instructions);
+        }
+    
+        void operator()(ast::Cast& cast){
+            if(WarningCast){
+                eddic::Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
+                eddic::Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+
+                std::cout << "cast " << (int) srcType.base() << " " << (int) destType.base() << std::endl;
+
+                if(srcType == destType){
+                    warn(cast.Content->position, "cast is not useful");
+                }
             }
         }
 
@@ -125,11 +159,9 @@ struct Inspector : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void ast::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
-    if(WarningUnused){
-        Collector collector;
-        visit_non_variant(collector, program);
+    Collector collector;
+    visit_non_variant(collector, program);
 
-        Inspector inspector(table, collector);
-        visit_non_variant(inspector, program);
-    }
+    Inspector inspector(table, collector);
+    visit_non_variant(inspector, program);
 }

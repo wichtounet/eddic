@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 #include "ast/Value.hpp"
 
 #include "Context.hpp"
@@ -17,6 +18,7 @@ using namespace eddic;
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, newSimpleType(BaseType::INT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::IntegerSuffix, newSimpleType(BaseType::FLOAT)) //For now, there is only a float (f) suffix
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, newSimpleType(BaseType::INT)) //At this time, all the builtin operators return an int
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, newSimpleType(BaseType::FLOAT))
@@ -30,6 +32,10 @@ Type ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
 
 Type ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
    return visit(*this, minus.Content->value); 
+}
+
+Type ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
+   return visit(ast::TypeTransformer(), cast.Content->type); 
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {

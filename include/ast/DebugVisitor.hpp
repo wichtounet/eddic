@@ -54,10 +54,12 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(FunctionCall&) const ;
     void operator()(BuiltinOperator&) const ;
     void operator()(Integer& integer) const ;
+    void operator()(IntegerSuffix& integer) const ;
     void operator()(Float& float_) const ;
     void operator()(VariableValue&) const ;
     void operator()(ArrayValue&) const ;
     void operator()(Expression& value) const ;
+    void operator()(Cast& cast) const ;
     void operator()(Plus& value) const ;
     void operator()(Minus& value) const ;
     void operator()(False& value) const ;

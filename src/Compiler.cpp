@@ -18,6 +18,7 @@
 #include "SemanticalException.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
+#include "RegisterAllocation.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -129,6 +130,9 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::defineContexts(program);
             ast::defineVariables(program);
             ast::defineFunctions(program, functionTable);
+            
+            //Allocate registers to params
+            allocateParams(functionTable);
 
             //Transform the AST
             ast::transformAST(program);
@@ -156,7 +160,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                 //Generate Three-Address-Code language
                 tac::Compiler compiler;
-                compiler.compile(program, pool, tacProgram);
+                compiler.compile(program, pool, tacProgram, functionTable);
 
                 //Separate into basic blocks
                 tac::BasicBlockExtractor extractor;

@@ -5,43 +5,29 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_FUNCTION_CALL_H
-#define AST_FUNCTION_CALL_H
-
-#include <memory>
+#ifndef AST_CAST_H
+#define AST_CAST_H
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/Type.hpp"
 #include "ast/Position.hpp"
-
-#include "FunctionTable.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-/*!
- * \class ASTFunctionCall
- * \brief The AST node for a function call. 
- * Should only be used from the Deferred version (eddic::ast::FunctionCall).
- */
-struct ASTFunctionCall {
-    std::shared_ptr<eddic::Function> function;
-
+struct ASTCast {
+    Value value;
+    Type type;
     Position position;
-    std::string functionName;
-    std::vector<Value> values;
 
     mutable long references;
-    ASTFunctionCall() : references(0) {}
+    ASTCast() : references(0) {}
 };
 
-/*!
- * \typedef FunctionCall
- * \brief The AST node for a function call.
- */
-typedef Deferred<ASTFunctionCall> FunctionCall;
+typedef Deferred<ASTCast> Cast;
 
 } //end of ast
 
@@ -49,10 +35,10 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::FunctionCall, 
+    eddic::ast::Cast, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->functionName)
-    (std::vector<eddic::ast::Value>, Content->values)
+    (eddic::ast::Type, Content->type)
+    (eddic::ast::Value, Content->value)
 )
 
 #endif

@@ -107,6 +107,10 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " <= " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::MINUS){
                 std::cout << "\t" << quadruple->result->name() << " = - " << printArgument(*quadruple->arg1) << std::endl;
+            } else if(op == tac::Operator::I2F){
+                std::cout << "\t" << quadruple->result->name() << " = (cast float) " << printArgument(*quadruple->arg1) << std::endl;
+            } else if(op == tac::Operator::F2I){
+                std::cout << "\t" << quadruple->result->name() << " = (cast int) " << printArgument(*quadruple->arg1) << std::endl;
             } else if(op == tac::Operator::DOT){
                 std::cout << "\t" << quadruple->result->name() << " = (" << printArgument(*quadruple->arg1) << ")" << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::DOT_ASSIGN){
@@ -115,8 +119,6 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " [" << printArgument(*quadruple->arg2) << "]" << std::endl;
             } else if(op == tac::Operator::ARRAY_ASSIGN){
                 std::cout << "\t" << quadruple->result->name() << "[" << printArgument(*quadruple->arg1) << "] = " << printArgument(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::PARAM){
-                std::cout << "\tparam " << printArgument(*quadruple->arg1) << std::endl;
             } else if(op == tac::Operator::RETURN){
                 std::cout << "\treturn";
 
@@ -180,6 +182,18 @@ struct DebugVisitor : public boost::static_visitor<> {
             }
         } else {
             std::cout << "\tifFalse " << printArgument(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
+        }
+    }
+    
+    void operator()(std::shared_ptr<tac::Param>& param){
+        if(param->param){
+            std::cout << "\tparam (" << param->param->name() << ") " << printArgument(param->arg) << std::endl;
+        } else {
+            if(param->std_param.length() > 0){
+                std::cout << "\tparam (std::" << param->std_param << ") " << printArgument(param->arg) << std::endl;
+            } else {
+                std::cout << "\tparam " << printArgument(param->arg) << std::endl;
+            }
         }
     }
 

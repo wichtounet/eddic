@@ -16,6 +16,7 @@
 using namespace eddic;
 
 bool eddic::WarningUnused;
+bool eddic::WarningCast;
 
 po::variables_map eddic::options;
 
@@ -50,6 +51,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
             ("warning-all", "Enable all the warnings")
             ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
+            ("warning-cast", po::bool_switch(&WarningCast), "Enable warnings for casts")
             
             ("32", "Force the compilation for 32 bits platform")
             ("64", "Force the compilation for 64 bits platform")
@@ -64,6 +66,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         if(options.count("warning-all")){
             WarningUnused = true;
+            WarningCast = true;
         }
 
         if(options.count("64") && options.count("32")){
@@ -93,5 +96,5 @@ void eddic::printHelp(){
 }
 
 void eddic::printVersion(){
-    std::cout << "eddic version 0.9.0" << std::endl;
+    std::cout << "eddic version 0.9.1" << std::endl;
 }

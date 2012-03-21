@@ -49,14 +49,16 @@ enum class Operator : unsigned int {
     FL,
 
     MINUS,          //result = -arg1
+    FMINUS,         //result = -arg1
+
+    I2F,            //result = (float) arg1
+    F2I,            //result = (int) arg1
     
     DOT,            //result = (arg1)+arg2
     DOT_ASSIGN,     //result+arg1=arg2
     
     ARRAY,          //result=arg1[arg2]
     ARRAY_ASSIGN,   //result[arg1]=arg2
-
-    PARAM,          //push a single value
 
     RETURN          //return from a function
 };

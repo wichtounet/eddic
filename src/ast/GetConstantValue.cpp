@@ -25,6 +25,10 @@ Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
+Val ast::GetConstantValue::operator()(const ast::IntegerSuffix& integer) const {
+    return (double) integer.value;
+}
+
 Val ast::GetConstantValue::operator()(const ast::Float& float_) const {
     return float_.value;
 }
@@ -34,7 +38,7 @@ Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
-    Type type = value.Content->var->type();
+    eddic::Type type = value.Content->var->type();
     assert(type.isConst());
         
     auto val = value.Content->var->val();

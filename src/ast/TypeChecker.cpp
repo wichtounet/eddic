@@ -13,6 +13,7 @@
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "Compiler.hpp"
 #include "SemanticalException.hpp"
@@ -173,6 +174,16 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
         }
     }
+    
+    void operator()(ast::Cast& cast){
+        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+
+        if(destType == BaseType::STRING){
+            throw SemanticalException("Cannot cast to string", cast.Content->position);
+        } else if(destType == BaseType::VOID){
+            throw SemanticalException("Cannot cast to void", cast.Content->position);
+        }
+    }
 
     void operator()(ast::Expression& value){
         visit(*this, value.Content->first);
@@ -245,6 +256,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
             if(type != BaseType::STRING){
                 throw SemanticalException("The builtin length() operator takes only string as arguments", builtin.Content->position);
             }
+        }
+    }
+
+    void operator()(ast::IntegerSuffix& integer){
+        std::string suffix = integer.suffix;
+
+        if(suffix != "f"){
+            throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
         }
     }
 

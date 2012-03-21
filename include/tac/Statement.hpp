@@ -11,6 +11,7 @@
 #include <boost/variant/variant.hpp>
 
 #include "tac/Quadruple.hpp"
+#include "tac/Param.hpp"
 #include "tac/IfFalse.hpp"
 #include "tac/If.hpp"
 #include "tac/Goto.hpp"
@@ -23,6 +24,7 @@ namespace tac {
 
 typedef boost::variant<
         std::shared_ptr<tac::Quadruple>,        //Basic quadruples
+        std::shared_ptr<tac::Param>,            //Parameters
         std::shared_ptr<tac::IfFalse>,          //Jumping quadruples
         std::shared_ptr<tac::If>,               //Jumping quadruples
         std::shared_ptr<tac::Goto>,             //Non-conditional jump

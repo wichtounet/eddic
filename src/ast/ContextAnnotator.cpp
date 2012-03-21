@@ -31,6 +31,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
+        AUTO_RECURSE_MINUS_PLUS_VALUES()
+        AUTO_RECURSE_CAST_VALUES()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
@@ -180,14 +182,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, value.Content->first);
             for_each(value.Content->operations.begin(), value.Content->operations.end(), 
                     [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
-        }
-
-        void operator()(ast::Plus& value){
-            visit(*this, value.Content->value);
-        }
-
-        void operator()(ast::Minus& value){
-            visit(*this, value.Content->value);
         }
         
         void operator()(ast::VariableValue& variable){

@@ -15,6 +15,7 @@ using namespace eddic;
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Litteral, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Integer, true)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::IntegerSuffix, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Float, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::True, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::False, true)
@@ -32,6 +33,10 @@ bool ast::IsConstantVisitor::operator()(ast::Minus& value) const {
 
 bool ast::IsConstantVisitor::operator()(ast::Plus& value) const {
     return visit(*this, value.Content->value);
+}
+
+bool ast::IsConstantVisitor::operator()(ast::Cast& cast) const {
+    return visit(*this, cast.Content->value);
 }
 
 bool ast::IsConstantVisitor::operator()(ast::VariableValue& variable) const {

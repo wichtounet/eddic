@@ -1,9 +1,19 @@
 float global[5];
 
 void main(){
+    println(5.499);
+    println(100f);
+    println(-100.0);
+    println(+100.0);
+
     float a = 1.5;
+    println(a);
     float b = 3.0;
-    float d = 5.0;
+    println(b);
+    float d = 5f;
+    println(d);
+
+    //Test operations
     float c = a + b;
 	println(c);
     c = b + 2.75;
@@ -19,6 +29,10 @@ void main(){
     c = c * 3.33;
     println(c);
     c = d / 0.345;
+    println(c);
+    c = 1f + 2f;
+    println(c);
+    c = c + 5f;
     println(c);
 
     println(test(2.0888, 1.00222));
@@ -43,6 +57,8 @@ void main(){
     
     array[1] = 2.5;
     array[2] = 5.5;
+
+    test(array[1], array[2]);
     
     println(array[1]); 
     println(array[2]); 

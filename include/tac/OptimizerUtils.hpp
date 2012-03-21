@@ -19,15 +19,6 @@ enum class Pass : unsigned int {
 };
 
 template<typename T>
-inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg){
-    visitor.optimized = true;
-
-    quadruple->op = tac::Operator::ASSIGN;
-    quadruple->arg1 = arg;
-    quadruple->arg2.reset();
-}
-
-template<typename T>
 inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg, tac::Operator op){
     visitor.optimized = true;
 

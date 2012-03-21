@@ -28,13 +28,13 @@ void tac::CopyPropagation::optimize_optional(boost::optional<tac::Argument>& arg
 
 void tac::CopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
     //Do not replace a variable by a constant when used in offset
-    if(quadruple->op == tac::Operator::ASSIGN || (quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT)){
+    if(quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT){
         optimize_optional(quadruple->arg1);
     }
 
     optimize_optional(quadruple->arg2);
 
-    if(quadruple->op == tac::Operator::ASSIGN){
+    if(quadruple->op == tac::Operator::ASSIGN || quadruple->op == tac::Operator::FASSIGN){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
             constants[quadruple->result] = *ptr;
         } else {
@@ -45,7 +45,7 @@ void tac::CopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple
         auto op = quadruple->op;
 
         //Check if the operator erase the contents of the result variable
-        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::PARAM && op != tac::Operator::RETURN){
+        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::RETURN){
             //The result is not constant at this point
             constants.erase(quadruple->result);
         }
@@ -55,6 +55,10 @@ void tac::CopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple
 void tac::CopyPropagation::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
     optimize(&ifFalse->arg1);
     optimize_optional(ifFalse->arg2);
+}
+
+void tac::CopyPropagation::operator()(std::shared_ptr<tac::Param>& param){
+    optimize(&param->arg);
 }
 
 void tac::CopyPropagation::operator()(std::shared_ptr<tac::If>& if_){
@@ -87,7 +91,7 @@ void tac::OffsetCopyPropagation::operator()(std::shared_ptr<tac::Quadruple>& qua
             offset.offset = *ptr;
 
             if(constants.find(offset) != constants.end()){
-                replaceRight(*this, quadruple, constants[offset]);
+                replaceRight(*this, quadruple, constants[offset], tac::Operator::ASSIGN);
             }
         }
     }

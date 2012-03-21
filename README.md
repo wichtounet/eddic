@@ -1,4 +1,4 @@
-# EDDI Compiler 0.9.0 #
+# EDDI Compiler 0.9.1 #
 
 The compiler of the EDDI programming language. 
 
@@ -18,7 +18,7 @@ You juste have to use cmake to build the compiler :
 You can compile an EDDI source file using the compiler easily. For example, with one of the provided sample : 
 
     $ cd eddic
-    $ ./bin/eddic samples/simple.eddi
+    $ ./bin/eddic samples/assembly.eddi
 
 That will create a "a.out" file in the current folder. You can then run this file as any other executable on your computer : 
 

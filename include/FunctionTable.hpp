@@ -14,8 +14,11 @@
 #include <unordered_map>
 
 #include "Types.hpp"
+#include "Variable.hpp"
 
 namespace eddic {
+
+class FunctionContext;
 
 /*!
  * \class ParameterType
@@ -37,10 +40,16 @@ struct Function {
     std::string name;
     std::string mangledName;
     std::vector<ParameterType> parameters;
+    std::shared_ptr<FunctionContext> context;
     int references;
 
     Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
+
+    Type getParameterType(const std::string& name);
+    unsigned int getParameterPositionByType(const std::string& name);
 };
+
+typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
 
 /*!
  * \class FunctionTable
@@ -51,7 +60,10 @@ struct Function {
  */
 class FunctionTable {
     private:
-        std::unordered_map<std::string, std::shared_ptr<Function>> functions;
+        FunctionMap functions;
+
+        void addPrintFunction(const std::string& function, BaseType parameterType);
+        void defineStandardFunctions();
 
     public:
         FunctionTable();
@@ -60,6 +72,9 @@ class FunctionTable {
         void addFunction(std::shared_ptr<Function> function);
         std::shared_ptr<Function> getFunction(const std::string& function);
         bool exists(const std::string& function);
+
+        FunctionMap::const_iterator begin();
+        FunctionMap::const_iterator end();
 
         void addReference(const std::string& function);
         int referenceCount(const std::string& function);

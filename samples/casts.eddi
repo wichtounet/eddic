@@ -1,0 +1,15 @@
+void main(){
+    int a = 5;
+    float b = (float) a;
+    float c = 333.879877;
+    float d = (float) c;
+
+    println(b);
+    println((int) b);
+    println((int) 4.33);
+    println((int) c);
+    println((float) a);
+
+    float e = (float) a + 3.33;
+    println(e);
+}

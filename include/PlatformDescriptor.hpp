@@ -5,25 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_COMPILER_H
-#define TAC_COMPILER_H
-
-#include "ast/source_def.hpp"
+#ifndef PLATFORM_DESCRIPTOR_H
+#define PLATFORM_DESCRIPTOR_H
 
 namespace eddic {
 
-class StringPool;
-class FunctionTable;
-
-namespace tac {
-
-class Program;
-
-struct Compiler {
-    void compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, FunctionTable& table) const ;
+struct PlatformDescriptor {
+    virtual unsigned int numberOfIntParamRegisters() = 0;  
+    virtual unsigned int numberOfFloatParamRegisters() = 0;  
 };
-
-} //end of tac
 
 } //end of eddic
 

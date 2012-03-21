@@ -38,7 +38,7 @@ template<typename L>
 class SpiritLexer : public lex::lexer<L> {
     public:
         SpiritLexer() {
-            //Define keywords
+            /* keywords  */
             for_ = "for";
             while_ = "while";
             do_ = "do";
@@ -54,11 +54,13 @@ class SpiritLexer : public lex::lexer<L> {
             const_ = "const";
             include = "include";
 
-            identifier = "[a-zA-Z_]?[a-zA-Z0-9_]+";
+            /* Raw values  */
+            identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
             float_ = "[0-9]+\".\"[0-9]+";
             integer = "[0-9]+";
             litteral = "\\\"[^\\\"]*\\\"";
 
+            /* Constructs  */
             left_parenth = '('; 
             right_parenth = ')'; 
             left_brace = '{'; 

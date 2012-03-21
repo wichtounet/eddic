@@ -15,6 +15,7 @@ namespace eddic {
 namespace ast {
 
 struct Integer;
+struct IntegerSuffix;
 struct Float;
 struct Litteral;
 struct True;
@@ -22,6 +23,9 @@ struct False;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
+
+struct ASTCast;
+typedef Deferred<ASTCast> Cast;
 
 struct ASTBuiltinOperator;
 typedef Deferred<ASTBuiltinOperator> BuiltinOperator;

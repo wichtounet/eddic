@@ -33,6 +33,10 @@ bool Position::isTemporary() const {
     return m_type == PositionType::TEMPORARY;
 }
 
+bool Position::isParamRegister() const {
+    return m_type == PositionType::PARAM_REGISTER;
+}
+
 int Position::offset() const {
     return m_offset;
 }

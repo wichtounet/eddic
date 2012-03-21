@@ -10,12 +10,25 @@
 
 #include <string>
 
+#include "PlatformDescriptor.hpp"
+
 namespace eddic {
 
+/*!
+ * \enum Platform
+ * \brief A type of platform. 
+ */
 enum class Platform : unsigned int {
     INTEL_X86,
     INTEL_X86_64
 };
+
+/*!
+ * \brief Return the platform descriptor of the specified platform. 
+ * \param platform The platform identifier
+ * \return The platform descriptor of the given platform. 
+ */
+PlatformDescriptor* getPlatformDescriptor(Platform platform);
 
 } //end of eddic
 

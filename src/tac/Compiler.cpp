@@ -9,6 +9,7 @@
 
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+#include "FunctionTable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "mangling.hpp"
@@ -21,8 +22,11 @@
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
+
+FunctionTable* functionTable;
 
 namespace {
 
@@ -174,6 +178,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     result_type operator()(ast::Integer& integer) const {
         return {integer.value};
+    }
+    
+    result_type operator()(ast::IntegerSuffix& integer) const {
+        return {(double) integer.value};
     }
     
     result_type operator()(ast::Float& float_) const {
@@ -362,11 +370,46 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     result_type operator()(ast::Minus& value) const {
         tac::Argument arg = moveToArgument(value.Content->value, function);
+        
+        Type type = visit(ast::GetTypeVisitor(), value.Content->value);
 
-        auto t1 = function->context->newTemporary();
-        function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::MINUS));
+        if(type == BaseType::FLOAT){
+            auto t1 = function->context->newFloatTemporary();
+            function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::FMINUS));
 
-        return {t1};
+            return {t1};
+        } else {
+            auto t1 = function->context->newTemporary();
+            function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::MINUS));
+
+            return {t1};
+        }
+    }
+    
+    result_type operator()(ast::Cast& cast) const {
+        tac::Argument arg = moveToArgument(cast.Content->value, function);
+        
+        Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
+        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+
+        if(srcType != destType){
+            if(destType == BaseType::FLOAT){
+                auto t1 = function->context->newFloatTemporary();
+
+                function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::I2F));
+
+                return {t1};
+            } else if(destType == BaseType::INT){
+                auto t1 = function->context->newTemporary();
+                
+                function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::F2I));
+
+                return {t1};
+            }
+        }
+
+        //If srcType == destType, there is nothing to do
+        return {arg};
     }
 
     //No operation to do
@@ -635,18 +678,18 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Functio
         arguments.insert(arguments.end(), second.begin(), second.end());
         
         for(auto& arg : arguments){
-            function->add(std::make_shared<tac::Quadruple>(tac::Operator::PARAM, arg));   
+            function->add(std::make_shared<tac::Param>(arg));   
         }
 
         arguments.clear();
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Call>("concat", 2 * size(BaseType::STRING), v1, v2)); 
+            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
             
-            function->add(std::make_shared<tac::Call>("concat", 2 * size(BaseType::STRING), t1, t2)); 
+            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -662,7 +705,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         std::shared_ptr<tac::Function> function;
     
     public:
-        CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram) {}
+        CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram){}
         
         void operator()(ast::SourceFile& p){
             program.context = p.Content->context;
@@ -672,6 +715,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::FunctionDeclaration& f){
             function = std::make_shared<tac::Function>(f.Content->context, f.Content->mangledName);
+            function->definition = functionTable->getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
@@ -940,28 +984,41 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     for(auto& value : functionCall.Content->values){
         arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
     }
-
-    for(auto& first : arguments){
-        for(auto& arg : first){
-            function->add(std::make_shared<tac::Quadruple>(tac::Operator::PARAM, arg));   
-        }
-    }
     
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
+    auto definition = functionTable->getFunction(functionName);
 
-    int total = 0;
-    for(auto& value : functionCall.Content->values){
-        Type type = visit(ast::GetTypeVisitor(), value);   
+    //All the functions should be in the function table
+    assert(definition);
 
-        if(type.isArray()){
-            //Passing an array is just passing an adress
-            total += size(BaseType::INT);
-        } else {
-            total += size(type);
+    auto context = definition->context;
+
+    //If it's a standard function, there are no context
+    if(!context){
+        auto parameters = definition->parameters;
+        int i = 0;
+
+        for(auto& first : arguments){
+            auto param = parameters[i++].name; 
+
+            for(auto& arg : first){
+                function->add(std::make_shared<tac::Param>(arg, param, definition));   
+            }
+        }
+    } else {
+        auto parameters = definition->parameters;
+        int i = 0;
+
+        for(auto& first : arguments){
+            std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
+
+            for(auto& arg : first){
+                function->add(std::make_shared<tac::Param>(arg, param, definition));   
+            }
         }
     }
 
-    function->add(std::make_shared<tac::Call>(functionName, total, return_, return2_));
+    function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
@@ -1038,7 +1095,9 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
+void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, FunctionTable& table) const {
+    functionTable = &table;
+
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);
 }
