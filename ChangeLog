@@ -1,3 +1,11 @@
+eddic 0.9.1 - 2012.03.21
+
+* Pass params in registers
+* Add suffix to integers to convert to float (5f for example)
+* Fix bugs with the minus operator
+* Implement optimizations for float
+* Add casts to the language (cast from float to int and from int to float)
+
 eddic 0.9.0 - 2012.03.07
 
 * Add floating point support to the language
