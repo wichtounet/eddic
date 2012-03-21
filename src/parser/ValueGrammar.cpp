@@ -148,7 +148,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     integer_suffix %=
             qi::eps
         >>  lexer.integer
-        >>  lexer.float_suffix; //For now, there is only float suffix
+        >>  lexer.identifier;
 
     float_ %= 
             qi::eps 

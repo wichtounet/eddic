@@ -259,6 +259,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::IntegerSuffix& integer){
+        std::string suffix = integer.suffix;
+
+        if(suffix != "f"){
+            throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
+        }
+    }
+
     void operator()(ast::VariableValue&){
         //Nothing to check here
     }
