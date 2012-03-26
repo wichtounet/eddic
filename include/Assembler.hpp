@@ -18,9 +18,10 @@ namespace eddic {
  * \brief Assemble and link the output.asm file and procude the output executable. 
  * \param platform The target platform. 
  * \param output The output file path.  
- * \param debug The debug mode flag
+ * \param debug The debug mode flag. 
+ * \param verbose The verbose mode flag. 
  */
-void assemble(Platform platform, const std::string& output, bool debug);
+void assemble(Platform platform, const std::string& output, bool debug, bool verbose);
 
 } //end of eddic
 
