@@ -86,7 +86,7 @@ int Compiler::compile(const std::string& file) {
     
     int code = compileOnly(file, platform);
 
-    std::cout << "Compilation took " << timer.elapsed() << "s" << std::endl;
+    std::cout << "Compilation took " << timer.elapsed() << "ms" << std::endl;
 
     return code;
 }
