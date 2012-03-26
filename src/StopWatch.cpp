@@ -10,11 +10,12 @@
 using namespace eddic;
 
 StopWatch::StopWatch() {
-    startTime = boost::chrono::system_clock::now();
+    startTime = Clock::now();
 }
 
 double StopWatch::elapsed() {
-    boost::chrono::duration<double> sec = boost::chrono::system_clock::now() - startTime;
+    Clock::time_point endTime = Clock::now();
+    milliseconds ms = std::chrono::duration_cast<milliseconds>(endTime - startTime);
     
-    return sec.count();
+    return ms.count();
 }
