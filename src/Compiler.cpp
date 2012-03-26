@@ -195,7 +195,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                     //If it's necessary, assemble and link the assembly
                     if(!options.count("assembly")){
-                        assemble(platform, output, options.count("assembly"));
+                        assemble(platform, output, options.count("assembly"), options.count("verbose"));
 
                         //Remove temporary files
                         if(!options.count("keep")){
