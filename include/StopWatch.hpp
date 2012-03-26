@@ -8,9 +8,13 @@
 #ifndef STOP_WATCH_H
 #define STOP_WATCH_H
 
-#include <boost/chrono.hpp>
+#include <chrono>
 
 namespace eddic {
+
+//Chrono typedefs
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::milliseconds milliseconds;
 
 /*!
  * \class StopWatch
@@ -24,7 +28,7 @@ class StopWatch {
         double elapsed();
 	
     private:
-        boost::chrono::system_clock::time_point startTime;
+        Clock::time_point startTime;
 };
 
 } //end of eddic

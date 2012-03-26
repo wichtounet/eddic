@@ -33,7 +33,7 @@ class DebugStopWatch {
         DebugStopWatch(const std::string& n) : name(n) {}
         
         ~DebugStopWatch(){
-            std::cout << name << " took " << timer.elapsed() << "s" << std::endl;
+            std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
         }
 };
 

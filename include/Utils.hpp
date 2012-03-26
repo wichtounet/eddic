@@ -10,6 +10,7 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <vector>
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
