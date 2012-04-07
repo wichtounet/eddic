@@ -10,44 +10,12 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 #include <unordered_map>
 
-#include "Types.hpp"
 #include "Variable.hpp"
+#include "Function.hpp"
 
 namespace eddic {
-
-class FunctionContext;
-
-/*!
- * \class ParameterType
- * \brief A parameter for a function.  
- */
-struct ParameterType {
-    std::string name;
-    Type paramType;
-
-    ParameterType(const std::string& n, Type t) : name(n), paramType(t) {}
-};
-
-/*!
- * \class Function
- * \brief A function entry in the function table. 
- */
-struct Function {
-    Type returnType;
-    std::string name;
-    std::string mangledName;
-    std::vector<ParameterType> parameters;
-    std::shared_ptr<FunctionContext> context;
-    int references;
-
-    Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
-
-    Type getParameterType(const std::string& name);
-    unsigned int getParameterPositionByType(const std::string& name);
-};
 
 typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
 
