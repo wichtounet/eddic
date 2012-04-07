@@ -24,9 +24,9 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  lexer.struct_
         >>  lexer.identifier
-        >>  lexer.left_bracket
+        >>  lexer.left_brace
         >>  *(member_declaration)
-        >>  lexer.right_bracket;
+        >>  lexer.right_brace;
 
     array_type %=
             qi::eps
