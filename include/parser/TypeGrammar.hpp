@@ -12,6 +12,7 @@
 #include "lexer/SpiritLexer.hpp"
 
 #include "ast/Type.hpp"
+#include "ast/Struct.hpp"
 
 namespace qi = boost::spirit::qi;
 
@@ -26,6 +27,7 @@ namespace parser {
 struct TypeGrammar : qi::grammar<lexer::Iterator, ast::Type()> {
     TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
 
+    qi::rule<lexer::Iterator, ast::Struct()> struct_;
     qi::rule<lexer::Iterator, ast::Type()> type;
     qi::rule<lexer::Iterator, ast::ArrayType()> arrayType;
     qi::rule<lexer::Iterator, ast::SimpleType()> simpleType;

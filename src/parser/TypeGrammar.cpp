@@ -13,6 +13,12 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         TypeGrammar::base_type(type, "Type Grammar"),
         position_begin(position_begin){
 
+    struct_ %=
+            lexer.struct_
+        >>  lexer.left_bracket
+        >>  lexer.right_bracket;
+
+
     arrayType %=
             qi::eps
         >>  lexer.identifier
