@@ -14,6 +14,7 @@
 
 #include "Variable.hpp"
 #include "Function.hpp"
+#include "Struct.hpp"
 
 namespace eddic {
 
