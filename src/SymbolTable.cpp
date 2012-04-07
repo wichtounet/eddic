@@ -34,6 +34,18 @@ bool SymbolTable::exists(const std::string& function){
     return functions.find(function) != functions.end();
 }
 
+void SymbolTable::add_struct(std::shared_ptr<Struct> struct_){
+    structs[struct_->name] = struct_;
+}
+
+std::shared_ptr<Struct> SymbolTable::get_struct(const std::string& struct_){
+    return structs[struct_];
+}
+
+bool SymbolTable::struct_exists(const std::string& struct_){
+    return structs.find(struct_) != structs.end();
+}
+
 void SymbolTable::addReference(const std::string& function){
     ++(functions[function]->references);
 }

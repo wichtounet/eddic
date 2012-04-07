@@ -36,7 +36,7 @@ struct Struct {
     std::vector<Member> members;
     int references = 0;
     
-    Struct(Type ret, const std::string& n);
+    Struct(const std::string& n);
 };
 
 } //end of eddic

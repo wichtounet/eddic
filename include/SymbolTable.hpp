@@ -19,6 +19,7 @@
 namespace eddic {
 
 typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
+typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
 
 /*!
  * \class SymbolTable
@@ -30,6 +31,7 @@ typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
 class SymbolTable {
     private:
         FunctionMap functions;
+        StructMap structs;
 
         void addPrintFunction(const std::string& function, BaseType parameterType);
         void defineStandardFunctions();
@@ -42,6 +44,11 @@ class SymbolTable {
         std::shared_ptr<Function> getFunction(const std::string& function);
         bool exists(const std::string& function);
 
+        void add_struct(std::shared_ptr<Struct> struct_);
+        std::shared_ptr<Struct> get_struct(const std::string& struct_);
+        bool struct_exists(const std::string& struct_);
+
+        //For now the symbol table is only iterable on functions
         FunctionMap::const_iterator begin();
         FunctionMap::const_iterator end();
 
