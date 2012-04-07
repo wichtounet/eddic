@@ -60,7 +60,7 @@ void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
-    visit(*this, *declaration.Content->value);\
+    visit_optional(*this, declaration.Content->value);\
 }
 
 #define AUTO_RECURSE_RETURN_VALUES()\
