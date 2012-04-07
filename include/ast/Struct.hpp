@@ -10,13 +10,17 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Deferred.hpp"
+
 namespace eddic {
 
 namespace ast {
 
-struct Struct {
+struct ASTStruct {
 
 };
+
+typedef Deferred<ASTStruct> Struct;
 
 } //end of ast
 
