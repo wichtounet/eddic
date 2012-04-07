@@ -160,20 +160,27 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         visit_optional(*this, declaration.Content->value);
 
-        Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
+        //If it's a standard type
+        if(isType(declaration.Content->variableType)){
+            Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
 
-        if(type.isConst()){
-            if(!declaration.Content->value){
-                throw SemanticalException("A constant variable must have a value", declaration.Content->position);
-            }
+            if(type.isConst()){
+                if(!declaration.Content->value){
+                    throw SemanticalException("A constant variable must have a value", declaration.Content->position);
+                }
 
-            if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                throw SemanticalException("The value must be constant", declaration.Content->position);
+                if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
+                    throw SemanticalException("The value must be constant", declaration.Content->position);
+                }
+
+                declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+            } else {
+                declaration.Content->context->addVariable(declaration.Content->variableName, type);
             }
-            
-            declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-        } else {
-            declaration.Content->context->addVariable(declaration.Content->variableName, type);
+        }
+        //If it's a custom type
+        else {
+            //TODO
         }
     }
     
