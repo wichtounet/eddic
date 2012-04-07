@@ -76,6 +76,8 @@ bool eddic::isType(const std::string& type){
 }
 
 BaseType stringToBaseType(const std::string& type){
+    BOOST_ASSERT_MSG(isType(type), "The given type is not standard");
+
     if (type == "int") {
         return BaseType::INT;
     } else if (type == "bool") {
@@ -84,11 +86,9 @@ BaseType stringToBaseType(const std::string& type){
         return BaseType::FLOAT;
     } else if (type == "string"){
         return BaseType::STRING;
-    } else if(type == "void") {
-        return BaseType::VOID;
     }
-
-    throw SemanticalException("Invalid type");
+    
+    return BaseType::VOID;
 }
 
 Type eddic::newType(const std::string& type){
