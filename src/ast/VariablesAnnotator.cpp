@@ -158,11 +158,15 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
         
-        visit(*this, *declaration.Content->value);
+        visit_optional(*this, declaration.Content->value);
 
         Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
 
         if(type.isConst()){
+            if(!declaration.Content->value){
+                throw SemanticalException("A constant variable must have a value", declaration.Content->position);
+            }
+
             if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
                 throw SemanticalException("The value must be constant", declaration.Content->position);
             }
