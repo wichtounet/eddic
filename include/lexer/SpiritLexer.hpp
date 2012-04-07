@@ -53,6 +53,7 @@ class SpiritLexer : public lex::lexer<L> {
             return_ = "return";
             const_ = "const";
             include = "include";
+            struct_ = "struct";
 
             /* Raw values  */
             identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
@@ -119,7 +120,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += increment | decrement;
             this->self += and_ | or_;
-            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include;
+            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += float_ | integer | identifier | litteral;
 
@@ -152,6 +153,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
         ConsumedToken const_, include;
+        ConsumedToken struct_;
 
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
