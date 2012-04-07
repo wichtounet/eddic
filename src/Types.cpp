@@ -5,49 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <string>
-
 #include "Types.hpp"
-#include "SemanticalException.hpp"
 #include "Compiler.hpp"
 
 using namespace eddic;
-
-Type::Type(BaseType base, bool a, unsigned int size, bool constant) : type(base), array(a), const_(constant), m_size(size) {}
-
-BaseType Type::base() const {
-    return type;
-}
-
-bool Type::isArray() const {
-    return array;
-}
-
-bool Type::isConst() const {
-    return const_;
-}
-
-unsigned int Type::size() const {
-    return m_size;
-}
-
-bool eddic::operator==(const Type& lhs, const Type& rhs){
-    return lhs.type == rhs.type && 
-           lhs.array == rhs.array &&
-           lhs.m_size == rhs.m_size; 
-}
-
-bool eddic::operator!=(const Type& lhs, const Type& rhs){
-    return !(lhs == rhs); 
-}
-
-bool eddic::operator==(const Type& lhs, const BaseType& rhs){
-    return lhs.type == rhs && lhs.array == false; 
-}
-
-bool eddic::operator!=(const Type& lhs, const BaseType& rhs){
-    return !(lhs == rhs); 
-}
 
 int eddic::size(BaseType type){
     static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
