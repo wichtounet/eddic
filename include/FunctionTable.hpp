@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef FUNCTION_TABLE_H
-#define FUNCTION_TABLE_H
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
 
 #include <memory>
 #include <string>
@@ -52,13 +52,13 @@ struct Function {
 typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
 
 /*!
- * \class FunctionTable
- * \brief The global function table. 
+ * \class SymbolTable
+ * \brief The global symbol table. 
  * 
- * This class is responsible for managing all the functions of the current program. It's also responsible
- * of managing the reference count for the functions.  
+ * This class is responsible for managing all the functions and the structs declarations of the current program. 
+ * It's also responsible of managing the reference count for the functions.  
  */
-class FunctionTable {
+class SymbolTable {
     private:
         FunctionMap functions;
 
@@ -66,8 +66,8 @@ class FunctionTable {
         void defineStandardFunctions();
 
     public:
-        FunctionTable();
-        FunctionTable(const FunctionTable& rhs) = delete;
+        SymbolTable();
+        SymbolTable(const SymbolTable& rhs) = delete;
 
         void addFunction(std::shared_ptr<Function> function);
         std::shared_ptr<Function> getFunction(const std::string& function);

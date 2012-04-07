@@ -5,51 +5,51 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
-FunctionTable::FunctionTable(){
+SymbolTable::SymbolTable(){
     //Add the standard functions to the function table
     defineStandardFunctions();
 }
 
-FunctionMap::const_iterator FunctionTable::begin(){
+FunctionMap::const_iterator SymbolTable::begin(){
     return functions.cbegin();
 }
 
-FunctionMap::const_iterator FunctionTable::end(){
+FunctionMap::const_iterator SymbolTable::end(){
     return functions.cend();
 }
 
-void FunctionTable::addFunction(std::shared_ptr<Function> function){
+void SymbolTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;
 }
 
-std::shared_ptr<Function> FunctionTable::getFunction(const std::string& function){
+std::shared_ptr<Function> SymbolTable::getFunction(const std::string& function){
     return functions[function];
 }
 
-bool FunctionTable::exists(const std::string& function){
+bool SymbolTable::exists(const std::string& function){
     return functions.find(function) != functions.end();
 }
 
-void FunctionTable::addReference(const std::string& function){
+void SymbolTable::addReference(const std::string& function){
     ++(functions[function]->references);
 }
 
-int FunctionTable::referenceCount(const std::string& function){
+int SymbolTable::referenceCount(const std::string& function){
     return functions[function]->references;
 }
 
-void FunctionTable::addPrintFunction(const std::string& function, BaseType parameterType){
+void SymbolTable::addPrintFunction(const std::string& function, BaseType parameterType){
     auto printFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "print");
     printFunction->mangledName = function;
     printFunction->parameters.push_back({"a", newSimpleType(parameterType)});
     addFunction(printFunction);
 }
 
-void FunctionTable::defineStandardFunctions(){
+void SymbolTable::defineStandardFunctions(){
     //print string
     addPrintFunction("_F5printS", BaseType::STRING);
     addPrintFunction("_F7printlnS", BaseType::STRING);
