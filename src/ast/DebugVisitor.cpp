@@ -70,7 +70,13 @@ void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const 
 
 void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
     std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
-    //TODO Print sub
+    level++;
+    visit_each_non_variant(*this, struct_.Content->members);    
+    level--;
+}
+
+void ast::DebugVisitor::operator()(ast::MemberDeclaration& declaration) const {
+    std::cout << indent() << declaration.Content->type  << " " << declaration.Content->name << std::endl;
 }
 
 void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {

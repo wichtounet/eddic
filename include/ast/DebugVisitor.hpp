@@ -36,6 +36,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(GlobalVariableDeclaration&) const ;
     void operator()(GlobalArrayDeclaration&) const ;
     void operator()(Struct&) const ;
+    void operator()(MemberDeclaration&) const ;
     void operator()(For& for_) const ;
     void operator()(Foreach& for_) const ;
     void operator()(ForeachIn& for_) const ;
