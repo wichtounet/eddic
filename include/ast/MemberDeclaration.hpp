@@ -28,8 +28,8 @@ struct ASTMemberDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
-    std::string variableType;
-    std::string variableName;
+    std::string type;
+    std::string name;
 
     mutable long references;
     ASTMemberDeclaration() : references(0) {}
@@ -49,8 +49,8 @@ typedef Deferred<ASTMemberDeclaration> MemberDeclaration;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::MemberDeclaration, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->variableType)
-    (std::string, Content->variableName)
+    (std::string, Content->type)
+    (std::string, Content->name)
 )
 
 #endif
