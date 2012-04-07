@@ -232,7 +232,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     program %=
             qi::eps 
         >>  qi::position(position_begin)
-        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import);
+        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import | type.struct_);
 
     //Name the rules
     globalDeclaration.name("EDDI global variable");
