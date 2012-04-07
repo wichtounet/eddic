@@ -68,6 +68,11 @@ void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const 
     print_each_sub(*this, declaration.Content->instructions);
 }
 
+void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
+    std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
+    //TODO Print sub
+}
+
 void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {
     std::cout << indent() << "Global Variable" << std::endl; 
 }

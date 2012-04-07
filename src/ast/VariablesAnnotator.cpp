@@ -68,6 +68,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, newArrayType(declaration.Content->arrayType, declaration.Content->arraySize));
     }
+
+    void operator()(ast::Struct&){
+        //Nothing to annotate
+    }
     
     void operator()(ast::Foreach& foreach){
         if(foreach.Content->context->exists(foreach.Content->variableName)){

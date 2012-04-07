@@ -734,6 +734,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             //Nothing to compile there, everything is done by the function context
         }
 
+        void operator()(ast::Struct&){
+            //Nothing to compile there
+        }
+
         void operator()(ast::If& if_){
             if (if_.Content->elseIfs.empty()) {
                 std::string endLabel = newLabel();

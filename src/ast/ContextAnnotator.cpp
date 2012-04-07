@@ -48,6 +48,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
             declaration.Content->context = currentContext;
         }
 
+        void operator()(ast::Struct&){
+            //Nothing to annotate here
+        }
+
         void operator()(ast::FunctionDeclaration& function){
             currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
 

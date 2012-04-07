@@ -48,6 +48,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
+    void operator()(ast::Struct&){
+        //Nothing to check here
+    }
+
     void operator()(ast::Import&){
         //Nothing to check here
     }
