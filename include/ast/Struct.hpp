@@ -23,7 +23,7 @@ namespace ast {
 struct ASTStruct {
     Position position;
     std::string name;
-    std::vector<MemberDeclaration> declarations;
+    std::vector<MemberDeclaration> members;
 
     mutable long references;
     ASTStruct() : references(0) {}
@@ -40,7 +40,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Struct,
     (eddic::ast::Position, Content->position)
     (std::string, Content->name)
-    (std::vector<eddic::ast::MemberDeclaration>, Content->declarations)
+    (std::vector<eddic::ast::MemberDeclaration>, Content->members)
 )
 
 #endif
