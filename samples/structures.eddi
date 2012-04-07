@@ -1,0 +1,8 @@
+struct Complex {
+    int imag;
+    int real;
+}
+
+void main(){
+    println("Structures test");
+}
