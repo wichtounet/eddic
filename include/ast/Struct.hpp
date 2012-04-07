@@ -8,16 +8,19 @@
 #ifndef AST_STRUCT_H
 #define AST_STRUCT_H
 
+#include <vector>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
+#include "ast/MemberDeclaration.hpp"
 
 namespace eddic {
 
 namespace ast {
 
 struct ASTStruct {
-
+    std::vector<MemberDeclaration> declarations;
 };
 
 typedef Deferred<ASTStruct> Struct;
@@ -28,7 +31,8 @@ typedef Deferred<ASTStruct> Struct;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Struct
+    eddic::ast::Struct,
+    (std::vector<eddic::ast::MemberDeclaration>, Content->declarations)
 )
 
 #endif
