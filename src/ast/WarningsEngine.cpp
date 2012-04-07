@@ -77,7 +77,7 @@ struct Collector : public boost::static_visitor<> {
 
 struct Inspector : public boost::static_visitor<> {
     public:
-        Inspector(FunctionTable& table, Collector& collector) : functionTable(table), collector(collector) {}
+        Inspector(SymbolTable& table, Collector& collector) : functionTable(table), collector(collector) {}
     
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
@@ -152,13 +152,13 @@ struct Inspector : public boost::static_visitor<> {
         }
     
     private:
-        FunctionTable& functionTable;
+        SymbolTable& functionTable;
         Collector& collector;
 };
 
 } //end of anonymous namespace
 
-void ast::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
+void ast::checkForWarnings(ast::SourceFile& program, SymbolTable& table){
     Collector collector;
     visit_non_variant(collector, program);
 

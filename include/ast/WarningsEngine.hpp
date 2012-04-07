@@ -12,11 +12,11 @@
 
 namespace eddic {
 
-class FunctionTable;
+class SymbolTable;
 
 namespace ast {
 
-void checkForWarnings(SourceFile& program, FunctionTable& functionTable);
+void checkForWarnings(SourceFile& program, SymbolTable& functionTable);
 
 } //end of ast
 

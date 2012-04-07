@@ -10,7 +10,7 @@
 #include "ast/TypeTransformer.hpp"
 #include "ast/ASTVisitor.hpp"
 
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"
@@ -21,10 +21,10 @@ using namespace eddic;
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
     private:
-        FunctionTable& functionTable;
+        SymbolTable& functionTable;
 
     public:
-        FunctionInserterVisitor(FunctionTable& table) : functionTable(table) {}
+        FunctionInserterVisitor(SymbolTable& table) : functionTable(table) {}
 
         AUTO_RECURSE_PROGRAM()
          
@@ -58,11 +58,11 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     private:
-        FunctionTable& functionTable;
+        SymbolTable& functionTable;
         std::shared_ptr<Function> currentFunction;
 
     public:
-        FunctionCheckerVisitor(FunctionTable& table) : functionTable(table) {}
+        FunctionCheckerVisitor(SymbolTable& table) : functionTable(table) {}
 
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -115,7 +115,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
+void ast::defineFunctions(ast::SourceFile& program, SymbolTable& functionTable){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor(functionTable);
     inserterVisitor(program);

@@ -14,7 +14,7 @@
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
@@ -111,7 +111,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
         //If the parsing was sucessfully
         if(parsing){
             //Symbol tables
-            FunctionTable functionTable;
+            SymbolTable functionTable;
             StringPool pool;
 
             //Read dependencies
@@ -222,7 +222,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     return code;
 }
 
-void eddic::checkForMain(FunctionTable& table){
+void eddic::checkForMain(SymbolTable& table){
     if(!table.exists("main")){
         throw SemanticalException("Your program must contain a main function"); 
     }

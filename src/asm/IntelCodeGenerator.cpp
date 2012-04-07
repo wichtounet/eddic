@@ -15,7 +15,7 @@ using namespace eddic;
 
 as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w) : CodeGenerator(w){}
 
-void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, FunctionTable& table){
+void as::IntelCodeGenerator::generate(tac::Program& program, StringPool& pool, SymbolTable& table){
     resetNumbering();
 
     writeRuntimeSupport(table); 

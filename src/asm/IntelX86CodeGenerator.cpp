@@ -9,7 +9,7 @@
 
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
 
@@ -372,7 +372,7 @@ void IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     leaveFunction(writer);
 }
 
-void IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
+void IntelX86CodeGenerator::writeRuntimeSupport(SymbolTable& table){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;

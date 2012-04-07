@@ -16,7 +16,7 @@
 #include "Types.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
@@ -131,10 +131,10 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 
 struct CanBeRemoved : public boost::static_visitor<bool> {
     private:
-        FunctionTable& functionTable;
+        SymbolTable& functionTable;
 
     public:
-        CanBeRemoved(FunctionTable& table) : functionTable(table) {}
+        CanBeRemoved(SymbolTable& table) : functionTable(table) {}
 
         bool operator()(ast::FirstLevelBlock block){
             return visit(*this, block);
@@ -184,12 +184,12 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
 
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
-        FunctionTable& functionTable;
+        SymbolTable& functionTable;
         StringPool& pool;
         ValueOptimizer optimizer;
 
     public:
-        OptimizationVisitor(FunctionTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
+        OptimizationVisitor(SymbolTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
 
         template<typename T>
         void removeUnused(std::vector<T>& vector){
@@ -287,7 +287,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
+void ast::optimizeAST(ast::SourceFile& program, SymbolTable& functionTable, StringPool& pool){
     OptimizationVisitor visitor(functionTable, pool);
     visitor(program);
 }

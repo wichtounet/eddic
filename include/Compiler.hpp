@@ -18,8 +18,8 @@ namespace eddic {
 
 extern Platform platform;
 
-class FunctionTable;
-void checkForMain(FunctionTable& table);
+class SymbolTable;
+void checkForMain(SymbolTable& table);
 
 /*!
  * \class Compiler

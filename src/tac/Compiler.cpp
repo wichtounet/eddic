@@ -9,7 +9,7 @@
 
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "mangling.hpp"
@@ -26,7 +26,7 @@
 
 using namespace eddic;
 
-FunctionTable* functionTable;
+SymbolTable* functionTable;
 
 namespace {
 
@@ -1099,7 +1099,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, FunctionTable& table) const {
+void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, SymbolTable& table) const {
     functionTable = &table;
 
     CompilerVisitor visitor(pool, tacProgram);

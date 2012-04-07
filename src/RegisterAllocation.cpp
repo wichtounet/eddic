@@ -8,12 +8,12 @@
 #include "Compiler.hpp"
 #include "Platform.hpp"
 #include "RegisterAllocation.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
 
 using namespace eddic;
 
-void eddic::allocateParams(FunctionTable& functionTable){
+void eddic::allocateParams(SymbolTable& functionTable){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
     auto it = functionTable.begin();

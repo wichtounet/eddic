@@ -14,7 +14,7 @@
 #include "ast/Value.hpp"
 
 #include "Types.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 
 namespace eddic {
 
