@@ -8,6 +8,8 @@
 #ifndef AST_VISITOR_H
 #define AST_VISITOR_H
 
+#include "VisitorUtils.hpp"
+
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->lhs);\

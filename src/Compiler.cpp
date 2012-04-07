@@ -29,6 +29,7 @@
 #include "ast/ContextAnnotator.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
+#include "ast/StructuresAnnotator.hpp"
 
 //Checkers
 #include "ast/StringChecker.hpp"
@@ -111,7 +112,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
         //If the parsing was sucessfully
         if(parsing){
             //Symbol tables
-            SymbolTable functionTable;
+            SymbolTable symbolTable;
             StringPool pool;
 
             //Read dependencies
@@ -127,12 +128,13 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::checkStrings(program, pool);
 
             //Add some more informations to the AST
+            ast::defineStructures(program, symbolTable);
             ast::defineContexts(program);
             ast::defineVariables(program);
-            ast::defineFunctions(program, functionTable);
+            ast::defineFunctions(program, symbolTable);
             
             //Allocate registers to params
-            allocateParams(functionTable);
+            allocateParams(symbolTable);
 
             //Transform the AST
             ast::transformAST(program);
@@ -141,13 +143,13 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::checkTypes(program);
 
             //Check for warnings
-            ast::checkForWarnings(program, functionTable);
+            ast::checkForWarnings(program, symbolTable);
 
             //Check that there is a main in the program
-            checkForMain(functionTable);
+            checkForMain(symbolTable);
 
             //Optimize the AST
-            ast::optimizeAST(program, functionTable, pool);
+            ast::optimizeAST(program, symbolTable, pool);
 
             //If the user asked for it, print the Abstract Syntax Tree
             if(options.count("ast") || options.count("ast-only")){
@@ -160,7 +162,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                 //Generate Three-Address-Code language
                 tac::Compiler compiler;
-                compiler.compile(program, pool, tacProgram, functionTable);
+                compiler.compile(program, pool, tacProgram, symbolTable);
 
                 //Separate into basic blocks
                 tac::BasicBlockExtractor extractor;
@@ -190,7 +192,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                     as::CodeGeneratorFactory factory;
                     auto generator = factory.get(platform, writer);
-                    generator->generate(tacProgram, pool, functionTable); 
+                    generator->generate(tacProgram, pool, symbolTable); 
                     writer.write(); 
 
                     //If it's necessary, assemble and link the assembly
