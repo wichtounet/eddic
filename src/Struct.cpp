@@ -12,3 +12,23 @@ using namespace eddic;
 Member::Member(const std::string& n, Type t) : name(n), paramType(t) {}
 
 Struct::Struct(const std::string& n) : name(n) {}
+
+bool member_exists(const std::string& n){
+    for(auto& member : members){
+        if(member.name == n){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Member Struct::operator[](const std::string& n){
+    for(auto& member : members){
+        if(member.name == n){
+            return member;
+        }
+    }
+
+    assert(false && "This member is not contained in the struct");
+}

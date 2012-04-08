@@ -37,6 +37,9 @@ struct Struct {
     int references = 0;
     
     Struct(const std::string& n);
+
+    bool member_exists(const std::string& n);
+    Member operator[](const std::string& n);
 };
 
 } //end of eddic
