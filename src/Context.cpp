@@ -44,6 +44,10 @@ std::shared_ptr<Variable> Context::newFloatTemporary(){
     assert(false && "Not implemented");
 }
 
+std::shared_ptr<Variable> Context::operator[](const std::string& variable) const {
+    return getVariable(variable);
+}
+
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
     auto iter = variables.find(variable);
     auto end = variables.end();

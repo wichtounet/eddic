@@ -52,6 +52,8 @@ class Context {
 
         bool exists(const std::string& a) const;
         std::shared_ptr<Variable> getVariable(const std::string& variable) const;
+        
+        std::shared_ptr<Variable> operator[](const std::string& variable) const;
 
         Variables::const_iterator begin() const;
         Variables::const_iterator end() const;
