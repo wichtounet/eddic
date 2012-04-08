@@ -10,7 +10,7 @@
 using namespace eddic;
 
 Type::Type(BaseType base, bool a, unsigned int size, bool constant) : array(a), const_(constant), custom(false), baseType(base), m_size(size){}
-Type::Type(const std::string& type) : array(false), const_(false), custom(true), type(type) {}
+Type::Type(const std::string& type) : array(false), const_(false), custom(true), m_type(type) {}
 
 BaseType Type::base() const {
     return baseType;
@@ -39,9 +39,8 @@ bool Type::is_standard_type() const {
 std::string Type::type() const {
     BOOST_ASSERT_MSG(is_standard_type(), "Only custom type have a type");
 
-    return type;
+    return m_type;
 }
-        
 
 bool eddic::operator==(const Type& lhs, const Type& rhs){
     return lhs.baseType == rhs.baseType && 

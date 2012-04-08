@@ -35,7 +35,7 @@ class Type {
         
         BaseType baseType;
         unsigned int m_size;
-        std::string type;
+        std::string m_type;
     
     public:
         Type(BaseType type, bool array, unsigned int size, bool const_);
