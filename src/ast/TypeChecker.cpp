@@ -296,6 +296,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::VariableValue&){
         //Nothing to check here
     }
+    
+    void operator()(ast::StructValue&){
+        //Nothing to check here
+    }
 
     void operator()(ast::TerminalNode&){
         //Terminal nodes have no need for type checking    
