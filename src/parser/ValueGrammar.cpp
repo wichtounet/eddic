@@ -127,9 +127,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   functionCall
         |   prefix_operation
         |   suffix_operation
+        |   struct_value
         |   arrayValue
         |   variable_value
-        |   struct_value
         |   true_
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
