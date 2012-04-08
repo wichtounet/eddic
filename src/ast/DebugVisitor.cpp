@@ -211,6 +211,10 @@ void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
     std::cout << indent() << "Variable [" << value.Content->var->name()  << "]" << std::endl; 
 }
 
+void ast::DebugVisitor::operator()(ast::StructValue& value) const {
+    std::cout << indent() << "Member access " << value.Content->variableName << "." << value.Content->memberName << std::endl; 
+}
+
 void ast::DebugVisitor::operator()(ast::ArrayValue&) const {
     std::cout << indent() << "Array value" << std::endl; 
 }
