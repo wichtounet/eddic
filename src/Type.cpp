@@ -9,10 +9,11 @@
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool a, unsigned int size, bool constant) : type(base), array(a), const_(constant), m_size(size) {}
+Type::Type(BaseType base, bool a, unsigned int size, bool constant) : array(a), const_(constant), custom(false), baseType(base), m_size(size){}
+Type::Type(const std::string& type) : array(false), const_(false), custom(true), type(type) {}
 
 BaseType Type::base() const {
-    return type;
+    return baseType;
 }
 
 bool Type::isArray() const {
@@ -26,9 +27,17 @@ bool Type::isConst() const {
 unsigned int Type::size() const {
     return m_size;
 }
+        
+bool Type::is_custom_type() const {
+    return custom;
+}
+
+bool Type::is_standard_type() const {
+    return !is_custom_type();
+}
 
 bool eddic::operator==(const Type& lhs, const Type& rhs){
-    return lhs.type == rhs.type && 
+    return lhs.baseType == rhs.baseType && 
            lhs.array == rhs.array &&
            lhs.m_size == rhs.m_size; 
 }
@@ -38,7 +47,7 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
 }
 
 bool eddic::operator==(const Type& lhs, const BaseType& rhs){
-    return lhs.type == rhs && lhs.array == false; 
+    return lhs.baseType == rhs && lhs.array == false; 
 }
 
 bool eddic::operator!=(const Type& lhs, const BaseType& rhs){

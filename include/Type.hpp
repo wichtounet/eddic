@@ -29,17 +29,24 @@ enum class BaseType : unsigned int {
  */
 class Type {
     private:
-        BaseType type;
-        bool array;
-        bool const_;
+        const bool array;
+        const bool const_;
+        const bool custom;
+        
+        BaseType baseType;
         unsigned int m_size;
+        std::string type;
     
     public:
         Type(BaseType type, bool array, unsigned int size, bool const_);
+        Type(const std::string& type);
 
         BaseType base() const;
         bool isArray() const;
         bool isConst() const;
+        bool is_custom_type() const;
+        bool is_standard_type() const;
+
         unsigned int size() const;
 
         friend bool operator==(const Type& lhs, const Type& rhs);
