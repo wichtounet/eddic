@@ -48,6 +48,7 @@ class Type {
         bool is_standard_type() const;
 
         unsigned int size() const;
+        std::string type() const;
 
         friend bool operator==(const Type& lhs, const Type& rhs);
         friend bool operator!=(const Type& lhs, const Type& rhs);

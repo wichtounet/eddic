@@ -36,6 +36,13 @@ bool Type::is_standard_type() const {
     return !is_custom_type();
 }
 
+std::string Type::type() const {
+    BOOST_ASSERT_MSG(is_standard_type(), "Only custom type have a type");
+
+    return type;
+}
+        
+
 bool eddic::operator==(const Type& lhs, const Type& rhs){
     return lhs.baseType == rhs.baseType && 
            lhs.array == rhs.array &&
