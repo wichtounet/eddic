@@ -178,6 +178,11 @@ void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     print_sub(*this, assign.Content->value);
 }
 
+void ast::DebugVisitor::operator()(ast::StructAssignment& assign) const {
+    std::cout << indent() << "Struct assignment " << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
+    print_sub(*this, assign.Content->value);
+}
+
 void ast::DebugVisitor::operator()(ast::Litteral& litteral) const {
     std::cout << indent() << "Litteral [" << litteral.value << "]" << std::endl; 
 }
