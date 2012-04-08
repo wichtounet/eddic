@@ -12,9 +12,11 @@
 
 namespace eddic {
 
+class SymbolTable;
+
 namespace ast {
 
-void checkTypes(ast::SourceFile& program);
+void checkTypes(ast::SourceFile& program, SymbolTable& symbols);
 
 } //end of ast
 

@@ -5,15 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <cassert>
+
 #include "Struct.hpp"
 
 using namespace eddic;
 
-Member::Member(const std::string& n, Type t) : name(n), paramType(t) {}
+Member::Member(const std::string& n, Type t) : name(n), type(t) {}
 
 Struct::Struct(const std::string& n) : name(n) {}
 
-bool member_exists(const std::string& n){
+bool Struct::member_exists(const std::string& n){
     for(auto& member : members){
         if(member.name == n){
             return true;

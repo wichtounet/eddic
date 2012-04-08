@@ -22,7 +22,7 @@ namespace eddic {
  */
 struct Member {
     std::string name;
-    Type paramType;
+    Type type;
 
     Member(const std::string& n, Type t);
 };

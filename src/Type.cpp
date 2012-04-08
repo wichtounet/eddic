@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/assert.hpp>
+
 #include "Type.hpp"
 
 using namespace eddic;

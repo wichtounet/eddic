@@ -24,6 +24,7 @@
 #include "Variable.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
@@ -34,6 +35,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
+
+    SymbolTable& symbols;
+
+    CheckerVisitor(SymbolTable& symbols) : symbols(symbols) {}
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);
@@ -147,6 +152,20 @@ struct CheckerVisitor : public boost::static_visitor<> {
         Type indexType = visit(ast::GetTypeVisitor(), assignment.Content->indexValue);
         if (indexType.base() != BaseType::INT) {
             throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
+        }
+    }
+
+    void operator()(ast::StructAssignment& assignment){
+        visit(*this, assignment.Content->value);
+        
+        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[assignment.Content->memberName].type;
+
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+        if (valueType != member_type) {
+            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
         }
     }
     
@@ -283,7 +302,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::checkTypes(ast::SourceFile& program){
-    CheckerVisitor visitor;
+void ast::checkTypes(ast::SourceFile& program, SymbolTable& symbols){
+    CheckerVisitor visitor(symbols);
     visit_non_variant(visitor, program);
 }
