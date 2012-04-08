@@ -24,6 +24,7 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
@@ -36,6 +37,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BUILTIN_OPERATORS()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
     AUTO_RECURSE_CAST_VALUES()
+
+    SymbolTable& symbols;
+
+    VariablesVisitor(SymbolTable& symbols) : symbols(symbols) {}
    
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
@@ -180,7 +185,17 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
         //If it's a custom type
         else {
-            //TODO
+            if(symbols.struct_exists(declaration.Content->variableType)){
+                if(declaration.Content->const_){
+                    throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+                }
+
+                Type type = new_custom_type(declaration.Content->variableType);
+
+                declaration.Content->context->addVariable(declaration.Content->variableName, type);
+            } else {
+                throw SemanticalException("The type \"" + declaration.Content->variableType + "\" does not exists", declaration.Content->position);
+            }
         }
     }
     
@@ -252,7 +267,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::defineVariables(ast::SourceFile& program){
-    VariablesVisitor visitor;
+void ast::defineVariables(ast::SourceFile& program, SymbolTable& table){
+    VariablesVisitor visitor(table);
     visit_non_variant(visitor, program);
 }

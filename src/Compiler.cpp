@@ -130,7 +130,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             //Add some more informations to the AST
             ast::defineStructures(program, symbolTable);
             ast::defineContexts(program);
-            ast::defineVariables(program);
+            ast::defineVariables(program, symbolTable);
             ast::defineFunctions(program, symbolTable);
             
             //Allocate registers to params

@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+class SymbolTable;
+
 namespace ast {
 
 /*!
@@ -19,7 +21,7 @@ namespace ast {
  * 
  * After this phase, all the variables are resolved as entry to the symbol table. 
  */
-void defineVariables(ast::SourceFile& program);
+void defineVariables(ast::SourceFile& program, SymbolTable& table);
 
 } //end of ast
 
