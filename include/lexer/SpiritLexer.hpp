@@ -115,7 +115,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
 
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
-            this->self += comma | stop;
+            this->self += comma | stop | dot;
             this->self += assign | swap;
             this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += addition | subtraction | multiplication | division | modulo;

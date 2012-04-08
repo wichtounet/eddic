@@ -140,7 +140,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::transformAST(program);
 
             //Static analysis
-            ast::checkTypes(program);
+            ast::checkTypes(program, symbolTable);
 
             //Check for warnings
             ast::checkForWarnings(program, symbolTable);

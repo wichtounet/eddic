@@ -44,7 +44,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     /* Assignments  */
     qi::rule<lexer::Iterator, ast::ArrayAssignment()> array_assignment;
     qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
-    qi::rule<lexer::Iterator, ast::ArrayAssignment()> struct_assignment;
+    qi::rule<lexer::Iterator, ast::StructAssignment()> struct_assignment;
 
     qi::rule<lexer::Iterator, ast::While()> while_;
     qi::rule<lexer::Iterator, ast::DoWhile()> do_while_;

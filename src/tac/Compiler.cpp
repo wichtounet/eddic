@@ -815,6 +815,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
         }
 
+        void operator()(ast::StructAssignment& assignment){
+            //TODO
+        }
+
         void operator()(ast::VariableDeclaration& declaration){
             if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
                 visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
