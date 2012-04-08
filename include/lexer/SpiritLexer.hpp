@@ -71,6 +71,7 @@ class SpiritLexer : public lex::lexer<L> {
 
             stop = ';';
             comma = ',';
+            dot = '.';
 
             /* Assignment operators */
             swap = "<=>";
@@ -146,7 +147,7 @@ class SpiritLexer : public lex::lexer<L> {
         StringToken and_, or_;
 
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace, left_bracket, right_bracket;
-        ConsumedToken stop, comma;
+        ConsumedToken stop, comma, dot;
         ConsumedToken assign, swap;
         
         //Keywords
