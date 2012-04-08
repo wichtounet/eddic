@@ -11,6 +11,8 @@
 #include <memory>
 #include <string>
 
+#include <boost/optional.hpp>
+
 #include "Type.hpp"
 
 #include "ast/Deferred.hpp"
@@ -36,7 +38,7 @@ struct ASTStructValue {
     std::string memberName;
 
     std::shared_ptr<Variable> variable;
-    Type type; //Stored at the same type as the variable
+    boost::optional<Type> type;
 
     mutable long references = 0;
 };

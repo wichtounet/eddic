@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/assert.hpp>
+
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/Value.hpp"
@@ -48,6 +50,12 @@ Type ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) cons
 
 Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
+}
+
+Type ast::GetTypeVisitor::operator()(const ast::StructValue& struct_) const {
+    BOOST_ASSERT_MSG(struct_.Content->type, "The type of the StructValue has not been set");
+
+    return struct_.Content->type;
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
