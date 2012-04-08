@@ -79,6 +79,6 @@ Type eddic::newArrayType(const std::string& baseType, int size){
     return Type(stringToBaseType(baseType), true, size, false);
 }
 
-Type new_custom_type(const std::string& type){
+Type eddic::new_custom_type(const std::string& type){
     return Type(type);
 }
