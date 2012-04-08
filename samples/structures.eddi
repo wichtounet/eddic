@@ -7,4 +7,6 @@ void main(){
     println("Structures test");
 
     Complex c;
+    c.imag = 222;
+    c.real = 666;
 }
