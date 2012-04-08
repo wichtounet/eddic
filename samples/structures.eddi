@@ -9,4 +9,7 @@ void main(){
     Complex c;
     c.imag = 222;
     c.real = 666;
+
+    println(c.imag);
+    println(c.real);
 }
