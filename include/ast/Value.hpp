@@ -17,6 +17,7 @@
 #include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
+#include "ast/StructValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/SuffixOperation.hpp"
@@ -32,6 +33,7 @@ typedef boost::variant<
             Float,
             Litteral, 
             VariableValue,
+            StructValue,
             Expression,
             Minus,
             Plus,
