@@ -246,6 +246,24 @@ struct VariablesVisitor : public boost::static_visitor<> {
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
         variable.Content->var->addReference();
     }
+    
+    void operator()(ast::StructValue& struct_){
+        if (!struct_.Content->context->exists(struct_.Content->variableName)) {
+            throw SemanticalException("Variable " + struct_.Content->variableName + " has not been declared", struct_.Content->position);
+        }
+        
+        auto var = (*struct_.Content->context)[struct_.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+
+        if(!struct_type->member_exists(struct_.Content->memberName)){
+            throw SemanticalException("The struct " + struct_name + " has no member named " + struct_.Content->memberName, struct_.Content->position);
+        }
+
+        //Reference the variable
+        variable.Content->variable = var;
+        variable.Content->variable->addReference();
+    }
 
     void operator()(ast::ArrayValue& array){
         if (!array.Content->context->exists(array.Content->arrayName)) {

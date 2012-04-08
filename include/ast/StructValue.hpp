@@ -9,6 +9,9 @@
 #define AST_STRUCT_VALUE_H
 
 #include <memory>
+#include <string>
+
+#include "Type.hpp"
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
