@@ -302,6 +302,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
+    result_type operator()(ast::StructValue& value) const {
+        //TODO
+        return {};
+    }
+
     result_type operator()(ast::PrefixOperation& operation) const {
         performPrefixOperation(operation, function);
 
