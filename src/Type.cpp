@@ -47,7 +47,10 @@ std::string Type::type() const {
 bool eddic::operator==(const Type& lhs, const Type& rhs){
     return lhs.baseType == rhs.baseType && 
            lhs.array == rhs.array &&
-           lhs.m_size == rhs.m_size; 
+           lhs.const_ == rhs.const_ &&
+           lhs.custom == rhs.custom &&
+           lhs.m_size == rhs.m_size && 
+           lhs.m_type == rhs.m_type; 
 }
 
 bool eddic::operator!=(const Type& lhs, const Type& rhs){
@@ -55,7 +58,7 @@ bool eddic::operator!=(const Type& lhs, const Type& rhs){
 }
 
 bool eddic::operator==(const Type& lhs, const BaseType& rhs){
-    return lhs.baseType == rhs && lhs.array == false; 
+    return lhs.baseType == rhs && !lhs.array && !lhs.custom; 
 }
 
 bool eddic::operator!=(const Type& lhs, const BaseType& rhs){

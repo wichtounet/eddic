@@ -29,9 +29,9 @@ enum class BaseType : unsigned int {
  */
 class Type {
     private:
-        const bool array;
-        const bool const_;
-        const bool custom;
+        bool array;
+        bool const_;
+        bool custom;
         
         BaseType baseType;
         unsigned int m_size;
