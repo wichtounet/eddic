@@ -39,7 +39,7 @@ bool Type::is_standard_type() const {
 }
 
 std::string Type::type() const {
-    BOOST_ASSERT_MSG(is_standard_type(), "Only custom type have a type");
+    BOOST_ASSERT_MSG(is_custom_type(), "Only custom type have a type");
 
     return m_type;
 }
