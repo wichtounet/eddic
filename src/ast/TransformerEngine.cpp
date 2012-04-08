@@ -252,6 +252,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
         assignment.Content->indexValue = visit(transformer, assignment.Content->indexValue); 
     }
+    
+    void operator()(ast::StructAssignment& assignment) const {
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+    }
 
     void operator()(ast::VariableDeclaration& declaration) const {
         if(declaration.Content->value){
