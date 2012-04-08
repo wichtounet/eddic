@@ -11,7 +11,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Type.hpp"
+#include "ast/VariableType.hpp"
 #include "ast/Position.hpp"
 
 namespace eddic {

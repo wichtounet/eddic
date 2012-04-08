@@ -55,7 +55,7 @@ Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
 Type ast::GetTypeVisitor::operator()(const ast::StructValue& struct_) const {
     BOOST_ASSERT_MSG(struct_.Content->type, "The type of the StructValue has not been set");
 
-    return struct_.Content->type;
+    return *struct_.Content->type;
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {

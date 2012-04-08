@@ -10,7 +10,8 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "ast/Type.hpp"
+#include "ast/VariableType.hpp"
+
 #include "Types.hpp"
 
 namespace eddic {

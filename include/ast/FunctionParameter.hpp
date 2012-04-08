@@ -10,7 +10,7 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Type.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
