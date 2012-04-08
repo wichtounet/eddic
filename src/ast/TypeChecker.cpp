@@ -151,12 +151,15 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::VariableDeclaration& declaration){
-        visit(*this, *declaration.Content->value);
+        visit_optional(*this, declaration.Content->value);
 
         Type variableType = newType(declaration.Content->variableType);
-        Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
-        if (valueType != variableType) {
-            throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+
+        if(declaration.Content->value){
+            Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+            if (valueType != variableType) {
+                throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+            }
         }
     }
     
