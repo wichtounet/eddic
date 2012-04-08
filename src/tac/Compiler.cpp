@@ -820,8 +820,10 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
-                visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+            if(declaration.Content->value){
+                if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
+                    visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+                }
             }
         }
 
