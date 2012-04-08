@@ -273,7 +273,9 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            declaration.Content->value = visit(optimizer, *declaration.Content->value); 
+            if(declaration.Content->value){
+                declaration.Content->value = visit(optimizer, *declaration.Content->value); 
+            }
         }
 
         void operator()(ast::BinaryCondition& binaryCondition){
