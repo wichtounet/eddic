@@ -20,6 +20,13 @@ bool operator!=(const Type& lhs, const Type& rhs);
 bool operator==(const Type& lhs, const BaseType& rhs);
 bool operator!=(const Type& lhs, const BaseType& rhs);
 
+/*!
+ * \brief Parse the given type into an EDDI Type. 
+ *
+ * The type must be a standard scalar type or a standard array type. 
+ *
+ * \param type The type to parse. 
+ */
 Type newType(const std::string& type);
 
 Type newSimpleType(BaseType baseType, bool const_ = false);
@@ -27,6 +34,8 @@ Type newSimpleType(const std::string& baseType, bool const_ = false);
 
 Type newArrayType(BaseType baseType, int size = 0);
 Type newArrayType(const std::string& baseType, int size = 0);
+
+Type new_custom_type(const std::string& type);
 
 int size(BaseType type);
 int size(Type type);
