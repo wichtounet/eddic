@@ -39,9 +39,13 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::Swap()> swap;
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
-    qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
     qi::rule<lexer::Iterator, ast::Return()> return_;
-    qi::rule<lexer::Iterator, ast::ArrayAssignment()> arrayAssignment;
+   
+    /* Assignments  */
+    qi::rule<lexer::Iterator, ast::ArrayAssignment()> array_assignment;
+    qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
+    qi::rule<lexer::Iterator, ast::ArrayAssignment()> struct_assignment;
+
     qi::rule<lexer::Iterator, ast::While()> while_;
     qi::rule<lexer::Iterator, ast::DoWhile()> do_while_;
     qi::rule<lexer::Iterator, ast::For()> for_;

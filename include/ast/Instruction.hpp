@@ -16,6 +16,7 @@
 #include "ast/CompoundAssignment.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/ArrayAssignment.hpp"
+#include "ast/StructAssignment.hpp"
 #include "ast/Return.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
@@ -52,6 +53,7 @@ typedef boost::variant<
             Assignment, 
             CompoundAssignment,
             ArrayAssignment, 
+            StructAssignment,
             Return,
             If, 
             While, 

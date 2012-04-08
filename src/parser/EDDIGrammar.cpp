@@ -144,12 +144,20 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  value
         >>  lexer.stop;
     
-    arrayAssignment %= 
+    array_assignment %= 
             qi::position(position_begin)
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket
+        >>  lexer.assign 
+        >>  value;
+    
+    struct_assignment %= 
+            qi::position(position_begin)
+        >>  lexer.identifier 
+        >>  lexer.dot
+        >>  lexer.identifier 
         >>  lexer.assign 
         >>  value;
     
