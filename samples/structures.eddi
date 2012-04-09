@@ -12,4 +12,10 @@ void main(){
 
     println(c.imag);
     println(c.real);
+
+    c.imag += 111;
+    c.real += 222;
+
+    println(c.imag);
+    println(c.real);
 }
