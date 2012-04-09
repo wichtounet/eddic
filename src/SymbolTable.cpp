@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
 #include "SymbolTable.hpp"
 
 using namespace eddic;
@@ -53,7 +54,7 @@ int member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
         offset += size(m.type);
     }
 
-    assert(false);
+    ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
 }
 
 bool SymbolTable::struct_exists(const std::string& struct_){
