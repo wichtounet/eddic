@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "SymbolTable.hpp"
@@ -26,7 +27,7 @@
 
 using namespace eddic;
 
-SymbolTable* functionTable;
+SymbolTable* symbols;
 
 namespace {
 
@@ -218,13 +219,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                     return {t1};
                 }
 
-                assert(false && "The variable is not of a valid type");
+                ASSERT_PATH_NOT_TAKEN("The variale is not of a valid type");
             }
             case ast::BuiltinType::LENGTH:
                 return {visit(*this, value)[1]};
         }
 
-        assert(false && "This builtin operator is not handled");
+        ASSERT_PATH_NOT_TAKEN("This builtin operator is not handled");
     }
 
     result_type operator()(ast::FunctionCall& call) const {
@@ -286,7 +287,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                      return {value.first, value.second};
                 }
                 default:
-                    assert(false && "void is not a type");
+                     ASSERT_PATH_NOT_TAKEN("void is not a type");
            }
         } else if(type.isArray()){
             return {value.Content->var};
@@ -302,11 +303,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         }
     }
 
-    result_type operator()(ast::StructValue& value) const {
-        //TODO
-        return {};
-    }
-
     result_type operator()(ast::PrefixOperation& operation) const {
         performPrefixOperation(operation, function);
 
@@ -315,6 +311,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     result_type operator()(ast::SuffixOperation& operation) const {
         return {performSuffixOperation(operation, function)};
+    }
+
+    result_type operator()(ast::StructValue& value) const {
+        auto struct_name = value.Content->variable->type().type();
+        auto offset = symbols->member_offset(symbols->get_struct(struct_name), value.Content->memberName);
+
+        //TODO Choose the temporary type 
+        auto temp = value.Content->context->newTemporary();
+        
+        function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
+
+        return {temp};
     }
 
     result_type operator()(ast::ArrayValue& array) const {
@@ -350,7 +358,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {t1, t2};
             }
             default:
-                assert(false && "void is not a variable");
+                ASSERT_PATH_NOT_TAKEN("void is not a variable");
         }
     }
 
@@ -689,12 +697,12 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Functio
         arguments.clear();
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), v1, v2)); 
+            function->add(std::make_shared<tac::Call>("concat", symbols->getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
             
-            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), t1, t2)); 
+            function->add(std::make_shared<tac::Call>("concat", symbols->getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -720,7 +728,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::FunctionDeclaration& f){
             function = std::make_shared<tac::Function>(f.Content->context, f.Content->mangledName);
-            function->definition = functionTable->getFunction(f.Content->mangledName);
+            function->definition = symbols->getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
@@ -1001,7 +1009,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     }
     
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
-    auto definition = functionTable->getFunction(functionName);
+    auto definition = symbols->getFunction(functionName);
 
     //All the functions should be in the function table
     assert(definition);
@@ -1111,7 +1119,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 } //end of anonymous namespace
 
 void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, SymbolTable& table) const {
-    functionTable = &table;
+    symbols = &table;
 
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);

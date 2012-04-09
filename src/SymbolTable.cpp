@@ -43,7 +43,7 @@ std::shared_ptr<Struct> SymbolTable::get_struct(const std::string& struct_){
     return structs[struct_];
 }
 
-int member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
+int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
     int offset = 0;
 
     for(auto& m : struct_->members){
