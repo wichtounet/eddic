@@ -40,13 +40,16 @@ class SymbolTable {
         SymbolTable();
         SymbolTable(const SymbolTable& rhs) = delete;
 
+        /* Functions management */
         void addFunction(std::shared_ptr<Function> function);
         std::shared_ptr<Function> getFunction(const std::string& function);
         bool exists(const std::string& function);
 
+        /* Struct management */
         void add_struct(std::shared_ptr<Struct> struct_);
         std::shared_ptr<Struct> get_struct(const std::string& struct_);
         bool struct_exists(const std::string& struct_);
+        int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
 
         //For now the symbol table is only iterable on functions
         FunctionMap::const_iterator begin();

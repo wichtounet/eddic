@@ -42,6 +42,20 @@ std::shared_ptr<Struct> SymbolTable::get_struct(const std::string& struct_){
     return structs[struct_];
 }
 
+int member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
+    int offset = 0;
+
+    for(auto& m : struct_->members){
+        if(m.name == member){
+            return offset;
+        }
+
+        offset += size(m.type);
+    }
+
+    assert(false);
+}
+
 bool SymbolTable::struct_exists(const std::string& struct_){
     return structs.find(struct_) != structs.end();
 }
