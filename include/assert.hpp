@@ -12,6 +12,7 @@
 
 #include <boost/assert.hpp>
 
+#define ASSERT(condition, message) BOOST_ASSERT_MSG(condition, message);
 #define ASSERT_PATH_NOT_TAKEN(message) BOOST_ASSERT_MSG(false, message); assert(false);
 
 #endif

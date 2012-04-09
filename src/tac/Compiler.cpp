@@ -315,10 +315,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
     result_type operator()(ast::StructValue& value) const {
         auto struct_name = value.Content->variable->type().type();
-        auto offset = symbols->member_offset(symbols->get_struct(struct_name), value.Content->memberName);
+        auto struct_type = symbols->get_struct(struct_name);
+        auto member_type = (*struct_type)[value.Content->memberName].type;
+        auto offset = symbols->member_offset(struct_type, value.Content->memberName);
 
-        //TODO Choose the temporary type 
-        auto temp = value.Content->context->newTemporary();
+        auto temp = value.Content->context->new_temporary(member_type);
         
         function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
 
