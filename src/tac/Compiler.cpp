@@ -330,16 +330,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
         switch(array.Content->var->type().base()){
-            case BaseType::FLOAT: {
-                auto temp = array.Content->context->newFloatTemporary();
-                function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
-
-                return {temp};
-
-            }   
             case BaseType::BOOL:
-            case BaseType::INT: {
-                auto temp = array.Content->context->newTemporary();
+            case BaseType::INT:
+            case BaseType::FLOAT: {
+                auto temp = array.Content->context->new_temporary(array.Content->var->type());
                 function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
 
                 return {temp};
