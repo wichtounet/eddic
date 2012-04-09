@@ -168,6 +168,13 @@ void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
     print_sub(*this, assign.Content->value);
 }
 
+void ast::DebugVisitor::operator()(ast::StructCompoundAssignment& assign) const {
+    std::cout << indent() << "Compound struct member assignment [operator = " << (int) assign.Content->op << " ]"
+        << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
+    
+    print_sub(*this, assign.Content->value);
+}
+
 void ast::DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
     print_sub(*this, return_.Content->value);
