@@ -1,6 +1,7 @@
 struct Complex {
     int imag;
     int real;
+    float d;
 }
 
 void main(){
@@ -9,9 +10,11 @@ void main(){
     Complex c;
     c.imag = 222;
     c.real = 666;
+    c.d = 3.23;
 
     println(c.imag);
     println(c.real);
+    println(c.d);
 
     c.imag += 111;
     c.real += 222;
