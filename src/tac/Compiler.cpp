@@ -537,6 +537,27 @@ struct AssignValueToVariable : public AbstractVisitor {
     }
 };
 
+struct AssignValueToVariableWithOffset : public AbstractVisitor {
+    AssignValueToVariableWithOffset(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
+    
+    std::shared_ptr<Variable> variable;
+    unsigned int offset;
+
+    void intAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_ASSIGN, arguments[0]));
+    }
+    
+    void floatAssign(std::vector<tac::Argument> arguments) const {
+        //TODO Handle floats
+        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::FASSIGN));
+    }
+
+    void stringAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_ASSIGN, arguments[0]));
+        function->add(std::make_shared<tac::Quadruple>(variable, offset + getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
+    }
+};
+
 void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
     visit(AssignValueToVariable(function, variable), value);
 }
@@ -824,7 +845,11 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::StructAssignment& assignment){
-            //TODO
+            auto struct_name = (*assignment.Content->context)[assignment.Content->variableName]->type().type();
+            auto struct_type = symbols->get_struct(struct_name);
+            auto offset = symbols->member_offset(struct_type, assignment.Content->memberName);
+
+            visit(AssignValueToVariableWithOffset(function, assignment.Content->context->getVariable(assignment.Content->variableName), offset), assignment.Content->value);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
