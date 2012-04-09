@@ -36,7 +36,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
-    assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
+    ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
     tac::Argument left = moveToArgument(value.Content->first, function);
     tac::Argument right;
@@ -202,7 +202,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         switch(builtin.Content->type){
             case ast::BuiltinType::SIZE:{
-                assert(boost::get<ast::VariableValue>(&value));
+                ASSERT(boost::get<ast::VariableValue>(&value), "The size builtin can only be applied to variable");
                 
                 auto variable = boost::get<ast::VariableValue>(value).Content->var;
 
@@ -580,8 +580,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 
 template<typename Control>
 void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
-    //relational operations cannot be chained
-    assert(value.Content->operations.size() == 1);
+    ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
     auto left = moveToArgument(value.Content->first, function);
     auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
@@ -589,8 +588,8 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Func
     Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
     Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-    assert(typeLeft == typeRight);
-    assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+    ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
+    ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only int and floats can be compared");
 
     if(typeLeft == BaseType::INT){
         function->add(std::make_shared<Control>(tac::toBinaryOperator(op), left, right, label));
@@ -692,7 +691,7 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
 }
 
 void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
-    assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
+    ASSERT(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
 
     std::vector<tac::Argument> arguments;
 
@@ -837,7 +836,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::CompoundAssignment&){
             //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            assert(false && "Compound assignment should be transformed into Assignment");
+            ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
         }
         
         void operator()(ast::ArrayAssignment& assignment){
@@ -946,7 +945,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Foreach&){
             //This node has been transformed into a for node
-            assert(false && "Foreach should have been transformed into a For loop"); 
+            ASSERT_PATH_NOT_TAKEN("Foreach should have been transformed into a For loop"); 
         }
        
         void operator()(ast::ForeachIn& foreach){
@@ -1031,8 +1030,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
     auto definition = symbols->getFunction(functionName);
 
-    //All the functions should be in the function table
-    assert(definition);
+    ASSERT(definition, "All the functions should be in the function table");
 
     auto context = definition->context;
 
@@ -1070,8 +1068,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     //The first operator defines the kind of operation 
     auto op = value.Content->operations[0].get<0>();
 
-    //Only these operators are valid there
-    assert(op == ast::Operator::AND || op == ast::Operator::OR || (op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS));
+    ASSERT(op == ast::Operator::AND || op == ast::Operator::OR || (op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS), "Invalid operator on bool");
 
     //Logical and operators (&&)
     if(op == ast::Operator::AND){
@@ -1113,8 +1110,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        //relational operations cannot be chained
-        assert(value.Content->operations.size() == 1);
+        ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
@@ -1122,8 +1118,8 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
         Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-        assert(typeLeft == typeRight);
-        assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+        ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
+        ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only float and int values can be compared");
 
         if(typeLeft == BaseType::INT){
             function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toRelationalOperator(op), right));
