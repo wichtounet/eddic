@@ -107,6 +107,20 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::CompoundAssignment& assignment){
         checkAssignment(assignment);
     }
+    
+    void operator()(ast::StructCompoundAssignment& assignment){
+        visit(*this, assignment.Content->value);
+        
+        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[assignment.Content->memberName].type;
+
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+        if (valueType != member_type) {
+            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+        }
+    }
 
     template<typename Operation>
     void checkSuffixOrPrefixOperation(Operation& operation){
