@@ -11,6 +11,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "assert.hpp"
 #include "Utils.hpp"
 #include "Registers.hpp"
 #include "Compiler.hpp"
@@ -1569,11 +1570,23 @@ struct IntelStatementCompiler {
             }
             case tac::Operator::DOT_ASSIGN:
             {
-                assert(boost::get<int>(&*quadruple->arg1));
+                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
 
                 int offset = boost::get<int>(*quadruple->arg1);
 
                 writer.stream() << "mov " << getMnemonicSize() << " " << toString(quadruple->result, offset) << ", " << arg(*quadruple->arg2) << std::endl;
+
+                break;
+            }
+            case tac::Operator::DOT_FASSIGN:
+            {
+                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+
+                int offset = boost::get<int>(*quadruple->arg1);
+                auto reg = getFreeReg(float_registers);
+                copy(*quadruple->arg2, reg);
+
+                writer.stream() << getFloatMove() << toString(quadruple->result, offset) << ", " << reg << std::endl;
 
                 break;
             }
