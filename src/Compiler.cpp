@@ -137,7 +137,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             allocateParams(symbolTable);
 
             //Transform the AST
-            ast::transformAST(program);
+            ast::transformAST(program, symbolTable);
 
             //Static analysis
             ast::checkTypes(program, symbolTable);

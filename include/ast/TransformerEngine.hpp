@@ -12,10 +12,12 @@
 
 namespace eddic {
 
+class SymbolTable;
+
 namespace ast {
     
 void cleanAST(SourceFile& program);
-void transformAST(SourceFile& program);
+void transformAST(SourceFile& program, SymbolTable& symbols);
 
 } //end of ast
 
