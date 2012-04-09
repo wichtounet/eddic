@@ -21,10 +21,10 @@ using namespace eddic;
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
     private:
-        SymbolTable& functionTable;
+        SymbolTable& symbols;
 
     public:
-        FunctionInserterVisitor(SymbolTable& table) : functionTable(table) {}
+        FunctionInserterVisitor(SymbolTable& table) : symbols(table) {}
 
         AUTO_RECURSE_PROGRAM()
          
@@ -36,18 +36,18 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = visit(ast::TypeTransformer(), param.parameterType);
+                Type paramType = visit(ast::TypeTransformer(symbols), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
-            if(functionTable.exists(signature->mangledName)){
+            if(symbols.exists(signature->mangledName)){
                 throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
             }
 
-            functionTable.addFunction(signature);
-            functionTable.getFunction(signature->mangledName)->context = declaration.Content->context;
+            symbols.addFunction(signature);
+            symbols.getFunction(signature->mangledName)->context = declaration.Content->context;
         }
 
         template<typename T>
@@ -58,11 +58,11 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     private:
-        SymbolTable& functionTable;
+        SymbolTable& symbols;
         std::shared_ptr<Function> currentFunction;
 
     public:
-        FunctionCheckerVisitor(SymbolTable& table) : functionTable(table) {}
+        FunctionCheckerVisitor(SymbolTable& table) : symbols(table) {}
 
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -76,7 +76,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ast::FunctionDeclaration& declaration){
-            currentFunction = functionTable.getFunction(declaration.Content->mangledName);
+            currentFunction = symbols.getFunction(declaration.Content->mangledName);
 
             visit_each(*this, declaration.Content->instructions);
         }
@@ -90,15 +90,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 return;
             }
 
-            std::string mangled = mangle(name, functionCall.Content->values);
+            std::string mangled = mangle(name, functionCall.Content->values, symbols);
 
-            if(!functionTable.exists(mangled)){
+            if(!symbols.exists(mangled)){
                 throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             } 
 
-            functionTable.addReference(mangled);
+            symbols.addReference(mangled);
 
-            functionCall.Content->function = functionTable.getFunction(mangled);
+            functionCall.Content->function = symbols.getFunction(mangled);
             
             visit_each(*this, functionCall.Content->values);
         }
@@ -115,12 +115,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::defineFunctions(ast::SourceFile& program, SymbolTable& functionTable){
+void ast::defineFunctions(ast::SourceFile& program, SymbolTable& symbols){
     //First phase : Collect functions
-    FunctionInserterVisitor inserterVisitor(functionTable);
+    FunctionInserterVisitor inserterVisitor(symbols);
     inserterVisitor(program);
 
     //Second phase : Verify calls
-    FunctionCheckerVisitor checkerVisitor(functionTable);
+    FunctionCheckerVisitor checkerVisitor(symbols);
     checkerVisitor(program);
 }

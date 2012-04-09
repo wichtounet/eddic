@@ -28,7 +28,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            if(isType(declaration.Content->variableType)){
+            if(is_standard_type(declaration.Content->variableType)){
                 Type type = newType(declaration.Content->variableType);
 
                 assert(type == BaseType::INT || type == BaseType::STRING);

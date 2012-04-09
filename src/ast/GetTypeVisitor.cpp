@@ -14,8 +14,11 @@
 #include "Context.hpp"
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
+
+ast::GetTypeVisitor::GetTypeVisitor(SymbolTable& symbols) : symbols(symbols) {}
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
 
@@ -37,7 +40,7 @@ Type ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
-   return visit(ast::TypeTransformer(), cast.Content->type); 
+   return visit(ast::TypeTransformer(symbols), cast.Content->type); 
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {

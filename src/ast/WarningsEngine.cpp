@@ -135,8 +135,8 @@ struct Inspector : public boost::static_visitor<> {
     
         void operator()(ast::Cast& cast){
             if(WarningCast){
-                eddic::Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-                eddic::Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+                eddic::Type srcType = visit(ast::GetTypeVisitor(functionTable), cast.Content->value);
+                eddic::Type destType = visit(ast::TypeTransformer(functionTable), cast.Content->type);
 
                 std::cout << "cast " << (int) srcType.base() << " " << (int) destType.base() << std::endl;
 

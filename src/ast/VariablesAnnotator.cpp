@@ -45,7 +45,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = visit(ast::TypeTransformer(), parameter.parameterType);
+            Type type = visit(ast::TypeTransformer(symbols), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -182,7 +182,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_optional(*this, declaration.Content->value);
 
         //If it's a standard type
-        if(isType(declaration.Content->variableType)){
+        if(is_standard_type(declaration.Content->variableType)){
             Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
 
             if(type.isConst()){

@@ -49,7 +49,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<Par
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, SymbolTable& symbols){
     if(functionName == "main"){
         return functionName;
     }
@@ -60,7 +60,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     ss << functionName.length();
     ss << functionName;
 
-    ast::GetTypeVisitor visitor;
+    ast::GetTypeVisitor visitor(symbols);
 
     for(auto& value : values){
         Type type = visit(visitor, value);

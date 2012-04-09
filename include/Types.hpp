@@ -40,7 +40,7 @@ Type new_custom_type(const std::string& type);
 int size(BaseType type);
 int size(Type type);
 
-bool isType(const std::string& type);
+bool is_standard_type(const std::string& type);
 
 } //end of eddic
 

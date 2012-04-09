@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
 #include "Types.hpp"
 #include "Compiler.hpp"
 
@@ -32,12 +33,12 @@ int eddic::size(Type type){
     }
 }
 
-bool eddic::isType(const std::string& type){
+bool eddic::is_standard_type(const std::string& type){
     return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
 }
 
 BaseType stringToBaseType(const std::string& type){
-    BOOST_ASSERT_MSG(isType(type), "The given type is not standard");
+    ASSERT(is_standard_type(type), "The given type is not standard");
 
     if (type == "int") {
         return BaseType::INT;

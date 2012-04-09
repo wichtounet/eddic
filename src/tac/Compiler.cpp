@@ -358,7 +358,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     }
 
     result_type operator()(ast::Expression& value) const {
-        Type type = ast::GetTypeVisitor()(value);
+        Type type = ast::GetTypeVisitor(*symbols)(value);
 
         if(type == BaseType::INT){
             return {performIntOperation(value, function)};
@@ -379,7 +379,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::Minus& value) const {
         tac::Argument arg = moveToArgument(value.Content->value, function);
         
-        Type type = visit(ast::GetTypeVisitor(), value.Content->value);
+        Type type = visit(ast::GetTypeVisitor(*symbols), value.Content->value);
 
         if(type == BaseType::FLOAT){
             auto t1 = function->context->newFloatTemporary();
@@ -397,8 +397,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::Cast& cast) const {
         tac::Argument arg = moveToArgument(cast.Content->value, function);
         
-        Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+        Type srcType = visit(ast::GetTypeVisitor(*symbols), cast.Content->value);
+        Type destType = visit(ast::TypeTransformer(*symbols), cast.Content->type);
 
         if(srcType != destType){
             if(destType == BaseType::FLOAT){
@@ -483,7 +483,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
 
     template<typename T>
     void operator()(T& value) const {
-        auto type = ast::GetTypeVisitor()(value);
+        auto type = ast::GetTypeVisitor(*symbols)(value);
         
         complexAssign(type, value);
     }
@@ -585,8 +585,8 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Func
     auto left = moveToArgument(value.Content->first, function);
     auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
 
-    Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-    Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
+    Type typeLeft = visit(ast::GetTypeVisitor(*symbols), value.Content->first);
+    Type typeRight = visit(ast::GetTypeVisitor(*symbols), value.Content->operations[0].get<1>());
 
     ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
     ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only int and floats can be compared");
@@ -1032,7 +1032,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
     }
     
-    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
+    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values, *symbols);
     auto definition = symbols->getFunction(functionName);
 
     ASSERT(definition, "All the functions should be in the function table");
@@ -1120,8 +1120,8 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
         
-        Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
+        Type typeLeft = visit(ast::GetTypeVisitor(*symbols), value.Content->first);
+        Type typeRight = visit(ast::GetTypeVisitor(*symbols), value.Content->operations[0].get<1>());
 
         ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
         ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only float and int values can be compared");
