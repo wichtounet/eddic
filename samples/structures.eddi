@@ -18,9 +18,11 @@ void main(){
 
     c.imag += 111;
     c.real += 222;
+    c.d += 1.1;
 
     println(c.imag);
     println(c.real);
+    println(c.d);
 
     test(c);
 }
@@ -28,4 +30,5 @@ void main(){
 void test(Complex a){
     println(a.imag);
     println(a.real);
+    println(a.d);
 }
