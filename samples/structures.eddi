@@ -18,6 +18,8 @@ void main(){
 
     println(c.imag);
     println(c.real);
+
+    test(c);
 }
 
 void test(Complex a){
