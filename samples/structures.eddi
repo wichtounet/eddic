@@ -19,3 +19,8 @@ void main(){
     println(c.imag);
     println(c.real);
 }
+
+void test(Complex a){
+    println(a.imag);
+    println(a.real);
+}
