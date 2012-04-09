@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "assert.hpp"
 #include "Context.hpp"
 #include "Utils.hpp"
 
@@ -37,11 +38,25 @@ bool Context::exists(const std::string& variable) const {
 }
 
 std::shared_ptr<Variable> Context::newTemporary(){
-    assert(false && "Not implemented");
+    ASSERT_PATH_NOT_TAKEN("Not implemented");
 }
 
 std::shared_ptr<Variable> Context::newFloatTemporary(){
-    assert(false && "Not implemented");
+    ASSERT_PATH_NOT_TAKEN("Not implemented");
+}
+
+std::shared_ptr<Variable> Context::new_temporary(Type type){
+    ASSERT(type.is_standard_type(), "Temporary can only represent standard types"); 
+
+    switch(type.base()){
+        case BaseType::INT:
+        case BaseType::BOOL:
+            return newTemporary();
+        case BaseType::FLOAT:
+            return newFloatTemporary();
+        default:
+            ASSERT_PATH_NOT_TAKEN("Temporary can only represent int, bool and float");
+    }
 }
 
 std::shared_ptr<Variable> Context::operator[](const std::string& variable) const {
