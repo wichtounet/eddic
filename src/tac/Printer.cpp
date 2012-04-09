@@ -115,6 +115,8 @@ struct DebugVisitor : public boost::static_visitor<> {
                 std::cout << "\t" << quadruple->result->name() << " = (" << printArgument(*quadruple->arg1) << ")" << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::DOT_ASSIGN){
                 std::cout << "\t(" << quadruple->result->name() << ")" << printArgument(*quadruple->arg1) << " = " << printArgument(*quadruple->arg2) << std::endl;
+            } else if(op == tac::Operator::DOT_FASSIGN){
+                std::cout << "\t(" << quadruple->result->name() << ")" << printArgument(*quadruple->arg1) << " = (float) " << printArgument(*quadruple->arg2) << std::endl;
             } else if(op == tac::Operator::ARRAY){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArgument(*quadruple->arg1) << " [" << printArgument(*quadruple->arg2) << "]" << std::endl;
             } else if(op == tac::Operator::ARRAY_ASSIGN){

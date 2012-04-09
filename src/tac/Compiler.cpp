@@ -548,8 +548,7 @@ struct AssignValueToVariableWithOffset : public AbstractVisitor {
     }
     
     void floatAssign(std::vector<tac::Argument> arguments) const {
-        //TODO Handle floats
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::FASSIGN));
+        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_FASSIGN, arguments[0]));
     }
 
     void stringAssign(std::vector<tac::Argument> arguments) const {

@@ -56,6 +56,7 @@ enum class Operator : unsigned int {
     
     DOT,            //result = (arg1)+arg2
     DOT_ASSIGN,     //result+arg1=arg2
+    DOT_FASSIGN,    //result+arg1=arg2
     
     ARRAY,          //result=arg1[arg2]
     ARRAY_ASSIGN,   //result[arg1]=arg2
