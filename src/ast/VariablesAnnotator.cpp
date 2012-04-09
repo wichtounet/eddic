@@ -124,6 +124,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::CompoundAssignment& assignment){
         annotateAssignment(assignment);
     }
+    
+    void operator()(ast::StructCompoundAssignment& assignment){
+        annotateAssignment(assignment);
+    }
 
     void operator()(ast::StructAssignment& assignment){
         annotateAssignment(assignment);
