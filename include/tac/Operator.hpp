@@ -55,6 +55,8 @@ enum class Operator : unsigned int {
     F2I,            //result = (int) arg1
     
     DOT,            //result = (arg1)+arg2
+    FDOT,           //result = (arg1)+arg2
+    
     DOT_ASSIGN,     //result+arg1=arg2
     DOT_FASSIGN,    //result+arg1=arg2
     

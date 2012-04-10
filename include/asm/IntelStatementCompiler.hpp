@@ -1334,7 +1334,7 @@ struct IntelStatementCompiler {
                     } else {
                         writer.stream() << getFloatAdd() << reg << ", " << arg(*quadruple->arg1) << std::endl;
                     }
-                } 
+                }
                 //In the other forms, use two instructions
                 else {
                     FloatRegister reg = getFloatRegNoMove(result);
@@ -1558,11 +1558,26 @@ struct IntelStatementCompiler {
                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
                assert(boost::get<int>(&*quadruple->arg2));
 
-               int offset = boost::get<int>(*quadruple->arg2);
                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+               int offset = boost::get<int>(*quadruple->arg2);
 
                Register reg = getRegNoMove(quadruple->result);
                writer.stream() << "mov " << reg << ", " << toString(variable, offset) << std::endl;
+    
+               written.insert(quadruple->result);
+
+               break;
+            }
+            case tac::Operator::FDOT:
+            {
+               assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+               assert(boost::get<int>(&*quadruple->arg2));
+
+               auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+               int offset = boost::get<int>(*quadruple->arg2);
+
+               FloatRegister reg = getFloatRegNoMove(quadruple->result);
+               writer.stream() << getFloatMove() << reg << ", " << toString(variable, offset) << std::endl;
     
                written.insert(quadruple->result);
 
