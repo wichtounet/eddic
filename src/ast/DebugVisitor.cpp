@@ -10,7 +10,6 @@
 #include "ast/DebugVisitor.hpp"
 #include "ast/SourceFile.hpp"
 
-#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
@@ -33,7 +32,7 @@ std::string toStringType(ast::Type type){
         return ptr->type + "[]";
     }
 
-    ASSERT_PATH_NOT_TAKEN("The given type is not an AST Type");
+    assert(false);
 }
 
 void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
