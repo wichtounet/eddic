@@ -317,6 +317,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         auto member_type = (*struct_type)[value.Content->memberName].type;
         auto offset = symbols.member_offset(struct_type, value.Content->memberName);
 
+        //Revert the offset for parameter variables
+        if(value.Content->variable->position().isParameter()){
+            offset = symbols.member_offset_reverse(struct_type, value.Content->memberName);
+        }
+
         auto temp = value.Content->context->new_temporary(member_type);
         
         if(member_type == BaseType::FLOAT){

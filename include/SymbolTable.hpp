@@ -50,6 +50,7 @@ class SymbolTable {
         std::shared_ptr<Struct> get_struct(const std::string& struct_);
         bool struct_exists(const std::string& struct_);
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
+        int member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member);
         int size_of_struct(const std::string& struct_);
 
         //For now the symbol table is only iterable on functions
