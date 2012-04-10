@@ -390,7 +390,7 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
     leaveFunction(writer);
 }
 
-void IntelX86_64CodeGenerator::writeRuntimeSupport(SymbolTable& table){
+void IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -398,7 +398,7 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(SymbolTable& table){
     writer.stream() << "_start:" << std::endl;
 
     //If the user wants the args, we add support for them
-    if(table.getFunction("main")->parameters.size() == 1){
+    if(symbols.getFunction("main")->parameters.size() == 1){
         writer.stream() << "pop rbx" << std::endl;                          //ebx = number of args
         writer.stream() << "lea rcx, [4 + rbx * 8]" << std::endl;           //ecx = size of the array
         writer.stream() << "push rcx" << std::endl;

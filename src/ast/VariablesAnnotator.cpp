@@ -37,15 +37,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BUILTIN_OPERATORS()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
     AUTO_RECURSE_CAST_VALUES()
-
-    SymbolTable& symbols;
-
-    VariablesVisitor(SymbolTable& symbols) : symbols(symbols) {}
    
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = visit(ast::TypeTransformer(symbols), parameter.parameterType);
+            Type type = visit(ast::TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -302,7 +298,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::defineVariables(ast::SourceFile& program, SymbolTable& table){
-    VariablesVisitor visitor(table);
+void ast::defineVariables(ast::SourceFile& program){
+    VariablesVisitor visitor;
     visit_non_variant(visitor, program);
 }

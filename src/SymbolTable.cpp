@@ -10,6 +10,9 @@
 
 using namespace eddic;
 
+//Global symbol table
+SymbolTable eddic::symbols;
+
 SymbolTable::SymbolTable(){
     //Add the standard functions to the function table
     defineStandardFunctions();

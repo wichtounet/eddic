@@ -13,11 +13,11 @@
 
 using namespace eddic;
 
-void eddic::allocateParams(SymbolTable& functionTable){
+void eddic::allocateParams(){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
-    auto it = functionTable.begin();
-    auto end = functionTable.end();
+    auto it = symbols.begin();
+    auto end = symbols.end();
 
     while(it != end){
         auto function = it->second;

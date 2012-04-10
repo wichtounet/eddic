@@ -14,7 +14,6 @@
 
 namespace eddic {
 
-class SymbolTable;
 class StringPool;
 class AssemblyFileWriter;
 
@@ -25,7 +24,7 @@ class CodeGenerator {
         CodeGenerator(AssemblyFileWriter& writer);
         
         //Entry point
-        virtual void generate(tac::Program& program, StringPool& pool, SymbolTable& table) = 0;
+        virtual void generate(tac::Program& program, StringPool& pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

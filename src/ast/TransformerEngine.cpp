@@ -84,9 +84,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 };
 
 struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
-    SymbolTable& symbols;
-    InstructionTransformer(SymbolTable& symbols) : symbols(symbols) {}
-
     ast::Instruction operator()(ast::CompoundAssignment& compound) const {
         ast::Assignment assignment;
 
@@ -310,10 +307,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
 };
 
 struct TransformerVisitor : public boost::static_visitor<> {
-    SymbolTable& symbols;
     InstructionTransformer instructionTransformer;
-    
-    TransformerVisitor(SymbolTable& symbols) : symbols(symbols), instructionTransformer(symbols) {}
 
     AUTO_RECURSE_PROGRAM()
 
@@ -384,7 +378,7 @@ void ast::cleanAST(ast::SourceFile& program){
     visitor(program);
 }
 
-void ast::transformAST(ast::SourceFile& program, SymbolTable& symbols){
-    TransformerVisitor visitor(symbols);
+void ast::transformAST(ast::SourceFile& program){
+    TransformerVisitor visitor;
     visitor(program);
 }

@@ -23,7 +23,7 @@ class IntelX86CodeGenerator : public IntelCodeGenerator {
         IntelX86CodeGenerator(AssemblyFileWriter& writer);
 
     protected:        
-        void writeRuntimeSupport(SymbolTable& table);
+        void writeRuntimeSupport();
         void addStandardFunctions();
         void compile(std::shared_ptr<tac::Function> function);
 

@@ -14,7 +14,6 @@
 #include "ast/Value.hpp"
 
 #include "Types.hpp"
-#include "SymbolTable.hpp"
 
 namespace eddic {
 
@@ -48,7 +47,7 @@ std::string mangle(const std::string& functionName, const std::vector<ParameterT
  * \param symbols The symbol table;
  * \return The mangled function name. 
  */
-std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values, SymbolTable& symbols);
+std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values);
 
 } //end of eddic
 

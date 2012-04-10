@@ -35,10 +35,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
-
-    SymbolTable& symbols;
-
-    CheckerVisitor(SymbolTable& symbols) : symbols(symbols) {}
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);
@@ -47,7 +43,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::GlobalVariableDeclaration& declaration){
         Type type = newType(declaration.Content->variableType); 
 
-        Type valueType = visit(ast::GetTypeVisitor(symbols), *declaration.Content->value);
+        Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
         }
@@ -86,7 +82,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        Type valueType = visit(ast::GetTypeVisitor(symbols), assignment.Content->value);
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
         if (valueType != var->type()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
         }
@@ -116,7 +112,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto struct_type = symbols.get_struct(struct_name);
         auto member_type = (*struct_type)[assignment.Content->memberName].type;
 
-        Type valueType = visit(ast::GetTypeVisitor(symbols), assignment.Content->value);
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
         if (valueType != member_type) {
             throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
         }
@@ -146,7 +142,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::Return& return_){
         visit(*this, return_.Content->value);
        
-        Type returnValueType = visit(ast::GetTypeVisitor(symbols), return_.Content->value);
+        Type returnValueType = visit(ast::GetTypeVisitor(), return_.Content->value);
         if(returnValueType != return_.Content->function->returnType){
             throw SemanticalException("The return value is not of the good type in the function " + return_.Content->function->name, return_.Content->position);
         }
@@ -158,12 +154,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        Type valueType = visit(ast::GetTypeVisitor(symbols), assignment.Content->value);
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
         if (valueType.base() != var->type().base()) {
             throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
         
-        Type indexType = visit(ast::GetTypeVisitor(symbols), assignment.Content->indexValue);
+        Type indexType = visit(ast::GetTypeVisitor(), assignment.Content->indexValue);
         if (indexType.base() != BaseType::INT) {
             throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
@@ -177,7 +173,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto struct_type = symbols.get_struct(struct_name);
         auto member_type = (*struct_type)[assignment.Content->memberName].type;
 
-        Type valueType = visit(ast::GetTypeVisitor(symbols), assignment.Content->value);
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
         if (valueType != member_type) {
             throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
         }
@@ -189,7 +185,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
             auto var = (*declaration.Content->context)[declaration.Content->variableName];
             
-            Type valueType = visit(ast::GetTypeVisitor(symbols), *declaration.Content->value);
+            Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
             if (valueType != var->type()) {
                 throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
             }
@@ -209,14 +205,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::ArrayValue& array){
         visit(*this, array.Content->indexValue);
 
-        Type valueType = visit(ast::GetTypeVisitor(symbols), array.Content->indexValue);
+        Type valueType = visit(ast::GetTypeVisitor(), array.Content->indexValue);
         if (valueType.base() != BaseType::INT || valueType.isArray()) {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
         }
     }
     
     void operator()(ast::Cast& cast){
-        Type destType = visit(ast::TypeTransformer(symbols), cast.Content->type);
+        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
 
         if(destType == BaseType::STRING){
             throw SemanticalException("Cannot cast to string", cast.Content->position);
@@ -231,7 +227,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
             [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
 
-        ast::GetTypeVisitor visitor(symbols);
+        ast::GetTypeVisitor visitor;
         Type type = visit(visitor, value.Content->first);
 
         for(auto& operation : value.Content->operations){
@@ -285,7 +281,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Too many arguments to the builtin operator", builtin.Content->position);
         }
         
-        ast::GetTypeVisitor visitor(symbols);
+        ast::GetTypeVisitor visitor;
         Type type = visit(visitor, builtin.Content->values[0]);
 
         if(builtin.Content->type == ast::BuiltinType::SIZE){
@@ -320,7 +316,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 };
 
-void ast::checkTypes(ast::SourceFile& program, SymbolTable& symbols){
-    CheckerVisitor visitor(symbols);
+void ast::checkTypes(ast::SourceFile& program){
+    CheckerVisitor visitor;
     visit_non_variant(visitor, program);
 }

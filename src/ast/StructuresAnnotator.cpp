@@ -15,37 +15,31 @@
 
 using namespace eddic;
 
-class StructuresCollector : public boost::static_visitor<> {
-    private:
-        SymbolTable& symbols;
+struct StructuresCollector : public boost::static_visitor<> {
+    AUTO_RECURSE_PROGRAM()
 
-    public:
-        StructuresCollector(SymbolTable& table) : symbols(table) {}
-
-        AUTO_RECURSE_PROGRAM()
-         
-        void operator()(ast::Struct& struct_){
-            if(symbols.struct_exists(struct_.Content->name)){
-                throw SemanticalException("The structure " + struct_.Content->name + " has already been defined", struct_.Content->position);
-            }
-
-            auto signature = std::make_shared<Struct>(struct_.Content->name);
-
-            for(auto& member : struct_.Content->members){
-                Type memberType = newType(member.Content->type);
-                signature->members.push_back({member.Content->name, memberType});
-            }
-
-            symbols.add_struct(signature);
+    void operator()(ast::Struct& struct_){
+        if(symbols.struct_exists(struct_.Content->name)){
+            throw SemanticalException("The structure " + struct_.Content->name + " has already been defined", struct_.Content->position);
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Stop recursion here
+        auto signature = std::make_shared<Struct>(struct_.Content->name);
+
+        for(auto& member : struct_.Content->members){
+            Type memberType = newType(member.Content->type);
+            signature->members.push_back({member.Content->name, memberType});
         }
+
+        symbols.add_struct(signature);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //Stop recursion here
+    }
 };
 
-void ast::defineStructures(ast::SourceFile& program, SymbolTable& symbolTable){
-    StructuresCollector collector(symbolTable);
+void ast::defineStructures(ast::SourceFile& program){
+    StructuresCollector collector;
     collector(program);
 }

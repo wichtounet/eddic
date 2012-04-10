@@ -59,6 +59,8 @@ class SymbolTable {
         int referenceCount(const std::string& function);
 };
 
+extern SymbolTable symbols;
+
 } //end of eddic
 
 #endif

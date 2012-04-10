@@ -16,8 +16,6 @@
 
 namespace eddic {
 
-class SymbolTable;
-
 namespace ast {
 
 /*!
@@ -25,9 +23,6 @@ namespace ast {
  * \brief AST visitor to transform an AST type into a type descriptor.   
  */
 struct TypeTransformer : public boost::static_visitor<eddic::Type> {
-    SymbolTable& symbols;
-    TypeTransformer(SymbolTable& symbols);
-
     eddic::Type operator()(ast::SimpleType& type) const;
     eddic::Type operator()(ast::ArrayType& type) const;
 };

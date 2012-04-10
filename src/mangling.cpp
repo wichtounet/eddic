@@ -10,6 +10,7 @@
 
 #include "mangling.hpp"
 #include "Utils.hpp"
+#include "SymbolTable.hpp"
 
 #include "VisitorUtils.hpp"
 #include "ast/GetTypeVisitor.hpp"
@@ -49,7 +50,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<Par
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, SymbolTable& symbols){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){
     if(functionName == "main"){
         return functionName;
     }
@@ -60,8 +61,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     ss << functionName.length();
     ss << functionName;
 
-    ast::GetTypeVisitor visitor(symbols);
-
+    ast::GetTypeVisitor visitor;
     for(auto& value : values){
         Type type = visit(visitor, value);
         ss << mangle(type);

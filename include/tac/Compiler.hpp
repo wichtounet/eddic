@@ -13,14 +13,13 @@
 namespace eddic {
 
 class StringPool;
-class SymbolTable;
 
 namespace tac {
 
 class Program;
 
 struct Compiler {
-    void compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, SymbolTable& table) const ;
+    void compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const ;
 };
 
 } //end of tac

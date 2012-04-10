@@ -20,12 +20,7 @@
 using namespace eddic;
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
-    private:
-        SymbolTable& symbols;
-
     public:
-        FunctionInserterVisitor(SymbolTable& table) : symbols(table) {}
-
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
@@ -36,7 +31,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = visit(ast::TypeTransformer(symbols), param.parameterType);
+                Type paramType = visit(ast::TypeTransformer(), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
@@ -58,12 +53,9 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     private:
-        SymbolTable& symbols;
         std::shared_ptr<Function> currentFunction;
 
     public:
-        FunctionCheckerVisitor(SymbolTable& table) : symbols(table) {}
-
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_SIMPLE_LOOPS()
@@ -90,7 +82,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 return;
             }
 
-            std::string mangled = mangle(name, functionCall.Content->values, symbols);
+            std::string mangled = mangle(name, functionCall.Content->values);
 
             if(!symbols.exists(mangled)){
                 throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
@@ -115,12 +107,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::defineFunctions(ast::SourceFile& program, SymbolTable& symbols){
+void ast::defineFunctions(ast::SourceFile& program){
     //First phase : Collect functions
-    FunctionInserterVisitor inserterVisitor(symbols);
+    FunctionInserterVisitor inserterVisitor;
     inserterVisitor(program);
 
     //Second phase : Verify calls
-    FunctionCheckerVisitor checkerVisitor(symbols);
+    FunctionCheckerVisitor checkerVisitor;
     checkerVisitor(program);
 }

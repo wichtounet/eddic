@@ -13,8 +13,6 @@
 
 using namespace eddic;
 
-ast::TypeTransformer::TypeTransformer(SymbolTable& symbols) : symbols(symbols) {}
-
 eddic::Type ast::TypeTransformer::operator()(ast::SimpleType& type) const {
     if(is_standard_type(type.type)){
         return newSimpleType(type.type);

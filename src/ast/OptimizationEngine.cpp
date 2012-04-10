@@ -57,17 +57,16 @@ struct GetStringValue : public boost::static_visitor<std::string> {
 struct ValueOptimizer : public boost::static_visitor<ast::Value> {
     private:
         StringPool& pool;
-        SymbolTable& symbols;
 
     public:
-        ValueOptimizer(StringPool& p, SymbolTable& s) : pool(p), symbols(s) {}
+        ValueOptimizer(StringPool& p) : pool(p){}
 
         ast::Value operator()(ast::Expression& value) const {
             assert(value.Content->operations.size() > 0); //Should have been transformed before
 
             //If the value is constant, we can replace it with the results of the computation
             if(ast::IsConstantVisitor()(value)){
-                Type type = ast::GetTypeVisitor(symbols)(value);
+                Type type = ast::GetTypeVisitor()(value);
 
                 if(type == BaseType::STRING){
                     ast::Litteral litteral;
@@ -131,12 +130,6 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 };
 
 struct CanBeRemoved : public boost::static_visitor<bool> {
-    private:
-        SymbolTable& symbols;
-
-    public:
-        CanBeRemoved(SymbolTable& table) : symbols(table) {}
-
         bool operator()(ast::FirstLevelBlock block){
             return visit(*this, block);
         }
@@ -185,19 +178,18 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
 
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
-        SymbolTable& symbols;
         StringPool& pool;
         ValueOptimizer optimizer;
 
     public:
-        OptimizationVisitor(SymbolTable& t, StringPool& p) : symbols(t), pool(p), optimizer(ValueOptimizer(pool, symbols)) {}
+        OptimizationVisitor(StringPool& p) : pool(p), optimizer(ValueOptimizer(pool)) {}
 
         template<typename T>
         void removeUnused(std::vector<T>& vector){
             auto iter = vector.begin();
             auto end = vector.end();
 
-            CanBeRemoved visitor(symbols);
+            CanBeRemoved visitor;
             auto newEnd = remove_if(iter, end, visitor);
 
             vector.erase(newEnd, end);
@@ -290,7 +282,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 };
 
-void ast::optimizeAST(ast::SourceFile& program, SymbolTable& symbols, StringPool& pool){
-    OptimizationVisitor visitor(symbols, pool);
+void ast::optimizeAST(ast::SourceFile& program, StringPool& pool){
+    OptimizationVisitor visitor(pool);
     visitor(program);
 }
