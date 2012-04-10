@@ -21,10 +21,9 @@ namespace tac {
 
 struct Call {
     std::string function;
+    std::shared_ptr<Function> functionDefinition;
     std::shared_ptr<Variable> return_;
     std::shared_ptr<Variable> return2_;
-    
-    std::shared_ptr<Function> functionDefinition;
 
     Call();
     Call(const std::string& function, std::shared_ptr<Function> functionDefinition);
