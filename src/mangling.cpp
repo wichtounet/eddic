@@ -9,26 +9,39 @@
 #include <cctype>
 
 #include "mangling.hpp"
+#include "assert.hpp"
 #include "Utils.hpp"
 #include "SymbolTable.hpp"
-
 #include "VisitorUtils.hpp"
+
 #include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
 std::string eddic::mangle(Type type){
-    switch(type.base()){
-        case BaseType::INT:
-            return type.isArray() ? "AI" : "I";
-        case BaseType::STRING:
-            return type.isArray() ? "AS" : "S";
-        case BaseType::BOOL:
-            return type.isArray() ? "AB" : "B";
-        case BaseType::FLOAT:
-            return type.isArray() ? "AF" : "F";
-        case BaseType::VOID:
-            return "V";
+    if(type.is_standard_type()){
+        switch(type.base()){
+            case BaseType::INT:
+                return type.isArray() ? "AI" : "I";
+            case BaseType::STRING:
+                return type.isArray() ? "AS" : "S";
+            case BaseType::BOOL:
+                return type.isArray() ? "AB" : "B";
+            case BaseType::FLOAT:
+                return type.isArray() ? "AF" : "F";
+            case BaseType::VOID:
+                return "V";
+        }
+
+        ASSERT_PATH_NOT_TAKEN("Not a standard type");
+    } else {
+        std::ostringstream ss;
+
+        ss << "C";
+        ss << type.type().length();
+        ss << type.type();
+        
+        return ss.str();
     }
 }
 
