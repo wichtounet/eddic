@@ -31,6 +31,8 @@ std::string toStringType(ast::Type type){
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return ptr->type + "[]";
     }
+
+    assert(false);
 }
 
 void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
