@@ -10,6 +10,7 @@
 #include "ast/DebugVisitor.hpp"
 #include "ast/SourceFile.hpp"
 
+#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
