@@ -60,6 +60,18 @@ int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::strin
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
 }
 
+int SymbolTable::size_of_struct(const std::string& struct_name){
+    int struct_size = 0;
+
+    auto struct_ = get_struct(struct_name);
+
+    for(auto& m : struct_->members){
+        struct_size += size(m.type);
+    }
+    
+    return struct_size;
+}
+
 bool SymbolTable::struct_exists(const std::string& struct_){
     return structs.find(struct_) != structs.end();
 }

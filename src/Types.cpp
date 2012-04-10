@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "Types.hpp"
 #include "Compiler.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
@@ -26,10 +27,16 @@ int eddic::size(BaseType type){
 }
 
 int eddic::size(Type type){
-    if(type.isArray()){
-        return size(type.base()) * type.size() + size(BaseType::INT); 
+    if(type.is_standard_type()){
+        if(type.isArray()){
+            return size(type.base()) * type.size() + size(BaseType::INT); 
+        } else {
+            return size(type.base());
+        }
     } else {
-        return size(type.base());
+        ASSERT(!type.isArray(), "Array of custom types are not supported for now");
+
+        return symbols.size_of_struct(type.type());
     }
 }
 
