@@ -20,6 +20,7 @@
 #include "tac/Program.hpp"
 #include "tac/IsSingleArgumentVisitor.hpp"
 #include "tac/IsParamSafeVisitor.hpp"
+#include "tac/Printer.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
@@ -322,17 +323,27 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             offset = symbols.member_offset_reverse(struct_type, value.Content->memberName);
         }
 
-        auto temp = value.Content->context->new_temporary(member_type);
-        
-        if(member_type == BaseType::FLOAT){
-            function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::FDOT, offset));
-        } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
-            function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
-        } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled type");
-        }
+        if(member_type == BaseType::STRING){
+            auto t1 = value.Content->context->newTemporary();
+            auto t2 = value.Content->context->newTemporary();
+            
+            function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset));
+            function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
 
-        return {temp};
+            return {t1, t2};
+        } else {
+            auto temp = value.Content->context->new_temporary(member_type);
+
+            if(member_type == BaseType::FLOAT){
+                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::FDOT, offset));
+            } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
+                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+            }
+
+            return {temp};
+        }
     }
 
     result_type operator()(ast::ArrayValue& array) const {

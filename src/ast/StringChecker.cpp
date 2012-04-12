@@ -37,6 +37,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_ARRAY_ASSIGNMENT()
+        AUTO_RECURSE_STRUCT_ASSIGNMENT()
 
         void operator()(ast::Litteral& litteral){
             litteral.label = pool.label(litteral.value);
