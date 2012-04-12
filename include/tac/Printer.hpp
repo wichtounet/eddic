@@ -9,6 +9,7 @@
 #define TAC_PRINTER_H
 
 #include "tac/Statement.hpp"
+#include "tac/Argument.hpp"
 
 namespace eddic {
 
@@ -22,7 +23,8 @@ class Program;
  */
 struct Printer {
     void print(tac::Program& program) const ;
-    void print(tac::Statement& program) const ;
+    void printStatement(tac::Statement& program) const ;
+    void printArgument(tac::Argument& program) const ;
 };
 
 } //end of tac
