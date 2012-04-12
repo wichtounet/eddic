@@ -293,11 +293,39 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         } else {
             if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
                 return {value.Content->var};
-            } else {
+            } else if(type == BaseType::STRING){
                 auto temp = value.Content->context->newTemporary();
                 function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, getStringOffset(value.Content->var)));
 
                 return {value.Content->var, temp};
+            } else if(type.is_custom_type()) {
+                std::vector<tac::Argument> values;
+
+                auto struct_name = value.Content->var->type().type();
+                auto struct_type = symbols.get_struct(struct_name);
+
+                for(auto& member : struct_type->members){
+                    ast::StructValue memberValue;
+                    memberValue.Content->context = value.Content->context;
+                    memberValue.Content->position = value.Content->position;
+                    memberValue.Content->variableName = value.Content->variableName;
+                    memberValue.Content->variable = value.Content->var;
+                    memberValue.Content->memberName = member.name;
+                    memberValue.Content->type = member.type;
+
+                    auto member_values = (*this)(memberValue);
+                    std::reverse(member_values.begin(), member_values.end());
+
+                    for(auto& v : member_values){
+                        values.push_back(v);
+                    }
+                }
+
+                std::reverse(values.begin(), values.end());
+
+                return values;
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
             }
         }
     }
@@ -326,9 +354,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         if(member_type == BaseType::STRING){
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
-            
-            function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset));
-            function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
+        
+            if(value.Content->variable->position().isParameter()){
+                function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset - getStringOffset(value.Content->variable)));
+                function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset));
+            } else {
+                function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset));
+                function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
+            }
 
             return {t1, t2};
         } else {
