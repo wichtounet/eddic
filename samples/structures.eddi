@@ -2,6 +2,7 @@ struct Complex {
     int imag;
     int real;
     float d;
+    bool b;
 }
 
 void main(){
@@ -11,18 +12,22 @@ void main(){
     c.imag = 222;
     c.real = 666;
     c.d = 3.23;
+    c.b = false;
 
     println(c.imag);
     println(c.real);
     println(c.d);
+    println(c.b);
 
     c.imag += 111;
     c.real += 222;
     c.d += 1.1;
+    c.b = true;
 
     println(c.imag);
     println(c.real);
     println(c.d);
+    println(c.b);
 
     test(c);
 }
@@ -31,4 +36,5 @@ void test(Complex a){
     println(a.imag);
     println(a.real);
     println(a.d);
+    println(a.b);
 }

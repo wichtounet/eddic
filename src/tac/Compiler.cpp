@@ -326,7 +326,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         
         if(member_type == BaseType::FLOAT){
             function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::FDOT, offset));
-        } else if(member_type == BaseType::INT){
+        } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
             function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled type");
