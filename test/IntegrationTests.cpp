@@ -94,6 +94,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_FIXTURE_TEST_SUITE(SpecificSuite, DeleteOutFixture)
 
+BOOST_AUTO_TEST_CASE( array_foreach_local ){
+    ASSERT_OUTPUT("array_foreach_local.eddi", "43210");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     ASSERT_OUTPUT("if.eddi", "Cool");
 }
