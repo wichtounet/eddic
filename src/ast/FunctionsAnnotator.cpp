@@ -24,6 +24,10 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
+            if(!is_standard_type(declaration.Content->returnType)){
+                throw SemanticalException("A function can only returns standard types for now", declaration.Content->position);
+            }
+
             auto signature = std::make_shared<Function>(newType(declaration.Content->returnType), declaration.Content->functionName);
 
             if(signature->returnType.isArray()){
