@@ -101,43 +101,35 @@ BOOST_AUTO_TEST_CASE( foreach_ ){
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
-    assertOutputEquals("globals.eddi", "1000a2000aa", "--32");
-    assertOutputEquals("globals.eddi", "1000a2000aa", "--64");
+    ASSERT_OUTPUT("globals.eddi", "1000a2000aa");
 }
 
 BOOST_AUTO_TEST_CASE( void_functions ){
-    assertOutputEquals("void.eddi", "4445", "--32");
-    assertOutputEquals("void.eddi", "4445", "--64");
+    ASSERT_OUTPUT("void.eddi", "4445");
 }
 
 BOOST_AUTO_TEST_CASE( string_functions ){
-    assertOutputEquals("return_string.eddi", "abcdef", "--32");
-    assertOutputEquals("return_string.eddi", "abcdef", "--64");
+    ASSERT_OUTPUT("return_string.eddi", "abcdef");
 }
 
 BOOST_AUTO_TEST_CASE( int_functions ){
-    assertOutputEquals("return_int.eddi", "484", "--32");
-    assertOutputEquals("return_int.eddi", "484", "--64");
+    ASSERT_OUTPUT("return_int.eddi", "484");
 }
 
 BOOST_AUTO_TEST_CASE( recursive_functions ){
-    assertOutputEquals("recursive.eddi", "362880", "--32");
-    assertOutputEquals("recursive.eddi", "362880", "--64");
+    ASSERT_OUTPUT("recursive.eddi", "362880");
 }
 
 BOOST_AUTO_TEST_CASE( math ){
-    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "--32");
-    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "--64");
+    ASSERT_OUTPUT("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|");
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
-    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "--32");
-    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "--64");
+    ASSERT_OUTPUT("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|");
 }
 
 BOOST_AUTO_TEST_CASE( assign_value ){
-    assertOutputEquals("assign_value.eddi", "66779921", "--32");
-    assertOutputEquals("assign_value.eddi", "66779921", "--64");
+    ASSERT_OUTPUT("assign_value.eddi", "66779921");
 }
 
 BOOST_AUTO_TEST_CASE( args ){
@@ -165,8 +157,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(BugFixesSuite)
 
 BOOST_AUTO_TEST_CASE( while_bug ){
-    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "--32");
-    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "--64");
+    ASSERT_OUTPUT("while_bug.eddi", "W1W2W3W4W5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
