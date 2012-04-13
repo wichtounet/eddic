@@ -51,6 +51,8 @@ class Type {
         unsigned int size() const;
         std::string type() const;
 
+        Type non_const() const;
+
         friend bool operator==(const Type& lhs, const Type& rhs);
         friend bool operator!=(const Type& lhs, const Type& rhs);
 

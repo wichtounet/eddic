@@ -50,6 +50,14 @@ std::string Type::type() const {
     return *m_type;
 }
 
+Type Type::non_const() const {
+    Type copy = *this;
+
+    copy.const_ = false;
+
+    return copy;
+}
+
 bool eddic::operator==(const Type& lhs, const Type& rhs){
     return lhs.baseType == rhs.baseType && 
            lhs.array == rhs.array &&
