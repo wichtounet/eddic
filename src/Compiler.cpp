@@ -93,6 +93,13 @@ int Compiler::compile(const std::string& file) {
 }
 
 int Compiler::compileOnly(const std::string& file, Platform platform) {
+    //Make sure that the file exists 
+    if(!file_exists(file)){
+        std::cout << "The file \"" + file + "\" does not exists" << std::endl;
+
+        return false;
+    }
+
     std::string output = options["output"].as<std::string>();
 
     int code = 0;

@@ -5,7 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
+#include <fstream>
+
 #include "Utils.hpp"
+
+bool eddic::file_exists(const std::string& file){
+   std::ifstream ifile(file.c_str());
+   return ifile; 
+}
 
 std::string eddic::execCommand(const std::string& command) {
     std::stringstream output;
