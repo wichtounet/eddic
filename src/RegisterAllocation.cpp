@@ -8,16 +8,16 @@
 #include "Compiler.hpp"
 #include "Platform.hpp"
 #include "RegisterAllocation.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
 
 using namespace eddic;
 
-void eddic::allocateParams(FunctionTable& functionTable){
+void eddic::allocateParams(){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
-    auto it = functionTable.begin();
-    auto end = functionTable.end();
+    auto it = symbols.begin();
+    auto end = symbols.end();
 
     while(it != end){
         auto function = it->second;

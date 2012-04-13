@@ -49,9 +49,12 @@ class Context {
 
         virtual std::shared_ptr<Variable> newTemporary();
         virtual std::shared_ptr<Variable> newFloatTemporary();
+        virtual std::shared_ptr<Variable> new_temporary(Type type);
 
         bool exists(const std::string& a) const;
         std::shared_ptr<Variable> getVariable(const std::string& variable) const;
+        
+        std::shared_ptr<Variable> operator[](const std::string& variable) const;
 
         Variables::const_iterator begin() const;
         Variables::const_iterator end() const;

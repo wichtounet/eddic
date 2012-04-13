@@ -12,11 +12,9 @@
 
 namespace eddic {
 
-class FunctionTable;
-
 namespace ast {
     
-void defineFunctions(ast::SourceFile& program, FunctionTable& functionTable);
+void defineFunctions(ast::SourceFile& program);
 
 } //end of ast
 

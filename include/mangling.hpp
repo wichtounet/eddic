@@ -14,7 +14,6 @@
 #include "ast/Value.hpp"
 
 #include "Types.hpp"
-#include "FunctionTable.hpp"
 
 namespace eddic {
 
@@ -36,6 +35,7 @@ std::string unmangle(std::string mangled);
  * \brief Return the mangled representation of the given function. Used for function declarations.  
  * \param functionName The name of the function
  * \param types The types of parameters. 
+ * \param symbols The symbol table;
  * \return The mangled function name. 
  */
 std::string mangle(const std::string& functionName, const std::vector<ParameterType>& types);
@@ -44,6 +44,7 @@ std::string mangle(const std::string& functionName, const std::vector<ParameterT
  * \brief Return the mangled representation of the given function. Used for function calls.  
  * \param functionName The name of the function. 
  * \param values The values used for the call. 
+ * \param symbols The symbol table;
  * \return The mangled function name. 
  */
 std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values);

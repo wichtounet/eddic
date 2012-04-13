@@ -14,7 +14,7 @@
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
@@ -29,6 +29,7 @@
 #include "ast/ContextAnnotator.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
+#include "ast/StructuresAnnotator.hpp"
 
 //Checkers
 #include "ast/StringChecker.hpp"
@@ -110,8 +111,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
         //If the parsing was sucessfully
         if(parsing){
-            //Symbol tables
-            FunctionTable functionTable;
             StringPool pool;
 
             //Read dependencies
@@ -127,12 +126,13 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::checkStrings(program, pool);
 
             //Add some more informations to the AST
+            ast::defineStructures(program);
             ast::defineContexts(program);
             ast::defineVariables(program);
-            ast::defineFunctions(program, functionTable);
+            ast::defineFunctions(program);
             
             //Allocate registers to params
-            allocateParams(functionTable);
+            allocateParams();
 
             //Transform the AST
             ast::transformAST(program);
@@ -141,13 +141,13 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::checkTypes(program);
 
             //Check for warnings
-            ast::checkForWarnings(program, functionTable);
+            ast::checkForWarnings(program);
 
             //Check that there is a main in the program
-            checkForMain(functionTable);
+            checkForMain();
 
             //Optimize the AST
-            ast::optimizeAST(program, functionTable, pool);
+            ast::optimizeAST(program, pool);
 
             //If the user asked for it, print the Abstract Syntax Tree
             if(options.count("ast") || options.count("ast-only")){
@@ -160,7 +160,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                 //Generate Three-Address-Code language
                 tac::Compiler compiler;
-                compiler.compile(program, pool, tacProgram, functionTable);
+                compiler.compile(program, pool, tacProgram);
 
                 //Separate into basic blocks
                 tac::BasicBlockExtractor extractor;
@@ -190,7 +190,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
                     as::CodeGeneratorFactory factory;
                     auto generator = factory.get(platform, writer);
-                    generator->generate(tacProgram, pool, functionTable); 
+                    generator->generate(tacProgram, pool); 
                     writer.write(); 
 
                     //If it's necessary, assemble and link the assembly
@@ -222,12 +222,12 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     return code;
 }
 
-void eddic::checkForMain(FunctionTable& table){
-    if(!table.exists("main")){
+void eddic::checkForMain(){
+    if(!symbols.exists("main")){
         throw SemanticalException("Your program must contain a main function"); 
     }
 
-    auto function = table.getFunction("main");
+    auto function = symbols.getFunction("main");
 
     if(function->parameters.size() > 1){
         throw SemanticalException("The signature of your main function is not valid");

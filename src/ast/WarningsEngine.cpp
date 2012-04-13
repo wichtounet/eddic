@@ -77,7 +77,7 @@ struct Collector : public boost::static_visitor<> {
 
 struct Inspector : public boost::static_visitor<> {
     public:
-        Inspector(FunctionTable& table, Collector& collector) : functionTable(table), collector(collector) {}
+        Inspector(Collector& collector) : collector(collector) {}
     
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
@@ -123,7 +123,7 @@ struct Inspector : public boost::static_visitor<> {
             check(declaration.Content->context);
             
             if(WarningUnused){
-                int references = functionTable.referenceCount(declaration.Content->mangledName);
+                int references = symbols.referenceCount(declaration.Content->mangledName);
 
                 if(declaration.Content->functionName != "main" && references == 0){
                     warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
@@ -152,16 +152,15 @@ struct Inspector : public boost::static_visitor<> {
         }
     
     private:
-        FunctionTable& functionTable;
         Collector& collector;
 };
 
 } //end of anonymous namespace
 
-void ast::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
+void ast::checkForWarnings(ast::SourceFile& program){
     Collector collector;
     visit_non_variant(collector, program);
 
-    Inspector inspector(table, collector);
+    Inspector inspector(collector);
     visit_non_variant(inspector, program);
 }

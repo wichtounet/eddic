@@ -22,6 +22,7 @@
 #include "ast/GlobalArrayDeclaration.hpp"
 #include "ast/StandardImport.hpp"
 #include "ast/Import.hpp"
+#include "ast/Struct.hpp"
 
 #include "Context.hpp"
 
@@ -40,7 +41,8 @@ typedef boost::variant<
             GlobalVariableDeclaration,
             GlobalArrayDeclaration,
             StandardImport,
-            Import
+            Import,
+            Struct
         > FirstLevelBlock;
 
 /*!

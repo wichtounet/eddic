@@ -48,6 +48,9 @@ typedef Deferred<ASTPlus> Plus;
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
 
+struct ASTStructValue;
+typedef Deferred<ASTStructValue> StructValue;
+
 struct ASTSuffixOperation;
 typedef Deferred<ASTSuffixOperation> SuffixOperation;
 

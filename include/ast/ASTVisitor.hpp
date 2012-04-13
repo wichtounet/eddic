@@ -8,6 +8,8 @@
 #ifndef AST_VISITOR_H
 #define AST_VISITOR_H
 
+#include "VisitorUtils.hpp"
+
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->lhs);\
@@ -58,7 +60,7 @@ void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
-    visit(*this, *declaration.Content->value);\
+    visit_optional(*this, declaration.Content->value);\
 }
 
 #define AUTO_RECURSE_RETURN_VALUES()\
@@ -69,6 +71,11 @@ void operator()(ast::Return& return_){\
 #define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
 void operator()(ast::ArrayAssignment& assignment){\
     visit(*this, assignment.Content->indexValue);\
+    visit(*this, assignment.Content->value);\
+}
+
+#define AUTO_RECURSE_STRUCT_ASSIGNMENT()\
+void operator()(ast::StructAssignment& assignment){\
     visit(*this, assignment.Content->value);\
 }
 

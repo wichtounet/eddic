@@ -34,8 +34,7 @@ struct ASTArrayDeclaration {
     std::string arrayName;
     int arraySize;
 
-    mutable long references;
-    ASTArrayDeclaration() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

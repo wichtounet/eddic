@@ -60,6 +60,7 @@ TEST_SAMPLE(optimize)
 TEST_SAMPLE(problem)
 TEST_SAMPLE(sort)
 TEST_SAMPLE(identifiers)
+TEST_SAMPLE(structures)
 
 /* Specific tests */ 
 

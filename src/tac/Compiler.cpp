@@ -7,9 +7,10 @@
 
 #include <string>
 
+#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "mangling.hpp"
@@ -19,14 +20,13 @@
 #include "tac/Program.hpp"
 #include "tac/IsSingleArgumentVisitor.hpp"
 #include "tac/IsParamSafeVisitor.hpp"
+#include "tac/Printer.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
-
-FunctionTable* functionTable;
 
 namespace {
 
@@ -35,7 +35,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
 tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
-    assert(value.Content->operations.size() > 0); //This has been enforced by previous phases
+    ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
     tac::Argument left = moveToArgument(value.Content->first, function);
     tac::Argument right;
@@ -201,7 +201,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 
         switch(builtin.Content->type){
             case ast::BuiltinType::SIZE:{
-                assert(boost::get<ast::VariableValue>(&value));
+                ASSERT(boost::get<ast::VariableValue>(&value), "The size builtin can only be applied to variable");
                 
                 auto variable = boost::get<ast::VariableValue>(value).Content->var;
 
@@ -218,13 +218,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                     return {t1};
                 }
 
-                assert(false && "The variable is not of a valid type");
+                ASSERT_PATH_NOT_TAKEN("The variale is not of a valid type");
             }
             case ast::BuiltinType::LENGTH:
                 return {visit(*this, value)[1]};
         }
 
-        assert(false && "This builtin operator is not handled");
+        ASSERT_PATH_NOT_TAKEN("This builtin operator is not handled");
     }
 
     result_type operator()(ast::FunctionCall& call) const {
@@ -286,18 +286,46 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                      return {value.first, value.second};
                 }
                 default:
-                    assert(false && "void is not a type");
+                     ASSERT_PATH_NOT_TAKEN("void is not a type");
            }
         } else if(type.isArray()){
             return {value.Content->var};
         } else {
             if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
                 return {value.Content->var};
-            } else {
+            } else if(type == BaseType::STRING){
                 auto temp = value.Content->context->newTemporary();
                 function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, getStringOffset(value.Content->var)));
 
                 return {value.Content->var, temp};
+            } else if(type.is_custom_type()) {
+                std::vector<tac::Argument> values;
+
+                auto struct_name = value.Content->var->type().type();
+                auto struct_type = symbols.get_struct(struct_name);
+
+                for(auto& member : struct_type->members){
+                    ast::StructValue memberValue;
+                    memberValue.Content->context = value.Content->context;
+                    memberValue.Content->position = value.Content->position;
+                    memberValue.Content->variableName = value.Content->variableName;
+                    memberValue.Content->variable = value.Content->var;
+                    memberValue.Content->memberName = member.name;
+                    memberValue.Content->type = member.type;
+
+                    auto member_values = (*this)(memberValue);
+                    std::reverse(member_values.begin(), member_values.end());
+
+                    for(auto& v : member_values){
+                        values.push_back(v);
+                    }
+                }
+
+                std::reverse(values.begin(), values.end());
+
+                return values;
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
             }
         }
     }
@@ -312,20 +340,53 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
         return {performSuffixOperation(operation, function)};
     }
 
+    result_type operator()(ast::StructValue& value) const {
+        auto struct_name = value.Content->variable->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[value.Content->memberName].type;
+        auto offset = symbols.member_offset(struct_type, value.Content->memberName);
+
+        //Revert the offset for parameter variables
+        if(value.Content->variable->position().isParameter()){
+            offset = symbols.member_offset_reverse(struct_type, value.Content->memberName);
+        }
+
+        if(member_type == BaseType::STRING){
+            auto t1 = value.Content->context->newTemporary();
+            auto t2 = value.Content->context->newTemporary();
+        
+            if(value.Content->variable->position().isParameter()){
+                function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset - getStringOffset(value.Content->variable)));
+                function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset));
+            } else {
+                function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset));
+                function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
+            }
+
+            return {t1, t2};
+        } else {
+            auto temp = value.Content->context->new_temporary(member_type);
+
+            if(member_type == BaseType::FLOAT){
+                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::FDOT, offset));
+            } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
+                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+            }
+
+            return {temp};
+        }
+    }
+
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
         switch(array.Content->var->type().base()){
-            case BaseType::FLOAT: {
-                auto temp = array.Content->context->newFloatTemporary();
-                function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
-
-                return {temp};
-
-            }   
             case BaseType::BOOL:
-            case BaseType::INT: {
-                auto temp = array.Content->context->newTemporary();
+            case BaseType::INT:
+            case BaseType::FLOAT: {
+                auto temp = array.Content->context->new_temporary(array.Content->var->type());
                 function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
 
                 return {temp};
@@ -345,7 +406,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {t1, t2};
             }
             default:
-                assert(false && "void is not a variable");
+                ASSERT_PATH_NOT_TAKEN("void is not a variable");
         }
     }
 
@@ -529,6 +590,26 @@ struct AssignValueToVariable : public AbstractVisitor {
     }
 };
 
+struct AssignValueToVariableWithOffset : public AbstractVisitor {
+    AssignValueToVariableWithOffset(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
+    
+    std::shared_ptr<Variable> variable;
+    unsigned int offset;
+
+    void intAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_ASSIGN, arguments[0]));
+    }
+    
+    void floatAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_FASSIGN, arguments[0]));
+    }
+
+    void stringAssign(std::vector<tac::Argument> arguments) const {
+        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_ASSIGN, arguments[0]));
+        function->add(std::make_shared<tac::Quadruple>(variable, offset + getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
+    }
+};
+
 void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
     visit(AssignValueToVariable(function, variable), value);
 }
@@ -551,8 +632,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 
 template<typename Control>
 void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
-    //relational operations cannot be chained
-    assert(value.Content->operations.size() == 1);
+    ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
     auto left = moveToArgument(value.Content->first, function);
     auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
@@ -560,8 +640,8 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Func
     Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
     Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-    assert(typeLeft == typeRight);
-    assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+    ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
+    ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only int and floats can be compared");
 
     if(typeLeft == BaseType::INT){
         function->add(std::make_shared<Control>(tac::toBinaryOperator(op), left, right, label));
@@ -663,7 +743,7 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
 }
 
 void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
-    assert(value.Content->operations.size() > 0); //Other values must be transformed before that phase
+    ASSERT(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
 
     std::vector<tac::Argument> arguments;
 
@@ -684,12 +764,12 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Functio
         arguments.clear();
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), v1, v2)); 
+            function->add(std::make_shared<tac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
             
-            function->add(std::make_shared<tac::Call>("concat", functionTable->getFunction("_F6concatSS"), t1, t2)); 
+            function->add(std::make_shared<tac::Call>("concat", symbols.getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -715,7 +795,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::FunctionDeclaration& f){
             function = std::make_shared<tac::Function>(f.Content->context, f.Content->mangledName);
-            function->definition = functionTable->getFunction(f.Content->mangledName);
+            function->definition = symbols.getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
@@ -732,6 +812,10 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::ArrayDeclaration&){
             //Nothing to compile there, everything is done by the function context
+        }
+
+        void operator()(ast::Struct&){
+            //Nothing to compile there
         }
 
         void operator()(ast::If& if_){
@@ -804,16 +888,31 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::CompoundAssignment&){
             //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            assert(false && "Compound assignment should be transformed into Assignment");
+            ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
+        }
+        
+        void operator()(ast::StructCompoundAssignment&){
+            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
+            ASSERT_PATH_NOT_TAKEN("Struct compound assignment should be transformed into Assignment");
         }
         
         void operator()(ast::ArrayAssignment& assignment){
             visit(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
         }
 
+        void operator()(ast::StructAssignment& assignment){
+            auto struct_name = (*assignment.Content->context)[assignment.Content->variableName]->type().type();
+            auto struct_type = symbols.get_struct(struct_name);
+            auto offset = symbols.member_offset(struct_type, assignment.Content->memberName);
+
+            visit(AssignValueToVariableWithOffset(function, assignment.Content->context->getVariable(assignment.Content->variableName), offset), assignment.Content->value);
+        }
+
         void operator()(ast::VariableDeclaration& declaration){
-            if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
-                visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+            if(declaration.Content->value){
+                if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
+                    visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+                }
             }
         }
 
@@ -903,7 +1002,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Foreach&){
             //This node has been transformed into a for node
-            assert(false && "Foreach should have been transformed into a For loop"); 
+            ASSERT_PATH_NOT_TAKEN("Foreach should have been transformed into a For loop"); 
         }
        
         void operator()(ast::ForeachIn& foreach){
@@ -986,10 +1085,9 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     }
     
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
-    auto definition = functionTable->getFunction(functionName);
+    auto definition = symbols.getFunction(functionName);
 
-    //All the functions should be in the function table
-    assert(definition);
+    ASSERT(definition, "All the functions should be in the function table");
 
     auto context = definition->context;
 
@@ -1027,8 +1125,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     //The first operator defines the kind of operation 
     auto op = value.Content->operations[0].get<0>();
 
-    //Only these operators are valid there
-    assert(op == ast::Operator::AND || op == ast::Operator::OR || (op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS));
+    ASSERT(op == ast::Operator::AND || op == ast::Operator::OR || (op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS), "Invalid operator on bool");
 
     //Logical and operators (&&)
     if(op == ast::Operator::AND){
@@ -1070,8 +1167,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        //relational operations cannot be chained
-        assert(value.Content->operations.size() == 1);
+        ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
@@ -1079,8 +1175,8 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
         Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
-        assert(typeLeft == typeRight);
-        assert(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT);
+        ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
+        ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only float and int values can be compared");
 
         if(typeLeft == BaseType::INT){
             function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toRelationalOperator(op), right));
@@ -1095,9 +1191,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram, FunctionTable& table) const {
-    functionTable = &table;
-
+void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);
 }

@@ -11,6 +11,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "assert.hpp"
 #include "Utils.hpp"
 #include "Registers.hpp"
 #include "Compiler.hpp"
@@ -1333,7 +1334,7 @@ struct IntelStatementCompiler {
                     } else {
                         writer.stream() << getFloatAdd() << reg << ", " << arg(*quadruple->arg1) << std::endl;
                     }
-                } 
+                }
                 //In the other forms, use two instructions
                 else {
                     FloatRegister reg = getFloatRegNoMove(result);
@@ -1557,8 +1558,8 @@ struct IntelStatementCompiler {
                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
                assert(boost::get<int>(&*quadruple->arg2));
 
-               int offset = boost::get<int>(*quadruple->arg2);
                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+               int offset = boost::get<int>(*quadruple->arg2);
 
                Register reg = getRegNoMove(quadruple->result);
                writer.stream() << "mov " << reg << ", " << toString(variable, offset) << std::endl;
@@ -1567,13 +1568,40 @@ struct IntelStatementCompiler {
 
                break;
             }
+            case tac::Operator::FDOT:
+            {
+               assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+               assert(boost::get<int>(&*quadruple->arg2));
+
+               auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+               int offset = boost::get<int>(*quadruple->arg2);
+
+               FloatRegister reg = getFloatRegNoMove(quadruple->result);
+               writer.stream() << getFloatMove() << reg << ", " << toString(variable, offset) << std::endl;
+    
+               written.insert(quadruple->result);
+
+               break;
+            }
             case tac::Operator::DOT_ASSIGN:
             {
-                assert(boost::get<int>(&*quadruple->arg1));
+                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
 
                 int offset = boost::get<int>(*quadruple->arg1);
 
                 writer.stream() << "mov " << getMnemonicSize() << " " << toString(quadruple->result, offset) << ", " << arg(*quadruple->arg2) << std::endl;
+
+                break;
+            }
+            case tac::Operator::DOT_FASSIGN:
+            {
+                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+
+                int offset = boost::get<int>(*quadruple->arg1);
+                auto reg = getFreeReg(float_registers);
+                copy(*quadruple->arg2, reg);
+
+                writer.stream() << getFloatMove() << toString(quadruple->result, offset) << ", " << reg << std::endl;
 
                 break;
             }

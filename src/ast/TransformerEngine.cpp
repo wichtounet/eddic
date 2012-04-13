@@ -103,6 +103,33 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         return assignment;
     }
+    
+    ast::Instruction operator()(ast::StructCompoundAssignment& compound) const {
+        ast::StructAssignment assignment;
+
+        assignment.Content->context = compound.Content->context;
+        assignment.Content->variableName = compound.Content->variableName;
+        assignment.Content->memberName = compound.Content->memberName;
+
+        ast::StructValue variable;
+        variable.Content->context = compound.Content->context;
+        variable.Content->variableName = compound.Content->variableName;
+        variable.Content->memberName = compound.Content->memberName;
+        variable.Content->variable = compound.Content->context->getVariable(compound.Content->variableName);
+
+        auto struct_name = compound.Content->context->getVariable(compound.Content->variableName)->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[compound.Content->memberName].type;
+        variable.Content->type = member_type;
+
+        ast::Expression composed;
+        composed.Content->first = variable;
+        composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
+
+        assignment.Content->value = composed;
+
+        return assignment;
+    }
 
     ast::Instruction operator()(ast::Foreach& foreach) const {
         ast::For for_;
@@ -159,8 +186,8 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
      
     //No transformations
     template<typename T>
-    ast::Instruction operator()(T& value) const {
-        return value;
+    ast::Instruction operator()(T& instruction) const {
+        return instruction;
     }
 };
 
@@ -243,6 +270,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::CompoundAssignment& assignment) const {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
+    
+    void operator()(ast::StructCompoundAssignment& assignment) const {
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+    }
 
     void operator()(ast::Return& return_) const {
         return_.Content->value = visit(transformer, return_.Content->value); 
@@ -251,6 +282,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::ArrayAssignment& assignment) const {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
         assignment.Content->indexValue = visit(transformer, assignment.Content->indexValue); 
+    }
+    
+    void operator()(ast::StructAssignment& assignment) const {
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
     void operator()(ast::VariableDeclaration& declaration) const {

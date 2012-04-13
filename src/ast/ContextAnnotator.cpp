@@ -48,6 +48,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
             declaration.Content->context = currentContext;
         }
 
+        void operator()(ast::Struct&){
+            //Nothing to annotate here
+        }
+
         void operator()(ast::FunctionDeclaration& function){
             currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
 
@@ -138,7 +142,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->context = currentContext;
             
-            visit(*this, *declaration.Content->value);
+            visit_optional(*this, declaration.Content->value);
         }
         
         void operator()(ast::ArrayDeclaration& declaration){
@@ -157,10 +161,22 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
+        void operator()(ast::StructCompoundAssignment& assignment){
+            assignment.Content->context = currentContext;
+
+            visit(*this, assignment.Content->value);
+        }
+        
         void operator()(ast::ArrayAssignment& assignment){
             assignment.Content->context = currentContext;
 
             visit(*this, assignment.Content->indexValue);
+            visit(*this, assignment.Content->value);
+        }
+        
+        void operator()(ast::StructAssignment& assignment){
+            assignment.Content->context = currentContext;
+
             visit(*this, assignment.Content->value);
         }
         
@@ -186,6 +202,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
+        }
+        
+        void operator()(ast::StructValue& struct_){
+            struct_.Content->context = currentContext;
         }
         
         void operator()(ast::ArrayValue& array){

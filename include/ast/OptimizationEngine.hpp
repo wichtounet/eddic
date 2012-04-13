@@ -12,12 +12,11 @@
 
 namespace eddic {
 
-class FunctionTable;
 class StringPool;
 
 namespace ast {
 
-void optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool);
+void optimizeAST(ast::SourceFile& program, StringPool& pool);
 
 } //end of ast
 

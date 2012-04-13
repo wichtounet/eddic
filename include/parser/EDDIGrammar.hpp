@@ -28,33 +28,44 @@ namespace parser {
 struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
 
+    /* First level blocks */
     qi::rule<lexer::Iterator, ast::SourceFile()> program;
     qi::rule<lexer::Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
     qi::rule<lexer::Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
     qi::rule<lexer::Iterator, ast::FunctionDeclaration()> function;
     qi::rule<lexer::Iterator, ast::FunctionParameter()> arg;
 
+    /* Instructions */
     qi::rule<lexer::Iterator, ast::Instruction()> instruction;
     qi::rule<lexer::Iterator, ast::Instruction()> repeatable_instruction;
     qi::rule<lexer::Iterator, ast::Swap()> swap;
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
-    qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
     qi::rule<lexer::Iterator, ast::Return()> return_;
-    qi::rule<lexer::Iterator, ast::ArrayAssignment()> arrayAssignment;
+   
+    /* Assignments  */
+    qi::rule<lexer::Iterator, ast::StructAssignment()> struct_assignment;
+    qi::rule<lexer::Iterator, ast::ArrayAssignment()> array_assignment;
+    qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
+    qi::rule<lexer::Iterator, ast::StructCompoundAssignment()> struct_compound_assignment;
+
+    /* Loops */
     qi::rule<lexer::Iterator, ast::While()> while_;
     qi::rule<lexer::Iterator, ast::DoWhile()> do_while_;
     qi::rule<lexer::Iterator, ast::For()> for_;
     qi::rule<lexer::Iterator, ast::Foreach()> foreach_;
     qi::rule<lexer::Iterator, ast::ForeachIn()> foreachin_;
-    qi::rule<lexer::Iterator, ast::If()> if_;
 
+    /* Branches  */
+    qi::rule<lexer::Iterator, ast::If()> if_;
     qi::rule<lexer::Iterator, ast::Else()> else_;
     qi::rule<lexer::Iterator, ast::ElseIf()> else_if_;
-
+ 
+    /* Imports  */
     qi::rule<lexer::Iterator, ast::StandardImport()> standardImport;
     qi::rule<lexer::Iterator, ast::Import()> import;
 
+    /* Helper  */
     qi::rule<lexer::Iterator, bool()> const_;
     
     qi::symbols<char, ast::Operator> compound_op;

@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 
 #include "tac/Argument.hpp"
 

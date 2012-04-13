@@ -5,51 +5,109 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FunctionTable.hpp"
+#include "assert.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
-FunctionTable::FunctionTable(){
+//Global symbol table
+SymbolTable eddic::symbols;
+
+SymbolTable::SymbolTable(){
     //Add the standard functions to the function table
     defineStandardFunctions();
 }
 
-FunctionMap::const_iterator FunctionTable::begin(){
+FunctionMap::const_iterator SymbolTable::begin(){
     return functions.cbegin();
 }
 
-FunctionMap::const_iterator FunctionTable::end(){
+FunctionMap::const_iterator SymbolTable::end(){
     return functions.cend();
 }
 
-void FunctionTable::addFunction(std::shared_ptr<Function> function){
+void SymbolTable::addFunction(std::shared_ptr<Function> function){
     functions[function->mangledName] = function;
 }
 
-std::shared_ptr<Function> FunctionTable::getFunction(const std::string& function){
+std::shared_ptr<Function> SymbolTable::getFunction(const std::string& function){
     return functions[function];
 }
 
-bool FunctionTable::exists(const std::string& function){
+bool SymbolTable::exists(const std::string& function){
     return functions.find(function) != functions.end();
 }
 
-void FunctionTable::addReference(const std::string& function){
+void SymbolTable::add_struct(std::shared_ptr<Struct> struct_){
+    structs[struct_->name] = struct_;
+}
+
+std::shared_ptr<Struct> SymbolTable::get_struct(const std::string& struct_){
+    return structs[struct_];
+}
+
+int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
+    int offset = 0;
+
+    for(auto& m : struct_->members){
+        if(m.name == member){
+            return offset;
+        }
+
+        offset -= size(m.type);
+    }
+
+    ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
+}
+
+int SymbolTable::member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member){
+    int offset = -size_of_struct(struct_->name) + 8; 
+    //member_offset(struct_, struct_->members.back().name);
+
+    for(auto& m : struct_->members){
+        if(m.name == member){
+            return offset;
+        }
+
+        offset += size(m.type);
+    }
+
+    ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
+
+}
+
+int SymbolTable::size_of_struct(const std::string& struct_name){
+    int struct_size = 0;
+
+    auto struct_ = get_struct(struct_name);
+
+    for(auto& m : struct_->members){
+        struct_size += size(m.type);
+    }
+    
+    return struct_size;
+}
+
+bool SymbolTable::struct_exists(const std::string& struct_){
+    return structs.find(struct_) != structs.end();
+}
+
+void SymbolTable::addReference(const std::string& function){
     ++(functions[function]->references);
 }
 
-int FunctionTable::referenceCount(const std::string& function){
+int SymbolTable::referenceCount(const std::string& function){
     return functions[function]->references;
 }
 
-void FunctionTable::addPrintFunction(const std::string& function, BaseType parameterType){
+void SymbolTable::addPrintFunction(const std::string& function, BaseType parameterType){
     auto printFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "print");
     printFunction->mangledName = function;
     printFunction->parameters.push_back({"a", newSimpleType(parameterType)});
     addFunction(printFunction);
 }
 
-void FunctionTable::defineStandardFunctions(){
+void SymbolTable::defineStandardFunctions(){
     //print string
     addPrintFunction("_F5printS", BaseType::STRING);
     addPrintFunction("_F7printlnS", BaseType::STRING);
@@ -85,32 +143,4 @@ void FunctionTable::defineStandardFunctions(){
     durationFunction->parameters.push_back({"a", newArrayType(BaseType::INT)});
     durationFunction->parameters.push_back({"b", newArrayType(BaseType::INT)});
     addFunction(durationFunction);
-}
-
-Type Function::getParameterType(const std::string& name){
-    for(auto& p : parameters){
-        if(p.name == name){
-            return p.paramType;
-        }
-    }
-    
-    assert(false && "This parameter does not exists in the given function");
-}
-
-unsigned int Function::getParameterPositionByType(const std::string& name){
-    unsigned int position = 0;
-
-    auto type = getParameterType(name);
-    
-    for(auto& p : parameters){
-        if(p.paramType == type){
-            ++position; 
-        }
-
-        if(p.name == name){
-            return position;
-        }
-    }
-
-    assert(false && "The parameter does not exists in the function");
 }

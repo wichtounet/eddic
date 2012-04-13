@@ -24,6 +24,7 @@
 #include "Variable.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
@@ -46,6 +47,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
         }
+    }
+
+    void operator()(ast::Struct&){
+        //Nothing to check here
     }
 
     void operator()(ast::Import&){
@@ -98,6 +103,20 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::CompoundAssignment& assignment){
         checkAssignment(assignment);
     }
+    
+    void operator()(ast::StructCompoundAssignment& assignment){
+        visit(*this, assignment.Content->value);
+        
+        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[assignment.Content->memberName].type;
+
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+        if (valueType != member_type) {
+            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+        }
+    }
 
     template<typename Operation>
     void checkSuffixOrPrefixOperation(Operation& operation){
@@ -145,14 +164,31 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
     }
+
+    void operator()(ast::StructAssignment& assignment){
+        visit(*this, assignment.Content->value);
+        
+        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[assignment.Content->memberName].type;
+
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+        if (valueType != member_type) {
+            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+        }
+    }
     
     void operator()(ast::VariableDeclaration& declaration){
-        visit(*this, *declaration.Content->value);
+        if(declaration.Content->value){
+            visit(*this, *declaration.Content->value);
 
-        Type variableType = newType(declaration.Content->variableType);
-        Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
-        if (valueType != variableType) {
-            throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+            auto var = (*declaration.Content->context)[declaration.Content->variableName];
+            
+            Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+            if (valueType != var->type()) {
+                throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+            }
         }
     }
     
@@ -268,6 +304,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue&){
+        //Nothing to check here
+    }
+    
+    void operator()(ast::StructValue&){
         //Nothing to check here
     }
 

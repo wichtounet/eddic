@@ -12,7 +12,7 @@
 #include <memory>
 #include <vector>
 
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 
 #include "tac/BasicBlock.hpp"
 
