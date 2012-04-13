@@ -35,6 +35,12 @@ void main(){
     println(c.s);
 
     test(c);
+
+    if(c.b){
+        println(c.imag);
+    } else {
+        println(c.real);
+    }
 }
 
 void test(Complex a){
