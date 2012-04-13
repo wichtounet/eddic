@@ -75,11 +75,11 @@ int Compiler::compile(const std::string& file) {
         platform = Platform::INTEL_X86_64;
     }
 
-    if(options.count("32")){
+    if(option_defined("32")){
         platform = Platform::INTEL_X86;
     }
     
-    if(options.count("64")){
+    if(option_defined("64")){
         platform = Platform::INTEL_X86_64;
     }
 
@@ -100,7 +100,7 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
         return false;
     }
 
-    std::string output = options["output"].as<std::string>();
+    std::string output = option_value("output");
 
     int code = 0;
     try {
@@ -157,12 +157,12 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             ast::optimizeAST(program, pool);
 
             //If the user asked for it, print the Abstract Syntax Tree
-            if(options.count("ast") || options.count("ast-only")){
+            if(option_defined("ast") || option_defined("ast-only")){
                 ast::DebugVisitor()(program);
             }
 
             //If necessary, continue the compilation process
-            if(!options.count("ast-only")){
+            if(!option_defined("ast-only")){
                 tac::Program tacProgram;
 
                 //Generate Three-Address-Code language
@@ -181,13 +181,13 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
                 optimizer.optimize(tacProgram, pool);
 
                 //If asked by the user, print the Three Address code representation
-                if(options.count("tac") || options.count("tac-only")){
+                if(option_defined("tac") || option_defined("tac-only")){
                     tac::Printer printer;
                     printer.print(tacProgram);
                 }
 
                 //If necessary, continue the compilation process
-                if(!options.count("tac-only")){
+                if(!option_defined("tac-only")){
                     //Compute liveness of variables
                     tac::LivenessAnalyzer liveness;
                     liveness.compute(tacProgram);
@@ -201,11 +201,11 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
                     writer.write(); 
 
                     //If it's necessary, assemble and link the assembly
-                    if(!options.count("assembly")){
-                        assemble(platform, output, options.count("assembly"), options.count("verbose"));
+                    if(!option_defined("assembly")){
+                        assemble(platform, output, option_defined("debug"), option_defined("verbose"));
 
                         //Remove temporary files
-                        if(!options.count("keep")){
+                        if(!option_defined("keep")){
                             remove("output.asm");
                         }
 

@@ -101,47 +101,47 @@ BOOST_AUTO_TEST_CASE( foreach_ ){
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
-    assertOutputEquals("globals.eddi", "1000a2000aa", "-32");
-    assertOutputEquals("globals.eddi", "1000a2000aa", "-64");
+    assertOutputEquals("globals.eddi", "1000a2000aa", "--32");
+    assertOutputEquals("globals.eddi", "1000a2000aa", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( void_functions ){
-    assertOutputEquals("void.eddi", "4445", "-32");
-    assertOutputEquals("void.eddi", "4445", "-64");
+    assertOutputEquals("void.eddi", "4445", "--32");
+    assertOutputEquals("void.eddi", "4445", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( string_functions ){
-    assertOutputEquals("return_string.eddi", "abcdef", "-32");
-    assertOutputEquals("return_string.eddi", "abcdef", "-64");
+    assertOutputEquals("return_string.eddi", "abcdef", "--32");
+    assertOutputEquals("return_string.eddi", "abcdef", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( int_functions ){
-    assertOutputEquals("return_int.eddi", "484", "-32");
-    assertOutputEquals("return_int.eddi", "484", "-64");
+    assertOutputEquals("return_int.eddi", "484", "--32");
+    assertOutputEquals("return_int.eddi", "484", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( recursive_functions ){
-    assertOutputEquals("recursive.eddi", "362880", "-32");
-    assertOutputEquals("recursive.eddi", "362880", "-64");
+    assertOutputEquals("recursive.eddi", "362880", "--32");
+    assertOutputEquals("recursive.eddi", "362880", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( math ){
-    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "-32");
-    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "-64");
+    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "--32");
+    assertOutputEquals("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
-    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-32");
-    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "-64");
+    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "--32");
+    assertOutputEquals("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( assign_value ){
-    assertOutputEquals("assign_value.eddi", "66779921", "-32");
-    assertOutputEquals("assign_value.eddi", "66779921", "-64");
+    assertOutputEquals("assign_value.eddi", "66779921", "--32");
+    assertOutputEquals("assign_value.eddi", "66779921", "--64");
 }
 
 BOOST_AUTO_TEST_CASE( args ){
-    assertCompiles("test/cases/args.eddi", "-32");
+    assertCompiles("test/cases/args.eddi", "--32");
 
     std::string out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE( args ){
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
     
-    assertCompiles("test/cases/args.eddi", "-64");
+    assertCompiles("test/cases/args.eddi", "--64");
 
     out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
@@ -165,8 +165,8 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(BugFixesSuite)
 
 BOOST_AUTO_TEST_CASE( while_bug ){
-    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "-32");
-    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "-64");
+    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "--32");
+    assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "--64");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

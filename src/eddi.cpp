@@ -19,22 +19,22 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    if(options.count("help")){
+    if(option_defined("help")){
         printHelp();
         return 0;
     }
 
-    if(options.count("version")){
+    if(option_defined("version")){
         printVersion();
         return 0;
     }
 
-    if (!options.count("input")) {
+    if (!option_defined("input")) {
         std::cout << "eddic: no input files" << std::endl;
         printHelp();
         return -1;
     }
 
     Compiler compiler;
-    return compiler.compile(options["input"].as<std::string>());
+    return compiler.compile(option_value("input"));
 }
