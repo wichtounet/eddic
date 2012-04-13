@@ -30,14 +30,14 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
 
 void assertCompiles(const std::string& file, const std::string& param){
     const char* options[3] = {"./bin/test", param.c_str(), file.c_str()};
-    eddic::parseOptions(3, options);
+    BOOST_REQUIRE (eddic::parseOptions(3, options));
 
     eddic::Compiler compiler;
 
     eddic::Platform platform = eddic::Platform::INTEL_X86;
     int code = compiler.compileOnly(file, platform);
 
-    BOOST_CHECK_EQUAL (code, 0);
+    BOOST_REQUIRE_EQUAL (code, 0);
 }
 
 void assertOutputEquals(const std::string& file, const std::string& output, const std::string& param){
