@@ -22,6 +22,10 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
     assertCompiles("samples/" #file ".eddi", "-64");\
 }
 
+#define ASSERT_OUTPUT(file, output)\
+    assertOutputEquals(file, output, "-32");\
+    assertOutputEquals(file, output, "-64");
+
 void assertCompiles(const std::string& file, const std::string& param){
     const char* options[1] = {param.c_str()};
     eddic::parseOptions(1, options);
@@ -65,8 +69,7 @@ TEST_SAMPLE(structures)
 /* Specific tests */ 
 
 BOOST_AUTO_TEST_CASE( if_ ){
-    assertOutputEquals("if.eddi", "Cool", "-32");
-    assertOutputEquals("if.eddi", "Cool", "-64");
+    ASSERT_OUTPUT("if.eddi", "Cool");
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
