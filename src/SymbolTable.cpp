@@ -14,6 +14,13 @@ using namespace eddic;
 SymbolTable eddic::symbols;
 
 SymbolTable::SymbolTable(){
+    reset();
+}
+
+void SymbolTable::reset(){
+    functions.clear();
+    structs.clear();
+    
     //Add the standard functions to the function table
     defineStandardFunctions();
 }
