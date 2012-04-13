@@ -480,7 +480,7 @@ void restoreFloat32(AssemblyFileWriter& writer, const std::vector<std::string>& 
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov eax, [ebp+8]" << std::endl;
+    writer.stream() << "mov eax, ecx" << std::endl;
     writer.stream() << "xor esi, esi" << std::endl;
 
     //If the number is negative, we print the - and then the number
