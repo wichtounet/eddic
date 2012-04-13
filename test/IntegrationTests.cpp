@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <string>
+#include <iostream>
 
 #include "Options.hpp"
 #include "Compiler.hpp"
@@ -15,6 +16,8 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE EddicTestSuites
 #include <boost/test/unit_test.hpp>
+
+/* Macros to ease the tests  */
 
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
@@ -26,7 +29,18 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
     assertOutputEquals(file, output, "--32");\
     assertOutputEquals(file, output, "--64");
 
-#include <iostream>
+/* Fixture to delete the a.out file after the compilation */
+
+struct DeleteOutFixture {
+    DeleteOutFixture(){
+        /* Nothing to setup  */    
+    }
+
+    ~DeleteOutFixture(){ 
+        BOOST_TEST_MESSAGE( "Delete the a.out file" ); 
+        remove("a.out"); 
+    }
+};
 
 void assertCompiles(const std::string& file, const std::string& param){
     const char* argv[3];
@@ -54,7 +68,7 @@ void assertOutputEquals(const std::string& file, const std::string& output, cons
 
 /* Compiles all the samples */
 
-BOOST_AUTO_TEST_SUITE(SamplesSuite)
+BOOST_FIXTURE_TEST_SUITE( SamplesSuite, DeleteOutFixture )
 
 TEST_SAMPLE(arrays)
 TEST_SAMPLE(asm)
@@ -78,7 +92,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 /* Specific tests */ 
 
-BOOST_AUTO_TEST_SUITE(SpecificSuite)
+BOOST_FIXTURE_TEST_SUITE(SpecificSuite, DeleteOutFixture)
 
 BOOST_AUTO_TEST_CASE( if_ ){
     ASSERT_OUTPUT("if.eddi", "Cool");
@@ -154,7 +168,7 @@ BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */
 
-BOOST_AUTO_TEST_SUITE(BugFixesSuite)
+BOOST_FIXTURE_TEST_SUITE(BugFixesSuite, DeleteOutFixture)
 
 BOOST_AUTO_TEST_CASE( while_bug ){
     ASSERT_OUTPUT("while_bug.eddi", "W1W2W3W4W5");
