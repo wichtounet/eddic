@@ -13,22 +13,24 @@
 #include "Platform.hpp"
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Eddic Tests
+#define BOOST_TEST_MODULE EddicTestSuites
 #include <boost/test/unit_test.hpp>
 
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
-    assertCompiles("samples/" #file ".eddi", "-32");\
-    assertCompiles("samples/" #file ".eddi", "-64");\
+    assertCompiles("samples/" #file ".eddi", "--32");\
+    assertCompiles("samples/" #file ".eddi", "--64");\
 }
 
 #define ASSERT_OUTPUT(file, output)\
-    assertOutputEquals(file, output, "-32");\
-    assertOutputEquals(file, output, "-64");
+    assertOutputEquals(file, output, "--32");\
+    assertOutputEquals(file, output, "--64");
+
+#include <iostream>
 
 void assertCompiles(const std::string& file, const std::string& param){
-    const char* options[1] = {param.c_str()};
-    eddic::parseOptions(1, options);
+    const char* options[3] = {"./bin/test", param.c_str(), file.c_str()};
+    eddic::parseOptions(3, options);
 
     eddic::Compiler compiler;
 
@@ -48,6 +50,8 @@ void assertOutputEquals(const std::string& file, const std::string& output, cons
 
 /* Compiles all the samples */
 
+BOOST_AUTO_TEST_SUITE(SamplesSuite)
+
 TEST_SAMPLE(arrays)
 TEST_SAMPLE(asm)
 TEST_SAMPLE(assembly)
@@ -66,30 +70,30 @@ TEST_SAMPLE(sort)
 TEST_SAMPLE(identifiers)
 TEST_SAMPLE(structures)
 
+BOOST_AUTO_TEST_SUITE_END()
+
 /* Specific tests */ 
+
+BOOST_AUTO_TEST_SUITE(SpecificSuite)
 
 BOOST_AUTO_TEST_CASE( if_ ){
     ASSERT_OUTPUT("if.eddi", "Cool");
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
-    assertOutputEquals("while.eddi", "01234", "-32");
-    assertOutputEquals("while.eddi", "01234", "-64");
+    ASSERT_OUTPUT("while.eddi", "01234");
 }
 
 BOOST_AUTO_TEST_CASE( do_while_ ){
-    assertOutputEquals("do_while.eddi", "01234", "-32");
-    assertOutputEquals("do_while.eddi", "01234", "-64");
+    ASSERT_OUTPUT("do_while.eddi", "01234");
 }
 
 BOOST_AUTO_TEST_CASE( for_ ){
-    assertOutputEquals("for.eddi", "01234", "-32");
-    assertOutputEquals("for.eddi", "01234", "-64");
+    ASSERT_OUTPUT("for.eddi", "01234");
 }
 
 BOOST_AUTO_TEST_CASE( foreach_ ){
-    assertOutputEquals("foreach.eddi", "012345", "-32");
-    assertOutputEquals("foreach.eddi", "012345", "-64");
+    ASSERT_OUTPUT("foreach.eddi", "012345");
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
@@ -149,9 +153,16 @@ BOOST_AUTO_TEST_CASE( args ){
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */
+
+BOOST_AUTO_TEST_SUITE(BugFixesSuite)
+
 BOOST_AUTO_TEST_CASE( while_bug ){
     assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "-32");
     assertOutputEquals("while_bug.eddi", "W1W2W3W4W5", "-64");
 }
+
+BOOST_AUTO_TEST_SUITE_END()
