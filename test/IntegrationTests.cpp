@@ -29,8 +29,12 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
 #include <iostream>
 
 void assertCompiles(const std::string& file, const std::string& param){
-    const char* options[3] = {"./bin/test", param.c_str(), file.c_str()};
-    BOOST_REQUIRE (eddic::parseOptions(3, options));
+    const char* argv[3];
+    argv[0] = "./bin/test";
+    argv[1] = param.c_str();
+    argv[2] = file.c_str();
+
+    BOOST_REQUIRE (eddic::parseOptions(3, argv));
 
     eddic::Compiler compiler;
 
