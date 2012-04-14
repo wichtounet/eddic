@@ -135,15 +135,9 @@ struct IntelStatementCompiler {
         auto offsetReg = getReg(offsetVariable);
         
         if(position.isStack()){
-            return "[" + regToString(getBasePointerRegister()) + " + " + regToString(offsetReg) + " + " + ::toString(-1 * (position.offset())) + "]";
+            return "[" + getBasePointerRegister() + " + " + offsetReg + " + " + ::toString(-1 * (position.offset())) + "]";
         } else if(position.isParameter()){
-            Register reg = getReg();
-            
-            writer.stream() << "mov " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << ::toString(position.offset()) << "]" << std::endl;
-
-            registers.release(reg);
-
-            return "[" + reg + "+" + offsetReg + "]";
+            return "[" + getBasePointerRegister() + " + " + offsetReg + " + " + ::toString(position.offset()) + "]";
         } else if(position.isGlobal()){
             return "[" + offsetReg + "+V" + position.name() + "]";
         } 
