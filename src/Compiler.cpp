@@ -69,7 +69,9 @@ static const bool debug = false;
 using namespace eddic;
 
 int Compiler::compile(const std::string& file) {
-    std::cout << "Compile " << file << std::endl;
+    if(!option_defined("quiet")){
+        std::cout << "Compile " << file << std::endl;
+    }
 
     if(TargetDetermined && Target64){
         platform = Platform::INTEL_X86_64;
@@ -87,7 +89,9 @@ int Compiler::compile(const std::string& file) {
     
     int code = compileOnly(file, platform);
 
-    std::cout << "Compilation took " << timer.elapsed() << "ms" << std::endl;
+    if(!option_defined("quiet")){
+        std::cout << "Compilation took " << timer.elapsed() << "ms" << std::endl;
+    }
 
     return code;
 }
