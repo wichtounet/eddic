@@ -38,8 +38,12 @@ struct IntelStatementCompiler {
 
     std::unordered_set<std::shared_ptr<Variable>> written;
 
+    //Store the Register that are saved before call
     std::vector<Register> int_pushed;
     std::vector<FloatRegister> float_pushed;
+
+    //Allow to push needed register before the first push param
+    bool first_param = true;
 
     bool last;
     bool ended;
@@ -978,8 +982,12 @@ struct IntelStatementCompiler {
             }
         }
 
+        //Each register has been restored
         int_pushed.clear();
         float_pushed.clear();
+
+        //All the parameters have been handled by now, the next param will be the first for its call
+        first_param = true;
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -1007,37 +1015,11 @@ struct IntelStatementCompiler {
     void passInIntRegister(tac::Argument& argument, int position){
         Register reg = getIntParamRegister(position);
 
-        //If the parameter register is already used by a variable or a parent parameter
-        if(registers.used(reg)){
-            if(registers[reg]->position().isParamRegister()){
-                int_pushed.push_back(reg);
-                writer.stream() << "push " << reg << std::endl;
-            } else {
-                spills(reg);
-            }
-        }
-
         writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;            
     }
     
     void passInFloatRegister(tac::Argument& argument, int position){
         FloatRegister reg = getFloatParamRegister(position);
-
-        //If the parameter register is already used by a variable or a parent parameter
-        if(float_registers.used(reg)){
-            if(float_registers[reg]->position().isParamRegister()){
-                float_pushed.push_back(reg);
-                
-                Register gpreg = getReg();
-
-                writer.stream() << getSizedMove() << gpreg << ", " << reg << std::endl;
-                writer.stream() << "push " << gpreg << std::endl;
-
-                registers.release(gpreg);
-            } else {
-                spills(reg);
-            }
-        }
 
         if(boost::get<double>(&argument)){
             Register gpreg = getReg();
@@ -1057,6 +1039,52 @@ struct IntelStatementCompiler {
         PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+
+        if(first_param){
+            if(param->function){
+                for(auto& parameter : param->function->parameters){
+                    auto type = param->function->getParameterType(parameter.name);
+                    unsigned int position = param->function->getParameterPositionByType(parameter.name);
+
+                    if(type == BaseType::INT && position <= maxInt){
+                        Register reg = getIntParamRegister(position);
+
+                        //If the parameter register is already used by a variable or a parent parameter
+                        if(registers.used(reg)){
+                            if(registers[reg]->position().isParamRegister()){
+                                int_pushed.push_back(reg);
+                                writer.stream() << "push " << reg << std::endl;
+                            } else {
+                                spills(reg);
+                            }
+                        }
+                    }
+
+                    if(type == BaseType::FLOAT && position <= maxFloat){
+                        FloatRegister reg = getFloatParamRegister(position);
+
+                        //If the parameter register is already used by a variable or a parent parameter
+                        if(float_registers.used(reg)){
+                            if(float_registers[reg]->position().isParamRegister()){
+                                float_pushed.push_back(reg);
+
+                                Register gpreg = getReg();
+
+                                writer.stream() << getSizedMove() << gpreg << ", " << reg << std::endl;
+                                writer.stream() << "push " << gpreg << std::endl;
+
+                                registers.release(gpreg);
+                            } else {
+                                spills(reg);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //The following parameters are for the same call
+            first_param = false;
+        }
         
         //It's a call to a standard function
         if(param->std_param.length() > 0){
