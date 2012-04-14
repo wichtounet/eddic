@@ -1094,10 +1094,12 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
     //If it's a standard function, there are no context
     if(!context){
         auto parameters = definition->parameters;
-        int i = 0;
+        int i = parameters.size()-1;
+
+        std::reverse(arguments.begin(), arguments.end());
 
         for(auto& first : arguments){
-            auto param = parameters[i++].name; 
+            auto param = parameters[i--].name; 
 
             for(auto& arg : first){
                 function->add(std::make_shared<tac::Param>(arg, param, definition));   
@@ -1105,10 +1107,12 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
         }
     } else {
         auto parameters = definition->parameters;
-        int i = 0;
+        int i = parameters.size()-1;
+
+        std::reverse(arguments.begin(), arguments.end());
 
         for(auto& first : arguments){
-            std::shared_ptr<Variable> param = context->getVariable(parameters[i++].name);
+            std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
 
             for(auto& arg : first){
                 function->add(std::make_shared<tac::Param>(arg, param, definition));   
