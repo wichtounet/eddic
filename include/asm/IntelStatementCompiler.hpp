@@ -97,14 +97,14 @@ struct IntelStatementCompiler {
         assert(!position.isTemporary());
 
         if(position.isStack()){
-            return "[" + regToString(getBasePointerRegister()) + " + " + ::toString(-position.offset() + offset) + "]";
+            return "[" + getBasePointerRegister() + " + " + ::toString(-position.offset() + offset) + "]";
         } else if(position.isParameter()){
             //The case of array is special because only the address is passed, not the complete array
             if(variable->type().isArray())
             {
                 Register reg = getReg();
 
-                writer.stream() << "mov " << reg << ", [" + regToString(getBasePointerRegister()) + " + " << ::toString(position.offset()) << "]" << std::endl;
+                writer.stream() << "mov " << reg << ", [" + getBasePointerRegister() + " + " << ::toString(position.offset()) << "]" << std::endl;
 
                 registers.release(reg);
 
@@ -112,7 +112,7 @@ struct IntelStatementCompiler {
             } 
             //In the other cases, the value is passed, so we can compute the offset directly
             else {
-                return "[" + regToString(getBasePointerRegister()) + " + " + ::toString(position.offset() + offset) + "]";
+                return "[" + getBasePointerRegister() + " + " + ::toString(position.offset() + offset) + "]";
             }
         } else if(position.isGlobal()){
             return "[V" + position.name() + "+" + ::toString(offset) + "]";
@@ -137,7 +137,13 @@ struct IntelStatementCompiler {
         if(position.isStack()){
             return "[" + getBasePointerRegister() + " + " + offsetReg + " + " + ::toString(-1 * (position.offset())) + "]";
         } else if(position.isParameter()){
-            return "[" + getBasePointerRegister() + " + " + offsetReg + " + " + ::toString(position.offset()) + "]";
+            Register reg = getReg();
+
+            writer.stream() << "mov " << reg << ", [" + getBasePointerRegister() + " + " << ::toString(position.offset()) << "]" << std::endl;
+
+            registers.release(reg);
+
+            return "[" + reg + "+" + offsetReg + "]";
         } else if(position.isGlobal()){
             return "[" + offsetReg + "+V" + position.name() + "]";
         } 
