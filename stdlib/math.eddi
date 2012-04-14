@@ -26,7 +26,7 @@ int pow(int a, int n){
         return 1;
     }
 
-    return n * pow(a, n -1);
+    return a * pow(a, n -1);
 }
 
 //Factorial function
