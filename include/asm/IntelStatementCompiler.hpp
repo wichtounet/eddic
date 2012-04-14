@@ -38,6 +38,9 @@ struct IntelStatementCompiler {
 
     std::unordered_set<std::shared_ptr<Variable>> written;
 
+    std::vector<Register> int_pushed;
+    std::vector<FloatRegister> float_pushed;
+
     bool last;
     bool ended;
 
@@ -957,34 +960,26 @@ struct IntelStatementCompiler {
             written.insert(call->return2_);
         }
 
-        auto int_it = registers.rbegin();
-        auto int_end = registers.rend();
+        std::reverse(int_pushed.begin(), int_pushed.end());
+        std::reverse(float_pushed.begin(), float_pushed.end());
 
         //Restore the int parameters in registers (in the reverse order they were pushed)
-        while(int_it != int_end){
-            auto& reg = *int_it;
-
+        for(auto& reg : int_pushed){
             if(registers.used(reg) && registers[reg]->position().isParamRegister()){
                 writer.stream() << "pop " << reg << std::endl;
             }
-
-            ++int_it;
         }
-
-        auto float_it = float_registers.rbegin();
-        auto float_end = float_registers.rend();
         
         //Restore the float parameters in registers (in the reverse order they were pushed)
-        while(float_it != float_end){
-            auto& reg = *float_it;
-
+        for(auto& reg : float_pushed){
             if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
                 writer.stream() << "movq " << reg << ", [" << getStackPointerRegister() << "]" << std::endl;
                 writer.stream() << "add " << getStackPointerRegister() << ", " << size(BaseType::FLOAT) << std::endl;
             }
-
-            ++float_it;
         }
+
+        int_pushed.clear();
+        float_pushed.clear();
     }
 
     void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
@@ -1015,6 +1010,7 @@ struct IntelStatementCompiler {
         //If the parameter register is already used by a variable or a parent parameter
         if(registers.used(reg)){
             if(registers[reg]->position().isParamRegister()){
+                int_pushed.push_back(reg);
                 writer.stream() << "push " << reg << std::endl;
             } else {
                 spills(reg);
@@ -1030,6 +1026,8 @@ struct IntelStatementCompiler {
         //If the parameter register is already used by a variable or a parent parameter
         if(float_registers.used(reg)){
             if(float_registers[reg]->position().isParamRegister()){
+                float_pushed.push_back(reg);
+                
                 Register gpreg = getReg();
 
                 writer.stream() << getSizedMove() << gpreg << ", " << reg << std::endl;
