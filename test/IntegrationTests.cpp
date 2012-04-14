@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE( assign_value ){
 }
 
 BOOST_AUTO_TEST_CASE( concat ){
-    ASSERT_OUTPUT("concat.eddi", "asdf1234|1234asfd|asdfasdf|12341234|");
+    ASSERT_OUTPUT("concat.eddi", "asdf1234|1234asdf|asdfasdf|12341234|");
 }
 
 BOOST_AUTO_TEST_CASE( args ){
