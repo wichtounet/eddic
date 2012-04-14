@@ -957,19 +957,33 @@ struct IntelStatementCompiler {
             written.insert(call->return2_);
         }
 
-        //Restore the int parameters in registers
-        for(auto reg : registers){
+        auto int_it = registers.rbegin();
+        auto int_end = registers.rend();
+
+        //Restore the int parameters in registers (in the reverse order they were pushed)
+        while(int_it != int_end){
+            auto& reg = *int_it;
+
             if(registers.used(reg) && registers[reg]->position().isParamRegister()){
                 writer.stream() << "pop " << reg << std::endl;
             }
+
+            ++int_it;
         }
+
+        auto float_it = float_registers.rbegin();
+        auto float_end = float_registers.rend();
         
-        //Restore the float parameters in registers
-        for(auto reg : float_registers){
+        //Restore the float parameters in registers (in the reverse order they were pushed)
+        while(float_it != float_end){
+            auto& reg = *float_it;
+
             if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
                 writer.stream() << "movq " << reg << ", [" << getStackPointerRegister() << "]" << std::endl;
                 writer.stream() << "add " << getStackPointerRegister() << ", " << size(BaseType::FLOAT) << std::endl;
             }
+
+            ++float_it;
         }
     }
 

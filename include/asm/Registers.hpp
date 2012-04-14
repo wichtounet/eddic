@@ -22,6 +22,7 @@ namespace as {
 template<typename Reg>
 class Registers {
     typedef typename std::vector<Reg>::const_iterator Iterator;
+    typedef typename std::vector<Reg>::const_reverse_iterator ReverseIterator;
 
     public:
         Registers(std::vector<Reg> registers, std::shared_ptr<Variable> var);
@@ -46,6 +47,9 @@ class Registers {
 
         Iterator begin() const;
         Iterator end() const;
+        
+        ReverseIterator rbegin() const;
+        ReverseIterator rend() const;
 
     private:
         std::vector<Reg> registers;   
@@ -136,6 +140,16 @@ typename Registers<Reg>::Iterator Registers<Reg>::begin() const {
 template<typename Reg>
 typename Registers<Reg>::Iterator Registers<Reg>::end() const {
     return registers.cend();
+}
+
+template<typename Reg>
+typename Registers<Reg>::ReverseIterator Registers<Reg>::rbegin() const {
+    return registers.crbegin();
+}
+
+template<typename Reg>
+typename Registers<Reg>::ReverseIterator Registers<Reg>::rend() const {
+    return registers.crend();
 }
 
 template<typename Reg>
