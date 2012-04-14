@@ -710,11 +710,11 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 void addPrintStringFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printS");
     
-    as::save(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
-    as::restore(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
    
@@ -722,13 +722,13 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnS");
     
-    as::save(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
 }
