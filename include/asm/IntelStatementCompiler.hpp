@@ -126,17 +126,16 @@ struct IntelStatementCompiler {
             return toString(variable, *ptr);
         }
         
-        assert(boost::get<std::shared_ptr<Variable>>(&offset));
-
-        auto* offsetVariable = boost::get<std::shared_ptr<Variable>>(&offset);
         auto position = variable->position();
-
-        auto offsetReg = getReg(*offsetVariable);
-        
         assert(!position.isTemporary());
         
+        assert(boost::get<std::shared_ptr<Variable>>(&offset));
+
+        auto offsetVariable = boost::get<std::shared_ptr<Variable>>(offset);
+        auto offsetReg = getReg(offsetVariable);
+        
         if(position.isStack()){
-            return "[" + regToString(getBasePointerRegister()) + " + " + ::toString(-1 * (position.offset())) + "]";//TODO Verify
+            return "[" + regToString(getBasePointerRegister()) + " + " + regToString(offsetReg) + " + " + ::toString(-1 * (position.offset())) + "]";
         } else if(position.isParameter()){
             Register reg = getReg();
             
