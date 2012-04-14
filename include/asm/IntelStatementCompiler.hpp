@@ -1086,40 +1086,33 @@ struct IntelStatementCompiler {
             first_param = false;
         }
         
-        //It's a call to a standard function
-        if(param->std_param.length() > 0){
-            auto type = param->function->getParameterType(param->std_param);
-            unsigned int position = param->function->getParameterPositionByType(param->std_param);
+        if(param->std_param.length() > 0 || param->param){
+            boost::optional<Type> type;
+            unsigned int position;
 
-            if(type == BaseType::INT && position <= maxInt){
+            //It's a call to a standard function
+            if(param->std_param.length() > 0){
+                type = param->function->getParameterType(param->std_param);
+                position = param->function->getParameterPositionByType(param->std_param);
+            } 
+            //It's a call to a user function
+            else if(param->param){
+                type = param->param->type();
+                position = param->function->getParameterPositionByType(param->param->name());
+            }
+
+            if(*type == BaseType::INT && position <= maxInt){
                 passInIntRegister(param->arg, position);
 
                 return;
             }
             
-            if(type == BaseType::FLOAT && position <= maxFloat){
+            if(*type == BaseType::FLOAT && position <= maxFloat){
                 passInFloatRegister(param->arg, position);
                 
                 return;
             }
         } 
-        //It's a call to a user function
-        else if(param->param){
-            auto type = param->param->type();
-            unsigned int position = param->function->getParameterPositionByType(param->param->name());
-
-            if(type == BaseType::INT && position <= maxInt){
-                passInIntRegister(param->arg, position);
-
-                return;
-            }
-            
-            if(type == BaseType::FLOAT && position <= maxFloat){
-                passInFloatRegister(param->arg, position);
-                
-                return;
-            }
-        }
        
         //If the param as not been handled as register passing, push it on the stack 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
