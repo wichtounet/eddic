@@ -194,6 +194,22 @@ BOOST_AUTO_TEST_CASE( std_lib_arrays_sum ){
     ASSERT_OUTPUT("stdlib_array_sum.eddi", "100");
 }
 
+BOOST_AUTO_TEST_CASE( std_lib_math_min ){
+    ASSERT_OUTPUT("stdlib_math_min.eddi", "999|0|0|-1|0|-1");
+}
+
+BOOST_AUTO_TEST_CASE( std_lib_math_max ){
+    ASSERT_OUTPUT("stdlib_math_max.eddi", "1000|1|1|0|0|0");
+}
+
+BOOST_AUTO_TEST_CASE( std_lib_math_factorial ){
+    ASSERT_OUTPUT("stdlib_math_factorial.eddi", "1|1|2|362880");
+}
+
+BOOST_AUTO_TEST_CASE( std_lib_math_pow ){
+    ASSERT_OUTPUT("stdlib_math_pow.eddi", "0|1|10|100|1024|1");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */
