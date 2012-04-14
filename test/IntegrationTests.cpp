@@ -183,6 +183,10 @@ BOOST_AUTO_TEST_CASE( assign_value ){
     ASSERT_OUTPUT("assign_value.eddi", "66779921");
 }
 
+BOOST_AUTO_TEST_CASE( concat ){
+    ASSERT_OUTPUT("concat.eddi", "asdf1234|1234asfd|asdfasdf|12341234|");
+}
+
 BOOST_AUTO_TEST_CASE( args ){
     assertCompiles("test/cases/args.eddi", "--32");
 
