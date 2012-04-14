@@ -29,6 +29,20 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
     assertOutputEquals(file, output, "--32");\
     assertOutputEquals(file, output, "--64");
 
+#include <boost/test/detail/unit_test_parameters.hpp>
+
+/* Config Fixture  */
+
+struct ConfigFixture {
+    ConfigFixture(){
+        //TODO Configure the show progress parameter
+    }
+
+    ~ConfigFixture(){
+        /* Nothing to teard down */
+    }
+};
+
 /* Fixture to delete the a.out file after the compilation */
 
 struct DeleteOutFixture {
@@ -64,6 +78,10 @@ void assertOutputEquals(const std::string& file, const std::string& output, cons
     
     BOOST_CHECK_EQUAL (output, out);
 }
+
+/* Configure a global fixture for the configuration */
+
+BOOST_GLOBAL_FIXTURE ( ConfigFixture  )
 
 /* Compiles all the samples */
 
