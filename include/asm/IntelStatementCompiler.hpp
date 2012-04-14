@@ -448,7 +448,7 @@ struct IntelStatementCompiler {
 
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if (auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+        } else if (auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } else if (auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
             return isLive((*ptr)->liveness, variable);
