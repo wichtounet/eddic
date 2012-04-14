@@ -340,7 +340,7 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
             }
             
             writer.stream() << "xor rax, rax" << std::endl;
-            writer.stream() << "lea rdi, [rbp + " << position << " - 4]" << std::endl;
+            writer.stream() << "lea rdi, [rbp + " << position << " - 8]" << std::endl;
             writer.stream() << "std" << std::endl;
             writer.stream() << "rep stosq" << std::endl;
             writer.stream() << "cld" << std::endl;
