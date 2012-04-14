@@ -185,6 +185,16 @@ BOOST_AUTO_TEST_CASE( args ){
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+/* Standard library test suite  */
+
+BOOST_FIXTURE_TEST_SUITE(StandardLibSuite, DeleteOutFixture)
+
+BOOST_AUTO_TEST_CASE( std_lib_arrays_sum ){
+    ASSERT_OUTPUT("stdlib_array_sum.eddi", "100");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */
 
