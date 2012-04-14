@@ -43,17 +43,16 @@ struct DeleteOutFixture {
 };
 
 void assertCompiles(const std::string& file, const std::string& param){
-    const char* argv[3];
+    const char* argv[4];
     argv[0] = "./bin/test";
     argv[1] = param.c_str();
-    argv[2] = file.c_str();
+    argv[2] = "--quiet";
+    argv[3] = file.c_str();
 
-    BOOST_REQUIRE (eddic::parseOptions(3, argv));
+    BOOST_REQUIRE (eddic::parseOptions(4, argv));
 
     eddic::Compiler compiler;
-
-    eddic::Platform platform = eddic::Platform::INTEL_X86;
-    int code = compiler.compileOnly(file, platform);
+    int code = compiler.compile(file);
 
     BOOST_REQUIRE_EQUAL (code, 0);
 }
