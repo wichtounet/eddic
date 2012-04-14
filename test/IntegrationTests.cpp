@@ -98,6 +98,22 @@ BOOST_AUTO_TEST_CASE( array_foreach_local ){
     ASSERT_OUTPUT("array_foreach_local.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( array_foreach_global ){
+    ASSERT_OUTPUT("array_foreach_global.eddi", "43210");
+}
+
+BOOST_AUTO_TEST_CASE( array_foreach_param_local ){
+    ASSERT_OUTPUT("array_foreach_param_local.eddi", "43210");
+}
+
+BOOST_AUTO_TEST_CASE( array_foreach_param_global ){
+    ASSERT_OUTPUT("array_foreach_param_global.eddi", "43210");
+}
+
+BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
+    ASSERT_OUTPUT("array_foreach_param_param.eddi", "43210");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     ASSERT_OUTPUT("if.eddi", "Cool");
 }
