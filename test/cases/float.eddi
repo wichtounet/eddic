@@ -9,6 +9,8 @@ void main(){
     print("|");
     print(+100.0);
     print("|");
+    print(2.0889);
+    print("|");
 
     float aaaaa = 4.2;
     print(aaaaa);
@@ -116,9 +118,11 @@ float test(float a, float b){
     float c = a + b;
     print(c);
     print("|");
+    
     float d = a * b;
     print(d);
     print("|");
+    
     return c + d;
 }
 
