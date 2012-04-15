@@ -581,7 +581,7 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = integer part
-    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;       //xmm1 = Move the integer part into xmm1
+    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;       //xmm1 = integer part
 
     //Print the integer part
     writer.stream() << "mov r14, rbx" << std::endl;
@@ -592,6 +592,16 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "add rsp, 16" << std::endl;
+
+    //Handle negative numbers
+    writer.stream() << "or rbx, rbx" << std::endl;
+    writer.stream() << "jge .pos" << std::endl;
+    writer.stream() << "mov rbx, __float64__(-1.0)" << std::endl;
+    writer.stream() << "movq xmm2, rbx" << std::endl;
+    writer.stream() << "mulsd xmm7, xmm2" << std::endl;
+    writer.stream() << "mulsd xmm1, xmm2" << std::endl;
+
+    writer.stream() << ".pos:" << std::endl;
    
     //Remove the integer part from the floating point 
     writer.stream() << "subsd xmm7, xmm1" << std::endl;         //xmm7 = decimal part
