@@ -187,6 +187,10 @@ BOOST_AUTO_TEST_CASE( concat ){
     ASSERT_OUTPUT("concat.eddi", "asdf1234|1234asdf|asdfasdf|12341234|");
 }
 
+BOOST_AUTO_TEST_CASE( structures ){
+    ASSERT_OUTPUT("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
+}
+
 BOOST_AUTO_TEST_CASE( args ){
     assertCompiles("test/cases/args.eddi", "--32");
 
