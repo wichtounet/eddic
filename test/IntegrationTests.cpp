@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE( concat ){
 }
 
 BOOST_AUTO_TEST_CASE( prints ){
-    ASSERT_OUTPUT("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.999||-0|asdf|1234asdf|");
+    ASSERT_OUTPUT("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.9900||-0|asdf|1234asdf|");
 }
 
 BOOST_AUTO_TEST_CASE( structures ){
