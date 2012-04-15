@@ -192,6 +192,10 @@ BOOST_AUTO_TEST_CASE( concat ){
     ASSERT_OUTPUT("concat.eddi", "asdf1234|1234asdf|asdfasdf|12341234|");
 }
 
+BOOST_AUTO_TEST_CASE( prints ){
+    ASSERT_OUTPUT("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.999||-0|asdf|1234asdf|");
+}
+
 BOOST_AUTO_TEST_CASE( structures ){
     ASSERT_OUTPUT("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
 }
