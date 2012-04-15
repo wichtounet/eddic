@@ -626,7 +626,7 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintBoolBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov eax, [ebp-4] " << std::endl;
+    writer.stream() << "mov eax, [ebp+8] " << std::endl;
     writer.stream() << "or eax, eax" << std::endl;
     writer.stream() << "jne .true_print" << std::endl;
     writer.stream() << "xor ecx, ecx" << std::endl;
