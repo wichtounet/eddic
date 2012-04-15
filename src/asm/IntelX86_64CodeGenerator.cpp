@@ -580,8 +580,8 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;   //Get the integer part into rbx
-    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;   //Move the integer part into xmm1
+    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = integer part
+    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;       //xmm1 = Move the integer part into xmm1
 
     //Print the integer part
     writer.stream() << "mov r14, rbx" << std::endl;
@@ -594,19 +594,21 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "add rsp, 16" << std::endl;
    
     //Remove the integer part from the floating point 
-    writer.stream() << "subsd xmm7, xmm1" << std::endl;
+    writer.stream() << "subsd xmm7, xmm1" << std::endl;         //xmm7 = decimal part
     
     writer.stream() << "mov rcx, __float64__(10000.0)" << std::endl;
-    writer.stream() << "movq xmm2, rcx" << std::endl;
+    writer.stream() << "movq xmm2, rcx" << std::endl;           //xmm2 = 10'000
     
-    writer.stream() << "mulsd xmm7, xmm2" << std::endl;
-    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;
-    writer.stream() << "mov rax, rbx" << std::endl;
+    writer.stream() << "mulsd xmm7, xmm2" << std::endl;         //xmm7 = decimal part * 10'000
+    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = decimal part * 10'000
+    writer.stream() << "mov rax, rbx" << std::endl;             //rax = rbx
 
-    //Handle numbers with 0 at the beginning of the decimal part
+    //Handle numbers with no decimal part 
     writer.stream() << "or rax, rax" << std::endl;
-    writer.stream() << "xor r14, r14" << std::endl;
     writer.stream() << "je .end" << std::endl;
+    
+    //Handle numbers with 0 at the beginning of the decimal part
+    writer.stream() << "xor r14, r14" << std::endl;
     writer.stream() << ".start:" << std::endl;
     writer.stream() << "cmp rax, 1000" << std::endl;
     writer.stream() << "jge .end" << std::endl;
@@ -614,6 +616,7 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "imul rax, 10" << std::endl;
     writer.stream() << "jmp .start" << std::endl;
     
+    //Print the number itself
     writer.stream() << ".end:" << std::endl;
     writer.stream() << "mov r14, rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
