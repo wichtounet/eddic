@@ -19,7 +19,7 @@ void main(){
     print("|");
     print(-1.009);
     print("|");
-    print(-999.999);
+    print(-999.990);
     print("|");
 
     print("");
