@@ -556,11 +556,11 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
    
@@ -568,13 +568,13 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
 }
