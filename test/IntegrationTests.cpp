@@ -59,7 +59,7 @@ struct DeleteOutFixture {
     }
 };
 
-void assertCompiles(const std::string& file, const std::string& param){
+inline void parse_options(const std::string& file, const std::string& param){
     const char* argv[4];
     argv[0] = "./bin/test";
     argv[1] = param.c_str();
@@ -67,11 +67,24 @@ void assertCompiles(const std::string& file, const std::string& param){
     argv[3] = file.c_str();
 
     BOOST_REQUIRE (eddic::parseOptions(4, argv));
+}
+
+void assertCompiles(const std::string& file, const std::string& param){
+    parse_options(file, param);
 
     eddic::Compiler compiler;
     int code = compiler.compile(file);
 
     BOOST_REQUIRE_EQUAL (code, 0);
+}
+
+void assert_compilation_error(const std::string& file, const std::string& param){
+    parse_options(file, param);
+
+    eddic::Compiler compiler;
+    int code = compiler.compile(file);
+
+    BOOST_REQUIRE_EQUAL (code, 1);
 }
 
 void assertOutputEquals(const std::string& file, const std::string& output, const std::string& param){
@@ -222,6 +235,17 @@ BOOST_AUTO_TEST_CASE( args ){
     
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+/* Verify that the compilation fails for invalid statements */
+
+BOOST_FIXTURE_TEST_SUITE(CompilationErrorsSuite, DeleteOutFixture)
+
+BOOST_AUTO_TEST_CASE( params_assign ){
+    assert_compilation_error("params_assign.eddi", "--32");
+    assert_compilation_error("params_assign.eddi", "--64");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
