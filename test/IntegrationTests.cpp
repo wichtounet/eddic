@@ -171,6 +171,14 @@ BOOST_AUTO_TEST_CASE( includes ){
     assert_output("includes.eddi", "45");
 }
 
+BOOST_AUTO_TEST_CASE( int_arrays ){
+    assert_output("int_arrays.eddi", "1|1|1|0|0|0|0|0|2|2|0|0|0|0|0|4|9|4|1|9|9|0|0|0|4|9|4|2|9|9|0|0|0|");
+}
+
+BOOST_AUTO_TEST_CASE( string_arrays ){
+    assert_output("string_arrays.eddi", "5|6|7|7|5|6|7|7||||a|a|a|a|a||||||2|2|2|7|7||||4|9|4|a|9|9||||4|9|4|2|9|9||||");
+}
+
 BOOST_AUTO_TEST_CASE( while_ ){
     assert_output("while.eddi", "01234");
 }
