@@ -30,21 +30,25 @@ using namespace eddic;
 
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
         
+    AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
-   
-    void operator()(ast::FunctionDeclaration& declaration){
-        visit_each(*this, declaration.Content->instructions);
-    }
+    AUTO_IGNORE_IMPORT()
+    AUTO_IGNORE_STANDARD_IMPORT()
+    AUTO_IGNORE_STRUCT()
+    AUTO_IGNORE_STRUCT_VALUE()
+    AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
+    AUTO_IGNORE_VARIABLE_VALUE()
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
         Type type = newType(declaration.Content->variableType); 
@@ -53,22 +57,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
         }
-    }
-
-    void operator()(ast::Struct&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::Import&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::StandardImport&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::GlobalArrayDeclaration&){
-        //Nothing to check here
     }
     
     void operator()(ast::Foreach& foreach){
@@ -198,10 +186,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(ast::ArrayDeclaration&){
-        //No need for type checking here
-    }
-    
     void operator()(ast::Swap& swap){
         if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
             throw SemanticalException("Swap of variables of incompatible type", swap.Content->position);
@@ -307,14 +291,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if(suffix != "f"){
             throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
         }
-    }
-
-    void operator()(ast::VariableValue&){
-        //Nothing to check here
-    }
-    
-    void operator()(ast::StructValue&){
-        //Nothing to check here
     }
 };
 

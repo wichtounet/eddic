@@ -131,11 +131,18 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 
 /* Ignore macros  */
 
+#define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
 #define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
-#define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
+#define AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION() void operator()(ast::GlobalArrayDeclaration&){}
+#define AUTO_IGNORE_IMPORT() void operator()(ast::Import&){}
 #define AUTO_IGNORE_INTEGER() void operator()(ast::Integer&){}
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
-#define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Litteral&){}
+#define AUTO_IGNORE_STANDARD_IMPORT() void operator()(ast::StandardImport&){}
+#define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
+#define AUTO_IGNORE_STRUCT_VALUE() void operator()(ast::StructValue&){}
+#define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
 
 #endif
