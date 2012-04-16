@@ -25,9 +25,12 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
     assertCompiles("samples/" #file ".eddi", "--64");\
 }
 
+#define ASSERT_OUTPUT_32(file, output) assertOutputEquals(file, output, "--32");
+#define ASSERT_OUTPUT_64(file, output) assertOutputEquals(file, output, "--64");
+
 #define ASSERT_OUTPUT(file, output)\
-    assertOutputEquals(file, output, "--32");\
-    assertOutputEquals(file, output, "--64");
+    ASSERT_OUTPUT_32(file, output);\
+    ASSERT_OUTPUT_64(file, output);
 
 #include <boost/test/detail/unit_test_parameters.hpp>
 
@@ -145,7 +148,8 @@ BOOST_AUTO_TEST_CASE( do_while_ ){
 
 BOOST_AUTO_TEST_CASE( float_ ){
     //TODO Could be better to split this test
-    ASSERT_OUTPUT("float.eddi", "5.4989|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|3.3300|");
+    ASSERT_OUTPUT_32("float.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|3.3300|");
+    ASSERT_OUTPUT_64("float.eddi", "5.4989|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|3.3300|");
 }
 
 BOOST_AUTO_TEST_CASE( for_ ){
@@ -193,11 +197,13 @@ BOOST_AUTO_TEST_CASE( concat ){
 }
 
 BOOST_AUTO_TEST_CASE( prints ){
-    ASSERT_OUTPUT("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.9900||-0|asdf|1234asdf|");
+    ASSERT_OUTPUT_32("prints.eddi", "111|0|-111|0|1|999.9899|1.0089|0.0|-1.0089|-999.9899||-0|asdf|1234asdf|");
+    ASSERT_OUTPUT_64("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.9900||-0|asdf|1234asdf|");
 }
 
 BOOST_AUTO_TEST_CASE( structures ){
-    ASSERT_OUTPUT("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
+    ASSERT_OUTPUT_32("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3299|1|ertz|333|888|4.3299|1|ertz|");
+    ASSERT_OUTPUT_64("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
 }
 
 BOOST_AUTO_TEST_CASE( args ){
