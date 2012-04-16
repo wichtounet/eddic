@@ -91,7 +91,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it", assignment.Content->position);
         }
 
-        if(var->position().isParameter()){
+        if(var->position().isParameter() || var->position().isParamRegister()){
             throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName, assignment.Content->position);
         }
     }
