@@ -8,8 +8,6 @@
 #ifndef AST_TRUE_H
 #define AST_TRUE_H
 
-#include "ast/TerminalNode.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -18,7 +16,7 @@ namespace ast {
  * \class True
  * \brief Reprensent a true boolean litteral. 
  */
-struct True : public TerminalNode {
+struct True {
     
 };
 

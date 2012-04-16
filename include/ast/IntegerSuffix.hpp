@@ -12,8 +12,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/TerminalNode.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -22,7 +20,7 @@ namespace ast {
  * \class IntegerSuffix
  * \brief The AST node for an integer suffixed to be another type.    
  */
-struct IntegerSuffix : public TerminalNode {
+struct IntegerSuffix {
     int value;
     std::string suffix;
 };
