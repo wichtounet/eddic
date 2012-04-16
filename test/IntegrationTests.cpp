@@ -154,6 +154,11 @@ BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
     assert_output("array_foreach_param_param.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( casts ){
+    assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|");
+    assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     assert_output("if.eddi", "Cool");
 }
