@@ -68,7 +68,7 @@ int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::strin
 }
 
 int SymbolTable::member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member){
-    int offset = -size_of_struct(struct_->name) + 8; 
+    int offset = -size_of_struct(struct_->name) + size(BaseType::INT); 
     //member_offset(struct_, struct_->members.back().name);
 
     for(auto& m : struct_->members){
