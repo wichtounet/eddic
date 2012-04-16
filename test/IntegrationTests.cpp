@@ -159,6 +159,10 @@ BOOST_AUTO_TEST_CASE( casts ){
     assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|");
 }
 
+BOOST_AUTO_TEST_CASE( compound ){
+    assert_output("compound.eddi", "6|9|6|18|6|0|");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     assert_output("if.eddi", "Cool");
 }
