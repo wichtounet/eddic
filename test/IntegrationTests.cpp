@@ -73,10 +73,10 @@ void assertCompiles(const std::string& file, const std::string& param){
 }
 
 void assert_compilation_error(const std::string& file, const std::string& param){
-    parse_options(file, param);
+    parse_options("test/cases/" + file, param);
 
     eddic::Compiler compiler;
-    int code = compiler.compile(file);
+    int code = compiler.compile("test/cases/" + file);
 
     BOOST_REQUIRE_EQUAL (code, 1);
 }
