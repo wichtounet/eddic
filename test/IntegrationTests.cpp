@@ -167,6 +167,10 @@ BOOST_AUTO_TEST_CASE( if_ ){
     assert_output("if.eddi", "Cool");
 }
 
+BOOST_AUTO_TEST_CASE( includes ){
+    assert_output("includes.eddi", "45");
+}
+
 BOOST_AUTO_TEST_CASE( while_ ){
     assert_output("while.eddi", "01234");
 }
