@@ -129,4 +129,13 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
 }
 
+/* Ignore macros  */
+
+#define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
+#define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_INTEGER() void operator()(ast::Integer&){}
+#define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
+#define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
+#define AUTO_IGNORE_LITERAL() void operator()(ast::Litteral&){}
+
 #endif

@@ -35,6 +35,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
+        
+    AUTO_IGNORE_FALSE()
+    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_FLOAT()
+    AUTO_IGNORE_INTEGER()
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_each(*this, declaration.Content->instructions);
@@ -309,10 +315,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     
     void operator()(ast::StructValue&){
         //Nothing to check here
-    }
-
-    void operator()(ast::TerminalNode&){
-        //Terminal nodes have no need for type checking    
     }
 };
 

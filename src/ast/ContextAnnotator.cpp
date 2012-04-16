@@ -33,6 +33,13 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_MINUS_PLUS_VALUES()
         AUTO_RECURSE_CAST_VALUES()
+
+        AUTO_IGNORE_FALSE()
+        AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_LITERAL()
+        AUTO_IGNORE_FLOAT()
+        AUTO_IGNORE_INTEGER()
+        AUTO_IGNORE_INTEGER_SUFFIX()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
@@ -226,10 +233,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::StandardImport&){
             //No Context there
-        }
-         
-        void operator()(ast::TerminalNode&){
-            //A terminal node has no context
         }
 };
 
