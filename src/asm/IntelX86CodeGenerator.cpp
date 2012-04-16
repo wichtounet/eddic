@@ -555,8 +555,8 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;   //Get the integer part into rbx
-    writer.stream() << "cvtsi2ss xmm1, ebx" << std::endl;   //Move the integer part into xmm1
+    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;      //ebx = integer part
+    writer.stream() << "cvtsi2ss xmm1, ebx" << std::endl;       //xmm1 = integer part
 
     //Print the integer part
     writer.stream() << "mov ecx, ebx" << std::endl;
@@ -567,29 +567,41 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "add esp, 8" << std::endl;
+
+    //Handle negative numbers
+    writer.stream() << "or ebx, ebx" << std::endl;
+    writer.stream() << "jge .pos" << std::endl;
+    writer.stream() << "mov ebx, __float32__(-1.0)" << std::endl;
+    writer.stream() << "movd xmm2, ebx" << std::endl;
+    writer.stream() << "mulss xmm7, xmm2" << std::endl;
+    writer.stream() << "mulss xmm1, xmm2" << std::endl;
+
+    writer.stream() << ".pos:" << std::endl;
    
     //Remove the integer part from the floating point 
-    writer.stream() << "subss xmm7, xmm1" << std::endl;
+    writer.stream() << "subss xmm7, xmm1" << std::endl;         //xmm7 = decimal part
     
     writer.stream() << "mov ecx, __float32__(10000.0)" << std::endl;
-    writer.stream() << "movd xmm2, ecx" << std::endl;
+    writer.stream() << "movd xmm2, ecx" << std::endl;           //xmm2 = 10'000
     
-    writer.stream() << "mulss xmm7, xmm2" << std::endl;
-    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;
-    writer.stream() << "mov eax, ebx" << std::endl;
+    writer.stream() << "mulss xmm7, xmm2" << std::endl;         //xmm7 = decimal part * 10'000
+    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;      //ebx = decimal part * 10'000
+    writer.stream() << "mov eax, ebx" << std::endl;             //eax = ebx
 
-    //Handle numbers with 0 at the beginning of the decimal part
+    //Handle numbers with no decimal part 
     writer.stream() << "or eax, eax" << std::endl;
     writer.stream() << "je .end" << std::endl;
+    
+    //Handle numbers with 0 at the beginning of the decimal part
+    writer.stream() << "xor ecx, ecx" << std::endl;
     writer.stream() << ".start:" << std::endl;
     writer.stream() << "cmp eax, 1000" << std::endl;
     writer.stream() << "jge .end" << std::endl;
-    writer.stream() << "xor ecx, ecx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add esp, 4" << std::endl;
     writer.stream() << "imul eax, 10" << std::endl;
     writer.stream() << "jmp .start" << std::endl;
     
+    //Print the number itself
     writer.stream() << ".end:" << std::endl;
     writer.stream() << "mov ecx, ebx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
@@ -598,7 +610,7 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
 void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printF");
 
-    as::save(writer, {"eax", "ebx"});
+    as::save(writer, {"eax", "ebx", "ecx"});
     saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
