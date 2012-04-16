@@ -17,7 +17,21 @@
 using namespace eddic;
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
-    ast::Value operator()(ast::Expression& value) const {
+    AUTO_RETURN_CAST(ast::Value)
+    AUTO_RETURN_FALSE(ast::Value)
+    AUTO_RETURN_TRUE(ast::Value)
+    AUTO_RETURN_LITERAL(ast::Value)
+    AUTO_RETURN_FLOAT(ast::Value)
+    AUTO_RETURN_INTEGER(ast::Value)
+    AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
+    AUTO_RETURN_STRUCT_VALUE(ast::Value)
+    AUTO_RETURN_VARIABLE_VALUE(ast::Value)
+    AUTO_RETURN_PLUS(ast::Value)
+    AUTO_RETURN_MINUS(ast::Value)
+    AUTO_RETURN_PREFIX_OPERATION(ast::Value)
+    AUTO_RETURN_SUFFIX_OPERATION(ast::Value)
+    
+    ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
             return visit(*this, value.Content->first);   
         }
@@ -38,13 +52,13 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return value;
     }
 
-    ast::Value operator()(ast::ArrayValue& value) const {
+    ast::Value operator()(ast::ArrayValue& value){
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
         return value;
     }
 
-    ast::Value operator()(ast::FunctionCall& functionCall) const {
+    ast::Value operator()(ast::FunctionCall& functionCall){
         auto start = functionCall.Content->values.begin();
         auto end = functionCall.Content->values.end();
 
@@ -57,13 +71,13 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return functionCall;
     }
 
-    ast::Value operator()(ast::Assignment& assignment) const {
+    ast::Value operator()(ast::Assignment& assignment){
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;
     }
 
-    ast::Value operator()(ast::BuiltinOperator& builtin) const {
+    ast::Value operator()(ast::BuiltinOperator& builtin){
         auto start = builtin.Content->values.begin();
         auto end = builtin.Content->values.end();
 
@@ -74,12 +88,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         }
 
         return builtin;
-    }
-
-    //No transformations
-    template<typename T>
-    ast::Value operator()(T& value) const {
-        return value;
     }
 };
 
@@ -183,20 +191,32 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         return for_;
     }
-     
-    //No transformations
-    template<typename T>
-    ast::Instruction operator()(T& instruction) const {
-        return instruction;
-    }
+
+    AUTO_RETURN_OTHERS_CONST(ast::Instruction)
 };
 
 struct CleanerVisitor : public boost::static_visitor<> {
     ValueTransformer transformer;
 
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FOREACH()
+        
+    AUTO_IGNORE_FALSE()
+    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_FLOAT()
+    AUTO_IGNORE_INTEGER()
+    AUTO_IGNORE_INTEGER_SUFFIX()
+    AUTO_IGNORE_IMPORT()
+    AUTO_IGNORE_STANDARD_IMPORT()
+    AUTO_IGNORE_STRUCT()
+    AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
+    AUTO_IGNORE_ARRAY_DECLARATION()
+    AUTO_IGNORE_PREFIX_OPERATION()
+    AUTO_IGNORE_SUFFIX_OPERATION()
+    AUTO_IGNORE_SWAP()
 
     void operator()(ast::If& if_){
         if_.Content->condition = visit(transformer, if_.Content->condition);
@@ -210,10 +230,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
         elseIf.condition = visit(transformer, elseIf.condition);
 
         visit_each(*this, elseIf.instructions);
-    }
-
-    void operator()(ast::Else& else_){
-        visit_each(*this, else_.instructions);
     }
 
     void operator()(ast::For& for_){
@@ -235,7 +251,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
         visit_each(*this, while_.Content->instructions);
     }
 
-    void operator()(ast::FunctionCall& functionCall) const {
+    void operator()(ast::FunctionCall& functionCall){
         auto start = functionCall.Content->values.begin();
         auto end = functionCall.Content->values.end();
 
@@ -246,7 +262,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(ast::BuiltinOperator& builtin) const {
+    void operator()(ast::BuiltinOperator& builtin){
         auto start = builtin.Content->values.begin();
         auto end = builtin.Content->values.end();
 
@@ -257,52 +273,46 @@ struct CleanerVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::GlobalVariableDeclaration& declaration) const {
+    void operator()(ast::GlobalVariableDeclaration& declaration){
         if(declaration.Content->value){
             declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
 
-    void operator()(ast::Assignment& assignment) const {
+    void operator()(ast::Assignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
     
-    void operator()(ast::CompoundAssignment& assignment) const {
+    void operator()(ast::CompoundAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
     
-    void operator()(ast::StructCompoundAssignment& assignment) const {
+    void operator()(ast::StructCompoundAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
-    void operator()(ast::Return& return_) const {
+    void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
     }
 
-    void operator()(ast::ArrayAssignment& assignment) const {
+    void operator()(ast::ArrayAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
         assignment.Content->indexValue = visit(transformer, assignment.Content->indexValue); 
     }
     
-    void operator()(ast::StructAssignment& assignment) const {
+    void operator()(ast::StructAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
-    void operator()(ast::VariableDeclaration& declaration) const {
+    void operator()(ast::VariableDeclaration& declaration){
         if(declaration.Content->value){
             declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
 
-    void operator()(ast::BinaryCondition& binaryCondition) const {
+    void operator()(ast::BinaryCondition& binaryCondition){
         binaryCondition.Content->lhs = visit(transformer, binaryCondition.Content->lhs); 
         binaryCondition.Content->rhs = visit(transformer, binaryCondition.Content->rhs); 
-    }
-
-    //No transformations
-    template<typename T>
-    void operator()(T&) const {
-        //Do nothing
     }
 };
 
@@ -310,9 +320,42 @@ struct TransformerVisitor : public boost::static_visitor<> {
     InstructionTransformer instructionTransformer;
 
     AUTO_RECURSE_PROGRAM()
+    
+    AUTO_IGNORE_ARRAY_DECLARATION()
+    AUTO_IGNORE_ARRAY_VALUE()
+    AUTO_IGNORE_ASSIGNMENT()
+    AUTO_IGNORE_BUILTIN_OPERATOR()
+    AUTO_IGNORE_CAST()
+    AUTO_IGNORE_VARIABLE_DECLARATION()
+    AUTO_IGNORE_VARIABLE_VALUE()
+    AUTO_IGNORE_FUNCTION_CALLS()
+    AUTO_IGNORE_SWAP()
+    AUTO_IGNORE_EXPRESSION()
+    AUTO_IGNORE_FALSE()
+    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_FLOAT()
+    AUTO_IGNORE_INTEGER()
+    AUTO_IGNORE_INTEGER_SUFFIX()
+    AUTO_IGNORE_IMPORT()
+    AUTO_IGNORE_STANDARD_IMPORT()
+    AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
+    AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
+    AUTO_IGNORE_FOREACH_LOOP()
+    AUTO_IGNORE_RETURN()
+    AUTO_IGNORE_COMPOUND_ASSIGNMENT()
+    AUTO_IGNORE_STRUCT()
+    AUTO_IGNORE_STRUCT_VALUE()
+    AUTO_IGNORE_STRUCT_ASSIGNMENT()
+    AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT()
+    AUTO_IGNORE_ARRAY_ASSIGNMENT()
+    AUTO_IGNORE_PLUS()
+    AUTO_IGNORE_MINUS()
+    AUTO_IGNORE_PREFIX_OPERATION()
+    AUTO_IGNORE_SUFFIX_OPERATION()
 
     template<typename T>
-    void transform(T& instructions) const {
+    void transform(T& instructions){
         auto start = instructions.begin();
         auto end = instructions.end();
 
@@ -325,51 +368,45 @@ struct TransformerVisitor : public boost::static_visitor<> {
         visit_each(*this, instructions);
     }
     
-    void operator()(ast::FunctionDeclaration& declaration) const {
+    void operator()(ast::FunctionDeclaration& declaration){
         transform(declaration.Content->instructions);
     }
 
-    void operator()(ast::If& if_) const {
+    void operator()(ast::If& if_){
         visit(*this, if_.Content->condition);
         transform(if_.Content->instructions);
         visit_each_non_variant(*this, if_.Content->elseIfs);
         visit_optional_non_variant(*this, if_.Content->else_);
     }
 
-    void operator()(ast::ElseIf& elseIf) const {
+    void operator()(ast::ElseIf& elseIf){
         visit(*this, elseIf.condition);
         transform(elseIf.instructions);
     }
 
-    void operator()(ast::Else& else_) const {
+    void operator()(ast::Else& else_){
         transform(else_.instructions);
     }
 
-    void operator()(ast::For& for_) const {
+    void operator()(ast::For& for_){
         visit_optional(*this, for_.Content->start);
         visit_optional(*this, for_.Content->condition);
         visit_optional(*this, for_.Content->repeat);
         transform(for_.Content->instructions);
     }
 
-    void operator()(ast::ForeachIn& foreach) const {
+    void operator()(ast::ForeachIn& foreach){
         transform(foreach.Content->instructions);
     }
 
-    void operator()(ast::While& while_) const {
+    void operator()(ast::While& while_){
         visit(*this, while_.Content->condition);
         transform(while_.Content->instructions);
     }
 
-    void operator()(ast::DoWhile& while_) const {
+    void operator()(ast::DoWhile& while_){
         visit(*this, while_.Content->condition);
         transform(while_.Content->instructions);
-    }
-
-    //No transformations
-    template<typename T>
-    void operator()(T&) const {
-        //Do nothing
     }
 };
 
