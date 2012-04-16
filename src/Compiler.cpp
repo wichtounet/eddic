@@ -222,12 +222,14 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             }
         }
     } catch (const SemanticalException& e) {
-        if(e.position()){
-            auto& position = *e.position();
+        if(!option_defined("quiet")){
+            if(e.position()){
+                auto& position = *e.position();
 
-            std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
-        } else {
-            std::cout << e.what() << std::endl;
+                std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
+            } else {
+                std::cout << e.what() << std::endl;
+            }
         }
 
         code = 1;
