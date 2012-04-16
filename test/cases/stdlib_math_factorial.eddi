@@ -1,0 +1,11 @@
+include<math>
+
+void main(){
+    print(factorial(0));
+    print("|");
+    print(factorial(1));
+    print("|");
+    print(factorial(2));
+    print("|");
+    print(factorial(9));
+}

@@ -340,7 +340,7 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
             }
             
             writer.stream() << "xor rax, rax" << std::endl;
-            writer.stream() << "lea rdi, [rbp + " << position << " - 4]" << std::endl;
+            writer.stream() << "lea rdi, [rbp + " << position << " - 8]" << std::endl;
             writer.stream() << "std" << std::endl;
             writer.stream() << "rep stosq" << std::endl;
             writer.stream() << "cld" << std::endl;
@@ -399,21 +399,26 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
 
     //If the user wants the args, we add support for them
     if(symbols.getFunction("main")->parameters.size() == 1){
-        writer.stream() << "pop rbx" << std::endl;                          //ebx = number of args
-        writer.stream() << "lea rcx, [4 + rbx * 8]" << std::endl;           //ecx = size of the array
+        writer.stream() << "pop rbx" << std::endl;                          //rbx = number of args
+        
+        //Calculate the size of the array
+        writer.stream() << "mov rcx, rbx" << std::endl;
+        writer.stream() << "imul rcx, rcx, 16" << std::endl;
+        writer.stream() << "add rcx, 8" << std::endl;                       //rcx = size of the array
+
         writer.stream() << "push rcx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;                  //eax = start address of the array
+        writer.stream() << "call eddi_alloc" << std::endl;                  //rax = start address of the array
         writer.stream() << "add rsp, 8" << std::endl;
 
-        writer.stream() << "lea rsi, [rax + rcx - 8]" << std::endl;         //esi = last address of the array
-        writer.stream() << "mov rdx, rsi" << std::endl;                     //edx = last address of the array
+        writer.stream() << "lea rsi, [rax + rcx - 16]" << std::endl;         //rsi = last address of the array
+        writer.stream() << "mov rdx, rsi" << std::endl;                     //rdx = last address of the array
         
         writer.stream() << "mov [rsi], rbx" << std::endl;                   //Set the length of the array
-        writer.stream() << "sub rsi, 8" << std::endl;                       //Move to the destination address of the first arg
+        writer.stream() << "sub rsi, 16" << std::endl;                       //Move to the destination address of the first arg
 
         writer.stream() << ".copy_args:" << std::endl;
-        writer.stream() << "pop rdi" << std::endl;                          //edi = address of current args
-        writer.stream() << "mov [rsi+8], rdi" << std::endl;                 //set the address of the string
+        writer.stream() << "pop rdi" << std::endl;                          //rdi = address of current args
+        writer.stream() << "mov [rsi+8], rdi" << std::endl;                   //set the address of the string
 
         /* Calculate the length of the string  */
         writer.stream() << "xor rax, rax" << std::endl;
@@ -425,7 +430,7 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         /* End of the calculation */
 
         writer.stream() << "mov qword [rsi], rcx" << std::endl;               //set the length of the string
-        writer.stream() << "sub rsi, 8" << std::endl;
+        writer.stream() << "sub rsi, 16" << std::endl;
         writer.stream() << "dec rbx" << std::endl;
         writer.stream() << "jnz .copy_args" << std::endl;
 
@@ -551,11 +556,11 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
    
@@ -563,20 +568,20 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnI");
 
-    as::save(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     addPrintIntegerBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rbx", "rdx", "rsi", "rdi"});
+    as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
     leaveFunction(writer);
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;   //Get the integer part into rbx
-    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;   //Move the integer part into xmm1
+    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = integer part
+    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;       //xmm1 = integer part
 
     //Print the integer part
     writer.stream() << "mov r14, rbx" << std::endl;
@@ -587,21 +592,33 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "add rsp, 16" << std::endl;
+
+    //Handle negative numbers
+    writer.stream() << "or rbx, rbx" << std::endl;
+    writer.stream() << "jge .pos" << std::endl;
+    writer.stream() << "mov rbx, __float64__(-1.0)" << std::endl;
+    writer.stream() << "movq xmm2, rbx" << std::endl;
+    writer.stream() << "mulsd xmm7, xmm2" << std::endl;
+    writer.stream() << "mulsd xmm1, xmm2" << std::endl;
+
+    writer.stream() << ".pos:" << std::endl;
    
     //Remove the integer part from the floating point 
-    writer.stream() << "subsd xmm7, xmm1" << std::endl;
+    writer.stream() << "subsd xmm7, xmm1" << std::endl;         //xmm7 = decimal part
     
     writer.stream() << "mov rcx, __float64__(10000.0)" << std::endl;
-    writer.stream() << "movq xmm2, rcx" << std::endl;
+    writer.stream() << "movq xmm2, rcx" << std::endl;           //xmm2 = 10'000
     
-    writer.stream() << "mulsd xmm7, xmm2" << std::endl;
-    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;
-    writer.stream() << "mov rax, rbx" << std::endl;
+    writer.stream() << "mulsd xmm7, xmm2" << std::endl;         //xmm7 = decimal part * 10'000
+    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = decimal part * 10'000
+    writer.stream() << "mov rax, rbx" << std::endl;             //rax = rbx
 
-    //Handle numbers with 0 at the beginning of the decimal part
+    //Handle numbers with no decimal part 
     writer.stream() << "or rax, rax" << std::endl;
-    writer.stream() << "xor r14, r14" << std::endl;
     writer.stream() << "je .end" << std::endl;
+    
+    //Handle numbers with 0 at the beginning of the decimal part
+    writer.stream() << "xor r14, r14" << std::endl;
     writer.stream() << ".start:" << std::endl;
     writer.stream() << "cmp rax, 1000" << std::endl;
     writer.stream() << "jge .end" << std::endl;
@@ -609,6 +626,7 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "imul rax, 10" << std::endl;
     writer.stream() << "jmp .start" << std::endl;
     
+    //Print the number itself
     writer.stream() << ".end:" << std::endl;
     writer.stream() << "mov r14, rbx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
@@ -705,11 +723,11 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 void addPrintStringFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printS");
     
-    as::save(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
-    as::restore(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
    
@@ -717,13 +735,13 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     
     defineFunction(writer, "_F7printlnS");
     
-    as::save(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     addPrintStringBody(writer);
 
     writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rdi", "rsi", "rdx"});
+    as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
     leaveFunction(writer);
 }

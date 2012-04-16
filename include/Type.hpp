@@ -9,6 +9,7 @@
 #define TYPE_H
 
 #include <string>
+#include <boost/optional.hpp>
 
 namespace eddic {
 
@@ -33,9 +34,9 @@ class Type {
         bool const_;
         bool custom;
         
-        BaseType baseType;
-        unsigned int m_size;
-        std::string m_type;
+        boost::optional<BaseType> baseType;
+        boost::optional<std::string> m_type;
+        boost::optional<unsigned int> m_size;
     
     public:
         Type(BaseType type, bool array, unsigned int size, bool const_);
@@ -49,6 +50,8 @@ class Type {
 
         unsigned int size() const;
         std::string type() const;
+
+        Type non_const() const;
 
         friend bool operator==(const Type& lhs, const Type& rhs);
         friend bool operator!=(const Type& lhs, const Type& rhs);

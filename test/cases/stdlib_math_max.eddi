@@ -1,0 +1,15 @@
+include<math>
+
+void main(){
+    print(max(1000, 999));
+    print("|");
+    print(max(0, 1));
+    print("|");
+    print(max(1, 0));
+    print("|");
+    print(max(-1, 0));
+    print("|");
+    print(max(0, 0));
+    print("|");
+    print(max(0, -1));
+}

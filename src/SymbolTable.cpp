@@ -14,6 +14,13 @@ using namespace eddic;
 SymbolTable eddic::symbols;
 
 SymbolTable::SymbolTable(){
+    reset();
+}
+
+void SymbolTable::reset(){
+    functions.clear();
+    structs.clear();
+    
     //Add the standard functions to the function table
     defineStandardFunctions();
 }
@@ -61,8 +68,7 @@ int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::strin
 }
 
 int SymbolTable::member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member){
-    int offset = -size_of_struct(struct_->name) + 8; 
-    //member_offset(struct_, struct_->members.back().name);
+    int offset = -size_of_struct(struct_->name) + size(BaseType::INT); 
 
     for(auto& m : struct_->members){
         if(m.name == member){

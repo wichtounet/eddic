@@ -24,10 +24,8 @@ extern bool WarningUnused;
  */
 extern bool WarningCast;
 
-/*!
- * \brief The program options. 
- */
-extern po::variables_map options;
+bool option_defined(const std::string& option_name);
+std::string option_value(const std::string& option_name);
 
 /*!
  * \brief Parse the options of the command line filling the options. 

@@ -1,0 +1,21 @@
+void main(){
+    int a = 5;
+    float b = (float) a;
+    float c = 333.879877;
+    float d = (float) c;
+
+    print(b);
+    print("|");
+    print((int) b);
+    print("|");
+    print((int) 4.33);
+    print("|");
+    print((int) c);
+    print("|");
+    print((float) a);
+    print("|");
+
+    float e = (float) a + 3.33;
+    print(e);
+    print("|");
+}

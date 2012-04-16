@@ -5,17 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/assert.hpp>
-
+#include "assert.hpp"
 #include "Type.hpp"
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool a, unsigned int size, bool constant) : array(a), const_(constant), custom(false), baseType(base), m_size(size){}
+Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), custom(false), baseType(base), m_size(size){}
 Type::Type(const std::string& type) : array(false), const_(false), custom(true), m_type(type) {}
 
 BaseType Type::base() const {
-    return baseType;
+    ASSERT(is_standard_type(), "Only standard type have a base type");
+    ASSERT(baseType, "The baseType has not been initialized");
+
+    return *baseType;
 }
 
 bool Type::isArray() const {
@@ -27,7 +29,10 @@ bool Type::isConst() const {
 }
 
 unsigned int Type::size() const {
-    return m_size;
+    ASSERT(is_standard_type(), "Only standard type have a size");
+    ASSERT(m_size, "The m_size has not been initialized");
+    
+    return *m_size;
 }
         
 bool Type::is_custom_type() const {
@@ -39,9 +44,18 @@ bool Type::is_standard_type() const {
 }
 
 std::string Type::type() const {
-    BOOST_ASSERT_MSG(is_custom_type(), "Only custom type have a type");
+    ASSERT(is_custom_type(), "Only custom type have a type");
+    ASSERT(m_type, "The m_type has not been initialized");
 
-    return m_type;
+    return *m_type;
+}
+
+Type Type::non_const() const {
+    Type copy = *this;
+
+    copy.const_ = false;
+
+    return copy;
 }
 
 bool eddic::operator==(const Type& lhs, const Type& rhs){

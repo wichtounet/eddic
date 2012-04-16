@@ -40,6 +40,8 @@ class SymbolTable {
         SymbolTable();
         SymbolTable(const SymbolTable& rhs) = delete;
 
+        void reset();
+
         /* Functions management */
         void addFunction(std::shared_ptr<Function> function);
         std::shared_ptr<Function> getFunction(const std::string& function);

@@ -83,7 +83,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != var->type()) {
+        if (valueType != var->type().non_const()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
         }
 
@@ -91,7 +91,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it", assignment.Content->position);
         }
 
-        if(var->position().isParameter()){
+        if(var->position().isParameter() || var->position().isParamRegister()){
             throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName, assignment.Content->position);
         }
     }
@@ -186,7 +186,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             auto var = (*declaration.Content->context)[declaration.Content->variableName];
             
             Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
-            if (valueType != var->type()) {
+            if (valueType != var->type().non_const()) {
                 throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
             }
         }

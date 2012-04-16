@@ -1,0 +1,5 @@
+include "samples/included.eddi"
+
+void main(){
+    print(sum(9));
+}

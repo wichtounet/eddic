@@ -23,10 +23,13 @@ void eddic::allocateParams(){
         auto function = it->second;
 
         if(function->context){
-            for(auto parameter : function->parameters){
+            for(unsigned int i = 0; i < function->parameters.size(); ++i){
+                auto& parameter = function->parameters[i];
                 auto type = parameter.paramType;
                 unsigned int position = function->getParameterPositionByType(parameter.name);
                 auto param = function->context->getVariable(parameter.name);
+
+                Position oldPosition = param->position();
 
                 if(type == BaseType::INT && position <= descriptor->numberOfIntParamRegisters()){
                     Position paramPosition(PositionType::PARAM_REGISTER, position);
@@ -34,6 +37,17 @@ void eddic::allocateParams(){
                 } else if(type == BaseType::FLOAT && position <= descriptor->numberOfFloatParamRegisters()){
                     Position paramPosition(PositionType::PARAM_REGISTER, position);
                     param->setPosition(paramPosition);
+                }
+
+                //If the parameter has been changed
+                if(param->position().isParamRegister()){
+                    //We have to change the position of the all the following parameters
+                    for(unsigned int j = i + 1; j < function->parameters.size(); ++j){
+                        auto p = function->context->getVariable(function->parameters[j].name);
+                        Position paramPosition = p->position();
+                        p->setPosition(oldPosition); 
+                        oldPosition = paramPosition;
+                    }
                 }
             }
         }

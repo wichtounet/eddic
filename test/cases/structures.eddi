@@ -1,0 +1,59 @@
+struct Complex {
+    int imag;
+    int real;
+    float d;
+    bool b;
+    string s;
+}
+
+void main(){
+    Complex c;
+    c.imag = 222;
+    c.real = 666;
+    c.d = 3.23;
+    c.b = false;
+    c.s = "asdf";
+
+    print(c.imag);
+    print("|");
+    print(c.real);
+    print("|");
+    print(c.d);
+    print("|");
+    print(c.b);
+    print("|");
+    print(c.s);
+    print("|");
+
+    c.imag += 111;
+    c.real += 222;
+    c.d += 1.1;
+    c.b = true;
+    c.s = "ertz";
+
+    print(c.imag);
+    print("|");
+    print(c.real);
+    print("|");
+    print(c.d);
+    print("|");
+    print(c.b);
+    print("|");
+    print(c.s);
+    print("|");
+
+    test(c);
+}
+
+void test(Complex a){
+    print(a.imag);
+    print("|");
+    print(a.real);
+    print("|");
+    print(a.d);
+    print("|");
+    print(a.b);
+    print("|");
+    print(a.s);
+    print("|");
+}

@@ -70,6 +70,8 @@ inline std::string toString(T number) {
     return boost::lexical_cast<std::string>(number); 
 }
 
+bool file_exists(const std::string& file);
+
 std::string execCommand(const std::string& command);
 
 bool isPowerOfTwo (int x);
