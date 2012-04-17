@@ -21,8 +21,9 @@ class FrontEnd {
         virtual std::shared_ptr<tac::Program> compile(const std::string& file) = 0;   
 
         void set_string_pool(std::shared_ptr<StringPool> pool);
+        std::shared_ptr<StringPool> get_string_pool();
 
-    private:
+    protected:
         std::shared_ptr<StringPool> pool;
 };
 

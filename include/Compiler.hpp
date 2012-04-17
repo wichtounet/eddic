@@ -18,8 +18,6 @@ namespace eddic {
 
 extern Platform platform;
 
-void checkForMain();
-
 /*!
  * \class Compiler
  * \brief The EDDI compiler.

@@ -12,3 +12,7 @@ using namespace eddic;
 void FrontEnd::set_string_pool(std::shared_ptr<StringPool> pool){
     this->pool = pool;
 }
+
+std::shared_ptr<StringPool> FrontEnd::get_string_pool(){
+    return pool;
+}
