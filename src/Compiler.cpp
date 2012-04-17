@@ -19,6 +19,7 @@
 #include "Assembler.hpp"
 
 #include "FrontEnds.hpp"
+#include "BackEnds.hpp"
 
 //Three Address Code
 #include "tac/Program.hpp"
@@ -90,6 +91,12 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
 
         //If program is null, it means that the user didn't wanted it
         if(tacProgram){
+            auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
+
+            back_end->set_string_pool(front_end->get_string_pool());
+
+            back_end->generate(tacProgram);
+
             std::string output = option_value("output");
 
             //Separate into basic blocks
