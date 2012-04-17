@@ -48,10 +48,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     }
     
     //Other values are not strings
-    template<typename T> 
-    std::string operator()(T&) const {
-        assert(false && "This type is not a string");
-    }
+    AUTO_BREAK_OTHERS_CONST()
 };
 
 struct ValueOptimizer : public boost::static_visitor<ast::Value> {
