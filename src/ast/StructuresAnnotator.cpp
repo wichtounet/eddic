@@ -37,10 +37,7 @@ struct StructuresCollector : public boost::static_visitor<> {
         symbols.add_struct(signature);
     }
 
-    template<typename T>
-    void operator()(T&){
-        //Stop recursion here
-    }
+    AUTO_IGNORE_OTHERS()
 };
 
 void ast::defineStructures(ast::SourceFile& program){

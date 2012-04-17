@@ -77,10 +77,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             }
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Nothing to include there
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
 void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser){

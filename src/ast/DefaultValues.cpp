@@ -66,10 +66,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
         setDefaultValue(declaration);
     }
 
-    template<typename T>
-    void operator()(T&){
-        //No need to recurse further
-    }
+    AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace

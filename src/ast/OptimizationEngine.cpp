@@ -120,10 +120,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         }
 
         //No optimizations for other kind of values
-        template<typename T>
-        ast::Value operator()(T& value) const {
-            return value;
-        }
+        AUTO_RETURN_OTHERS_CONST(ast::Value)
 };
 
 struct CanBeRemoved : public boost::static_visitor<bool> {
@@ -273,10 +270,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             binaryCondition.Content->rhs = visit(optimizer, binaryCondition.Content->rhs); 
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Nothing to optimize for other types        
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
 void ast::optimizeAST(ast::SourceFile& program, StringPool& pool){

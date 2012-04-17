@@ -39,13 +39,10 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_ARRAY_ASSIGNMENT()
         AUTO_RECURSE_STRUCT_ASSIGNMENT()
 
+        AUTO_IGNORE_OTHERS()
+
         void operator()(ast::Litteral& litteral){
             litteral.label = pool.label(litteral.value);
-        }
-
-        template<typename T>        
-        void operator()(T&){
-            //No need for string checking in other types
         }
 };
 
