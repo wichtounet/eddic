@@ -5,18 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FrontEnds.hpp"
 #include "EDDIFrontEnd.hpp"
-#include "Utils.hpp"
 
 using namespace eddic;
 
-std::shared_ptr<FrontEnd> eddic::get_front_end(const std::string& file){
-    //Handle .eddi files with the EDDI FrontEnd
-    if(has_extension(file, "eddi")){
-        return std::make_shared<EDDIFrontEnd>();
-    }
-
-    //This kind of file is not handled
+std::shared_ptr<tac::Program> EDDIFrontEnd::compile(const std::string& file){
     return nullptr;
 }

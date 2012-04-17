@@ -9,8 +9,10 @@
 #define FRONT_ENDS_H
 
 #include <memory>
+#include <string>
 
 #include "FrontEnd.hpp"
+#include "Utils.hpp"
 
 namespace eddic {
 

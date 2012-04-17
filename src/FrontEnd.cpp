@@ -5,18 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "FrontEnds.hpp"
-#include "EDDIFrontEnd.hpp"
-#include "Utils.hpp"
+#include "FrontEnd.hpp"
 
 using namespace eddic;
-
-std::shared_ptr<FrontEnd> eddic::get_front_end(const std::string& file){
-    //Handle .eddi files with the EDDI FrontEnd
-    if(has_extension(file, "eddi")){
-        return std::make_shared<EDDIFrontEnd>();
-    }
-
-    //This kind of file is not handled
-    return nullptr;
+        
+void FrontEnd::set_string_pool(std::shared_ptr<StringPool> pool){
+    this->pool = pool;
 }

@@ -5,25 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef FRONT_END_H
-#define FRONT_END_H
+#ifndef EDDI_FRONT_END_H
+#define EDDI_FRONT_END_H
 
-#include <memory>
-#include <string>
-
-#include "StringPool.hpp"
-#include "tac/Program.hpp"
+#include "FrontEnd.hpp"
 
 namespace eddic {
 
-class FrontEnd {
-    public:
-        virtual std::shared_ptr<tac::Program> compile(const std::string& file) = 0;   
-
-        void set_string_pool(std::shared_ptr<StringPool> pool);
-
-    private:
-        std::shared_ptr<StringPool> pool;
+struct EDDIFrontEnd : public FrontEnd {
+    std::shared_ptr<tac::Program> compile(const std::string& file);
 };
 
 }
