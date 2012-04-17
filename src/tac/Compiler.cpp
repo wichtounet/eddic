@@ -311,7 +311,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                     memberValue.Content->variableName = value.Content->variableName;
                     memberValue.Content->variable = value.Content->var;
                     memberValue.Content->memberName = member.name;
-                    memberValue.Content->type = member.type;
 
                     auto member_values = (*this)(memberValue);
                     std::reverse(member_values.begin(), member_values.end());

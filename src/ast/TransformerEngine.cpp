@@ -117,11 +117,6 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         variable.Content->memberName = compound.Content->memberName;
         variable.Content->variable = compound.Content->context->getVariable(compound.Content->variableName);
 
-        auto struct_name = compound.Content->context->getVariable(compound.Content->variableName)->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[compound.Content->memberName].type;
-        variable.Content->type = member_type;
-
         ast::Expression composed;
         composed.Content->first = variable;
         composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
