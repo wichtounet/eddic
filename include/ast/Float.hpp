@@ -10,8 +10,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/TerminalNode.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -20,7 +18,7 @@ namespace ast {
  * \class Float
  * \brief The AST node for a float.    
  */
-struct Float : public TerminalNode {
+struct Float {
     double value;
 };
 

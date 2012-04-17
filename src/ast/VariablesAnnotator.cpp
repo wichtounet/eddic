@@ -37,6 +37,17 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BUILTIN_OPERATORS()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
     AUTO_RECURSE_CAST_VALUES()
+    AUTO_RECURSE_RETURN_VALUES()
+
+    AUTO_IGNORE_FALSE()
+    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_FLOAT()
+    AUTO_IGNORE_INTEGER()
+    AUTO_IGNORE_INTEGER_SUFFIX()
+    AUTO_IGNORE_IMPORT()
+    AUTO_IGNORE_STANDARD_IMPORT()
+    AUTO_IGNORE_STRUCT()
    
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
@@ -68,10 +79,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, newArrayType(declaration.Content->arrayType, declaration.Content->arraySize));
-    }
-
-    void operator()(ast::Struct&){
-        //Nothing to annotate
     }
     
     void operator()(ast::Foreach& foreach){
@@ -153,10 +160,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::PrefixOperation& operation){
         annotateSuffixOrPrefixOperation(operation);
-    }
-
-    void operator()(ast::Return& return_){
-        visit(*this, return_.Content->value);
     }
 
     void operator()(ast::ArrayAssignment& assignment){
@@ -283,18 +286,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
             [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
-    }
-
-    void operator()(ast::Import&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::StandardImport&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::TerminalNode&){
-        //Terminal nodes have no need for variable checking    
     }
 };
 

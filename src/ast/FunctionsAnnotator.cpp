@@ -49,10 +49,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             symbols.getFunction(signature->mangledName)->context = declaration.Content->context;
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Stop recursion here
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
@@ -105,10 +102,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             visit(*this, return_.Content->value);
         }
 
-        template<typename T>        
-        void operator()(T&){
-            //No function calls there
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
 void ast::defineFunctions(ast::SourceFile& program){
