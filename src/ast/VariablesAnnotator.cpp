@@ -266,7 +266,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Reference the variable
         struct_.Content->variable = var;
         struct_.Content->variable->addReference();
-        struct_.Content->type = (*struct_type)[struct_.Content->memberName].type;
     }
 
     void operator()(ast::ArrayValue& array){

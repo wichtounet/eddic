@@ -38,7 +38,6 @@ struct ASTStructValue {
     std::string memberName;
 
     std::shared_ptr<Variable> variable;
-    boost::optional<eddic::Type> type;
 
     mutable long references = 0;
 };
