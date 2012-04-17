@@ -20,6 +20,8 @@
 #include "Assembler.hpp"
 #include "RegisterAllocation.hpp"
 
+#include "FrontEnds.hpp"
+
 #include "parser/SpiritParser.hpp"
 
 #include "ast/SourceFile.hpp"
@@ -103,6 +105,14 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     //Make sure that the file exists 
     if(!file_exists(file)){
         std::cout << "The file \"" + file + "\" does not exists" << std::endl;
+
+        return false;
+    }
+
+    auto front_end = get_front_end(file);
+
+    if(!front_end){
+        std::cout << "The file \"" + file + "\" cannot be compiled using eddic" << std::endl;
 
         return false;
     }
