@@ -5,10 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "EDDIBackEnd.hpp"
+#include "NativeBackEnd.hpp"
 
 using namespace eddic;
 
-void EDDIBackEnd::generate(std::shared_ptr<tac::Program> tacProgram){
+void NativeBackEnd::generate(std::shared_ptr<tac::Program> tacProgram){
     //TODO
 }

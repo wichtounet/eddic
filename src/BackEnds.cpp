@@ -6,14 +6,14 @@
 //=======================================================================
 
 #include "BackEnds.hpp"
-#include "EDDIBackEnd.hpp"
+#include "NativeBackEnd.hpp"
 
 using namespace eddic;
 
 std::shared_ptr<BackEnd> eddic::get_back_end(Output output){
     switch(output){
         case Output::NATIVE_EXECUTABLE:
-            return std::make_shared<EDDIBackEnd>();
+            return std::make_shared<NativeBackEnd>();
         default:
             return nullptr;
     }

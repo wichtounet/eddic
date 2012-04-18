@@ -5,14 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef EDDI_BACK_END_H
-#define EDDI_BACK_END_H
+#ifndef NATIVE_BACK_END_H
+#define NATIVE_BACK_END_H
 
 #include "BackEnd.hpp"
 
 namespace eddic {
 
-struct EDDIBackEnd : public BackEnd {
+struct NativeBackEnd : public BackEnd {
     void generate(std::shared_ptr<tac::Program> tacProgram);
 };
 
