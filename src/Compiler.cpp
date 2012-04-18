@@ -15,22 +15,12 @@
 #include "Options.hpp"
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
-#include "AssemblyFileWriter.hpp"
-#include "Assembler.hpp"
 
 #include "FrontEnds.hpp"
 #include "BackEnds.hpp"
 
 //Three Address Code
 #include "tac/Program.hpp"
-#include "tac/BasicBlockExtractor.hpp"
-#include "tac/TemporaryAllocator.hpp"
-#include "tac/LivenessAnalyzer.hpp"
-#include "tac/Optimizer.hpp"
-#include "tac/Printer.hpp"
-
-//Code generation
-#include "asm/CodeGeneratorFactory.hpp"
 
 //32 bits by default
 eddic::Platform eddic::platform = Platform::INTEL_X86;
@@ -96,52 +86,6 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
             back_end->set_string_pool(front_end->get_string_pool());
 
             back_end->generate(tacProgram);
-
-            std::string output = option_value("output");
-
-            //Separate into basic blocks
-            tac::BasicBlockExtractor extractor;
-            extractor.extract(*tacProgram);
-
-            //Allocate storage for the temporaries that need to be stored
-            tac::TemporaryAllocator allocator;
-            allocator.allocate(*tacProgram);
-
-            tac::Optimizer optimizer;
-            optimizer.optimize(*tacProgram, *front_end->get_string_pool());
-
-            //If asked by the user, print the Three Address code representation
-            if(option_defined("tac") || option_defined("tac-only")){
-                tac::Printer printer;
-                printer.print(*tacProgram);
-            }
-
-            //If necessary, continue the compilation process
-            if(!option_defined("tac-only")){
-                //Compute liveness of variables
-                tac::LivenessAnalyzer liveness;
-                liveness.compute(*tacProgram);
-
-                //Generate assembly from TAC
-                AssemblyFileWriter writer("output.asm");
-
-                as::CodeGeneratorFactory factory;
-                auto generator = factory.get(platform, writer);
-                generator->generate(*tacProgram, *front_end->get_string_pool()); 
-                writer.write(); 
-
-                //If it's necessary, assemble and link the assembly
-                if(!option_defined("assembly")){
-                    assemble(platform, output, option_defined("debug"), option_defined("verbose"));
-
-                    //Remove temporary files
-                    if(!option_defined("keep")){
-                        remove("output.asm");
-                    }
-
-                    remove("output.o");
-                }
-            }
         }
     } catch (const SemanticalException& e) {
         if(!option_defined("quiet")){
