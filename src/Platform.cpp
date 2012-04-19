@@ -9,6 +9,9 @@
 
 #include "Platform.hpp"
 
+//32 bits by default
+eddic::Platform eddic::platform = Platform::INTEL_X86;
+
 using namespace eddic;
 
 struct X86Descriptor : public PlatformDescriptor {

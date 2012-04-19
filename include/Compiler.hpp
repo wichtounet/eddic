@@ -16,8 +16,6 @@
 
 namespace eddic {
 
-extern Platform platform;
-
 /*!
  * \class Compiler
  * \brief The EDDI compiler.

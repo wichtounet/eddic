@@ -22,9 +22,6 @@
 //Three Address Code
 #include "tac/Program.hpp"
 
-//32 bits by default
-eddic::Platform eddic::platform = Platform::INTEL_X86;
-
 using namespace eddic;
 
 int Compiler::compile(const std::string& file) {
