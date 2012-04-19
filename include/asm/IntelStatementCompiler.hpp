@@ -14,7 +14,7 @@
 #include "assert.hpp"
 #include "Utils.hpp"
 #include "Registers.hpp"
-#include "Compiler.hpp"
+#include "Platform.hpp"
 #include "PlatformDescriptor.hpp"
 
 #include "tac/Utils.hpp"

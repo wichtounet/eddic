@@ -7,7 +7,7 @@
 
 #include "assert.hpp"
 #include "Types.hpp"
-#include "Compiler.hpp"
+#include "Platform.hpp"
 #include "SymbolTable.hpp"
 
 using namespace eddic;

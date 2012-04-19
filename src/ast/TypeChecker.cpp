@@ -15,7 +15,6 @@
 #include "ast/ASTVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 
-#include "Compiler.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"

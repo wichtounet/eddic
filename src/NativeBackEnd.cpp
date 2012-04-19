@@ -8,7 +8,6 @@
 #include "NativeBackEnd.hpp"
 #include "Utils.hpp"
 #include "Options.hpp"
-#include "Compiler.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
 
