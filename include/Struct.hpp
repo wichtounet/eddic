@@ -25,6 +25,9 @@ struct Member {
     Type type;
 
     Member(const std::string& n, Type t);
+
+    private:
+        int references = 0;
 };
 
 /*!
@@ -34,12 +37,14 @@ struct Member {
 struct Struct {
     std::string name;
     std::vector<std::shared_ptr<Member>> members;
-    int references = 0;
     
     Struct(const std::string& n);
 
     bool member_exists(const std::string& n);
     std::shared_ptr<Member> operator[](const std::string& n);
+
+    private:
+        int references = 0;
 };
 
 } //end of eddic
