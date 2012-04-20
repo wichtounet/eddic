@@ -18,28 +18,39 @@ namespace eddic {
 
 /*!
  * \class Member
- * \brief A member of a function.  
+ * \brief A member of a struct.  
  */
 struct Member {
     std::string name;
     Type type;
 
     Member(const std::string& n, Type t);
+
+    void add_reference();
+    unsigned int get_references();
+
+    private:
+        unsigned int references = 0;
 };
 
 /*!
- * \class Function
- * \brief A function entry in the function table. 
+ * \class Struct
+ * \brief A structure entry in the function table. 
  */
 struct Struct {
     std::string name;
-    std::vector<Member> members;
-    int references = 0;
+    std::vector<std::shared_ptr<Member>> members;
     
     Struct(const std::string& n);
 
     bool member_exists(const std::string& n);
-    Member operator[](const std::string& n);
+    std::shared_ptr<Member> operator[](const std::string& n);
+
+    void add_reference();
+    unsigned int get_references();
+
+    private:
+        unsigned int references = 0;
 };
 
 } //end of eddic

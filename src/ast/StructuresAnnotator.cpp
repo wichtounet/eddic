@@ -31,7 +31,7 @@ struct StructuresCollector : public boost::static_visitor<> {
             }
 
             Type memberType = newType(member.Content->type);
-            signature->members.push_back({member.Content->name, memberType});
+            signature->members.push_back(std::make_shared<Member>(member.Content->name, memberType));
         }
 
         symbols.add_struct(signature);

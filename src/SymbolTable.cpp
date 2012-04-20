@@ -56,12 +56,12 @@ std::shared_ptr<Struct> SymbolTable::get_struct(const std::string& struct_){
 int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
     int offset = 0;
 
-    for(auto& m : struct_->members){
-        if(m.name == member){
+    for(auto m : struct_->members){
+        if(m->name == member){
             return offset;
         }
 
-        offset -= size(m.type);
+        offset -= size(m->type);
     }
 
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
@@ -70,16 +70,15 @@ int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::strin
 int SymbolTable::member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member){
     int offset = -size_of_struct(struct_->name) + size(BaseType::INT); 
 
-    for(auto& m : struct_->members){
-        if(m.name == member){
+    for(auto m : struct_->members){
+        if(m->name == member){
             return offset;
         }
 
-        offset += size(m.type);
+        offset += size(m->type);
     }
 
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
-
 }
 
 int SymbolTable::size_of_struct(const std::string& struct_name){
@@ -87,8 +86,8 @@ int SymbolTable::size_of_struct(const std::string& struct_name){
 
     auto struct_ = get_struct(struct_name);
 
-    for(auto& m : struct_->members){
-        struct_size += size(m.type);
+    for(auto m : struct_->members){
+        struct_size += size(m->type);
     }
     
     return struct_size;

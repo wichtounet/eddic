@@ -304,13 +304,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 auto struct_name = value.Content->var->type().type();
                 auto struct_type = symbols.get_struct(struct_name);
 
-                for(auto& member : struct_type->members){
+                for(auto member : struct_type->members){
                     ast::StructValue memberValue;
                     memberValue.Content->context = value.Content->context;
                     memberValue.Content->position = value.Content->position;
                     memberValue.Content->variableName = value.Content->variableName;
                     memberValue.Content->variable = value.Content->var;
-                    memberValue.Content->memberName = member.name;
+                    memberValue.Content->memberName = member->name;
 
                     auto member_values = (*this)(memberValue);
                     std::reverse(member_values.begin(), member_values.end());
@@ -342,7 +342,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     result_type operator()(ast::StructValue& value) const {
         auto struct_name = value.Content->variable->type().type();
         auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[value.Content->memberName].type;
+        auto member_type = (*struct_type)[value.Content->memberName]->type;
         auto offset = symbols.member_offset(struct_type, value.Content->memberName);
 
         //Revert the offset for parameter variables

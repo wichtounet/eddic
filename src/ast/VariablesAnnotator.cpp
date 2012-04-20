@@ -142,6 +142,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(!struct_type->member_exists(assignment.Content->memberName)){
             throw SemanticalException("The struct " + struct_name + " has no member named " + assignment.Content->memberName, assignment.Content->position);
         }
+
+        struct_type->add_reference();
+        (*struct_type)[assignment.Content->memberName]->add_reference();
     }
 
     template<typename Operation>
@@ -266,6 +269,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Reference the variable
         struct_.Content->variable = var;
         struct_.Content->variable->addReference();
+
+        struct_type->add_reference();
+        (*struct_type)[struct_.Content->memberName]->add_reference();
     }
 
     void operator()(ast::ArrayValue& array){
