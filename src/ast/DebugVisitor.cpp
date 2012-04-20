@@ -115,6 +115,7 @@ void ast::DebugVisitor::operator()(ast::DoWhile& while_) const {
     std::cout << indent() << "Do while" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
     print_sub(*this, while_.Content->condition);
+    std::cout << indent() << "Body:" << std::endl;
     print_each_sub(*this, while_.Content->instructions);
 }
 
