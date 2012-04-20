@@ -133,6 +133,20 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         return assignment;
     }
+    
+    //Transform while in do while loop as an optimization (less jumps)
+    ast::Instruction operator()(ast::While& while_) const {
+        ast::If if_;
+        if_.Content->condition = while_.Content->condition;
+
+        ast::DoWhile do_while;
+        do_while.Content->condition = while_.Content->condition;
+        do_while.Content->instructions = while_.Content->instructions;
+
+        if_.Content->instructions.push_back(do_while);
+
+        return if_;
+    }
 
     ast::Instruction operator()(ast::Foreach& foreach) const {
         ast::For for_;
