@@ -969,7 +969,6 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::DoWhile& while_){
             std::string startLabel = newLabel();
-            std::string endLabel = newLabel();
 
             function->add(startLabel);
 
