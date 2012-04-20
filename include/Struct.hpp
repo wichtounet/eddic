@@ -18,7 +18,7 @@ namespace eddic {
 
 /*!
  * \class Member
- * \brief A member of a function.  
+ * \brief A member of a struct.  
  */
 struct Member {
     std::string name;
@@ -28,8 +28,8 @@ struct Member {
 };
 
 /*!
- * \class Function
- * \brief A function entry in the function table. 
+ * \class Struct
+ * \brief A structure entry in the function table. 
  */
 struct Struct {
     std::string name;
