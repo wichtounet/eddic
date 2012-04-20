@@ -91,8 +91,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 };
 
-struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
-    ast::Instruction operator()(ast::CompoundAssignment& compound) const {
+struct InstructionTransformer : public boost::static_visitor<std::vector<ast::Instruction>> {
+    result_type operator()(ast::CompoundAssignment& compound) const {
         ast::Assignment assignment;
 
         assignment.Content->context = compound.Content->context;
@@ -109,10 +109,10 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         assignment.Content->value = composed;
 
-        return assignment;
+        return {assignment};
     }
     
-    ast::Instruction operator()(ast::StructCompoundAssignment& compound) const {
+    result_type operator()(ast::StructCompoundAssignment& compound) const {
         ast::StructAssignment assignment;
 
         assignment.Content->context = compound.Content->context;
@@ -131,11 +131,11 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         assignment.Content->value = composed;
 
-        return assignment;
+        return {assignment};
     }
     
     //Transform while in do while loop as an optimization (less jumps)
-    ast::Instruction operator()(ast::While& while_) const {
+    result_type operator()(ast::While& while_) const {
         ast::If if_;
         if_.Content->condition = while_.Content->condition;
 
@@ -145,11 +145,11 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         if_.Content->instructions.push_back(do_while);
 
-        return if_;
+        return {if_};
     }
 
     //Transform foreach loop in do while loop
-    ast::Instruction operator()(ast::Foreach& foreach) const {
+    result_type operator()(ast::Foreach& foreach) const {
         ast::If if_;
 
         ast::Integer from_value;
@@ -201,10 +201,14 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         if_.Content->instructions.push_back(do_while);
 
-        return if_;
+        return {if_};
     }
 
-    AUTO_RETURN_OTHERS_CONST(ast::Instruction)
+    //No transformation for the other nodes
+    template<typename T>
+    result_type operator()(T&) const {
+        return {};//Empty vector means no transformation
+    }
 };
 
 struct CleanerVisitor : public boost::static_visitor<> {
@@ -372,7 +376,17 @@ struct TransformerVisitor : public boost::static_visitor<> {
         auto end = instructions.end();
 
         while(start != end){
-            *start = visit(instructionTransformer, *start);
+            auto transformed = visit(instructionTransformer, *start);
+
+            if(transformed.size() == 1){
+                *start = transformed[0];
+            } else if(transformed.size() > 1){
+                //Replace the current instruction with the first one
+                *start = transformed[0];
+
+                //Insert the other instructions after the previously inserted
+                instructions.insert(start+1, transformed.begin() + 1, transformed.end());
+            }
 
             ++start;
         }
