@@ -32,8 +32,7 @@ struct ASTPrefixOperation {
     std::shared_ptr<Variable> variable;
     ast::Operator op;
 
-    mutable long references;
-    ASTPrefixOperation() : references(0) {}
+    mutable long references = 0;
 };
 
 typedef Deferred<ASTPrefixOperation> PrefixOperation;
