@@ -203,6 +203,46 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         return {if_};
     }
+    
+    //Transform for loop in do while loop
+    result_type operator()(ast::For& for_) const {
+        result_type instructions;
+
+        if(for_.Content->start){
+            instructions.push_back(*for_.Content->start);
+        }
+
+        if(for_.Content->condition){
+            ast::If if_;
+            if_.Content->condition = *for_.Content->condition; 
+
+            ast::DoWhile do_while;
+            do_while.Content->condition = *for_.Content->condition; 
+            do_while.Content->instructions = for_.Content->instructions;
+            
+            if(for_.Content->repeat){
+                do_while.Content->instructions.push_back(*for_.Content->repeat);
+            }
+
+            if_.Content->instructions.push_back(do_while);
+
+            instructions.push_back(if_);
+        } else {
+            ast::DoWhile do_while;
+
+            ast::True condition;
+            do_while.Content->condition = condition;
+            do_while.Content->instructions = for_.Content->instructions;
+            
+            if(for_.Content->repeat){
+                do_while.Content->instructions.push_back(*for_.Content->repeat);
+            }
+
+            instructions.push_back(do_while);
+        }
+
+        return instructions;
+    }
 
     //No transformation for the other nodes
     template<typename T>
@@ -380,12 +420,15 @@ struct TransformerVisitor : public boost::static_visitor<> {
 
             if(transformed.size() == 1){
                 *start = transformed[0];
-            } else if(transformed.size() > 1){
+            } else if(transformed.size() == 2){
                 //Replace the current instruction with the first one
                 *start = transformed[0];
 
                 //Insert the other instructions after the previously inserted
-                instructions.insert(start+1, transformed.begin() + 1, transformed.end());
+                start = instructions.insert(start+1, transformed[1]);
+
+                //Update the end iterator
+                end = instructions.end();
             }
 
             ++start;

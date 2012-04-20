@@ -956,6 +956,11 @@ class CompilerVisitor : public boost::static_visitor<> {
             //This node has been transformed into a do while loop
             ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
         }
+        
+        void operator()(ast::For&){
+            //This node has been transformed into a do while loop
+            ASSERT_PATH_NOT_TAKEN("For should have been transformed into a DoWhile loop"); 
+        }
 
         void operator()(ast::Foreach&){
             //This node has been transformed into a do while loop
@@ -971,27 +976,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit_each(*this, while_.Content->instructions);
 
             visit(JumpIfTrueVisitor(function, startLabel), while_.Content->condition);
-        }
-
-        void operator()(ast::For for_){
-            visit_optional(*this, for_.Content->start);
-
-            std::string startLabel = newLabel();
-            std::string endLabel = newLabel();
-
-            function->add(startLabel);
-
-            if(for_.Content->condition){
-                visit(JumpIfFalseVisitor(function, endLabel), *for_.Content->condition);
-            }
-
-            visit_each(*this, for_.Content->instructions);
-
-            visit_optional(*this, for_.Content->repeat);
-
-            function->add(std::make_shared<tac::Goto>(startLabel));
-            
-            function->add(endLabel);
         }
        
         void operator()(ast::ForeachIn& foreach){
