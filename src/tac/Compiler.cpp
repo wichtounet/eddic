@@ -952,19 +952,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             performPrefixOperation(operation, function);
         }
 
-        void operator()(ast::While& while_){
-            std::string startLabel = newLabel();
-            std::string endLabel = newLabel();
-
-            function->add(startLabel);
-
-            visit(JumpIfFalseVisitor(function, endLabel), while_.Content->condition);
-
-            visit_each(*this, while_.Content->instructions);
-
-            function->add(std::make_shared<tac::Goto>(startLabel));
-
-            function->add(endLabel);
+        void operator()(ast::While&){
+            //This node has been transformed into a while loop
+            ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
         }
 
         void operator()(ast::DoWhile& while_){
