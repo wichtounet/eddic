@@ -23,6 +23,9 @@ enum class Platform : unsigned int {
     INTEL_X86_64
 };
 
+//The current platform
+extern Platform platform;
+
 /*!
  * \brief Return the platform descriptor of the specified platform. 
  * \param platform The platform identifier

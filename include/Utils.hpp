@@ -70,6 +70,8 @@ inline std::string toString(T number) {
     return boost::lexical_cast<std::string>(number); 
 }
 
+bool has_extension(const std::string& file, const std::string& extension);
+
 bool file_exists(const std::string& file);
 
 std::string execCommand(const std::string& command);

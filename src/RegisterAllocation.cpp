@@ -5,7 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "Compiler.hpp"
 #include "Platform.hpp"
 #include "RegisterAllocation.hpp"
 #include "SymbolTable.hpp"

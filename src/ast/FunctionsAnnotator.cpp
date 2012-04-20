@@ -15,7 +15,6 @@
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"
-#include "Compiler.hpp"
 
 using namespace eddic;
 
