@@ -8,8 +8,11 @@
 #ifndef TAC_PRINTER_H
 #define TAC_PRINTER_H
 
+#include <memory>
+
 #include "tac/Statement.hpp"
 #include "tac/Argument.hpp"
+#include "tac/Function.hpp"
 
 namespace eddic {
 
@@ -23,6 +26,7 @@ class Program;
  */
 struct Printer {
     void print(tac::Program& program) const ;
+    void printFunction(std::shared_ptr<tac::Function> function) const ;
     void printStatement(tac::Statement& program) const ;
     void printArgument(tac::Argument& program) const ;
 };

@@ -49,7 +49,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, program.functions);
     }
 
-    void operator()(std::shared_ptr<tac::Function> function){
+    void operator()(std::shared_ptr<tac::Function>& function){
         std::cout << "Function " << function->getName() << std::endl;
 
         visit_each(*this, function->getStatements());
@@ -172,21 +172,22 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<tac::If>& ifFalse){
         if(ifFalse->op){
-            if(*ifFalse->op == tac::BinaryOperator::EQUALS){
+            auto op = *ifFalse->op;
+            if(op == tac::BinaryOperator::EQUALS || op == tac::BinaryOperator::FE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(*ifFalse->op == tac::BinaryOperator::NOT_EQUALS){
+            } else if(op == tac::BinaryOperator::NOT_EQUALS || op == tac::BinaryOperator::FNE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(*ifFalse->op == tac::BinaryOperator::LESS){
+            } else if(op == tac::BinaryOperator::LESS || op == tac::BinaryOperator::FL){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(*ifFalse->op == tac::BinaryOperator::LESS_EQUALS){
+            } else if(op == tac::BinaryOperator::LESS_EQUALS || op == tac::BinaryOperator::FLE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(*ifFalse->op == tac::BinaryOperator::GREATER){
+            } else if(op == tac::BinaryOperator::GREATER || op == tac::BinaryOperator::FG){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(*ifFalse->op == tac::BinaryOperator::GREATER_EQUALS){
+            } else if(op == tac::BinaryOperator::GREATER_EQUALS || op == tac::BinaryOperator::FGE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
             }
         } else {
-            std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
+            std::cout << "\tif " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << std::endl;
         }
     }
     
@@ -238,6 +239,11 @@ struct DebugVisitor : public boost::static_visitor<> {
 void tac::Printer::print(tac::Program& program) const {
    DebugVisitor visitor;
    visitor(program); 
+}
+
+void tac::Printer::printFunction(std::shared_ptr<tac::Function> function) const {
+   DebugVisitor visitor;
+   visitor(function); 
 }
 
 void tac::Printer::printStatement(tac::Statement& statement) const {
