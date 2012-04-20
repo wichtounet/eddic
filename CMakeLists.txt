@@ -7,15 +7,13 @@ set(VERSION_MAJOR 0)
 set(VERSION_MINOR 9)
 set(VERSION_PATCH 1)
 
-#Activate warnings
-if(MSVC)
-  if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-    string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-  endif()
-elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++0x -pedantic -Wall -Wextra -Wno-long-long")
+#Activate warnings and C++11 support
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS           "-pipe -g -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
+    set(CMAKE_CXX_FLAGS_DEBUG     "-pipe -g -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
+    set(CMAKE_CXX_FLAGS_RELEASE   "-pipe -DNDEBUG -O2 -march=native -std=c++11")
+else()
+    MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
 endif()
 
 # add a target to generate API documentation with Doxygen
