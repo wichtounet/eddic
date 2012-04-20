@@ -33,13 +33,13 @@ struct Member {
  */
 struct Struct {
     std::string name;
-    std::vector<Member> members;
+    std::vector<std::shared_ptr<Member>> members;
     int references = 0;
     
     Struct(const std::string& n);
 
     bool member_exists(const std::string& n);
-    Member operator[](const std::string& n);
+    std::shared_ptr<Member> operator[](const std::string& n);
 };
 
 } //end of eddic

@@ -16,8 +16,8 @@ Member::Member(const std::string& n, Type t) : name(n), type(t) {}
 Struct::Struct(const std::string& n) : name(n) {}
 
 bool Struct::member_exists(const std::string& n){
-    for(auto& member : members){
-        if(member.name == n){
+    for(auto member : members){
+        if(member->name == n){
             return true;
         }
     }
@@ -25,9 +25,9 @@ bool Struct::member_exists(const std::string& n){
     return false;
 }
 
-Member Struct::operator[](const std::string& n){
-    for(auto& member : members){
-        if(member.name == n){
+std::shared_ptr<Member> Struct::operator[](const std::string& n){
+    for(auto member : members){
+        if(member->name == n){
             return member;
         }
     }
