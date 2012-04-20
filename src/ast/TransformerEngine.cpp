@@ -148,38 +148,42 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         return if_;
     }
 
+    //Transform foreach loop in do while loop
     ast::Instruction operator()(ast::Foreach& foreach) const {
-        ast::For for_;
+        ast::If if_;
 
-        //Define the start instruction
-    
-        ast::Integer fromValue;
-        fromValue.value = foreach.Content->from;
+        ast::Integer from_value;
+        from_value.value = foreach.Content->from;
 
-        ast::Assignment startAssign;
-        startAssign.Content->context = foreach.Content->context;
-        startAssign.Content->variableName = foreach.Content->variableName;
-        startAssign.Content->value = fromValue;
+        ast::Integer to_value;
+        to_value.value = foreach.Content->to;
+        
+        ast::Expression condition;
+        condition.Content->first = from_value;
+        condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
-        for_.Content->start = startAssign;
+        if_.Content->condition = condition;
+        
+        ast::Assignment start_assign;
+        start_assign.Content->context = foreach.Content->context;
+        start_assign.Content->variableName = foreach.Content->variableName;
+        start_assign.Content->value = from_value;
 
-        //Defne the condition
+        if_.Content->instructions.push_back(start_assign);
 
-        ast::Integer toValue;
-        toValue.value = foreach.Content->to;
-
+        ast::DoWhile do_while;
+        
         ast::VariableValue v;
         v.Content->variableName = foreach.Content->variableName;
         v.Content->context = foreach.Content->context;
         v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
 
-        ast::Expression cond;
-        cond.Content->first = v;
-        cond.Content->operations.push_back({ast::Operator::LESS_EQUALS, toValue});
+        ast::Expression while_condition;
+        while_condition.Content->first = v;
+        while_condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
-        for_.Content->condition = cond;
-
-        //Define the repeat instruction
+        do_while.Content->condition = while_condition;
+        do_while.Content->instructions = foreach.Content->instructions;
 
         ast::Integer inc;
         inc.value = 1;
@@ -188,17 +192,16 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         addition.Content->first = v;
         addition.Content->operations.push_back({ast::Operator::ADD, inc});
         
-        ast::Assignment repeatAssign;
-        repeatAssign.Content->context = foreach.Content->context;
-        repeatAssign.Content->variableName = foreach.Content->variableName;
-        repeatAssign.Content->value = addition;
+        ast::Assignment repeat_assign;
+        repeat_assign.Content->context = foreach.Content->context;
+        repeat_assign.Content->variableName = foreach.Content->variableName;
+        repeat_assign.Content->value = addition;
+        
+        do_while.Content->instructions.push_back(repeat_assign);
 
-        for_.Content->repeat = repeatAssign;
+        if_.Content->instructions.push_back(do_while);
 
-        //Put the operations into the new for
-        for_.Content->instructions = foreach.Content->instructions;
-
-        return for_;
+        return if_;
     }
 
     AUTO_RETURN_OTHERS_CONST(ast::Instruction)
