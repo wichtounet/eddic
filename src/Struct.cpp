@@ -13,6 +13,14 @@ using namespace eddic;
 
 Member::Member(const std::string& n, Type t) : name(n), type(t) {}
 
+void Member::add_reference(){
+    ++references;
+}
+
+unsigned int Member::get_references(){
+    return references;
+}
+
 Struct::Struct(const std::string& n) : name(n) {}
 
 bool Struct::member_exists(const std::string& n){
@@ -33,4 +41,12 @@ std::shared_ptr<Member> Struct::operator[](const std::string& n){
     }
 
     assert(false && "This member is not contained in the struct");
+}
+    
+void Struct::add_reference(){
+    ++references;
+}
+
+unsigned int Struct::get_references(){
+    return references;
 }

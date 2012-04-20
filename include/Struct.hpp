@@ -26,8 +26,11 @@ struct Member {
 
     Member(const std::string& n, Type t);
 
+    void add_reference();
+    unsigned int get_references();
+
     private:
-        int references = 0;
+        unsigned int references = 0;
 };
 
 /*!
@@ -43,8 +46,11 @@ struct Struct {
     bool member_exists(const std::string& n);
     std::shared_ptr<Member> operator[](const std::string& n);
 
+    void add_reference();
+    unsigned int get_references();
+
     private:
-        int references = 0;
+        unsigned int references = 0;
 };
 
 } //end of eddic
