@@ -141,7 +141,7 @@ void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
 }
 
 void ast::DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
-    std::cout << indent() << "Variable declaration" << std::endl; 
+    std::cout << indent() << "Variable declaration [" << declaration.Content->variableName << "]" << std::endl; 
 
     if(declaration.Content->value){
         print_sub(*this, *declaration.Content->value);
