@@ -457,11 +457,14 @@ struct IntelStatementCompiler {
     }
 
     bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
-        assert(tac::is<std::shared_ptr<tac::Quadruple>>(statement) || tac::is<std::shared_ptr<tac::IfFalse>>(statement) || tac::is<std::shared_ptr<tac::Param>>(statement));
+        assert(tac::is<std::shared_ptr<tac::Quadruple>>(statement) || tac::is<std::shared_ptr<tac::IfFalse>>(statement) 
+            || tac::is<std::shared_ptr<tac::If>>(statement) || tac::is<std::shared_ptr<tac::Param>>(statement));
 
         if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } else if (auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+            return isLive((*ptr)->liveness, variable);
+        } else if (auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } else if (auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
             return isLive((*ptr)->liveness, variable);
