@@ -103,7 +103,6 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_IGNORE_STANDARD_IMPORT()
         AUTO_IGNORE_COMPOUND_ASSIGNMENT()
         AUTO_IGNORE_SWAP()
-        AUTO_IGNORE_STRUCT()
         AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT()
         AUTO_IGNORE_STRUCT_ASSIGNMENT()
         AUTO_IGNORE_STRUCT_VALUE()
@@ -140,6 +139,22 @@ struct Inspector : public boost::static_visitor<> {
             check(program.Content->context);
 
             visit_each(*this, program.Content->blocks);
+        }
+        
+        void operator()(ast::Struct& declaration){
+            if(WarningUnused){
+                auto struct_ = symbols.get_struct(declaration.Content->name);
+
+                if(struct_->get_references() == 0){
+                    warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
+                } else {
+                    for(auto member : struct_->members){
+                        if(member->get_references() == 0){
+                            warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+                        }
+                    }
+                }
+            }
         }
         
         void operator()(ast::FunctionDeclaration& declaration){
