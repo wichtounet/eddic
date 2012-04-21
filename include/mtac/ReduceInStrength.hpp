@@ -31,7 +31,7 @@ struct ReduceInStrength : public boost::static_visitor<void> {
     }
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

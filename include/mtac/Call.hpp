@@ -31,7 +31,7 @@ struct Call {
     Call(const std::string& function, std::shared_ptr<Function> functionDefinition, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

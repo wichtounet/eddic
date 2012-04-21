@@ -29,7 +29,7 @@ struct Return {
     Return(Argument arg1, Argument arg2);
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

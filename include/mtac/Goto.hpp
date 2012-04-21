@@ -27,7 +27,7 @@ struct Goto {
     Goto(const std::string& label);
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

@@ -72,7 +72,7 @@ mtac::Operator toFloatOperator(ast::Operator op);
 mtac::Operator toRelationalOperator(ast::Operator op);
 mtac::Operator toFloatRelationalOperator(ast::Operator op);
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

@@ -52,7 +52,7 @@ class RemoveMultipleAssign : public boost::static_visitor<bool> {
 };
 
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

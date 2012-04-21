@@ -49,7 +49,7 @@ struct Quadruple {
     Quadruple(Operator op, mtac::Argument arg1, mtac::Argument arg2);
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

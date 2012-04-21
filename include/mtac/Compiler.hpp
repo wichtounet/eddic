@@ -22,7 +22,7 @@ struct Compiler {
     void compile(ast::SourceFile& program, StringPool& pool, mtac::Program& tacProgram) const ;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

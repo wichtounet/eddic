@@ -41,7 +41,7 @@ struct IfFalse {
     IfFalse(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

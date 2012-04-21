@@ -25,7 +25,7 @@ struct Program {
     std::vector<std::shared_ptr<Function>> functions;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

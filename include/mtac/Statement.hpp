@@ -33,7 +33,7 @@ typedef boost::variant<
         std::string                             //For labels
     > Statement;
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

@@ -52,7 +52,7 @@ class Function {
         std::string name;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

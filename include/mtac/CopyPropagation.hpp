@@ -62,7 +62,7 @@ class OffsetCopyPropagation : public boost::static_visitor<void> {
         std::unordered_map<mtac::Offset, std::shared_ptr<Variable>, mtac::OffsetHash> constants;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

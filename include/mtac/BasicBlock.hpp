@@ -33,7 +33,7 @@ class BasicBlock {
         std::shared_ptr<Context> context;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

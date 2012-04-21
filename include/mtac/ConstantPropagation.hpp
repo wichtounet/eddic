@@ -65,7 +65,7 @@ class OffsetConstantPropagation : public boost::static_visitor<void> {
         std::unordered_map<mtac::Offset, std::string, mtac::OffsetHash> string_constants;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

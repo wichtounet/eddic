@@ -62,7 +62,7 @@ struct OffsetHash : std::unary_function<Offset, std::size_t> {
     }
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

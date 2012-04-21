@@ -86,7 +86,7 @@ bool operator==(const Argument& a, double b);
 bool operator==(const Argument& a, std::shared_ptr<Variable> b);
 bool operator==(const Argument& a, const std::string& b);
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

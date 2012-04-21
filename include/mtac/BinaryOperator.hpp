@@ -37,7 +37,7 @@ enum class BinaryOperator : unsigned int {
 BinaryOperator toBinaryOperator(ast::Operator op);
 BinaryOperator toFloatBinaryOperator(ast::Operator op);
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

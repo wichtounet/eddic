@@ -34,7 +34,7 @@ struct IsParamSafeVisitor : public boost::static_visitor<bool> {
     bool operator()(const ast::Assignment& value) const;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

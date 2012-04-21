@@ -20,7 +20,7 @@ struct Optimizer {
     void optimize(mtac::Program& program, StringPool& pool) const ;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

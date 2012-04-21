@@ -39,7 +39,7 @@ struct Param {
     Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<Function> function);
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

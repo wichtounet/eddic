@@ -20,7 +20,7 @@ namespace as {
 void save(AssemblyFileWriter& writer, const std::vector<std::string>& registers);
 void restore(AssemblyFileWriter& writer, const std::vector<std::string>& registers);
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

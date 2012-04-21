@@ -53,7 +53,7 @@ void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_
 
 bool safe(std::shared_ptr<mtac::Call> call);
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 

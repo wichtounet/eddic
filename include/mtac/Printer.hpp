@@ -31,7 +31,7 @@ struct Printer {
     void printArgument(mtac::Argument& program) const ;
 };
 
-} //end of tac
+} //end of mtac
 
 } //end of eddic
 
