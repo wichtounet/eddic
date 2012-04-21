@@ -12,10 +12,10 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 struct LivenessAnalyzer {
-    void compute(tac::Program& program);
+    void compute(mtac::Program& program);
 };
 
 } //end of ast

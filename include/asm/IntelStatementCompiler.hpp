@@ -28,13 +28,13 @@ namespace as {
 template<typename Register, typename FloatRegister>
 struct IntelStatementCompiler {
     //The current function being compiled
-    std::shared_ptr<tac::Function> function;
+    std::shared_ptr<mtac::Function> function;
     
     AssemblyFileWriter& writer;
     Registers<Register> registers;
     Registers<FloatRegister> float_registers;
 
-    std::unordered_set<std::shared_ptr<tac::BasicBlock>> blockUsage;
+    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> blockUsage;
 
     std::unordered_set<std::shared_ptr<Variable>> written;
 
@@ -48,17 +48,17 @@ struct IntelStatementCompiler {
     bool last;
     bool ended;
 
-    tac::Statement current;
-    tac::Statement next;
+    mtac::Statement current;
+    mtac::Statement next;
    
-    IntelStatementCompiler(AssemblyFileWriter& w, std::vector<Register> r, std::vector<FloatRegister> fr, std::shared_ptr<tac::Function> f) : function(f), writer(w), 
+    IntelStatementCompiler(AssemblyFileWriter& w, std::vector<Register> r, std::vector<FloatRegister> fr, std::shared_ptr<mtac::Function> f) : function(f), writer(w), 
             registers(r, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
             float_registers(fr, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))) {
         last = ended = false;        
     } 
     
-    virtual void div(std::shared_ptr<tac::Quadruple> quadruple) = 0;
-    virtual void mod(std::shared_ptr<tac::Quadruple> quadruple) = 0;
+    virtual void div(std::shared_ptr<mtac::Quadruple> quadruple) = 0;
+    virtual void mod(std::shared_ptr<mtac::Quadruple> quadruple) = 0;
     
     virtual std::string getMnemonicSize() = 0;
     virtual std::string getFloatPrefix() = 0;
@@ -128,7 +128,7 @@ struct IntelStatementCompiler {
         assert(false && "Should never get there");
     }
     
-    std::string toString(std::shared_ptr<Variable> variable, tac::Argument offset){
+    std::string toString(std::shared_ptr<Variable> variable, mtac::Argument offset){
         if(auto* ptr = boost::get<int>(&offset)){
             return toString(variable, *ptr);
         }
@@ -158,7 +158,7 @@ struct IntelStatementCompiler {
         assert(false && "Should never get there");
     }
     
-    void copy(tac::Argument argument, FloatRegister reg){
+    void copy(mtac::Argument argument, FloatRegister reg){
         assert(isVariable(argument) || isFloat(argument));
 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
@@ -193,7 +193,7 @@ struct IntelStatementCompiler {
         }
     }
     
-    void copy(tac::Argument argument, Register reg){
+    void copy(mtac::Argument argument, Register reg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -222,7 +222,7 @@ struct IntelStatementCompiler {
         }
     }
     
-    void move(tac::Argument argument, FloatRegister reg){
+    void move(mtac::Argument argument, FloatRegister reg){
         assert(isVariable(argument) || isFloat(argument));
 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
@@ -266,7 +266,7 @@ struct IntelStatementCompiler {
         }
     }
     
-    void move(tac::Argument argument, Register reg){
+    void move(mtac::Argument argument, Register reg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
 
@@ -390,7 +390,7 @@ struct IntelStatementCompiler {
         }
     }
 
-    void setIfCc(const std::string& set, std::shared_ptr<tac::Quadruple>& quadruple){
+    void setIfCc(const std::string& set, std::shared_ptr<mtac::Quadruple>& quadruple){
         Register reg = getRegNoMove(quadruple->result);
 
         //The first argument is not important, it can be immediate, but the second must be a register
@@ -440,7 +440,7 @@ struct IntelStatementCompiler {
         }
     }
 
-    void setNext(tac::Statement statement){
+    void setNext(mtac::Statement statement){
         next = statement;
     }
    
@@ -456,17 +456,17 @@ struct IntelStatementCompiler {
         }
     }
 
-    bool isLive(std::shared_ptr<Variable> variable, tac::Statement statement){
-        assert(tac::is<std::shared_ptr<tac::Quadruple>>(statement) || tac::is<std::shared_ptr<tac::IfFalse>>(statement) 
-            || tac::is<std::shared_ptr<tac::If>>(statement) || tac::is<std::shared_ptr<tac::Param>>(statement));
+    bool isLive(std::shared_ptr<Variable> variable, mtac::Statement statement){
+        assert(mtac::is<std::shared_ptr<mtac::Quadruple>>(statement) || mtac::is<std::shared_ptr<mtac::IfFalse>>(statement) 
+            || mtac::is<std::shared_ptr<mtac::If>>(statement) || mtac::is<std::shared_ptr<mtac::Param>>(statement));
 
-        if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if (auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+        } else if (auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if (auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+        } else if (auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
             return isLive((*ptr)->liveness, variable);
-        } else if (auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
+        } else if (auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
             return isLive((*ptr)->liveness, variable);
         } 
 
@@ -618,7 +618,7 @@ struct IntelStatementCompiler {
         return str;
     }
 
-    std::string arg(tac::Argument argument){
+    std::string arg(mtac::Argument argument){
         if(auto* ptr = boost::get<int>(&argument)){
             return ::toString(*ptr);
         } else if(auto* ptr = boost::get<double>(&argument)){
@@ -644,7 +644,7 @@ struct IntelStatementCompiler {
         assert(false && "Should never get there");
     }
    
-    void spillsIfNecessary(Register reg, tac::Argument arg){
+    void spillsIfNecessary(Register reg, mtac::Argument arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
             if(!registers.inRegister(*ptr, reg)){
                 spills(reg);
@@ -754,11 +754,11 @@ struct IntelStatementCompiler {
         }
     }
 
-    bool isFloatOperator(tac::BinaryOperator op){
-        return op >= tac::BinaryOperator::FE && op <= tac::BinaryOperator::FL;
+    bool isFloatOperator(mtac::BinaryOperator op){
+        return op >= mtac::BinaryOperator::FE && op <= mtac::BinaryOperator::FL;
     }
 
-    void compile(std::shared_ptr<tac::IfFalse> ifFalse){
+    void compile(std::shared_ptr<mtac::IfFalse> ifFalse){
         current = ifFalse;
 
         if(ifFalse->op){
@@ -767,27 +767,27 @@ struct IntelStatementCompiler {
                 compareFloatBinary(ifFalse);
                 
                 switch(*ifFalse->op){
-                    case tac::BinaryOperator::FE:
+                    case mtac::BinaryOperator::FE:
                         writer.stream() << "jne " << ifFalse->block->label << std::endl;
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FNE:
+                    case mtac::BinaryOperator::FNE:
                         writer.stream() << "je " << ifFalse->block->label << std::endl;
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FL:
+                    case mtac::BinaryOperator::FL:
                         writer.stream() << "jae " << ifFalse->block->label << std::endl;
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FLE:
+                    case mtac::BinaryOperator::FLE:
                         writer.stream() << "ja " << ifFalse->block->label << std::endl;
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FG:
+                    case mtac::BinaryOperator::FG:
                         writer.stream() << "jbe " << ifFalse->block->label << std::endl;
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FGE:
+                    case mtac::BinaryOperator::FGE:
                         writer.stream() << "jb " << ifFalse->block->label << std::endl;
                         writer.stream() << "jp " << ifFalse->block->label << std::endl;
                         break;
@@ -799,22 +799,22 @@ struct IntelStatementCompiler {
                 compareBinary(ifFalse);
             
                 switch(*ifFalse->op){
-                    case tac::BinaryOperator::EQUALS:
+                    case mtac::BinaryOperator::EQUALS:
                         writer.stream() << "jne " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::NOT_EQUALS:
+                    case mtac::BinaryOperator::NOT_EQUALS:
                         writer.stream() << "je " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::LESS:
+                    case mtac::BinaryOperator::LESS:
                         writer.stream() << "jge " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::LESS_EQUALS:
+                    case mtac::BinaryOperator::LESS_EQUALS:
                         writer.stream() << "jg " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::GREATER:
+                    case mtac::BinaryOperator::GREATER:
                         writer.stream() << "jle " << ifFalse->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::GREATER_EQUALS:
+                    case mtac::BinaryOperator::GREATER_EQUALS:
                         writer.stream() << "jl " << ifFalse->block->label << std::endl;
                         break;
                     default:
@@ -829,7 +829,7 @@ struct IntelStatementCompiler {
         }
     }
 
-    void compile(std::shared_ptr<tac::If> if_){
+    void compile(std::shared_ptr<mtac::If> if_){
         current = if_;
 
         if(if_->op){
@@ -838,27 +838,27 @@ struct IntelStatementCompiler {
                 compareFloatBinary(if_);
             
                 switch(*if_->op){
-                    case tac::BinaryOperator::FE:
+                    case mtac::BinaryOperator::FE:
                         writer.stream() << "je " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FNE:
+                    case mtac::BinaryOperator::FNE:
                         writer.stream() << "jne " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FL:
+                    case mtac::BinaryOperator::FL:
                         writer.stream() << "jb " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FLE:
+                    case mtac::BinaryOperator::FLE:
                         writer.stream() << "jbe " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FG:
+                    case mtac::BinaryOperator::FG:
                         writer.stream() << "ja " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::FGE:
+                    case mtac::BinaryOperator::FGE:
                         writer.stream() << "jae " << if_->block->label << std::endl;
                         writer.stream() << "jp " << if_->block->label << std::endl;
                         break;
@@ -870,22 +870,22 @@ struct IntelStatementCompiler {
                 compareBinary(if_);
             
                 switch(*if_->op){
-                    case tac::BinaryOperator::EQUALS:
+                    case mtac::BinaryOperator::EQUALS:
                         writer.stream() << "je " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::NOT_EQUALS:
+                    case mtac::BinaryOperator::NOT_EQUALS:
                         writer.stream() << "jne " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::LESS:
+                    case mtac::BinaryOperator::LESS:
                         writer.stream() << "jl " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::LESS_EQUALS:
+                    case mtac::BinaryOperator::LESS_EQUALS:
                         writer.stream() << "jle " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::GREATER:
+                    case mtac::BinaryOperator::GREATER:
                         writer.stream() << "jg " << if_->block->label << std::endl;
                         break;
-                    case tac::BinaryOperator::GREATER_EQUALS:
+                    case mtac::BinaryOperator::GREATER_EQUALS:
                         writer.stream() << "jge " << if_->block->label << std::endl;
                         break;
                     default:
@@ -901,7 +901,7 @@ struct IntelStatementCompiler {
         }
     }
     
-    void compile(std::shared_ptr<tac::Goto> goto_){
+    void compile(std::shared_ptr<mtac::Goto> goto_){
         current = goto_;
 
         //The basic block must be ended before the jump
@@ -910,7 +910,7 @@ struct IntelStatementCompiler {
         writer.stream() << "jmp " << goto_->block->label << std::endl; 
     }
 
-    void compile(std::shared_ptr<tac::Call> call){
+    void compile(std::shared_ptr<mtac::Call> call){
         current = call;
 
         writer.stream() << "call " << call->function << std::endl;
@@ -993,8 +993,8 @@ struct IntelStatementCompiler {
         first_param = true;
     }
 
-    void mul(std::shared_ptr<Variable> result, tac::Argument arg2){
-        tac::assertIntOrVariable(arg2);
+    void mul(std::shared_ptr<Variable> result, mtac::Argument arg2){
+        mtac::assertIntOrVariable(arg2);
 
         if(isInt(arg2)){
             int constant = boost::get<int>(arg2);
@@ -1015,13 +1015,13 @@ struct IntelStatementCompiler {
         }
     }
 
-    void passInIntRegister(tac::Argument& argument, int position){
+    void passInIntRegister(mtac::Argument& argument, int position){
         Register reg = getIntParamRegister(position);
 
         writer.stream() << "mov " << reg << ", " << arg(argument) << std::endl;            
     }
     
-    void passInFloatRegister(tac::Argument& argument, int position){
+    void passInFloatRegister(mtac::Argument& argument, int position){
         FloatRegister reg = getFloatParamRegister(position);
 
         if(boost::get<double>(&argument)){
@@ -1036,7 +1036,7 @@ struct IntelStatementCompiler {
         }
     }
 
-    void compile(std::shared_ptr<tac::Param> param){
+    void compile(std::shared_ptr<mtac::Param> param){
         current = param;
         
         PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
@@ -1165,14 +1165,14 @@ struct IntelStatementCompiler {
         }
     }
 
-    void compile(std::shared_ptr<tac::Quadruple> quadruple){
+    void compile(std::shared_ptr<mtac::Quadruple> quadruple){
         current = quadruple;
         
         switch(quadruple->op){
-            case tac::Operator::ASSIGN:
+            case mtac::Operator::ASSIGN:
             {
                 //The fastest way to set a register to 0 is to use xorl
-                if(tac::equals<int>(*quadruple->arg1, 0)){
+                if(mtac::equals<int>(*quadruple->arg1, 0)){
                     Register reg = getRegNoMove(quadruple->result);
                     writer.stream() << "xor " << reg << ", " << reg << std::endl;            
                 } 
@@ -1186,10 +1186,10 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::FASSIGN:
+            case mtac::Operator::FASSIGN:
             {
                 //The fastest way to set a register to 0 is to use pxor
-                if(tac::equals<int>(*quadruple->arg1, 0)){
+                if(mtac::equals<int>(*quadruple->arg1, 0)){
                     FloatRegister reg = getFloatRegNoMove(quadruple->result);
                     writer.stream() << "pxor " << reg << ", " << reg << std::endl;            
                 } 
@@ -1203,7 +1203,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::ADD:
+            case mtac::Operator::ADD:
             {
                 auto result = quadruple->result;
 
@@ -1251,7 +1251,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::SUB:
+            case mtac::Operator::SUB:
             {
                 auto result = quadruple->result;
 
@@ -1283,7 +1283,7 @@ struct IntelStatementCompiler {
                 
                 break;
             }
-            case tac::Operator::MUL:
+            case mtac::Operator::MUL:
             {
                 //This case should never happen unless the optimized has bugs
                 assert(!(isInt(*quadruple->arg1) && isInt(*quadruple->arg2)));
@@ -1315,7 +1315,7 @@ struct IntelStatementCompiler {
 
                 break;            
             }
-            case tac::Operator::DIV:
+            case mtac::Operator::DIV:
                 //Form x = x / y when y is power of two
                 if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
                     int constant = boost::get<int>(*quadruple->arg2);
@@ -1334,13 +1334,13 @@ struct IntelStatementCompiler {
                 written.insert(quadruple->result);
                 
                 break;            
-            case tac::Operator::MOD:
+            case mtac::Operator::MOD:
                 mod(quadruple);
                 
                 written.insert(quadruple->result);
 
                 break;
-            case tac::Operator::FADD:
+            case mtac::Operator::FADD:
             {
                 auto result = quadruple->result;
                     
@@ -1348,7 +1348,7 @@ struct IntelStatementCompiler {
                 if(*quadruple->arg1 == result){
                     FloatRegister reg = getFloatReg(result);
 
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatAdd() << reg << ", " << reg2 << std::endl;
@@ -1361,7 +1361,7 @@ struct IntelStatementCompiler {
                 else if(*quadruple->arg2 == result){
                     FloatRegister reg = getFloatReg(result);
 
-                    if(tac::isFloat(*quadruple->arg1)){
+                    if(mtac::isFloat(*quadruple->arg1)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg1, reg2);
                         writer.stream() << getFloatAdd() << reg << ", " << reg2 << std::endl;
@@ -1375,7 +1375,7 @@ struct IntelStatementCompiler {
                     FloatRegister reg = getFloatRegNoMove(result);
                     copy(*quadruple->arg1, reg);
 
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatAdd() << reg << ", " << reg2 << std::endl;
@@ -1389,7 +1389,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::FSUB:
+            case mtac::Operator::FSUB:
             {
                 auto result = quadruple->result;
 
@@ -1397,7 +1397,7 @@ struct IntelStatementCompiler {
                 if(*quadruple->arg1 == result){
                     FloatRegister reg = getFloatReg(result);
 
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatSub() << reg << ", " << reg2 << std::endl;
@@ -1409,7 +1409,7 @@ struct IntelStatementCompiler {
                     FloatRegister reg = getFloatRegNoMove(result);
                     copy(*quadruple->arg1, reg);
 
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatSub() << reg << ", " << reg2 << std::endl;
@@ -1423,12 +1423,12 @@ struct IntelStatementCompiler {
                 
                 break;
             }
-            case tac::Operator::FMUL:
+            case mtac::Operator::FMUL:
                 //Form  x = x * y
                 if(*quadruple->arg1 == quadruple->result){
                     FloatRegister reg = getFloatReg(quadruple->result);
 
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatMul() << reg << ", " << reg2 << std::endl;
@@ -1440,7 +1440,7 @@ struct IntelStatementCompiler {
                 //Form x = y * x
                 else if(*quadruple->arg2 == quadruple->result){
                     FloatRegister reg = getFloatReg(quadruple->result);
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatMul() << reg << ", " << reg2 << std::endl;
@@ -1453,7 +1453,7 @@ struct IntelStatementCompiler {
                 else  {
                     FloatRegister reg = getFloatRegNoMove(quadruple->result);
                     copy(*quadruple->arg1, reg);
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatMul() << reg << ", " << reg2 << std::endl;
@@ -1466,11 +1466,11 @@ struct IntelStatementCompiler {
                 written.insert(quadruple->result);
 
                 break;            
-            case tac::Operator::FDIV:
+            case mtac::Operator::FDIV:
                 //Form x = x / y
                 if(*quadruple->arg1 == quadruple->result){
                     FloatRegister reg = getFloatReg(quadruple->result);
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatDiv() << reg << ", " << reg2 << std::endl;
@@ -1483,7 +1483,7 @@ struct IntelStatementCompiler {
                 else {
                     FloatRegister reg = getFloatRegNoMove(quadruple->result);
                     copy(*quadruple->arg1, reg);
-                    if(tac::isFloat(*quadruple->arg2)){
+                    if(mtac::isFloat(*quadruple->arg2)){
                         FloatRegister reg2 = getFloatReg();
                         copy(*quadruple->arg2, reg2);
                         writer.stream() << getFloatDiv() << reg << ", " << reg2 << std::endl;
@@ -1496,7 +1496,7 @@ struct IntelStatementCompiler {
                 written.insert(quadruple->result);
                 
                 break;            
-            case tac::Operator::I2F:
+            case mtac::Operator::I2F:
             {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
@@ -1510,7 +1510,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::F2I:
+            case mtac::Operator::F2I:
             {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
@@ -1524,7 +1524,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::MINUS:
+            case mtac::Operator::MINUS:
             {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
@@ -1535,7 +1535,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::FMINUS:
+            case mtac::Operator::FMINUS:
             {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
@@ -1552,43 +1552,43 @@ struct IntelStatementCompiler {
                 
                 break;    
             }
-            case tac::Operator::GREATER:
+            case mtac::Operator::GREATER:
                 setIfCc("cmovg", quadruple);
                 break;
-            case tac::Operator::GREATER_EQUALS:
+            case mtac::Operator::GREATER_EQUALS:
                 setIfCc("cmovge", quadruple);
                 break;
-            case tac::Operator::LESS:
+            case mtac::Operator::LESS:
                 setIfCc("cmovl", quadruple);
                 break;
-            case tac::Operator::LESS_EQUALS:
+            case mtac::Operator::LESS_EQUALS:
                 setIfCc("cmovle", quadruple);
                 break;
-            case tac::Operator::EQUALS:
+            case mtac::Operator::EQUALS:
                 setIfCc("cmove", quadruple);
                 break;
-            case tac::Operator::NOT_EQUALS:
+            case mtac::Operator::NOT_EQUALS:
                 setIfCc("cmovne", quadruple);
                 break;
-            case tac::Operator::FG:
+            case mtac::Operator::FG:
                 setIfCc("cmova", quadruple);
                 break;
-            case tac::Operator::FGE:
+            case mtac::Operator::FGE:
                 setIfCc("cmovae", quadruple);
                 break;
-            case tac::Operator::FL:
+            case mtac::Operator::FL:
                 setIfCc("cmovb", quadruple);
                 break;
-            case tac::Operator::FLE:
+            case mtac::Operator::FLE:
                 setIfCc("cmovbe", quadruple);
                 break;
-            case tac::Operator::FE:
+            case mtac::Operator::FE:
                 setIfCc("cmove", quadruple);
                 break;
-            case tac::Operator::FNE:
+            case mtac::Operator::FNE:
                 setIfCc("cmovne", quadruple);
                 break;
-            case tac::Operator::DOT:
+            case mtac::Operator::DOT:
             {
                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
                assert(boost::get<int>(&*quadruple->arg2));
@@ -1603,7 +1603,7 @@ struct IntelStatementCompiler {
 
                break;
             }
-            case tac::Operator::FDOT:
+            case mtac::Operator::FDOT:
             {
                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
                assert(boost::get<int>(&*quadruple->arg2));
@@ -1618,7 +1618,7 @@ struct IntelStatementCompiler {
 
                break;
             }
-            case tac::Operator::DOT_ASSIGN:
+            case mtac::Operator::DOT_ASSIGN:
             {
                 ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
 
@@ -1628,7 +1628,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::DOT_FASSIGN:
+            case mtac::Operator::DOT_FASSIGN:
             {
                 ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
 
@@ -1640,7 +1640,7 @@ struct IntelStatementCompiler {
 
                 break;
             }
-            case tac::Operator::ARRAY:
+            case mtac::Operator::ARRAY:
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
 
@@ -1658,7 +1658,7 @@ struct IntelStatementCompiler {
                 
                 break;            
             }
-            case tac::Operator::ARRAY_ASSIGN:
+            case mtac::Operator::ARRAY_ASSIGN:
                 if(quadruple->result->type().base() == BaseType::FLOAT){
                     auto reg = getFloatReg();
 
@@ -1672,7 +1672,7 @@ struct IntelStatementCompiler {
                 }
                 
                 break;
-            case tac::Operator::RETURN:
+            case mtac::Operator::RETURN:
             {
                 //A return without args is the same as exiting from the function
                 if(quadruple->arg1){

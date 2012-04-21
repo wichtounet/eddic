@@ -20,7 +20,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class ConstantPropagation : public boost::static_visitor<void> {
     public:
@@ -28,10 +28,10 @@ class ConstantPropagation : public boost::static_visitor<void> {
 
         ConstantPropagation() : optimized(false) {}
 
-        void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
-        void operator()(std::shared_ptr<tac::Param>& param);
-        void operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
-        void operator()(std::shared_ptr<tac::If>& if_);
+        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<mtac::Param>& param);
+        void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
+        void operator()(std::shared_ptr<mtac::If>& if_);
 
         template<typename T>
         void operator()(T&) const { 
@@ -43,8 +43,8 @@ class ConstantPropagation : public boost::static_visitor<void> {
         std::unordered_map<std::shared_ptr<Variable>, double> float_constants;
         std::unordered_map<std::shared_ptr<Variable>, std::string> string_constants;
 
-        void optimize(tac::Argument* arg);
-        void optimize_optional(boost::optional<tac::Argument>& arg);
+        void optimize(mtac::Argument* arg);
+        void optimize_optional(boost::optional<mtac::Argument>& arg);
 };
 
 class OffsetConstantPropagation : public boost::static_visitor<void> {
@@ -53,7 +53,7 @@ class OffsetConstantPropagation : public boost::static_visitor<void> {
 
         OffsetConstantPropagation() : optimized(false) {}
 
-        void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
 
         template<typename T>
         void operator()(T&){ 
@@ -61,8 +61,8 @@ class OffsetConstantPropagation : public boost::static_visitor<void> {
         }
 
     private:
-        std::unordered_map<tac::Offset, int, tac::OffsetHash> int_constants;
-        std::unordered_map<tac::Offset, std::string, tac::OffsetHash> string_constants;
+        std::unordered_map<mtac::Offset, int, mtac::OffsetHash> int_constants;
+        std::unordered_map<mtac::Offset, std::string, mtac::OffsetHash> string_constants;
 };
 
 } //end of tac

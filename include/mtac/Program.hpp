@@ -17,7 +17,7 @@ namespace eddic {
 
 struct GlobalContext;
 
-namespace tac {
+namespace mtac {
 
 struct Program {
     std::shared_ptr<GlobalContext> context;

@@ -21,7 +21,7 @@ namespace eddic {
 
 class Variable;
 
-namespace tac {
+namespace mtac {
 
 class BasicBlock;
 

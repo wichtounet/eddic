@@ -12,20 +12,20 @@
 
 using namespace eddic;
 
-void tac::MathPropagation::collect(tac::Argument* arg){
+void mtac::MathPropagation::collect(mtac::Argument* arg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
         usage[*ptr] += 1;
     }
 }
 
-void tac::MathPropagation::collect(boost::optional<tac::Argument>& arg){
+void mtac::MathPropagation::collect(boost::optional<mtac::Argument>& arg){
     if(arg){
         collect(&*arg);
     }
 }
 
-void tac::MathPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-    if(pass == tac::Pass::DATA_MINING){
+void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+    if(pass == mtac::Pass::DATA_MINING){
         collect(quadruple->arg1);
         collect(quadruple->arg2);
     } else {
@@ -33,7 +33,7 @@ void tac::MathPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple
             assigns[quadruple->result] = quadruple;
         }
 
-        if(quadruple->op == tac::Operator::ASSIGN){
+        if(quadruple->op == mtac::Operator::ASSIGN){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                 //We only duplicate the math operation if the variable is used once to not add overhead
                 if(usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
@@ -49,15 +49,15 @@ void tac::MathPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple
     }
 }
 
-void tac::MathPropagation::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-    if(pass == tac::Pass::DATA_MINING){
+void mtac::MathPropagation::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+    if(pass == mtac::Pass::DATA_MINING){
         collect(&ifFalse->arg1);
         collect(ifFalse->arg2);
     }
 }
 
-void tac::MathPropagation::operator()(std::shared_ptr<tac::If>& if_){
-    if(pass == tac::Pass::DATA_MINING){
+void mtac::MathPropagation::operator()(std::shared_ptr<mtac::If>& if_){
+    if(pass == mtac::Pass::DATA_MINING){
         collect(&if_->arg1);
         collect(if_->arg2);
     }

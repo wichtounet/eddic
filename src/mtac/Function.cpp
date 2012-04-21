@@ -9,31 +9,31 @@
 
 using namespace eddic;
 
-tac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {}
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {}
         
-void tac::Function::add(tac::Statement statement){
+void mtac::Function::add(mtac::Statement statement){
     statements.push_back(statement);
 }
 
-std::shared_ptr<tac::BasicBlock> tac::Function::currentBasicBlock(){
+std::shared_ptr<mtac::BasicBlock> mtac::Function::currentBasicBlock(){
     assert(!blocks.empty());
 
     return blocks.back();
 }
 
-std::shared_ptr<tac::BasicBlock> tac::Function::newBasicBlock(){
+std::shared_ptr<mtac::BasicBlock> mtac::Function::newBasicBlock(){
     blocks.push_back(std::make_shared<BasicBlock>(blocks.size() + 1));
     return blocks.back();
 }   
 
-std::string tac::Function::getName() const {
+std::string mtac::Function::getName() const {
     return name;
 }
 
-std::vector<tac::Statement>& tac::Function::getStatements(){
+std::vector<mtac::Statement>& mtac::Function::getStatements(){
     return statements;
 }
 
-std::vector<std::shared_ptr<tac::BasicBlock>>& tac::Function::getBasicBlocks(){
+std::vector<std::shared_ptr<mtac::BasicBlock>>& mtac::Function::getBasicBlocks(){
     return blocks;
 }

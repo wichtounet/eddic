@@ -41,7 +41,7 @@ using namespace eddic;
 
 void checkForMain();
 
-std::shared_ptr<tac::Program> EDDIFrontEnd::compile(const std::string& file){
+std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
     parser::SpiritParser parser;
 
     //The program to build
@@ -100,10 +100,10 @@ std::shared_ptr<tac::Program> EDDIFrontEnd::compile(const std::string& file){
             return nullptr;
         }
 
-        std::shared_ptr<tac::Program> tacProgram = std::make_shared<tac::Program>();
+        std::shared_ptr<mtac::Program> tacProgram = std::make_shared<mtac::Program>();
 
         //Generate Three-Address-Code language
-        tac::Compiler compiler;
+        mtac::Compiler compiler;
         compiler.compile(program, *pool, *tacProgram);
 
         return tacProgram;

@@ -18,7 +18,7 @@ namespace eddic {
 
 class BackEnd {
     public:
-        virtual void generate(std::shared_ptr<tac::Program> tacProgram) = 0;
+        virtual void generate(std::shared_ptr<mtac::Program> tacProgram) = 0;
 
         void set_string_pool(std::shared_ptr<StringPool> pool);
         std::shared_ptr<StringPool> get_string_pool();

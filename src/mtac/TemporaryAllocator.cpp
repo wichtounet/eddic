@@ -20,9 +20,9 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::BasicBlock>> Usage;
+typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::BasicBlock>> Usage;
 
-void updateTemporary(Usage& usage, std::shared_ptr<Variable> variable, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
+void updateTemporary(Usage& usage, std::shared_ptr<Variable> variable, std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<mtac::Function> function){
     if(variable->position().isTemporary()){
         if(usage.find(variable) == usage.end()){
             usage[variable] = block;
@@ -33,7 +33,7 @@ void updateTemporary(Usage& usage, std::shared_ptr<Variable> variable, std::shar
 }
 
 template<typename T>
-void updateIf(Usage& usage, std::shared_ptr<T> if_, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
+void updateIf(Usage& usage, std::shared_ptr<T> if_, std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<mtac::Function> function){
     if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
         updateTemporary(usage, *variablePtr, block, function);
     }
@@ -45,7 +45,7 @@ void updateIf(Usage& usage, std::shared_ptr<T> if_, std::shared_ptr<tac::BasicBl
     }
 }
 
-void updateQuadruple(Usage& usage, std::shared_ptr<tac::Quadruple> quadruple, std::shared_ptr<tac::BasicBlock> block, std::shared_ptr<tac::Function> function){
+void updateQuadruple(Usage& usage, std::shared_ptr<mtac::Quadruple> quadruple, std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<mtac::Function> function){
     if(quadruple->result){
         updateTemporary(usage, quadruple->result, block, function);
     }
@@ -65,17 +65,17 @@ void updateQuadruple(Usage& usage, std::shared_ptr<tac::Quadruple> quadruple, st
 
 }
 
-void tac::TemporaryAllocator::allocate(tac::Program& program) const {
+void mtac::TemporaryAllocator::allocate(mtac::Program& program) const {
     for(auto& function : program.functions){
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<BasicBlock>> usage;
 
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                     updateQuadruple(usage, *ptr, block, function);
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                     updateIf(usage, *ptr, block, function);
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
                     updateIf(usage, *ptr, block, function);
                 } 
             }

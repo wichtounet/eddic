@@ -16,7 +16,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class Program;
 
@@ -25,10 +25,10 @@ class Program;
  * \brief Utility class to print the three-address-code representation on the console. 
  */
 struct Printer {
-    void print(tac::Program& program) const ;
-    void printFunction(std::shared_ptr<tac::Function> function) const ;
-    void printStatement(tac::Statement& program) const ;
-    void printArgument(tac::Argument& program) const ;
+    void print(mtac::Program& program) const ;
+    void printFunction(std::shared_ptr<mtac::Function> function) const ;
+    void printStatement(mtac::Statement& program) const ;
+    void printArgument(mtac::Argument& program) const ;
 };
 
 } //end of tac

@@ -32,14 +32,14 @@ class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer);
         
-        void generate(tac::Program& program, StringPool& pool);
+        void generate(mtac::Program& program, StringPool& pool);
 
     protected:
         void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void compile(std::shared_ptr<tac::Function> function) = 0;
+        virtual void compile(std::shared_ptr<mtac::Function> function) = 0;
 
         virtual void defineDataSection() = 0;
 

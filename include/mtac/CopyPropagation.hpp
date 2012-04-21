@@ -20,7 +20,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class CopyPropagation : public boost::static_visitor<void> {
     public:
@@ -28,10 +28,10 @@ class CopyPropagation : public boost::static_visitor<void> {
 
         CopyPropagation() : optimized(false) {}
 
-        void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
-        void operator()(std::shared_ptr<tac::Param>& param);
-        void operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
-        void operator()(std::shared_ptr<tac::If>& if_);
+        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<mtac::Param>& param);
+        void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
+        void operator()(std::shared_ptr<mtac::If>& if_);
 
         template<typename T>
         void operator()(T&) const { 
@@ -41,8 +41,8 @@ class CopyPropagation : public boost::static_visitor<void> {
     private:
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> constants;
 
-        void optimize(tac::Argument* arg);
-        void optimize_optional(boost::optional<tac::Argument>& arg);
+        void optimize(mtac::Argument* arg);
+        void optimize_optional(boost::optional<mtac::Argument>& arg);
 };
 
 class OffsetCopyPropagation : public boost::static_visitor<void> {
@@ -51,7 +51,7 @@ class OffsetCopyPropagation : public boost::static_visitor<void> {
 
         OffsetCopyPropagation() : optimized(false) {}
 
-        void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
 
         template<typename T>
         void operator()(T&){ 
@@ -59,7 +59,7 @@ class OffsetCopyPropagation : public boost::static_visitor<void> {
         }
 
     private:
-        std::unordered_map<tac::Offset, std::shared_ptr<Variable>, tac::OffsetHash> constants;
+        std::unordered_map<mtac::Offset, std::shared_ptr<Variable>, mtac::OffsetHash> constants;
 };
 
 } //end of tac

@@ -11,37 +11,37 @@
 
 using namespace eddic;
 
-tac::BinaryOperator eddic::tac::toBinaryOperator(ast::Operator op){
+mtac::BinaryOperator eddic::mtac::toBinaryOperator(ast::Operator op){
     if(op == ast::Operator::NOT_EQUALS){
-        return tac::BinaryOperator::NOT_EQUALS;
+        return mtac::BinaryOperator::NOT_EQUALS;
     } else if(op == ast::Operator::EQUALS){
-        return tac::BinaryOperator::EQUALS;
+        return mtac::BinaryOperator::EQUALS;
     } else if(op == ast::Operator::GREATER_EQUALS){
-        return tac::BinaryOperator::GREATER_EQUALS;
+        return mtac::BinaryOperator::GREATER_EQUALS;
     } else if(op == ast::Operator::GREATER){
-        return tac::BinaryOperator::GREATER;
+        return mtac::BinaryOperator::GREATER;
     } else if(op == ast::Operator::LESS_EQUALS){
-        return tac::BinaryOperator::LESS_EQUALS;
+        return mtac::BinaryOperator::LESS_EQUALS;
     } else if(op == ast::Operator::LESS){
-        return tac::BinaryOperator::LESS;
+        return mtac::BinaryOperator::LESS;
     }
 
     assert(false && "Not an int binary operator"); 
 }
 
-tac::BinaryOperator eddic::tac::toFloatBinaryOperator(ast::Operator op){
+mtac::BinaryOperator eddic::mtac::toFloatBinaryOperator(ast::Operator op){
     if(op == ast::Operator::NOT_EQUALS){
-        return tac::BinaryOperator::FNE;
+        return mtac::BinaryOperator::FNE;
     } else if(op == ast::Operator::EQUALS){
-        return tac::BinaryOperator::FE;
+        return mtac::BinaryOperator::FE;
     } else if(op == ast::Operator::GREATER_EQUALS){
-        return tac::BinaryOperator::FGE;
+        return mtac::BinaryOperator::FGE;
     } else if(op == ast::Operator::GREATER){
-        return tac::BinaryOperator::FG;
+        return mtac::BinaryOperator::FG;
     } else if(op == ast::Operator::LESS_EQUALS){
-        return tac::BinaryOperator::FLE;
+        return mtac::BinaryOperator::FLE;
     } else if(op == ast::Operator::LESS){
-        return tac::BinaryOperator::FL;
+        return mtac::BinaryOperator::FL;
     }
 
     assert(false && "Not a float binary operator"); 

@@ -12,12 +12,12 @@ namespace eddic {
 
 class StringPool;
 
-namespace tac {
+namespace mtac {
 
 class Program;
 
 struct Optimizer {
-    void optimize(tac::Program& program, StringPool& pool) const ;
+    void optimize(mtac::Program& program, StringPool& pool) const ;
 };
 
 } //end of tac

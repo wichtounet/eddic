@@ -10,7 +10,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 //Use for two pass optimization
 enum class Pass : unsigned int {
@@ -19,7 +19,7 @@ enum class Pass : unsigned int {
 };
 
 template<typename T>
-inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg, tac::Operator op){
+inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Argument arg, mtac::Operator op){
     visitor.optimized = true;
 
     quadruple->op = op;
@@ -28,7 +28,7 @@ inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple,
 }
 
 template<typename T>
-inline void replaceRight(T& visitor, std::shared_ptr<tac::Quadruple>& quadruple, tac::Argument arg1, tac::Operator op, tac::Argument arg2){
+inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2){
     visitor.optimized = true;
 
     quadruple->op = op;

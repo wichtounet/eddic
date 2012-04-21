@@ -9,6 +9,6 @@
 
 using namespace eddic;
 
-tac::Return::Return(){}
-tac::Return::Return(Argument a1) : arg1(a1) {}
-tac::Return::Return(Argument a1, Argument a2) : arg1(a1), arg2(a2) {}
+mtac::Return::Return(){}
+mtac::Return::Return(Argument a1) : arg1(a1) {}
+mtac::Return::Return(Argument a1, Argument a2) : arg1(a1), arg2(a2) {}

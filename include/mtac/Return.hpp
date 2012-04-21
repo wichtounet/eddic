@@ -16,7 +16,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 struct Return {
     boost::optional<Argument> arg1;

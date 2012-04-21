@@ -18,14 +18,14 @@ using namespace eddic;
 
 template<typename T>
 bool isReturn(T statement){
-    if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
-        return (*ptr)->op == tac::Operator::RETURN;
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+        return (*ptr)->op == mtac::Operator::RETURN;
     }
 
     return false;
 }
 
-void tac::BasicBlockExtractor::extract(tac::Program& program) const {
+void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
     for(auto& function : program.functions){
         std::unordered_map<std::string, std::shared_ptr<BasicBlock>> labels;
        
@@ -41,13 +41,13 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
 
                 nextIsLeader = false;
             } else {
-                if(nextIsLeader || (boost::get<std::shared_ptr<tac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<tac::Call>>(statement)))){
+                if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Call>>(statement)))){
                     function->newBasicBlock();
                     nextIsLeader = false;
                 }
 
-                if(boost::get<std::shared_ptr<tac::IfFalse>>(&statement) || boost::get<std::shared_ptr<tac::If>>(&statement) || 
-                        isReturn(statement) || boost::get<std::shared_ptr<tac::Goto>>(&statement)){
+                if(boost::get<std::shared_ptr<mtac::IfFalse>>(&statement) || boost::get<std::shared_ptr<mtac::If>>(&statement) || 
+                        isReturn(statement) || boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
                     nextIsLeader = true;
                 } 
 
@@ -58,11 +58,11 @@ void tac::BasicBlockExtractor::extract(tac::Program& program) const {
         //Then, replace all the the labels by reference to basic blocks
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&statement)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];
                 }
             }

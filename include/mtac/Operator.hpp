@@ -12,7 +12,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 enum class Operator : unsigned int {
     /* Assignment operators  */
@@ -66,11 +66,11 @@ enum class Operator : unsigned int {
     RETURN          //return from a function
 };
 
-tac::Operator toOperator(ast::Operator op);
-tac::Operator toFloatOperator(ast::Operator op);
+mtac::Operator toOperator(ast::Operator op);
+mtac::Operator toFloatOperator(ast::Operator op);
 
-tac::Operator toRelationalOperator(ast::Operator op);
-tac::Operator toFloatRelationalOperator(ast::Operator op);
+mtac::Operator toRelationalOperator(ast::Operator op);
+mtac::Operator toFloatRelationalOperator(ast::Operator op);
 
 } //end of tac
 

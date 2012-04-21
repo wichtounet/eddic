@@ -23,7 +23,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class RemoveMultipleAssign : public boost::static_visitor<bool> {
     public:
@@ -32,23 +32,23 @@ class RemoveMultipleAssign : public boost::static_visitor<bool> {
 
         RemoveMultipleAssign() : optimized(false) {}
 
-        bool operator()(std::shared_ptr<tac::Quadruple>& quadruple);
-        bool operator()(std::shared_ptr<tac::Param>& param);
-        bool operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
-        bool operator()(std::shared_ptr<tac::If>& if_);
+        bool operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+        bool operator()(std::shared_ptr<mtac::Param>& param);
+        bool operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
+        bool operator()(std::shared_ptr<mtac::If>& if_);
 
         template<typename T>
         bool operator()(T&) const { 
             return true;
         }
     
-        void collect(tac::Argument* arg);
-        void collect(boost::optional<tac::Argument>& arg);
+        void collect(mtac::Argument* arg);
+        void collect(boost::optional<mtac::Argument>& arg);
 
     private:
         std::unordered_set<std::shared_ptr<Variable>> used;
-        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::Quadruple>> lastAssign;
-        std::unordered_set<std::shared_ptr<tac::Quadruple>> removed;
+        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::Quadruple>> lastAssign;
+        std::unordered_set<std::shared_ptr<mtac::Quadruple>> removed;
 };
 
 

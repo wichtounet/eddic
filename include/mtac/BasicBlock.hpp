@@ -16,7 +16,7 @@ namespace eddic {
 
 class Context;
 
-namespace tac {
+namespace mtac {
 
 class BasicBlock {
     public:
@@ -25,9 +25,9 @@ class BasicBlock {
 
         BasicBlock(unsigned int index);
 
-        void add(tac::Statement statement);
+        void add(mtac::Statement statement);
 
-        std::vector<tac::Statement> statements;
+        std::vector<mtac::Statement> statements;
 
     private:
         std::shared_ptr<Context> context;

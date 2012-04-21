@@ -24,30 +24,30 @@
 
 using namespace eddic;
 
-void NativeBackEnd::generate(std::shared_ptr<tac::Program> tacProgram){
+void NativeBackEnd::generate(std::shared_ptr<mtac::Program> tacProgram){
     std::string output = option_value("output");
 
     //Separate into basic blocks
-    tac::BasicBlockExtractor extractor;
+    mtac::BasicBlockExtractor extractor;
     extractor.extract(*tacProgram);
 
     //Allocate storage for the temporaries that need to be stored
-    tac::TemporaryAllocator allocator;
+    mtac::TemporaryAllocator allocator;
     allocator.allocate(*tacProgram);
 
-    tac::Optimizer optimizer;
+    mtac::Optimizer optimizer;
     optimizer.optimize(*tacProgram, *get_string_pool());
 
     //If asked by the user, print the Three Address code representation
     if(option_defined("tac") || option_defined("tac-only")){
-        tac::Printer printer;
+        mtac::Printer printer;
         printer.print(*tacProgram);
     }
 
     //If necessary, continue the compilation process
     if(!option_defined("tac-only")){
         //Compute liveness of variables
-        tac::LivenessAnalyzer liveness;
+        mtac::LivenessAnalyzer liveness;
         liveness.compute(*tacProgram);
 
         //Generate assembly from TAC

@@ -10,12 +10,12 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class Program;
 
 struct TemporaryAllocator {
-    void allocate(tac::Program& program) const ;
+    void allocate(mtac::Program& program) const ;
 };
 
 } //end of ast

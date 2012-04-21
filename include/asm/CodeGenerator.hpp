@@ -24,7 +24,7 @@ class CodeGenerator {
         CodeGenerator(AssemblyFileWriter& writer);
         
         //Entry point
-        virtual void generate(tac::Program& program, StringPool& pool) = 0;
+        virtual void generate(mtac::Program& program, StringPool& pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

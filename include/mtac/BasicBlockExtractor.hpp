@@ -10,12 +10,12 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class Program;
 
 struct BasicBlockExtractor {
-    void extract(tac::Program& program) const ;
+    void extract(mtac::Program& program) const ;
 };
 
 } //end of ast

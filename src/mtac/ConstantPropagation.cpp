@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-void tac::ConstantPropagation::optimize(tac::Argument* arg){
+void mtac::ConstantPropagation::optimize(mtac::Argument* arg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
         if(int_constants.find(*ptr) != int_constants.end()){
             optimized = true;
@@ -26,21 +26,21 @@ void tac::ConstantPropagation::optimize(tac::Argument* arg){
     }
 }
 
-void tac::ConstantPropagation::optimize_optional(boost::optional<tac::Argument>& arg){
+void mtac::ConstantPropagation::optimize_optional(boost::optional<mtac::Argument>& arg){
     if(arg){
         optimize(&*arg);
     }
 }
 
-void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+void mtac::ConstantPropagation::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     //Do not replace a variable by a constant when used in offset
-    if(quadruple->op != tac::Operator::ARRAY && quadruple->op != tac::Operator::DOT){
+    if(quadruple->op != mtac::Operator::ARRAY && quadruple->op != mtac::Operator::DOT){
         optimize_optional(quadruple->arg1);
     }
     
     optimize_optional(quadruple->arg2);
 
-    if(quadruple->op == tac::Operator::ASSIGN || quadruple->op == tac::Operator::FASSIGN){
+    if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
         if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
             int_constants[quadruple->result] = *ptr;
         } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
@@ -57,7 +57,7 @@ void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadr
         auto op = quadruple->op;
 
         //Check if the operator erase the contents of the result variable
-        if(op != tac::Operator::ARRAY_ASSIGN && op != tac::Operator::DOT_ASSIGN && op != tac::Operator::RETURN){
+        if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
             //The result is not constant at this point
             int_constants.erase(quadruple->result);
             string_constants.erase(quadruple->result);
@@ -66,25 +66,25 @@ void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadr
     }
 }
 
-void tac::ConstantPropagation::operator()(std::shared_ptr<tac::Param>& param){
+void mtac::ConstantPropagation::operator()(std::shared_ptr<mtac::Param>& param){
     optimize(&param->arg);
 }
 
-void tac::ConstantPropagation::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+void mtac::ConstantPropagation::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
     optimize(&ifFalse->arg1);
     optimize_optional(ifFalse->arg2);
 }
 
-void tac::ConstantPropagation::operator()(std::shared_ptr<tac::If>& if_){
+void mtac::ConstantPropagation::operator()(std::shared_ptr<mtac::If>& if_){
     optimize(&if_->arg1);
     optimize_optional(if_->arg2);
 }
         
-void tac::OffsetConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+void mtac::OffsetConstantPropagation::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     //Store the value assigned to result+arg1
-    if(quadruple->op == tac::Operator::DOT_ASSIGN){
+    if(quadruple->op == mtac::Operator::DOT_ASSIGN){
         if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-            tac::Offset offset;
+            mtac::Offset offset;
             offset.variable = quadruple->result;
             offset.offset = *ptr;
 
@@ -101,16 +101,16 @@ void tac::OffsetConstantPropagation::operator()(std::shared_ptr<tac::Quadruple>&
     }
 
     //If constant replace the value assigned to result by the value stored for arg1+arg2
-    if(quadruple->op == tac::Operator::DOT){
+    if(quadruple->op == mtac::Operator::DOT){
         if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-            tac::Offset offset;
+            mtac::Offset offset;
             offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
             offset.offset = *ptr;
 
             if(int_constants.find(offset) != int_constants.end()){
-                replaceRight(*this, quadruple, int_constants[offset], tac::Operator::ASSIGN);
+                replaceRight(*this, quadruple, int_constants[offset], mtac::Operator::ASSIGN);
             } else if(string_constants.find(offset) != string_constants.end()){
-                replaceRight(*this, quadruple, string_constants[offset], tac::Operator::ASSIGN);
+                replaceRight(*this, quadruple, string_constants[offset], mtac::Operator::ASSIGN);
             }
         }
     }

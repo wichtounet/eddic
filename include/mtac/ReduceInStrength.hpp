@@ -16,14 +16,14 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 struct ReduceInStrength : public boost::static_visitor<void> {
     bool optimized;
 
     ReduceInStrength() : optimized(false) {}
 
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
 
     template<typename T>
     void operator()(T&) const { 

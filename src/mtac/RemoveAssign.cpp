@@ -12,32 +12,32 @@
 
 using namespace eddic;
 
-void tac::RemoveAssign::collect(tac::Argument* arg){
+void mtac::RemoveAssign::collect(mtac::Argument* arg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
         used.insert(*ptr);
     }
 }
 
-void tac::RemoveAssign::collect_optional(boost::optional<tac::Argument>& arg){
+void mtac::RemoveAssign::collect_optional(boost::optional<mtac::Argument>& arg){
     if(arg){
         collect(&*arg);
     }
 }
 
-bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-    if(pass == tac::Pass::DATA_MINING){
+bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+    if(pass == mtac::Pass::DATA_MINING){
         collect_optional(quadruple->arg1);
         collect_optional(quadruple->arg2);
 
         return true;
     } else {
         //These operators are not erasing result
-        if(quadruple->op == tac::Operator::DOT_ASSIGN || quadruple->op == tac::Operator::ARRAY_ASSIGN){
+        if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::ARRAY_ASSIGN){
             return true;
         }
 
         //x = x is never useful
-        if((quadruple->op == tac::Operator::ASSIGN || quadruple->op == tac::Operator::FASSIGN) && *quadruple->arg1 == quadruple->result){
+        if((quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN) && *quadruple->arg1 == quadruple->result){
             optimized = true;
             return false;
         }
@@ -56,16 +56,16 @@ bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
     }
 }
 
-bool tac::RemoveAssign::operator()(std::shared_ptr<tac::Param>& param){
-    if(pass == tac::Pass::DATA_MINING){
+bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Param>& param){
+    if(pass == mtac::Pass::DATA_MINING){
         collect(&param->arg);
     }
 
     return true;
 }
 
-bool tac::RemoveAssign::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-    if(pass == tac::Pass::DATA_MINING){
+bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+    if(pass == mtac::Pass::DATA_MINING){
         collect(&ifFalse->arg1);
         collect_optional(ifFalse->arg2);
     }
@@ -73,8 +73,8 @@ bool tac::RemoveAssign::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
     return true;
 }
 
-bool tac::RemoveAssign::operator()(std::shared_ptr<tac::If>& if_){
-    if(pass == tac::Pass::DATA_MINING){
+bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::If>& if_){
+    if(pass == mtac::Pass::DATA_MINING){
         collect(&if_->arg1);
         collect_optional(if_->arg2);
     }

@@ -11,58 +11,58 @@
 
 using namespace eddic;
     
-void tac::ConstantFolding::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     if(quadruple->arg1){
-        if(tac::isInt(*quadruple->arg1)){
-            if(quadruple->op == tac::Operator::MINUS){
-                replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1), tac::Operator::ASSIGN);
-            } else if(quadruple->op == tac::Operator::I2F){
-                replaceRight(*this, quadruple, (float) boost::get<int>(*quadruple->arg1), tac::Operator::FASSIGN);
-            } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
+        if(mtac::isInt(*quadruple->arg1)){
+            if(quadruple->op == mtac::Operator::MINUS){
+                replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1), mtac::Operator::ASSIGN);
+            } else if(quadruple->op == mtac::Operator::I2F){
+                replaceRight(*this, quadruple, (float) boost::get<int>(*quadruple->arg1), mtac::Operator::FASSIGN);
+            } else if(quadruple->arg2 && mtac::isInt(*quadruple->arg2)){
                 int lhs = boost::get<int>(*quadruple->arg1); 
                 int rhs = boost::get<int>(*quadruple->arg2); 
 
                 switch(quadruple->op){
-                    case tac::Operator::ADD:
-                        replaceRight(*this, quadruple, lhs + rhs, tac::Operator::ASSIGN);
+                    case mtac::Operator::ADD:
+                        replaceRight(*this, quadruple, lhs + rhs, mtac::Operator::ASSIGN);
                         break;
-                    case tac::Operator::SUB:
-                        replaceRight(*this, quadruple, lhs - rhs, tac::Operator::ASSIGN);
+                    case mtac::Operator::SUB:
+                        replaceRight(*this, quadruple, lhs - rhs, mtac::Operator::ASSIGN);
                         break;
-                    case tac::Operator::MUL:
-                        replaceRight(*this, quadruple, lhs * rhs, tac::Operator::ASSIGN);
+                    case mtac::Operator::MUL:
+                        replaceRight(*this, quadruple, lhs * rhs, mtac::Operator::ASSIGN);
                         break;
-                    case tac::Operator::DIV:
-                        replaceRight(*this, quadruple, lhs / rhs, tac::Operator::ASSIGN);
+                    case mtac::Operator::DIV:
+                        replaceRight(*this, quadruple, lhs / rhs, mtac::Operator::ASSIGN);
                         break;
-                    case tac::Operator::MOD:
-                        replaceRight(*this, quadruple, lhs % rhs, tac::Operator::ASSIGN);
+                    case mtac::Operator::MOD:
+                        replaceRight(*this, quadruple, lhs % rhs, mtac::Operator::ASSIGN);
                         break;
                     default:
                         break;
                 }
             }
-        } else if(tac::isFloat(*quadruple->arg1)){
-            if(quadruple->op == tac::Operator::FMINUS){
-                replaceRight(*this, quadruple, -1 * boost::get<double>(*quadruple->arg1), tac::Operator::FASSIGN);
-            } else if(quadruple->op == tac::Operator::F2I){
-                replaceRight(*this, quadruple, (int) boost::get<double>(*quadruple->arg1), tac::Operator::ASSIGN);
-            } else if(quadruple->arg2 && tac::isInt(*quadruple->arg2)){
+        } else if(mtac::isFloat(*quadruple->arg1)){
+            if(quadruple->op == mtac::Operator::FMINUS){
+                replaceRight(*this, quadruple, -1 * boost::get<double>(*quadruple->arg1), mtac::Operator::FASSIGN);
+            } else if(quadruple->op == mtac::Operator::F2I){
+                replaceRight(*this, quadruple, (int) boost::get<double>(*quadruple->arg1), mtac::Operator::ASSIGN);
+            } else if(quadruple->arg2 && mtac::isInt(*quadruple->arg2)){
                 double lhs = boost::get<double>(*quadruple->arg1); 
                 double rhs = boost::get<double>(*quadruple->arg2); 
 
                 switch(quadruple->op){
-                    case tac::Operator::FADD:
-                        replaceRight(*this, quadruple, lhs + rhs, tac::Operator::FASSIGN);
+                    case mtac::Operator::FADD:
+                        replaceRight(*this, quadruple, lhs + rhs, mtac::Operator::FASSIGN);
                         break;
-                    case tac::Operator::FSUB:
-                        replaceRight(*this, quadruple, lhs - rhs, tac::Operator::FASSIGN);
+                    case mtac::Operator::FSUB:
+                        replaceRight(*this, quadruple, lhs - rhs, mtac::Operator::FASSIGN);
                         break;
-                    case tac::Operator::FMUL:
-                        replaceRight(*this, quadruple, lhs * rhs, tac::Operator::FASSIGN);
+                    case mtac::Operator::FMUL:
+                        replaceRight(*this, quadruple, lhs * rhs, mtac::Operator::FASSIGN);
                         break;
-                    case tac::Operator::FDIV:
-                        replaceRight(*this, quadruple, lhs / rhs, tac::Operator::FASSIGN);
+                    case mtac::Operator::FDIV:
+                        replaceRight(*this, quadruple, lhs / rhs, mtac::Operator::FASSIGN);
                         break;
                     default:
                         break;
@@ -80,17 +80,17 @@ bool computeValueInt(T& if_){
     int right = boost::get<int>(*if_->arg2);
 
     switch(*if_->op){
-        case tac::BinaryOperator::EQUALS:
+        case mtac::BinaryOperator::EQUALS:
             return left == right;
-        case tac::BinaryOperator::NOT_EQUALS:
+        case mtac::BinaryOperator::NOT_EQUALS:
             return left != right;
-        case tac::BinaryOperator::LESS:
+        case mtac::BinaryOperator::LESS:
             return left < right;
-        case tac::BinaryOperator::LESS_EQUALS:
+        case mtac::BinaryOperator::LESS_EQUALS:
             return left <= right;
-        case tac::BinaryOperator::GREATER:
+        case mtac::BinaryOperator::GREATER:
             return left > right;
-        case tac::BinaryOperator::GREATER_EQUALS:
+        case mtac::BinaryOperator::GREATER_EQUALS:
             return left >= right;
         default:
             assert(false);
@@ -103,17 +103,17 @@ bool computeValueFloat(T& if_){
     double right = boost::get<double>(*if_->arg2);
 
     switch(*if_->op){
-        case tac::BinaryOperator::FE:
+        case mtac::BinaryOperator::FE:
             return left == right;
-        case tac::BinaryOperator::FNE:
+        case mtac::BinaryOperator::FNE:
             return left != right;
-        case tac::BinaryOperator::FL:
+        case mtac::BinaryOperator::FL:
             return left < right;
-        case tac::BinaryOperator::FLE:
+        case mtac::BinaryOperator::FLE:
             return left <= right;
-        case tac::BinaryOperator::FG:
+        case mtac::BinaryOperator::FG:
             return left > right;
-        case tac::BinaryOperator::FGE:
+        case mtac::BinaryOperator::FGE:
             return left >= right;
         default:
             assert(false);
@@ -122,9 +122,9 @@ bool computeValueFloat(T& if_){
 
 } //End of anonymous namespace
 
-void tac::ConstantFolding::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
     if(ifFalse->op){
-        if(tac::isInt(ifFalse->arg1) && tac::isInt(*ifFalse->arg2)){
+        if(mtac::isInt(ifFalse->arg1) && mtac::isInt(*ifFalse->arg2)){
             bool value = computeValueInt(ifFalse);
 
             ifFalse->op.reset();
@@ -132,7 +132,7 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
             ifFalse->arg2.reset();
 
             optimized = true;
-        } else if(tac::isFloat(ifFalse->arg1) && tac::isFloat(*ifFalse->arg2)){
+        } else if(mtac::isFloat(ifFalse->arg1) && mtac::isFloat(*ifFalse->arg2)){
             bool value = computeValueFloat(ifFalse);
 
             ifFalse->op.reset();
@@ -144,9 +144,9 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
     }
 }
 
-void tac::ConstantFolding::operator()(std::shared_ptr<tac::If>& if_){
+void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If>& if_){
     if(if_->op){
-        if(tac::isInt(if_->arg1) && tac::isInt(*if_->arg2)){
+        if(mtac::isInt(if_->arg1) && mtac::isInt(*if_->arg2)){
             bool value = computeValueInt(if_);
 
             if_->op.reset();
@@ -154,7 +154,7 @@ void tac::ConstantFolding::operator()(std::shared_ptr<tac::If>& if_){
             if_->arg2.reset();
 
             optimized = true;
-        } else if(tac::isFloat(if_->arg1) && tac::isFloat(*if_->arg2)){
+        } else if(mtac::isFloat(if_->arg1) && mtac::isFloat(*if_->arg2)){
             bool value = computeValueFloat(if_);
 
             if_->op.reset();

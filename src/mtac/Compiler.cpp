@@ -31,15 +31,15 @@ using namespace eddic;
 
 namespace {
 
-void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function);
+void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
 
-std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> t1, tac::Operator f(ast::Operator)){
+std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
-    tac::Argument left = moveToArgument(value.Content->first, function);
-    tac::Argument right;
+    mtac::Argument left = moveToArgument(value.Content->first, function);
+    mtac::Argument right;
 
     //Apply all the operations in chain
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
@@ -48,65 +48,65 @@ std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_p
         right = moveToArgument(operation.get<1>(), function);
        
         if (i == 0){
-            function->add(std::make_shared<tac::Quadruple>(t1, left, f(operation.get<0>()), right));
+            function->add(std::make_shared<mtac::Quadruple>(t1, left, f(operation.get<0>()), right));
         } else {
-            function->add(std::make_shared<tac::Quadruple>(t1, t1, f(operation.get<0>()), right));
+            function->add(std::make_shared<mtac::Quadruple>(t1, t1, f(operation.get<0>()), right));
         }
     }
 
     return t1;
 }
 
-std::shared_ptr<Variable> performIntOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
-    return performOperation(value, function, function->context->newTemporary(), &tac::toOperator);
+std::shared_ptr<Variable> performIntOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
+    return performOperation(value, function, function->context->newTemporary(), &mtac::toOperator);
 }
 
-std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
-    return performOperation(value, function, function->context->newFloatTemporary(), &tac::toFloatOperator);
+std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
+    return performOperation(value, function, function->context->newFloatTemporary(), &mtac::toFloatOperator);
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function);
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
 
-tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, tac::Argument index, std::shared_ptr<tac::Function> function){
+mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argument index, std::shared_ptr<mtac::Function> function){
     auto temp = function->context->newTemporary();
     auto position = array->position();
 
     if(position.isGlobal()){
-        function->add(std::make_shared<tac::Quadruple>(temp, index, tac::Operator::MUL, -1 * size(array->type().base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * size(array->type().base())));
 
         //Compute the offset manually to avoid having ADD then SUB
         //TODO Find a way to make that optimization in the TAC Optimizer
         int offset = size(array->type().base()) * array->type().size();
         offset -= size(BaseType::INT);
 
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::ADD, offset));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, offset));
     } else if(position.isStack()){
-        function->add(std::make_shared<tac::Quadruple>(temp, index, tac::Operator::MUL, size(array->type().base())));
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::ADD, size(BaseType::INT)));
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::MUL, -1));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type().base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, size(BaseType::INT)));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     } else if(position.isParameter()){
-        function->add(std::make_shared<tac::Quadruple>(temp, index, tac::Operator::MUL, size(array->type().base())));
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::ADD, size(BaseType::INT)));
-        function->add(std::make_shared<tac::Quadruple>(temp, temp, tac::Operator::MUL, -1));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type().base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, size(BaseType::INT)));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     }
    
     return temp;
 }
 
-tac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<tac::Function> function){
-    tac::Argument index = moveToArgument(indexValue, function);
+mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<mtac::Function> function){
+    mtac::Argument index = moveToArgument(indexValue, function);
 
     return computeIndexOfArray(array, index, function);
 }
 
-std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<mtac::Function> function){
     auto t1 = function->context->newTemporary();
     
     auto position = array->position();
     if(position.isGlobal() || position.isStack()){
-        function->add(std::make_shared<tac::Quadruple>(t1, array->type().size(), tac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(t1, array->type().size(), mtac::Operator::ASSIGN));
     } else if(position.isParameter()){
-        function->add(std::make_shared<tac::Quadruple>(t1, array, tac::Operator::ARRAY, 0));
+        function->add(std::make_shared<mtac::Quadruple>(t1, array, mtac::Operator::ARRAY, 0));
     }
 
     return t1;
@@ -116,62 +116,62 @@ int getStringOffset(std::shared_ptr<Variable> variable){
     return variable->position().isGlobal() ? size(BaseType::INT) : -size(BaseType::INT);
 }
 
-void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
+void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
     
 template<typename Operation>
-void performPrefixOperation(const Operation& operation, std::shared_ptr<tac::Function> function){
+void performPrefixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
     auto var = operation.Content->variable;
 
     if(operation.Content->op == ast::Operator::INC){
         if(var->type() == BaseType::FLOAT){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FADD, 1.0));
         } else {
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::ADD, 1));
         }
     } else if(operation.Content->op == ast::Operator::DEC){
         if(var->type() == BaseType::FLOAT){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FSUB, 1.0));
         } else {
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::SUB, 1));
         }
     }
 }
 
 template<typename Operation>
-std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
     auto var = operation.Content->variable;
 
     if(var->type() == BaseType::FLOAT){
         auto temp = operation.Content->context->newFloatTemporary();
 
-        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::FASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FASSIGN));
 
         if(operation.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FADD, 1.0));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FADD, 1.0));
         } else if(operation.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::FSUB, 1.0));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FSUB, 1.0));
         }
 
         return temp;
     } else {
         auto temp = operation.Content->context->newTemporary();
 
-        function->add(std::make_shared<tac::Quadruple>(temp, var, tac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::ASSIGN));
 
         if(operation.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::ADD, 1));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::ADD, 1));
         } else if(operation.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<tac::Quadruple>(var, var, tac::Operator::SUB, 1));
+            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::SUB, 1));
         }
 
         return temp;
     }
 }
 
-struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argument>> {
-    ToArgumentsVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
+struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
+    ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
     
-    mutable std::shared_ptr<tac::Function> function;
+    mutable std::shared_ptr<mtac::Function> function;
 
     result_type operator()(ast::Litteral& litteral) const {
         return {litteral.label, (int) litteral.value.size() - 2};
@@ -214,7 +214,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                     auto t1 = function->context->newTemporary();
 
                     //The size of the array is at the address pointed by the variable
-                    function->add(std::make_shared<tac::Quadruple>(t1, variable, tac::Operator::DOT, 0));
+                    function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
 
                     return {t1};
                 }
@@ -296,11 +296,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
                 return {value.Content->var};
             } else if(type == BaseType::STRING){
                 auto temp = value.Content->context->newTemporary();
-                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->var, tac::Operator::DOT, getStringOffset(value.Content->var)));
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
 
                 return {value.Content->var, temp};
             } else if(type.is_custom_type()) {
-                std::vector<tac::Argument> values;
+                std::vector<mtac::Argument> values;
 
                 auto struct_name = value.Content->var->type().type();
                 auto struct_type = symbols.get_struct(struct_name);
@@ -356,11 +356,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             auto t2 = value.Content->context->newTemporary();
         
             if(value.Content->variable->position().isParameter()){
-                function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset - getStringOffset(value.Content->variable)));
-                function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset));
+                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset - getStringOffset(value.Content->variable)));
+                function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->variable, mtac::Operator::DOT, offset));
             } else {
-                function->add(std::make_shared<tac::Quadruple>(t1, value.Content->variable, tac::Operator::DOT, offset));
-                function->add(std::make_shared<tac::Quadruple>(t2, value.Content->variable, tac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
+                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset));
+                function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->variable, mtac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
             }
 
             return {t1, t2};
@@ -368,9 +368,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             auto temp = value.Content->context->new_temporary(member_type);
 
             if(member_type == BaseType::FLOAT){
-                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::FDOT, offset));
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->variable, mtac::Operator::FDOT, offset));
             } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
-                function->add(std::make_shared<tac::Quadruple>(temp, value.Content->variable, tac::Operator::DOT, offset));
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->variable, mtac::Operator::DOT, offset));
             } else {
                 ASSERT_PATH_NOT_TAKEN("Unhandled type");
             }
@@ -387,21 +387,21 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             case BaseType::INT:
             case BaseType::FLOAT: {
                 auto temp = array.Content->context->new_temporary(array.Content->var->type());
-                function->add(std::make_shared<tac::Quadruple>(temp, array.Content->var, tac::Operator::ARRAY, index));
+                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
 
                 return {temp};
 
             }   
             case BaseType::STRING: {
                 auto t1 = array.Content->context->newTemporary();
-                function->add(std::make_shared<tac::Quadruple>(t1, array.Content->var, tac::Operator::ARRAY, index));
+                function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
                     
                 auto t2 = array.Content->context->newTemporary();
                 auto t3 = array.Content->context->newTemporary();
                 
                 //Assign the second part of the string
-                function->add(std::make_shared<tac::Quadruple>(t3, index, tac::Operator::ADD, -size(BaseType::INT)));
-                function->add(std::make_shared<tac::Quadruple>(t2, array.Content->var, tac::Operator::ARRAY, t3));
+                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -size(BaseType::INT)));
+                function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
                 
                 return {t1, t2};
             }
@@ -430,25 +430,25 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
     }
 
     result_type operator()(ast::Minus& value) const {
-        tac::Argument arg = moveToArgument(value.Content->value, function);
+        mtac::Argument arg = moveToArgument(value.Content->value, function);
         
         Type type = visit(ast::GetTypeVisitor(), value.Content->value);
 
         if(type == BaseType::FLOAT){
             auto t1 = function->context->newFloatTemporary();
-            function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::FMINUS));
+            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
 
             return {t1};
         } else {
             auto t1 = function->context->newTemporary();
-            function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::MINUS));
+            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::MINUS));
 
             return {t1};
         }
     }
     
     result_type operator()(ast::Cast& cast) const {
-        tac::Argument arg = moveToArgument(cast.Content->value, function);
+        mtac::Argument arg = moveToArgument(cast.Content->value, function);
         
         Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
         Type destType = visit(ast::TypeTransformer(), cast.Content->type);
@@ -457,13 +457,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
             if(destType == BaseType::FLOAT){
                 auto t1 = function->context->newFloatTemporary();
 
-                function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::I2F));
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::I2F));
 
                 return {t1};
             } else if(destType == BaseType::INT){
                 auto t1 = function->context->newTemporary();
                 
-                function->add(std::make_shared<tac::Quadruple>(t1, arg, tac::Operator::F2I));
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
 
                 return {t1};
             }
@@ -480,13 +480,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<tac::Argume
 };
 
 struct AbstractVisitor : public boost::static_visitor<> {
-    AbstractVisitor(std::shared_ptr<tac::Function> f) : function(f) {}
+    AbstractVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
     
-    mutable std::shared_ptr<tac::Function> function;
+    mutable std::shared_ptr<mtac::Function> function;
     
-    virtual void intAssign(std::vector<tac::Argument> arguments) const = 0;
-    virtual void floatAssign(std::vector<tac::Argument> arguments) const = 0;
-    virtual void stringAssign(std::vector<tac::Argument> arguments) const = 0;
+    virtual void intAssign(std::vector<mtac::Argument> arguments) const = 0;
+    virtual void floatAssign(std::vector<mtac::Argument> arguments) const = 0;
+    virtual void stringAssign(std::vector<mtac::Argument> arguments) const = 0;
    
     /* Litterals are always strings */
     
@@ -543,81 +543,81 @@ struct AbstractVisitor : public boost::static_visitor<> {
 };
 
 struct AssignValueToArray : public AbstractVisitor {
-    AssignValueToArray(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : AbstractVisitor(f), variable(v), indexValue(i) {}
+    AssignValueToArray(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, ast::Value& i) : AbstractVisitor(f), variable(v), indexValue(i) {}
     
     std::shared_ptr<Variable> variable;
     ast::Value& indexValue;
 
-    void intAssign(std::vector<tac::Argument> arguments) const {
+    void intAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
-        function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
     }
     
-    void floatAssign(std::vector<tac::Argument> arguments) const {
+    void floatAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
-        function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
     }
 
-    void stringAssign(std::vector<tac::Argument> arguments) const {
+    void stringAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
         
-        function->add(std::make_shared<tac::Quadruple>(variable, index, tac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
 
         auto temp1 = function->context->newTemporary();
-        function->add(std::make_shared<tac::Quadruple>(temp1, index, tac::Operator::ADD, -size(BaseType::INT)));
-        function->add(std::make_shared<tac::Quadruple>(variable, temp1, tac::Operator::ARRAY_ASSIGN, arguments[1]));
+        function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -size(BaseType::INT)));
+        function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::ARRAY_ASSIGN, arguments[1]));
     }
 };
  
 struct AssignValueToVariable : public AbstractVisitor {
-    AssignValueToVariable(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v) : AbstractVisitor(f), variable(v) {}
+    AssignValueToVariable(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v) : AbstractVisitor(f), variable(v) {}
     
     std::shared_ptr<Variable> variable;
 
-    void intAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
+    void intAssign(std::vector<mtac::Argument> arguments) const {
+        function->add(std::make_shared<mtac::Quadruple>(variable, arguments[0], mtac::Operator::ASSIGN));
     }
     
-    void floatAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::FASSIGN));
+    void floatAssign(std::vector<mtac::Argument> arguments) const {
+        function->add(std::make_shared<mtac::Quadruple>(variable, arguments[0], mtac::Operator::FASSIGN));
     }
 
-    void stringAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, arguments[0], tac::Operator::ASSIGN));
-        function->add(std::make_shared<tac::Quadruple>(variable, getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
+    void stringAssign(std::vector<mtac::Argument> arguments) const {
+        function->add(std::make_shared<mtac::Quadruple>(variable, arguments[0], mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(variable, getStringOffset(variable), mtac::Operator::DOT_ASSIGN, arguments[1]));
     }
 };
 
 struct AssignValueToVariableWithOffset : public AbstractVisitor {
-    AssignValueToVariableWithOffset(std::shared_ptr<tac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
+    AssignValueToVariableWithOffset(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
     
     std::shared_ptr<Variable> variable;
     unsigned int offset;
 
-    void intAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_ASSIGN, arguments[0]));
+    void intAssign(std::vector<mtac::Argument> arguments) const {
+        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
     }
     
-    void floatAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_FASSIGN, arguments[0]));
+    void floatAssign(std::vector<mtac::Argument> arguments) const {
+        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_FASSIGN, arguments[0]));
     }
 
-    void stringAssign(std::vector<tac::Argument> arguments) const {
-        function->add(std::make_shared<tac::Quadruple>(variable, offset, tac::Operator::DOT_ASSIGN, arguments[0]));
-        function->add(std::make_shared<tac::Quadruple>(variable, offset + getStringOffset(variable), tac::Operator::DOT_ASSIGN, arguments[1]));
+    void stringAssign(std::vector<mtac::Argument> arguments) const {
+        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, offset + getStringOffset(variable), mtac::Operator::DOT_ASSIGN, arguments[1]));
     }
 };
 
-void assign(std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
+void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
     visit(AssignValueToVariable(function, variable), value);
 }
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
-    JumpIfFalseVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
+    JumpIfFalseVisitor(std::shared_ptr<mtac::Function> f, const std::string& l) : function(f), label(l) {}
     
-    mutable std::shared_ptr<tac::Function> function;
+    mutable std::shared_ptr<mtac::Function> function;
     std::string label;
    
     void operator()(ast::Expression& value) const ;
@@ -626,12 +626,12 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     void operator()(T& value) const {
         auto argument = ToArgumentsVisitor(function)(value)[0];
 
-        function->add(std::make_shared<tac::IfFalse>(argument, label));
+        function->add(std::make_shared<mtac::IfFalse>(argument, label));
     }
 };
 
 template<typename Control>
-void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Function> function, const std::string& label){
+void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Function> function, const std::string& label){
     ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
     auto left = moveToArgument(value.Content->first, function);
@@ -644,16 +644,16 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<tac::Func
     ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only int and floats can be compared");
 
     if(typeLeft == BaseType::INT){
-        function->add(std::make_shared<Control>(tac::toBinaryOperator(op), left, right, label));
+        function->add(std::make_shared<Control>(mtac::toBinaryOperator(op), left, right, label));
     } else if(typeLeft == BaseType::FLOAT){
-        function->add(std::make_shared<Control>(tac::toFloatBinaryOperator(op), left, right, label));
+        function->add(std::make_shared<Control>(mtac::toFloatBinaryOperator(op), left, right, label));
     } 
 }
 
 struct JumpIfTrueVisitor : public boost::static_visitor<> {
-    JumpIfTrueVisitor(std::shared_ptr<tac::Function> f, const std::string& l) : function(f), label(l) {}
+    JumpIfTrueVisitor(std::shared_ptr<mtac::Function> f, const std::string& l) : function(f), label(l) {}
     
-    mutable std::shared_ptr<tac::Function> function;
+    mutable std::shared_ptr<mtac::Function> function;
     std::string label;
    
     void operator()(ast::Expression& value) const {
@@ -685,13 +685,13 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
         }
         //Relational operators 
         else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-            compare<tac::If>(value, op, function, label);
+            compare<mtac::If>(value, op, function, label);
         } 
         //A bool value
         else { //Perform int operations
             auto var = performIntOperation(value, function);
             
-            function->add(std::make_shared<tac::If>(var, label));
+            function->add(std::make_shared<mtac::If>(var, label));
         }
     }
    
@@ -699,7 +699,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
     void operator()(T& value) const {
         auto argument = ToArgumentsVisitor(function)(value)[0];
 
-        function->add(std::make_shared<tac::If>(argument, label));
+        function->add(std::make_shared<mtac::If>(argument, label));
     }
 };
 
@@ -732,20 +732,20 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        compare<tac::IfFalse>(value, op, function, label);
+        compare<mtac::IfFalse>(value, op, function, label);
     } 
     //A bool value
     else { //Perform int operations
         auto var = performIntOperation(value, function);
 
-        function->add(std::make_shared<tac::IfFalse>(var, label));
+        function->add(std::make_shared<mtac::IfFalse>(var, label));
     }
 }
 
-void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
+void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     ASSERT(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
 
-    std::vector<tac::Argument> arguments;
+    std::vector<mtac::Argument> arguments;
 
     auto first = visit(ToArgumentsVisitor(function), value.Content->first);
     arguments.insert(arguments.end(), first.begin(), first.end());
@@ -758,18 +758,18 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Functio
         arguments.insert(arguments.end(), second.begin(), second.end());
         
         for(auto& arg : arguments){
-            function->add(std::make_shared<tac::Param>(arg));   
+            function->add(std::make_shared<mtac::Param>(arg));   
         }
 
         arguments.clear();
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<tac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
+            function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = value.Content->context->newTemporary();
             auto t2 = value.Content->context->newTemporary();
             
-            function->add(std::make_shared<tac::Call>("concat", symbols.getFunction("_F6concatSS"), t1, t2)); 
+            function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -780,12 +780,12 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<tac::Functio
 class CompilerVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
-        tac::Program& program;
+        mtac::Program& program;
 
-        std::shared_ptr<tac::Function> function;
+        std::shared_ptr<mtac::Function> function;
     
     public:
-        CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram){}
+        CompilerVisitor(StringPool& p, mtac::Program& tacProgram) : pool(p), program(tacProgram){}
 
         //No code is generated for these nodes
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
@@ -832,7 +832,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& f){
-            function = std::make_shared<tac::Function>(f.Content->context, f.Content->mangledName);
+            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
             function->definition = symbols.getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
@@ -851,7 +851,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 if (if_.Content->else_) {
                     std::string elseLabel = newLabel();
 
-                    function->add(std::make_shared<tac::Goto>(elseLabel));
+                    function->add(std::make_shared<mtac::Goto>(elseLabel));
 
                     function->add(endLabel);
 
@@ -869,7 +869,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                 visit_each(*this, if_.Content->instructions);
 
-                function->add(std::make_shared<tac::Goto>(end));
+                function->add(std::make_shared<mtac::Goto>(end));
 
                 for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
                     ast::ElseIf& elseIf = if_.Content->elseIfs[i];
@@ -891,7 +891,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                     visit_each(*this, elseIf.instructions);
 
-                    function->add(std::make_shared<tac::Goto>(end));
+                    function->add(std::make_shared<mtac::Goto>(end));
                 }
 
                 if (if_.Content->else_) {
@@ -935,21 +935,21 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto t1 = swap.Content->context->newTemporary();
 
             if(lhs_var->type() == BaseType::INT || lhs_var->type() == BaseType::BOOL || lhs_var->type() == BaseType::STRING){
-                function->add(std::make_shared<tac::Quadruple>(t1, rhs_var, tac::Operator::ASSIGN));  
-                function->add(std::make_shared<tac::Quadruple>(rhs_var, lhs_var, tac::Operator::ASSIGN));  
-                function->add(std::make_shared<tac::Quadruple>(lhs_var, t1, tac::Operator::ASSIGN));  
+                function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::ASSIGN));  
+                function->add(std::make_shared<mtac::Quadruple>(rhs_var, lhs_var, mtac::Operator::ASSIGN));  
+                function->add(std::make_shared<mtac::Quadruple>(lhs_var, t1, mtac::Operator::ASSIGN));  
                 
                 if( lhs_var->type() == BaseType::STRING){
                     auto t2 = swap.Content->context->newTemporary();
 
                     //t1 = 4(b)
-                    function->add(std::make_shared<tac::Quadruple>(t1, rhs_var, tac::Operator::DOT, getStringOffset(rhs_var)));  
+                    function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::DOT, getStringOffset(rhs_var)));  
                     //t2 = 4(a)
-                    function->add(std::make_shared<tac::Quadruple>(t2, lhs_var, tac::Operator::DOT, getStringOffset(lhs_var)));  
+                    function->add(std::make_shared<mtac::Quadruple>(t2, lhs_var, mtac::Operator::DOT, getStringOffset(lhs_var)));  
                     //4(b) = t2
-                    function->add(std::make_shared<tac::Quadruple>(rhs_var, getStringOffset(rhs_var), tac::Operator::DOT_ASSIGN, t2));  
+                    function->add(std::make_shared<mtac::Quadruple>(rhs_var, getStringOffset(rhs_var), mtac::Operator::DOT_ASSIGN, t2));  
                     //4(a) = t1
-                    function->add(std::make_shared<tac::Quadruple>(lhs_var, getStringOffset(lhs_var), tac::Operator::DOT_ASSIGN, t1));  
+                    function->add(std::make_shared<mtac::Quadruple>(lhs_var, getStringOffset(lhs_var), mtac::Operator::DOT_ASSIGN, t1));  
                 }
             } else {
                 throw SemanticalException("Variable of invalid type");
@@ -983,21 +983,21 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto arguments = visit(ToArgumentsVisitor(function), return_.Content->value);
 
             if(arguments.size() == 1){
-                function->add(std::make_shared<tac::Quadruple>(tac::Operator::RETURN, arguments[0]));
+                function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
             } else if(arguments.size() == 2){
-                function->add(std::make_shared<tac::Quadruple>(tac::Operator::RETURN, arguments[0], arguments[1]));
+                function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
             } else {
                 throw SemanticalException("Invalid number of arguments");
             }   
         }
 };
 
-tac::Argument moveToArgument(ast::Value& value, std::shared_ptr<tac::Function> function){
+mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function){
     return visit(ToArgumentsVisitor(function), value)[0];
 }
 
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    std::vector<std::vector<tac::Argument>> arguments;
+void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+    std::vector<std::vector<mtac::Argument>> arguments;
 
     for(auto& value : functionCall.Content->values){
         arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
@@ -1021,7 +1021,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
             auto param = parameters[i--].name; 
 
             for(auto& arg : first){
-                function->add(std::make_shared<tac::Param>(arg, param, definition));   
+                function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
     } else {
@@ -1034,15 +1034,15 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<tac::Function>
             std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
 
             for(auto& arg : first){
-                function->add(std::make_shared<tac::Param>(arg, param, definition));   
+                function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
     }
 
-    function->add(std::make_shared<tac::Call>(functionName, definition, return_, return2_));
+    function->add(std::make_shared<mtac::Call>(functionName, definition, return_, return2_));
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<tac::Function> function){
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
     auto t1 = function->context->newTemporary(); 
    
     //The first operator defines the kind of operation 
@@ -1061,11 +1061,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
             visit(JumpIfFalseVisitor(function, falseLabel), operation.get<1>());
         }
 
-        function->add(std::make_shared<tac::Quadruple>(t1, 1, tac::Operator::ASSIGN));
-        function->add(std::make_shared<tac::Goto>(endLabel));
+        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Goto>(endLabel));
 
         function->add(falseLabel);
-        function->add(std::make_shared<tac::Quadruple>(t1, 0, tac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
 
         function->add(endLabel);
     } 
@@ -1080,11 +1080,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
             visit(JumpIfTrueVisitor(function, trueLabel), operation.get<1>());
         }
 
-        function->add(std::make_shared<tac::Quadruple>(t1, 0, tac::Operator::ASSIGN));
-        function->add(std::make_shared<tac::Goto>(endLabel));
+        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Goto>(endLabel));
 
         function->add(trueLabel);
-        function->add(std::make_shared<tac::Quadruple>(t1, 1, tac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
 
         function->add(endLabel);
     }
@@ -1102,9 +1102,9 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only float and int values can be compared");
 
         if(typeLeft == BaseType::INT){
-            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toRelationalOperator(op), right));
+            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
         } else if(typeRight == BaseType::FLOAT){
-            function->add(std::make_shared<tac::Quadruple>(t1, left, tac::toFloatRelationalOperator(op), right));
+            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
         }
     } 
     
@@ -1114,7 +1114,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void tac::Compiler::compile(ast::SourceFile& program, StringPool& pool, tac::Program& tacProgram) const {
+void mtac::Compiler::compile(ast::SourceFile& program, StringPool& pool, mtac::Program& tacProgram) const {
     CompilerVisitor visitor(pool, tacProgram);
     visitor(program);
 }

@@ -22,7 +22,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class MathPropagation : public boost::static_visitor<void> {
     public:
@@ -31,20 +31,20 @@ class MathPropagation : public boost::static_visitor<void> {
 
         MathPropagation() : optimized(false) {}
 
-        void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
-        void operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
-        void operator()(std::shared_ptr<tac::If>& if_);
+        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
+        void operator()(std::shared_ptr<mtac::If>& if_);
 
         template<typename T>
         void operator()(T&) const { 
             //Nothing to optimize here
         }
     
-        void collect(tac::Argument* arg);
-        void collect(boost::optional<tac::Argument>& arg);
+        void collect(mtac::Argument* arg);
+        void collect(boost::optional<mtac::Argument>& arg);
 
     private:
-        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<tac::Quadruple>> assigns;
+        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::Quadruple>> assigns;
         std::unordered_map<std::shared_ptr<Variable>, int> usage;
 };
 

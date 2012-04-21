@@ -17,7 +17,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 template<typename V, typename T>
 inline bool equals(T& variant, V value){
@@ -49,9 +49,9 @@ inline void assertIntOrVariable(T& variant){
     assert(isInt(variant) || isVariable(variant));
 }
 
-void computeBlockUsage(std::shared_ptr<tac::Function> function, std::unordered_set<std::shared_ptr<tac::BasicBlock>>& usage);
+void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage);
 
-bool safe(std::shared_ptr<tac::Call> call);
+bool safe(std::shared_ptr<mtac::Call> call);
 
 } //end of tac
 

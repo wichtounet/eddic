@@ -14,7 +14,7 @@ using namespace eddic;
 namespace {
 
 //Set the default properties of the variable
-void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
+void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, mtac::Argument arg){
     if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
         if(liveness.find(*variable) == liveness.end()){
             if((*variable)->position().isTemporary()){
@@ -27,28 +27,28 @@ void updateLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, t
 }
 
 //Set the variable as live
-void setLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, tac::Argument arg){
+void setLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, mtac::Argument arg){
     if(auto* variable = boost::get<std::shared_ptr<Variable>>(&arg)){
         liveness[*variable] = true;
     }
 }
 
-void computeLiveness(std::shared_ptr<tac::Function> function){
-    std::vector<std::shared_ptr<tac::BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
-    std::vector<std::shared_ptr<tac::BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
+void computeLiveness(std::shared_ptr<mtac::Function> function){
+    std::vector<std::shared_ptr<mtac::BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
+    std::vector<std::shared_ptr<mtac::BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     while(bit != bend){
-        std::vector<tac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
-        std::vector<tac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
+        std::vector<mtac::Statement>::reverse_iterator sit = (*bit)->statements.rbegin();
+        std::vector<mtac::Statement>::reverse_iterator send = (*bit)->statements.rend(); 
     
         liveness.clear();
 
         while(sit != send){
             auto statement = *sit;
 
-            if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                 updateLive(liveness, (*ptr)->arg1);
                 if((*ptr)->arg2){
                     updateLive(liveness, *(*ptr)->arg2);
@@ -60,7 +60,7 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 }
                 
                 (*ptr)->liveness = liveness;
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
                 updateLive(liveness, (*ptr)->arg1);
                 if((*ptr)->arg2){
                     updateLive(liveness, *(*ptr)->arg2);
@@ -72,7 +72,7 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 }
                 
                 (*ptr)->liveness = liveness;
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&statement)){
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if((*ptr)->arg1){
                     updateLive(liveness, (*(*ptr)->arg1));
                 }
@@ -94,7 +94,7 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
                 if((*ptr)->result){
                     //TODO Take into account that the the result is overriden, so should no be live (warning with a = a + b)
                 }
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::Param>>(&statement)){
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
                 setLive(liveness, (*ptr)->arg);
 
                 (*ptr)->liveness = liveness;
@@ -109,7 +109,7 @@ void computeLiveness(std::shared_ptr<tac::Function> function){
 
 }
 
-void tac::LivenessAnalyzer::compute(tac::Program& program){
+void mtac::LivenessAnalyzer::compute(mtac::Program& program){
     for(auto& function : program.functions){
         computeLiveness(function);
     }

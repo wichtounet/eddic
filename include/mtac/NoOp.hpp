@@ -10,7 +10,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 struct NoOp {
     NoOp();

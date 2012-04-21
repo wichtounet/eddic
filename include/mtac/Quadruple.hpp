@@ -20,13 +20,13 @@ namespace eddic {
 
 class Variable;
 
-namespace tac {
+namespace mtac {
 
 struct Quadruple {
     std::shared_ptr<Variable> result;
-    boost::optional<tac::Argument> arg1;
-    boost::optional<tac::Argument> arg2;
-    tac::Operator op;
+    boost::optional<mtac::Argument> arg1;
+    boost::optional<mtac::Argument> arg2;
+    mtac::Operator op;
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
@@ -37,16 +37,16 @@ struct Quadruple {
     Quadruple();
 
     //Quadruple for unary operators
-    Quadruple(std::shared_ptr<Variable> result, tac::Argument arg1, Operator op);
+    Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, Operator op);
 
     //Quadruple for binary operators
-    Quadruple(std::shared_ptr<Variable> result, tac::Argument arg1, Operator op, tac::Argument arg2);
+    Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, Operator op, mtac::Argument arg2);
 
     //Quadruples without assign to result
-    Quadruple(Operator op, tac::Argument arg1);
+    Quadruple(Operator op, mtac::Argument arg1);
 
     //Quadruples without assign to result
-    Quadruple(Operator op, tac::Argument arg1, tac::Argument arg2);
+    Quadruple(Operator op, mtac::Argument arg1, mtac::Argument arg2);
 };
 
 } //end of tac

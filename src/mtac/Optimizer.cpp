@@ -38,7 +38,7 @@ static const bool DebugPerf = false;
 static const bool Debug = false;
 
 template<typename Visitor>
-bool apply_to_all(tac::Program& program){
+bool apply_to_all(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("apply to all clean");
 
     Visitor visitor;
@@ -53,7 +53,7 @@ bool apply_to_all(tac::Program& program){
 }
 
 template<typename Visitor>
-bool apply_to_basic_blocks(tac::Program& program){
+bool apply_to_basic_blocks(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks");
     bool optimized = false;
 
@@ -72,26 +72,26 @@ bool apply_to_basic_blocks(tac::Program& program){
 
 template<typename Visitor>
 typename boost::disable_if<boost::is_void<typename Visitor::result_type>, bool>::type 
-apply_to_basic_blocks_two_pass(tac::Program& program){
+apply_to_basic_blocks_two_pass(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
     bool optimized = false;
 
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
-            visitor.pass = tac::Pass::DATA_MINING;
+            visitor.pass = mtac::Pass::DATA_MINING;
 
             //In the first pass, don't care about the return value
             visit_each(visitor, block->statements);
 
-            visitor.pass = tac::Pass::OPTIMIZE;
+            visitor.pass = mtac::Pass::OPTIMIZE;
 
             auto it = block->statements.begin();
             auto end = block->statements.end();
             
             block->statements.erase(
                 std::remove_if(it, end,
-                    [&](tac::Statement& s){return !visit(visitor, s); }), 
+                    [&](mtac::Statement& s){return !visit(visitor, s); }), 
                 end);
 
             optimized |= visitor.optimized;
@@ -103,18 +103,18 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
 
 template<typename Visitor>
 inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, bool>::type
-apply_to_basic_blocks_two_pass(tac::Program& program){
+apply_to_basic_blocks_two_pass(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
     bool optimized = false;
 
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
-            visitor.pass = tac::Pass::DATA_MINING;
+            visitor.pass = mtac::Pass::DATA_MINING;
 
             visit_each(visitor, block->statements);
 
-            visitor.pass = tac::Pass::OPTIMIZE;
+            visitor.pass = mtac::Pass::OPTIMIZE;
 
             visit_each(visitor, block->statements);
 
@@ -125,12 +125,12 @@ apply_to_basic_blocks_two_pass(tac::Program& program){
     return optimized;
 }
 
-bool remove_dead_basic_blocks(tac::Program& program){
+bool remove_dead_basic_blocks(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("Remove dead basic blocks");
     bool optimized = false;
 
     for(auto& function : program.functions){
-        std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
+        std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
 
         auto& blocks = function->getBasicBlocks();
 
@@ -143,14 +143,14 @@ bool remove_dead_basic_blocks(tac::Program& program){
             if(block->statements.size() > 0){
                 auto& last = block->statements[block->statements.size() - 1];
 
-                if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&last)){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
                     if(usage.find((*ptr)->block) == usage.end()){
                         i = index(blocks, (*ptr)->block);
                         continue;
                     }
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&last)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
                     usage.insert((*ptr)->block); 
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&last)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last)){
                     usage.insert((*ptr)->block); 
                 }
             }
@@ -163,7 +163,7 @@ bool remove_dead_basic_blocks(tac::Program& program){
 
         blocks.erase(
             std::remove_if(it, end, 
-                [&](std::shared_ptr<tac::BasicBlock>& b){ return usage.find(b) == usage.end(); }), 
+                [&](std::shared_ptr<mtac::BasicBlock>& b){ return usage.find(b) == usage.end(); }), 
             end);
 
         if(blocks.size() < before){
@@ -174,19 +174,19 @@ bool remove_dead_basic_blocks(tac::Program& program){
     return optimized;
 }
 
-bool optimize_branches(tac::Program& program){
+bool optimize_branches(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("Optimize branches");
     bool optimized = false;
     
     for(auto& function : program.functions){
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                     if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){
                         int value = boost::get<int>((*ptr)->arg1);
                         
                         if(value == 0){
-                            auto goto_ = std::make_shared<tac::Goto>();
+                            auto goto_ = std::make_shared<mtac::Goto>();
 
                             goto_->label = (*ptr)->label;
                             goto_->block = (*ptr)->block;
@@ -194,19 +194,19 @@ bool optimize_branches(tac::Program& program){
                             statement = goto_;
                             optimized = true;
                         } else if(value == 1){
-                            statement = tac::NoOp();
+                            statement = mtac::NoOp();
                             optimized = true;
                         }
                     }
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
                     if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){
                         int value = boost::get<int>((*ptr)->arg1);
                         
                         if(value == 0){
-                            statement = tac::NoOp();
+                            statement = mtac::NoOp();
                             optimized = true;
                         } else if(value == 1){
-                            auto goto_ = std::make_shared<tac::Goto>();
+                            auto goto_ = std::make_shared<mtac::Goto>();
 
                             goto_->label = (*ptr)->label;
                             goto_->block = (*ptr)->block;
@@ -225,10 +225,10 @@ bool optimize_branches(tac::Program& program){
 
 template<typename T>
 bool isParam(T& statement){
-    return boost::get<std::shared_ptr<tac::Param>>(&statement);
+    return boost::get<std::shared_ptr<mtac::Param>>(&statement);
 }
 
-bool optimize_concat(tac::Program& program, StringPool& pool){
+bool optimize_concat(mtac::Program& program, StringPool& pool){
     DebugStopWatch<DebugPerf> timer("Optimize concat");
     bool optimized = false;
     
@@ -240,7 +240,7 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
             auto& block = blocks[i];
 
             if(block->statements.size() > 0){
-                if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&block->statements[0])){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
                     if((*ptr)->function == "concat"){
                         //The params are on the previous block
                         auto& paramBlock = blocks[i - 1]; 
@@ -254,8 +254,8 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
                             auto& statement4 = paramBlock->statements[size - 1];
 
                             if(isParam(statement1) && isParam(statement2) && isParam(statement3) && isParam(statement4)){
-                                auto& quadruple1 = boost::get<std::shared_ptr<tac::Param>>(statement1);
-                                auto& quadruple3 = boost::get<std::shared_ptr<tac::Param>>(statement3);
+                                auto& quadruple1 = boost::get<std::shared_ptr<mtac::Param>>(statement1);
+                                auto& quadruple3 = boost::get<std::shared_ptr<mtac::Param>>(statement3);
 
                                 if(boost::get<std::string>(&quadruple1->arg) && boost::get<std::string>(&quadruple3->arg)){
                                     std::string firstValue = pool.value(boost::get<std::string>(quadruple1->arg));
@@ -278,8 +278,8 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
                                     block->statements.erase(block->statements.begin());
                                    
                                     //Insert assign with the concatenated value 
-                                    block->statements.insert(block->statements.begin(), std::make_shared<tac::Quadruple>(ret1, label, tac::Operator::ASSIGN));
-                                    block->statements.insert(block->statements.begin()+1, std::make_shared<tac::Quadruple>(ret2, length, tac::Operator::ASSIGN));
+                                    block->statements.insert(block->statements.begin(), std::make_shared<mtac::Quadruple>(ret1, label, mtac::Operator::ASSIGN));
+                                    block->statements.insert(block->statements.begin()+1, std::make_shared<mtac::Quadruple>(ret2, length, mtac::Operator::ASSIGN));
 
                                     //Remove the four params from the previous basic block
                                     paramBlock->statements.erase(paramBlock->statements.end() - 4, paramBlock->statements.end());
@@ -297,7 +297,7 @@ bool optimize_concat(tac::Program& program, StringPool& pool){
     return optimized;
 }
 
-bool remove_needless_jumps(tac::Program& program){
+bool remove_needless_jumps(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("Remove needless jumps");
     bool optimized = false;
 
@@ -309,7 +309,7 @@ bool remove_needless_jumps(tac::Program& program){
             if(block->statements.size() > 0){
                 auto& last = block->statements[block->statements.size() - 1];
 
-                if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&last)){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
                     unsigned int target = index(blocks, (*ptr)->block);
                    
                     if(target == i + 1){
@@ -326,12 +326,12 @@ bool remove_needless_jumps(tac::Program& program){
     return optimized;
 }
 
-bool merge_basic_blocks(tac::Program& program){
+bool merge_basic_blocks(mtac::Program& program){
     DebugStopWatch<DebugPerf> timer("Merge basic blocks");
     bool optimized = false;
 
     for(auto& function : program.functions){
-        std::unordered_set<std::shared_ptr<tac::BasicBlock>> usage;
+        std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
         
         computeBlockUsage(function, usage);
 
@@ -346,11 +346,11 @@ bool merge_basic_blocks(tac::Program& program){
 
                 bool merge = false;
 
-                if(boost::get<std::shared_ptr<tac::Quadruple>>(&last)){
+                if(boost::get<std::shared_ptr<mtac::Quadruple>>(&last)){
                     merge = true;
-                } else if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&last)){
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&last)){
                     merge = safe(*ptr); 
-                } else if(boost::get<tac::NoOp>(&last)){
+                } else if(boost::get<mtac::NoOp>(&last)){
                     merge = true;
                 }
 
@@ -358,7 +358,7 @@ bool merge_basic_blocks(tac::Program& program){
                 if(merge && next != blocks.end()){
                     //Only if the next block is not used because we will remove its label
                     if(usage.find(*next) == usage.end()){
-                        if(auto* ptr = boost::get<std::shared_ptr<tac::Call>>(&(*(*next)->statements.begin()))){
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(*(*next)->statements.begin()))){
                             if(!safe(*ptr)){
                                 ++it;
                                 continue;
@@ -398,7 +398,7 @@ bool debug(bool b){
 
 }
 
-void tac::Optimizer::optimize(tac::Program& program, StringPool& pool) const {
+void mtac::Optimizer::optimize(mtac::Program& program, StringPool& pool) const {
     bool optimized;
     do {
         optimized = false;

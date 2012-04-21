@@ -13,7 +13,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 class BasicBlock;
 

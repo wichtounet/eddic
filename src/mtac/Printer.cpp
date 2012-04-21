@@ -38,18 +38,18 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
    }
 };
 
-std::string printArg(tac::Argument& arg){
+std::string printArg(mtac::Argument& arg){
     return visit(ArgumentToString(), arg);
 }
 
 struct DebugVisitor : public boost::static_visitor<> {
-    void operator()(tac::Program& program){
+    void operator()(mtac::Program& program){
         std::cout << "TAC Program " << std::endl << std::endl; 
 
         visit_each_non_variant(*this, program.functions);
     }
 
-    void operator()(std::shared_ptr<tac::Function>& function){
+    void operator()(std::shared_ptr<mtac::Function>& function){
         std::cout << "Function " << function->getName() << std::endl;
 
         visit_each(*this, function->getStatements());
@@ -58,73 +58,73 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << std::endl;
     }
 
-    void operator()(std::shared_ptr<tac::BasicBlock>& block){
+    void operator()(std::shared_ptr<mtac::BasicBlock>& block){
         std::cout << "B" << block->index << "->" << std::endl;
         
         visit_each(*this, block->statements);     
     }
 
-    void operator()(tac::Statement& statement){
+    void operator()(mtac::Statement& statement){
         visit(*this, statement);
     }
 
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        if(quadruple->op == tac::Operator::ASSIGN){
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+        if(quadruple->op == mtac::Operator::ASSIGN){
             std::cout << "\t" << quadruple->result->name() << " = (normal) " << printArg(*quadruple->arg1) << std::endl;
-        } else if(quadruple->op == tac::Operator::FASSIGN){
+        } else if(quadruple->op == mtac::Operator::FASSIGN){
             std::cout << "\t" << quadruple->result->name() << " = (float) " << printArg(*quadruple->arg1) << std::endl;
         } else {
-            tac::Operator op = quadruple->op;
+            mtac::Operator op = quadruple->op;
 
-            if(op == tac::Operator::ADD){
+            if(op == mtac::Operator::ADD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::FADD){
+            } else if(op == mtac::Operator::FADD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::SUB){
+            } else if(op == mtac::Operator::SUB){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " - " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::FSUB){
+            } else if(op == mtac::Operator::FSUB){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " - (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::MUL){
+            } else if(op == mtac::Operator::MUL){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " * " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::FMUL){
+            } else if(op == mtac::Operator::FMUL){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " * (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::DIV){
+            } else if(op == mtac::Operator::DIV){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " / " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::FDIV){
+            } else if(op == mtac::Operator::FDIV){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " / (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::MOD){
+            } else if(op == mtac::Operator::MOD){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " % " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::EQUALS || op == tac::Operator::FE){
+            } else if(op == mtac::Operator::EQUALS || op == mtac::Operator::FE){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::NOT_EQUALS || op == tac::Operator::FNE){
+            } else if(op == mtac::Operator::NOT_EQUALS || op == mtac::Operator::FNE){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " != " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::GREATER || op == tac::Operator::FG){
+            } else if(op == mtac::Operator::GREATER || op == mtac::Operator::FG){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " > " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::GREATER_EQUALS || op == tac::Operator::FGE){
+            } else if(op == mtac::Operator::GREATER_EQUALS || op == mtac::Operator::FGE){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " >= " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::LESS || op == tac::Operator::FL){
+            } else if(op == mtac::Operator::LESS || op == mtac::Operator::FL){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " < " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::LESS_EQUALS || op == tac::Operator::FLE){
+            } else if(op == mtac::Operator::LESS_EQUALS || op == mtac::Operator::FLE){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " <= " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::MINUS){
+            } else if(op == mtac::Operator::MINUS){
                 std::cout << "\t" << quadruple->result->name() << " = - " << printArg(*quadruple->arg1) << std::endl;
-            } else if(op == tac::Operator::I2F){
+            } else if(op == mtac::Operator::I2F){
                 std::cout << "\t" << quadruple->result->name() << " = (cast float) " << printArg(*quadruple->arg1) << std::endl;
-            } else if(op == tac::Operator::F2I){
+            } else if(op == mtac::Operator::F2I){
                 std::cout << "\t" << quadruple->result->name() << " = (cast int) " << printArg(*quadruple->arg1) << std::endl;
-            } else if(op == tac::Operator::DOT){
+            } else if(op == mtac::Operator::DOT){
                 std::cout << "\t" << quadruple->result->name() << " = (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::FDOT){
+            } else if(op == mtac::Operator::FDOT){
                 std::cout << "\t" << quadruple->result->name() << " = (float) (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::DOT_ASSIGN){
+            } else if(op == mtac::Operator::DOT_ASSIGN){
                 std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::DOT_FASSIGN){
+            } else if(op == mtac::Operator::DOT_FASSIGN){
                 std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::ARRAY){
+            } else if(op == mtac::Operator::ARRAY){
                 std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
-            } else if(op == tac::Operator::ARRAY_ASSIGN){
+            } else if(op == mtac::Operator::ARRAY_ASSIGN){
                 std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == tac::Operator::RETURN){
+            } else if(op == mtac::Operator::RETURN){
                 std::cout << "\treturn";
 
                 if(quadruple->arg1){
@@ -149,20 +149,20 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+    void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
         if(ifFalse->op){
             auto op = *ifFalse->op;
-            if(op == tac::BinaryOperator::EQUALS || op == tac::BinaryOperator::FE){
+            if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
                 std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::NOT_EQUALS || op == tac::BinaryOperator::FNE){
+            } else if(op == mtac::BinaryOperator::NOT_EQUALS || op == mtac::BinaryOperator::FNE){
                 std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::LESS || op == tac::BinaryOperator::FL){
+            } else if(op == mtac::BinaryOperator::LESS || op == mtac::BinaryOperator::FL){
                 std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::LESS_EQUALS || op == tac::BinaryOperator::FLE){
+            } else if(op == mtac::BinaryOperator::LESS_EQUALS || op == mtac::BinaryOperator::FLE){
                 std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::GREATER || op == tac::BinaryOperator::FG){
+            } else if(op == mtac::BinaryOperator::GREATER || op == mtac::BinaryOperator::FG){
                 std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::GREATER_EQUALS || op == tac::BinaryOperator::FGE){
+            } else if(op == mtac::BinaryOperator::GREATER_EQUALS || op == mtac::BinaryOperator::FGE){
                 std::cout << "\tifFalse " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
             }
         } else {
@@ -170,20 +170,20 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<tac::If>& ifFalse){
+    void operator()(std::shared_ptr<mtac::If>& ifFalse){
         if(ifFalse->op){
             auto op = *ifFalse->op;
-            if(op == tac::BinaryOperator::EQUALS || op == tac::BinaryOperator::FE){
+            if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::NOT_EQUALS || op == tac::BinaryOperator::FNE){
+            } else if(op == mtac::BinaryOperator::NOT_EQUALS || op == mtac::BinaryOperator::FNE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::LESS || op == tac::BinaryOperator::FL){
+            } else if(op == mtac::BinaryOperator::LESS || op == mtac::BinaryOperator::FL){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::LESS_EQUALS || op == tac::BinaryOperator::FLE){
+            } else if(op == mtac::BinaryOperator::LESS_EQUALS || op == mtac::BinaryOperator::FLE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::GREATER || op == tac::BinaryOperator::FG){
+            } else if(op == mtac::BinaryOperator::GREATER || op == mtac::BinaryOperator::FG){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
-            } else if(op == tac::BinaryOperator::GREATER_EQUALS || op == tac::BinaryOperator::FGE){
+            } else if(op == mtac::BinaryOperator::GREATER_EQUALS || op == mtac::BinaryOperator::FGE){
                 std::cout << "\tif " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << std::endl;
             }
         } else {
@@ -191,7 +191,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(std::shared_ptr<tac::Param>& param){
+    void operator()(std::shared_ptr<mtac::Param>& param){
         if(param->param){
             std::cout << "\tparam (" << param->param->name() << ") " << printArg(param->arg) << std::endl;
         } else {
@@ -203,15 +203,15 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<tac::Goto>& goto_){
+    void operator()(std::shared_ptr<mtac::Goto>& goto_){
         std::cout << "\tgoto " << printTarget(goto_) << std::endl;
     }
 
-    void operator()(tac::NoOp&){
+    void operator()(mtac::NoOp&){
         std::cout << "\tno-op" << std::endl;
     }
 
-    void operator()(std::shared_ptr<tac::Call>& call){
+    void operator()(std::shared_ptr<mtac::Call>& call){
         std::cout << "\t";
 
         if(call->return_){
@@ -236,21 +236,21 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void tac::Printer::print(tac::Program& program) const {
+void mtac::Printer::print(mtac::Program& program) const {
    DebugVisitor visitor;
    visitor(program); 
 }
 
-void tac::Printer::printFunction(std::shared_ptr<tac::Function> function) const {
+void mtac::Printer::printFunction(std::shared_ptr<mtac::Function> function) const {
    DebugVisitor visitor;
    visitor(function); 
 }
 
-void tac::Printer::printStatement(tac::Statement& statement) const {
+void mtac::Printer::printStatement(mtac::Statement& statement) const {
    DebugVisitor visitor;
    visit(visitor, statement);
 }
 
-void tac::Printer::printArgument(tac::Argument& arg) const {
+void mtac::Printer::printArgument(mtac::Argument& arg) const {
     std::cout << printArg(arg) << std::endl;
 }

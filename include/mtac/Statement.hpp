@@ -20,16 +20,16 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 typedef boost::variant<
-        std::shared_ptr<tac::Quadruple>,        //Basic quadruples
-        std::shared_ptr<tac::Param>,            //Parameters
-        std::shared_ptr<tac::IfFalse>,          //Jumping quadruples
-        std::shared_ptr<tac::If>,               //Jumping quadruples
-        std::shared_ptr<tac::Goto>,             //Non-conditional jump
-        std::shared_ptr<tac::Call>,             //Call a function
-        tac::NoOp,                              //Only used by the optimizer
+        std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
+        std::shared_ptr<mtac::Param>,            //Parameters
+        std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
+        std::shared_ptr<mtac::If>,               //Jumping quadruples
+        std::shared_ptr<mtac::Goto>,             //Non-conditional jump
+        std::shared_ptr<mtac::Call>,             //Call a function
+        mtac::NoOp,                              //Only used by the optimizer
         std::string                             //For labels
     > Statement;
 

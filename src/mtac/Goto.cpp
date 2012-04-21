@@ -9,5 +9,5 @@
 
 using namespace eddic;
 
-tac::Goto::Goto(){}
-tac::Goto::Goto(const std::string& l) : label(l) {}
+mtac::Goto::Goto(){}
+mtac::Goto::Goto(const std::string& l) : label(l) {}

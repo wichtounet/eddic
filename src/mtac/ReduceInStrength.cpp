@@ -10,21 +10,21 @@
 
 using namespace eddic;
 
-void tac::ReduceInStrength::operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+void mtac::ReduceInStrength::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     switch(quadruple->op){
-        case tac::Operator::MUL:
+        case mtac::Operator::MUL:
             if(*quadruple->arg1 == 2){
-                replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::ADD, *quadruple->arg2);
+                replaceRight(*this, quadruple, *quadruple->arg2, mtac::Operator::ADD, *quadruple->arg2);
             } else if(*quadruple->arg2 == 2){
-                replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::ADD, *quadruple->arg1);
+                replaceRight(*this, quadruple, *quadruple->arg1, mtac::Operator::ADD, *quadruple->arg1);
             }
 
             break;
-        case tac::Operator::FMUL:
+        case mtac::Operator::FMUL:
             if(*quadruple->arg1 == 2.0){
-                replaceRight(*this, quadruple, *quadruple->arg2, tac::Operator::FADD, *quadruple->arg2);
+                replaceRight(*this, quadruple, *quadruple->arg2, mtac::Operator::FADD, *quadruple->arg2);
             } else if(*quadruple->arg2 == 2.0){
-                replaceRight(*this, quadruple, *quadruple->arg1, tac::Operator::FADD, *quadruple->arg1);
+                replaceRight(*this, quadruple, *quadruple->arg1, mtac::Operator::FADD, *quadruple->arg1);
             }
 
             break;

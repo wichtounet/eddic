@@ -9,21 +9,21 @@
 
 using namespace eddic;
 
-void eddic::tac::computeBlockUsage(std::shared_ptr<tac::Function> function, std::unordered_set<std::shared_ptr<tac::BasicBlock>>& usage){
+void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<tac::Goto>>(&statement)){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
                 usage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::IfFalse>>(&statement)){
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                 usage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<tac::If>>(&statement)){
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
                 usage.insert((*ptr)->block);
             }
         }
     }
 }
 
-bool eddic::tac::safe(std::shared_ptr<tac::Call> call){
+bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
     auto function = call->function;
 
     //These functions are considered as safe because they save/restore all the registers and does not return anything 

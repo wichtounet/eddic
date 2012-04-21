@@ -99,7 +99,7 @@ using namespace x86_64;
 namespace eddic { namespace as {
 
 struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, FloatRegister>, public boost::static_visitor<> {
-    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : 
+    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<mtac::Function> f) : 
         IntelStatementCompiler(w, {Register::RDI, Register::RSI, Register::RCX, Register::RDX, Register::R8, Register::R9, 
         Register::R10, Register::R11, Register::R12, Register::R13, Register::R14, Register::R15, Register::RBX, Register::RAX}, 
         {FloatRegister::XMM0, FloatRegister::XMM1, FloatRegister::XMM2, FloatRegister::XMM3, FloatRegister::XMM4, FloatRegister::XMM5, FloatRegister::XMM6, FloatRegister::XMM7}, f) {}
@@ -177,7 +177,7 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     }
   
     //Div eax by arg2 
-    void divEax(std::shared_ptr<tac::Quadruple> quadruple){
+    void divEax(std::shared_ptr<mtac::Quadruple> quadruple){
         writer.stream() << "mov rdx, rax" << std::endl;
         writer.stream() << "sar rdx, 63" << std::endl;
 
@@ -195,7 +195,7 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         }
     }
     
-    void div(std::shared_ptr<tac::Quadruple> quadruple){
+    void div(std::shared_ptr<mtac::Quadruple> quadruple){
         spills(Register::RDX);
         registers.reserve(Register::RDX);
 
@@ -230,7 +230,7 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         registers.release(Register::RDX);
     }
     
-    void mod(std::shared_ptr<tac::Quadruple> quadruple){
+    void mod(std::shared_ptr<mtac::Quadruple> quadruple){
         spills(Register::RAX);
         spills(Register::RDX);
 
@@ -247,31 +247,31 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
         registers.release(Register::RAX);
     }
     
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
         compile(quadruple);
     }
     
-    void operator()(std::shared_ptr<tac::Param>& param){
+    void operator()(std::shared_ptr<mtac::Param>& param){
         compile(param);
     }
     
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
+    void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
         compile(ifFalse);
     }
 
-    void operator()(std::shared_ptr<tac::If>& if_){
+    void operator()(std::shared_ptr<mtac::If>& if_){
         compile(if_);
     }
 
-    void operator()(std::shared_ptr<tac::Goto>& goto_){
+    void operator()(std::shared_ptr<mtac::Goto>& goto_){
         compile(goto_);
     }
 
-    void operator()(std::shared_ptr<tac::Call>& call){
+    void operator()(std::shared_ptr<mtac::Call>& call){
         compile(call);
     }
 
-    void operator()(tac::NoOp&){
+    void operator()(mtac::NoOp&){
         //It's a no-op
     }
 
@@ -284,7 +284,7 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
 
 namespace { //anonymous namespace
 
-void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86_64StatementCompiler& compiler, std::shared_ptr<Function> definition){
+void compile(AssemblyFileWriter& writer, std::shared_ptr<mtac::BasicBlock> block, as::IntelX86_64StatementCompiler& compiler, std::shared_ptr<Function> definition){
     compiler.reset();
     compiler.handleParameters(definition);
 
@@ -314,7 +314,7 @@ void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block,
 
 namespace eddic { namespace as {
 
-void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+void IntelX86_64CodeGenerator::compile(std::shared_ptr<mtac::Function> function){
     defineFunction(writer, function->getName());
 
     auto size = function->context->size();
@@ -349,7 +349,7 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
 
     IntelX86_64StatementCompiler compiler(writer, function);
 
-    tac::computeBlockUsage(function, compiler.blockUsage);
+    mtac::computeBlockUsage(function, compiler.blockUsage);
 
     //First we computes a label for each basic block
     for(auto block : function->getBasicBlocks()){
@@ -367,8 +367,8 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<tac::Function> function){
         if(lastBasicBlock->statements.size() > 0){
             auto lastStatement = lastBasicBlock->statements.back();
             
-            if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&lastStatement)){
-                if((*ptr)->op != tac::Operator::RETURN){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&lastStatement)){
+                if((*ptr)->op != mtac::Operator::RETURN){
                     //Only if necessary, deallocates size on the stack for the local variables
                     if(size > 0){
                         writer.stream() << "add rsp, " << size << std::endl;

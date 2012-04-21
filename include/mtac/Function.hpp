@@ -20,9 +20,9 @@ namespace eddic {
 
 class FunctionContext;
 
-namespace tac {
+namespace mtac {
 
-typedef std::shared_ptr<tac::BasicBlock> BlockPtr;
+typedef std::shared_ptr<mtac::BasicBlock> BlockPtr;
 
 class Function {
     public:
@@ -32,19 +32,19 @@ class Function {
         
         std::shared_ptr<FunctionContext> context;
 
-        void add(tac::Statement statement);
+        void add(mtac::Statement statement);
 
         BlockPtr currentBasicBlock();
         BlockPtr newBasicBlock();
 
         std::string getName() const;
 
-        std::vector<tac::Statement>& getStatements();
+        std::vector<mtac::Statement>& getStatements();
         std::vector<BlockPtr>& getBasicBlocks();
 
     private:
         //Before being partitioned, the function has only statement
-        std::vector<tac::Statement> statements;
+        std::vector<mtac::Statement> statements;
         
         //There is no basic blocks at the beginning
         std::vector<BlockPtr> blocks;

@@ -18,16 +18,16 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 struct ConstantFolding : public boost::static_visitor<void> {
     bool optimized;
 
     ConstantFolding() : optimized(false) {}
 
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple);
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse);
-    void operator()(std::shared_ptr<tac::If>& if_);
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+    void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
+    void operator()(std::shared_ptr<mtac::If>& if_);
 
     template<typename T>
     void operator()(T&) const { 

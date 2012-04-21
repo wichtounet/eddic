@@ -14,7 +14,7 @@
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 struct IsSingleArgumentVisitor : public boost::static_visitor<bool> {
     bool operator()(const ast::VariableValue& value) const;

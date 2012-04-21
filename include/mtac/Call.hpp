@@ -17,7 +17,7 @@ namespace eddic {
 class Variable;
 class Function;
 
-namespace tac {
+namespace mtac {
 
 struct Call {
     std::string function;

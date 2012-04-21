@@ -18,7 +18,7 @@ namespace eddic {
 
 class FrontEnd {
     public:
-        virtual std::shared_ptr<tac::Program> compile(const std::string& file) = 0;   
+        virtual std::shared_ptr<mtac::Program> compile(const std::string& file) = 0;   
 
         void set_string_pool(std::shared_ptr<StringPool> pool);
         std::shared_ptr<StringPool> get_string_pool();

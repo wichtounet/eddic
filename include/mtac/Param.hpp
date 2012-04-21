@@ -19,10 +19,10 @@ namespace eddic {
 
 class Variable;
 
-namespace tac {
+namespace mtac {
 
 struct Param {
-    tac::Argument arg;
+    mtac::Argument arg;
 
     std::shared_ptr<Variable> param;
     std::string std_param;
@@ -34,9 +34,9 @@ struct Param {
     Param& operator=(const Param& rhs) = delete;
 
     Param();
-    Param(tac::Argument arg1);
-    Param(tac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<Function> function);
-    Param(tac::Argument arg1, const std::string& param, std::shared_ptr<Function> function);
+    Param(mtac::Argument arg1);
+    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<Function> function);
+    Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<Function> function);
 };
 
 } //end of tac

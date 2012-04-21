@@ -76,7 +76,7 @@ namespace eddi_detail {
 
 namespace eddic {
 
-namespace tac {
+namespace mtac {
 
 CUSTOM_STRONG_TYPEDEF(eddi_detail::variant_t, Argument)
 
@@ -93,22 +93,22 @@ bool operator==(const Argument& a, const std::string& b);
 namespace boost {
 
 template<typename T>
-inline T* get(eddic::tac::Argument* argument){
+inline T* get(eddic::mtac::Argument* argument){
     return boost::get<T>(argument->int_ptr());
 }
 
 template<typename T>
-inline const T* get(const eddic::tac::Argument* argument){
+inline const T* get(const eddic::mtac::Argument* argument){
     return boost::get<T>(argument->int_ptr());
 }
 
 template<typename T>
-inline T& get(eddic::tac::Argument& argument){
+inline T& get(eddic::mtac::Argument& argument){
     return boost::get<T>(argument.int_ref());
 }
 
 template<typename T>
-inline const T& get(const eddic::tac::Argument& argument){
+inline const T& get(const eddic::mtac::Argument& argument){
     return boost::get<T>(argument.int_ref());
 }
 
