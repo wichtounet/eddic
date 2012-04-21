@@ -8,6 +8,8 @@
 #ifndef MTAC_QUADRUPLE_H
 #define MTAC_QUADRUPLE_H
 
+#include <memory>
+
 #include "tac/Quadruple.hpp"
 
 #include "mtac/Operator.hpp"
@@ -19,7 +21,7 @@ class Variable;
 
 namespace mtac {
 
-typedef tac::Quadruple<mtac::Argument, mtac::Operator> Quadruple;
+typedef tac::Quadruple<std::shared_ptr<Variable>, mtac::Argument, mtac::Operator> Quadruple;
 
 } //end of mtac
 

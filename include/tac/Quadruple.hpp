@@ -8,24 +8,21 @@
 #ifndef TAC_QUADRUPLE_H
 #define TAC_QUADRUPLE_H
 
-#include <memory>
 #include <unordered_map>
 #include <boost/optional.hpp>
 
 namespace eddic {
 
-class Variable;
-
 namespace tac {
 
-template<typename Argument, typename Operator>
+template<typename Result, typename Argument, typename Operator>
 struct Quadruple {
-    std::shared_ptr<Variable> result;
+    Result result;
     boost::optional<Argument> arg1;
     boost::optional<Argument> arg2;
     Operator op;
     
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
+    std::unordered_map<Result, bool> liveness;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;
@@ -35,10 +32,10 @@ struct Quadruple {
     Quadruple();
 
     //Quadruple for unary operators
-    Quadruple(std::shared_ptr<Variable> result, Argument arg1, Operator op);
+    Quadruple(Result result, Argument arg1, Operator op);
 
     //Quadruple for binary operators
-    Quadruple(std::shared_ptr<Variable> result, Argument arg1, Operator op, Argument arg2);
+    Quadruple(Result result, Argument arg1, Operator op, Argument arg2);
 
     //Quadruples without assign to result
     Quadruple(Operator op, Argument arg1);
@@ -47,28 +44,28 @@ struct Quadruple {
     Quadruple(Operator op, Argument arg1, Argument arg2);
 };
 
-template<typename Argument, typename Operator>
-tac::Quadruple<Argument, Operator>::Quadruple(){
+template<typename Result, typename Argument, typename Operator>
+tac::Quadruple<Result, Argument, Operator>::Quadruple(){
     //Nothing to init    
 }
 
-template<typename Argument, typename Operator>
-tac::Quadruple<Argument, Operator>::Quadruple(std::shared_ptr<Variable> r, Argument a1, Operator o) : result(r), arg1(a1), op(o) {
+template<typename Result, typename Argument, typename Operator>
+tac::Quadruple<Result, Argument, Operator>::Quadruple(Result result, Argument a1, Operator o) : result(result), arg1(a1), op(o) {
     //Nothing to init    
 }
 
-template<typename Argument, typename Operator>
-tac::Quadruple<Argument, Operator>::Quadruple(std::shared_ptr<Variable> r, Argument a1, Operator o, Argument a2) : result(r), arg1(a1), arg2(a2), op(o) {
+template<typename Result, typename Argument, typename Operator>
+tac::Quadruple<Result, Argument, Operator>::Quadruple(Result result, Argument a1, Operator o, Argument a2) : result(result), arg1(a1), arg2(a2), op(o) {
     //Nothing to init    
 }
 
-template<typename Argument, typename Operator>
-tac::Quadruple<Argument, Operator>::Quadruple(Operator o, Argument a1) : arg1(a1), op(o) {
+template<typename Result, typename Argument, typename Operator>
+tac::Quadruple<Result, Argument, Operator>::Quadruple(Operator o, Argument a1) : arg1(a1), op(o) {
     //Nothing to init    
 }
 
-template<typename Argument, typename Operator>
-tac::Quadruple<Argument, Operator>::Quadruple(Operator o, Argument a1, Argument a2) : arg1(a1), arg2(a2), op(o) {
+template<typename Result, typename Argument, typename Operator>
+tac::Quadruple<Result, Argument, Operator>::Quadruple(Operator o, Argument a1, Argument a2) : arg1(a1), arg2(a2), op(o) {
     //Nothing to init    
 }
 
