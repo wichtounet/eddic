@@ -203,6 +203,86 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         return {if_};
     }
+
+    //Transform foreach loop in do while loop
+    result_type operator()(ast::ForeachIn& foreach) const {
+        result_type instructions;
+            
+        auto iterVar = foreach.Content->iterVar;
+        auto arrayVar = foreach.Content->arrayVar;
+        auto var = foreach.Content->var;
+        
+        ast::Integer init_value;
+        init_value.value = 0;
+        
+        ast::Assignment init_assign;
+        init_assign.Content->context = foreach.Content->context;
+        init_assign.Content->variableName = iterVar->name();
+        init_assign.Content->value = init_value;
+
+        instructions.push_back(init_assign);
+        
+        ast::VariableValue iter_var_value;
+        iter_var_value.Content->var = iterVar;
+        iter_var_value.Content->variableName = iterVar->name();
+        iter_var_value.Content->context = foreach.Content->context;
+        
+        ast::VariableValue array_var_value;
+        array_var_value.Content->var = arrayVar;
+        array_var_value.Content->variableName = arrayVar->name();
+        array_var_value.Content->context = foreach.Content->context;
+
+        ast::BuiltinOperator size_builtin; 
+        size_builtin.Content->type = ast::BuiltinType::SIZE;
+        size_builtin.Content->values.push_back(array_var_value);
+
+        ast::Expression while_condition;
+        while_condition.Content->first = iter_var_value;
+        while_condition.Content->operations.push_back({ast::Operator::LESS, size_builtin});
+
+        ast::If if_;
+        if_.Content->condition = while_condition;
+
+        ast::DoWhile do_while;
+        do_while.Content->condition = while_condition;
+
+        ast::ArrayValue array_value;
+        array_value.Content->context = foreach.Content->context;
+        array_value.Content->arrayName = foreach.Content->arrayName;
+        array_value.Content->var = arrayVar;
+        array_value.Content->indexValue = iter_var_value;
+
+        ast::VariableDeclaration variable_declaration;
+        variable_declaration.Content->context = foreach.Content->context;
+        variable_declaration.Content->const_ = false;
+        variable_declaration.Content->value = array_value;
+        variable_declaration.Content->variableName = var->name();
+        
+        do_while.Content->instructions.push_back(variable_declaration);
+
+        //Insert all the instructions of the foreach
+        std::copy(foreach.Content->instructions.begin(), foreach.Content->instructions.end(), std::back_inserter(do_while.Content->instructions));
+
+        ast::Integer inc;
+        inc.value = 1;
+
+        ast::Expression addition;
+        addition.Content->first = iter_var_value;
+        addition.Content->operations.push_back({ast::Operator::ADD, inc});
+        
+        ast::Assignment repeat_assign;
+        repeat_assign.Content->context = foreach.Content->context;
+        repeat_assign.Content->variableName = foreach.Content->variableName;
+        repeat_assign.Content->value = addition;
+
+        do_while.Content->instructions.push_back(repeat_assign);
+
+        if_.Content->instructions.push_back(do_while);
+
+        instructions.push_back(if_);
+
+        return instructions;
+    }
     
     //Transform for loop in do while loop
     result_type operator()(ast::For& for_) const {
