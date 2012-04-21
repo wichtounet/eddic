@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_RETURN_H
-#define TAC_RETURN_H
+#ifndef MTAC_RETURN_H
+#define MTAC_RETURN_H
 
 #include <unordered_map>
 

@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_UTILS_H
-#define TAC_UTILS_H
+#ifndef MTAC_UTILS_H
+#define MTAC_UTILS_H
 
 #include <memory>
 #include <unordered_set>

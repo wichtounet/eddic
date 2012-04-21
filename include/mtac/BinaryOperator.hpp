@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_BINARY_OPERATOR_H
-#define TAC_BINARY_OPERATOR_H
+#ifndef MTAC_BINARY_OPERATOR_H
+#define MTAC_BINARY_OPERATOR_H
 
 #include <string>
 

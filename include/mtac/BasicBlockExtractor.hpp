@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_BASIC_BLOCK_EXTRACTOR_H
-#define TAC_BASIC_BLOCK_EXTRACTOR_H
+#ifndef MTAC_BASIC_BLOCK_EXTRACTOR_H
+#define MTAC_BASIC_BLOCK_EXTRACTOR_H
 
 namespace eddic {
 

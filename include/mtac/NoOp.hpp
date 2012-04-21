@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_NO_OP_H
-#define TAC_NO_OP_H
+#ifndef MTAC_NO_OP_H
+#define MTAC_NO_OP_H
 
 namespace eddic {
 

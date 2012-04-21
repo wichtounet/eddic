@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_PARAM_H
-#define TAC_PARAM_H
+#ifndef MTAC_PARAM_H
+#define MTAC_PARAM_H
 
 #include <memory>
 #include <unordered_map>

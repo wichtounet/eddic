@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_LIVENESS_ANALYZER_H
-#define TAC_LIVENESS_ANALYZER_H
+#ifndef MTAC_LIVENESS_ANALYZER_H
+#define MTAC_LIVENESS_ANALYZER_H
 
 #include "mtac/Program.hpp"
 

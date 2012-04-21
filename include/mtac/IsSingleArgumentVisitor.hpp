@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_IS_SINGLE_ARGUMENT_VISITOR_H
-#define TAC_IS_SINGLE_ARGUMENT_VISITOR_H
+#ifndef MTAC_IS_SINGLE_ARGUMENT_VISITOR_H
+#define MTAC_IS_SINGLE_ARGUMENT_VISITOR_H
 
 #include <boost/variant/static_visitor.hpp>
 

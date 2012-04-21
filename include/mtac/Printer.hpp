@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_PRINTER_H
-#define TAC_PRINTER_H
+#ifndef MTAC_PRINTER_H
+#define MTAC_PRINTER_H
 
 #include <memory>
 

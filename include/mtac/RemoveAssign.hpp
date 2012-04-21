@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_REMOVE_ASSIGN_H
-#define TAC_REMOVE_ASSIGN_H
+#ifndef MTAC_REMOVE_ASSIGN_H
+#define MTAC_REMOVE_ASSIGN_H
 
 #include <memory>
 #include <unordered_set>

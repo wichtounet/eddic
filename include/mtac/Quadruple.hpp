@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_QUADRUPLE_H
-#define TAC_QUADRUPLE_H
+#ifndef MTAC_QUADRUPLE_H
+#define MTAC_QUADRUPLE_H
 
 #include <unordered_map>
 #include <vector>

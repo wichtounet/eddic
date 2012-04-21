@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_COMPILER_H
-#define TAC_COMPILER_H
+#ifndef MTAC_COMPILER_H
+#define MTAC_COMPILER_H
 
 namespace eddic {
 

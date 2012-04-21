@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_ARITHMETIC_IDENTITIES_H
-#define TAC_ARITHMETIC_IDENTIES_H
+#ifndef MTAC_ARITHMETIC_IDENTITIES_H
+#define MTAC_ARITHMETIC_IDENTIES_H
 
 #include <memory>
 

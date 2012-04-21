@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_TEMPORARY_ALLOCATOR_H
-#define TAC_TEMPORARY_ALLOCATOR_H
+#ifndef MTAC_TEMPORARY_ALLOCATOR_H
+#define MTAC_TEMPORARY_ALLOCATOR_H
 
 namespace eddic {
 

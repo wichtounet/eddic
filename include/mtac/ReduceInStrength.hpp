@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_REDUCE_IN_STRENGTH_H
-#define TAC_REDUCE_IN_STRENGTH_H
+#ifndef MTAC_REDUCE_IN_STRENGTH_H
+#define MTAC_REDUCE_IN_STRENGTH_H
 
 #include <memory>
 

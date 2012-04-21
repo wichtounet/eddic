@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_MATH_PROPAGATION_H
-#define TAC_MATH_PROPAGATION_H
+#ifndef MTAC_MATH_PROPAGATION_H
+#define MTAC_MATH_PROPAGATION_H
 
 #include <memory>
 #include <unordered_map>

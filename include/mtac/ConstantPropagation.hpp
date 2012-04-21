@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_CONSTANT_PROPAGATION_H
-#define TAC_CONSTANT_PROPAGATION_H
+#ifndef MTAC_CONSTANT_PROPAGATION_H
+#define MTAC_CONSTANT_PROPAGATION_H
 
 #include <memory>
 

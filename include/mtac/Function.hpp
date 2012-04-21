@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_FUNCTION_H
-#define TAC_FUNCTION_H
+#ifndef MTAC_FUNCTION_H
+#define MTAC_FUNCTION_H
 
 #include <string>
 #include <memory>

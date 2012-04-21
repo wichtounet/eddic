@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TAC_STATEMENT_H
-#define TAC_STATEMENT_H
+#ifndef MTAC_STATEMENT_H
+#define MTAC_STATEMENT_H
 
 #include <boost/variant/variant.hpp>
 
