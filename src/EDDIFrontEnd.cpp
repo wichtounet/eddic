@@ -100,13 +100,13 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             return nullptr;
         }
 
-        std::shared_ptr<mtac::Program> tacProgram = std::make_shared<mtac::Program>();
+        std::shared_ptr<mtac::Program> mtacProgram = std::make_shared<mtac::Program>();
 
         //Generate Three-Address-Code language
         mtac::Compiler compiler;
-        compiler.compile(program, *pool, *tacProgram);
+        compiler.compile(program, *pool, *mtacProgram);
 
-        return tacProgram;
+        return mtacProgram;
     }
 
     //If the parsing fails, the error is already printed to the console

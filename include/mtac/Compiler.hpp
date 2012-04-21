@@ -19,7 +19,7 @@ namespace mtac {
 class Program;
 
 struct Compiler {
-    void compile(ast::SourceFile& program, StringPool& pool, mtac::Program& tacProgram) const ;
+    void compile(ast::SourceFile& program, StringPool& pool, mtac::Program& mtacProgram) const ;
 };
 
 } //end of mtac

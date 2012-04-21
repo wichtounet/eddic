@@ -785,7 +785,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         std::shared_ptr<mtac::Function> function;
     
     public:
-        CompilerVisitor(StringPool& p, mtac::Program& tacProgram) : pool(p), program(tacProgram){}
+        CompilerVisitor(StringPool& p, mtac::Program& mtacProgram) : pool(p), program(mtacProgram){}
 
         //No code is generated for these nodes
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
@@ -1114,7 +1114,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void mtac::Compiler::compile(ast::SourceFile& program, StringPool& pool, mtac::Program& tacProgram) const {
-    CompilerVisitor visitor(pool, tacProgram);
+void mtac::Compiler::compile(ast::SourceFile& program, StringPool& pool, mtac::Program& mtacProgram) const {
+    CompilerVisitor visitor(pool, mtacProgram);
     visitor(program);
 }

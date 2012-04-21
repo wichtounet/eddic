@@ -74,15 +74,15 @@ int Compiler::compileOnly(const std::string& file, Platform platform) {
     int code = 0; 
 
     try {
-        auto tacProgram = front_end->compile(file);
+        auto mtacProgram = front_end->compile(file);
 
         //If program is null, it means that the user didn't wanted it
-        if(tacProgram){
+        if(mtacProgram){
             auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 
             back_end->set_string_pool(front_end->get_string_pool());
 
-            back_end->generate(tacProgram);
+            back_end->generate(mtacProgram);
         }
     } catch (const SemanticalException& e) {
         if(!option_defined("quiet")){
