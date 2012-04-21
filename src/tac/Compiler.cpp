@@ -25,6 +25,7 @@
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
+#include "ast/ASTVisitor.hpp"
 
 using namespace eddic;
 
@@ -785,6 +786,44 @@ class CompilerVisitor : public boost::static_visitor<> {
     
     public:
         CompilerVisitor(StringPool& p, tac::Program& tacProgram) : pool(p), program(tacProgram){}
+
+        //No code is generated for these nodes
+        AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
+        AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
+        AUTO_IGNORE_ARRAY_DECLARATION()
+        AUTO_IGNORE_STRUCT()
+        AUTO_IGNORE_IMPORT()
+        AUTO_IGNORE_STANDARD_IMPORT()
+
+        void operator()(ast::CompoundAssignment&){
+            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
+            ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
+        }
+        
+        void operator()(ast::StructCompoundAssignment&){
+            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
+            ASSERT_PATH_NOT_TAKEN("Struct compound assignment should be transformed into Assignment");
+        }
+
+        void operator()(ast::While&){
+            //This node has been transformed into a do while loop
+            ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
+        }
+        
+        void operator()(ast::For&){
+            //This node has been transformed into a do while loop
+            ASSERT_PATH_NOT_TAKEN("For should have been transformed into a DoWhile loop"); 
+        }
+
+        void operator()(ast::Foreach&){
+            //This node has been transformed into a do while loop
+            ASSERT_PATH_NOT_TAKEN("Foreach should have been transformed into a DoWhile loop"); 
+        }
+       
+        void operator()(ast::ForeachIn&){
+            //This node has been transformed into a do while loop
+            ASSERT_PATH_NOT_TAKEN("ForeachIn should have been transformed into a DoWhile loop"); 
+        }
         
         void operator()(ast::SourceFile& p){
             program.context = p.Content->context;
@@ -799,22 +838,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit_each(*this, f.Content->instructions);
 
             program.functions.push_back(function);
-        }
-
-        void operator()(ast::GlobalVariableDeclaration&){
-            //Nothing to compile, the global variable values are written using global contexts
-        }
-        
-        void operator()(ast::GlobalArrayDeclaration&){
-            //Nothing to compile, the global arrays are written using global contexts
-        }
-
-        void operator()(ast::ArrayDeclaration&){
-            //Nothing to compile there, everything is done by the function context
-        }
-
-        void operator()(ast::Struct&){
-            //Nothing to compile there
         }
 
         void operator()(ast::If& if_){
@@ -884,16 +907,6 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Assignment& assignment){
             assign(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->value);
         }
-
-        void operator()(ast::CompoundAssignment&){
-            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
-        }
-        
-        void operator()(ast::StructCompoundAssignment&){
-            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            ASSERT_PATH_NOT_TAKEN("Struct compound assignment should be transformed into Assignment");
-        }
         
         void operator()(ast::ArrayAssignment& assignment){
             visit(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
@@ -952,21 +965,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             performPrefixOperation(operation, function);
         }
 
-        void operator()(ast::While&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
-        }
-        
-        void operator()(ast::For&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("For should have been transformed into a DoWhile loop"); 
-        }
-
-        void operator()(ast::Foreach&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("Foreach should have been transformed into a DoWhile loop"); 
-        }
-
         void operator()(ast::DoWhile& while_){
             std::string startLabel = newLabel();
 
@@ -976,60 +974,9 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             visit(JumpIfTrueVisitor(function, startLabel), while_.Content->condition);
         }
-       
-        void operator()(ast::ForeachIn& foreach){
-            auto iterVar = foreach.Content->iterVar;
-            auto arrayVar = foreach.Content->arrayVar;
-            auto var = foreach.Content->var;
-
-            auto startLabel = newLabel();
-            auto endLabel = newLabel();
-
-            auto stringTemp = foreach.Content->context->newTemporary();
-
-            //Init the index to 0
-            function->add(std::make_shared<tac::Quadruple>(iterVar, 0, tac::Operator::ASSIGN));
-
-            function->add(startLabel);
-
-            auto sizeTemp = computeLengthOfArray(arrayVar, function);
-
-            function->add(std::make_shared<tac::IfFalse>(tac::BinaryOperator::LESS, iterVar, sizeTemp, endLabel));
-            
-            auto indexTemp = computeIndexOfArray(arrayVar, iterVar, function);
-
-            if(var->type() == BaseType::INT || var->type() == BaseType::BOOL){
-                function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
-            } else {
-                function->add(std::make_shared<tac::Quadruple>(var, arrayVar, tac::Operator::ARRAY, indexTemp));
-
-                auto t1 = function->context->newTemporary();
-
-                //Assign the second part of the string
-                function->add(std::make_shared<tac::Quadruple>(t1, indexTemp, tac::Operator::ADD, -size(BaseType::INT)));
-                function->add(std::make_shared<tac::Quadruple>(stringTemp, arrayVar, tac::Operator::ARRAY, t1));
-                function->add(std::make_shared<tac::Quadruple>(var, getStringOffset(var), tac::Operator::DOT_ASSIGN, stringTemp));
-            }
-
-            visit_each(*this, foreach.Content->instructions);    
-
-            function->add(std::make_shared<tac::Quadruple>(iterVar, iterVar, tac::Operator::ADD, 1)); 
-
-            function->add(std::make_shared<tac::Goto>(startLabel));
-           
-            function->add(endLabel); 
-        }
 
         void operator()(ast::FunctionCall& functionCall){
             executeCall(functionCall, function, {}, {});
-        }
-
-        void operator()(ast::StandardImport&){
-            //Nothing to do with imports
-        }
-
-        void operator()(ast::Import&){
-            //Nothing to do with imports
         }
 
         void operator()(ast::Return& return_){
