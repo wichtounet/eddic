@@ -10,9 +10,9 @@
 
 #include <boost/variant.hpp>
 
-#include "tac/BasicBlockExtractor.hpp"
-#include "tac/Program.hpp"
-#include "tac/Utils.hpp"
+#include "mtac/BasicBlockExtractor.hpp"
+#include "mtac/Program.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 

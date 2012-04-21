@@ -7,7 +7,7 @@
 
 #include <cassert>
 
-#include "tac/Operator.hpp"
+#include "mtac/Operator.hpp"
 
 using namespace eddic;
 

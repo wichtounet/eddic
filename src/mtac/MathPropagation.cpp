@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/MathPropagation.hpp"
-#include "tac/OptimizerUtils.hpp"
+#include "mtac/MathPropagation.hpp"
+#include "mtac/OptimizerUtils.hpp"
 
 #include "Variable.hpp"
 

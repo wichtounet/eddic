@@ -35,7 +35,7 @@
 #include "ast/WarningsEngine.hpp"
 #include "ast/DebugVisitor.hpp"
 
-#include "tac/Compiler.hpp"
+#include "mtac/Compiler.hpp"
 
 using namespace eddic;
 

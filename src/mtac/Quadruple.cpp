@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/Quadruple.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 

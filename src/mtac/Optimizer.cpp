@@ -11,19 +11,19 @@
 #include <boost/variant.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include "tac/Optimizer.hpp"
-#include "tac/Program.hpp"
-#include "tac/Utils.hpp"
+#include "mtac/Optimizer.hpp"
+#include "mtac/Program.hpp"
+#include "mtac/Utils.hpp"
 
 //The optimization visitors
-#include "tac/ArithmeticIdentities.hpp"
-#include "tac/ReduceInStrength.hpp"
-#include "tac/ConstantFolding.hpp"
-#include "tac/ConstantPropagation.hpp"
-#include "tac/CopyPropagation.hpp"
-#include "tac/RemoveAssign.hpp"
-#include "tac/RemoveMultipleAssign.hpp"
-#include "tac/MathPropagation.hpp"
+#include "mtac/ArithmeticIdentities.hpp"
+#include "mtac/ReduceInStrength.hpp"
+#include "mtac/ConstantFolding.hpp"
+#include "mtac/ConstantPropagation.hpp"
+#include "mtac/CopyPropagation.hpp"
+#include "mtac/RemoveAssign.hpp"
+#include "mtac/RemoveMultipleAssign.hpp"
+#include "mtac/MathPropagation.hpp"
 
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"

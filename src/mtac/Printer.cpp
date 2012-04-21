@@ -10,8 +10,8 @@
 
 #include <boost/variant.hpp>
 
-#include "tac/Printer.hpp"
-#include "tac/Program.hpp"
+#include "mtac/Printer.hpp"
+#include "mtac/Program.hpp"
 
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"

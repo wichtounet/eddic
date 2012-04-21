@@ -7,7 +7,7 @@
 
 #include "VisitorUtils.hpp"
 
-#include "tac/IsParamSafeVisitor.hpp"
+#include "mtac/IsParamSafeVisitor.hpp"
 
 using namespace eddic;
 

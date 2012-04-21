@@ -16,11 +16,11 @@
 #include "mangling.hpp"
 #include "Labels.hpp"
 
-#include "tac/Compiler.hpp"
-#include "tac/Program.hpp"
-#include "tac/IsSingleArgumentVisitor.hpp"
-#include "tac/IsParamSafeVisitor.hpp"
-#include "tac/Printer.hpp"
+#include "mtac/Compiler.hpp"
+#include "mtac/Program.hpp"
+#include "mtac/IsSingleArgumentVisitor.hpp"
+#include "mtac/IsParamSafeVisitor.hpp"
+#include "mtac/Printer.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"

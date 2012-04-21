@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/ArithmeticIdentities.hpp"
-#include "tac/OptimizerUtils.hpp"
+#include "mtac/ArithmeticIdentities.hpp"
+#include "mtac/OptimizerUtils.hpp"
 
 using namespace eddic;
     

@@ -13,7 +13,7 @@
 
 #include <boost/utility/enable_if.hpp>
 
-#include "tac/Program.hpp"
+#include "mtac/Program.hpp"
 
 #include "asm/CodeGenerator.hpp"
 

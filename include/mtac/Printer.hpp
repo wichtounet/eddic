@@ -10,9 +10,9 @@
 
 #include <memory>
 
-#include "tac/Statement.hpp"
-#include "tac/Argument.hpp"
-#include "tac/Function.hpp"
+#include "mtac/Statement.hpp"
+#include "mtac/Argument.hpp"
+#include "mtac/Function.hpp"
 
 namespace eddic {
 

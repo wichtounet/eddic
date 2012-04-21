@@ -13,12 +13,12 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "tac/Quadruple.hpp"
-#include "tac/IfFalse.hpp"
-#include "tac/If.hpp"
+#include "mtac/Quadruple.hpp"
+#include "mtac/IfFalse.hpp"
+#include "mtac/If.hpp"
 
-#include "tac/Optimizer.hpp"
-#include "tac/OptimizerUtils.hpp"
+#include "mtac/Optimizer.hpp"
+#include "mtac/OptimizerUtils.hpp"
 
 namespace eddic {
 

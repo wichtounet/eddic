@@ -10,9 +10,9 @@
 
 #include <boost/variant.hpp>
 
-#include "tac/TemporaryAllocator.hpp"
-#include "tac/Program.hpp"
-#include "tac/Utils.hpp"
+#include "mtac/TemporaryAllocator.hpp"
+#include "mtac/Program.hpp"
+#include "mtac/Utils.hpp"
 
 #include "FunctionContext.hpp"
 

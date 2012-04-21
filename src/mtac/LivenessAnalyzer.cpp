@@ -7,7 +7,7 @@
 
 #include <boost/variant.hpp>
 
-#include "tac/LivenessAnalyzer.hpp"
+#include "mtac/LivenessAnalyzer.hpp"
 
 using namespace eddic;
 

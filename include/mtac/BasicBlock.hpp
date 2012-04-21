@@ -10,7 +10,7 @@
 
 #include <boost/variant/variant.hpp>
 
-#include "tac/Statement.hpp"
+#include "mtac/Statement.hpp"
 
 namespace eddic {
 

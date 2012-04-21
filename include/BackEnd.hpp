@@ -12,7 +12,7 @@
 #include <string>
 
 #include "StringPool.hpp"
-#include "tac/Program.hpp"
+#include "mtac/Program.hpp"
 
 namespace eddic {
 

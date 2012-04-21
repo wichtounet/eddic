@@ -8,7 +8,7 @@
 #ifndef TAC_LIVENESS_ANALYZER_H
 #define TAC_LIVENESS_ANALYZER_H
 
-#include "tac/Program.hpp"
+#include "mtac/Program.hpp"
 
 namespace eddic {
 

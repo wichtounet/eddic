@@ -14,8 +14,8 @@
 
 #include <boost/optional.hpp>
 
-#include "tac/BinaryOperator.hpp"
-#include "tac/Argument.hpp"
+#include "mtac/BinaryOperator.hpp"
+#include "mtac/Argument.hpp"
 
 namespace eddic {
 

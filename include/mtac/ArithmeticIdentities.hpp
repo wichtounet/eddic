@@ -12,7 +12,7 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "tac/Quadruple.hpp"
+#include "mtac/Quadruple.hpp"
 
 namespace eddic {
 

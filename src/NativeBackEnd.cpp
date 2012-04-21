@@ -12,12 +12,12 @@
 #include "Assembler.hpp"
 
 //Three Address Code
-#include "tac/Program.hpp"
-#include "tac/BasicBlockExtractor.hpp"
-#include "tac/TemporaryAllocator.hpp"
-#include "tac/LivenessAnalyzer.hpp"
-#include "tac/Optimizer.hpp"
-#include "tac/Printer.hpp"
+#include "mtac/Program.hpp"
+#include "mtac/BasicBlockExtractor.hpp"
+#include "mtac/TemporaryAllocator.hpp"
+#include "mtac/LivenessAnalyzer.hpp"
+#include "mtac/Optimizer.hpp"
+#include "mtac/Printer.hpp"
 
 //Code generation
 #include "asm/CodeGeneratorFactory.hpp"

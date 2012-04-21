@@ -7,7 +7,7 @@
 
 #include <cassert>
 
-#include "tac/BinaryOperator.hpp"
+#include "mtac/BinaryOperator.hpp"
 
 using namespace eddic;
 

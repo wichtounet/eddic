@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/RemoveMultipleAssign.hpp"
-#include "tac/OptimizerUtils.hpp"
+#include "mtac/RemoveMultipleAssign.hpp"
+#include "mtac/OptimizerUtils.hpp"
 
 #include "Variable.hpp"
 

@@ -5,9 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "tac/ConstantPropagation.hpp"
-#include "tac/OptimizerUtils.hpp"
-#include "tac/Utils.hpp"
+#include "mtac/ConstantPropagation.hpp"
+#include "mtac/OptimizerUtils.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 

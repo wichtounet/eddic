@@ -12,9 +12,9 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "tac/Quadruple.hpp"
-#include "tac/If.hpp"
-#include "tac/IfFalse.hpp"
+#include "mtac/Quadruple.hpp"
+#include "mtac/If.hpp"
+#include "mtac/IfFalse.hpp"
 
 namespace eddic {
 

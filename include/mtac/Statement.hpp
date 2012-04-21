@@ -10,13 +10,13 @@
 
 #include <boost/variant/variant.hpp>
 
-#include "tac/Quadruple.hpp"
-#include "tac/Param.hpp"
-#include "tac/IfFalse.hpp"
-#include "tac/If.hpp"
-#include "tac/Goto.hpp"
-#include "tac/Call.hpp"
-#include "tac/NoOp.hpp"
+#include "mtac/Quadruple.hpp"
+#include "mtac/Param.hpp"
+#include "mtac/IfFalse.hpp"
+#include "mtac/If.hpp"
+#include "mtac/Goto.hpp"
+#include "mtac/Call.hpp"
+#include "mtac/NoOp.hpp"
 
 namespace eddic {
 
