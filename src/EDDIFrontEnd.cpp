@@ -75,9 +75,6 @@ std::shared_ptr<tac::Program> EDDIFrontEnd::compile(const std::string& file){
         //Allocate registers to params
         allocateParams();
 
-        //Transform the AST
-        ast::transformAST(program);
-
         //Static analysis
         ast::checkTypes(program);
 
@@ -86,6 +83,9 @@ std::shared_ptr<tac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         //Check that there is a main in the program
         checkForMain();
+
+        //Transform the AST
+        ast::transformAST(program);
 
         //Optimize the AST
         ast::optimizeAST(program, *pool);

@@ -36,8 +36,7 @@ struct ASTVariableDeclaration {
     std::string variableName;
     boost::optional<Value> value;
 
-    mutable long references;
-    ASTVariableDeclaration() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

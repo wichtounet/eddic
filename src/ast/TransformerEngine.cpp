@@ -91,8 +91,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 };
 
-struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
-    ast::Instruction operator()(ast::CompoundAssignment& compound) const {
+struct InstructionTransformer : public boost::static_visitor<std::vector<ast::Instruction>> {
+    result_type operator()(ast::CompoundAssignment& compound) const {
         ast::Assignment assignment;
 
         assignment.Content->context = compound.Content->context;
@@ -109,10 +109,10 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         assignment.Content->value = composed;
 
-        return assignment;
+        return {assignment};
     }
     
-    ast::Instruction operator()(ast::StructCompoundAssignment& compound) const {
+    result_type operator()(ast::StructCompoundAssignment& compound) const {
         ast::StructAssignment assignment;
 
         assignment.Content->context = compound.Content->context;
@@ -131,41 +131,59 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
 
         assignment.Content->value = composed;
 
-        return assignment;
+        return {assignment};
+    }
+    
+    //Transform while in do while loop as an optimization (less jumps)
+    result_type operator()(ast::While& while_) const {
+        ast::If if_;
+        if_.Content->condition = while_.Content->condition;
+
+        ast::DoWhile do_while;
+        do_while.Content->condition = while_.Content->condition;
+        do_while.Content->instructions = while_.Content->instructions;
+
+        if_.Content->instructions.push_back(do_while);
+
+        return {if_};
     }
 
-    ast::Instruction operator()(ast::Foreach& foreach) const {
-        ast::For for_;
+    //Transform foreach loop in do while loop
+    result_type operator()(ast::Foreach& foreach) const {
+        ast::If if_;
 
-        //Define the start instruction
-    
-        ast::Integer fromValue;
-        fromValue.value = foreach.Content->from;
+        ast::Integer from_value;
+        from_value.value = foreach.Content->from;
 
-        ast::Assignment startAssign;
-        startAssign.Content->context = foreach.Content->context;
-        startAssign.Content->variableName = foreach.Content->variableName;
-        startAssign.Content->value = fromValue;
+        ast::Integer to_value;
+        to_value.value = foreach.Content->to;
+        
+        ast::Expression condition;
+        condition.Content->first = from_value;
+        condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
-        for_.Content->start = startAssign;
+        if_.Content->condition = condition;
+        
+        ast::Assignment start_assign;
+        start_assign.Content->context = foreach.Content->context;
+        start_assign.Content->variableName = foreach.Content->variableName;
+        start_assign.Content->value = from_value;
 
-        //Defne the condition
+        if_.Content->instructions.push_back(start_assign);
 
-        ast::Integer toValue;
-        toValue.value = foreach.Content->to;
-
+        ast::DoWhile do_while;
+        
         ast::VariableValue v;
         v.Content->variableName = foreach.Content->variableName;
         v.Content->context = foreach.Content->context;
         v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
 
-        ast::Expression cond;
-        cond.Content->first = v;
-        cond.Content->operations.push_back({ast::Operator::LESS_EQUALS, toValue});
+        ast::Expression while_condition;
+        while_condition.Content->first = v;
+        while_condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
-        for_.Content->condition = cond;
-
-        //Define the repeat instruction
+        do_while.Content->condition = while_condition;
+        do_while.Content->instructions = foreach.Content->instructions;
 
         ast::Integer inc;
         inc.value = 1;
@@ -174,20 +192,143 @@ struct InstructionTransformer : public boost::static_visitor<ast::Instruction> {
         addition.Content->first = v;
         addition.Content->operations.push_back({ast::Operator::ADD, inc});
         
-        ast::Assignment repeatAssign;
-        repeatAssign.Content->context = foreach.Content->context;
-        repeatAssign.Content->variableName = foreach.Content->variableName;
-        repeatAssign.Content->value = addition;
+        ast::Assignment repeat_assign;
+        repeat_assign.Content->context = foreach.Content->context;
+        repeat_assign.Content->variableName = foreach.Content->variableName;
+        repeat_assign.Content->value = addition;
+        
+        do_while.Content->instructions.push_back(repeat_assign);
 
-        for_.Content->repeat = repeatAssign;
+        if_.Content->instructions.push_back(do_while);
 
-        //Put the operations into the new for
-        for_.Content->instructions = foreach.Content->instructions;
-
-        return for_;
+        return {if_};
     }
 
-    AUTO_RETURN_OTHERS_CONST(ast::Instruction)
+    //Transform foreach loop in do while loop
+    result_type operator()(ast::ForeachIn& foreach) const {
+        result_type instructions;
+            
+        auto iterVar = foreach.Content->iterVar;
+        auto arrayVar = foreach.Content->arrayVar;
+        auto var = foreach.Content->var;
+        
+        ast::Integer init_value;
+        init_value.value = 0;
+        
+        ast::Assignment init_assign;
+        init_assign.Content->context = foreach.Content->context;
+        init_assign.Content->variableName = iterVar->name();
+        init_assign.Content->value = init_value;
+
+        instructions.push_back(init_assign);
+        
+        ast::VariableValue iter_var_value;
+        iter_var_value.Content->var = iterVar;
+        iter_var_value.Content->variableName = iterVar->name();
+        iter_var_value.Content->context = foreach.Content->context;
+        
+        ast::VariableValue array_var_value;
+        array_var_value.Content->var = arrayVar;
+        array_var_value.Content->variableName = arrayVar->name();
+        array_var_value.Content->context = foreach.Content->context;
+
+        ast::BuiltinOperator size_builtin; 
+        size_builtin.Content->type = ast::BuiltinType::SIZE;
+        size_builtin.Content->values.push_back(array_var_value);
+
+        ast::Expression while_condition;
+        while_condition.Content->first = iter_var_value;
+        while_condition.Content->operations.push_back({ast::Operator::LESS, size_builtin});
+
+        ast::If if_;
+        if_.Content->condition = while_condition;
+
+        ast::DoWhile do_while;
+        do_while.Content->condition = while_condition;
+
+        ast::ArrayValue array_value;
+        array_value.Content->context = foreach.Content->context;
+        array_value.Content->arrayName = foreach.Content->arrayName;
+        array_value.Content->var = arrayVar;
+        array_value.Content->indexValue = iter_var_value;
+
+        ast::VariableDeclaration variable_declaration;
+        variable_declaration.Content->context = foreach.Content->context;
+        variable_declaration.Content->const_ = false;
+        variable_declaration.Content->value = array_value;
+        variable_declaration.Content->variableName = var->name();
+        
+        do_while.Content->instructions.push_back(variable_declaration);
+
+        //Insert all the instructions of the foreach
+        std::copy(foreach.Content->instructions.begin(), foreach.Content->instructions.end(), std::back_inserter(do_while.Content->instructions));
+
+        ast::Integer inc;
+        inc.value = 1;
+
+        ast::Expression addition;
+        addition.Content->first = iter_var_value;
+        addition.Content->operations.push_back({ast::Operator::ADD, inc});
+        
+        ast::Assignment repeat_assign;
+        repeat_assign.Content->context = foreach.Content->context;
+        repeat_assign.Content->variableName = iterVar->name();
+        repeat_assign.Content->value = addition;
+
+        do_while.Content->instructions.push_back(repeat_assign);
+
+        if_.Content->instructions.push_back(do_while);
+
+        instructions.push_back(if_);
+
+        return instructions;
+    }
+    
+    //Transform for loop in do while loop
+    result_type operator()(ast::For& for_) const {
+        result_type instructions;
+
+        if(for_.Content->start){
+            instructions.push_back(*for_.Content->start);
+        }
+
+        if(for_.Content->condition){
+            ast::If if_;
+            if_.Content->condition = *for_.Content->condition; 
+
+            ast::DoWhile do_while;
+            do_while.Content->condition = *for_.Content->condition; 
+            do_while.Content->instructions = for_.Content->instructions;
+            
+            if(for_.Content->repeat){
+                do_while.Content->instructions.push_back(*for_.Content->repeat);
+            }
+
+            if_.Content->instructions.push_back(do_while);
+
+            instructions.push_back(if_);
+        } else {
+            ast::DoWhile do_while;
+
+            ast::True condition;
+            do_while.Content->condition = condition;
+            do_while.Content->instructions = for_.Content->instructions;
+            
+            if(for_.Content->repeat){
+                do_while.Content->instructions.push_back(*for_.Content->repeat);
+            }
+
+            instructions.push_back(do_while);
+        }
+
+        return instructions;
+    }
+
+    //No transformation for the other nodes
+    template<typename T>
+    result_type operator()(T&) const {
+        return {};//Empty vector means no transformation
+    }
 };
 
 struct CleanerVisitor : public boost::static_visitor<> {
@@ -355,7 +496,20 @@ struct TransformerVisitor : public boost::static_visitor<> {
         auto end = instructions.end();
 
         while(start != end){
-            *start = visit(instructionTransformer, *start);
+            auto transformed = visit(instructionTransformer, *start);
+
+            if(transformed.size() == 1){
+                *start = transformed[0];
+            } else if(transformed.size() == 2){
+                //Replace the current instruction with the first one
+                *start = transformed[0];
+
+                //Insert the other instructions after the previously inserted
+                start = instructions.insert(start+1, transformed[1]);
+
+                //Update the end iterator
+                end = instructions.end();
+            }
 
             ++start;
         }

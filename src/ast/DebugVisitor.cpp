@@ -115,6 +115,7 @@ void ast::DebugVisitor::operator()(ast::DoWhile& while_) const {
     std::cout << indent() << "Do while" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
     print_sub(*this, while_.Content->condition);
+    std::cout << indent() << "Body:" << std::endl;
     print_each_sub(*this, while_.Content->instructions);
 }
 
@@ -141,7 +142,7 @@ void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
 }
 
 void ast::DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
-    std::cout << indent() << "Variable declaration" << std::endl; 
+    std::cout << indent() << "Variable declaration [" << declaration.Content->variableName << "]" << std::endl; 
 
     if(declaration.Content->value){
         print_sub(*this, *declaration.Content->value);

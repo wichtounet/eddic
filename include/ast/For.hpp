@@ -30,8 +30,7 @@ struct ASTFor {
     boost::optional<Instruction> repeat;
     std::vector<Instruction> instructions;
 
-    mutable long references;
-    ASTFor() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

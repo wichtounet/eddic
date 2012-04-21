@@ -34,8 +34,7 @@ struct ASTAssignment {
     std::string variableName;
     Value value;
 
-    mutable long references;
-    ASTAssignment() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
