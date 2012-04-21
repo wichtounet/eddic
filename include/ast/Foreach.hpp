@@ -35,8 +35,7 @@ struct ASTForeach {
     int to;
     std::vector<Instruction> instructions;
 
-    mutable long references;
-    ASTForeach() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
