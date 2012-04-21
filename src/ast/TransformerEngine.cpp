@@ -272,7 +272,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         
         ast::Assignment repeat_assign;
         repeat_assign.Content->context = foreach.Content->context;
-        repeat_assign.Content->variableName = foreach.Content->variableName;
+        repeat_assign.Content->variableName = iterVar->name();
         repeat_assign.Content->value = addition;
 
         do_while.Content->instructions.push_back(repeat_assign);
