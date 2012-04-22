@@ -22,11 +22,11 @@ class FunctionContext;
 
 namespace mtac {
 
-typedef std::shared_ptr<mtac::BasicBlock> BlockPtr;
-
 class Function {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
+
+        typedef std::shared_ptr<mtac::BasicBlock> BlockPtr;
 
         std::shared_ptr<eddic::Function> definition;
         
