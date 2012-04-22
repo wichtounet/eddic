@@ -8,13 +8,13 @@
 #ifndef MTAC_OPTIMIZER_H
 #define MTAC_OPTIMIZER_H
 
+#include "mtac/Program.hpp"
+
 namespace eddic {
 
 class StringPool;
 
 namespace mtac {
-
-class Program;
 
 struct Optimizer {
     void optimize(mtac::Program& program, StringPool& pool) const ;

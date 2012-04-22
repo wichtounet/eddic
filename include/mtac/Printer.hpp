@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "mtac/Program.hpp"
 #include "mtac/Statement.hpp"
 #include "mtac/Argument.hpp"
 #include "mtac/Function.hpp"
@@ -17,8 +18,6 @@
 namespace eddic {
 
 namespace mtac {
-
-class Program;
 
 /*!
  * \class Printer

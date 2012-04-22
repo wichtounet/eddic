@@ -5,24 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_COMPILER_H
-#define MTAC_COMPILER_H
+#ifndef TAC_PROGRAM_H
+#define TAC_PROGRAM_H
 
-#include "ast/source_def.hpp"
-
-#include "mtac/Program.hpp"
+#include <memory>
+#include <vector>
 
 namespace eddic {
 
-class StringPool;
+struct GlobalContext;
 
-namespace mtac {
+namespace tac {
 
-struct Compiler {
-    void compile(ast::SourceFile& program, StringPool& pool, mtac::Program& mtacProgram) const ;
+template<typename Function>
+struct Program {
+    std::shared_ptr<GlobalContext> context;
+
+    std::vector<std::shared_ptr<Function>> functions;
 };
 
-} //end of mtac
+} //end of tac
 
 } //end of eddic
 

@@ -8,11 +8,11 @@
 #ifndef MTAC_BASIC_BLOCK_EXTRACTOR_H
 #define MTAC_BASIC_BLOCK_EXTRACTOR_H
 
+#include "mtac/Program.hpp"
+
 namespace eddic {
 
 namespace mtac {
-
-class Program;
 
 struct BasicBlockExtractor {
     void extract(mtac::Program& program) const ;

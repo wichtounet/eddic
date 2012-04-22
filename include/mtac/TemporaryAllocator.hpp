@@ -8,11 +8,11 @@
 #ifndef MTAC_TEMPORARY_ALLOCATOR_H
 #define MTAC_TEMPORARY_ALLOCATOR_H
 
+#include "mtac/Program.hpp"
+
 namespace eddic {
 
 namespace mtac {
-
-class Program;
 
 struct TemporaryAllocator {
     void allocate(mtac::Program& program) const ;
