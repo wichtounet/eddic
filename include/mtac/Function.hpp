@@ -8,49 +8,15 @@
 #ifndef MTAC_FUNCTION_H
 #define MTAC_FUNCTION_H
 
-#include <string>
-#include <memory>
-#include <vector>
-
-#include "SymbolTable.hpp"
-
+#include "tac/Function.hpp"
 #include "mtac/BasicBlock.hpp"
+#include "mtac/Statement.hpp"
 
 namespace eddic {
 
-class FunctionContext;
-
 namespace mtac {
 
-class Function {
-    public:
-        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
-
-        typedef std::shared_ptr<mtac::BasicBlock> BlockPtr;
-
-        std::shared_ptr<eddic::Function> definition;
-        
-        std::shared_ptr<FunctionContext> context;
-
-        void add(mtac::Statement statement);
-
-        BlockPtr currentBasicBlock();
-        BlockPtr newBasicBlock();
-
-        std::string getName() const;
-
-        std::vector<mtac::Statement>& getStatements();
-        std::vector<BlockPtr>& getBasicBlocks();
-
-    private:
-        //Before being partitioned, the function has only statement
-        std::vector<mtac::Statement> statements;
-        
-        //There is no basic blocks at the beginning
-        std::vector<BlockPtr> blocks;
-
-        std::string name;
-};
+typedef tac::Function<BasicBlock, Statement> Function;
 
 } //end of mtac
 
