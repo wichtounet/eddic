@@ -13,7 +13,9 @@
 
 #include <boost/variant.hpp>
 
-#define CUSTOM_STRONG_TYPEDEF(T, D)                                         \
+#include "ltac/Register.hpp"
+
+#define LTAC_CUSTOM_STRONG_TYPEDEF(T, D)                                    \
 struct D {                                                                  \
     T t;                                                                    \
     explicit D(const T t_) : t(t_) {};                                      \
@@ -21,6 +23,7 @@ struct D {                                                                  \
     D(){};                                                                  \
     D(const D & t_) : t(t_.t){}                                             \
                                                                             \
+    D(Register t_) : t(t_) {}                                               \
     D(int t_) : t(t_) {}                                                    \
     D(unsigned int t_) : t((int) t_) {}                                     \
     D(double t_) : t(t_) {}                                                 \
@@ -30,11 +33,13 @@ struct D {                                                                  \
     D& operator=(const D & rhs) { t = rhs.t; return *this;}                 \
     D& operator=(const T & rhs) { t = rhs; return *this;}                   \
                                                                             \
+    D& operator=(Register rhs) { t = rhs; return *this; }                   \
     D& operator=(int rhs) { t = rhs; return *this; }                        \
     D& operator=(unsigned int rhs) { t = (int) rhs; return *this; }         \
     D& operator=(double rhs) { t = rhs; return *this; }                     \
     D& operator=(const std::string& rhs) { t = rhs; return *this; }         \
     D& operator=(std::shared_ptr<Variable> rhs) { t = rhs; return *this; }  \
+                                                                            \
     operator const T &() const {return t; }                                 \
     operator T &() { return t; }                                            \
                                                                             \
@@ -54,8 +59,7 @@ class Variable;
 } //end of eddic
 
 namespace eddi_detail {
-    //TODO Change the variant
-    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, std::string> ltac_variant_t;
+    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, eddic::ltac::Register, std::string> ltac_variant_t;
 
     struct ltac_equals_visitor : boost::static_visitor<bool> {
         template <typename T>
@@ -79,9 +83,10 @@ namespace eddic {
 
 namespace ltac {
 
-CUSTOM_STRONG_TYPEDEF(eddi_detail::ltac_variant_t, Argument)
+LTAC_CUSTOM_STRONG_TYPEDEF(eddi_detail::ltac_variant_t, Argument)
 
 bool operator==(const Argument& a, const Argument& b);
+bool operator==(const Argument& a, Register b);
 bool operator==(const Argument& a, int b);
 bool operator==(const Argument& a, double b);
 bool operator==(const Argument& a, std::shared_ptr<Variable> b);
