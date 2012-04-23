@@ -55,9 +55,9 @@ class Variable;
 
 namespace eddi_detail {
     //TODO Change the variant
-    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, std::string> variant_t;
+    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, std::string> ltac_variant_t;
 
-    struct equals_visitor : boost::static_visitor<bool> {
+    struct ltac_equals_visitor : boost::static_visitor<bool> {
         template <typename T>
         bool operator()(const T& a, const T& b) const
         { return a == b; }
@@ -67,10 +67,10 @@ namespace eddi_detail {
         { return false; }
     };
 
-    struct variant_equals {
-        equals_visitor _helper;
+    struct ltac_variant_equals {
+        ltac_equals_visitor _helper;
 
-        bool operator()(const variant_t& a, const variant_t& b) const
+        bool operator()(const ltac_variant_t& a, const ltac_variant_t& b) const
         { return boost::apply_visitor(_helper, a, b); }
     };
 } //end of eddi_detail
@@ -79,7 +79,7 @@ namespace eddic {
 
 namespace ltac {
 
-CUSTOM_STRONG_TYPEDEF(eddi_detail::variant_t, Argument)
+CUSTOM_STRONG_TYPEDEF(eddi_detail::ltac_variant_t, Argument)
 
 bool operator==(const Argument& a, const Argument& b);
 bool operator==(const Argument& a, int b);

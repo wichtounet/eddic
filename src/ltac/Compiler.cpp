@@ -5,31 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef LTAC_JUMP_H
-#define LTAC_JUMP_H
+#include "ltac/Compiler.hpp"
 
-#include "tac/Jump.hpp"
+using namespace eddic;
 
-namespace eddic {
-
-namespace ltac {
-
-class BasicBlock;
-
-enum class JumpType : unsigned int {
-    ALWAYS,
-    NE,
-    EQ,
-    GE,
-    G,
-    LE,
-    L
-};
-
-typedef tac::Jump<JumpType, BasicBlock> Jump;
-
-} //end of ltac
-
-} //end of eddic
-
-#endif
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target) const {
+    //TODO
+}

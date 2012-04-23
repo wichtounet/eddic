@@ -8,6 +8,8 @@
 #ifndef LTAC_COMPILER_H
 #define LTAC_COMPILER_H
 
+#include <memory>
+
 #include "ltac/Program.hpp"
 #include "mtac/Program.hpp"
 
