@@ -10,17 +10,24 @@
 
 #include <boost/optional.hpp>
 
+#include "ltac/Register.hpp"
+
 namespace eddic {
 
 namespace ltac {
 
-struct Register;
-
 struct Address {
-    boost::optional<unsigned int> displacement;
+    boost::optional<ltac::Register> base_register;
+    boost::optional<ltac::Register> scaled_register;
     boost::optional<unsigned int> scale;
-    boost::optional<Register> base_register;
-    boost::optional<Register> scaled_register;
+    boost::optional<unsigned int> displacement;
+
+    Address();
+    Address(unsigned displacement);
+    Address(ltac::Register reg, unsigned displacement);
+    Address(ltac::Register reg, ltac::Register scaled);
+    Address(ltac::Register reg, ltac::Register scaled, unsigned displacement);
+    Address(ltac::Register reg, ltac::Register scaled, unsigned scale, unsigned displacement);
 };
 
 } //end of ltac
