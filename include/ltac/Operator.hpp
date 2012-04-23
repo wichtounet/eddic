@@ -13,7 +13,11 @@ namespace eddic {
 namespace ltac {
 
 enum class Operator : unsigned int {
-    MOV
+    MOV,
+
+    //For stack allocation
+    ALLOC_STACK,
+    FREE_STACK
     
     //TODO
 };

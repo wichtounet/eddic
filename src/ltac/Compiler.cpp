@@ -7,6 +7,8 @@
 
 #include "ltac/Compiler.hpp"
 
+#include "FunctionContext.hpp"
+
 using namespace eddic;
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target) const {
@@ -20,11 +22,21 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 }
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function) const {
-    //alloc space
+    auto size = src_function->context->size();
+    
+    //Only if necessary, allocates size on the stack for the local variables
+    if(size > 0){
+        target_function->add(std::make_shared<ltac::Instruction>(ltac::Operator::ALLOC_STACK, size));
+    }
 
     //alloc and init variables
+
+    //Does it make sense to have basic blocks ???
     
     //TODO basic blocks
     
-    //free space
+    //Only if necessary, deallocates size on the stack for the local variables
+    if(size > 0){
+        target_function->add(std::make_shared<ltac::Instruction>(ltac::Operator::FREE_STACK, size));
+    }
 }
