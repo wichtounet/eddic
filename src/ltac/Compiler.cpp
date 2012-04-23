@@ -28,6 +28,30 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     if(size > 0){
         target_function->add(std::make_shared<ltac::Instruction>(ltac::Operator::ALLOC_STACK, size));
     }
+    
+    auto iter = src_function->context->begin();
+    auto end = src_function->context->end();
+
+    /*for(; iter != end; iter++){
+        auto var = iter->second;
+        if(var->type().isArray() && var->position().isStack()){
+            int position = -var->position().offset();
+
+            writer.stream() << "mov qword [rbp + " << position << "], " << var->type().size() << std::endl;
+
+            if(var->type().base() == BaseType::INT){
+                writer.stream() << "mov rcx, " << var->type().size() << std::endl;
+            } else if(var->type().base() == BaseType::STRING){
+                writer.stream() << "mov rcx, " << (var->type().size() * 2) << std::endl;
+            }
+            
+            writer.stream() << "xor rax, rax" << std::endl;
+            writer.stream() << "lea rdi, [rbp + " << position << " - 8]" << std::endl;
+            writer.stream() << "std" << std::endl;
+            writer.stream() << "rep stosq" << std::endl;
+            writer.stream() << "cld" << std::endl;
+        }
+    }*/
 
     //alloc and init variables
 

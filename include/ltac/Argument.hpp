@@ -14,6 +14,7 @@
 #include <boost/variant.hpp>
 
 #include "ltac/Register.hpp"
+#include "ltac/Address.hpp"
 
 #define LTAC_CUSTOM_STRONG_TYPEDEF(T, D)                                    \
 struct D {                                                                  \
@@ -24,6 +25,7 @@ struct D {                                                                  \
     D(const D & t_) : t(t_.t){}                                             \
                                                                             \
     D(Register t_) : t(t_) {}                                               \
+    D(Address t_) : t(t_) {}                                                \
     D(int t_) : t(t_) {}                                                    \
     D(unsigned int t_) : t((int) t_) {}                                     \
     D(double t_) : t(t_) {}                                                 \
@@ -34,6 +36,7 @@ struct D {                                                                  \
     D& operator=(const T & rhs) { t = rhs; return *this;}                   \
                                                                             \
     D& operator=(Register rhs) { t = rhs; return *this; }                   \
+    D& operator=(Address rhs) { t = rhs; return *this; }                    \
     D& operator=(int rhs) { t = rhs; return *this; }                        \
     D& operator=(unsigned int rhs) { t = (int) rhs; return *this; }         \
     D& operator=(double rhs) { t = rhs; return *this; }                     \
@@ -59,7 +62,7 @@ class Variable;
 } //end of eddic
 
 namespace eddi_detail {
-    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, eddic::ltac::Register, std::string> ltac_variant_t;
+    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, eddic::ltac::Register, eddic::ltac::Address, std::string> ltac_variant_t;
 
     struct ltac_equals_visitor : boost::static_visitor<bool> {
         template <typename T>
@@ -87,6 +90,7 @@ LTAC_CUSTOM_STRONG_TYPEDEF(eddi_detail::ltac_variant_t, Argument)
 
 bool operator==(const Argument& a, const Argument& b);
 bool operator==(const Argument& a, Register b);
+bool operator==(const Argument& a, Address b);
 bool operator==(const Argument& a, int b);
 bool operator==(const Argument& a, double b);
 bool operator==(const Argument& a, std::shared_ptr<Variable> b);
