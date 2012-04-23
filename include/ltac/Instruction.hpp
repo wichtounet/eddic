@@ -19,7 +19,7 @@ namespace eddic {
 
 namespace ltac {
 
-typedef tac::Quadruple<ltac::Argument, ltac::Argument, ltac::Operator> Instruction;
+typedef tac::Quadruple<ltac::Argument, unsigned int, ltac::Argument, ltac::Operator> Instruction;
 
 } //end of ltac
 

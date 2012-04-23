@@ -21,7 +21,7 @@ class Variable;
 
 namespace mtac {
 
-typedef tac::Quadruple<std::shared_ptr<Variable>, mtac::Argument, mtac::Operator> Quadruple;
+typedef tac::Quadruple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, mtac::Argument, mtac::Operator> Quadruple;
 
 } //end of mtac
 

@@ -19,6 +19,7 @@ namespace ltac {
 
 struct Compiler {
     void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target) const ;
+    void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function) const;
 };
 
 } //end of ltac

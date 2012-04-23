@@ -15,14 +15,14 @@ namespace eddic {
 
 namespace tac {
 
-template<typename Result, typename Argument, typename Operator>
+template<typename Result, typename Live, typename Argument, typename Operator>
 struct Quadruple {
     Result result;
     boost::optional<Argument> arg1;
     boost::optional<Argument> arg2;
     Operator op;
     
-    std::unordered_map<Result, bool> liveness;
+    std::unordered_map<Live, bool> liveness;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;
@@ -44,28 +44,28 @@ struct Quadruple {
     Quadruple(Operator op, Argument arg1, Argument arg2);
 };
 
-template<typename Result, typename Argument, typename Operator>
-tac::Quadruple<Result, Argument, Operator>::Quadruple(){
+template<typename Result, typename Live, typename Argument, typename Operator>
+tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(){
     //Nothing to init    
 }
 
-template<typename Result, typename Argument, typename Operator>
-tac::Quadruple<Result, Argument, Operator>::Quadruple(Result result, Argument a1, Operator o) : result(result), arg1(a1), op(o) {
+template<typename Result, typename Live, typename Argument, typename Operator>
+tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(Result result, Argument a1, Operator o) : result(result), arg1(a1), op(o) {
     //Nothing to init    
 }
 
-template<typename Result, typename Argument, typename Operator>
-tac::Quadruple<Result, Argument, Operator>::Quadruple(Result result, Argument a1, Operator o, Argument a2) : result(result), arg1(a1), arg2(a2), op(o) {
+template<typename Result, typename Live, typename Argument, typename Operator>
+tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(Result result, Argument a1, Operator o, Argument a2) : result(result), arg1(a1), arg2(a2), op(o) {
     //Nothing to init    
 }
 
-template<typename Result, typename Argument, typename Operator>
-tac::Quadruple<Result, Argument, Operator>::Quadruple(Operator o, Argument a1) : arg1(a1), op(o) {
+template<typename Result, typename Live, typename Argument, typename Operator>
+tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(Operator o, Argument a1) : arg1(a1), op(o) {
     //Nothing to init    
 }
 
-template<typename Result, typename Argument, typename Operator>
-tac::Quadruple<Result, Argument, Operator>::Quadruple(Operator o, Argument a1, Argument a2) : arg1(a1), arg2(a2), op(o) {
+template<typename Result, typename Live, typename Argument, typename Operator>
+tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(Operator o, Argument a1, Argument a2) : arg1(a1), arg2(a2), op(o) {
     //Nothing to init    
 }
 
