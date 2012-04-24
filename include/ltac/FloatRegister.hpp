@@ -15,8 +15,6 @@ namespace ltac {
 struct FloatRegister {
     unsigned short reg;
 
-    static int REGISTER_COUNT;
-
     FloatRegister(unsigned short);
 };
 

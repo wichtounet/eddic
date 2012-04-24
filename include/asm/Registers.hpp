@@ -61,7 +61,8 @@ class Registers {
 
 template<typename Reg>
 Registers<Reg>::Registers(std::vector<Reg> reg, std::shared_ptr<Variable> var) : registers(reg), retainVariable(var) {
-    descriptors.resize(static_cast<int>(Reg::REGISTER_COUNT));
+    //Resize the descriptors the same way as the registers
+    descriptors.resize(reg.size());
 }
 
 template<typename Reg>
@@ -105,7 +106,7 @@ template<typename Reg>
 void Registers<Reg>::reset(){
     variables.clear();
 
-    for(unsigned int i = 0; i < (int) Reg::REGISTER_COUNT; ++i){
+    for(unsigned int i = 0; i < descriptors.size(); ++i){
         descriptors[i] = nullptr;
     }
 }
