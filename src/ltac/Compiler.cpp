@@ -83,6 +83,22 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     }
 }
 
+namespace {
+
+struct StatementCompiler : public boost::static_visitor<> {
+    //The registers
+    as::Registers<ltac::Register> registers;
+    as::Registers<ltac::FloatRegister> float_registers;
+
+    StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers) : 
+            registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
+            float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))){
+        //Nothing else to init
+   }
+};
+
+} //end of anonymous namespace
+
 void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<ltac::Function> target_function){
     //Handle parameters
     
@@ -90,14 +106,12 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
     if(block_usage.find(block) != block_usage.end()){
         target_function->add(block->label);
     }
+
+    //TODO Fill the registers
+    StatementCompiler compiler({}, {});
     
     //statements
 
     //end basic block
 }
 
-struct StatementCompiler : public boost::static_visitor<> {
-    //The registers
-    as::Registers<ltac::Register> registers;
-    as::Registers<ltac::FloatRegister> float_registers;
-};
