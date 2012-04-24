@@ -15,6 +15,9 @@ namespace ltac {
 enum class Operator : unsigned int {
     MOV,
 
+    //Set the memory to 0
+    MEMSET,
+
     //For stack allocation
     ALLOC_STACK,
     FREE_STACK

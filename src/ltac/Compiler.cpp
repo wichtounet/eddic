@@ -32,31 +32,22 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     auto iter = src_function->context->begin();
     auto end = src_function->context->end();
 
-    /*for(; iter != end; iter++){
+    for(; iter != end; iter++){
         auto var = iter->second;
         if(var->type().isArray() && var->position().isStack()){
             int position = -var->position().offset();
 
-            writer.stream() << "mov qword [rbp + " << position << "], " << var->type().size() << std::endl;
+            target_function->add(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), var->type().size()));
 
             if(var->type().base() == BaseType::INT){
-                writer.stream() << "mov rcx, " << var->type().size() << std::endl;
+                target_function->add(std::make_shared<ltac::Instruction>(ltac::Operator::MEMSET, ltac::Address(ltac::BP, position, -8), var->type().size()));
             } else if(var->type().base() == BaseType::STRING){
-                writer.stream() << "mov rcx, " << (var->type().size() * 2) << std::endl;
+                target_function->add(std::make_shared<ltac::Instruction>(ltac::Operator::MEMSET, ltac::Address(ltac::BP, position, -8), 2 * var->type().size()));
             }
-            
-            writer.stream() << "xor rax, rax" << std::endl;
-            writer.stream() << "lea rdi, [rbp + " << position << " - 8]" << std::endl;
-            writer.stream() << "std" << std::endl;
-            writer.stream() << "rep stosq" << std::endl;
-            writer.stream() << "cld" << std::endl;
         }
-    }*/
+    }
 
-    //alloc and init variables
-
-    //Does it make sense to have basic blocks ???
-    
+    //TODO Does it make sense to have basic blocks ???
     //TODO basic blocks
     
     //Only if necessary, deallocates size on the stack for the local variables
