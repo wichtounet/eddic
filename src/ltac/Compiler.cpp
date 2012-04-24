@@ -5,12 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "FunctionContext.hpp"
+#include "Labels.hpp"
+
+#include "asm/Registers.hpp"
+
 #include "ltac/Compiler.hpp"
 
 #include "mtac/Utils.hpp" //TODO Perhaps this should be moved to ltac ? 
-
-#include "FunctionContext.hpp"
-#include "Labels.hpp"
 
 using namespace eddic;
 
@@ -93,3 +95,9 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
 
     //end basic block
 }
+
+struct StatementCompiler : public boost::static_visitor<> {
+    //The registers
+    as::Registers<ltac::Register> registers;
+    as::Registers<ltac::FloatRegister> float_registers;
+};
