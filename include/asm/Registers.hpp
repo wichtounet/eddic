@@ -53,7 +53,7 @@ class Registers {
 
     private:
         std::vector<Reg> registers;   
-        std::shared_ptr<Variable> descriptors[(int) Reg::REGISTER_COUNT];
+        std::vector<std::shared_ptr<Variable>> descriptors;
         std::unordered_map<std::shared_ptr<Variable>, Reg> variables;
 
         std::shared_ptr<Variable> retainVariable;
@@ -61,7 +61,7 @@ class Registers {
 
 template<typename Reg>
 Registers<Reg>::Registers(std::vector<Reg> reg, std::shared_ptr<Variable> var) : registers(reg), retainVariable(var) {
-    //nothing to init
+    descriptors.resize(static_cast<int>(Reg::REGISTER_COUNT));
 }
 
 template<typename Reg>
