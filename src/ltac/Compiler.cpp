@@ -95,11 +95,46 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     mtac::Statement next;
 
-    StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers) : 
-            registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
-            float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))){
+    std::shared_ptr<ltac::Function> function;
+
+    StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
+        registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
+        float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
+        function(function) {
         //Nothing else to init
-   }
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse>&){
+        //TODO
+    }
+    
+    void operator()(std::shared_ptr<mtac::If>&){
+        //TODO
+    }
+    
+    void operator()(std::shared_ptr<mtac::Goto>&){
+        //TODO
+    }
+    
+    void operator()(std::shared_ptr<mtac::Param>&){
+        //TODO
+    }
+    
+    void operator()(std::shared_ptr<mtac::Quadruple>&){
+        //TODO
+    }
+    
+    void operator()(std::shared_ptr<mtac::Call>&){
+        //TODO
+    }
+
+    void operator()(mtac::NoOp&){
+        //Nothing to do
+    }
+    
+    void operator()(std::string& str){
+        function->add(str);
+    }
 };
 
 } //end of anonymous namespace
@@ -113,7 +148,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
     }
 
     //TODO Fill the registers
-    StatementCompiler compiler({}, {});
+    StatementCompiler compiler({}, {}, target_function);
     
     for(unsigned int i = 0; i < block->statements.size(); ++i){
         auto& statement = block->statements[i];
