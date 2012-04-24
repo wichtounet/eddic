@@ -7,12 +7,13 @@
 
 #include "FunctionContext.hpp"
 #include "Labels.hpp"
+#include "VisitorUtils.hpp"
 
 #include "asm/Registers.hpp"
 
 #include "ltac/Compiler.hpp"
 
-#include "mtac/Utils.hpp" //TODO Perhaps this should be moved to ltac ? 
+#include "mtac/Utils.hpp" //TODO Perhaps part of this should be moved to ltac ? 
 
 using namespace eddic;
 
@@ -90,6 +91,10 @@ struct StatementCompiler : public boost::static_visitor<> {
     as::Registers<ltac::Register> registers;
     as::Registers<ltac::FloatRegister> float_registers;
 
+    bool last = false;
+
+    mtac::Statement next;
+
     StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers) : 
             registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
             float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))){
@@ -110,7 +115,17 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
     //TODO Fill the registers
     StatementCompiler compiler({}, {});
     
-    //statements
+    for(unsigned int i = 0; i < block->statements.size(); ++i){
+        auto& statement = block->statements[i];
+
+        if(i == block->statements.size() - 1){
+            compiler.last = true;
+        } else {
+            compiler.next = block->statements[i+1];
+        }
+        
+        visit(compiler, statement);
+    }
 
     //end basic block
 }
