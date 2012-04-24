@@ -7,7 +7,10 @@
 
 #include "ltac/Compiler.hpp"
 
+#include "mtac/Utils.hpp" //TODO Perhaps this should be moved to ltac ? 
+
 #include "FunctionContext.hpp"
+#include "Labels.hpp"
 
 using namespace eddic;
 
@@ -19,7 +22,7 @@ void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op
     function->add(std::make_shared<ltac::Instruction>(op, arg1, arg2));
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target) const {
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target){
     for(auto& src_function : source->functions){
         auto target_function = std::make_shared<ltac::Function>(src_function->context, src_function->getName());
 
@@ -29,7 +32,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function) const {
+void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function){
     auto size = src_function->context->size();
     
     //Only if necessary, allocates size on the stack for the local variables
@@ -54,12 +57,30 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
             }
         }
     }
+    
+    //Compute the block usage (in order to know if we have to output the label)
+    mtac::computeBlockUsage(src_function, block_usage);
 
-    //TODO Does it make sense to have basic blocks ???
-    //TODO basic blocks
+    resetNumbering();
+
+    //First we computes a label for each basic block
+    for(auto block : src_function->getBasicBlocks()){
+        block->label = newLabel();
+    }
+
+    //Then we compile each of them
+    for(auto block : src_function->getBasicBlocks()){
+        compile(block, target_function);
+    }
+
+    //TODO Return optimization
     
     //Only if necessary, deallocates size on the stack for the local variables
     if(size > 0){
         add_instruction(target_function, ltac::Operator::FREE_STACK, size);
     }
+}
+
+void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> basic_block, std::shared_ptr<ltac::Function> target_function){
+    //TODO
 }

@@ -9,6 +9,7 @@
 #define LTAC_COMPILER_H
 
 #include <memory>
+#include <unordered_set>
 
 #include "ltac/Program.hpp"
 #include "mtac/Program.hpp"
@@ -17,9 +18,15 @@ namespace eddic {
 
 namespace ltac {
 
-struct Compiler {
-    void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target) const ;
-    void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function) const;
+class Compiler {
+    public:
+        void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target);
+    
+    private:
+        void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function);
+        void compile(std::shared_ptr<mtac::BasicBlock> basic_block, std::shared_ptr<ltac::Function> target_function);
+
+        std::unordered_set<std::shared_ptr<mtac::BasicBlock>> block_usage;
 };
 
 } //end of ltac
