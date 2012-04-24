@@ -81,6 +81,15 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> basic_block, std::shared_ptr<ltac::Function> target_function){
-    //TODO
+void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<ltac::Function> target_function){
+    //Handle parameters
+    
+    //If necessary add a label for the block
+    if(block_usage.find(block) != block_usage.end()){
+        target_function->add(block->label);
+    }
+    
+    //statements
+
+    //end basic block
 }
