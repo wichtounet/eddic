@@ -93,6 +93,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     bool last = false;
 
+    mtac::Statement current;
     mtac::Statement next;
 
     std::shared_ptr<ltac::Function> function;
@@ -103,28 +104,49 @@ struct StatementCompiler : public boost::static_visitor<> {
         function(function) {
         //Nothing else to init
     }
+
+    void end_basic_block(){
+        //TODO
+    }
+
+    /* Visitor members  */
     
-    void operator()(std::shared_ptr<mtac::IfFalse>&){
+    void operator()(std::shared_ptr<mtac::IfFalse>& if_false){
+        current = if_false;
+
         //TODO
     }
     
-    void operator()(std::shared_ptr<mtac::If>&){
+    void operator()(std::shared_ptr<mtac::If>& if_){
+        current = if_;
+
         //TODO
     }
     
-    void operator()(std::shared_ptr<mtac::Goto>&){
+    void operator()(std::shared_ptr<mtac::Goto>& goto_){
+        current = goto_;
+
+        //The basic block must be ended before the jump
+        end_basic_block();
+
+        function->add(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
+    }
+    
+    void operator()(std::shared_ptr<mtac::Param>& param){
+        current = param;
+
         //TODO
     }
     
-    void operator()(std::shared_ptr<mtac::Param>&){
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+        current = quadruple;
+
         //TODO
     }
     
-    void operator()(std::shared_ptr<mtac::Quadruple>&){
-        //TODO
-    }
-    
-    void operator()(std::shared_ptr<mtac::Call>&){
+    void operator()(std::shared_ptr<mtac::Call>& call){
+        current = call;
+
         //TODO
     }
 
