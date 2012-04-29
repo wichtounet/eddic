@@ -315,7 +315,73 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<mtac::If>& if_){
         current = if_;
 
-        //TODO
+        if(if_->op){
+            //Depending on the type of the operator, do a float or a int comparison
+            if(is_float_operator(*if_->op)){
+                compare_float_binary(if_);
+            
+                switch(*if_->op){
+                    case mtac::BinaryOperator::FE:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::E));
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FNE:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NE));
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FL:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::B));
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FLE:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::BE));
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FG:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::A));
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FGE:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::AE));
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+                        break;
+                    default:
+                        assert(false && "This operation is not a float operator");
+                        break;
+                }
+            } else {
+                compare_binary(if_);
+            
+                switch(*if_->op){
+                    case mtac::BinaryOperator::EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::E));
+                        break;
+                    case mtac::BinaryOperator::NOT_EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NE));
+                        break;
+                    case mtac::BinaryOperator::LESS:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::L));
+                        break;
+                    case mtac::BinaryOperator::LESS_EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::LE));
+                        break;
+                    case mtac::BinaryOperator::GREATER:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::G));
+                        break;
+                    case mtac::BinaryOperator::GREATER_EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::GE));
+                        break;
+                    default:
+                        assert(false && "This operation is not a float operator");
+                        break;
+                }
+            }
+
+        } else {
+            compare_unary(if_);
+
+            function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NZ));
+        }
     }
     
     void operator()(std::shared_ptr<mtac::Goto>& goto_){

@@ -37,6 +37,7 @@ enum class JumpType : unsigned int {
 
     P,      //Parity
     Z,      //Zero
+    NZ      //Not zero
 };
 
 typedef tac::Jump<JumpType, BasicBlock> Jump;
