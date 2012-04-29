@@ -8,6 +8,7 @@
 #include "FunctionContext.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
+#include "Platform.hpp"
 
 #include "asm/Registers.hpp"
 
@@ -90,13 +91,26 @@ struct StatementCompiler : public boost::static_visitor<> {
     //The registers
     as::Registers<ltac::Register> registers;
     as::Registers<ltac::FloatRegister> float_registers;
+    
+    //Store the Register that are saved before call
+    std::vector<ltac::Register> int_pushed;
+    std::vector<ltac::FloatRegister> float_pushed;
 
-    bool last = false;
+    bool last = false;      //Is it the last basic block ?
+    bool ended = false;     //Is the basic block ended ?
 
+    //Allow to push needed register before the first push param
+    bool first_param = true;
+
+    //Reference to the statement for liveness
     mtac::Statement current;
     mtac::Statement next;
 
+    //The function being compiled
     std::shared_ptr<ltac::Function> function;
+    
+    //Keep track of the written variables to spills them
+    std::unordered_set<std::shared_ptr<Variable>> written;
 
     StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
         registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
@@ -408,7 +422,83 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<mtac::Call>& call){
         current = call;
 
-        //TODO
+        function->add(std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL));
+
+        int total = 0;
+    
+        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+
+        for(auto& param : call->functionDefinition->parameters){
+            Type type = param.paramType; 
+
+            if(type.isArray()){
+                //Passing an array is just passing an adress
+                total += size(BaseType::INT);
+            } else {
+                if(type == BaseType::INT){
+                    //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                    if(maxInt > 0){
+                        --maxInt;
+                    } else {
+                        total += size(type);
+                    }
+                } else if(type == BaseType::FLOAT){
+                    //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                    if(maxFloat > 0){
+                        --maxFloat;
+                    } else {
+                        total += size(type);
+                    }
+                } else {
+                    total += size(type);
+                }
+            }
+        }
+        
+        if(total > 0){
+            add_instruction(function, ltac::Operator::FREE_STACK, total);
+        }
+
+        if(call->return_){
+            if(call->return_->type() == BaseType::FLOAT){
+                float_registers.setLocation(call->return_, ltac::ReturnFloat);
+            } else {
+                registers.setLocation(call->return_, ltac::ReturnInt1);
+            }
+                
+            written.insert(call->return_);
+        }
+
+        if(call->return2_){
+            registers.setLocation(call->return2_, ltac::ReturnInt1);
+            written.insert(call->return2_);
+        }
+
+        std::reverse(int_pushed.begin(), int_pushed.end());
+        std::reverse(float_pushed.begin(), float_pushed.end());
+
+        //Restore the int parameters in registers (in the reverse order they were pushed)
+        for(auto& reg : int_pushed){
+            if(registers.used(reg) && registers[reg]->position().isParamRegister()){
+                add_instruction(function, ltac::Operator::POP, reg);
+            }
+        }
+        
+        //Restore the float parameters in registers (in the reverse order they were pushed)
+        for(auto& reg : float_pushed){
+            if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
+                add_instruction(function, ltac::Operator::POP, reg);
+            }
+        }
+
+        //Each register has been restored
+        int_pushed.clear();
+        float_pushed.clear();
+
+        //All the parameters have been handled by now, the next param will be the first for its call
+        first_param = true;
     }
 
     void operator()(mtac::NoOp&){

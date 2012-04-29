@@ -15,10 +15,13 @@ namespace ltac {
 struct FloatRegister {
     unsigned short reg;
 
+    FloatRegister();
     FloatRegister(unsigned short);
 
     operator int();
 };
+
+static const FloatRegister ReturnFloat(100);
 
 } //end of ltac
 

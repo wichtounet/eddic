@@ -9,6 +9,10 @@
 
 using namespace eddic;
 
+ltac::FloatRegister::FloatRegister(){
+    //Nothing to init
+}
+
 ltac::FloatRegister::FloatRegister(unsigned short reg) : reg(reg) {
     //Nothing to init
 }

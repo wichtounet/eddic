@@ -27,7 +27,11 @@ enum class Operator : unsigned int {
     CMP_FLOAT,
 
     //Logical operations
-    OR
+    OR,
+
+    //Stack manipulations
+    PUSH,
+    POP
 };
 
 } //end of ltac

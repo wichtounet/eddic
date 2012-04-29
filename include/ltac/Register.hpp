@@ -15,13 +15,17 @@ namespace ltac {
 struct Register {
     unsigned short reg;
 
+    Register();
     Register(unsigned short);
     
     operator int();
 };
 
+static const Register ReturnInt1(100);
+static const Register ReturnInt2(101);
+
 static const Register SP(1000);
-static const Register BP(2000);
+static const Register BP(1001);
 
 } //end of ltac
 

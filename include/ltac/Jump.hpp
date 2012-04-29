@@ -19,6 +19,8 @@ class BasicBlock;
 enum class JumpType : unsigned int {
     ALWAYS,
 
+    CALL,
+
     //Egality
     NE,
     E,
