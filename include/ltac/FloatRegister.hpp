@@ -16,6 +16,8 @@ struct FloatRegister {
     unsigned short reg;
 
     FloatRegister(unsigned short);
+
+    operator int();
 };
 
 } //end of ltac

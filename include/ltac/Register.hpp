@@ -16,6 +16,8 @@ struct Register {
     unsigned short reg;
 
     Register(unsigned short);
+    
+    operator int();
 };
 
 static const Register SP(1000);

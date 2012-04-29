@@ -105,8 +105,138 @@ struct StatementCompiler : public boost::static_visitor<> {
         //Nothing else to init
     }
 
+    /* Register stuff  */
+    
+    ltac::Register get_free_reg(){
+        //TODO
+    }
+
+    ltac::Register get_reg(std::shared_ptr<Variable> var){
+        //TODO
+    }
+    
+    ltac::FloatRegister get_free_float_reg(){
+        //TODO
+    }
+
+    ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var){
+        //TODO
+    }
+
+    void copy(mtac::Argument& arg, ltac::Register reg){
+        //TODO
+    }
+    
+    void copy(mtac::Argument& arg, ltac::FloatRegister reg){
+        //TODO
+    }
+
     void end_basic_block(){
         //TODO
+    }
+    
+    /* Utility  */
+
+    bool is_float_operator(mtac::BinaryOperator op){
+        return op >= mtac::BinaryOperator::FE && op <= mtac::BinaryOperator::FL;
+    }
+
+    template<typename Variant>
+    std::shared_ptr<Variable> get_variable(Variant& variant){
+        return boost::get<std::shared_ptr<Variable>>(variant);
+    }
+
+    /* Others  */
+    
+    template<typename T>
+    void compare_binary(T& if_){
+        //The first argument is not important, it can be immediate, but the second must be a register
+        if(auto* ptr = boost::get<int>(&if_->arg1)){
+            auto reg1 = get_free_reg();
+            
+            add_instruction(function, ltac::Operator::MOV, reg1, *ptr);
+
+            auto reg2 = get_reg(get_variable(*if_->arg2));
+
+            //The basic block must be ended before the jump
+            end_basic_block();
+
+            add_instruction(function, ltac::Operator::CMP_INT, reg1, reg2);
+
+            registers.release(reg1);
+        } else {
+            auto reg1 = get_reg(get_variable(if_->arg1));
+            auto reg2 = get_reg(get_variable(*if_->arg2));
+
+            //The basic block must be ended before the jump
+            end_basic_block();
+
+            add_instruction(function, ltac::Operator::CMP_INT, reg1, reg2);
+        }
+    }
+    
+    template<typename T>
+    void compare_float_binary(T& if_){
+        //Comparisons of constant should have been handled by the optimizer
+        assert(!(isFloat(if_->arg1) && isFloat(*if_->arg2))); 
+
+        //If both args are variables
+        if(isVariable(if_->arg1) && isVariable(*if_->arg2)){
+            //The basic block must be ended before the jump
+            end_basic_block();
+            
+            auto reg1 = get_float_reg(get_variable(if_->arg1));
+            auto reg2 = get_float_reg(get_variable(*if_->arg2));
+
+            add_instruction(function, ltac::Operator::CMP_FLOAT, reg1, reg2);
+        } else if(isVariable(if_->arg1) && isFloat(*if_->arg2)){
+            auto reg1 = get_float_reg(get_variable(if_->arg1));
+            auto reg2 = get_free_float_reg();
+
+            copy(*if_->arg2, reg2);
+
+            //The basic block must be ended before the jump
+            end_basic_block();
+
+            add_instruction(function, ltac::Operator::CMP_FLOAT, reg1, reg2);
+            
+            float_registers.release(reg1);
+        } else if(isFloat(if_->arg1) && isVariable(*if_->arg2)){
+            auto reg1 = get_free_float_reg();
+            auto reg2 = get_float_reg(get_variable(*if_->arg2));
+
+            copy(if_->arg1, reg1);
+
+            //The basic block must be ended before the jump
+            end_basic_block();
+
+            add_instruction(function, ltac::Operator::CMP_FLOAT, reg1, reg2);
+            
+            float_registers.release(reg1);
+        }
+    }
+
+    template<typename T>
+    void compare_unary(T& if_){
+        if(auto* ptr = boost::get<int>(&if_->arg1)){
+            auto reg = get_free_reg();
+            
+            add_instruction(function, ltac::Operator::MOV, reg, *ptr);
+
+            //The basic block must be ended before the jump
+            end_basic_block();
+            
+            add_instruction(function, ltac::Operator::OR, reg, reg);
+
+            registers.release(reg);
+        } else {
+            //The basic block must be ended before the jump
+            end_basic_block();
+            
+            auto reg = get_reg(get_variable(if_->arg1));
+
+            add_instruction(function, ltac::Operator::OR, reg, reg);
+        }
     }
 
     /* Visitor members  */
@@ -114,7 +244,72 @@ struct StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<mtac::IfFalse>& if_false){
         current = if_false;
 
-        //TODO
+        if(if_false->op){
+            //Depending on the type of the operator, do a float or a int comparison
+            if(is_float_operator(*if_false->op)){
+                compare_float_binary(if_false);
+                
+                switch(*if_false->op){
+                    case mtac::BinaryOperator::FE:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::NE));
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FNE:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::E));
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FL:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::AE));
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FLE:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::A));
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FG:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::BE));
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+                        break;
+                    case mtac::BinaryOperator::FGE:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::B));
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+                        break;
+                    default:
+                        assert(false && "This operation is not a float operator");
+                        break;
+                }
+            } else {
+                compare_binary(if_false);
+            
+                switch(*if_false->op){
+                    case mtac::BinaryOperator::EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::NE));
+                        break;
+                    case mtac::BinaryOperator::NOT_EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::E));
+                        break;
+                    case mtac::BinaryOperator::LESS:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::GE));
+                        break;
+                    case mtac::BinaryOperator::LESS_EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::G));
+                        break;
+                    case mtac::BinaryOperator::GREATER:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::LE));
+                        break;
+                    case mtac::BinaryOperator::GREATER_EQUALS:
+                        function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::L));
+                        break;
+                    default:
+                        assert(false && "This operation is not a float operator");
+                        break;
+                }
+            }
+        } else {
+            compare_unary(if_false);
+
+            function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::Z));
+        }
     }
     
     void operator()(std::shared_ptr<mtac::If>& if_){

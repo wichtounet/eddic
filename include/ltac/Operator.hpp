@@ -20,9 +20,14 @@ enum class Operator : unsigned int {
 
     //For stack allocation
     ALLOC_STACK,
-    FREE_STACK
-    
-    //TODO
+    FREE_STACK,
+
+    //Comparisons
+    CMP_INT,
+    CMP_FLOAT,
+
+    //Logical operations
+    OR
 };
 
 } //end of ltac

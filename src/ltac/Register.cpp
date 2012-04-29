@@ -12,3 +12,7 @@ using namespace eddic;
 ltac::Register::Register(unsigned short reg) : reg(reg) {
     //Nothing to init
 }
+
+ltac::Register::operator int(){
+    return reg;
+}

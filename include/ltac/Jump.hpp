@@ -18,12 +18,25 @@ class BasicBlock;
 
 enum class JumpType : unsigned int {
     ALWAYS,
+
+    //Egality
     NE,
-    EQ,
+    E,
+    
+    //signed comparisons
     GE,
     G,
     LE,
-    L
+    L,
+
+    //unsigned comparisons
+    B,
+    BE,
+    A,
+    AE,
+
+    P,      //Parity
+    Z,      //Zero
 };
 
 typedef tac::Jump<JumpType, BasicBlock> Jump;
