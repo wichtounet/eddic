@@ -14,6 +14,7 @@ namespace ltac {
 
 enum class Operator : unsigned int {
     MOV,
+    FMOV,
 
     //Set the memory to 0
     MEMSET,
@@ -22,23 +23,57 @@ enum class Operator : unsigned int {
     ALLOC_STACK,
     FREE_STACK,
 
+    //Leave from a function
+    LEAVE,
+
     //Comparisons
     CMP_INT,
     CMP_FLOAT,
 
     //Logical operations
     OR,
+    XOR,
 
     //Stack manipulations
     PUSH,
     POP,
+    
+    //Load effective address
+    LEA,
+
+    //Shifts
+    SHIFT_LEFT,
+    SHIFT_RIGHT,
 
     //Math operations
     ADD,
     SUB,
     MUL,
     DIV,
-    MOD
+
+    //Float operations
+    FADD,
+    FSUB,
+    FMUL,
+    FDIV,
+
+    INC,
+    DEC,
+    NEG,
+
+    I2F,
+    F2I,
+
+    CMOVE,
+    CMOVNE,
+    CMOVA,
+    CMOVAE,
+    CMOVB,
+    CMOVBE,
+    CMOVG,
+    CMOVGE,
+    CMOVL,
+    CMOVLE
 };
 
 } //end of ltac

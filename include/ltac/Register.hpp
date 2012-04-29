@@ -19,6 +19,9 @@ struct Register {
     Register(unsigned short);
     
     operator int();
+
+    bool operator==(const Register& rhs) const;
+    bool operator!=(const Register& rhs) const;
 };
 
 static const Register ReturnInt1(100);

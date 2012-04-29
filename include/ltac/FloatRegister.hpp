@@ -19,6 +19,9 @@ struct FloatRegister {
     FloatRegister(unsigned short);
 
     operator int();
+
+    bool operator==(const FloatRegister& rhs) const;
+    bool operator!=(const FloatRegister& rhs) const;
 };
 
 static const FloatRegister ReturnFloat(100);

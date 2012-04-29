@@ -31,6 +31,9 @@ struct Quadruple {
     //Default constructor
     Quadruple();
 
+    //Quadruples without assign to result and no param
+    Quadruple(Operator op);
+
     //Quadruple for unary operators
     Quadruple(Result result, Argument arg1, Operator op);
 
@@ -46,6 +49,11 @@ struct Quadruple {
 
 template<typename Result, typename Live, typename Argument, typename Operator>
 tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(){
+    //Nothing to init    
+}
+
+template<typename Result, typename Live, typename Argument, typename Operator>
+tac::Quadruple<Result, Live, Argument, Operator>::Quadruple(Operator o) : op(o) {
     //Nothing to init    
 }
 

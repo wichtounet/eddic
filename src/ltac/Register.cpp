@@ -20,3 +20,11 @@ ltac::Register::Register(unsigned short reg) : reg(reg) {
 ltac::Register::operator int(){
     return reg;
 }
+
+bool ltac::Register::operator==(const Register& rhs) const {
+    return reg == rhs.reg;
+}
+
+bool ltac::Register::operator!=(const Register& rhs) const {
+    return !(*this == rhs); 
+}

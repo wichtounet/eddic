@@ -29,7 +29,7 @@ struct Address {
     Address(unsigned displacement);
     Address(ltac::Register reg, unsigned displacement);
     Address(ltac::Register reg, ltac::Register scaled);
-    Address(ltac::Register reg, ltac::Register scaled, unsigned displacement);
+    Address(ltac::Register reg, ltac::Register scaled, unsigned scale);
     Address(ltac::Register reg, ltac::Register scaled, unsigned scale, unsigned displacement);
 };
 
