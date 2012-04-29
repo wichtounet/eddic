@@ -31,7 +31,14 @@ enum class Operator : unsigned int {
 
     //Stack manipulations
     PUSH,
-    POP
+    POP,
+
+    //Math operations
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    MOD
 };
 
 } //end of ltac

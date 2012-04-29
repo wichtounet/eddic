@@ -22,7 +22,10 @@ struct Address {
     boost::optional<unsigned int> scale;
     boost::optional<unsigned int> displacement;
 
+    boost::optional<std::string> absolute;
+
     Address();
+    Address(const std::string& absolute);
     Address(unsigned displacement);
     Address(ltac::Register reg, unsigned displacement);
     Address(ltac::Register reg, ltac::Register scaled);

@@ -144,8 +144,22 @@ struct StatementCompiler : public boost::static_visitor<> {
     void copy(mtac::Argument& arg, ltac::FloatRegister reg){
         //TODO
     }
+    
+    void spills(ltac::Register reg){
+        //TODO
+    }
 
+    void spills(ltac::FloatRegister reg){
+        //TODO
+    }
+    
     void end_basic_block(){
+        //TODO
+    }
+
+    /* Conversions */
+
+    ltac::Argument to_arg(mtac::Argument& arg){
         //TODO
     }
     
@@ -153,6 +167,14 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     bool is_float_operator(mtac::BinaryOperator op){
         return op >= mtac::BinaryOperator::FE && op <= mtac::BinaryOperator::FL;
+    }
+
+    bool is_float_var(std::shared_ptr<Variable> variable){
+        return variable->type() == BaseType::FLOAT;
+    }
+    
+    bool is_int_var(std::shared_ptr<Variable> variable){
+        return variable->type() == BaseType::INT;
     }
 
     template<typename Variant>
@@ -407,16 +429,153 @@ struct StatementCompiler : public boost::static_visitor<> {
         function->add(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
     }
     
-    void operator()(std::shared_ptr<mtac::Param>& param){
-        current = param;
-
-        //TODO
+    void pass_in_int_register(mtac::Argument& argument, int position){
+        add_instruction(function, ltac::Operator::MOV, ltac::Register(ltac::FirstIntParam + position), to_arg(argument));
     }
     
-    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
-        current = quadruple;
+    void pass_in_float_register(mtac::Argument& argument, int position){
+        if(auto* ptr = boost::get<double>(&argument)){
+            auto gpreg = get_free_reg();
 
-        //TODO
+            add_instruction(function, ltac::Operator::MOV, gpreg, *ptr);
+            add_instruction(function, ltac::Operator::MOV, ltac::Register(ltac::FirstIntParam + position), gpreg);
+
+            registers.release(gpreg);
+        } else {
+            add_instruction(function, ltac::Operator::MOV, ltac::Register(ltac::FirstIntParam + position), to_arg(argument));
+        }
+    }
+    
+    void operator()(std::shared_ptr<mtac::Param>& param){
+        current = param;
+        
+        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+
+        if(first_param){
+            if(param->function){
+                for(auto& parameter : param->function->parameters){
+                    auto type = param->function->getParameterType(parameter.name);
+                    unsigned int position = param->function->getParameterPositionByType(parameter.name);
+
+                    if(type == BaseType::INT && position <= maxInt){
+                        ltac::Register reg(ltac::FirstIntParam + position);
+
+                        //If the parameter register is already used by a variable or a parent parameter
+                        if(registers.used(reg)){
+                            if(registers[reg]->position().isParamRegister()){
+                                int_pushed.push_back(reg);
+                                add_instruction(function, ltac::Operator::PUSH, reg);
+                            } else {
+                                spills(reg);
+                            }
+                        }
+                    }
+
+                    if(type == BaseType::FLOAT && position <= maxFloat){
+                        ltac::FloatRegister reg(ltac::FirstFloatParam + position);
+
+                        //If the parameter register is already used by a variable or a parent parameter
+                        if(float_registers.used(reg)){
+                            if(float_registers[reg]->position().isParamRegister()){
+                                float_pushed.push_back(reg);
+
+                                auto gpreg = get_free_reg();
+                                
+                                add_instruction(function, ltac::Operator::MOV, gpreg, reg);
+                                add_instruction(function, ltac::Operator::PUSH, gpreg);
+
+                                registers.release(gpreg);
+                            } else {
+                                spills(reg);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //The following parameters are for the same call
+            first_param = false;
+        }
+        
+        if(param->std_param.length() > 0 || param->param){
+            boost::optional<Type> type;
+            unsigned int position;
+
+            //It's a call to a standard function
+            if(param->std_param.length() > 0){
+                type = param->function->getParameterType(param->std_param);
+                position = param->function->getParameterPositionByType(param->std_param);
+            } 
+            //It's a call to a user function
+            else if(param->param){
+                type = param->param->type();
+                position = param->function->getParameterPositionByType(param->param->name());
+            }
+
+            if(*type == BaseType::INT && position <= maxInt){
+                pass_in_int_register(param->arg, position);
+
+                return;
+            }
+            
+            if(*type == BaseType::FLOAT && position <= maxFloat){
+                pass_in_float_register(param->arg, position);
+                
+                return;
+            }
+        } 
+       
+        //If the param as not been handled as register passing, push it on the stack 
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+            if(!(*ptr)->type().isArray() && is_float_var(*ptr)){
+                auto reg1 = get_free_reg();
+                auto reg2 = get_float_reg(*ptr);
+
+                add_instruction(function, ltac::Operator::MOV, reg1, reg2);
+                add_instruction(function, ltac::Operator::PUSH, reg1);
+
+                registers.release(reg1);
+            } else {
+                if((*ptr)->type().isArray()){
+                    auto position = (*ptr)->position();
+
+                    if(position.isGlobal()){
+                        auto reg = get_free_reg();
+
+                        auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+
+                        add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                        add_instruction(function, ltac::Operator::ADD, reg, offset);
+                        add_instruction(function, ltac::Operator::PUSH, reg);
+
+                        registers.release(reg);
+                    } else if(position.isStack()){
+                        auto reg = get_free_reg();
+                        
+                        add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
+                        add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+                        add_instruction(function, ltac::Operator::PUSH, reg);
+
+                        registers.release(reg);
+                    } else if(position.isParameter()){
+                        add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
+                    }
+                } else {
+                    auto reg = get_reg(get_variable(param->arg));
+                    add_instruction(function, ltac::Operator::PUSH, reg);
+                }
+            }
+        } else if(auto* ptr = boost::get<double>(&param->arg)){
+            auto reg = get_free_reg();
+            add_instruction(function, ltac::Operator::MOV, reg, *ptr);
+            add_instruction(function, ltac::Operator::PUSH, reg);
+            registers.release(reg);
+        } else {
+            auto reg = get_reg(get_variable(param->arg));
+            add_instruction(function, ltac::Operator::PUSH, reg);
+        }
     }
     
     void operator()(std::shared_ptr<mtac::Call>& call){
@@ -499,6 +658,12 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         //All the parameters have been handled by now, the next param will be the first for its call
         first_param = true;
+    }
+    
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+        current = quadruple;
+
+        //TODO
     }
 
     void operator()(mtac::NoOp&){

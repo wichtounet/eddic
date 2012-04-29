@@ -23,6 +23,8 @@ struct FloatRegister {
 
 static const FloatRegister ReturnFloat(100);
 
+static const unsigned short FirstFloatParam = 500;
+
 } //end of ltac
 
 } //end of eddic
