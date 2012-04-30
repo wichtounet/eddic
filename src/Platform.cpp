@@ -22,6 +22,22 @@ struct X86Descriptor : public PlatformDescriptor {
     unsigned int numberOfFloatParamRegisters(){
         return 1;
     }
+
+    unsigned int number_of_registers(){
+        return 6;
+    }
+    
+    std::vector<unsigned short> symbolic_registers(){
+        return {1, 2, 3, 4, 5, 6};
+    }
+    
+    unsigned int number_of_float_registers(){
+        return 8;
+    }
+    
+    std::vector<unsigned short> symbolic_float_registers(){
+        return {0, 1, 2, 3, 4, 5, 6, 7};
+    }
 };
 
 struct X86_64Descriptor : public PlatformDescriptor {
@@ -31,6 +47,22 @@ struct X86_64Descriptor : public PlatformDescriptor {
       
     unsigned int numberOfFloatParamRegisters(){
         return 1;
+    }
+    
+    unsigned int number_of_registers(){
+        return 6;
+    }
+    
+    std::vector<unsigned short> symbolic_registers(){
+        return {1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    }
+    
+    unsigned int number_of_float_registers(){
+        return 8;
+    }
+    
+    std::vector<unsigned short> symbolic_float_registers(){
+        return {0, 1, 2, 3, 4, 5, 6, 7};
     }
 };
 
