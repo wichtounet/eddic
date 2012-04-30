@@ -160,6 +160,22 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
 
     /* Register stuff  */
+
+    void copy(mtac::Argument arg, ltac::Register reg){
+        //TODO
+    }
+    
+    void copy(mtac::Argument arg, ltac::FloatRegister reg){
+        //TODO
+    }
+    
+    void move(mtac::Argument arg, ltac::Register reg){
+        //TODO
+    }
+    
+    void move(mtac::Argument arg, ltac::FloatRegister reg){
+        //TODO
+    }
     
     template<typename Reg>
     Reg get_free_reg(as::Registers<Reg>& registers){
@@ -205,43 +221,49 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     ltac::Register get_free_reg(){
-        return get_free_reg(registers);
+        auto reg = get_free_reg(registers);
+        registers.reserve(reg);
+        return reg;
     }
     
     ltac::FloatRegister get_free_float_reg(){
-        return get_free_reg(float_registers);
+        auto reg = get_free_reg(float_registers);
+        float_registers.reserve(reg);
+        return reg;
+    }
+    
+    template<typename Reg> 
+    Reg get_reg(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, bool doMove){
+        //The variable is already in a register
+        if(registers.inRegister(variable)){
+            return registers[variable];
+        }
+       
+        Reg reg = get_free_reg(registers);
+
+        if(doMove){
+            move(variable, reg);
+        }
+
+        registers.setLocation(variable, reg);
+
+        return reg;
     }
 
     ltac::Register get_reg(std::shared_ptr<Variable> var){
-        //TODO
+        return get_reg(registers, var, true);
     }
     
     ltac::Register get_reg_no_move(std::shared_ptr<Variable> var){
-        //TODO
+        return get_reg(registers, var, false);
     }
 
     ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var){
-        //TODO
+        return get_reg(float_registers, var, true);
     }
 
     ltac::FloatRegister get_float_reg_no_move(std::shared_ptr<Variable> var){
-        //TODO
-    }
-
-    void copy(mtac::Argument arg, ltac::Register reg){
-        //TODO
-    }
-    
-    void copy(mtac::Argument arg, ltac::FloatRegister reg){
-        //TODO
-    }
-    
-    void move(mtac::Argument arg, ltac::Register reg){
-        //TODO
-    }
-    
-    void move(mtac::Argument arg, ltac::FloatRegister reg){
-        //TODO
+        return get_reg(float_registers, var, false);
     }
     
     template<typename Reg>
@@ -469,7 +491,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             add_instruction(function, ltac::Operator::CMP_FLOAT, reg1, reg2);
             
-            float_registers.release(reg1);
+            float_registers.release(reg2);
         } else if(isFloat(if_->arg1) && isVariable(*if_->arg2)){
             auto reg1 = get_free_float_reg();
             auto reg2 = get_float_reg(get_variable(*if_->arg2));
@@ -1496,6 +1518,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                 copy(*quadruple->arg2, reg);
 
                 add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, offset), reg);
+
+                float_registers.release(reg);
 
                 break;
             }
