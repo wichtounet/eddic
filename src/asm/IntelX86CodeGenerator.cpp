@@ -52,7 +52,7 @@ enum class FloatRegister : unsigned int {
 };
 
 std::string regToString(Register reg){
-    static std::string registers[(int) Register::REGISTER_COUNT] = {"eax", "ebx", "ecx", "edx", "esp", "ebp", "esi", "edi"};
+    static std::string registers[(int) Register::REGISTER_COUNT] = {"eax", "ebx", "ecx", "edx", "esi", "edi", "esp", "ebp"};
 
     return registers[(int) reg];
 }
