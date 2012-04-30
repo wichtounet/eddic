@@ -85,13 +85,13 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     for(auto block : src_function->getBasicBlocks()){
         compile(block, target_function);
     }
-
-    //TODO Return optimization
     
     //Only if necessary, deallocates size on the stack for the local variables
     if(size > 0){
         add_instruction(target_function, ltac::Operator::FREE_STACK, size);
     }
+        
+    add_instruction(target_function, ltac::Operator::LEAVE);
 }
 
 namespace {
