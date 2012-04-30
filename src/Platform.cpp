@@ -28,7 +28,7 @@ struct X86Descriptor : public PlatformDescriptor {
     }
     
     std::vector<unsigned short> symbolic_registers(){
-        return {1, 2, 3, 4, 5, 6};
+        return {0, 1, 2, 3, 4, 5};
     }
     
     unsigned int number_of_float_registers(){
@@ -42,7 +42,7 @@ struct X86Descriptor : public PlatformDescriptor {
     unsigned short int_param_register(unsigned int position){
         assert(position == 1);
 
-        return 3; //ecx
+        return 2; //ecx
     }
 
     unsigned short float_param_register(unsigned int position){
@@ -86,7 +86,7 @@ struct X86_64Descriptor : public PlatformDescriptor {
     }
     
     std::vector<unsigned short> symbolic_registers(){
-        return {1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15};
+        return {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
     }
     
     unsigned int number_of_float_registers(){
@@ -100,7 +100,7 @@ struct X86_64Descriptor : public PlatformDescriptor {
     unsigned short int_param_register(unsigned int position){
         assert(position == 1 || position == 2);
 
-        return position == 1 ? 14 : 15; //r14 and r15
+        return position == 1 ? 13 : 14; //r14 and r15
     }
 
     unsigned short float_param_register(unsigned int position){

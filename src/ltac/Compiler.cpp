@@ -1016,7 +1016,6 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         int total = 0;
     
-        PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
@@ -1811,9 +1810,22 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
     if(block_usage.find(block) != block_usage.end()){
         target_function->add(block->label);
     }
+    
+    PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
-    //TODO Fill the registers
-    StatementCompiler compiler({}, {}, target_function);
+    std::vector<ltac::Register> registers;
+    auto symbolic_registers = descriptor->symbolic_registers();
+    for(auto reg : symbolic_registers){
+        registers.push_back({reg});
+    }
+    
+    std::vector<ltac::FloatRegister> float_registers;
+    auto float_symbolic_registers = descriptor->symbolic_float_registers();
+    for(auto reg : float_symbolic_registers){
+        float_registers.push_back({reg});
+    }
+
+    StatementCompiler compiler(registers, float_registers, target_function);
     
     for(unsigned int i = 0; i < block->statements.size(); ++i){
         auto& statement = block->statements[i];
