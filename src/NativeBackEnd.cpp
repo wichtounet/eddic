@@ -11,13 +11,17 @@
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
 
-//Three Address Code
+//Medium-level Three Address Code
 #include "mtac/Program.hpp"
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/LivenessAnalyzer.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
+
+//Low-level Three Address Code
+#include "ltac/Compiler.hpp"
+#include "ltac/Printer.hpp"
 
 //Code generation
 #include "asm/CodeGeneratorFactory.hpp"
@@ -39,16 +43,29 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     optimizer.optimize(*mtacProgram, *get_string_pool());
 
     //If asked by the user, print the Three Address code representation
-    if(option_defined("tac") || option_defined("tac-only")){
+    if(option_defined("mtac") || option_defined("mtac-only")){
         mtac::Printer printer;
         printer.print(*mtacProgram);
     }
 
     //If necessary, continue the compilation process
-    if(!option_defined("tac-only")){
+    if(!option_defined("mtac-only")){
         //Compute liveness of variables
         mtac::LivenessAnalyzer liveness;
         liveness.compute(*mtacProgram);
+
+        auto ltac_program = std::make_shared<ltac::Program>();
+        ltac::Compiler ltacCompiler;
+        ltacCompiler.compile(mtacProgram, ltac_program);
+        
+        //If asked by the user, print the Three Address code representation
+        if(option_defined("ltac") || option_defined("ltac-only")){
+            ltac::Printer printer;
+            printer.print(*ltac_program);
+        }
+
+        //TODO Continue with the new code generators
+
 
         //Generate assembly from TAC
         AssemblyFileWriter writer("output.asm");

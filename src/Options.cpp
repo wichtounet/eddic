@@ -49,10 +49,12 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
 
                 ("ast", "Print the Abstract Syntax Tree representation of the source")
-                ("tac", "Print the Three Address Code representation of the source")
+                ("mtac", "Print the medium-level Three Address Code representation of the source")
+                ("ltac", "Print the low-level Three Address Code representation of the source")
                 
                 ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
-                ("tac-only", "Only print the Three Address Code representation of the source (do not continue compilation after printing)")
+                ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
+                ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
                 
                 ("debug,g", "Add debugging symbols")
 
