@@ -27,6 +27,9 @@ struct Register {
 static const Register ReturnInt1(100);
 static const Register ReturnInt2(101);
 
+static const Register A(500);
+static const Register D(501);
+
 static const Register SP(1000);
 static const Register BP(1001);
 

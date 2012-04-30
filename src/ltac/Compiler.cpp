@@ -170,6 +170,27 @@ struct StatementCompiler : public boost::static_visitor<> {
         //TODO
     }
     
+    template<typename Reg>
+    void safe_move(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, Reg reg){
+        if(registers.used(reg)){
+            if(registers[reg] != variable){
+                spills(reg);
+
+                move(variable, reg);
+            }
+        } else {
+            move(variable, reg);
+        }
+    }
+    
+    void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg){
+        return safe_move(registers, variable, reg);
+    }
+
+    void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
+        return safe_move(float_registers, variable, reg);
+    }
+    
     void spills(ltac::Register reg){
         //TODO
     }
@@ -825,99 +846,100 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     //Div eax by arg2 
-    void divEax(std::shared_ptr<mtac::Quadruple> quadruple){
-        /*writer.stream() << "mov rdx, rax" << std::endl;
-        writer.stream() << "sar rdx, 63" << std::endl;
+    void div_eax(std::shared_ptr<mtac::Quadruple> quadruple){
+        add_instruction(function, ltac::Operator::MOV, ltac::D, ltac::A);
+        add_instruction(function, ltac::Operator::SHIFT_LEFT, ltac::D, size(BaseType::INT) * 8 - 1);
 
         if(isInt(*quadruple->arg2)){
-            auto reg = getReg();
+            auto reg = get_free_reg();
             move(*quadruple->arg2, reg);
 
-            writer.stream() << "idiv " << reg << std::endl;
+            add_instruction(function, ltac::Operator::DIV, reg);
 
             if(registers.reserved(reg)){
                 registers.release(reg);
             }
         } else {
-            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
-        }*/
+            add_instruction(function, ltac::Operator::DIV, to_arg(*quadruple->arg2));
+        }
     }
     
     void div(std::shared_ptr<mtac::Quadruple> quadruple){
-        /*spills(Register::RDX);
-        registers.reserve(Register::RDX);
+        spills(ltac::D);
+        registers.reserve(ltac::D);
 
         //Form x = x / y
         if(*quadruple->arg1 == quadruple->result){
-            safeMove(quadruple->result, Register::RAX);
+            safe_move(quadruple->result, ltac::A);
 
-            divEax(quadruple);
-            //Form x = y / z (y: variable)
-        } else if(isVariable(*quadruple->arg1)){
-            spills(Register::RAX);
-            registers.reserve(Register::RAX);
+            div_eax(quadruple);
+            
+        } 
+        //Form x = y / z (y: variable)
+        else if(isVariable(*quadruple->arg1)){
+            spills(ltac::A);
+            registers.reserve(ltac::A);
 
-            copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::RAX);
+            copy(get_variable(*quadruple->arg1), ltac::A);
 
-            divEax(quadruple);
+            div_eax(quadruple);
 
-            registers.release(Register::RAX);
-            registers.setLocation(quadruple->result, Register::RAX);
+            registers.release(ltac::A);
+            registers.setLocation(quadruple->result, ltac::A);
         } else {
-            spills(Register::RAX);
-            registers.reserve(Register::RAX);
+            spills(ltac::A);
+            registers.reserve(ltac::A);
 
-            copy(*quadruple->arg1, Register::RAX);
+            copy(*quadruple->arg1, ltac::A);
 
-            divEax(quadruple);
+            div_eax(quadruple);
 
-            registers.release(Register::RAX);
-            registers.setLocation(quadruple->result, Register::RAX);
+            registers.release(ltac::A);
+            registers.setLocation(quadruple->result, ltac::A);
         }
 
-        registers.release(Register::RDX);*/
+        registers.release(ltac::D);
     }
     
     void mod(std::shared_ptr<mtac::Quadruple> quadruple){
-        /*spills(Register::RAX);
-        spills(Register::RDX);
+        spills(ltac::A);
+        spills(ltac::D);
 
-        registers.reserve(Register::RAX);
-        registers.reserve(Register::RDX);
+        registers.reserve(ltac::A);
+        registers.reserve(ltac::D);
 
-        copy(*quadruple->arg1, Register::RAX);
+        copy(*quadruple->arg1, ltac::A);
 
-        divEax(quadruple);
+        div_eax(quadruple);
 
         //result is in edx (no need to move it now)
-        registers.setLocation(quadruple->result, Register::RDX);
+        registers.setLocation(quadruple->result, ltac::D);
 
-        registers.release(Register::RAX);*/
+        registers.release(ltac::A);
     }
     
     void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple){
-        /*Register reg = getRegNoMove(quadruple->result);
+        auto reg = get_reg_no_move(quadruple->result);
 
         //The first argument is not important, it can be immediate, but the second must be a register
         if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-            auto reg = getReg();
+            auto reg = get_free_reg();
 
-            writer.stream() << "mov " << reg << ", " << *ptr << std::endl;
-
-            writer.stream() << "cmp " << reg << ", " << arg(*quadruple->arg2) << std::endl;
+            add_instruction(function, ltac::Operator::MOV, reg, *ptr); 
+            add_instruction(function, ltac::Operator::CMP_INT, reg, to_arg(*quadruple->arg2)); 
 
             registers.release(reg);
         } else {
-            writer.stream() << "cmp " << arg(*quadruple->arg1) << ", " << arg(*quadruple->arg2) << std::endl;
+            add_instruction(function, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
         }
 
         //TODO Find a better way to achieve that
-        Register valueReg = getReg();
-        writer.stream() << "mov " << valueReg << ", 1" << std::endl;
-        writer.stream() << set << " " << reg << ", " << valueReg << std::endl;
+        auto valueReg = get_free_reg();
+        add_instruction(function, ltac::Operator::MOV, valueReg, 1); 
+        add_instruction(function, set, reg, valueReg); 
         registers.release(valueReg);
 
-        written.insert(quadruple->result);*/
+        written.insert(quadruple->result);
     }
     
     void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
