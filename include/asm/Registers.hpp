@@ -27,6 +27,9 @@ class Registers {
     public:
         Registers(std::vector<Reg> registers, std::shared_ptr<Variable> var);
 
+        Registers(const Registers<Reg>& rhs) = delete;
+        Registers& operator=(const Registers<Reg>& rhs) = delete;
+
         void reset();
 
         bool inRegister(std::shared_ptr<Variable> variable);
@@ -130,6 +133,7 @@ void Registers<Reg>::remove(std::shared_ptr<Variable> variable){
     assert((*this)[(*this)[variable]] == variable);
 
     descriptors.at(static_cast<int>((*this)[variable])) = nullptr;
+
     variables.erase(variable);
 }
         

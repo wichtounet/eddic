@@ -655,7 +655,7 @@ struct IntelStatementCompiler {
     }
 
     template<typename Reg>
-    void spillsAll(Registers<Reg> registers){
+    void spillsAll(Registers<Reg>& registers){
         for(auto reg : registers){
             //The register can be reserved if the ending occurs in a special break case
             if(!registers.reserved(reg) && registers.used(reg)){

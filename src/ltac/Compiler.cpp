@@ -420,7 +420,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     template<typename Reg>
-    void spills(as::Registers<Reg> registers, Reg reg, ltac::Operator mov){
+    void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov){
         //If the register is not used, there is nothing to spills
         if(registers.used(reg)){
             auto variable = registers[reg];
@@ -482,7 +482,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
 
     template<typename Reg>
-    void spills_all(as::Registers<Reg> registers){
+    void spills_all(as::Registers<Reg>& registers){
         for(auto reg : registers){
             //The register can be reserved if the ending occurs in a special break case
             if(!registers.reserved(reg) && registers.used(reg)){
@@ -1150,15 +1150,17 @@ struct StatementCompiler : public boost::static_visitor<> {
         } 
         //Form x = y / z (y: variable)
         else if(isVariable(*quadruple->arg1)){
-            spills(ltac::Register(descriptor->a_register()));
-            registers.reserve(ltac::Register(descriptor->a_register()));
+            auto A = ltac::Register(descriptor->a_register());
 
-            copy(get_variable(*quadruple->arg1), ltac::Register(descriptor->a_register()));
+            spills(A);
+            registers.reserve(A);
+
+            copy(get_variable(*quadruple->arg1), A);
 
             div_eax(quadruple);
 
-            registers.release(ltac::Register(descriptor->a_register()));
-            registers.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
+            registers.release(A);
+            registers.setLocation(quadruple->result, A);
         } else {
             spills(ltac::Register(descriptor->a_register()));
             registers.reserve(ltac::Register(descriptor->a_register()));
