@@ -38,11 +38,11 @@ enum class Register : unsigned int {
     R14,
     R15,
 
-    RSP, //Extended stack pointer
-    RBP, //Extended base pointer
-
     RSI, //Extended source index
     RDI, //Extended destination index
+
+    RSP, //Extended stack pointer
+    RBP, //Extended base pointer
     
     REGISTER_COUNT  
 };
@@ -64,7 +64,7 @@ std::string regToString(Register reg){
     static std::string registers[(int) Register::REGISTER_COUNT] = {
         "rax", "rbx", "rcx", "rdx", 
         "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-        "rsp", "rbp", "rsi", "rdi"};
+        "rsi", "rdi", "rsp", "rbp"};
 
     return registers[(int) reg];
 }
