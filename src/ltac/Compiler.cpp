@@ -1004,8 +1004,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             add_instruction(function, ltac::Operator::PUSH, reg);
             registers.release(reg);
         } else {
-            auto reg = get_reg(get_variable(param->arg));
-            add_instruction(function, ltac::Operator::PUSH, reg);
+            add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
         }
     }
     
