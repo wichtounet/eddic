@@ -190,8 +190,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
     
-    void copy(mtac::Argument arg, ltac::FloatRegister reg){
-        assert(is_variable(argument) || isFloat(argument));
+    void copy(mtac::Argument argument, ltac::FloatRegister reg){
+        assert(is_variable(argument) || mtac::isFloat(argument));
 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
@@ -216,7 +216,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 } 
             }
         } else if(boost::get<double>(&argument)){
-            Register gpreg = getReg();
+            auto gpreg = get_free_reg();
             
             add_instruction(function, ltac::Operator::MOV, gpreg, to_arg(argument));
             add_instruction(function, ltac::Operator::FMOV, reg, gpreg);
@@ -225,12 +225,86 @@ struct StatementCompiler : public boost::static_visitor<> {
         }
     }
     
-    void move(mtac::Argument arg, ltac::Register reg){
-        //TODO
+    void move(mtac::Argument argument, ltac::Register reg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            auto variable = *ptr;
+
+            //If the variable is hold in a register, just move the register value
+            if(registers.inRegister(variable)){
+                auto oldReg = registers[variable];
+               
+                //Only if the variable is not already on the same register 
+                if(oldReg != reg){
+                    add_instruction(function, ltac::Operator::MOV, reg, oldReg);
+
+                    //There is nothing more in the old register
+                    registers.remove(variable);
+                }
+            } else {
+                auto position = variable->position();
+
+                //The temporary should have been handled by the preceding condition (hold in a register)
+                assert(!position.isTemporary());
+
+                if(position.isStack()){
+                    add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, -1 * position.offset()));
+                } else if(position.isParameter()){
+                    add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                } else if(position.isGlobal()){
+                    add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                } 
+            } 
+            
+            //The variable is now held in the new register
+            registers.setLocation(variable, reg);
+        } else {
+            //If it's a constant (int, double, string), just move it
+            add_instruction(function, ltac::Operator::MOV, reg, to_arg(argument));
+        }
     }
     
-    void move(mtac::Argument arg, ltac::FloatRegister reg){
-        //TODO
+    void move(mtac::Argument argument, ltac::FloatRegister reg){
+        assert(is_variable(argument) || mtac::isFloat(argument));
+
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            auto variable = *ptr;
+
+            //If the variable is hold in a register, just move the register value
+            if(float_registers.inRegister(variable)){
+                auto oldReg = float_registers[variable];
+               
+                //Only if the variable is not already on the same register 
+                if(oldReg != reg){
+                    add_instruction(function, ltac::Operator::FMOV, reg, oldReg);
+
+                    //There is nothing more in the old register
+                    float_registers.remove(variable);
+                }
+            } else {
+                auto position = variable->position();
+
+                //The temporary should have been handled by the preceding condition (hold in a register)
+                assert(!position.isTemporary());
+
+                if(position.isStack()){
+                    add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, -1 * position.offset()));
+                } else if(position.isParameter()){
+                    add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
+                } else if(position.isGlobal()){
+                    add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
+                } 
+            }
+            
+            //The variable is now held in the new register
+            float_registers.setLocation(variable, reg);
+        } else if(boost::get<double>(&argument)){
+            auto gpreg = get_free_reg();
+            
+            add_instruction(function, ltac::Operator::MOV, gpreg, to_arg(argument));
+            add_instruction(function, ltac::Operator::FMOV, reg, gpreg);
+
+            registers.release(gpreg);
+        }
     }
     
     template<typename Reg>
