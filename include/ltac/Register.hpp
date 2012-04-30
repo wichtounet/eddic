@@ -24,16 +24,9 @@ struct Register {
     bool operator!=(const Register& rhs) const;
 };
 
-static const Register ReturnInt1(100);
-static const Register ReturnInt2(101);
-
-static const Register A(500);
-static const Register D(501);
-
+/* Whatever the platform is, these two registers must be constant  */
 static const Register SP(1000);
 static const Register BP(1001);
-
-static const unsigned short FirstIntParam = 500;
 
 } //end of ltac
 

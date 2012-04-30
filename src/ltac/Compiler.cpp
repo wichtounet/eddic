@@ -121,11 +121,13 @@ struct StatementCompiler : public boost::static_visitor<> {
     //Keep track of the written variables to spills them
     std::unordered_set<std::shared_ptr<Variable>> written;
 
+    PlatformDescriptor* descriptor;
+
     StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
-        registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
-        float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
-        function(function) {
-        //Nothing else to init
+            registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
+            float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
+            function(function) {
+        descriptor = getPlatformDescriptor(platform);
     }
     
     /* Liveness stuff  */
@@ -859,7 +861,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void pass_in_int_register(mtac::Argument& argument, int position){
-        add_instruction(function, ltac::Operator::MOV, ltac::Register(ltac::FirstIntParam + position), to_arg(argument));
+        add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), to_arg(argument));
     }
     
     void pass_in_float_register(mtac::Argument& argument, int position){
@@ -867,11 +869,11 @@ struct StatementCompiler : public boost::static_visitor<> {
             auto gpreg = get_free_reg();
 
             add_instruction(function, ltac::Operator::MOV, gpreg, *ptr);
-            add_instruction(function, ltac::Operator::MOV, ltac::Register(ltac::FirstIntParam + position), gpreg);
+            add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->float_param_register(position)), gpreg);
 
             registers.release(gpreg);
         } else {
-            add_instruction(function, ltac::Operator::MOV, ltac::Register(ltac::FirstIntParam + position), to_arg(argument));
+            add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->float_param_register(position)), to_arg(argument));
         }
     }
     
@@ -889,7 +891,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
                     if(type == BaseType::INT && position <= maxInt){
-                        ltac::Register reg(ltac::FirstIntParam + position);
+                        ltac::Register reg(descriptor->int_param_register(position));
 
                         //If the parameter register is already used by a variable or a parent parameter
                         if(registers.used(reg)){
@@ -903,7 +905,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     }
 
                     if(type == BaseType::FLOAT && position <= maxFloat){
-                        ltac::FloatRegister reg(ltac::FirstFloatParam + position);
+                        ltac::FloatRegister reg(descriptor->float_param_register(position));
 
                         //If the parameter register is already used by a variable or a parent parameter
                         if(float_registers.used(reg)){
@@ -1051,16 +1053,16 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         if(call->return_){
             if(call->return_->type() == BaseType::FLOAT){
-                float_registers.setLocation(call->return_, ltac::ReturnFloat);
+                float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
             } else {
-                registers.setLocation(call->return_, ltac::ReturnInt1);
+                registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
             }
                 
             written.insert(call->return_);
         }
 
         if(call->return2_){
-            registers.setLocation(call->return2_, ltac::ReturnInt1);
+            registers.setLocation(call->return2_, ltac::Register(descriptor->int_return_register2()));
             written.insert(call->return2_);
         }
 
@@ -1117,8 +1119,8 @@ struct StatementCompiler : public boost::static_visitor<> {
     
     //Div eax by arg2 
     void div_eax(std::shared_ptr<mtac::Quadruple> quadruple){
-        add_instruction(function, ltac::Operator::MOV, ltac::D, ltac::A);
-        add_instruction(function, ltac::Operator::SHIFT_LEFT, ltac::D, size(BaseType::INT) * 8 - 1);
+        add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->d_register()), ltac::Register(descriptor->a_register()));
+        add_instruction(function, ltac::Operator::SHIFT_LEFT, ltac::Register(descriptor->d_register()), size(BaseType::INT) * 8 - 1);
 
         if(isInt(*quadruple->arg2)){
             auto reg = get_free_reg();
@@ -1135,57 +1137,57 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void div(std::shared_ptr<mtac::Quadruple> quadruple){
-        spills(ltac::D);
-        registers.reserve(ltac::D);
+        spills(ltac::Register(descriptor->d_register()));
+        registers.reserve(ltac::Register(descriptor->d_register()));
 
         //Form x = x / y
         if(*quadruple->arg1 == quadruple->result){
-            safe_move(quadruple->result, ltac::A);
+            safe_move(quadruple->result, ltac::Register(descriptor->a_register()));
 
             div_eax(quadruple);
             
         } 
         //Form x = y / z (y: variable)
         else if(isVariable(*quadruple->arg1)){
-            spills(ltac::A);
-            registers.reserve(ltac::A);
+            spills(ltac::Register(descriptor->a_register()));
+            registers.reserve(ltac::Register(descriptor->a_register()));
 
-            copy(get_variable(*quadruple->arg1), ltac::A);
+            copy(get_variable(*quadruple->arg1), ltac::Register(descriptor->a_register()));
 
             div_eax(quadruple);
 
-            registers.release(ltac::A);
-            registers.setLocation(quadruple->result, ltac::A);
+            registers.release(ltac::Register(descriptor->a_register()));
+            registers.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
         } else {
-            spills(ltac::A);
-            registers.reserve(ltac::A);
+            spills(ltac::Register(descriptor->a_register()));
+            registers.reserve(ltac::Register(descriptor->a_register()));
 
-            copy(*quadruple->arg1, ltac::A);
+            copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
 
             div_eax(quadruple);
 
-            registers.release(ltac::A);
-            registers.setLocation(quadruple->result, ltac::A);
+            registers.release(ltac::Register(descriptor->a_register()));
+            registers.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
         }
 
-        registers.release(ltac::D);
+        registers.release(ltac::Register(descriptor->d_register()));
     }
     
     void mod(std::shared_ptr<mtac::Quadruple> quadruple){
-        spills(ltac::A);
-        spills(ltac::D);
+        spills(ltac::Register(descriptor->a_register()));
+        spills(ltac::Register(descriptor->d_register()));
 
-        registers.reserve(ltac::A);
-        registers.reserve(ltac::D);
+        registers.reserve(ltac::Register(descriptor->a_register()));
+        registers.reserve(ltac::Register(descriptor->d_register()));
 
-        copy(*quadruple->arg1, ltac::A);
+        copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
 
         div_eax(quadruple);
 
         //result is in edx (no need to move it now)
-        registers.setLocation(quadruple->result, ltac::D);
+        registers.setLocation(quadruple->result, ltac::Register(descriptor->d_register()));
 
-        registers.release(ltac::A);
+        registers.release(ltac::Register(descriptor->a_register()));
     }
     
     void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple){
@@ -1733,8 +1735,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //A return without args is the same as exiting from the function
                 if(quadruple->arg1){
                     if(isFloat(*quadruple->arg1)){
-                        spills(ltac::ReturnFloat);
-                        move(*quadruple->arg1, ltac::ReturnFloat);
+                        spills(ltac::FloatRegister(descriptor->float_return_register()));
+                        move(*quadruple->arg1, ltac::FloatRegister(descriptor->float_return_register()));
                     } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && is_float_var(get_variable(*quadruple->arg1))){
                         auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
@@ -1744,8 +1746,8 @@ struct StatementCompiler : public boost::static_visitor<> {
                             add_instruction(function, ltac::Operator::FMOV, ltac::ReturnFloat, reg);
                         }
                     } else {
-                        auto reg1 = ltac::ReturnInt1;
-                        auto reg2 = ltac::ReturnInt2;
+                        auto reg1 = ltac::Register(descriptor->int_return_register1());
+                        auto reg2 = ltac::Register(descriptor->int_return_register2());
 
                         spills_if_necessary(reg1, *quadruple->arg1);
 
