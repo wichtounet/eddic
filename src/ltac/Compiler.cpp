@@ -287,7 +287,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         return safe_move(float_registers, variable, reg);
     }
     
-    void spills(ltac::Register reg){
+    template<typename Reg>
+    void spills(as::Registers<Reg> registers, Reg reg, ltac::Operator mov){
         //If the register is not used, there is nothing to spills
         if(registers.used(reg)){
             auto variable = registers[reg];
@@ -301,19 +302,19 @@ struct StatementCompiler : public boost::static_visitor<> {
             if(written.find(variable) != written.end()){
                 auto position = variable->position();
                 if(position.isStack()){
-                    add_instruction(function, ltac::Operator::MOV, ltac::Address(ltac::BP, -1 * position.offset()), reg);
+                    add_instruction(function, mov, ltac::Address(ltac::BP, -1 * position.offset()), reg);
                 } else if(position.isParameter()){
-                    add_instruction(function, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+                    add_instruction(function, mov, ltac::Address(ltac::BP, position.offset()), reg);
                 } else if(position.isGlobal()){
-                    add_instruction(function, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+                    add_instruction(function, mov, ltac::Address("V" + position.name()), reg);
                 } else if(position.isTemporary()){
                     //If the variable is live, move it to another register, else do nothing
                     if(is_live(variable)){
                         registers.remove(variable);
                         registers.reserve(reg);
 
-                        auto newReg = get_reg_no_move(variable);
-                        add_instruction(function, ltac::Operator::MOV, newReg, reg);
+                        auto newReg = get_reg(registers, variable, false);
+                        add_instruction(function, mov, newReg, reg);
                         
                         registers.release(reg);
 
@@ -329,48 +330,13 @@ struct StatementCompiler : public boost::static_visitor<> {
             written.erase(variable);
         }
     }
+    
+    void spills(ltac::Register reg){
+        spills(registers, reg, ltac::Operator::MOV);
+    }
 
     void spills(ltac::FloatRegister reg){
-        //If the register is not used, there is nothing to spills
-        if(float_registers.used(reg)){
-            auto variable = float_registers[reg];
-
-            //Do no spills param stored in register
-            if(variable->position().isParamRegister()){
-                return;
-            }
-
-            //If the variable has not been written, there is no need to spill it
-            if(written.find(variable) != written.end()){
-                auto position = variable->position();
-                if(position.isStack()){
-                    add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::BP, -1 * position.offset()), reg);
-                } else if(position.isParameter()){
-                    add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
-                } else if(position.isGlobal()){
-                    add_instruction(function, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
-                } else if(position.isTemporary()){
-                    //If the variable is live, move it to another register, else do nothing
-                    if(is_live(variable)){
-                        float_registers.remove(variable);
-                        float_registers.reserve(reg);
-
-                        auto newReg = get_float_reg_no_move(variable);
-                        add_instruction(function, ltac::Operator::FMOV, newReg, reg);
-
-                        float_registers.release(reg);
-
-                        return; //Return here to avoid erasing variable from variables
-                    }
-                }
-            }
-            
-            //The variable is no more contained in the register
-            float_registers.remove(variable);
-
-            //The variable has not been written now
-            written.erase(variable);
-        }
+        spills(float_registers, reg, ltac::Operator::FMOV);
     }
     
     void spills_if_necessary(ltac::Register reg, mtac::Argument arg){
