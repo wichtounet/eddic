@@ -21,6 +21,14 @@ ltac::Address::Address(const std::string& absolute) : absolute(absolute) {
     //Nothing to init    
 }
 
+ltac::Address::Address(const std::string& absolute, ltac::Register reg) : base_register(reg), absolute(absolute) {
+    //Nothing to init    
+}
+
+ltac::Address::Address(const std::string& absolute, unsigned displacement) : displacement(displacement), absolute(absolute) {
+    //Nothing to init    
+}
+
 ltac::Address::Address(ltac::Register reg, unsigned displacement) : base_register(reg), displacement(displacement) {
     //Nothing to init    
 }

@@ -26,6 +26,9 @@ struct Address {
 
     Address();
     Address(const std::string& absolute);
+    Address(const std::string& absolute, ltac::Register reg);
+    Address(const std::string& absolute, unsigned displacement);
+    
     Address(unsigned displacement);
     Address(ltac::Register reg, unsigned displacement);
     Address(ltac::Register reg, ltac::Register scaled);

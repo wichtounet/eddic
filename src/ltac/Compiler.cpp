@@ -208,20 +208,6 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         ended = true;
     }
-
-    /* Conversions */
-
-    ltac::Argument to_arg(mtac::Argument arg){
-        //TODO
-    }
-
-    ltac::Address to_address(std::shared_ptr<Variable> var, int offset){
-        //TODO
-    }
-    
-    ltac::Address to_address(std::shared_ptr<Variable> var, mtac::Argument offset){
-        //TODO
-    }
     
     /* Utility  */
 
@@ -236,10 +222,80 @@ struct StatementCompiler : public boost::static_visitor<> {
     bool is_int_var(std::shared_ptr<Variable> variable){
         return variable->type() == BaseType::INT;
     }
+    
+    template<typename Variant>
+    bool is_variable(Variant& variant){
+        return boost::get<std::shared_ptr<Variable>>(&variant);
+    }
 
     template<typename Variant>
     std::shared_ptr<Variable> get_variable(Variant& variant){
         return boost::get<std::shared_ptr<Variable>>(variant);
+    }
+
+    /* Conversions */
+
+    ltac::Argument to_arg(mtac::Argument arg){
+        //TODO
+    }
+
+    ltac::Address to_address(std::shared_ptr<Variable> var, int offset){
+        auto position = var->position();
+
+        assert(!position.isTemporary());
+
+        if(position.isStack()){
+            return ltac::Address(ltac::BP, -position.offset() + offset);
+        } else if(position.isParameter()){
+            //The case of array is special because only the address is passed, not the complete array
+            if(var->type().isArray())
+            {
+                auto reg = get_free_reg();
+
+                add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+
+                registers.release(reg);
+
+                return ltac::Address(reg, offset);
+            } 
+            //In the other cases, the value is passed, so we can compute the offset directly
+            else {
+                return ltac::Address(ltac::BP, position.offset() + offset);
+            }
+        } else if(position.isGlobal()){
+            return ltac::Address("V" + position.name(), offset);
+        } 
+
+        ASSERT_PATH_NOT_TAKEN("Should never get there");
+    }
+    
+    ltac::Address to_address(std::shared_ptr<Variable> var, mtac::Argument offset){
+        if(auto* ptr = boost::get<int>(&offset)){
+            return to_address(var, *ptr);
+        }
+        
+        assert(is_variable(offset));
+        
+        auto position = var->position();
+        assert(!position.isTemporary());
+
+        auto offsetReg = get_reg(get_variable(offset));
+        
+        if(position.isStack()){
+            return ltac::Address(ltac::BP, offsetReg, 1, -1 * position.offset());
+        } else if(position.isParameter()){
+            auto reg = get_free_reg();
+
+            add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+
+            registers.release(reg);
+
+            return ltac::Address(reg, offsetReg);
+        } else if(position.isGlobal()){
+            return ltac::Address("V" + position.name(), offsetReg);
+        } 
+
+        ASSERT_PATH_NOT_TAKEN("Should never get there");
     }
 
     /* Others  */
