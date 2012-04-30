@@ -633,12 +633,11 @@ struct StatementCompiler : public boost::static_visitor<> {
             registers.release(reg1);
         } else {
             auto reg1 = get_reg(get_variable(if_->arg1));
-            auto reg2 = get_reg(get_variable(*if_->arg2));
 
             //The basic block must be ended before the jump
             end_basic_block();
 
-            add_instruction(function, ltac::Operator::CMP_INT, reg1, reg2);
+            add_instruction(function, ltac::Operator::CMP_INT, reg1, to_arg(*if_->arg2));
         }
     }
     
@@ -1295,7 +1294,12 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //In the other cases, use lea to perform the addition
                 else {
                     auto reg = get_reg_no_move(quadruple->result);
-                    add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(get_reg(get_variable(*quadruple->arg1)), get_reg(get_variable(*quadruple->arg2))));
+                    
+                    if(is_variable(*quadruple->arg1)){
+                        add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(get_reg(get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
+                    } else {
+                        add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), get_reg(get_variable(*quadruple->arg2)));
+                    }
                 }
         
                 written.insert(quadruple->result);
