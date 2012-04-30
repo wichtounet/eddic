@@ -32,7 +32,6 @@ struct D {                                                                  \
     D(unsigned int t_) : t((int) t_) {}                                     \
     D(double t_) : t(t_) {}                                                 \
     D(const std::string& t_) : t(t_) {}                                     \
-    D(std::shared_ptr<Variable> t_) : t(t_) {}                              \
                                                                             \
     D& operator=(const D & rhs) { t = rhs.t; return *this;}                 \
     D& operator=(const T & rhs) { t = rhs; return *this;}                   \
@@ -44,7 +43,6 @@ struct D {                                                                  \
     D& operator=(unsigned int rhs) { t = (int) rhs; return *this; }         \
     D& operator=(double rhs) { t = rhs; return *this; }                     \
     D& operator=(const std::string& rhs) { t = rhs; return *this; }         \
-    D& operator=(std::shared_ptr<Variable> rhs) { t = rhs; return *this; }  \
                                                                             \
     operator const T &() const {return t; }                                 \
     operator T &() { return t; }                                            \
@@ -65,7 +63,7 @@ class Variable;
 } //end of eddic
 
 namespace eddi_detail {
-    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, eddic::ltac::FloatRegister, eddic::ltac::Register, eddic::ltac::Address, std::string> ltac_variant_t;
+    typedef boost::variant<double, int, eddic::ltac::FloatRegister, eddic::ltac::Register, eddic::ltac::Address, std::string> ltac_variant_t;
 
     struct ltac_equals_visitor : boost::static_visitor<bool> {
         template <typename T>
