@@ -72,17 +72,17 @@ bool Registers<Reg>::inRegister(std::shared_ptr<Variable> variable) {
 
 template<typename Reg>
 bool Registers<Reg>::inRegister(std::shared_ptr<Variable> variable, Reg reg) {
-    return inRegister(variable) && variables[variable] == reg;
+    return inRegister(variable) && variables.at(variable) == reg;
 }
 
 template<typename Reg>
 Reg Registers<Reg>::first() const {
-    return registers[0];
+    return registers.at(0);
 }
 
 template<typename Reg>
 bool Registers<Reg>::used(Reg reg) {
-    return descriptors[(int) reg].get() != 0;
+    return descriptors.at(static_cast<int>(reg)).get() != 0;
 }
 
 template<typename Reg>
@@ -99,7 +99,7 @@ std::shared_ptr<Variable> Registers<Reg>::operator[](Reg reg){
     assert(used(reg));
     assert(!reserved(reg));
 
-    return descriptors[(int) reg];
+    return descriptors.at(static_cast<int>(reg));
 }
 
 template<typename Reg>
@@ -115,11 +115,11 @@ template<typename Reg>
 void Registers<Reg>::setLocation(std::shared_ptr<Variable> variable, Reg reg){
     //Make sure that there is no other refernce to this variable
     if(inRegister(variable)){
-        descriptors[(int) (*this)[variable]] = nullptr;
+        descriptors.at(static_cast<int>((*this)[variable])) = nullptr;
     }
 
     variables[variable] = reg;
-    descriptors[(int) reg] = variable;
+    descriptors.at(static_cast<int>(reg)) = variable;
     
     assert((*this)[(*this)[variable]] == variable);
 }
@@ -129,7 +129,7 @@ void Registers<Reg>::remove(std::shared_ptr<Variable> variable){
     assert(inRegister(variable));
     assert((*this)[(*this)[variable]] == variable);
 
-    descriptors[(int) (*this)[variable]] = nullptr;
+    descriptors.at(static_cast<int>((*this)[variable])) = nullptr;
     variables.erase(variable);
 }
         
@@ -157,19 +157,19 @@ template<typename Reg>
 void Registers<Reg>::reserve(Reg reg){
     assert(!used(reg));
 
-    descriptors[(int) reg] = retainVariable;
+    descriptors.at(static_cast<int>(reg)) = retainVariable;
 }
 
 template<typename Reg>
 void Registers<Reg>::release(Reg reg){
-   assert(descriptors[(int) reg] == retainVariable);
+   assert(descriptors[static_cast<int>(reg)] == retainVariable);
    
-   descriptors[(int) reg] = nullptr; 
+   descriptors.at(static_cast<int>(reg)) = nullptr;
 }
 
 template<typename Reg>
 bool Registers<Reg>::reserved(Reg reg){
-   return descriptors[(int) reg] == retainVariable; 
+   return descriptors.at(static_cast<int>(reg)) == retainVariable; 
 }
 
 } //end of as

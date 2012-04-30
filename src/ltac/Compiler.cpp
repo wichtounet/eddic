@@ -1743,9 +1743,9 @@ struct StatementCompiler : public boost::static_visitor<> {
                         auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
                         auto reg = get_float_reg(variable);
-                        if(reg != ltac::ReturnFloat){
-                            spills(ltac::ReturnFloat);
-                            add_instruction(function, ltac::Operator::FMOV, ltac::ReturnFloat, reg);
+                        if(reg != ltac::FloatRegister(descriptor->float_return_register())){
+                            spills(ltac::FloatRegister(descriptor->float_return_register()));
+                            add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_return_register()), reg);
                         }
                     } else {
                         auto reg1 = ltac::Register(descriptor->int_return_register1());
