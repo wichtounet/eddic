@@ -235,8 +235,30 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     /* Conversions */
 
-    ltac::Argument to_arg(mtac::Argument arg){
-        //TODO
+    ltac::Argument to_arg(mtac::Argument argument){
+        if(auto* ptr = boost::get<int>(&argument)){
+            return *ptr;
+        } else if(auto* ptr = boost::get<double>(&argument)){
+            return *ptr;
+        } else if(auto* ptr = boost::get<std::string>(&argument)){
+            return *ptr;
+        } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+            if(is_float_var(*ptr)){
+                if((*ptr)->position().isTemporary()){
+                    return get_float_reg_no_move(*ptr);
+                } else {
+                    return get_float_reg(*ptr);
+                }
+            } else {
+                if((*ptr)->position().isTemporary()){
+                    return get_reg_no_move(*ptr);
+                } else {
+                    return get_reg(*ptr);
+                }
+            }
+        }
+
+        ASSERT_PATH_NOT_TAKEN("Should never get there");
     }
 
     ltac::Address to_address(std::shared_ptr<Variable> var, int offset){
