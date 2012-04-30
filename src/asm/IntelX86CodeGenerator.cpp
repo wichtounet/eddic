@@ -29,11 +29,11 @@ enum class Register : unsigned int {
     ECX,
     EDX,
 
-    ESP, //Extended stack pointer
-    EBP, //Extended base pointer
-
     ESI, //Extended source index
     EDI, //Extended destination index
+
+    ESP, //Extended stack pointer
+    EBP, //Extended base pointer
     
     REGISTER_COUNT  
 };
