@@ -77,11 +77,11 @@ struct DebugVisitor : public boost::static_visitor<> {
         //TODO add arg3
 
         if(quadruple->arg1 && quadruple->arg2){
-            std::cout << static_cast<unsigned int>(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << std::endl;
+            std::cout << "\t" << static_cast<unsigned int>(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << std::endl;
         } else if(quadruple->arg1){
-            std::cout << static_cast<unsigned int>(quadruple->op) << " " << printArg(*quadruple->arg1) << std::endl;
+            std::cout << "\t" << static_cast<unsigned int>(quadruple->op) << " " << printArg(*quadruple->arg1) << std::endl;
         } else {
-            std::cout << static_cast<unsigned int>(quadruple->op) << std::endl;
+            std::cout << "\t" << static_cast<unsigned int>(quadruple->op) << std::endl;
         }
     }
 
@@ -90,7 +90,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Call>& call){
-        std::cout << "call " << call->function << std::endl;
+        std::cout << "\tcall " << call->function << std::endl;
     }
 
     void operator()(std::string& label){
