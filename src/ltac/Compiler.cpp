@@ -127,11 +127,89 @@ struct StatementCompiler : public boost::static_visitor<> {
         function(function) {
         //Nothing else to init
     }
+    
+    /* Liveness stuff  */
+    
+    bool is_live(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
+        if(liveness.find(variable) != liveness.end()){
+            return liveness[variable];   
+        } else {
+            return !variable->position().isTemporary();
+        }
+    }
+
+    bool is_live(std::shared_ptr<Variable> variable, mtac::Statement statement){
+        assert(mtac::is<std::shared_ptr<mtac::Quadruple>>(statement) || mtac::is<std::shared_ptr<mtac::IfFalse>>(statement) 
+            || mtac::is<std::shared_ptr<mtac::If>>(statement) || mtac::is<std::shared_ptr<mtac::Param>>(statement));
+
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+            return is_live((*ptr)->liveness, variable);
+        } else if (auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
+            return is_live((*ptr)->liveness, variable);
+        } else if (auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
+            return is_live((*ptr)->liveness, variable);
+        } else if (auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+            return is_live((*ptr)->liveness, variable);
+        } 
+
+        return false;
+    }
+    
+    bool is_live(std::shared_ptr<Variable> variable){
+        return is_live(variable, current);
+    }
 
     /* Register stuff  */
     
+    template<typename Reg>
+    Reg get_free_reg(as::Registers<Reg>& registers){
+        //Try to get a free register 
+        for(Reg reg : registers){
+            if(!registers.used(reg)){
+                return reg;
+            } else if(!registers.reserved(reg) && !is_live(registers[reg]) && !registers[reg]->position().isParamRegister()){
+                registers.remove(registers[reg]);
+
+                return reg;
+            }
+        }
+       
+        //There are no free register, take one
+        Reg reg = registers.first();
+        bool found = false;
+
+        //First, try to take a register that doesn't need to be spilled (variable has not modified)
+        for(Reg remaining : registers){
+            if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
+                if(written.find(registers[remaining]) == written.end()){
+                    reg = remaining;
+                    found = true;
+                }
+            }
+        }
+       
+        //If there is no registers that doesn't need to be spilled, take the first one not reserved 
+        if(!found){
+            for(Reg remaining : registers){
+                if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
+                    reg = remaining;
+                    found = true;
+                }
+            }
+        }
+
+        assert(found);
+        spills(reg);
+        
+        return reg; 
+    }
+    
     ltac::Register get_free_reg(){
-        //TODO
+        return get_free_reg(registers);
+    }
+    
+    ltac::FloatRegister get_free_float_reg(){
+        return get_free_reg(float_registers);
     }
 
     ltac::Register get_reg(std::shared_ptr<Variable> var){
@@ -139,10 +217,6 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     ltac::Register get_reg_no_move(std::shared_ptr<Variable> var){
-        //TODO
-    }
-    
-    ltac::FloatRegister get_free_float_reg(){
         //TODO
     }
 
