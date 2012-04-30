@@ -187,9 +187,26 @@ struct StatementCompiler : public boost::static_visitor<> {
             spills(reg);
         }
     }
+
+    template<typename Reg>
+    void spills_all(as::Registers<Reg> registers){
+        for(auto reg : registers){
+            //The register can be reserved if the ending occurs in a special break case
+            if(!registers.reserved(reg) && registers.used(reg)){
+                auto variable = registers[reg];
+
+                if(!variable->position().isTemporary()){
+                    spills(reg);    
+                }
+            }
+        }
+    }
     
     void end_basic_block(){
-        //TODO
+        spills_all(registers);
+        spills_all(float_registers);
+
+        ended = true;
     }
 
     /* Conversions */
