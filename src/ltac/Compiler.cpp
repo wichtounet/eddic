@@ -528,6 +528,14 @@ struct StatementCompiler : public boost::static_visitor<> {
 
     /* Conversions */
 
+    ltac::Register to_register(std::shared_ptr<Variable> var){
+        if(var->position().isTemporary()){
+            return get_reg_no_move(var);
+        } else {
+            return get_reg(var);
+        }
+    }
+
     ltac::Argument to_arg(mtac::Argument argument){
         if(auto* ptr = boost::get<int>(&argument)){
             return *ptr;
@@ -543,11 +551,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     return get_float_reg(*ptr);
                 }
             } else {
-                if((*ptr)->position().isTemporary()){
-                    return get_reg_no_move(*ptr);
-                } else {
-                    return get_reg(*ptr);
-                }
+                return to_register(*ptr);
             }
         }
 
@@ -1296,9 +1300,17 @@ struct StatementCompiler : public boost::static_visitor<> {
                     auto reg = get_reg_no_move(quadruple->result);
                     
                     if(is_variable(*quadruple->arg1)){
-                        add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(get_reg(get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
+                        if(is_variable(*quadruple->arg2)){
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(get_variable(*quadruple->arg1)), to_register(get_variable(*quadruple->arg2))));
+                        } else {
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
+                        }
                     } else {
-                        add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), get_reg(get_variable(*quadruple->arg2)));
+                        if(is_variable(*quadruple->arg1)){
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), get_reg(get_variable(*quadruple->arg2)));
+                        } else {
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), boost::get<int>(*quadruple->arg2));
+                        }
                     }
                 }
         
