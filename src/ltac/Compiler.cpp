@@ -288,11 +288,89 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void spills(ltac::Register reg){
-        //TODO
+        //If the register is not used, there is nothing to spills
+        if(registers.used(reg)){
+            auto variable = registers[reg];
+            
+            //Do no spills param stored in register
+            if(variable->position().isParamRegister()){
+                return;
+            }
+
+            //If the variable has not been written, there is no need to spill it
+            if(written.find(variable) != written.end()){
+                auto position = variable->position();
+                if(position.isStack()){
+                    add_instruction(function, ltac::Operator::MOV, ltac::Address(ltac::BP, -1 * position.offset()), reg);
+                } else if(position.isParameter()){
+                    add_instruction(function, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+                } else if(position.isGlobal()){
+                    add_instruction(function, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+                } else if(position.isTemporary()){
+                    //If the variable is live, move it to another register, else do nothing
+                    if(is_live(variable)){
+                        registers.remove(variable);
+                        registers.reserve(reg);
+
+                        auto newReg = get_reg_no_move(variable);
+                        add_instruction(function, ltac::Operator::MOV, newReg, reg);
+                        
+                        registers.release(reg);
+
+                        return; //Return here to avoid erasing variable from variables
+                    }
+                }
+            }
+            
+            //The variable is no more contained in the register
+            registers.remove(variable);
+
+            //The variable has not been written now
+            written.erase(variable);
+        }
     }
 
     void spills(ltac::FloatRegister reg){
-        //TODO
+        //If the register is not used, there is nothing to spills
+        if(float_registers.used(reg)){
+            auto variable = float_registers[reg];
+
+            //Do no spills param stored in register
+            if(variable->position().isParamRegister()){
+                return;
+            }
+
+            //If the variable has not been written, there is no need to spill it
+            if(written.find(variable) != written.end()){
+                auto position = variable->position();
+                if(position.isStack()){
+                    add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::BP, -1 * position.offset()), reg);
+                } else if(position.isParameter()){
+                    add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
+                } else if(position.isGlobal()){
+                    add_instruction(function, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
+                } else if(position.isTemporary()){
+                    //If the variable is live, move it to another register, else do nothing
+                    if(is_live(variable)){
+                        float_registers.remove(variable);
+                        float_registers.reserve(reg);
+
+                        auto newReg = get_float_reg_no_move(variable);
+                        add_instruction(function, ltac::Operator::FMOV, newReg, reg);
+
+                        float_registers.release(reg);
+
+                        return; //Return here to avoid erasing variable from variables
+                    }
+                }
+            }
+            
+            //The variable is no more contained in the register
+            float_registers.remove(variable);
+
+            //The variable has not been written now
+            written.erase(variable);
+        }
     }
     
     void spills_if_necessary(ltac::Register reg, mtac::Argument arg){
