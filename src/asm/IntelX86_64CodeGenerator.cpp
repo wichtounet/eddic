@@ -110,11 +110,53 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Jump> jump){
-
-    }
-
-    void operator()(std::shared_ptr<ltac::Call> call){
-
+        switch(jump->type){
+            case ltac::JumpType::ALWAYS:
+                writer.stream() << "jmp " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::CALL:
+                writer.stream() << "call " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::NE:
+                writer.stream() << "jne " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::E:
+                writer.stream() << "je " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::GE:
+                writer.stream() << "jge " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::G:
+                writer.stream() << "jg " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::LE:
+                writer.stream() << "jle " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::L:
+                writer.stream() << "jl " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::AE:
+                writer.stream() << "jae " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::A:
+                writer.stream() << "ja" << jump->label << std::endl;
+                break;
+            case ltac::JumpType::BE:
+                writer.stream() << "jbe " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::B:
+                writer.stream() << "jb " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::P:
+                writer.stream() << "jp " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::Z:
+                writer.stream() << "jz " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::NZ:
+                writer.stream() << "jnz " << jump->label << std::endl;
+                break;
+        }
     }
 
     void operator()(std::string& label){

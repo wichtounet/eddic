@@ -21,7 +21,6 @@ namespace ltac {
 typedef boost::variant<
         std::shared_ptr<ltac::Instruction>,        //Basic quadruples
         std::shared_ptr<ltac::Jump>,             //Jumps
-        std::shared_ptr<ltac::Call>,             //Call a function
         std::string                             //For labels
     > Statement;
 

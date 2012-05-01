@@ -89,10 +89,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "\tjmp (" << static_cast<unsigned int>(jmp->type) << ")" << jmp->label << std::endl;
     }
 
-    void operator()(std::shared_ptr<ltac::Call>& call){
-        std::cout << "\tcall " << call->function << std::endl;
-    }
-
     void operator()(std::string& label){
         std::cout << "\t" << label << ":" << std::endl;
     }

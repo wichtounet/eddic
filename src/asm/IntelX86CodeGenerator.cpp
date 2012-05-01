@@ -100,10 +100,6 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 
     }
 
-    void operator()(std::shared_ptr<ltac::Call> call){
-
-    }
-
     void operator()(std::string& label){
         writer.stream() << label << ":" << std::endl;
     }
