@@ -92,7 +92,21 @@ struct X86StatementCompiler : public boost::static_visitor<> {
         //Nothing else to init
     }
 
-    //TODO
+    void operator()(std::shared_ptr<ltac::Instruction> instruction){
+
+    }
+
+    void operator()(std::shared_ptr<ltac::Jump> jump){
+
+    }
+
+    void operator()(std::shared_ptr<ltac::Call> call){
+
+    }
+
+    void operator()(std::string& label){
+        writer.stream() << label << ":" << std::endl;
+    }
 };
 
 void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
@@ -101,7 +115,7 @@ void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
 
     X86StatementCompiler compiler(writer);
 
-    //TODO Compile each statement
+    visit_each(compiler, function->getStatements());
 }
 
 void IntelX86CodeGenerator::writeRuntimeSupport(){

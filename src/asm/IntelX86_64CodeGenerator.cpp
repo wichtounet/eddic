@@ -98,188 +98,6 @@ using namespace x86_64;
 
 namespace eddic { namespace as {
 
-struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, FloatRegister>, public boost::static_visitor<> {
-    IntelX86_64StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<mtac::Function> f) : 
-        IntelStatementCompiler(w, {Register::RDI, Register::RSI, Register::RCX, Register::RDX, Register::R8, Register::R9, 
-        Register::R10, Register::R11, Register::R12, Register::R13, Register::R14, Register::R15, Register::RBX, Register::RAX}, 
-        {FloatRegister::XMM0, FloatRegister::XMM1, FloatRegister::XMM2, FloatRegister::XMM3, FloatRegister::XMM4, FloatRegister::XMM5, FloatRegister::XMM6, FloatRegister::XMM7}, f) {}
-    
-    std::string getMnemonicSize(){
-        return "qword";
-    }
-
-    std::string getFloatPrefix(){
-        return "__float64__";
-    }
-
-    std::string getFloatMove(){
-        return "movsd ";
-    }
-
-    std::string getFloatToInteger(){
-        return "cvttsd2si ";
-    }
-
-    std::string getIntegerToFloat(){
-        return "cvtsi2sd ";
-    }
-    
-    std::string getFloatAdd(){
-        return "addsd ";
-    }
-    
-    std::string getFloatSub(){
-        return "subsd ";
-    }
-    
-    std::string getFloatMul(){
-        return "mulsd ";
-    }
-    
-    std::string getFloatDiv(){
-        return "divsd ";
-    }
-    
-    std::string getSizedMove(){
-        return "movq ";
-    }
-
-    Register getReturnRegister1(){
-        return Register::RAX;
-    }
-
-    Register getReturnRegister2(){
-        return Register::RBX;
-    }
-
-    Register getBasePointerRegister(){
-        return Register::RBP;
-    }
-
-    Register getStackPointerRegister(){
-        return Register::RSP;
-    }
-
-    Register getIntParamRegister(unsigned int position){
-        if(position == 1){
-            return Register::R14;
-        } else if(position == 2){
-            return Register::R15;
-        }
-
-        assert(false && "There are only two registers for int");
-    }
-
-    FloatRegister getFloatParamRegister(unsigned int position){
-        assert(position == 1);
-
-        return FloatRegister::XMM7;
-    }
-  
-    //Div eax by arg2 
-    void divEax(std::shared_ptr<mtac::Quadruple> quadruple){
-        writer.stream() << "mov rdx, rax" << std::endl;
-        writer.stream() << "sar rdx, 63" << std::endl;
-
-        if(isInt(*quadruple->arg2)){
-            auto reg = getReg();
-            move(*quadruple->arg2, reg);
-
-            writer.stream() << "idiv " << reg << std::endl;
-
-            if(registers.reserved(reg)){
-                registers.release(reg);
-            }
-        } else {
-            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
-        }
-    }
-    
-    void div(std::shared_ptr<mtac::Quadruple> quadruple){
-        spills(Register::RDX);
-        registers.reserve(Register::RDX);
-
-        //Form x = x / y
-        if(*quadruple->arg1 == quadruple->result){
-            safeMove(quadruple->result, Register::RAX);
-
-            divEax(quadruple);
-            //Form x = y / z (y: variable)
-        } else if(isVariable(*quadruple->arg1)){
-            spills(Register::RAX);
-            registers.reserve(Register::RAX);
-
-            copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::RAX);
-
-            divEax(quadruple);
-
-            registers.release(Register::RAX);
-            registers.setLocation(quadruple->result, Register::RAX);
-        } else {
-            spills(Register::RAX);
-            registers.reserve(Register::RAX);
-
-            copy(*quadruple->arg1, Register::RAX);
-
-            divEax(quadruple);
-
-            registers.release(Register::RAX);
-            registers.setLocation(quadruple->result, Register::RAX);
-        }
-
-        registers.release(Register::RDX);
-    }
-    
-    void mod(std::shared_ptr<mtac::Quadruple> quadruple){
-        spills(Register::RAX);
-        spills(Register::RDX);
-
-        registers.reserve(Register::RAX);
-        registers.reserve(Register::RDX);
-
-        copy(*quadruple->arg1, Register::RAX);
-
-        divEax(quadruple);
-
-        //result is in edx (no need to move it now)
-        registers.setLocation(quadruple->result, Register::RDX);
-
-        registers.release(Register::RAX);
-    }
-    
-    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
-        compile(quadruple);
-    }
-    
-    void operator()(std::shared_ptr<mtac::Param>& param){
-        compile(param);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
-        compile(ifFalse);
-    }
-
-    void operator()(std::shared_ptr<mtac::If>& if_){
-        compile(if_);
-    }
-
-    void operator()(std::shared_ptr<mtac::Goto>& goto_){
-        compile(goto_);
-    }
-
-    void operator()(std::shared_ptr<mtac::Call>& call){
-        compile(call);
-    }
-
-    void operator()(mtac::NoOp&){
-        //It's a no-op
-    }
-
-    void operator()(std::string&){
-        assert(false && "No more labels should be there");
-    }
-};
-
 struct X86_64StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
 
@@ -287,7 +105,21 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
         //Nothing else to init
     }
 
-    //TODO
+    void operator()(std::shared_ptr<ltac::Instruction> instruction){
+
+    }
+
+    void operator()(std::shared_ptr<ltac::Jump> jump){
+
+    }
+
+    void operator()(std::shared_ptr<ltac::Call> call){
+
+    }
+
+    void operator()(std::string& label){
+        writer.stream() << label << ":" << std::endl;
+    }
 };
 
 void IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
@@ -296,7 +128,7 @@ void IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function)
 
     X86_64StatementCompiler compiler(writer);
 
-    //TODO Compile each statement
+    visit_each(compiler, function->getStatements());
 }
 
 void IntelX86_64CodeGenerator::writeRuntimeSupport(){
