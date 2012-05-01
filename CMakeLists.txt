@@ -10,7 +10,7 @@ set(VERSION_PATCH 1)
 #Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS           "-pipe -g -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
-    set(CMAKE_CXX_FLAGS_DEBUG     "-pipe -g -std=c++11 -pedantic -Wall -Wextra -Wno-long-long")
+    set(CMAKE_CXX_FLAGS_DEBUG     "-pipe -g -std=c++11 -pedantic -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=const -Wall -Wextra -Wno-long-long")
     set(CMAKE_CXX_FLAGS_RELEASE   "-pipe -DNDEBUG -O2 -march=native -std=c++11")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
