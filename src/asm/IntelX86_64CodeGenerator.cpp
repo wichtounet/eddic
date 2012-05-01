@@ -280,9 +280,21 @@ struct IntelX86_64StatementCompiler : public IntelStatementCompiler<Register, Fl
     }
 };
 
+struct X86_64StatementCompiler : public boost::static_visitor<> {
+    AssemblyFileWriter& writer;
+
+    X86_64StatementCompiler(AssemblyFileWriter& writer) : writer(writer) {
+        //Nothing else to init
+    }
+
+    //TODO
+};
+
 void IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     defineFunction(writer, function->getName());
     //TODO In the future, it is possible that it is up to the ltac compiler to generate the preamble of functions
+
+    X86_64StatementCompiler compiler(writer);
 
     //TODO Compile each statement
 }
