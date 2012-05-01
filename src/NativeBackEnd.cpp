@@ -57,6 +57,8 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         auto ltac_program = std::make_shared<ltac::Program>();
         ltac::Compiler ltacCompiler;
         ltacCompiler.compile(mtacProgram, ltac_program);
+
+        //TODO Pass everything using directly the shared_ptr
         
         //If asked by the user, print the Three Address code representation
         if(option_defined("ltac") || option_defined("ltac-only")){
@@ -65,14 +67,16 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         }
 
         if(!option_defined("ltac-only")){
-            //TODO Use the LTAC Program
-
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
 
             as::CodeGeneratorFactory factory;
             auto generator = factory.get(platform, writer);
-            generator->generate(*mtacProgram, *get_string_pool()); 
+
+            //Generate the code from the LTAC Program
+            generator->generate(*ltac_program, *get_string_pool()); 
+
+            //Write the output
             writer.write(); 
 
             //If it's necessary, assemble and link the assembly

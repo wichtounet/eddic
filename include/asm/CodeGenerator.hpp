@@ -8,7 +8,7 @@
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
 
-#include "mtac/Program.hpp"
+#include "ltac/Program.hpp"
 
 #include <memory>
 
@@ -24,7 +24,7 @@ class CodeGenerator {
         CodeGenerator(AssemblyFileWriter& writer);
         
         //Entry point
-        virtual void generate(mtac::Program& program, StringPool& pool) = 0;
+        virtual void generate(ltac::Program& program, StringPool& pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

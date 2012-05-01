@@ -262,114 +262,11 @@ struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, Float
     }
 };
 
-}} //end of eddic::as
-
-namespace { //anonymous namespace
-
-void compile(AssemblyFileWriter& writer, std::shared_ptr<mtac::BasicBlock> block, as::IntelX86StatementCompiler& compiler, std::shared_ptr<Function> definition){
-    compiler.reset();
-    compiler.handleParameters(definition);
-
-    if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
-        writer.stream() << block->label << ":" << std::endl;
-    }
-
-    for(unsigned int i = 0; i < block->statements.size(); ++i){
-        auto& statement = block->statements[i];
-
-        if(i == block->statements.size() - 1){
-            compiler.setLast(true);
-        } else {
-            compiler.setNext(block->statements[i+1]);
-        }
-        
-        visit(compiler, statement);
-    }
-
-    //If the basic block has not been ended
-    if(!compiler.ended){
-        compiler.endBasicBlock();
-    }
-}
- 
-} //end of anonymous space
-
-namespace eddic { namespace as {
-
-void IntelX86CodeGenerator::compile(std::shared_ptr<mtac::Function> function){
+void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     defineFunction(writer, function->getName());
+    //TODO In the future, it is possible that it is up to the ltac compiler to generate the preamble of functions
 
-    auto size = function->context->size();
-    //Only if necessary, allocates size on the stack for the local variables
-    if(size > 0){
-        writer.stream() << "sub esp, " << size << std::endl;
-    }
-    
-    auto iter = function->context->begin();
-    auto end = function->context->end();
-
-    for(; iter != end; iter++){
-        auto var = iter->second;
-        if(var->type().isArray() && var->position().isStack()){
-            int position = -var->position().offset();
-
-            writer.stream() << "mov dword [ebp + " << position << "], " << var->type().size() << std::endl;
-
-            if(var->type().base() == BaseType::INT){
-                writer.stream() << "mov ecx, " << var->type().size() << std::endl;
-            } else if(var->type().base() == BaseType::STRING){
-                writer.stream() << "mov ecx, " << (var->type().size() * 2) << std::endl;
-            }
-            
-            writer.stream() << "mov eax, 0" << std::endl;
-            writer.stream() << "lea edi, [ebp + " << position << " - 4]" << std::endl;
-            writer.stream() << "std" << std::endl;
-            writer.stream() << "rep stosd" << std::endl;
-            writer.stream() << "cld" << std::endl;
-        }
-    }
-
-    IntelX86StatementCompiler compiler(writer, function);
-
-    mtac::computeBlockUsage(function, compiler.blockUsage);
-
-    //First we computes a label for each basic block
-    for(auto& block : function->getBasicBlocks()){
-        block->label = newLabel();
-    }
-
-    //Then we compile each of them
-    for(auto& block : function->getBasicBlocks()){
-        ::compile(writer, block, compiler, function->definition);
-    }
- 
-    if(function->getBasicBlocks().size() > 0){
-        auto& lastBasicBlock = function->getBasicBlocks().back();
-        
-        if(lastBasicBlock->statements.size() > 0){
-            auto lastStatement = lastBasicBlock->statements.back();
-            
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&lastStatement)){
-                if((*ptr)->op != mtac::Operator::RETURN){
-                    //Only if necessary, deallocates size on the stack for the local variables
-                    if(size > 0){
-                        writer.stream() << "add esp, " << size << std::endl;
-                    }
-
-                    leaveFunction(writer);
-
-                    return;
-                }
-            }
-        }
-    }
-                    
-    //Only if necessary, deallocates size on the stack for the local variables
-    if(size > 0){
-        writer.stream() << "add esp, " << size << std::endl;
-    }
-
-    leaveFunction(writer);
+    //TODO Compile each statement
 }
 
 void IntelX86CodeGenerator::writeRuntimeSupport(){
