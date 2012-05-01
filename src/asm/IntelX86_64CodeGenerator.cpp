@@ -106,7 +106,86 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
-
+        switch(instruction->op){
+            case ltac::Operator::MOV:
+                break;
+            case ltac::Operator::FMOV:
+                break;
+            case ltac::Operator::MEMSET:
+                break;
+            case ltac::Operator::ALLOC_STACK:
+                break;
+            case ltac::Operator::FREE_STACK:
+                break;
+            case ltac::Operator::LEAVE:
+                break;
+            case ltac::Operator::CMP_INT:
+                break;
+            case ltac::Operator::CMP_FLOAT:
+                break;
+            case ltac::Operator::OR:
+                break;
+            case ltac::Operator::XOR:
+                break;
+            case ltac::Operator::PUSH:
+                break;
+            case ltac::Operator::POP:
+                break;
+            case ltac::Operator::LEA:
+                break;
+            case ltac::Operator::SHIFT_LEFT:
+                break;
+            case ltac::Operator::SHIFT_RIGHT:
+                break;
+            case ltac::Operator::ADD:
+                break;
+            case ltac::Operator::SUB:
+                break;
+            case ltac::Operator::MUL:
+                break;
+            case ltac::Operator::DIV:
+                break;
+            case ltac::Operator::FADD:
+                break;
+            case ltac::Operator::FSUB:
+                break;
+            case ltac::Operator::FMUL:
+                break;
+            case ltac::Operator::FDIV:
+                break;
+            case ltac::Operator::INC:
+                break;
+            case ltac::Operator::DEC:
+                break;
+            case ltac::Operator::NEG:
+                break;
+            case ltac::Operator::I2F:
+                break;
+            case ltac::Operator::F2I:
+                break;
+            case ltac::Operator::CMOVE:
+                break;
+            case ltac::Operator::CMOVNE:
+                break;
+            case ltac::Operator::CMOVA:
+                break;
+            case ltac::Operator::CMOVAE:
+                break;
+            case ltac::Operator::CMOVB:
+                break;
+            case ltac::Operator::CMOVBE:
+                break;
+            case ltac::Operator::CMOVG:
+                break;
+            case ltac::Operator::CMOVGE:
+                break;
+            case ltac::Operator::CMOVL:
+                break;
+            case ltac::Operator::CMOVLE:
+                break;
+            default:
+                ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
+        }
     }
 
     void operator()(std::shared_ptr<ltac::Jump> jump){
@@ -156,6 +235,8 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
             case ltac::JumpType::NZ:
                 writer.stream() << "jnz " << jump->label << std::endl;
                 break;
+            default:
+                ASSERT_PATH_NOT_TAKEN("The jump type is not supported");
         }
     }
 
