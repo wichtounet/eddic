@@ -83,7 +83,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     //Then we compile each of them
     for(auto block : src_function->getBasicBlocks()){
-        compile(block, target_function);
+        compile(block, src_function->definition, target_function);
     }
     
     //Only if necessary, deallocates size on the stack for the local variables
@@ -500,6 +500,20 @@ struct StatementCompiler : public boost::static_visitor<> {
         spills_all(float_registers);
 
         ended = true;
+    }
+    
+    void collect_parameters(std::shared_ptr<eddic::Function> definition){
+        for(auto parameter : definition->parameters){
+            auto param = definition->context->getVariable(parameter.name);
+
+            if(param->position().isParamRegister()){
+                if(param->type() == BaseType::INT){
+                    registers.setLocation(param, ltac::Register(descriptor->int_param_register(param->position().offset())));
+                } else if(param->type() == BaseType::FLOAT){
+                    float_registers.setLocation(param, ltac::FloatRegister(descriptor->float_param_register(param->position().offset())));
+                }
+            }
+        }
     }
     
     /* Utility  */
@@ -1820,14 +1834,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<ltac::Function> target_function){
-    //Handle parameters
-    
-    //If necessary add a label for the block
-    if(block_usage.find(block) != block_usage.end()){
-        target_function->add(block->label);
-    }
-    
+void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<eddic::Function> definition, std::shared_ptr<ltac::Function> target_function){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
     std::vector<ltac::Register> registers;
@@ -1843,6 +1850,14 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
     }
 
     StatementCompiler compiler(registers, float_registers, target_function);
+    compiler.collect_parameters(definition);
+    
+    //Handle parameters
+    
+    //If necessary add a label for the block
+    if(block_usage.find(block) != block_usage.end()){
+        target_function->add(block->label);
+    }
     
     for(unsigned int i = 0; i < block->statements.size(); ++i){
         auto& statement = block->statements[i];

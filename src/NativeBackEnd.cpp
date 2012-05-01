@@ -64,27 +64,28 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
             printer.print(*ltac_program);
         }
 
-        //TODO Continue with the new code generators
+        if(!option_defined("ltac-only")){
+            //TODO Use the LTAC Program
 
+            //Generate assembly from TAC
+            AssemblyFileWriter writer("output.asm");
 
-        //Generate assembly from TAC
-        AssemblyFileWriter writer("output.asm");
+            as::CodeGeneratorFactory factory;
+            auto generator = factory.get(platform, writer);
+            generator->generate(*mtacProgram, *get_string_pool()); 
+            writer.write(); 
 
-        as::CodeGeneratorFactory factory;
-        auto generator = factory.get(platform, writer);
-        generator->generate(*mtacProgram, *get_string_pool()); 
-        writer.write(); 
+            //If it's necessary, assemble and link the assembly
+            if(!option_defined("assembly")){
+                assemble(platform, output, option_defined("debug"), option_defined("verbose"));
 
-        //If it's necessary, assemble and link the assembly
-        if(!option_defined("assembly")){
-            assemble(platform, output, option_defined("debug"), option_defined("verbose"));
+                //Remove temporary files
+                if(!option_defined("keep")){
+                    remove("output.asm");
+                }
 
-            //Remove temporary files
-            if(!option_defined("keep")){
-                remove("output.asm");
+                remove("output.o");
             }
-
-            remove("output.o");
         }
     }
 }
