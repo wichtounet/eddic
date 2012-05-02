@@ -63,12 +63,12 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         if(var->type().isArray() && var->position().isStack()){
             int position = -var->position().offset();
 
-            add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), var->type().size());
+            add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type().size()));
 
             if(var->type().base() == BaseType::INT){
-                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position, -8), var->type().size());
+                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position, -8), static_cast<int>(var->type().size()));
             } else if(var->type().base() == BaseType::STRING){
-                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position, -8), 2 * var->type().size());
+                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position, -8), static_cast<int>(2 * var->type().size()));
             }
         }
     }
@@ -997,7 +997,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
 
                         add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
-                        add_instruction(function, ltac::Operator::ADD, reg, offset);
+                        add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
                         add_instruction(function, ltac::Operator::PUSH, reg);
 
                         registers.release(reg);

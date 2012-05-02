@@ -95,6 +95,12 @@ void leaveFunction(AssemblyFileWriter& writer){
     writer.stream() << "leave" << std::endl;
     writer.stream() << "ret" << std::endl;
 }
+    
+} //end of x86_64 namespace
+
+using namespace x86_64;
+
+namespace eddic { namespace as {
 
 std::ostream& operator<<(std::ostream& os, ltac::Argument& arg){
     if(auto* ptr = boost::get<int>(&arg)){
@@ -111,12 +117,6 @@ std::ostream& operator<<(std::ostream& os, ltac::Argument& arg){
 
     ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
 }
-    
-} //end of x86_64 namespace
-
-using namespace x86_64;
-
-namespace eddic { namespace as {
 
 struct X86_64StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
