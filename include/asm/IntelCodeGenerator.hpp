@@ -50,26 +50,6 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareString(const std::string& label, const std::string& value) = 0;
 };
 
-//Provide utility for registers
-
-template<typename Reg>
-inline typename boost::enable_if<boost::is_enum<Reg>, std::ostream>::type&
-operator<<(std::ostream& os, Reg reg){
-    return os << regToString(reg);
-}
-
-template<typename Reg>
-inline typename boost::enable_if<boost::is_enum<Reg>, std::string>::type
-operator+(const char* left, Reg right) {
-    return left + regToString(right);
-}
-
-template<typename Reg>
-inline typename boost::enable_if<boost::is_enum<Reg>, std::string>::type
-operator+(std::string left, Reg right) {
-    return left + regToString(right);
-}
-
 } //end of as
 
 } //end of eddic

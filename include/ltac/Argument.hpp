@@ -91,6 +91,7 @@ LTAC_CUSTOM_STRONG_TYPEDEF(eddi_detail::ltac_variant_t, Argument)
 
 bool operator==(const Argument& a, const Argument& b);
 bool operator==(const Argument& a, Register b);
+bool operator==(const Argument& a, FloatRegister b);
 bool operator==(const Argument& a, Address b);
 bool operator==(const Argument& a, int b);
 bool operator==(const Argument& a, double b);
