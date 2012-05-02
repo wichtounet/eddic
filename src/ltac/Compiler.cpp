@@ -36,6 +36,8 @@ void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op
 }
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target){
+    target->context = source->context;
+
     for(auto& src_function : source->functions){
         auto target_function = std::make_shared<ltac::Function>(src_function->context, src_function->getName());
 
