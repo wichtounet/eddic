@@ -101,8 +101,6 @@ void leaveFunction(AssemblyFileWriter& writer){
 using namespace x86_64;
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
-    std::cout << arg.which() << std::endl;
-
     if(auto* ptr = boost::get<int>(&arg)){
         return os << *ptr;
     } else if(auto* ptr = boost::get<double>(&arg)){
