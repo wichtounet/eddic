@@ -32,7 +32,7 @@ void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op
 }
 
 void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
-    function->add(std::make_shared<ltac::Instruction>(arg3, arg1, op, arg2));
+    function->add(std::make_shared<ltac::Instruction>(op, arg1, arg2, arg3));
 }
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target){
