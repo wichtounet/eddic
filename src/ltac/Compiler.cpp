@@ -956,7 +956,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
                         auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
 
-                        add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                        add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
                         add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
                         add_instruction(function, ltac::Operator::PUSH, reg);
 
