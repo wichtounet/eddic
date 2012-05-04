@@ -93,7 +93,7 @@ std::string to_string(eddic::ltac::Address& address){
     ASSERT_PATH_NOT_TAKEN("Invalid address type");
 }
 
-std::ostream& operator<<(std::ostream& os, ltac::Argument& arg){
+std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     if(auto* ptr = boost::get<int>(&arg)){
         return os << *ptr;
     } else if(auto* ptr = boost::get<double>(&arg)){
@@ -104,7 +104,9 @@ std::ostream& operator<<(std::ostream& os, ltac::Argument& arg){
         return os << to_string(*ptr); 
     } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
         return os << to_string(*ptr);
-    } 
+    } else if(auto* ptr = boost::get<std::string>(&arg)){
+        return os << *ptr;
+    }
 
     ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
 }
