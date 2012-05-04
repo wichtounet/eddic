@@ -177,7 +177,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 
                 break;
             case ltac::Operator::DIV:
-                writer.stream() << "div " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                writer.stream() << "idiv " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::FADD:
                 writer.stream() << "addss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
