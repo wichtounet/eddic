@@ -888,11 +888,11 @@ struct StatementCompiler : public boost::static_visitor<> {
             auto gpreg = get_free_reg();
 
             add_instruction(function, ltac::Operator::MOV, gpreg, *ptr);
-            add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->float_param_register(position)), gpreg);
+            add_instruction(function, ltac::Operator::MOV, ltac::FloatRegister(descriptor->float_param_register(position)), gpreg);
 
             registers.release(gpreg);
         } else {
-            add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->float_param_register(position)), to_arg(argument));
+            add_instruction(function, ltac::Operator::MOV, ltac::FloatRegister(descriptor->float_param_register(position)), to_arg(argument));
         }
     }
     
