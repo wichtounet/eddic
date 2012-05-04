@@ -24,7 +24,6 @@ class Compiler {
     
     private:
         void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function);
-        void compile(std::shared_ptr<mtac::BasicBlock> basic_block, std::shared_ptr<eddic::Function> definition, std::shared_ptr<ltac::Function> target_function);
 
         std::unordered_set<std::shared_ptr<mtac::BasicBlock>> block_usage;
 };

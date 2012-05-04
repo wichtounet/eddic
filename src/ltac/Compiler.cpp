@@ -47,54 +47,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function){
-    auto size = src_function->context->size();
-    
-    //Only if necessary, allocates size on the stack for the local variables
-    if(size > 0){
-        add_instruction(target_function, ltac::Operator::ALLOC_STACK, size);
-    }
-    
-    auto iter = src_function->context->begin();
-    auto end = src_function->context->end();
-
-    for(; iter != end; iter++){
-        auto var = iter->second;
-        if(var->type().isArray() && var->position().isStack()){
-            int position = -var->position().offset();
-
-            add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type().size()));
-
-            if(var->type().base() == BaseType::INT){
-                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(var->type().size()));
-            } else if(var->type().base() == BaseType::STRING){
-                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(2 * var->type().size()));
-            }
-        }
-    }
-    
-    //Compute the block usage (in order to know if we have to output the label)
-    mtac::computeBlockUsage(src_function, block_usage);
-
-    resetNumbering();
-
-    //First we computes a label for each basic block
-    for(auto block : src_function->getBasicBlocks()){
-        block->label = newLabel();
-    }
-
-    //Then we compile each of them
-    for(auto block : src_function->getBasicBlocks()){
-        compile(block, src_function->definition, target_function);
-    }
-    
-    //Only if necessary, deallocates size on the stack for the local variables
-    if(size > 0){
-        add_instruction(target_function, ltac::Operator::FREE_STACK, size);
-    }
-        
-    add_instruction(target_function, ltac::Operator::LEAVE);
-}
 
 namespace {
 
@@ -107,7 +59,6 @@ struct StatementCompiler : public boost::static_visitor<> {
     std::vector<ltac::Register> int_pushed;
     std::vector<ltac::FloatRegister> float_pushed;
 
-    bool last = false;      //Is it the last basic block ?
     bool ended = false;     //Is the basic block ended ?
 
     //Allow to push needed register before the first push param
@@ -130,6 +81,15 @@ struct StatementCompiler : public boost::static_visitor<> {
             float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
             function(function) {
         descriptor = getPlatformDescriptor(platform);
+    }
+
+    void reset(){
+        registers.reset();
+        float_registers.reset();
+
+        written.clear();
+
+        ended = false;
     }
     
     /* Liveness stuff  */
@@ -1082,7 +1042,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             registers.setLocation(call->return2_, ltac::Register(descriptor->int_return_register2()));
             written.insert(call->return2_);
         }
-
+            
         std::reverse(int_pushed.begin(), int_pushed.end());
         std::reverse(float_pushed.begin(), float_pushed.end());
 
@@ -1837,7 +1797,42 @@ struct StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<eddic::Function> definition, std::shared_ptr<ltac::Function> target_function){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function){
+    auto size = src_function->context->size();
+    
+    //Only if necessary, allocates size on the stack for the local variables
+    if(size > 0){
+        add_instruction(target_function, ltac::Operator::ALLOC_STACK, size);
+    }
+    
+    auto iter = src_function->context->begin();
+    auto end = src_function->context->end();
+
+    for(; iter != end; iter++){
+        auto var = iter->second;
+        if(var->type().isArray() && var->position().isStack()){
+            int position = -var->position().offset();
+
+            add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type().size()));
+
+            if(var->type().base() == BaseType::INT){
+                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(var->type().size()));
+            } else if(var->type().base() == BaseType::STRING){
+                add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(2 * var->type().size()));
+            }
+        }
+    }
+    
+    //Compute the block usage (in order to know if we have to output the label)
+    mtac::computeBlockUsage(src_function, block_usage);
+
+    resetNumbering();
+
+    //First we computes a label for each basic block
+    for(auto block : src_function->getBasicBlocks()){
+        block->label = newLabel();
+    }
+    
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
     std::vector<ltac::Register> registers;
@@ -1853,27 +1848,38 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::BasicBlock> block, std::share
     }
 
     StatementCompiler compiler(registers, float_registers, target_function);
-    compiler.collect_parameters(definition);
-    
-    //Handle parameters
-    
-    //If necessary add a label for the block
-    if(block_usage.find(block) != block_usage.end()){
-        target_function->add(block->label);
-    }
-    
-    for(unsigned int i = 0; i < block->statements.size(); ++i){
-        auto& statement = block->statements[i];
 
-        if(i == block->statements.size() - 1){
-            compiler.last = true;
-        } else {
-            compiler.next = block->statements[i+1];
+    //Then we compile each of them
+    for(auto block : src_function->getBasicBlocks()){
+        //If necessary add a label for the block
+        if(block_usage.find(block) != block_usage.end()){
+            target_function->add(block->label);
         }
-        
-        visit(compiler, statement);
+    
+        //Handle parameters
+        compiler.reset();
+        compiler.collect_parameters(src_function->definition);
+    
+        for(unsigned int i = 0; i < block->statements.size(); ++i){
+            auto& statement = block->statements[i];
+
+            if(i != block->statements.size() - 1){
+                compiler.next = block->statements[i+1];
+            }
+
+            visit(compiler, statement);
+        }
+
+        //end basic block
+        if(!compiler.ended){
+            compiler.end_basic_block();
+        }
     }
-
-    //end basic block
+    
+    //Only if necessary, deallocates size on the stack for the local variables
+    if(size > 0){
+        add_instruction(target_function, ltac::Operator::FREE_STACK, size);
+    }
+        
+    add_instruction(target_function, ltac::Operator::LEAVE);
 }
-
