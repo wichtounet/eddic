@@ -135,6 +135,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 } else {
                     writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 }
+
                 break;
             case ltac::Operator::FMOV:
                 writer.stream() << "movsd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
