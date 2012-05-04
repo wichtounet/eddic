@@ -27,8 +27,16 @@ std::string to_string(eddic::ltac::Address& address){
                 
                 return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
             }
+                
+            if(address.displacement){
+                return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
+            }
             
             return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + "]";
+        }
+                
+        if(address.displacement){
+            return "[" + to_string(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
         }
 
         return "[" + to_string(*address.base_register) + "]";
