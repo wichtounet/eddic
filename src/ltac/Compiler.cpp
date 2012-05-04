@@ -1056,8 +1056,8 @@ struct StatementCompiler : public boost::static_visitor<> {
         //Restore the float parameters in registers (in the reverse order they were pushed)
         for(auto& reg : float_pushed){
             if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
-                add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, 0));
-                add_instruction(function, ltac::Operator::ADD, ltac::BP, size(BaseType::FLOAT));
+                add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
+                add_instruction(function, ltac::Operator::ADD, ltac::SP, size(BaseType::FLOAT));
             }
         }
 
