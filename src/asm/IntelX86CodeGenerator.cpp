@@ -177,7 +177,12 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "xor " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::PUSH:
-                writer.stream() << "push " << *instruction->arg1 << std::endl;
+                if(boost::get<ltac::Address>(&*instruction->arg1)){
+                    writer.stream() << "push dword " << *instruction->arg1 << std::endl;
+                } else {
+                    writer.stream() << "push " << *instruction->arg1 << std::endl;
+                }
+
                 break;
             case ltac::Operator::POP:
                 writer.stream() << "pop " << *instruction->arg1 << std::endl;
