@@ -1098,7 +1098,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     //Div eax by arg2 
     void div_eax(std::shared_ptr<mtac::Quadruple> quadruple){
         add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->d_register()), ltac::Register(descriptor->a_register()));
-        add_instruction(function, ltac::Operator::SHIFT_LEFT, ltac::Register(descriptor->d_register()), size(BaseType::INT) * 8 - 1);
+        add_instruction(function, ltac::Operator::SHIFT_RIGHT, ltac::Register(descriptor->d_register()), size(BaseType::INT) * 8 - 1);
 
         if(isInt(*quadruple->arg2)){
             auto reg = get_free_reg();
