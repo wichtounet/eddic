@@ -44,6 +44,22 @@ std::string to_string(eddic::ltac::FloatRegister reg){
     return registers[static_cast<int>(reg)];
 }
 
+void enterFunction(AssemblyFileWriter& writer){
+    writer.stream() << "push rbp" << std::endl;
+    writer.stream() << "mov rbp, rsp" << std::endl;
+}
+
+void defineFunction(AssemblyFileWriter& writer, const std::string& function){
+    writer.stream() << std::endl << function << ":" << std::endl;
+    
+    enterFunction(writer);
+}
+
+void leaveFunction(AssemblyFileWriter& writer){
+    writer.stream() << "leave" << std::endl;
+    writer.stream() << "ret" << std::endl;
+}
+
 std::string to_string(eddic::ltac::Address& address){
     if(address.absolute){
         if(address.displacement){
@@ -78,22 +94,6 @@ std::string to_string(eddic::ltac::Address& address){
     }
 
     ASSERT_PATH_NOT_TAKEN("Invalid address type");
-}
-
-void enterFunction(AssemblyFileWriter& writer){
-    writer.stream() << "push rbp" << std::endl;
-    writer.stream() << "mov rbp, rsp" << std::endl;
-}
-
-void defineFunction(AssemblyFileWriter& writer, const std::string& function){
-    writer.stream() << std::endl << function << ":" << std::endl;
-    
-    enterFunction(writer);
-}
-
-void leaveFunction(AssemblyFileWriter& writer){
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
