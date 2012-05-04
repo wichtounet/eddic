@@ -37,10 +37,6 @@ ltac::Address::Address(ltac::Register reg, ltac::Register scaled) : base_registe
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, ltac::Register scaled, int displacement) : base_register(reg), scaled_register(scaled), displacement(displacement) {
-    //Nothing to init    
-}
-
 ltac::Address::Address(ltac::Register reg, ltac::Register scaled, unsigned scale, int displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
     //Nothing to init    
 }
