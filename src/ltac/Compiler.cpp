@@ -1702,7 +1702,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                int offset = boost::get<int>(*quadruple->arg2);
 
                auto reg = get_float_reg_no_move(quadruple->result);
-               add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, offset));
+               add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, offset));
     
                written.insert(quadruple->result);
 
