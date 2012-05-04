@@ -892,7 +892,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             registers.release(gpreg);
         } else {
-            add_instruction(function, ltac::Operator::MOV, ltac::FloatRegister(descriptor->float_param_register(position)), to_arg(argument));
+            add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), to_arg(argument));
         }
     }
     

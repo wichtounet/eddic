@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     if(auto* ptr = boost::get<int>(&arg)){
         return os << *ptr;
     } else if(auto* ptr = boost::get<double>(&arg)){
-        return os << "__float32__(" << *ptr << ")";
+        return os << "__float32__(" << std::fixed << *ptr << ")";
     } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
         return os << to_string(*ptr); 
     } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
@@ -127,14 +127,24 @@ struct X86StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
         switch(instruction->op){
             case ltac::Operator::MOV:
-                if(boost::get<ltac::Address>(&*instruction->arg1)){
+                if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
+                    writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else if(boost::get<ltac::Register>(&*instruction->arg1) && boost::get<ltac::FloatRegister>(&*instruction->arg2)){
+                    writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else if(boost::get<ltac::Address>(&*instruction->arg1)){
                     writer.stream() << "mov dword " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 } else {
                     writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 }
+
                 break;
             case ltac::Operator::FMOV:
-                writer.stream() << "movss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
+                    writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else {
+                    writer.stream() << "movss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                }
+
                 break;
             case ltac::Operator::MEMSET:
                 writer.stream() << "mov ecx, " << *instruction->arg2 << std::endl;
