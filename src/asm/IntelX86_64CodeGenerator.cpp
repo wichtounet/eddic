@@ -7,13 +7,13 @@
 
 #include <iostream>
 
+#include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
 #include "SymbolTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
 
-#include "asm/IntelStatementCompiler.hpp"
 #include "asm/IntelX86_64CodeGenerator.hpp"
 #include "asm/IntelAssemblyUtils.hpp"
 
