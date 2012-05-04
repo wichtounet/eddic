@@ -125,124 +125,129 @@ struct X86StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
         switch(instruction->op){
             case ltac::Operator::MOV:
-                writer.stream() << "mov " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::FMOV:
-                writer.stream() << "movss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "movss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::MEMSET:
-                writer.stream() << "mov ecx, " << instruction->arg2 << std::endl;
+                writer.stream() << "mov ecx, " << *instruction->arg2 << std::endl;
                 writer.stream() << "xor eax, eax" << std::endl;
-                writer.stream() << "lea edi, " << instruction->arg1 << std::endl;
+                writer.stream() << "lea edi, " << *instruction->arg1 << std::endl;
                 writer.stream() << "std" << std::endl;
                 writer.stream() << "rep stosw" << std::endl;
                 writer.stream() << "cld" << std::endl;
 
                 break;
             case ltac::Operator::ALLOC_STACK:
-                writer.stream() << "sub esp, " << instruction->arg1 << std::endl;
+                writer.stream() << "sub esp, " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::FREE_STACK:
-                writer.stream() << "add esp, " << instruction->arg1 << std::endl;
+                writer.stream() << "add esp, " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::LEAVE:
                 leaveFunction(writer);
                 break;
             case ltac::Operator::CMP_INT:
-                writer.stream() << "cmp " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmp " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMP_FLOAT:
-                writer.stream() << "ucomiss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "ucomiss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::OR:
-                writer.stream() << "or " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "or " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::XOR:
-                writer.stream() << "xor " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "xor " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::PUSH:
-                writer.stream() << "push " << instruction->arg1 << std::endl;
+                writer.stream() << "push " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::POP:
-                writer.stream() << "pop " << instruction->arg1 << std::endl;
+                writer.stream() << "pop " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::LEA:
-                writer.stream() << "lea " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "lea " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::SHIFT_LEFT:
-                writer.stream() << "sal " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "sal " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::SHIFT_RIGHT:
-                writer.stream() << "sar " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "sar " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::ADD:
-                writer.stream() << "add " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "add " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::SUB:
-                writer.stream() << "sub " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "sub " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::MUL:
-                writer.stream() << "imul " << instruction->arg1 << ", " << instruction->arg2 << ", " << instruction->arg3 << std::endl;
+                if(instruction->arg3){
+                    writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << ", " << *instruction->arg3 << std::endl;
+                } else {
+                    writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                }
+
                 break;
             case ltac::Operator::DIV:
-                writer.stream() << "div " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "div " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::FADD:
-                writer.stream() << "addss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "addss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::FSUB:
-                writer.stream() << "subss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "subss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::FMUL:
-                writer.stream() << "mulss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "mulss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::FDIV:
-                writer.stream() << "divss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "divss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::INC:
-                writer.stream() << "inc " << instruction->arg1 << std::endl;
+                writer.stream() << "inc " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::DEC:
-                writer.stream() << "dec " << instruction->arg1 << std::endl;
+                writer.stream() << "dec " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::NEG:
-                writer.stream() << "neg " << instruction->arg1 << std::endl;
+                writer.stream() << "neg " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::I2F:
-                writer.stream() << "cvtsi2ss " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cvtsi2ss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::F2I:
-                writer.stream() << "cvttss2si " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cvttss2si " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVE:
-                writer.stream() << "cmove " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmove " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVNE:
-                writer.stream() << "cmovne " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovne " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVA:
-                writer.stream() << "cmova " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmova " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVAE:
-                writer.stream() << "cmovae " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovae " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVB:
-                writer.stream() << "cmovb " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovb " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVBE:
-                writer.stream() << "cmovbe " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovbe " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVG:
-                writer.stream() << "cmovg " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovg " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVGE:
-                writer.stream() << "cmovge " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovge " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVL:
-                writer.stream() << "cmovl " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovl " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             case ltac::Operator::CMOVLE:
-                writer.stream() << "cmovle " << instruction->arg1 << ", " << instruction->arg2 << std::endl;
+                writer.stream() << "cmovle " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
             default:
                 ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
