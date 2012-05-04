@@ -130,7 +130,11 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
         switch(instruction->op){
             case ltac::Operator::MOV:
-                writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                if(boost::get<ltac::Address>(&*instruction->arg1)){
+                    writer.stream() << "mov qword " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else {
+                    writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                }
                 break;
             case ltac::Operator::FMOV:
                 writer.stream() << "movsd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;

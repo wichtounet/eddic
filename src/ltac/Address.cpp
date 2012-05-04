@@ -13,7 +13,7 @@ ltac::Address::Address(){
     //Nothing to init    
 }
 
-ltac::Address::Address(unsigned displacement) : displacement(displacement) {
+ltac::Address::Address(int displacement) : displacement(displacement) {
     //Nothing to init    
 }
 
@@ -25,11 +25,11 @@ ltac::Address::Address(const std::string& absolute, ltac::Register reg) : base_r
     //Nothing to init    
 }
 
-ltac::Address::Address(const std::string& absolute, unsigned displacement) : displacement(displacement), absolute(absolute) {
+ltac::Address::Address(const std::string& absolute, int displacement) : displacement(displacement), absolute(absolute) {
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, unsigned displacement) : base_register(reg), displacement(displacement) {
+ltac::Address::Address(ltac::Register reg, int displacement) : base_register(reg), displacement(displacement) {
     //Nothing to init    
 }
 
@@ -37,10 +37,10 @@ ltac::Address::Address(ltac::Register reg, ltac::Register scaled) : base_registe
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, ltac::Register scaled, unsigned displacement) : base_register(reg), scaled_register(scaled), displacement(displacement) {
+ltac::Address::Address(ltac::Register reg, ltac::Register scaled, int displacement) : base_register(reg), scaled_register(scaled), displacement(displacement) {
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, ltac::Register scaled, unsigned scale, unsigned displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
+ltac::Address::Address(ltac::Register reg, ltac::Register scaled, unsigned scale, int displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
     //Nothing to init    
 }
