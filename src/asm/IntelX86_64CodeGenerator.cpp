@@ -100,7 +100,7 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     if(auto* ptr = boost::get<int>(&arg)){
         return os << *ptr;
     } else if(auto* ptr = boost::get<double>(&arg)){
-        return os << *ptr;
+        return os << "__float64__(" << std::fixed << *ptr << ")";
     } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
         return os << to_string(*ptr); 
     } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
