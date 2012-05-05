@@ -17,6 +17,7 @@
 namespace eddic {
 
 /**
+ * \class BackEnd
  * \brief Represent the back end part of the compilation process. 
  */
 class BackEnd {
