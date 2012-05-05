@@ -40,17 +40,58 @@ class Position {
         Position(PositionType type, int offset);
         Position(PositionType type, const std::string& name);
 
+	/*!
+	 * Indicates if this position is on the stack. 
+	 * \return true if this position is on the stack, otherwise false. 
+	 */
         bool isStack() const;
+        
+	/*!
+	 * Indicates if this position is a parameter. 
+	 * \return true if this position is a parameter, otherwise false. 
+	 */
         bool isParameter() const;
+        
+	/*!
+	 * Indicates if this position is a global variable. 
+	 * \return true if this position is a global variable, otherwise false. 
+	 */
         bool isGlobal() const;
+        
+	/*!
+	 * Indicates if this position is const. 
+	 * \return true if this position is const, otherwise false. 
+	 */
         bool isConst() const;
+        
+	/*!
+	 * Indicates if this position is temporary. 
+	 * \return true if this position is temporary, otherwise false. 
+	 */
         bool isTemporary() const;
+        
+	/*!
+	 * Indicates if this position is a parameter stored in a register. 
+	 * \return true if this position is a parameter stored in a register, otherwise false. 
+	 */
         bool isParamRegister() const;
 
-        int offset() const;
-
+	/*!
+	 * Returns the type of the position. 
+	 * \return The type of the position
+	 */
         PositionType type() const;
-		
+
+	/*!
+	 * Returns the offset of the variable. This value is only valid for position having a offset. 
+	 * \return the offset of the variable. 
+	 */
+        int offset() const;
+	
+	/*!
+	 * Returns the name of the variable. This value is only valid for position having a name. 
+	 * \return the name of the variable. 
+	 */
         const std::string& name() const;
 };
 
