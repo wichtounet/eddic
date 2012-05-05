@@ -32,6 +32,8 @@ enum class PositionType : unsigned int {
 class Position {
     private:
         PositionType m_type;
+        
+        //TODO These two fields should be optional
         int m_offset;
         std::string m_name;
 
