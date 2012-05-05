@@ -9,6 +9,7 @@
 #define POSITION_H
 
 #include <string>
+#include <boost/optional.hpp>
 
 namespace eddic {
 
@@ -33,9 +34,8 @@ class Position {
     private:
         PositionType m_type;
         
-        //TODO These two fields should be optional
-        int m_offset;
-        std::string m_name;
+        boost::optional<int> m_offset;
+        boost::optional<std::string> m_name;
 
     public:
         Position(PositionType type);
