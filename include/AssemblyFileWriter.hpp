@@ -25,25 +25,25 @@ class AssemblyFileWriter {
         std::stringstream buffer;
 	
     public:
-    	/**
+    	/*!
     	 * Construct an AssemblyFileWriter that will output on the given path. 
     	 * \param path The path to the file. 
     	 */
         AssemblyFileWriter(const std::string& path);
         
-        /**
+        /*!
          * Close the file stream. 
          */
         ~AssemblyFileWriter();
         
-        /**
+        /*!
          * \brief Return the enclosing stream. 
          * This method should be used to output assembly instruction to the file. 
          * \return A reference to the enclosing stream. 
          */
         std::stringstream& stream();
         
-        /**
+        /*!
          * Output the buffer to the file. 
          */
         void write();
