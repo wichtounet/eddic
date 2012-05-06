@@ -31,7 +31,16 @@ class SemanticalException: public std::exception {
 
         ~SemanticalException() throw();
 
+        /*!
+         * Return the error message. 
+         * \return The error message. 
+         */
         const std::string& message() const;
+        
+        /*!
+         * Return the position in the source file where this error comes from. This value is optional. 
+         * \return The position of the error. 
+         */
         boost::optional<eddic::ast::Position> position() const;
 
         virtual const char* what() const throw();

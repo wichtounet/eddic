@@ -24,7 +24,18 @@ extern bool WarningUnused;
  */
 extern bool WarningCast;
 
+/*!
+ * Indicates if the given option has been defined. 
+ * \param option_name The name of the option to test. 
+ * \return true if the option has been defined, otherwise false. 
+ */
 bool option_defined(const std::string& option_name);
+
+/*!
+ * Return the value of the defined option. 
+ * \param option_name The name of the option to search. 
+ * \return the value of the given option. 
+ */
 std::string option_value(const std::string& option_name);
 
 /*!

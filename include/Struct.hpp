@@ -26,7 +26,15 @@ struct Member {
 
     Member(const std::string& n, Type t);
 
+    /*!
+     * Increment the reference counter of the member. 
+     */
     void add_reference();
+    
+    /*!
+     * Return the reference counter of the member. 
+     * \return The reference counter of the member. 
+     */
     unsigned int get_references();
 
     private:
@@ -43,10 +51,29 @@ struct Struct {
     
     Struct(const std::string& n);
 
-    bool member_exists(const std::string& n);
-    std::shared_ptr<Member> operator[](const std::string& n);
+    /*!
+     * Indicates if the specified member exists in this structure. 
+     * \param name The name of the member to search for. 
+     * \return true if the member exists, otherwise false. 
+     */
+    bool member_exists(const std::string& name);
+    
+    /*!
+     * Return the member with the specified name. 
+     * \param name The name of the member to search for. 
+     * \return A pointer to the member with the given name. 
+     */
+    std::shared_ptr<Member> operator[](const std::string& name);
 
+    /*!
+     * Increment the reference counter of the structure. 
+     */
     void add_reference();
+    
+    /*!
+     * Return the reference counter of the member. 
+     * \return The reference counter of the member. 
+     */
     unsigned int get_references();
 
     private:
