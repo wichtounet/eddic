@@ -23,7 +23,9 @@ enum class Platform : unsigned int {
     INTEL_X86_64
 };
 
-//The current platform
+/*!
+ * The current platform. 
+ */
 extern Platform platform;
 
 /*!
