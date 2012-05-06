@@ -12,6 +12,10 @@ namespace eddic {
 
 namespace ltac {
 
+/*!
+ * \struct Register
+ * Represents a symbolic register in the LTAC Representation. 
+ */
 struct Register {
     unsigned short reg;
 
@@ -24,8 +28,14 @@ struct Register {
     bool operator!=(const Register& rhs) const;
 };
 
-/* Whatever the platform is, these two registers must be constant  */
+/*!
+ * Represent the stack pointer. 
+ */
 static const Register SP(1000);
+
+/*!
+ * Represent the base pointer. 
+ */
 static const Register BP(1001);
 
 } //end of ltac
