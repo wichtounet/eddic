@@ -18,8 +18,17 @@ namespace eddic {
 
 namespace ltac {
 
+/*!
+ * \class Compiler
+ * Low-Level Compiler. Generates LTAC program from the MTAC Program. 
+ */
 class Compiler {
     public:
+        /*!
+         * Compile the MTAC Program into an LTAC Program. 
+         * \param source The source MTAC Program. 
+         * \param target The target LTAC Program. 
+         */
         void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target);
     
     private:
