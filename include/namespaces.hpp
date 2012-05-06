@@ -20,21 +20,27 @@ namespace eddic {
 namespace ast {} //end of ast
 
 /*!
- * \namespace eddic::il
- * \brief Contains all the Intermediate Language instructions. 
+ * \namespace eddic::tac
+ * \brief Contains all the Three Address Code instructions. 
  */
-namespace il {} //end of il
+namespace tac {} //end of il
 
 /*!
  * \namespace eddic::lexer
  * \brief Contains the lexical analyzer
  */
-namespace il {} //end of lexer
+namespace lexer {} //end of lexer
 
 /*!
  * \namespace eddic::parser
  * \brief Contains the parser. 
  */
-namespace il {} //end of parser
+namespace parser {} //end of parser
+
+/*!
+ * \namespace eddic::as
+ * \brief Contains the code generators. 
+ */
+namespace as {} //end of as
 
 } //end of eddic
