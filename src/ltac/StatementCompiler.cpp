@@ -52,7 +52,6 @@ ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
     return ltac::to_arg(argument, manager);
 }
 
-//TODO Move the logic to Utils
 ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, int offset){
     auto position = var->position();
 
@@ -616,6 +615,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
         }
     }
 
+    //TODO Do that in the peephole optimizer
     if(total > 0){
         ltac::add_instruction(function, ltac::Operator::FREE_STACK, total);
     }
