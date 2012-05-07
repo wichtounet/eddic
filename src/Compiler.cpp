@@ -43,7 +43,7 @@ int Compiler::compile(const std::string& file) {
 
     StopWatch timer;
     
-    int code = compileOnly(file, platform);
+    int code = compileOnly(file);
 
     if(!option_defined("quiet")){
         std::cout << "Compilation took " << timer.elapsed() << "ms" << std::endl;
@@ -52,7 +52,7 @@ int Compiler::compile(const std::string& file) {
     return code;
 }
 
-int Compiler::compileOnly(const std::string& file, Platform platform) {
+int Compiler::compileOnly(const std::string& file) {
     //Reset the symbol table
     symbols.reset();
 

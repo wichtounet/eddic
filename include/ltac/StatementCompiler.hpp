@@ -22,6 +22,16 @@ namespace ltac {
 class StatementCompiler : public boost::static_visitor<> {
     public:
         StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function);
+    
+        /*!
+         * Deleted copy constructor
+         */
+        StatementCompiler(const StatementCompiler& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
         void set_current(mtac::Statement statement);
         void reset();

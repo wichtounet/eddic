@@ -21,6 +21,7 @@
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
+#include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
 
 //Code generation
@@ -57,6 +58,8 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         auto ltac_program = std::make_shared<ltac::Program>();
         ltac::Compiler ltacCompiler;
         ltacCompiler.compile(mtacProgram, ltac_program);
+
+        optimize(ltac_program);
 
         //TODO Pass everything using directly the shared_ptr
         

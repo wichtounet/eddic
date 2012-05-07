@@ -38,7 +38,9 @@ class SymbolTable {
 
     public:
         SymbolTable();
+        
         SymbolTable(const SymbolTable& rhs) = delete;
+        SymbolTable& operator=(const SymbolTable& rhs) = delete;
 
         /*!
          * Reset the symbol table. 

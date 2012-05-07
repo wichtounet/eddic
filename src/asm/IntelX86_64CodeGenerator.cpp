@@ -239,6 +239,9 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::CMOVLE:
                 writer.stream() << "cmovle " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
+            case ltac::Operator::NOP:
+                //Nothing to output for a nop
+                break;
             default:
                 ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
         }

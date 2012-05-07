@@ -219,26 +219,7 @@ void ltac::StatementCompiler::mul(std::shared_ptr<Variable> result, mtac::Argume
     mtac::assertIntOrVariable(arg2);
 
     auto reg = manager.get_reg(result);
-
-    if(isInt(arg2)){
-        int constant = boost::get<int>(arg2);
-
-        //TODO Do these optimizations in the low level optimizer
-
-        if(isPowerOfTwo(constant)){
-            ltac::add_instruction(function, ltac::Operator::SHIFT_LEFT, reg, powerOfTwo(constant));
-        } else if(constant == 3){
-            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(reg, reg, 2, 0));
-        } else if(constant == 5){
-            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(reg, reg, 4, 0));
-        } else if(constant == 9){
-            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(reg, reg, 8, 0));
-        } else {
-            ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
-        }
-    } else {
-        ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
-    }
+    ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
 }
 
 //Div eax by arg2 
@@ -644,18 +625,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:
             {
-                //TODO This optimization can be done in the low level optimizer
-
-                //The fastest way to set a register to 0 is to use xorl
-                if(mtac::equals<int>(*quadruple->arg1, 0)){
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::XOR, reg, reg);
-                } 
-                //In all the others cases, just move the value to the register
-                else {
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
-                }
+                auto reg = manager.get_reg_no_move(quadruple->result);
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
 
                 manager.set_written(quadruple->result);
 
@@ -663,16 +634,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             }
         case mtac::Operator::FASSIGN:
             {
-                //The fastest way to set a register to 0 is to use pxor
-                if(mtac::equals<int>(*quadruple->arg1, 0)){
-                    auto reg = manager.get_float_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::XOR, reg, reg);
-                } 
-                //In all the others cases, just move the value to the register
-                else {
-                    auto reg = manager.get_float_reg_no_move(quadruple->result);
-                    manager.copy(*quadruple->arg1, reg);
-                }
+                auto reg = manager.get_float_reg_no_move(quadruple->result);
+                manager.copy(*quadruple->arg1, reg);
 
                 manager.set_written(quadruple->result);
 
@@ -682,41 +645,15 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             {
                 auto result = quadruple->result;
 
-                //Optimize the special form a = a + b by using only one instruction
+                //Optimize the special form a = a + b by using only one ADD instruction
                 if(*quadruple->arg1 == result){
                     auto reg = manager.get_reg(quadruple->result);
-
-                    //TODO Do this optimization in the peephole optimizer
-
-                    //a = a + 1 => increment a
-                    if(*quadruple->arg2 == 1){
-                        ltac::add_instruction(function, ltac::Operator::INC, reg);
-                    }
-                    //a = a + -1 => decrement a
-                    else if(*quadruple->arg2 == -1){
-                        ltac::add_instruction(function, ltac::Operator::DEC, reg);
-                    }
-                    //In the other cases, perform a simple addition
-                    else {
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
-                    }
+                    ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
                 } 
-                //Optimize the special form a = b + a by using only one instruction
+                //Optimize the special form a = b + a by using only one ADD instruction
                 else if(*quadruple->arg2 == result){
                     auto reg = manager.get_reg(quadruple->result);
-
-                    //a = 1 + a => increment a
-                    if(*quadruple->arg1 == 1){
-                        ltac::add_instruction(function, ltac::Operator::INC, reg);
-                    }
-                    //a = -1 + a => decrement a
-                    else if(*quadruple->arg1 == -1){
-                        ltac::add_instruction(function, ltac::Operator::DEC, reg);
-                    }
-                    //In the other cases, perform a simple addition
-                    else {
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
-                    }
+                    ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
                 } 
                 //In the other cases, use lea to perform the addition
                 else {
@@ -745,22 +682,10 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             {
                 auto result = quadruple->result;
 
-                //Optimize the special form a = a - b by using only one instruction
+                //Optimize the special form a = a - b by using only one SUB instruction
                 if(*quadruple->arg1 == result){
                     auto reg = manager.get_reg(quadruple->result);
-
-                    //a = a - 1 => decrement a
-                    if(*quadruple->arg2 == 1){
-                        ltac::add_instruction(function, ltac::Operator::DEC, reg);
-                    }
-                    //a = a - -1 => increment a
-                    else if(*quadruple->arg2 == -1){
-                        ltac::add_instruction(function, ltac::Operator::INC, reg);
-                    }
-                    //In the other cases, perform a simple subtraction
-                    else {
-                        ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
-                    }
+                    ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
                 } 
                 //In the other cases, move the first arg into the result register and then subtract the second arg into it
                 else {
@@ -806,7 +731,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;            
             }
         case mtac::Operator::DIV:
-            //TODO Optimization in the peephole optimizer
+            //This optimization cannot be done in the peephole optimizer
             //Form x = x / y when y is power of two
             if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
                 int constant = boost::get<int>(*quadruple->arg2);

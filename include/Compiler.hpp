@@ -32,12 +32,11 @@ struct Compiler {
     int compile (const std::string& file);
     
     /*!
-     * Compile the given file. The compilation is not timed and the used platform is the given one. 
+     * Compile the given file. The compilation is not timed. 
      * \param file The file to compile. 
-     * \param platform The platform to compile for. 
      * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
      */
-    int compileOnly (const std::string& file, Platform platform);
+    int compileOnly (const std::string& file);
 };
 
 } //end of eddic

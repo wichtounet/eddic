@@ -98,6 +98,8 @@ std::string to_string(ltac::Operator op){
             return "CMOVL"; 
         case ltac::Operator::CMOVLE:
             return "CMOVLE"; 
+        case ltac::Operator::NOP:
+            return "NOP"; 
         default:
             ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
     }
@@ -227,7 +229,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << std::endl;
     }
 
-    void operator()(std::shared_ptr<ltac::BasicBlock>& block){
+    void operator()(std::shared_ptr<ltac::BasicBlock>&/* block*/){
         //Nothing to do here
         //TODO Can be removed in the future
     }
