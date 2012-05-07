@@ -16,6 +16,7 @@
 #include "ltac/Compiler.hpp"
 
 #include "mtac/Utils.hpp" //TODO Perhaps part of this should be moved to ltac ? 
+#include "ltac/Utils.hpp"
 
 using namespace eddic;
 
@@ -46,7 +47,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
         compile(src_function, target_function);
     }
 }
-
 
 namespace {
 
@@ -155,7 +155,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void copy(mtac::Argument argument, ltac::FloatRegister reg){
-        assert(is_variable(argument) || mtac::isFloat(argument));
+        assert(ltac::is_variable(argument) || mtac::isFloat(argument));
 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
@@ -228,7 +228,7 @@ struct StatementCompiler : public boost::static_visitor<> {
     }
     
     void move(mtac::Argument argument, ltac::FloatRegister reg){
-        assert(is_variable(argument) || mtac::isFloat(argument));
+        assert(ltac::is_variable(argument) || mtac::isFloat(argument));
 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
             auto variable = *ptr;
@@ -477,30 +477,6 @@ struct StatementCompiler : public boost::static_visitor<> {
             }
         }
     }
-    
-    /* Utility  */
-
-    bool is_float_operator(mtac::BinaryOperator op){
-        return op >= mtac::BinaryOperator::FE && op <= mtac::BinaryOperator::FL;
-    }
-
-    bool is_float_var(std::shared_ptr<Variable> variable){
-        return variable->type() == BaseType::FLOAT;
-    }
-    
-    bool is_int_var(std::shared_ptr<Variable> variable){
-        return variable->type() == BaseType::INT;
-    }
-    
-    template<typename Variant>
-    bool is_variable(Variant& variant){
-        return boost::get<std::shared_ptr<Variable>>(&variant);
-    }
-
-    template<typename Variant>
-    std::shared_ptr<Variable> get_variable(Variant& variant){
-        return boost::get<std::shared_ptr<Variable>>(variant);
-    }
 
     /* Conversions */
 
@@ -520,7 +496,7 @@ struct StatementCompiler : public boost::static_visitor<> {
         } else if(auto* ptr = boost::get<std::string>(&argument)){
             return *ptr;
         } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-            if(is_float_var(*ptr)){
+            if(ltac::is_float_var(*ptr)){
                 if((*ptr)->position().isTemporary()){
                     return get_float_reg_no_move(*ptr);
                 } else {
@@ -569,12 +545,12 @@ struct StatementCompiler : public boost::static_visitor<> {
             return to_address(var, *ptr);
         }
         
-        assert(is_variable(offset));
+        assert(ltac::is_variable(offset));
         
         auto position = var->position();
         assert(!position.isTemporary());
 
-        auto offsetReg = get_reg(get_variable(offset));
+        auto offsetReg = get_reg(ltac::get_variable(offset));
         
         if(position.isStack()){
             return ltac::Address(ltac::BP, offsetReg, 1, -1 * position.offset());
@@ -603,7 +579,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             
             add_instruction(function, ltac::Operator::MOV, reg1, *ptr);
 
-            auto reg2 = get_reg(get_variable(*if_->arg2));
+            auto reg2 = get_reg(ltac::get_variable(*if_->arg2));
 
             //The basic block must be ended before the jump
             end_basic_block();
@@ -612,7 +588,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
             registers.release(reg1);
         } else {
-            auto reg1 = get_reg(get_variable(if_->arg1));
+            auto reg1 = get_reg(ltac::get_variable(if_->arg1));
 
             //The basic block must be ended before the jump
             end_basic_block();
@@ -631,12 +607,12 @@ struct StatementCompiler : public boost::static_visitor<> {
             //The basic block must be ended before the jump
             end_basic_block();
             
-            auto reg1 = get_float_reg(get_variable(if_->arg1));
-            auto reg2 = get_float_reg(get_variable(*if_->arg2));
+            auto reg1 = get_float_reg(ltac::get_variable(if_->arg1));
+            auto reg2 = get_float_reg(ltac::get_variable(*if_->arg2));
 
             add_instruction(function, ltac::Operator::CMP_FLOAT, reg1, reg2);
         } else if(isVariable(if_->arg1) && isFloat(*if_->arg2)){
-            auto reg1 = get_float_reg(get_variable(if_->arg1));
+            auto reg1 = get_float_reg(ltac::get_variable(if_->arg1));
             auto reg2 = get_free_float_reg();
 
             copy(*if_->arg2, reg2);
@@ -649,7 +625,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             float_registers.release(reg2);
         } else if(isFloat(if_->arg1) && isVariable(*if_->arg2)){
             auto reg1 = get_free_float_reg();
-            auto reg2 = get_float_reg(get_variable(*if_->arg2));
+            auto reg2 = get_float_reg(ltac::get_variable(*if_->arg2));
 
             copy(if_->arg1, reg1);
 
@@ -679,7 +655,7 @@ struct StatementCompiler : public boost::static_visitor<> {
             //The basic block must be ended before the jump
             end_basic_block();
             
-            auto reg = get_reg(get_variable(if_->arg1));
+            auto reg = get_reg(ltac::get_variable(if_->arg1));
 
             add_instruction(function, ltac::Operator::OR, reg, reg);
         }
@@ -692,7 +668,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         if(if_false->op){
             //Depending on the type of the operator, do a float or a int comparison
-            if(is_float_operator(*if_false->op)){
+            if(ltac::is_float_operator(*if_false->op)){
                 compare_float_binary(if_false);
                 
                 switch(*if_false->op){
@@ -763,7 +739,7 @@ struct StatementCompiler : public boost::static_visitor<> {
 
         if(if_->op){
             //Depending on the type of the operator, do a float or a int comparison
-            if(is_float_operator(*if_->op)){
+            if(ltac::is_float_operator(*if_->op)){
                 compare_float_binary(if_);
             
                 switch(*if_->op){
@@ -939,7 +915,7 @@ struct StatementCompiler : public boost::static_visitor<> {
        
         //If the param as not been handled as register passing, push it on the stack 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-            if(!(*ptr)->type().isArray() && is_float_var(*ptr)){
+            if(!(*ptr)->type().isArray() && ltac::is_float_var(*ptr)){
                 auto reg1 = get_free_reg();
                 auto reg2 = get_float_reg(*ptr);
 
@@ -973,7 +949,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                         add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
                     }
                 } else {
-                    auto reg = get_reg(get_variable(param->arg));
+                    auto reg = get_reg(ltac::get_variable(param->arg));
                     add_instruction(function, ltac::Operator::PUSH, reg);
                 }
             }
@@ -1126,13 +1102,13 @@ struct StatementCompiler : public boost::static_visitor<> {
             
         } 
         //Form x = y / z (y: variable)
-        else if(isVariable(*quadruple->arg1)){
+        else if(ltac::is_variable(*quadruple->arg1)){
             auto A = ltac::Register(descriptor->a_register());
 
             spills(A);
             registers.reserve(A);
 
-            copy(get_variable(*quadruple->arg1), A);
+            copy(ltac::get_variable(*quadruple->arg1), A);
 
             div_eax(quadruple);
 
@@ -1278,15 +1254,15 @@ struct StatementCompiler : public boost::static_visitor<> {
                 else {
                     auto reg = get_reg_no_move(quadruple->result);
                     
-                    if(is_variable(*quadruple->arg1)){
-                        if(is_variable(*quadruple->arg2)){
-                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(get_variable(*quadruple->arg1)), to_register(get_variable(*quadruple->arg2))));
+                    if(ltac::is_variable(*quadruple->arg1)){
+                        if(ltac::is_variable(*quadruple->arg2)){
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), to_register(ltac::get_variable(*quadruple->arg2))));
                         } else {
-                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
                         }
                     } else {
-                        if(is_variable(*quadruple->arg1)){
-                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), get_reg(get_variable(*quadruple->arg2)));
+                        if(ltac::is_variable(*quadruple->arg1)){
+                            add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), get_reg(ltac::get_variable(*quadruple->arg2)));
                         } else {
                             add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), boost::get<int>(*quadruple->arg2));
                         }
@@ -1552,7 +1528,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
 
-                auto reg = get_reg(get_variable(*quadruple->arg1));
+                auto reg = get_reg(ltac::get_variable(*quadruple->arg1));
                 auto resultReg = get_float_reg_no_move(quadruple->result);
 
                 add_instruction(function, ltac::Operator::I2F, resultReg, reg);
@@ -1566,7 +1542,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
 
-                auto reg = get_float_reg(get_variable(*quadruple->arg1));
+                auto reg = get_float_reg(ltac::get_variable(*quadruple->arg1));
                 auto resultReg = get_reg_no_move(quadruple->result);
 
                 add_instruction(function, ltac::Operator::F2I, resultReg, reg);
@@ -1580,7 +1556,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 //Constants should have been replaced by the optimizer
                 assert(isVariable(*quadruple->arg1));
 
-                add_instruction(function, ltac::Operator::NEG, get_reg(get_variable(*quadruple->arg1)));
+                add_instruction(function, ltac::Operator::NEG, get_reg(ltac::get_variable(*quadruple->arg1)));
                 
                 written.insert(quadruple->result);
 
@@ -1594,7 +1570,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                 auto reg = get_free_float_reg();
                 copy(-1.0, reg);
 
-                add_instruction(function, ltac::Operator::FMUL, get_float_reg(get_variable(*quadruple->arg1)), reg);
+                add_instruction(function, ltac::Operator::FMUL, get_float_reg(ltac::get_variable(*quadruple->arg1)), reg);
 
                 float_registers.release(reg);
 
@@ -1696,14 +1672,14 @@ struct StatementCompiler : public boost::static_visitor<> {
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
 
-                if(is_float_var(quadruple->result)){
+                if(ltac::is_float_var(quadruple->result)){
                     auto reg = get_float_reg_no_move(quadruple->result);
 
-                    add_instruction(function, ltac::Operator::FMOV, reg, to_address(get_variable(*quadruple->arg1), *quadruple->arg2));
+                    add_instruction(function, ltac::Operator::FMOV, reg, to_address(ltac::get_variable(*quadruple->arg1), *quadruple->arg2));
                 } else {
                     auto reg = get_reg_no_move(quadruple->result);
 
-                    add_instruction(function, ltac::Operator::MOV, reg, to_address(get_variable(*quadruple->arg1), *quadruple->arg2));
+                    add_instruction(function, ltac::Operator::MOV, reg, to_address(ltac::get_variable(*quadruple->arg1), *quadruple->arg2));
                 }
                
                 written.insert(quadruple->result);
@@ -1730,7 +1706,7 @@ struct StatementCompiler : public boost::static_visitor<> {
                     if(isFloat(*quadruple->arg1)){
                         spills(ltac::FloatRegister(descriptor->float_return_register()));
                         move(*quadruple->arg1, ltac::FloatRegister(descriptor->float_return_register()));
-                    } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && is_float_var(get_variable(*quadruple->arg1))){
+                    } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && ltac::is_float_var(ltac::get_variable(*quadruple->arg1))){
                         auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
                         auto reg = get_float_reg(variable);
