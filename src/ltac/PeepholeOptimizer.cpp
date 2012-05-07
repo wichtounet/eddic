@@ -100,7 +100,15 @@ void optimize_statement(ltac::Statement& statement){
                     return;
                 } 
             }
-            
+        }
+
+        if(instruction->op == ltac::Operator::CMP_INT){
+            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
+                instruction->op = ltac::Operator::OR;
+                instruction->arg2 = instruction->arg1;
+
+                return;
+            }
         }
     }
 }
