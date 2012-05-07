@@ -31,8 +31,7 @@ struct ASTGlobalArrayDeclaration {
     std::string arrayName;
     int arraySize;
 
-    mutable long references;
-    ASTGlobalArrayDeclaration() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

@@ -32,8 +32,7 @@ struct ASTSuffixOperation {
     std::shared_ptr<Variable> variable;
     ast::Operator op;
 
-    mutable long references;
-    ASTSuffixOperation() : references(0) {}
+    mutable long references = 0;
 };
 
 typedef Deferred<ASTSuffixOperation> SuffixOperation;

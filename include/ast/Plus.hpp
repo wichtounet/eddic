@@ -20,8 +20,7 @@ struct ASTPlus {
     Value value;
     char op;
 
-    mutable long references;
-    ASTPlus() : references(0) {}
+    mutable long references = 0;
 };
 
 typedef Deferred<ASTPlus> Plus;
