@@ -45,7 +45,9 @@ class Context {
          * \param parent The parent Context of this new Context. 
          */
         explicit Context(std::shared_ptr<Context> parent);
+        
         Context(const Context& rhs) = delete;
+        Context& operator=(const Context& rhs) = delete;
 
         /*!
          * Add a new variable to this context. 

@@ -26,6 +26,7 @@ class StringPool {
     public:
         StringPool();
         StringPool(const StringPool& rhs) = delete;
+        StringPool& operator=(const StringPool& rhs) = delete;
 
         std::string label(const std::string& value);
         std::string value(const std::string& label);
