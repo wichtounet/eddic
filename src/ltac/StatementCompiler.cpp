@@ -644,18 +644,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:
             {
-                //TODO This optimization can be done in the low level optimizer
-
-                //The fastest way to set a register to 0 is to use xorl
-                if(mtac::equals<int>(*quadruple->arg1, 0)){
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::XOR, reg, reg);
-                } 
-                //In all the others cases, just move the value to the register
-                else {
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
-                }
+                auto reg = manager.get_reg_no_move(quadruple->result);
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
 
                 manager.set_written(quadruple->result);
 
