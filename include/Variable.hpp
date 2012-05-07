@@ -20,7 +20,6 @@
 
 namespace eddic {
 
-class Value;
 class IntermediateProgram;
 class Operand;
 
