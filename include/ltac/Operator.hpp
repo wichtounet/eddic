@@ -73,7 +73,9 @@ enum class Operator : unsigned int {
     CMOVG,
     CMOVGE,
     CMOVL,
-    CMOVLE
+    CMOVLE,
+
+    NOP
 };
 
 } //end of ltac

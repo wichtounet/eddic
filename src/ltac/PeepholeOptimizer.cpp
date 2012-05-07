@@ -69,6 +69,7 @@ void optimize_statement(ltac::Statement& statement){
         }
 
         if(instruction->op == ltac::Operator::MUL){
+            //Optimize multiplications with SHIFTs or LEAs
             if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
                 int constant = boost::get<int>(*instruction->arg2);
 
@@ -105,6 +106,7 @@ void optimize_statement(ltac::Statement& statement){
         }
 
         if(instruction->op == ltac::Operator::CMP_INT){
+            //Optimize comparisons with 0 with or reg, reg
             if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
                 instruction->op = ltac::Operator::OR;
                 instruction->arg2 = instruction->arg1;
@@ -123,6 +125,27 @@ void single_statement_optimizations(std::shared_ptr<ltac::Program> program){
     }
 }
 
+void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
+    for(auto& function : program->functions){
+        auto& statements = function->getStatements();
+
+        for(size_t i = 1; i < statements.size(); ++i){
+            auto& s1 = statements[i -  1];
+            auto& s2 = statements[i];
+
+            if(mtac::is<std::shared_ptr<ltac::Instruction>>(s1) && mtac::is<std::shared_ptr<ltac::Instruction>>(s2)){
+                auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
+                auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
+
+                if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
+                    i2->op = ltac::Operator::NOP;
+                }
+            }
+        }
+    }
+}
+
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
     single_statement_optimizations(program);
+    multiple_statement_optimizations(program);
 }

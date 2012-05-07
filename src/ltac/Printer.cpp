@@ -98,6 +98,8 @@ std::string to_string(ltac::Operator op){
             return "CMOVL"; 
         case ltac::Operator::CMOVLE:
             return "CMOVLE"; 
+        case ltac::Operator::NOP:
+            return "NOP"; 
         default:
             ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
     }
