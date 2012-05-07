@@ -17,8 +17,6 @@
 
 namespace eddic {
 
-class Value;
-
 /*!
  * \class FunctionContext
  * \brief A symbol table for a function.

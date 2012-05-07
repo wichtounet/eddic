@@ -82,7 +82,5 @@ Type ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
-    std::string name = call.Content->functionName;
-
     return call.Content->function->returnType;
 }

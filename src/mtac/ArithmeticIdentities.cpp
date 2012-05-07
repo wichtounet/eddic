@@ -60,7 +60,7 @@ void mtac::ArithmeticIdentities::operator()(std::shared_ptr<mtac::Quadruple>& qu
                 if(*quadruple->arg2 == 1){
                     replaceRight(*this, quadruple, *quadruple->arg1, mtac::Operator::ASSIGN);
                 }
-
+                
                 else if(*quadruple->arg1 == 0){
                     replaceRight(*this, quadruple, 0, mtac::Operator::ASSIGN);
                 }
@@ -70,7 +70,7 @@ void mtac::ArithmeticIdentities::operator()(std::shared_ptr<mtac::Quadruple>& qu
                     replaceRight(*this, quadruple, 1, mtac::Operator::ASSIGN);
                 }
                 
-                else if(*quadruple->arg2 == 1){
+                else if(*quadruple->arg2 == -1){
                     replaceRight(*this, quadruple, *quadruple->arg1, mtac::Operator::MINUS);
                 }
 
@@ -133,7 +133,7 @@ void mtac::ArithmeticIdentities::operator()(std::shared_ptr<mtac::Quadruple>& qu
                     replaceRight(*this, quadruple, 1.0, mtac::Operator::FASSIGN);
                 }
                 
-                else if(*quadruple->arg2 == 1.0){
+                else if(*quadruple->arg2 == -1.0){
                     replaceRight(*this, quadruple, *quadruple->arg1, mtac::Operator::MINUS);
                 }
 

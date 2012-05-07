@@ -20,8 +20,7 @@ struct ASTMinus {
     Value value;
     char op;
 
-    mutable long references;
-    ASTMinus() : references(0) {}
+    mutable long references = 0;
 };
 
 typedef Deferred<ASTMinus> Minus;

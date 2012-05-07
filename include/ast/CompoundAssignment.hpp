@@ -30,8 +30,7 @@ struct ASTCompoundAssignment {
     ast::Operator op;
     Position position;
 
-    mutable long references;
-    ASTCompoundAssignment() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
