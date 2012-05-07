@@ -8,6 +8,8 @@
 #include <iostream>
 #include <boost/optional.hpp>
 
+#include "Utils.hpp"
+
 #include "ltac/PeepholeOptimizer.hpp"
 
 #include "mtac/Utils.hpp"
@@ -62,6 +64,43 @@ void optimize_statement(ltac::Statement& statement){
 
                 return;
             }
+        }
+
+        if(instruction->op == ltac::Operator::MUL){
+            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
+                int constant = boost::get<int>(*instruction->arg2);
+
+                auto reg = boost::get<ltac::Register>(*instruction->arg1);
+        
+                if(isPowerOfTwo(constant)){
+                    instruction->op = ltac::Operator::SHIFT_LEFT;
+                    instruction->arg2 = powerOfTwo(constant);
+
+                    return;
+                } 
+                
+                if(constant == 3){
+                    instruction->op = ltac::Operator::LEA;
+                    instruction->arg2 = ltac::Address(reg, reg, 2, 0);
+
+                    return;
+                } 
+                
+                if(constant == 5){
+                    instruction->op = ltac::Operator::LEA;
+                    instruction->arg2 = ltac::Address(reg, reg, 4, 0);
+
+                    return;
+                } 
+                
+                if(constant == 9){
+                    instruction->op = ltac::Operator::LEA;
+                    instruction->arg2 = ltac::Address(reg, reg, 8, 0);
+
+                    return;
+                } 
+            }
+            
         }
     }
 }

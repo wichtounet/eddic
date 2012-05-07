@@ -219,26 +219,7 @@ void ltac::StatementCompiler::mul(std::shared_ptr<Variable> result, mtac::Argume
     mtac::assertIntOrVariable(arg2);
 
     auto reg = manager.get_reg(result);
-
-    if(isInt(arg2)){
-        int constant = boost::get<int>(arg2);
-
-        //TODO Do these optimizations in the low level optimizer
-
-        if(isPowerOfTwo(constant)){
-            ltac::add_instruction(function, ltac::Operator::SHIFT_LEFT, reg, powerOfTwo(constant));
-        } else if(constant == 3){
-            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(reg, reg, 2, 0));
-        } else if(constant == 5){
-            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(reg, reg, 4, 0));
-        } else if(constant == 9){
-            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(reg, reg, 8, 0));
-        } else {
-            ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
-        }
-    } else {
-        ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
-    }
+    ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
 }
 
 //Div eax by arg2 
@@ -750,7 +731,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;            
             }
         case mtac::Operator::DIV:
-            //TODO Optimization in the peephole optimizer
+            //This optimization cannot be done in the peephole optimizer
             //Form x = x / y when y is power of two
             if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
                 int constant = boost::get<int>(*quadruple->arg2);
