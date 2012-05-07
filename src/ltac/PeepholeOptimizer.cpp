@@ -16,8 +16,6 @@
 
 using namespace eddic;
 
-//TODO Comment every optimization
-
 void optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
@@ -166,6 +164,9 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
 }
 
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
+    //Optimizations that looks at only one statement
     single_statement_optimizations(program);
+
+    //Optimizations that looks at several statements at once
     multiple_statement_optimizations(program);
 }
