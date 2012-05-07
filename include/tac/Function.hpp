@@ -14,43 +14,80 @@
 
 #include "SymbolTable.hpp"
 
-#include "tac/BasicBlock.hpp"
-
 namespace eddic {
 
 class FunctionContext;
 
 namespace tac {
 
-typedef std::shared_ptr<tac::BasicBlock> BlockPtr;
-
+template<typename BasicBlock, typename Statement>
 class Function {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
+
+        typedef std::shared_ptr<BasicBlock> BlockPtr;
 
         std::shared_ptr<eddic::Function> definition;
         
         std::shared_ptr<FunctionContext> context;
 
-        void add(tac::Statement statement);
+        void add(Statement statement);
 
         BlockPtr currentBasicBlock();
         BlockPtr newBasicBlock();
 
         std::string getName() const;
 
-        std::vector<tac::Statement>& getStatements();
+        std::vector<Statement>& getStatements();
         std::vector<BlockPtr>& getBasicBlocks();
 
     private:
         //Before being partitioned, the function has only statement
-        std::vector<tac::Statement> statements;
+        std::vector<Statement> statements;
         
         //There is no basic blocks at the beginning
         std::vector<BlockPtr> blocks;
 
         std::string name;
 };
+
+template<typename BasicBlock, typename Statement>
+tac::Function<BasicBlock, Statement>::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {
+    //Nothing to do   
+}
+        
+template<typename BasicBlock, typename Statement>
+void tac::Function<BasicBlock, Statement>::add(Statement statement){
+    statements.push_back(statement);
+}
+
+template<typename BasicBlock, typename Statement>
+std::shared_ptr<BasicBlock> tac::Function<BasicBlock, Statement>::currentBasicBlock(){
+    assert(!blocks.empty());
+
+    return blocks.back();
+}
+
+template<typename BasicBlock, typename Statement>
+std::shared_ptr<BasicBlock> tac::Function<BasicBlock, Statement>::newBasicBlock(){
+    blocks.push_back(std::make_shared<BasicBlock>(blocks.size() + 1));
+    return blocks.back();
+}   
+
+template<typename BasicBlock, typename Statement>
+std::string tac::Function<BasicBlock, Statement>::getName() const {
+    return name;
+}
+
+template<typename BasicBlock, typename Statement>
+std::vector<Statement>& tac::Function<BasicBlock, Statement>::getStatements(){
+    return statements;
+}
+
+template<typename BasicBlock, typename Statement>
+std::vector<std::shared_ptr<BasicBlock>>& tac::Function<BasicBlock, Statement>::getBasicBlocks(){
+    return blocks;
+}
 
 } //end of tac
 

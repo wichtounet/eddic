@@ -11,14 +11,13 @@
 #include <memory>
 #include <vector>
 
-#include "tac/Function.hpp"
-
 namespace eddic {
 
 struct GlobalContext;
 
 namespace tac {
 
+template<typename Function>
 struct Program {
     std::shared_ptr<GlobalContext> context;
 

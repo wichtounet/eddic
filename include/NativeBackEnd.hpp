@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct NativeBackEnd : public BackEnd {
-    void generate(std::shared_ptr<tac::Program> tacProgram);
+    void generate(std::shared_ptr<mtac::Program> mtacProgram);
 };
 
 }

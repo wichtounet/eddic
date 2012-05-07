@@ -24,7 +24,19 @@ namespace eddic {
  * and produce either an executable or an assembly file depending on the provided options. 
  */
 struct Compiler {
+    /*!
+     * Compile the given file. 
+     * \param file The file to compile. 
+     * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
+     */
     int compile (const std::string& file);
+    
+    /*!
+     * Compile the given file. The compilation is not timed and the used platform is the given one. 
+     * \param file The file to compile. 
+     * \param platform The platform to compile for. 
+     * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
+     */
     int compileOnly (const std::string& file, Platform platform);
 };
 

@@ -18,9 +18,18 @@ namespace eddic {
 
 namespace as {
 
-class CodeGeneratorFactory {
-    public:
-        std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer);
+/*!
+ * \struct CodeGeneratorFactory
+ * A factory to create code generator based on the target platform. 
+ */
+struct CodeGeneratorFactory {
+    /*!
+     * Create a code generator for the givne platform. 
+     * \param platform The target platform. 
+     * \param writer The assembly file writer to use. 
+     * \return A pointer to the code generator corresponding to the platform. 
+     */
+    std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer);
 };
 
 } //end of as

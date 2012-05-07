@@ -76,7 +76,7 @@ class SymbolTable {
          * \param struct_ The structure to search for. 
          * \return A pointer to the structure with the given name. 
          */
-        std::shared_ptr<Struct> get_struct(const std::string& struct_
+        std::shared_ptr<Struct> get_struct(const std::string& struct_);
         
         /*!
          * Indicates if a structure with the given name exists. 
