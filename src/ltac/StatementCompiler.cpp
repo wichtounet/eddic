@@ -664,41 +664,15 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             {
                 auto result = quadruple->result;
 
-                //Optimize the special form a = a + b by using only one instruction
+                //Optimize the special form a = a + b by using only one ADD instruction
                 if(*quadruple->arg1 == result){
                     auto reg = manager.get_reg(quadruple->result);
-
-                    //TODO Do this optimization in the peephole optimizer
-
-                    //a = a + 1 => increment a
-                    if(*quadruple->arg2 == 1){
-                        ltac::add_instruction(function, ltac::Operator::INC, reg);
-                    }
-                    //a = a + -1 => decrement a
-                    else if(*quadruple->arg2 == -1){
-                        ltac::add_instruction(function, ltac::Operator::DEC, reg);
-                    }
-                    //In the other cases, perform a simple addition
-                    else {
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
-                    }
+                    ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
                 } 
-                //Optimize the special form a = b + a by using only one instruction
+                //Optimize the special form a = b + a by using only one ADD instruction
                 else if(*quadruple->arg2 == result){
                     auto reg = manager.get_reg(quadruple->result);
-
-                    //a = 1 + a => increment a
-                    if(*quadruple->arg1 == 1){
-                        ltac::add_instruction(function, ltac::Operator::INC, reg);
-                    }
-                    //a = -1 + a => decrement a
-                    else if(*quadruple->arg1 == -1){
-                        ltac::add_instruction(function, ltac::Operator::DEC, reg);
-                    }
-                    //In the other cases, perform a simple addition
-                    else {
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
-                    }
+                    ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
                 } 
                 //In the other cases, use lea to perform the addition
                 else {

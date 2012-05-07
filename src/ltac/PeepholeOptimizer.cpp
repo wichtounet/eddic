@@ -27,6 +27,24 @@ void optimize_statement(ltac::Statement& statement){
                 return;
             }
         }
+
+        if(instruction->op == ltac::Operator::ADD){
+            //ADD reg, 1 can be transformed into INC reg
+            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
+                instruction->op = ltac::Operator::INC;
+                instruction->arg2.reset();
+
+                return;
+            }
+            
+            //ADD reg, -1 can be transformed into DEC reg
+            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
+                instruction->op = ltac::Operator::DEC;
+                instruction->arg2.reset();
+
+                return;
+            }
+        }
     }
 }
 
