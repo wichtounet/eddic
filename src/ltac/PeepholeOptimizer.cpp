@@ -30,6 +30,18 @@ void optimize_statement(ltac::Statement& statement){
 
                 return;
             }
+
+            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<ltac::Register>(*instruction->arg2)){
+                auto& reg1 = boost::get<ltac::Register>(*instruction->arg1); 
+                auto& reg2 = boost::get<ltac::Register>(*instruction->arg2); 
+            
+                //MOV reg, reg is useless
+                if(reg1 == reg2){
+                    instruction->op = ltac::Operator::NOP;
+                    instruction->arg1.reset();
+                    instruction->arg2.reset();
+                }
+            }
         }
 
         if(instruction->op == ltac::Operator::ADD){
@@ -137,7 +149,15 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                 auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
                 auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
 
+                //The seconde LEAVE is dead
                 if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
+                    i2->op = ltac::Operator::NOP;
+                }
+
+                //Combine two FREE STACK into one
+                if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
+                    i1->arg1 = boost::get<int>(*i1->arg1) + boost::get<int>(*i2->arg1);
+                    i2->arg1.reset();
                     i2->op = ltac::Operator::NOP;
                 }
             }
