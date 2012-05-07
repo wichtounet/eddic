@@ -701,22 +701,10 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             {
                 auto result = quadruple->result;
 
-                //Optimize the special form a = a - b by using only one instruction
+                //Optimize the special form a = a - b by using only one SUB instruction
                 if(*quadruple->arg1 == result){
                     auto reg = manager.get_reg(quadruple->result);
-
-                    //a = a - 1 => decrement a
-                    if(*quadruple->arg2 == 1){
-                        ltac::add_instruction(function, ltac::Operator::DEC, reg);
-                    }
-                    //a = a - -1 => increment a
-                    else if(*quadruple->arg2 == -1){
-                        ltac::add_instruction(function, ltac::Operator::INC, reg);
-                    }
-                    //In the other cases, perform a simple subtraction
-                    else {
-                        ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
-                    }
+                    ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
                 } 
                 //In the other cases, move the first arg into the result register and then subtract the second arg into it
                 else {
