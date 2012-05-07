@@ -8,9 +8,12 @@
 #ifndef LTAC_UTILS_H
 #define LTAC_UTILS_H
 
+#include <memory>
 #include <boost/variant.hpp>
 
 #include "mtac/Program.hpp"
+#include "ltac/Program.hpp"
+#include "ltac/RegisterManager.hpp"
 
 namespace eddic {
 
@@ -31,6 +34,14 @@ template<typename Variant>
 std::shared_ptr<Variable> get_variable(Variant& variant){
     return boost::get<std::shared_ptr<Variable>>(variant);
 }
+
+void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op);
+void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1);
+void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2);
+void add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3);
+
+ltac::Register to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
+ltac::Argument to_arg(mtac::Argument argument, ltac::RegisterManager& manager);
 
 } //end of ltac
 
