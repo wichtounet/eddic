@@ -19,7 +19,6 @@ void optimize_statement(ltac::Statement& statement){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
 
         if(instruction->op == ltac::Operator::MOV){
-
             //MOV reg, 0 can be transformed into XOR reg, reg
             if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
                 instruction->op = ltac::Operator::XOR;

@@ -653,16 +653,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             }
         case mtac::Operator::FASSIGN:
             {
-                //The fastest way to set a register to 0 is to use pxor
-                if(mtac::equals<int>(*quadruple->arg1, 0)){
-                    auto reg = manager.get_float_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::XOR, reg, reg);
-                } 
-                //In all the others cases, just move the value to the register
-                else {
-                    auto reg = manager.get_float_reg_no_move(quadruple->result);
-                    manager.copy(*quadruple->arg1, reg);
-                }
+                auto reg = manager.get_float_reg_no_move(quadruple->result);
+                manager.copy(*quadruple->arg1, reg);
 
                 manager.set_written(quadruple->result);
 
