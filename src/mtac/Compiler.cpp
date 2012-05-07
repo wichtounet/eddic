@@ -31,6 +31,8 @@ using namespace eddic;
 
 namespace {
 
+//TODO Visitors should be moved out of this class in a future clenaup phase
+
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
@@ -1110,7 +1112,6 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     
     return t1;
 }
-
 
 } //end of anonymous namespace
 
