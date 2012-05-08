@@ -51,7 +51,7 @@ ltac::Argument eddic::ltac::to_arg(mtac::Argument argument, ltac::RegisterManage
     if(auto* ptr = boost::get<int>(&argument)){
         return *ptr;
     } else if(auto* ptr = boost::get<double>(&argument)){
-        return *ptr;
+        return manager.float_pool->label(*ptr);
     } else if(auto* ptr = boost::get<std::string>(&argument)){
         return *ptr;
     } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){

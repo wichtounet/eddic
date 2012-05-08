@@ -192,12 +192,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             } 
         }
     } else if(boost::get<double>(&argument)){
-        auto gpreg = get_free_reg();
-
-        ltac::add_instruction(function, ltac::Operator::MOV, gpreg, to_arg(argument, *this));
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, gpreg);
-
-        registers.release(gpreg);
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_arg(argument, *this));
     }
 }
 
