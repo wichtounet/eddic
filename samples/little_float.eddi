@@ -1,0 +1,6 @@
+void main(){
+    float aaaaa = 4.2;
+    println(aaaaa);
+    aaaaa = 3.33;
+    println(aaaaa);
+}

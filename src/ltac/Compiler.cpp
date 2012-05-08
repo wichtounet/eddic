@@ -18,7 +18,7 @@
 
 using namespace eddic;
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool){
     target->context = source->context;
 
     for(auto& src_function : source->functions){
@@ -26,11 +26,11 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 
         target->functions.push_back(target_function);
 
-        compile(src_function, target_function);
+        compile(src_function, target_function, float_pool);
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool){
     auto size = src_function->context->size();
     
     //Only if necessary, allocates size on the stack for the local variables
@@ -80,7 +80,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         float_registers.push_back({reg});
     }
 
-    StatementCompiler compiler(registers, float_registers, target_function);
+    StatementCompiler compiler(registers, float_registers, target_function, float_pool);
 
     //Then we compile each of them
     for(auto block : src_function->getBasicBlocks()){

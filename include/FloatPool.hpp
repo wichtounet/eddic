@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef STRING_POOL_H
-#define STRING_POOL_H
+#ifndef FLOAT_POOL_H
+#define FLOAT_POOL_H
 
 #include <string>
 #include <unordered_map>
@@ -14,20 +14,20 @@
 namespace eddic {
 
 /*!
- * \class StringPool
- * \brief The string pool of the program. 
- * All the strings are stored and referred only by an index.  
+ * \class FloatPool
+ * \brief The float pool of the program. 
+ * All the floats are stored and referred only by an index.  
  */
-class StringPool {
+class FloatPool {
     private:
-        std::unordered_map<std::string, std::string> pool;
+        std::unordered_map<double, std::string> pool;
         unsigned int currentString;
 
     public:
-        StringPool();
-        
-        StringPool(const StringPool& rhs) = delete;
-        StringPool& operator=(const StringPool& rhs) = delete;
+        FloatPool();
+
+        FloatPool(const FloatPool& rhs) = delete;
+        FloatPool& operator=(const FloatPool& rhs) = delete;
 
         /*!
          * \brief Return the label for the given value. 
@@ -36,7 +36,7 @@ class StringPool {
          * \param value The string we want to search in the pool. 
          * \return The label associated with the given value. 
          */
-        std::string label(const std::string& value);
+        std::string label(double value);
         
         /*!
          * \brief Return the value for the given label. 
@@ -45,9 +45,9 @@ class StringPool {
          * \param label The label we want to search in the pool. 
          * \return The value associated with the given label. 
          */
-        std::string value(const std::string& label) const ;
+        double value(const std::string& label) const ;
 
-        std::unordered_map<std::string, std::string> getPool() const;
+        std::unordered_map<double, std::string> get_pool() const;
 };
 
 } //end of eddic

@@ -6,23 +6,20 @@
 //=======================================================================
 
 #include <sstream>
-#include <cassert>
 
-#include "StringPool.hpp"
+#include "assert.hpp"
+#include "FloatPool.hpp"
 
 using namespace eddic;
 
-StringPool::StringPool() : currentString(0) {
-    label("`\\n`");   //Carriage return special label for println
-    label("\"-\"");     //- special label for print_integer with negative number
-    label("\"\"");      //- special label for default string value
-    label("\".\"");     //- special label for printing floating point numbers
+FloatPool::FloatPool() : currentString(0) {
+    //No labels are inserted by default
 }
 
-std::string StringPool::label(const std::string& value) {
+std::string FloatPool::label(double value) {
     if (pool.find(value) == pool.end()) {
         std::stringstream ss;
-        ss << "S";
+        ss << "F";
         ss << ++currentString;
         pool[value] = ss.str();
     }
@@ -30,7 +27,7 @@ std::string StringPool::label(const std::string& value) {
     return pool[value];
 }
 
-std::string StringPool::value(const std::string& label) const {
+double FloatPool::value(const std::string& label) const {
     for (auto it : pool){
         if(it.second == label){
             return it.first;
@@ -38,9 +35,9 @@ std::string StringPool::value(const std::string& label) const {
     }
 
     //This method should not be called on not-existing label
-    assert(false && "The label does not exists");
+    ASSERT_PATH_NOT_TAKEN("The float label does not exists");
 }
 
-std::unordered_map<std::string, std::string> StringPool::getPool() const {
+std::unordered_map<double, std::string> FloatPool::get_pool() const {
     return pool;
 }

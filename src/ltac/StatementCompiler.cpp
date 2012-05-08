@@ -19,8 +19,9 @@ using namespace eddic;
 
 //TODO Avoid as much as possible direct acess to the the registers fields of the manager
 
-ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
-        function(function), manager(registers, float_registers, function) {
+ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
+        function(function), manager(registers, float_registers, function, float_pool), float_pool(float_pool) {
     descriptor = getPlatformDescriptor(platform);
 }
 
@@ -117,12 +118,8 @@ void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int
 
 void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, int position){
     if(auto* ptr = boost::get<double>(&argument)){
-        auto gpreg = manager.get_free_reg();
-
-        ltac::add_instruction(function, ltac::Operator::MOV, gpreg, *ptr);
-        ltac::add_instruction(function, ltac::Operator::MOV, ltac::FloatRegister(descriptor->float_param_register(position)), gpreg);
-
-        manager.release(gpreg);
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), ltac::Address(label));
     } else {
         ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), to_arg(argument));
     }
@@ -550,10 +547,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
             }
         }
     } else if(auto* ptr = boost::get<double>(&param->arg)){
-        auto reg = manager.get_free_reg();
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, *ptr);
-        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-        manager.release(reg);
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
     } else {
         ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
     }

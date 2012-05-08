@@ -395,6 +395,10 @@ void IntelX86CodeGenerator::declareString(const std::string& label, const std::s
     writer.stream() << label << " dd " << value << std::endl;
 }
 
+void IntelX86CodeGenerator::declareFloat(const std::string& label, double value){
+    writer.stream() << std::fixed << label << " dd __float32__(" << value << ")" << std::endl;
+}
+
 }} //end of eddic::as
 
 namespace { //anonymous namespace

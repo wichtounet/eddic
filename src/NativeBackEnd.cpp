@@ -10,6 +10,7 @@
 #include "Options.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
+#include "FloatPool.hpp"
 
 //Medium-level Three Address Code
 #include "mtac/Program.hpp"
@@ -55,9 +56,11 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         mtac::LivenessAnalyzer liveness;
         liveness.compute(*mtacProgram);
 
+        auto float_pool = std::make_shared<FloatPool>();
+
         auto ltac_program = std::make_shared<ltac::Program>();
         ltac::Compiler ltacCompiler;
-        ltacCompiler.compile(mtacProgram, ltac_program);
+        ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
         optimize(ltac_program);
 
@@ -77,7 +80,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
             auto generator = factory.get(platform, writer);
 
             //Generate the code from the LTAC Program
-            generator->generate(*ltac_program, *get_string_pool()); 
+            generator->generate(*ltac_program, *get_string_pool(), float_pool); 
 
             //Write the output
             writer.write(); 

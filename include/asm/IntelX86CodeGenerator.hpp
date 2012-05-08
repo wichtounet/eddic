@@ -36,6 +36,7 @@ class IntelX86CodeGenerator : public IntelCodeGenerator {
         void declareIntVariable(const std::string& name, int value);
         void declareStringVariable(const std::string& name, const std::string& label, int size);
         void declareString(const std::string& label, const std::string& value);
+        void declareFloat(const std::string& label, double value);
 };
 
 } //end of as

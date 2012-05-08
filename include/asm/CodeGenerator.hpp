@@ -9,6 +9,7 @@
 #define CODE_GENERATOR_H
 
 #include "ltac/Program.hpp"
+#include "FloatPool.hpp"
 
 #include <memory>
 
@@ -36,7 +37,7 @@ class CodeGenerator {
          * \param program The source LTAC Program. 
          * \param pool The string pool to use. 
          */
-        virtual void generate(ltac::Program& program, StringPool& pool) = 0;
+        virtual void generate(ltac::Program& program, StringPool& pool, std::shared_ptr<FloatPool> float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

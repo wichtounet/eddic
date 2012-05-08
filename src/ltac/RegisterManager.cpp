@@ -151,12 +151,13 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
+ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
     registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
     float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
-    function(function) {
+    function(function), float_pool(float_pool) {
         //Nothing else to init
-    }
+}
 
 void ltac::RegisterManager::reset(){
     registers.reset();
@@ -190,13 +191,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
-    } else if(boost::get<double>(&argument)){
-        auto gpreg = get_free_reg();
-
-        ltac::add_instruction(function, ltac::Operator::MOV, gpreg, to_arg(argument, *this));
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, gpreg);
-
-        registers.release(gpreg);
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 
@@ -301,13 +298,9 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 
         //The variable is now held in the new register
         float_registers.setLocation(variable, reg);
-    } else if(boost::get<double>(&argument)){
-        auto gpreg = get_free_reg();
-
-        ltac::add_instruction(function, ltac::Operator::MOV, gpreg, to_arg(argument, *this));
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, gpreg);
-
-        registers.release(gpreg);
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 
@@ -472,12 +465,8 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                         if(float_registers[reg]->position().isParamRegister()){
                             float_pushed.push_back(reg);
 
-                            auto gpreg = get_free_reg();
-
-                            ltac::add_instruction(function, ltac::Operator::MOV, gpreg, reg);
-                            ltac::add_instruction(function, ltac::Operator::PUSH, gpreg);
-
-                            release(gpreg);
+                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, size(BaseType::FLOAT));
+                            ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
                         } else {
                             spills(reg);
                         }
