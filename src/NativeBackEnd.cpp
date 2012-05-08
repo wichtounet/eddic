@@ -80,7 +80,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
             auto generator = factory.get(platform, writer);
 
             //Generate the code from the LTAC Program
-            generator->generate(*ltac_program, *get_string_pool()); 
+            generator->generate(*ltac_program, *get_string_pool(), float_pool); 
 
             //Write the output
             writer.write(); 
