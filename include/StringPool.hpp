@@ -29,7 +29,7 @@ class StringPool {
         StringPool& operator=(const StringPool& rhs) = delete;
 
         std::string label(const std::string& value);
-        std::string value(const std::string& label);
+        std::string value(const std::string& label) const ;
 
         std::unordered_map<std::string, std::string> getPool() const;
 };
