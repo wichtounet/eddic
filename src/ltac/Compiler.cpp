@@ -18,7 +18,7 @@
 
 using namespace eddic;
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool){
     target->context = source->context;
 
     for(auto& src_function : source->functions){
