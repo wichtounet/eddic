@@ -25,10 +25,26 @@ class StringPool {
 
     public:
         StringPool();
+        
         StringPool(const StringPool& rhs) = delete;
         StringPool& operator=(const StringPool& rhs) = delete;
 
+        /*!
+         * \brief Return the label for the given value. 
+         * If the given value is not in the pool, it will be inserted with a new label. 
+         * \n\n \b Complexity : O(1)
+         * \param value The string we want to search in the pool. 
+         * \return The label associated with the given value. 
+         */
         std::string label(const std::string& value);
+        
+        /*!
+         * \brief Return the value for the given label. 
+         * This function should only be used for existing labels.
+         * \n\n \b Complexity : O(n)
+         * \param label The label we want to search in the pool. 
+         * \return The value associated with the given label. 
+         */
         std::string value(const std::string& label) const ;
 
         std::unordered_map<std::string, std::string> getPool() const;
