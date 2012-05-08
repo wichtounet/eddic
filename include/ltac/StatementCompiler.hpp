@@ -11,7 +11,10 @@
 #include <memory>
 #include <boost/variant.hpp>
 
+#include "FloatPool.hpp"
+
 #include "mtac/Program.hpp"
+
 #include "ltac/Program.hpp"
 #include "ltac/RegisterManager.hpp"
 
@@ -21,7 +24,8 @@ namespace ltac {
 
 class StatementCompiler : public boost::static_visitor<> {
     public:
-        StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function);
+        StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+                std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
     
         /*!
          * Deleted copy constructor
@@ -54,6 +58,8 @@ class StatementCompiler : public boost::static_visitor<> {
         std::shared_ptr<ltac::Function> function;
 
         ltac::RegisterManager manager;
+
+        std::shared_ptr<FloatPool> float_pool;
         
         PlatformDescriptor* descriptor;
         

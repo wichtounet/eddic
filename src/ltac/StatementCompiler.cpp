@@ -19,8 +19,9 @@ using namespace eddic;
 
 //TODO Avoid as much as possible direct acess to the the registers fields of the manager
 
-ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
-        function(function), manager(registers, float_registers, function) {
+ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
+        function(function), manager(registers, float_registers, function), float_pool(float_pool) {
     descriptor = getPlatformDescriptor(platform);
 }
 
