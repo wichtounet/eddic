@@ -407,7 +407,7 @@ void IntelX86_64CodeGenerator::declareString(const std::string& label, const std
 }
 
 void IntelX86_64CodeGenerator::declareFloat(const std::string& label, double value){
-    writer.stream() << label << " dq __float64__(" << value << ")" << std::endl;
+    writer.stream() << label << std::fixed << " dq __float64__(" << value << ")" << std::endl;
 }
 
 }} //end of eddic::as

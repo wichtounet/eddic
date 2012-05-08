@@ -118,12 +118,8 @@ void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int
 
 void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, int position){
     if(auto* ptr = boost::get<double>(&argument)){
-        auto gpreg = manager.get_free_reg();
-
-        ltac::add_instruction(function, ltac::Operator::MOV, gpreg, *ptr);
-        ltac::add_instruction(function, ltac::Operator::MOV, ltac::FloatRegister(descriptor->float_param_register(position)), gpreg);
-
-        manager.release(gpreg);
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), ltac::Address(label));
     } else {
         ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), to_arg(argument));
     }
