@@ -298,13 +298,9 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 
         //The variable is now held in the new register
         float_registers.setLocation(variable, reg);
-    } else if(boost::get<double>(&argument)){
-        auto gpreg = get_free_reg();
-
-        ltac::add_instruction(function, ltac::Operator::MOV, gpreg, to_arg(argument, *this));
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, gpreg);
-
-        registers.release(gpreg);
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 
