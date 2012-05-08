@@ -547,10 +547,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
             }
         }
     } else if(auto* ptr = boost::get<double>(&param->arg)){
-        auto reg = manager.get_free_reg();
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, *ptr);
-        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-        manager.release(reg);
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
     } else {
         ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
     }
