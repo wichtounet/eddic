@@ -191,8 +191,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
-    } else if(boost::get<double>(&argument)){
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_arg(argument, *this));
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 

@@ -33,7 +33,7 @@ class IntelCodeGenerator : public CodeGenerator {
         void generate(ltac::Program& program, StringPool& pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool, std::shared_ptr<FloatPool> float_pool);
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
@@ -48,6 +48,7 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareIntVariable(const std::string& name, int value) = 0;
         virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
         virtual void declareString(const std::string& label, const std::string& value) = 0;
+        virtual void declareFloat(const std::string& label, double value) = 0;
 };
 
 } //end of as

@@ -26,10 +26,10 @@ void as::IntelCodeGenerator::generate(ltac::Program& program, StringPool& pool, 
 
     addStandardFunctions();
 
-    addGlobalVariables(program.context, pool);
+    addGlobalVariables(program.context, pool, float_pool);
 }
 
-void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool){
+void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool, std::shared_ptr<FloatPool> float_pool){
     defineDataSection();
      
     for(auto it : context->getVariables()){
@@ -64,5 +64,9 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
     
     for (auto it : pool.getPool()){
         declareString(it.second, it.first);
+    }
+    
+    for (auto it : float_pool->get_pool()){
+        declareFloat(it.second, it.first);
     }
 }
