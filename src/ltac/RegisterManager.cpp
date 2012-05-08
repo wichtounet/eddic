@@ -465,12 +465,8 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                         if(float_registers[reg]->position().isParamRegister()){
                             float_pushed.push_back(reg);
 
-                            auto gpreg = get_free_reg();
-
-                            ltac::add_instruction(function, ltac::Operator::MOV, gpreg, reg);
-                            ltac::add_instruction(function, ltac::Operator::PUSH, gpreg);
-
-                            release(gpreg);
+                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, size(BaseType::FLOAT));
+                            ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
                         } else {
                             spills(reg);
                         }
