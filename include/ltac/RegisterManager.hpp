@@ -15,6 +15,7 @@
 #include <boost/variant.hpp>
 
 #include "Platform.hpp"
+#include "FloatPool.hpp"
 
 #include "mtac/Program.hpp"
 #include "ltac/Program.hpp"
@@ -36,7 +37,10 @@ struct RegisterManager {
     //The function being compiled
     std::shared_ptr<ltac::Function> function;
 
-    RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function);
+    std::shared_ptr<FloatPool> float_pool;
+
+    RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+            std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
         
     /*!
      * Deleted copy constructor

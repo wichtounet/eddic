@@ -21,7 +21,7 @@ using namespace eddic;
 
 ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
-        function(function), manager(registers, float_registers, function), float_pool(float_pool) {
+        function(function), manager(registers, float_registers, function, float_pool), float_pool(float_pool) {
     descriptor = getPlatformDescriptor(platform);
 }
 

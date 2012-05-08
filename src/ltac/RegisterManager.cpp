@@ -151,12 +151,13 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, std::shared_ptr<ltac::Function> function) : 
+ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
     registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
     float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
-    function(function) {
+    function(function), float_pool(float_pool) {
         //Nothing else to init
-    }
+}
 
 void ltac::RegisterManager::reset(){
     registers.reset();
