@@ -12,6 +12,7 @@
 
 #include <boost/graph/adjacency_list.hpp>
 
+#include "mtac/Function.hpp"
 #include "mtac/BasicBlock.hpp"
 
 namespace eddic {
@@ -53,7 +54,7 @@ class ControlFlowGraph {
         std::pair<EdgeIterator, EdgeIterator> edges();
         
     private:
-        std::shared_ptr<InternalControlFlowGraph> graph;
+        InternalControlFlowGraph graph;
 };
 
 } //end of mtac

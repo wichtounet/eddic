@@ -10,13 +10,13 @@
 using namespace eddic;
         
 mtac::ControlFlowGraph::ControlFlowGraph(){
-    graph = std::make_shared<InternalControlFlowGraph>();
+    //Nothing to init
 }
 
 std::pair<mtac::ControlFlowGraph::BasicBlockIterator, mtac::ControlFlowGraph::BasicBlockIterator> mtac::ControlFlowGraph::blocks(){
-    return boost::vertices(*graph);
+    return boost::vertices(graph);
 }
 
 std::pair<mtac::ControlFlowGraph::EdgeIterator, mtac::ControlFlowGraph::EdgeIterator> mtac::ControlFlowGraph::edges(){
-    return boost::edges(*graph);
+    return boost::edges(graph);
 }
