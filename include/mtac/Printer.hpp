@@ -24,7 +24,7 @@ namespace mtac {
  * \brief Utility class to print the three-address-code representation on the console. 
  */
 struct Printer {
-    void print(mtac::Program& program) const ;
+    void print(std::shared_ptr<mtac::Program> program) const ;
     void printFunction(std::shared_ptr<mtac::Function> function) const ;
     void printStatement(mtac::Statement& program) const ;
     void printArgument(mtac::Argument& program) const ;

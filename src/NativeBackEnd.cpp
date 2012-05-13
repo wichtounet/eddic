@@ -35,26 +35,26 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
 
     //Separate into basic blocks
     mtac::BasicBlockExtractor extractor;
-    extractor.extract(*mtacProgram);
+    extractor.extract(mtacProgram);
 
     //Allocate storage for the temporaries that need to be stored
     mtac::TemporaryAllocator allocator;
-    allocator.allocate(*mtacProgram);
+    allocator.allocate(mtacProgram);
 
     mtac::Optimizer optimizer;
-    optimizer.optimize(*mtacProgram, *get_string_pool());
+    optimizer.optimize(mtacProgram, get_string_pool());
 
     //If asked by the user, print the Three Address code representation
     if(option_defined("mtac") || option_defined("mtac-only")){
         mtac::Printer printer;
-        printer.print(*mtacProgram);
+        printer.print(mtacProgram);
     }
 
     //If necessary, continue the compilation process
     if(!option_defined("mtac-only")){
         //Compute liveness of variables
         mtac::LivenessAnalyzer liveness;
-        liveness.compute(*mtacProgram);
+        liveness.compute(mtacProgram);
 
         auto float_pool = std::make_shared<FloatPool>();
 
@@ -63,13 +63,11 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
         optimize(ltac_program);
-
-        //TODO Pass everything using directly the shared_ptr
         
         //If asked by the user, print the Three Address code representation
         if(option_defined("ltac") || option_defined("ltac-only")){
             ltac::Printer printer;
-            printer.print(*ltac_program);
+            printer.print(ltac_program);
         }
 
         if(!option_defined("ltac-only")){
@@ -80,7 +78,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
             auto generator = factory.get(platform, writer);
 
             //Generate the code from the LTAC Program
-            generator->generate(*ltac_program, *get_string_pool(), float_pool); 
+            generator->generate(ltac_program, get_string_pool(), float_pool); 
 
             //Write the output
             writer.write(); 

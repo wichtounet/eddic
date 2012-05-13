@@ -43,10 +43,10 @@ std::string printArg(mtac::Argument& arg){
 }
 
 struct DebugVisitor : public boost::static_visitor<> {
-    void operator()(mtac::Program& program){
+    void operator()(std::shared_ptr<mtac::Program> program){
         std::cout << "TAC Program " << std::endl << std::endl; 
 
-        visit_each_non_variant(*this, program.functions);
+        visit_each_non_variant(*this, program->functions);
     }
 
     void operator()(std::shared_ptr<mtac::Function>& function){
@@ -236,7 +236,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void mtac::Printer::print(mtac::Program& program) const {
+void mtac::Printer::print(std::shared_ptr<mtac::Program> program) const {
    DebugVisitor visitor;
    visitor(program); 
 }

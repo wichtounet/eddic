@@ -65,8 +65,8 @@ void updateQuadruple(Usage& usage, std::shared_ptr<mtac::Quadruple> quadruple, s
 
 }
 
-void mtac::TemporaryAllocator::allocate(mtac::Program& program) const {
-    for(auto& function : program.functions){
+void mtac::TemporaryAllocator::allocate(std::shared_ptr<mtac::Program> program) const {
+    for(auto& function : program->functions){
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<BasicBlock>> usage;
 
         for(auto& block : function->getBasicBlocks()){

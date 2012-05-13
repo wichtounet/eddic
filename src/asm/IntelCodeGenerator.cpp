@@ -15,21 +15,21 @@ using namespace eddic;
 
 as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w) : CodeGenerator(w){}
 
-void as::IntelCodeGenerator::generate(ltac::Program& program, StringPool& pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         compile(function);
     }
 
     addStandardFunctions();
 
-    addGlobalVariables(program.context, pool, float_pool);
+    addGlobalVariables(program->context, pool, float_pool);
 }
 
-void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     defineDataSection();
      
     for(auto it : context->getVariables()){
@@ -57,12 +57,12 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
                 //If that's not the case, there is a problem with the pool 
                 assert(value.first.size() > 0);
     
-                declareStringVariable(it.second->position().name(), pool.label(value.first), value.second);            
+                declareStringVariable(it.second->position().name(), pool->label(value.first), value.second);            
             }
         }
     }
     
-    for (auto it : pool.getPool()){
+    for (auto it : pool->getPool()){
         declareString(it.second, it.first);
     }
     

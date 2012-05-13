@@ -15,7 +15,7 @@ namespace eddic {
 namespace mtac {
 
 struct TemporaryAllocator {
-    void allocate(mtac::Program& program) const ;
+    void allocate(std::shared_ptr<mtac::Program> program) const ;
 };
 
 } //end of ast

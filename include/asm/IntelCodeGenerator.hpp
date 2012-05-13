@@ -30,10 +30,10 @@ class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer);
         
-        void generate(ltac::Program& program, StringPool& pool, std::shared_ptr<FloatPool> float_pool);
+        void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool, std::shared_ptr<FloatPool> float_pool);
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;

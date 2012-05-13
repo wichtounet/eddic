@@ -25,8 +25,8 @@ bool isReturn(T statement){
     return false;
 }
 
-void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
-    for(auto& function : program.functions){
+void mtac::BasicBlockExtractor::extract(std::shared_ptr<mtac::Program> program) const {
+    for(auto& function : program->functions){
         std::unordered_map<std::string, std::shared_ptr<BasicBlock>> labels;
        
         //The first is always a leader 

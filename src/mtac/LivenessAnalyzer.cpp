@@ -109,8 +109,8 @@ void computeLiveness(std::shared_ptr<mtac::Function> function){
 
 }
 
-void mtac::LivenessAnalyzer::compute(mtac::Program& program){
-    for(auto& function : program.functions){
+void mtac::LivenessAnalyzer::compute(std::shared_ptr<mtac::Program> program){
+    for(auto& function : program->functions){
         computeLiveness(function);
     }
 }

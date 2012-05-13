@@ -38,12 +38,12 @@ static const bool DebugPerf = false;
 static const bool Debug = false;
 
 template<typename Visitor>
-bool apply_to_all(mtac::Program& program){
+bool apply_to_all(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("apply to all clean");
 
     Visitor visitor;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         for(auto& block : function->getBasicBlocks()){
             visit_each(visitor, block->statements);
         }
@@ -53,11 +53,11 @@ bool apply_to_all(mtac::Program& program){
 }
 
 template<typename Visitor>
-bool apply_to_basic_blocks(mtac::Program& program){
+bool apply_to_basic_blocks(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks");
     bool optimized = false;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
 
@@ -72,11 +72,11 @@ bool apply_to_basic_blocks(mtac::Program& program){
 
 template<typename Visitor>
 typename boost::disable_if<boost::is_void<typename Visitor::result_type>, bool>::type 
-apply_to_basic_blocks_two_pass(mtac::Program& program){
+apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
     bool optimized = false;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
             visitor.pass = mtac::Pass::DATA_MINING;
@@ -103,11 +103,11 @@ apply_to_basic_blocks_two_pass(mtac::Program& program){
 
 template<typename Visitor>
 inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, bool>::type
-apply_to_basic_blocks_two_pass(mtac::Program& program){
+apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
     bool optimized = false;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         for(auto& block : function->getBasicBlocks()){
             Visitor visitor;
             visitor.pass = mtac::Pass::DATA_MINING;
@@ -125,11 +125,11 @@ apply_to_basic_blocks_two_pass(mtac::Program& program){
     return optimized;
 }
 
-bool remove_dead_basic_blocks(mtac::Program& program){
+bool remove_dead_basic_blocks(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("Remove dead basic blocks");
     bool optimized = false;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
 
         auto& blocks = function->getBasicBlocks();
@@ -174,11 +174,11 @@ bool remove_dead_basic_blocks(mtac::Program& program){
     return optimized;
 }
 
-bool optimize_branches(mtac::Program& program){
+bool optimize_branches(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("Optimize branches");
     bool optimized = false;
     
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
@@ -228,11 +228,11 @@ bool isParam(T& statement){
     return boost::get<std::shared_ptr<mtac::Param>>(&statement);
 }
 
-bool optimize_concat(mtac::Program& program, StringPool& pool){
+bool optimize_concat(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool){
     DebugStopWatch<DebugPerf> timer("Optimize concat");
     bool optimized = false;
     
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         auto& blocks = function->getBasicBlocks();
         
         //we start at 1 because the first block cannot start with a call to concat
@@ -258,8 +258,8 @@ bool optimize_concat(mtac::Program& program, StringPool& pool){
                                 auto& quadruple3 = boost::get<std::shared_ptr<mtac::Param>>(statement3);
 
                                 if(boost::get<std::string>(&quadruple1->arg) && boost::get<std::string>(&quadruple3->arg)){
-                                    std::string firstValue = pool.value(boost::get<std::string>(quadruple1->arg));
-                                    std::string secondValue = pool.value(boost::get<std::string>(quadruple3->arg));
+                                    std::string firstValue = pool->value(boost::get<std::string>(quadruple1->arg));
+                                    std::string secondValue = pool->value(boost::get<std::string>(quadruple3->arg));
                                    
                                     //Remove the quotes
                                     firstValue.resize(firstValue.size() - 1);
@@ -268,7 +268,7 @@ bool optimize_concat(mtac::Program& program, StringPool& pool){
                                     //Compute the reuslt of the concatenation
                                     std::string result = firstValue + secondValue;
 
-                                    std::string label = pool.label(result);
+                                    std::string label = pool->label(result);
                                     int length = result.length() - 2;
 
                                     auto ret1 = (*ptr)->return_;
@@ -297,11 +297,11 @@ bool optimize_concat(mtac::Program& program, StringPool& pool){
     return optimized;
 }
 
-bool remove_needless_jumps(mtac::Program& program){
+bool remove_needless_jumps(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("Remove needless jumps");
     bool optimized = false;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         auto& blocks = function->getBasicBlocks();
 
         for(unsigned int i = 0; i < blocks.size();++i){
@@ -326,11 +326,11 @@ bool remove_needless_jumps(mtac::Program& program){
     return optimized;
 }
 
-bool merge_basic_blocks(mtac::Program& program){
+bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("Merge basic blocks");
     bool optimized = false;
 
-    for(auto& function : program.functions){
+    for(auto& function : program->functions){
         std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
         
         computeBlockUsage(function, usage);
@@ -398,7 +398,7 @@ bool debug(bool b){
 
 }
 
-void mtac::Optimizer::optimize(mtac::Program& program, StringPool& pool) const {
+void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const {
     bool optimized;
     do {
         optimized = false;

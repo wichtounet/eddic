@@ -21,7 +21,7 @@ namespace ltac {
  * \brief Utility class to print the three-address-code representation on the console. 
  */
 struct Printer {
-    void print(ltac::Program& program) const ;
+    void print(std::shared_ptr<ltac::Program> program) const ;
 };
 
 } //end of ltac

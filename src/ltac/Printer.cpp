@@ -215,10 +215,10 @@ std::string printArg(ltac::Argument arg){
 }
 
 struct DebugVisitor : public boost::static_visitor<> {
-    void operator()(ltac::Program& program){
+    void operator()(std::shared_ptr<ltac::Program> program){
         std::cout << "LTAC Program " << std::endl << std::endl; 
 
-        visit_each_non_variant(*this, program.functions);
+        visit_each_non_variant(*this, program->functions);
     }
 
     void operator()(std::shared_ptr<ltac::Function>& function){
@@ -261,7 +261,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ltac::Printer::print(ltac::Program& program) const {
+void ltac::Printer::print(std::shared_ptr<ltac::Program> program) const {
    DebugVisitor visitor;
    visitor(program); 
 }

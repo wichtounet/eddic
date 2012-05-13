@@ -15,7 +15,7 @@ namespace eddic {
 namespace mtac {
 
 struct LivenessAnalyzer {
-    void compute(mtac::Program& program);
+    void compute(std::shared_ptr<mtac::Program> program);
 };
 
 } //end of ast
