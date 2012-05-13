@@ -50,21 +50,24 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
     while(changes){
         for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
             auto vertex = *it;
+            auto B = graph[vertex].block;
 
             //Do not consider ENTRY
-            if(graph[vertex].block->index == -1){
+            if(B->index == -1){
                 continue;
             }
 
-            ControlFlowGraph::OutEdgeIterator oit, oend;
-            for(boost::tie(oit, oend) = boost::out_edges(vertex, graph); oit != oend; ++oit){
-                auto edge = *oit;
-                auto vertex_target = boost::target(edge, graph);
-                auto successor = graph[vertex_target].block;
+            ControlFlowGraph::InEdgeIterator iit, iend;
+            for(boost::tie(iit, iend) = boost::in_edges(vertex, graph); iit != iend; ++iit){
+                auto edge = *iit;
+                auto predecessor = boost::source(edge, graph);
+                auto P = graph[predecessor].block;
 
-                IN[graph[vertex].block] = problem.meet(IN[graph[vertex].block], OUT[successor]);
-                OUT[graph[vertex].block] = problem.transfer(graph[vertex].block, IN[graph[vertex].block]);
+                IN[B] = problem.meet(IN[B], OUT[P]);
+                OUT[B] = problem.transfer(B, IN[B]);
             }
+
+            //TODO Calculate changes
         }
     }
 }
