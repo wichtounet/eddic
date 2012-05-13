@@ -16,7 +16,7 @@ class StringPool;
 
 namespace mtac {
 
-template<typename Domain>
+template<bool Forward, typename Domain>
 struct DataFlowProblem {
     //What about statement ?
     //What about reading the basic blocks ?
