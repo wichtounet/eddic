@@ -5,17 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_DATA_FLOW_PROBLEM_H
-#define MTAC_DATA_FLOW_PROBLEM_H
+#ifndef MTAC_CONSTANT_PROPAGATION_PROBLEM_H
+#define MTAC_CONSTANT_PROPAGATION_PROBLEM_H
+
+#include "mtac/DataFlowProblem.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-template<bool Forward, typename Domain>
-struct DataFlowProblem {
-    //What about statement ?
-    //What about reading the basic blocks ?
+typedef int ConstantPropagationDomain;
+
+struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationDomain> {
+    typedef ConstantPropagationDomain Domain;
 
     Domain meet(Domain& values);
     Domain transfer(Domain& values);
