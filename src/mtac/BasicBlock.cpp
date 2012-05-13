@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-mtac::BasicBlock::BasicBlock(unsigned int i) : index(i), label("") {}
+mtac::BasicBlock::BasicBlock(int i) : index(i), label("") {}
 
 void mtac::BasicBlock::add(mtac::Statement statement){
     statements.push_back(statement);
