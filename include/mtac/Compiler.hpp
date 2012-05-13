@@ -19,7 +19,7 @@ class StringPool;
 namespace mtac {
 
 struct Compiler {
-    void compile(ast::SourceFile& program, StringPool& pool, mtac::Program& mtacProgram) const ;
+    void compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const ;
 };
 
 } //end of mtac

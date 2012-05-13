@@ -781,13 +781,12 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
 
 class CompilerVisitor : public boost::static_visitor<> {
     private:
-        StringPool& pool;
-        mtac::Program& program;
-
+        std::shared_ptr<StringPool> pool;
+        std::shared_ptr<mtac::Program> program;
         std::shared_ptr<mtac::Function> function;
     
     public:
-        CompilerVisitor(StringPool& p, mtac::Program& mtacProgram) : pool(p), program(mtacProgram){}
+        CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram){}
 
         //No code is generated for these nodes
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
@@ -828,7 +827,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::SourceFile& p){
-            program.context = p.Content->context;
+            program->context = p.Content->context;
 
             visit_each(*this, p.Content->blocks);
         }
@@ -839,7 +838,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, f.Content->instructions);
 
-            program.functions.push_back(function);
+            program->functions.push_back(function);
         }
 
         void operator()(ast::If& if_){
@@ -1115,7 +1114,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 
 } //end of anonymous namespace
 
-void mtac::Compiler::compile(ast::SourceFile& program, StringPool& pool, mtac::Program& mtacProgram) const {
+void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const {
     CompilerVisitor visitor(pool, mtacProgram);
     visitor(program);
 }

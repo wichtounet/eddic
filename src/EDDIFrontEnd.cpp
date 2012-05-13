@@ -104,7 +104,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         //Generate Three-Address-Code language
         mtac::Compiler compiler;
-        compiler.compile(program, *pool, *mtacProgram);
+        compiler.compile(program, pool, mtacProgram);
 
         return mtacProgram;
     }
