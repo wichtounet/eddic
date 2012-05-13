@@ -20,3 +20,7 @@ std::pair<mtac::ControlFlowGraph::BasicBlockIterator, mtac::ControlFlowGraph::Ba
 std::pair<mtac::ControlFlowGraph::EdgeIterator, mtac::ControlFlowGraph::EdgeIterator> mtac::ControlFlowGraph::edges(){
     return boost::edges(graph);
 }
+
+mtac::ControlFlowGraph::InternalControlFlowGraph& mtac::ControlFlowGraph::get_graph(){
+    return graph;
+}

@@ -44,14 +44,16 @@ class ControlFlowGraph {
         typedef boost::graph_traits<InternalControlFlowGraph>::adjacency_iterator AdjacentBasicBlockIterator;
 
         //Descriptors
-        typedef boost::graph_traits<InternalControlFlowGraph>::edge_descriptor BasicBlockInfo;
-        typedef boost::graph_traits<InternalControlFlowGraph>::vertex_descriptor EdgeInfo;
+        typedef boost::graph_traits<InternalControlFlowGraph>::vertex_descriptor BasicBlockInfo;
+        typedef boost::graph_traits<InternalControlFlowGraph>::edge_descriptor EdgeInfo;
     
     public:
         ControlFlowGraph();
 
         std::pair<BasicBlockIterator, BasicBlockIterator> blocks();
         std::pair<EdgeIterator, EdgeIterator> edges();
+
+        InternalControlFlowGraph& get_graph();
         
     private:
         InternalControlFlowGraph graph;
