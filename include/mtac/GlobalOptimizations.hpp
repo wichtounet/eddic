@@ -33,7 +33,9 @@ template<bool Forward, typename Domain>
 void forward_data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, Domain>& problem){
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
-    
+   
+    OUT[graph->entry()] = problem.Boundary();
+
     //TODO
 }
 

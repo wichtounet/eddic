@@ -24,8 +24,8 @@ struct DataFlowProblem {
     Domain meet(Domain& values);
     Domain transfer(Domain& values);
 
-    void Boundary(Domain& values);
-    void Init(Domain& values);
+    Domain Boundary();
+    Domain Init();
 };
 
 } //end of mtac
