@@ -9,7 +9,6 @@
 #define LTAC_FUNCTION_H
 
 #include "tac/Function.hpp"
-#include "ltac/BasicBlock.hpp"
 #include "ltac/Statement.hpp"
 
 namespace eddic {
