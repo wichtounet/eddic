@@ -8,6 +8,9 @@
 #ifndef VISITOR_UTILS_H
 #define VISITOR_UTILS_H
 
+#include <list>
+#include <vector>
+
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/optional/optional.hpp>
@@ -160,12 +163,32 @@ inline void visit_each(Visitor& visitor, std::vector<Visitable>& elements){
 }
 
 /*!
+ * Apply the visitor to each variant object inside the vector. 
+ * \param visitor The visitor to apply. 
+ * \param elements The elements to visit. 
+ */
+template<typename Visitor, typename Visitable>
+inline void visit_each(Visitor& visitor, std::list<Visitable>& elements){
+    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit(visitor, visitable); });
+}
+
+/*!
  * Apply the visitor to each variant object inside the vector. The elements can be non-variant type. 
  * \param visitor The visitor to apply. 
  * \param elements The elements to visit. 
  */
 template<typename Visitor, typename Visitable>
 inline void visit_each_non_variant(Visitor& visitor, std::vector<Visitable>& elements){
+    for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit_non_variant(visitor, visitable); });
+}
+
+/*!
+ * Apply the visitor to each variant object inside the vector. The elements can be non-variant type. 
+ * \param visitor The visitor to apply. 
+ * \param elements The elements to visit. 
+ */
+template<typename Visitor, typename Visitable>
+inline void visit_each_non_variant(Visitor& visitor, std::list<Visitable>& elements){
     for_each(elements.begin(), elements.end(), [&](Visitable& visitable){ visit_non_variant(visitor, visitable); });
 }
 

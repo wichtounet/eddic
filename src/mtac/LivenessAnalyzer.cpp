@@ -34,8 +34,8 @@ void setLive(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, mtac
 }
 
 void computeLiveness(std::shared_ptr<mtac::Function> function){
-    std::vector<std::shared_ptr<mtac::BasicBlock>>::reverse_iterator bit = function->getBasicBlocks().rbegin();
-    std::vector<std::shared_ptr<mtac::BasicBlock>>::reverse_iterator bend = function->getBasicBlocks().rend(); 
+    auto bit = function->getBasicBlocks().rbegin();
+    auto bend = function->getBasicBlocks().rend(); 
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 

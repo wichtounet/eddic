@@ -136,16 +136,20 @@ bool remove_dead_basic_blocks(std::shared_ptr<mtac::Program> program){
 
         unsigned int before = blocks.size();
 
-        for(unsigned int i = 0; i < blocks.size();){
-            usage.insert(blocks[i]);
+        auto it = blocks.begin();
+        auto end = blocks.end();
+
+        while(it != end){
+            auto& block = *it;
             
-            auto& block = blocks[i];
+            usage.insert(block);
+            
             if(block->statements.size() > 0){
                 auto& last = block->statements[block->statements.size() - 1];
 
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
                     if(usage.find((*ptr)->block) == usage.end()){
-                        i = index(blocks, (*ptr)->block);
+                        it = std::find(blocks.begin(), blocks.end(), (*ptr)->block);
                         continue;
                     }
                 } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
@@ -155,11 +159,11 @@ bool remove_dead_basic_blocks(std::shared_ptr<mtac::Program> program){
                 }
             }
 
-            ++i;
+            ++it;
         }
 
-        auto it = blocks.begin();
-        auto end = blocks.end();
+        it = blocks.begin();
+        end = blocks.end();
 
         blocks.erase(
             std::remove_if(it, end, 
@@ -234,16 +238,22 @@ bool optimize_concat(std::shared_ptr<mtac::Program> program, std::shared_ptr<Str
     
     for(auto& function : program->functions){
         auto& blocks = function->getBasicBlocks();
-        
-        //we start at 1 because the first block cannot start with a call to concat
-        for(unsigned int i = 1; i < blocks.size(); ++i){
-            auto& block = blocks[i];
 
+        auto it = blocks.begin();
+        auto end = blocks.end();
+        auto previous = it;
+
+        //we start at 1 because the first block cannot start with a call to concat
+        ++it;
+
+        while(it != end){
+            auto block = *it;
+            
             if(block->statements.size() > 0){
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
                     if((*ptr)->function == "concat"){
                         //The params are on the previous block
-                        auto& paramBlock = blocks[i - 1]; 
+                        auto& paramBlock = *previous;
 
                         //Must have at least four params
                         if(paramBlock->statements.size() >= 4){
@@ -291,6 +301,9 @@ bool optimize_concat(std::shared_ptr<mtac::Program> program, std::shared_ptr<Str
                     }
                 }
             }
+
+            previous = it;
+            ++it;
         }
     }
 
@@ -304,22 +317,29 @@ bool remove_needless_jumps(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
         auto& blocks = function->getBasicBlocks();
 
-        for(unsigned int i = 0; i < blocks.size();++i){
-            auto& block = blocks[i];
+        auto it = blocks.begin();
+        auto end = blocks.end();
+
+        while(it != end){
+            auto& block = *it;
+            
             if(block->statements.size() > 0){
                 auto& last = block->statements[block->statements.size() - 1];
 
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                    unsigned int target = index(blocks, (*ptr)->block);
-                   
-                    if(target == i + 1){
+                    auto next = it;
+                    ++next;
+
+                    //If the target block is the next in the list 
+                    if((*ptr)->block == *next){
                         block->statements.pop_back();
-                        //erase(block->statements.size() - 1);
 
                         optimized = true;
                     }
                 }
             }
+
+            ++it;
         }
     }
 
@@ -354,7 +374,9 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
                     merge = true;
                 }
 
-                auto next = it + 1;
+                auto next = it;
+                ++next;
+
                 if(merge && next != blocks.end()){
                     //Only if the next block is not used because we will remove its label
                     if(usage.find(*next) == usage.end()){

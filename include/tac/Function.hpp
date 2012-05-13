@@ -11,6 +11,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <list>
 
 #include "SymbolTable.hpp"
 
@@ -39,14 +40,14 @@ class Function {
         std::string getName() const;
 
         std::vector<Statement>& getStatements();
-        std::vector<BlockPtr>& getBasicBlocks();
+        std::list<BlockPtr>& getBasicBlocks();
 
     private:
         //Before being partitioned, the function has only statement
         std::vector<Statement> statements;
         
         //There is no basic blocks at the beginning
-        std::vector<BlockPtr> blocks;
+        std::list<BlockPtr> blocks;
 
         std::string name;
 };
@@ -85,7 +86,7 @@ std::vector<Statement>& tac::Function<BasicBlock, Statement>::getStatements(){
 }
 
 template<typename BasicBlock, typename Statement>
-std::vector<std::shared_ptr<BasicBlock>>& tac::Function<BasicBlock, Statement>::getBasicBlocks(){
+std::list<std::shared_ptr<BasicBlock>>& tac::Function<BasicBlock, Statement>::getBasicBlocks(){
     return blocks;
 }
 
