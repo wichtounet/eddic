@@ -16,7 +16,26 @@ namespace eddic {
 
 namespace ltac {
 
-typedef tac::Function<BasicBlock, Statement> Function;
+class Function {
+    public:
+        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
+
+        std::shared_ptr<eddic::Function> definition;
+        
+        std::shared_ptr<FunctionContext> context;
+
+        void add(Statement statement);
+
+        std::string getName() const;
+
+        std::vector<Statement>& getStatements();
+
+    private:
+        //Before being partitioned, the function has only statement
+        std::vector<Statement> statements;
+
+        std::string name;
+};
 
 } //end of mtac
 
