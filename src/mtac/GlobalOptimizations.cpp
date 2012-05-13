@@ -25,6 +25,10 @@ std::shared_ptr<mtac::ControlFlowGraph> build_control_flow_graph(std::shared_ptr
         infos[block] = block_vertex;
     }
     
+    //Set the entry and exit blocks
+    g->entry() = function->getBasicBlocks().front();
+    g->exit() = function->getBasicBlocks().back();
+    
     //Add the edges
     for(boost::tie(it, end) = function->blocks(); it != end; ++it){
         auto& block = *it;

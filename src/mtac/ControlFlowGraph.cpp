@@ -24,3 +24,11 @@ std::pair<mtac::ControlFlowGraph::EdgeIterator, mtac::ControlFlowGraph::EdgeIter
 mtac::ControlFlowGraph::InternalControlFlowGraph& mtac::ControlFlowGraph::get_graph(){
     return graph;
 }
+        
+std::shared_ptr<mtac::BasicBlock>& mtac::ControlFlowGraph::entry(){
+    return entry_block;
+}
+
+std::shared_ptr<mtac::BasicBlock>& mtac::ControlFlowGraph::exit(){
+    return exit_block;
+}

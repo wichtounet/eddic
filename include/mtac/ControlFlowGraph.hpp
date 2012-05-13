@@ -53,10 +53,16 @@ class ControlFlowGraph {
         std::pair<BasicBlockIterator, BasicBlockIterator> blocks();
         std::pair<EdgeIterator, EdgeIterator> edges();
 
+        std::shared_ptr<BasicBlock>& entry();
+        std::shared_ptr<BasicBlock>& exit();
+
         InternalControlFlowGraph& get_graph();
         
     private:
         InternalControlFlowGraph graph;
+        
+        std::shared_ptr<BasicBlock> entry_block;
+        std::shared_ptr<BasicBlock> exit_block;
 };
 
 } //end of mtac
