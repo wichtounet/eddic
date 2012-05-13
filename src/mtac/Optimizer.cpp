@@ -15,6 +15,10 @@
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
 
+//The data-flow problems
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/ConstantPropagationProblem.hpp"
+
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
 #include "mtac/ReduceInStrength.hpp"
@@ -423,6 +427,16 @@ bool debug(bool b){
     }
 
     return b;
+}
+
+bool global_optimizations(std::shared_ptr<mtac::Program> program){
+    mtac::ConstantPropagationProblem constant_propagation;
+
+    for(auto& function : program->functions){
+        auto graph = mtac::build_control_flow_graph(function);
+
+        mtac::data_flow(graph, constant_propagation);
+    }
 }
 
 }

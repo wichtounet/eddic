@@ -17,11 +17,11 @@ struct DataFlowProblem {
     //What about statement ?
     //What about reading the basic blocks ?
 
-    Domain meet(Domain& values);
-    Domain transfer(Domain& values);
+    virtual Domain meet(Domain& values) = 0;
+    virtual Domain transfer(Domain& values) = 0;
 
-    Domain Boundary();
-    Domain Init();
+    virtual Domain Boundary() = 0;
+    virtual Domain Init() = 0;
 };
 
 } //end of mtac
