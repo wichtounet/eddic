@@ -30,17 +30,24 @@ void data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward,
 }
 
 template<bool Forward, typename Domain>
-void forward_data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, Domain>& problem){
+void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Forward, Domain>& problem){
+    auto graph = cfg->get_graph();
+
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
    
-    OUT[graph->entry()] = problem.Boundary();
+    OUT[cfg->entry()] = problem.Boundary();
+
+    ControlFlowGraph::BasicBlockIterator it, end;
+    for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
+        OUT[graph[*it].block] = problem.Init();
+    }
 
     //TODO
 }
 
 template<bool Forward, typename Domain>
-void backward_data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, Domain>& problem){
+void backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Forward, Domain>&/* problem*/){
     //TODO
 }
 

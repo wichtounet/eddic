@@ -437,6 +437,8 @@ bool global_optimizations(std::shared_ptr<mtac::Program> program){
 
         mtac::data_flow(graph, constant_propagation);
     }
+
+    return false; //TODO
 }
 
 }
