@@ -19,8 +19,8 @@ typedef int ConstantPropagationDomain;
 struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationDomain> {
     typedef ConstantPropagationDomain Domain;
 
-    Domain meet(Domain& values) override;
-    Domain transfer(Domain& values) override;
+    Domain meet(Domain& in, Domain& out) override;
+    Domain transfer(std::shared_ptr<BasicBlock> block, Domain& in) override;
 
     Domain Boundary() override;
     Domain Init() override;

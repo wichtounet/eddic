@@ -9,11 +9,11 @@
 
 using namespace eddic;
 
-mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::meet(Domain& values){
+mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::meet(Domain& in, Domain& out){
     //TODO
 }
 
-mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::transfer(Domain& values){
+mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> block, Domain& in){
     //TODO
 }
 

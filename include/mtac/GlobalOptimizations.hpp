@@ -40,10 +40,33 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
 
     ControlFlowGraph::BasicBlockIterator it, end;
     for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
-        OUT[graph[*it].block] = problem.Init();
+        //Init all but ENTRY
+        if(graph[*it].block->index != -1){
+            OUT[graph[*it].block] = problem.Init();
+        }
     }
 
-    //TODO
+    bool changes = true;
+    while(changes){
+        for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
+            auto vertex = *it;
+
+            //Do not consider ENTRY
+            if(graph[vertex].block->index == -1){
+                continue;
+            }
+
+            ControlFlowGraph::OutEdgeIterator oit, oend;
+            for(boost::tie(oit, oend) = boost::out_edges(vertex, graph); oit != oend; ++oit){
+                auto edge = *oit;
+                auto vertex_target = boost::target(edge, graph);
+                auto successor = graph[vertex_target].block;
+
+                IN[graph[vertex].block] = problem.meet(IN[graph[vertex].block], OUT[successor]);
+                OUT[graph[vertex].block] = problem.transfer(graph[vertex].block, IN[graph[vertex].block]);
+            }
+        }
+    }
 }
 
 template<bool Forward, typename Domain>

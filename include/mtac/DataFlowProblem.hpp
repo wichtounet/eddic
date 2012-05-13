@@ -8,6 +8,10 @@
 #ifndef MTAC_DATA_FLOW_PROBLEM_H
 #define MTAC_DATA_FLOW_PROBLEM_H
 
+#include <memory>
+
+#include "mtac/BasicBlock.hpp"
+
 namespace eddic {
 
 namespace mtac {
@@ -17,8 +21,8 @@ struct DataFlowProblem {
     //What about statement ?
     //What about reading the basic blocks ?
 
-    virtual Domain meet(Domain& values) = 0;
-    virtual Domain transfer(Domain& values) = 0;
+    virtual Domain meet(Domain& in, Domain& out) = 0;
+    virtual Domain transfer(std::shared_ptr<BasicBlock> block, Domain& in) = 0;
 
     virtual Domain Boundary() = 0;
     virtual Domain Init() = 0;
