@@ -19,11 +19,11 @@ typedef int ConstantPropagationDomain;
 struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationDomain> {
     typedef ConstantPropagationDomain Domain;
 
-    Domain meet(Domain& values);
-    Domain transfer(Domain& values);
+    Domain meet(Domain& values) override;
+    Domain transfer(Domain& values) override;
 
-    Domain Boundary();
-    Domain Init();
+    Domain Boundary() override;
+    Domain Init() override;
 };
 
 } //end of mtac
