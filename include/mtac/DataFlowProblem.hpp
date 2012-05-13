@@ -16,7 +16,7 @@ class StringPool;
 
 namespace mtac {
 
-template<Domain>
+template<typename Domain>
 struct DataFlowProblem {
     //What about statement ?
     //What about reading the basic blocks ?
@@ -24,9 +24,9 @@ struct DataFlowProblem {
     Domain meet(Domain& values);
     Domain transfer(Domain& values);
 
-    void Boundary(Values& values);
-    void Init(Values& values);
-}
+    void Boundary(Domain& values);
+    void Init(Domain& values);
+};
 
 } //end of mtac
 

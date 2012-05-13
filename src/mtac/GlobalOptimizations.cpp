@@ -9,10 +9,6 @@
 
 using namespace eddic;
 
-void mtac::forward_data_flow(std::shared_ptr<ControlFlowGraph> graph){
-    //TODO
-}
-
 std::shared_ptr<mtac::ControlFlowGraph> build_control_flow_graph(std::shared_ptr<mtac::Function> function){
     auto g = std::make_shared<mtac::ControlFlowGraph>();
     auto& graph = g->get_graph();

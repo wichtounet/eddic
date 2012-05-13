@@ -12,14 +12,18 @@
 
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Program.hpp"
+#include "mtac/DataFlowProblem.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-void forward_data_flow(std::shared_ptr<ControlFlowGraph> graph);
-
 std::shared_ptr<ControlFlowGraph> build_control_flow_graph(std::shared_ptr<Function> function);
+
+template<typename Domain>
+void forward_data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Domain>& problem){
+    //TODO
+}
 
 } //end of mtac
 
