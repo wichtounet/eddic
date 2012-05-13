@@ -162,6 +162,10 @@ bool remove_dead_basic_blocks(std::shared_ptr<mtac::Program> program){
             ++it;
         }
 
+        //The ENTRY and EXIT blocks should not be removed
+        usage.insert(blocks.front());
+        usage.insert(blocks.back());
+
         it = blocks.begin();
         end = blocks.end();
 
@@ -359,6 +363,9 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
 
         auto it = blocks.begin();
 
+        //The ENTRY Basic block should not been merged
+        ++it;
+
         while(it != blocks.end()){
             auto& block = *it;
             if(block->statements.size() > 0){
@@ -377,7 +384,7 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
                 auto next = it;
                 ++next;
 
-                if(merge && next != blocks.end()){
+                if(merge && next != blocks.end() && (*next)->index != -2){
                     //Only if the next block is not used because we will remove its label
                     if(usage.find(*next) == usage.end()){
                         if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(*(*next)->statements.begin()))){
