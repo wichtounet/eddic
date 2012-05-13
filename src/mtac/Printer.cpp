@@ -59,9 +59,14 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::BasicBlock>& block){
-        std::cout << "B" << block->index << "->" << std::endl;
-        
-        visit_each(*this, block->statements);     
+        if(block->index == -1){
+            std::cout << "ENTRY" << std::endl;
+        } else if(block->index == -2){
+            std::cout << "EXIT" << std::endl;
+        } else {
+            std::cout << "B" << block->index << "->" << std::endl;
+            visit_each(*this, block->statements);     
+        }
     }
 
     void operator()(mtac::Statement& statement){

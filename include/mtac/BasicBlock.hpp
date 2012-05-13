@@ -20,10 +20,10 @@ namespace mtac {
 
 class BasicBlock {
     public:
-        unsigned int index;
+        int index;
         std::string label;
 
-        BasicBlock(unsigned int index);
+        BasicBlock(int index);
 
         void add(mtac::Statement statement);
 

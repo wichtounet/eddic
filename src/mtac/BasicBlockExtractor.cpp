@@ -68,6 +68,9 @@ void mtac::BasicBlockExtractor::extract(std::shared_ptr<mtac::Program> program) 
             }
         }
 
+        function->getBasicBlocks().push_front(std::make_shared<mtac::BasicBlock>(-1));
+        function->getBasicBlocks().push_back(std::make_shared<mtac::BasicBlock>(-2));
+
         function->getStatements().clear();
     }
 }

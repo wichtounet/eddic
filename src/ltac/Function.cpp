@@ -5,12 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/Function.hpp"
+#include "ltac/Function.hpp"
 
 using namespace eddic;
 
-mtac::BasicBlock::BasicBlock(int i) : index(i), label("") {}
-
-void mtac::BasicBlock::add(mtac::Statement statement){
+ltac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {
+    //Nothing to do   
+}
+        
+void ltac::Function::add(ltac::Statement statement){
     statements.push_back(statement);
 }
+
+std::string ltac::Function::getName() const {
+    return name;
+}
+
+std::vector<ltac::Statement>& ltac::Function::getStatements(){
+    return statements;
+}
+
