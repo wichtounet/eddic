@@ -9,18 +9,20 @@
 
 using namespace eddic;
 
-mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::meet(Domain& in, Domain& out){
+typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
+
+ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     //TODO
 }
 
-mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> block, Domain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> block, ProblemDomain& in){
     //TODO
 }
 
-mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::Boundary(){
+ProblemDomain mtac::ConstantPropagationProblem::Boundary(){
     //TODO
 }
 
-mtac::ConstantPropagationDomain mtac::ConstantPropagationProblem::Init(){
+ProblemDomain mtac::ConstantPropagationProblem::Init(){
     //TODO
 }

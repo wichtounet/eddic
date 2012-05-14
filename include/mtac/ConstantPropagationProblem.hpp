@@ -14,16 +14,14 @@ namespace eddic {
 
 namespace mtac {
 
-typedef int ConstantPropagationDomain;
+typedef int ConstantPropagationValues;
 
-struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationDomain> {
-    typedef ConstantPropagationDomain Domain;
+struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
+    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    ProblemDomain transfer(std::shared_ptr<BasicBlock> block, ProblemDomain& in) override;
 
-    Domain meet(Domain& in, Domain& out) override;
-    Domain transfer(std::shared_ptr<BasicBlock> block, Domain& in) override;
-
-    Domain Boundary() override;
-    Domain Init() override;
+    ProblemDomain Boundary() override;
+    ProblemDomain Init() override;
 };
 
 } //end of mtac

@@ -16,16 +16,27 @@ namespace eddic {
 
 namespace mtac {
 
-template<bool Forward, typename Domain>
+template<typename DomainValues>
+struct Domain {
+    boost::optional<DomainValues> values;
+
+    bool top(){
+        return !values;
+    }
+};
+
+template<bool Forward, typename DomainValues>
 struct DataFlowProblem {
     //What about statement ?
     //What about reading the basic blocks ?
+    
+    typedef Domain<DomainValues> ProblemDomain;
 
-    virtual Domain meet(Domain& in, Domain& out) = 0;
-    virtual Domain transfer(std::shared_ptr<BasicBlock> block, Domain& in) = 0;
+    virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
+    virtual ProblemDomain transfer(std::shared_ptr<BasicBlock> block, ProblemDomain& in) = 0;
 
-    virtual Domain Boundary() = 0;
-    virtual Domain Init() = 0;
+    virtual ProblemDomain Boundary() = 0;
+    virtual ProblemDomain Init() = 0;
 };
 
 } //end of mtac

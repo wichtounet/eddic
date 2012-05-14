@@ -20,8 +20,8 @@ namespace mtac {
 
 std::shared_ptr<ControlFlowGraph> build_control_flow_graph(std::shared_ptr<Function> function);
 
-template<bool Forward, typename Domain>
-void data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, Domain>& problem){
+template<bool Forward, typename DomainValues>
+void data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, DomainValues>& problem){
     if(Forward){
         forward_data_flow(graph, problem);
     } else {
@@ -29,8 +29,10 @@ void data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward,
     }
 }
 
-template<bool Forward, typename Domain>
-void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Forward, Domain>& problem){
+template<bool Forward, typename DomainValues>
+void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Forward, DomainValues>& problem){
+    typedef mtac::Domain<DomainValues> Domain;
+
     auto graph = cfg->get_graph();
 
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
@@ -72,8 +74,10 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
     }
 }
 
-template<bool Forward, typename Domain>
-void backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Forward, Domain>&/* problem*/){
+template<bool Forward, typename DomainValues>
+void backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Forward, DomainValues>&/* problem*/){
+    typedef mtac::Domain<DomainValues> Domain;
+
     //TODO
 }
 
