@@ -212,7 +212,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "\tgoto " << printTarget(goto_) << std::endl;
     }
 
-    void operator()(mtac::NoOp&){
+    void operator()(std::shared_ptr<mtac::NoOp>&){
         std::cout << "\tno-op" << std::endl;
     }
 

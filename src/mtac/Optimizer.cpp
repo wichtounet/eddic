@@ -206,7 +206,7 @@ bool optimize_branches(std::shared_ptr<mtac::Program> program){
                             statement = goto_;
                             optimized = true;
                         } else if(value == 1){
-                            statement = mtac::NoOp();
+                            statement = std::make_shared<mtac::NoOp>();
                             optimized = true;
                         }
                     }
@@ -215,7 +215,7 @@ bool optimize_branches(std::shared_ptr<mtac::Program> program){
                         int value = boost::get<int>((*ptr)->arg1);
                         
                         if(value == 0){
-                            statement = mtac::NoOp();
+                            statement = std::make_shared<mtac::NoOp>();
                             optimized = true;
                         } else if(value == 1){
                             auto goto_ = std::make_shared<mtac::Goto>();
@@ -381,7 +381,7 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
                     merge = true;
                 } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&last)){
                     merge = safe(*ptr); 
-                } else if(boost::get<mtac::NoOp>(&last)){
+                } else if(boost::get<std::shared_ptr<mtac::NoOp>>(&last)){
                     merge = true;
                 }
 

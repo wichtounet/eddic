@@ -1150,7 +1150,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
     }
 }
 
-void ltac::StatementCompiler::operator()(mtac::NoOp&){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>&){
     //Nothing to do
 }
 

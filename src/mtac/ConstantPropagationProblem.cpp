@@ -15,7 +15,7 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     //TODO
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> block, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
     //TODO
 }
 

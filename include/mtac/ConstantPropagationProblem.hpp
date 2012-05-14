@@ -18,7 +18,7 @@ typedef int ConstantPropagationValues;
 
 struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
-    ProblemDomain transfer(std::shared_ptr<BasicBlock> block, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
 
     ProblemDomain Boundary() override;
     ProblemDomain Init() override;

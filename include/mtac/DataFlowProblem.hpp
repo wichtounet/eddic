@@ -24,7 +24,7 @@ struct Domain {
         //Nothing to init
     }
 
-    Domain(DomainValues values) : values(values){
+    Domain(DomainValues&& values) : values(values){ //TODO Not sure if it is really useful to have rvalues references here
         //Nothing to init
     }
 
@@ -41,7 +41,7 @@ struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
-    virtual ProblemDomain transfer(std::shared_ptr<BasicBlock> block, ProblemDomain& in) = 0;
+    virtual ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) = 0;
 
     virtual ProblemDomain Boundary() = 0;
     virtual ProblemDomain Init() = 0;

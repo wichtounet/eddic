@@ -37,6 +37,9 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
 
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
+    
+    std::unordered_map<mtac::Statement, Domain> OUT_S;
+    std::unordered_map<mtac::Statement, Domain> IN_S;
    
     OUT[cfg->entry()] = problem.Boundary();
 
@@ -50,6 +53,8 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
 
     bool changes = true;
     while(changes){
+        changes = false;
+
         for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
             auto vertex = *it;
             auto B = graph[vertex].block;
@@ -66,7 +71,23 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
                 auto P = graph[predecessor].block;
 
                 IN[B] = problem.meet(IN[B], OUT[P]);
-                OUT[B] = problem.transfer(B, IN[B]);
+
+                auto& statements = B->statements;
+
+                IN_S[statements.front()] = IN[B];
+
+                for(unsigned i = 0; i < statements.size(); ++i){
+                    auto& statement = statements[i];
+
+                    OUT_S[statement] = problem.transfer(statement, IN_S[statement]);
+
+                    //The entry value of the next statement are the exit values of the current statement
+                    if(i != statements.size() - 1){
+                        IN_S[statements[i+1]] = OUT_S[statement];
+                    }
+                }
+
+                OUT[B] = OUT_S[statements.back()];
             }
 
             //TODO Calculate changes
