@@ -20,9 +20,9 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::Boundary(){
-    //TODO
+    return default_element();
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::Init(){
-    //TODO
+    return top_element();
 }

@@ -20,6 +20,14 @@ template<typename DomainValues>
 struct Domain {
     boost::optional<DomainValues> values;
 
+    Domain(){
+        //Nothing to init
+    }
+
+    Domain(DomainValues values) : values(values){
+        //Nothing to init
+    }
+
     bool top(){
         return !values;
     }
@@ -37,6 +45,14 @@ struct DataFlowProblem {
 
     virtual ProblemDomain Boundary() = 0;
     virtual ProblemDomain Init() = 0;
+
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
+
+    ProblemDomain default_element(){
+        return ProblemDomain(DomainValues());
+    }
 };
 
 } //end of mtac
