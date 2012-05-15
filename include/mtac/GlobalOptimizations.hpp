@@ -29,17 +29,38 @@ void data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward,
     }
 }
 
-template<bool Forward, typename DomainValues>
-void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Forward, DomainValues>& problem){
-    typedef mtac::Domain<DomainValues> Domain;
+//TODO Find a way to improve it in order to pass value by reference
+template<typename Values>
+void assign(Values& old, Values value, bool& changes){
+    if(old.values().size() != value.values().size()){
+        changes = true;
+    }
 
-    auto graph = cfg->get_graph();
+    old = value;
+}
 
+template<typename Domain>
+struct DataFlowResults {
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
     
     std::unordered_map<mtac::Statement, Domain> OUT_S;
     std::unordered_map<mtac::Statement, Domain> IN_S;
+};
+
+template<bool Forward, typename DomainValues>
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Forward, DomainValues>& problem){
+    typedef mtac::Domain<DomainValues> Domain;
+
+    auto graph = cfg->get_graph();
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+    
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
    
     OUT[cfg->entry()] = problem.Boundary();
 
@@ -70,29 +91,29 @@ void forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Fo
                 auto predecessor = boost::source(edge, graph);
                 auto P = graph[predecessor].block;
 
-                IN[B] = problem.meet(IN[B], OUT[P]);
+                assign(IN[B], problem.meet(IN[B], OUT[P]), changes);
 
                 auto& statements = B->statements;
 
-                IN_S[statements.front()] = IN[B];
+                assign(IN_S[statements.front()], IN[B], changes);
 
                 for(unsigned i = 0; i < statements.size(); ++i){
                     auto& statement = statements[i];
 
-                    OUT_S[statement] = problem.transfer(statement, IN_S[statement]);
+                    assign(OUT_S[statement], problem.transfer(statement, IN_S[statement]), changes);
 
                     //The entry value of the next statement are the exit values of the current statement
                     if(i != statements.size() - 1){
-                        IN_S[statements[i+1]] = OUT_S[statement];
+                        assign(IN_S[statements[i+1]], OUT_S[statement], changes);
                     }
                 }
 
-                OUT[B] = OUT_S[statements.back()];
+                assign(OUT[B], OUT_S[statements.back()], changes);
             }
-
-            //TODO Calculate changes
         }
     }
+
+    return results;
 }
 
 template<bool Forward, typename DomainValues>

@@ -32,16 +32,13 @@ struct Domain {
         return *int_values;
     }
 
-    bool top(){
+    bool top() const {
         return !int_values;
     }
 };
 
 template<bool Forward, typename DomainValues>
 struct DataFlowProblem {
-    //What about statement ?
-    //What about reading the basic blocks ?
-    
     typedef Domain<DomainValues> ProblemDomain;
 
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
