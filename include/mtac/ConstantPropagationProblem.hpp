@@ -21,7 +21,7 @@ class Variable;
 
 namespace mtac {
 
-typedef boost::variant<int, double, std::string> ConstantValue;
+typedef boost::variant<std::string, double, int> ConstantValue;
 typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
 
 struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {

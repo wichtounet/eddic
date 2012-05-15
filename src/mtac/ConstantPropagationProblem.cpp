@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "Variable.hpp"
+
 #include "mtac/ConstantPropagationProblem.hpp"
 
 using namespace eddic;
@@ -16,7 +18,35 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
-    //TODO
+    auto out = in;
+
+    //Only quadruple affects variable
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+        auto quadruple = *ptr;
+
+        if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
+                out.values()[quadruple->result] = *ptr;
+            } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
+                out.values()[quadruple->result] = *ptr;
+            } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
+                out.values()[quadruple->result] = *ptr;
+            } else {
+                //The result is not constant at this point
+                out.values().erase(quadruple->result);
+            }
+        } else {
+            auto op = quadruple->op;
+
+            //Check if the operator erase the contents of the result variable
+            if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
+                //The result is not constant at this point
+                out.values().erase(quadruple->result);
+            }
+        }
+    }
+
+    return out;
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::Boundary(){

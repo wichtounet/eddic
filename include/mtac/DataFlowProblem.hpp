@@ -18,18 +18,22 @@ namespace mtac {
 
 template<typename DomainValues>
 struct Domain {
-    boost::optional<DomainValues> values;
+    boost::optional<DomainValues> int_values;
 
     Domain(){
         //Nothing to init
     }
 
-    Domain(DomainValues&& values) : values(values){ //TODO Not sure if it is really useful to have rvalues references here
+    Domain(DomainValues&& values) : int_values(values){ //TODO Not sure if it is really useful to have rvalues references here
         //Nothing to init
     }
 
+    DomainValues& values(){
+        return *int_values;
+    }
+
     bool top(){
-        return !values;
+        return !int_values;
     }
 };
 
