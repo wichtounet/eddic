@@ -56,7 +56,7 @@ struct DataFlowProblem {
     virtual ProblemDomain Boundary() = 0;
     virtual ProblemDomain Init() = 0;
 
-    virtual bool optimize(mtac::Statement& statement, mtac::DataFlowResults<ProblemDomain>& results) = 0;
+    virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& results) = 0;
 
     ProblemDomain top_element(){
         return ProblemDomain();

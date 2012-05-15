@@ -21,11 +21,11 @@ namespace mtac {
 std::shared_ptr<ControlFlowGraph> build_control_flow_graph(std::shared_ptr<Function> function);
 
 template<bool Forward, typename DomainValues>
-void data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Forward, DomainValues>& problem){
     if(Forward){
-        forward_data_flow(graph, problem);
+        return forward_data_flow(graph, problem);
     } else {
-        backward_data_flow(graph, problem);
+        return backward_data_flow(graph, problem);
     }
 }
 
@@ -108,7 +108,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 }
 
 template<bool Forward, typename DomainValues>
-void backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Forward, DomainValues>&/* problem*/){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>>  backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Forward, DomainValues>&/* problem*/){
     typedef mtac::Domain<DomainValues> Domain;
 
     //TODO

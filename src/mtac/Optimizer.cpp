@@ -432,13 +432,22 @@ bool debug(bool b){
 bool global_optimizations(std::shared_ptr<mtac::Program> program){
     mtac::ConstantPropagationProblem constant_propagation;
 
+    bool optimized = false;
+
     for(auto& function : program->functions){
         auto graph = mtac::build_control_flow_graph(function);
 
-        mtac::data_flow(graph, constant_propagation);
+        auto results = mtac::data_flow(graph, constant_propagation);
+
+        //Once the data-flow problem is fixed, statements can be optimized
+        for(auto& block : function->getBasicBlocks()){
+            for(auto& statement : block->statements){
+                optimized |= constant_propagation.optimize(statement, results);
+            }
+        }
     }
 
-    return false; //TODO
+    return optimized;
 }
 
 }

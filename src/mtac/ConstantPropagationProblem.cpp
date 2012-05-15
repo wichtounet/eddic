@@ -81,7 +81,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statem
     return out;
 }
 
-bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, mtac::DataFlowResults<ProblemDomain>& results){
+bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& results){
     //TODO
 }
 
