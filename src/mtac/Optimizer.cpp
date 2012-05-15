@@ -429,20 +429,21 @@ bool debug(bool b){
     return b;
 }
 
-bool global_optimizations(std::shared_ptr<mtac::Program> program){
-    mtac::ConstantPropagationProblem constant_propagation;
+template<typename Problem>
+bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
+    Problem problem;
 
     bool optimized = false;
 
     for(auto& function : program->functions){
         auto graph = mtac::build_control_flow_graph(function);
 
-        auto results = mtac::data_flow(graph, constant_propagation);
+        auto results = mtac::data_flow(graph, problem);
 
         //Once the data-flow problem is fixed, statements can be optimized
         for(auto& block : function->getBasicBlocks()){
             for(auto& statement : block->statements){
-                optimized |= constant_propagation.optimize(statement, results);
+                optimized |= problem.optimize(statement, results);
             }
         }
     }
@@ -466,40 +467,43 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         //Constant folding
         optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
 
+        //Global constant propagation
+        optimized |= debug<Debug, 4>(data_flow_optimization<ConstantPropagationProblem>(program));
+
         //Constant propagation
-        optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
+        optimized |= debug<Debug, 5>(apply_to_basic_blocks<ConstantPropagation>(program));
 
         //Offset Constant propagation
-        optimized |= debug<Debug, 5>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
-        
+        optimized |= debug<Debug, 6>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
+       
         //Copy propagation
-        optimized |= debug<Debug, 6>(apply_to_basic_blocks<CopyPropagation>(program));
+        optimized |= debug<Debug, 7>(apply_to_basic_blocks<CopyPropagation>(program));
         
         //Offset Copy propagation
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
+        optimized |= debug<Debug, 8>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
 
         //Propagate math
-        optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
+        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
+        optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
 
         //Remove unused assignations
-        optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
+        optimized |= debug<Debug, 11>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
        
         //Optimize branches 
-        optimized |= debug<Debug, 11>(optimize_branches(program));
+        optimized |= debug<Debug, 12>(optimize_branches(program));
        
         //Optimize concatenations 
-        optimized |= debug<Debug, 12>(optimize_concat(program, pool));
+        optimized |= debug<Debug, 13>(optimize_concat(program, pool));
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 13>(remove_dead_basic_blocks(program));
+        optimized |= debug<Debug, 14>(remove_dead_basic_blocks(program));
 
         //Remove needless jumps
-        optimized |= debug<Debug, 14>(remove_needless_jumps(program));
+        optimized |= debug<Debug, 15>(remove_needless_jumps(program));
 
         //Merge basic blocks
-        optimized |= debug<Debug, 15>(merge_basic_blocks(program));
+        optimized |= debug<Debug, 16>(merge_basic_blocks(program));
     } while (optimized);
 }
