@@ -24,20 +24,20 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     } else {
         //TODO Find a more proper way to declare that
         ProblemDomain result(in.values());
-        result.values().clear();
+        result.clear();
 
-        auto it = in.values().begin();
-        auto end = in.values().end();
+        auto it = in.begin();
+        auto end = in.end();
 
         while(it != end){
             auto var = it->first;
 
-            if(out.values().find(var) != out.values().end()){
+            if(out.find(var) != out.end()){
                 auto value_in = it->second;
-                auto value_out = out.values()[var];
+                auto value_out = out[var];
 
                 if(value_in == value_out){
-                    result.values()[var] = value_in;
+                    result[var] = value_in;
                 }
             }
 
@@ -58,14 +58,14 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statem
 
         if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                out.values()[quadruple->result] = *ptr;
+                out[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
-                out.values()[quadruple->result] = *ptr;
+                out[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
-                out.values()[quadruple->result] = *ptr;
+                out[quadruple->result] = *ptr;
             } else {
                 //The result is not constant at this point
-                out.values().erase(quadruple->result);
+                out.erase(quadruple->result);
             }
         } else {
             auto op = quadruple->op;
@@ -73,7 +73,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statem
             //Check if the operator erase the contents of the result variable
             if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
                 //The result is not constant at this point
-                out.values().erase(quadruple->result);
+                out.erase(quadruple->result);
             }
         }
     }

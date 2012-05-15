@@ -37,6 +37,63 @@ struct Domain {
     }
 };
 
+template<typename Key, typename Value>
+struct Domain<std::unordered_map<Key, Value>> {
+    boost::optional<std::unordered_map<Key, Value>> int_values;
+
+    Domain(){
+        //Nothing to init
+    }
+
+    Domain(std::unordered_map<Key, Value> values) : int_values(values){ //TODO Not sure if it is really useful to have rvalues references here
+        //Nothing to init
+    }
+
+    std::unordered_map<Key, Value>& values(){
+        return *int_values;
+    }
+
+    Value& operator[](Key key){
+        assert(int_values);
+
+        return (*int_values)[key];
+    }
+
+    typename std::unordered_map<Key, Value>::iterator begin(){
+        assert(int_values);
+
+        return (*int_values).begin();
+    }
+    
+    typename std::unordered_map<Key, Value>::iterator find(Key key){
+        assert(int_values);
+
+        return (*int_values).find(key);
+    }
+
+    typename std::unordered_map<Key, Value>::iterator end(){
+        assert(int_values);
+
+        return (*int_values).end();
+    }
+
+    void erase(Key key){
+        assert(int_values);
+
+        (*int_values).erase(key);
+    }
+    
+    void clear(){
+        assert(int_values);
+
+        (*int_values).clear();
+    }
+
+    bool top() const {
+        return !int_values;
+    }
+};
+
 template<typename Domain>
 struct DataFlowResults {
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
