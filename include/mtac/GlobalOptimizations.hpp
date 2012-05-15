@@ -88,20 +88,25 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 
                 auto& statements = B->statements;
 
-                assign(IN_S[statements.front()], IN[B], changes);
+                if(statements.size() > 0){
+                    assign(IN_S[statements.front()], IN[B], changes);
 
-                for(unsigned i = 0; i < statements.size(); ++i){
-                    auto& statement = statements[i];
+                    for(unsigned i = 0; i < statements.size(); ++i){
+                        auto& statement = statements[i];
 
-                    assign(OUT_S[statement], problem.transfer(statement, IN_S[statement]), changes);
+                        assign(OUT_S[statement], problem.transfer(statement, IN_S[statement]), changes);
 
-                    //The entry value of the next statement are the exit values of the current statement
-                    if(i != statements.size() - 1){
-                        assign(IN_S[statements[i+1]], OUT_S[statement], changes);
+                        //The entry value of the next statement are the exit values of the current statement
+                        if(i != statements.size() - 1){
+                            assign(IN_S[statements[i+1]], OUT_S[statement], changes);
+                        }
                     }
+                    
+                    assign(OUT[B], OUT_S[statements.back()], changes);
+                } else {
+                    //If the basic block is empty, the OUT values are the IN values
+                    assign(OUT[B], IN[B], changes);
                 }
-
-                assign(OUT[B], OUT_S[statements.back()], changes);
             }
         }
     }
