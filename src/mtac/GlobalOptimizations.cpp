@@ -45,6 +45,10 @@ std::shared_ptr<mtac::ControlFlowGraph> mtac::build_control_flow_graph(std::shar
         else if(block->index == -2){
             //Nothing to do
         }
+        //Empty block
+        else if(block->statements.size() == 0){
+            boost::add_edge(infos[block], infos[*next], graph);
+        }
         //Standard block
         else {
             auto& last_statement = block->statements.back();

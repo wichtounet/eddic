@@ -32,7 +32,9 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shar
 //TODO Find a way to improve it in order to pass value by reference
 template<typename Values>
 inline void assign(Values& old, Values value, bool& changes){
-    if(old.values().size() != value.values().size()){
+    if(old.top()){
+        changes = !value.top();
+    } else if(old.values().size() != value.values().size()){
         changes = true;
     }
 
