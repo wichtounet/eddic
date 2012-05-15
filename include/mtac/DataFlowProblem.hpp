@@ -37,6 +37,15 @@ struct Domain {
     }
 };
 
+template<typename Domain>
+struct DataFlowResults {
+    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
+    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
+    
+    std::unordered_map<mtac::Statement, Domain> OUT_S;
+    std::unordered_map<mtac::Statement, Domain> IN_S;
+};
+
 template<bool Forward, typename DomainValues>
 struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
@@ -46,6 +55,8 @@ struct DataFlowProblem {
 
     virtual ProblemDomain Boundary() = 0;
     virtual ProblemDomain Init() = 0;
+
+    virtual bool optimize(mtac::Statement& statement, mtac::DataFlowResults<ProblemDomain>& results) = 0;
 
     ProblemDomain top_element(){
         return ProblemDomain();

@@ -39,15 +39,6 @@ void assign(Values& old, Values value, bool& changes){
     old = value;
 }
 
-template<typename Domain>
-struct DataFlowResults {
-    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
-    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
-    
-    std::unordered_map<mtac::Statement, Domain> OUT_S;
-    std::unordered_map<mtac::Statement, Domain> IN_S;
-};
-
 template<bool Forward, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Forward, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;

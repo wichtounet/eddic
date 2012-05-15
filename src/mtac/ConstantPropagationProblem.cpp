@@ -81,6 +81,10 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statem
     return out;
 }
 
+bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, mtac::DataFlowResults<ProblemDomain>& results){
+    //TODO
+}
+
 ProblemDomain mtac::ConstantPropagationProblem::Boundary(){
     return default_element();
 }

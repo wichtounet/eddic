@@ -30,6 +30,8 @@ struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropaga
 
     ProblemDomain Boundary() override;
     ProblemDomain Init() override;
+    
+    bool optimize(mtac::Statement& statement, DataFlowResults<ProblemDomain>& results);
 };
 
 } //end of mtac
