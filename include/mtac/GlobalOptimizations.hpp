@@ -111,7 +111,11 @@ template<bool Forward, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>>  backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Forward, DomainValues>&/* problem*/){
     typedef mtac::Domain<DomainValues> Domain;
 
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
     //TODO
+
+    return results;
 }
 
 } //end of mtac

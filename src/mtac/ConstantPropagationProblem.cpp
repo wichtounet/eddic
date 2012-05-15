@@ -48,7 +48,6 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     }
 }
 
-//TODO Some cleanup will be necessary
 ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
@@ -129,6 +128,8 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
         changes |= optimize_arg(&if_->arg1, results);
         changes |= optimize_optional(if_->arg2, results);
     }
+
+    return changes;
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::Boundary(){
