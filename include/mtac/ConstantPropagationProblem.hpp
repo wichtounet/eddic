@@ -8,13 +8,21 @@
 #ifndef MTAC_CONSTANT_PROPAGATION_PROBLEM_H
 #define MTAC_CONSTANT_PROPAGATION_PROBLEM_H
 
+#include <unordered_map>
+#include <memory>
+
+#include <boost/variant.hpp>
+
 #include "mtac/DataFlowProblem.hpp"
 
 namespace eddic {
 
+class Variable;
+
 namespace mtac {
 
-typedef int ConstantPropagationValues;
+typedef boost::variant<int, double, std::string> ConstantValue;
+typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
 
 struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
