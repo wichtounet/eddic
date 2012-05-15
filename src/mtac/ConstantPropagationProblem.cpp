@@ -81,8 +81,54 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statem
     return out;
 }
 
-bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& results){
-    //TODO
+bool optimize_arg(mtac::Argument* arg, ProblemDomain& results){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+        if(results.find(*ptr) != results.end()){
+            *arg = results[*ptr];
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& results){
+    if(arg){
+        return optimize_arg(&*arg, results);
+    }
+
+    return false;
+}
+
+bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
+    auto& results = global_results->IN_S[statement];
+
+    bool changes = false;
+
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+        auto& quadruple = *ptr;
+
+        //Do not replace a variable by a constant when used in offset
+        if(quadruple->op != mtac::Operator::ARRAY && quadruple->op != mtac::Operator::DOT){
+            changes |= optimize_optional(quadruple->arg1, results);
+        }
+
+        changes |= optimize_optional(quadruple->arg2, results);
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+        auto& param = *ptr;
+
+        changes |= optimize_arg(&param->arg, results);
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
+        auto& ifFalse = *ptr;
+        
+        changes |= optimize_arg(&ifFalse->arg1, results);
+        changes |= optimize_optional(ifFalse->arg2, results);
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
+        auto& if_ = *ptr;
+        
+        changes |= optimize_arg(&if_->arg1, results);
+        changes |= optimize_optional(if_->arg2, results);
+    }
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::Boundary(){
