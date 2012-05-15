@@ -24,7 +24,7 @@ struct Domain {
         //Nothing to init
     }
 
-    Domain(DomainValues&& values) : int_values(values){ //TODO Not sure if it is really useful to have rvalues references here
+    Domain(DomainValues values) : int_values(values){ //TODO Not sure if it is really useful to have rvalues references here
         //Nothing to init
     }
 

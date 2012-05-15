@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
 #include "Variable.hpp"
 
 #include "mtac/ConstantPropagationProblem.hpp"
@@ -14,9 +15,40 @@ using namespace eddic;
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    //TODO
+    ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
+
+    if(in.top()){
+        return out;
+    } else if(out.top()){
+        return in;
+    } else {
+        //TODO Find a more proper way to declare that
+        ProblemDomain result(in.values());
+        result.values().clear();
+
+        auto it = in.values().begin();
+        auto end = in.values().end();
+
+        while(it != end){
+            auto var = it->first;
+
+            if(out.values().find(var) != out.values().end()){
+                auto value_in = it->second;
+                auto value_out = out.values()[var];
+
+                if(value_in == value_out){
+                    result.values()[var] = value_in;
+                }
+            }
+
+            ++it;
+        }
+
+        return result;
+    }
 }
 
+//TODO Some cleanup will be necessary
 ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
