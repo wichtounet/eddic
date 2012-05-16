@@ -470,9 +470,6 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         //Global constant propagation
         optimized |= debug<Debug, 4>(data_flow_optimization<ConstantPropagationProblem>(program));
 
-        //Constant propagation
-        optimized |= debug<Debug, 5>(apply_to_basic_blocks<ConstantPropagation>(program));
-
         //Offset Constant propagation
         optimized |= debug<Debug, 6>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
        
