@@ -49,11 +49,11 @@ struct Domain<std::unordered_map<Key, Value>> {
         //Nothing to init
     }
 
-    Domain(std::unordered_map<Key, Value> values) : int_values(values){ //TODO Not sure if it is really useful to have rvalues references here
+    Domain(Values values) : int_values(std::move(values)){
         //Nothing to init
     }
 
-    std::unordered_map<Key, Value>& values(){
+    Values& values(){
         return *int_values;
     }
 
@@ -63,19 +63,19 @@ struct Domain<std::unordered_map<Key, Value>> {
         return (*int_values)[key];
     }
 
-    typename std::unordered_map<Key, Value>::iterator begin(){
+    typename Values::iterator begin(){
         assert(int_values);
 
         return (*int_values).begin();
     }
     
-    typename std::unordered_map<Key, Value>::iterator find(Key key){
+    typename Values::iterator find(Key key){
         assert(int_values);
 
         return (*int_values).find(key);
     }
 
-    typename std::unordered_map<Key, Value>::iterator end(){
+    typename Values::iterator end(){
         assert(int_values);
 
         return (*int_values).end();
