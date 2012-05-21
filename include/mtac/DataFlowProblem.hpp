@@ -18,13 +18,15 @@ namespace mtac {
 
 template<typename DomainValues>
 struct Domain {
+    typedef DomainValues Values;
+
     boost::optional<DomainValues> int_values;
 
     Domain(){
         //Nothing to init
     }
 
-    Domain(DomainValues values) : int_values(values){ //TODO Not sure if it is really useful to have rvalues references here
+    Domain(DomainValues values) : int_values(std::move(values)){
         //Nothing to init
     }
 
@@ -39,7 +41,9 @@ struct Domain {
 
 template<typename Key, typename Value>
 struct Domain<std::unordered_map<Key, Value>> {
-    boost::optional<std::unordered_map<Key, Value>> int_values;
+    typedef std::unordered_map<Key, Value> Values;
+    
+    boost::optional<Values> int_values;
 
     Domain(){
         //Nothing to init

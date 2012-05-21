@@ -22,9 +22,8 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     } else if(out.top()){
         return in;
     } else {
-        //TODO Find a more proper way to declare that
-        ProblemDomain result(in.values());
-        result.clear();
+        ProblemDomain::Values values;
+        ProblemDomain result(values);
 
         auto it = in.begin();
         auto end = in.end();
