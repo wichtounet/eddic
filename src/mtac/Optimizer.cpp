@@ -24,7 +24,6 @@
 #include "mtac/ArithmeticIdentities.hpp"
 #include "mtac/ReduceInStrength.hpp"
 #include "mtac/ConstantFolding.hpp"
-#include "mtac/ConstantPropagation.hpp"
 #include "mtac/CopyPropagation.hpp"
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
