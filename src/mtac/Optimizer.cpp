@@ -18,6 +18,7 @@
 //The data-flow problems
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ConstantPropagationProblem.hpp"
+#include "mtac/OffsetConstantPropagationProblem.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -471,7 +472,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         optimized |= debug<Debug, 4>(data_flow_optimization<ConstantPropagationProblem>(program));
 
         //Offset Constant propagation
-        optimized |= debug<Debug, 6>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
+        optimized |= debug<Debug, 6>(data_flow_optimization<OffsetConstantPropagationProblem>(program));
        
         //Copy propagation
         optimized |= debug<Debug, 7>(apply_to_basic_blocks<CopyPropagation>(program));

@@ -21,9 +21,9 @@ namespace eddic {
 namespace mtac {
 
 typedef boost::variant<std::string, double, int> ConstantValue;
-typedef std::unordered_map<Offset, ConstantValue, mtac::OffsetHash> ConstantPropagationValues;
+typedef std::unordered_map<Offset, ConstantValue, mtac::OffsetHash> OffsetConstantPropagationValues;
 
-struct OffsetConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
+struct OffsetConstantPropagationProblem : public DataFlowProblem<true, OffsetConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
     
