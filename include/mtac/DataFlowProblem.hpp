@@ -39,9 +39,9 @@ struct Domain {
     }
 };
 
-template<typename Key, typename Value>
-struct Domain<std::unordered_map<Key, Value>> {
-    typedef std::unordered_map<Key, Value> Values;
+template<typename Key, typename Value, typename Hasher>
+struct Domain<std::unordered_map<Key, Value, Hasher>> {
+    typedef std::unordered_map<Key, Value, Hasher> Values;
     
     boost::optional<Values> int_values;
 
