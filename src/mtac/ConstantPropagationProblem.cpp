@@ -131,11 +131,3 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
 
     return changes;
 }
-
-ProblemDomain mtac::ConstantPropagationProblem::Boundary(){
-    return default_element();
-}
-
-ProblemDomain mtac::ConstantPropagationProblem::Init(){
-    return top_element();
-}

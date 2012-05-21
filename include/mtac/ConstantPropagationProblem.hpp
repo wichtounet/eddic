@@ -27,9 +27,6 @@ typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPro
 struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
-
-    ProblemDomain Boundary() override;
-    ProblemDomain Init() override;
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
 };

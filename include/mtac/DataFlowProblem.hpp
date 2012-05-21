@@ -110,8 +110,8 @@ struct DataFlowProblem {
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
     virtual ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) = 0;
 
-    virtual ProblemDomain Boundary() = 0;
-    virtual ProblemDomain Init() = 0;
+    virtual ProblemDomain Boundary();
+    virtual ProblemDomain Init();
 
     virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& results) = 0;
 
@@ -123,6 +123,18 @@ struct DataFlowProblem {
         return ProblemDomain(DomainValues());
     }
 };
+
+template<bool Forward, typename DomainValues>
+typename DataFlowProblem<Forward, DomainValues>::ProblemDomain DataFlowProblem<Forward, DomainValues>::Boundary(){
+    //By default, return the default element
+    return default_element();
+}
+
+template<bool Forward, typename DomainValues>
+typename DataFlowProblem<Forward, DomainValues>::ProblemDomain DataFlowProblem<Forward, DomainValues>::Init(){
+    //By default, return the top element
+    return top_element();
+}
 
 } //end of mtac
 
