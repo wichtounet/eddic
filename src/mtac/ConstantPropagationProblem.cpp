@@ -15,36 +15,7 @@ using namespace eddic;
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
-
-    if(in.top()){
-        return out;
-    } else if(out.top()){
-        return in;
-    } else {
-        ProblemDomain::Values values;
-        ProblemDomain result(values);
-
-        auto it = in.begin();
-        auto end = in.end();
-
-        while(it != end){
-            auto var = it->first;
-
-            if(out.find(var) != out.end()){
-                auto value_in = it->second;
-                auto value_out = out[var];
-
-                if(value_in == value_out){
-                    result[var] = value_in;
-                }
-            }
-
-            ++it;
-        }
-
-        return result;
-    }
+    return mtac::union_meet(in, out);
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
