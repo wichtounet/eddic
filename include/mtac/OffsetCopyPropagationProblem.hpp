@@ -12,14 +12,14 @@
 #include <memory>
 
 #include "mtac/DataFlowProblem.hpp"
-#include "mtac/OptimizerUtils.hpp"      //Only for Offset
+#include "mtac/Offset.hpp"      
 
 namespace eddic {
 
 namespace mtac {
 
-typedef std::shared_ptr<Variable> ConstantValue;
-typedef std::unordered_map<Offset, ConstantValue, mtac::OffsetHash> OffsetCopyPropagationValues;
+typedef std::shared_ptr<Variable> OffsetCopyValue;
+typedef std::unordered_map<Offset, OffsetCopyValue, mtac::OffsetHash> OffsetCopyPropagationValues;
 
 struct OffsetCopyPropagationProblem : public DataFlowProblem<true, OffsetCopyPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;

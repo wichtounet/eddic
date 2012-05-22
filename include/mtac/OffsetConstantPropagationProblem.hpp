@@ -14,14 +14,14 @@
 #include <boost/variant.hpp>
 
 #include "mtac/DataFlowProblem.hpp"
-#include "mtac/OptimizerUtils.hpp"      //Only for Offset
+#include "mtac/Offset.hpp"      
 
 namespace eddic {
 
 namespace mtac {
 
-typedef boost::variant<std::string, double, int> ConstantValue;
-typedef std::unordered_map<Offset, ConstantValue, mtac::OffsetHash> OffsetConstantPropagationValues;
+typedef boost::variant<std::string, double, int> OffsetConstantValue;
+typedef std::unordered_map<Offset, OffsetConstantValue, mtac::OffsetHash> OffsetConstantPropagationValues;
 
 struct OffsetConstantPropagationProblem : public DataFlowProblem<true, OffsetConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;

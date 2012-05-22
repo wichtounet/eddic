@@ -27,9 +27,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::Statement& 
         //Store the value assigned to result+arg1
         if(quadruple->op == mtac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                mtac::Offset offset;
-                offset.variable = quadruple->result;
-                offset.offset = *ptr;
+                mtac::Offset offset(quadruple->result, *ptr);
 
                 if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                     out[offset] = *ptr;
@@ -59,9 +57,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
         //If constant replace the value assigned to result by the value stored for arg1+arg2
         if(quadruple->op == mtac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                mtac::Offset offset;
-                offset.variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                offset.offset = *ptr;
+                mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
 
                 if(results.find(offset) != results.end()){
                     quadruple->op = mtac::Operator::ASSIGN;

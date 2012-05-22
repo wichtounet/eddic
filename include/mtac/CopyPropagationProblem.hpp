@@ -19,10 +19,10 @@ class Variable;
 
 namespace mtac {
 
-typedef std::shared_ptr<Variable> ConstantValue;
-typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
+typedef std::shared_ptr<Variable> CopyValue;
+typedef std::unordered_map<std::shared_ptr<Variable>, CopyValue> CopyPropagationValues;
 
-struct CopyPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
+struct CopyPropagationProblem : public DataFlowProblem<true, CopyPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
     

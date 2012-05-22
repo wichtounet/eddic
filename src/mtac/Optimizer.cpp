@@ -19,12 +19,13 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
+#include "mtac/CopyPropagationProblem.hpp"
+#include "mtac/OffsetCopyPropagationProblem.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
 #include "mtac/ReduceInStrength.hpp"
 #include "mtac/ConstantFolding.hpp"
-#include "mtac/CopyPropagation.hpp"
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
@@ -474,10 +475,10 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         optimized |= debug<Debug, 6>(data_flow_optimization<OffsetConstantPropagationProblem>(program));
        
         //Copy propagation
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks<CopyPropagation>(program));
+        optimized |= debug<Debug, 7>(data_flow_optimization<CopyPropagationProblem>(program));
         
         //Offset Copy propagation
-        optimized |= debug<Debug, 8>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
+        optimized |= debug<Debug, 8>(data_flow_optimization<OffsetCopyPropagationProblem>(program));
 
         //Propagate math
         optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
