@@ -19,6 +19,7 @@ using namespace eddic;
 
 bool eddic::WarningUnused;
 bool eddic::WarningCast;
+int eddic::OLevel = 2;
 
 std::shared_ptr<po::variables_map> options;
 
@@ -62,6 +63,10 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("warning-all", "Enable all the warnings")
                 ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
                 ("warning-cast", po::bool_switch(&WarningCast), "Enable warnings for casts")
+
+                ("O0", "Disable all optimizations")
+                ("O1", "Enable low-level optimizations")
+                ("O2", "Enable all optimizations. This can be slow for big programs.")
                 
                 ("32", "Force the compilation for 32 bits platform")
                 ("64", "Force the compilation for 64 bits platform")
@@ -82,15 +87,29 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), *options);
         po::notify(*options);
 
-        if(options->count("warning-all")){
-            WarningUnused = true;
-            WarningCast = true;
+        if(options->count("O0") + options->count("O1") + options->count("O2") > 1){
+            std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
+
+            return false;
         }
 
         if(options->count("64") && options->count("32")){
             std::cout << "Invalid command line options : a compilation cannot be both 32 and 64 bits" << std::endl;
 
             return false;
+        }
+
+        if(options->count("O0")){
+            OLevel = 0;
+        } else if(options->count("O1")){
+            OLevel = 1;
+        } else if(options->count("O2")){
+            OLevel = 2;
+        } 
+
+        if(options->count("warning-all")){
+            WarningUnused = true;
+            WarningCast = true;
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;

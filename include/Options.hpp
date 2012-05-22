@@ -25,6 +25,11 @@ extern bool WarningUnused;
 extern bool WarningCast;
 
 /*!
+ * \brief Level of optimization engine.  
+ */
+extern int OLevel;
+
+/*!
  * Indicates if the given option has been defined. 
  * \param option_name The name of the option to test. 
  * \return true if the option has been defined, otherwise false. 
