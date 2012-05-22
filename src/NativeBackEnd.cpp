@@ -36,6 +36,12 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     //Separate into basic blocks
     mtac::BasicBlockExtractor extractor;
     extractor.extract(mtacProgram);
+    
+    //If asked by the user, print the Three Address code representation before optimization
+    if(option_defined("mtac-opt")){
+        mtac::Printer printer;
+        printer.print(mtacProgram);
+    }
 
     //Allocate storage for the temporaries that need to be stored
     mtac::TemporaryAllocator allocator;

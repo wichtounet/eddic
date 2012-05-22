@@ -50,6 +50,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
                 ("ast", "Print the Abstract Syntax Tree representation of the source")
                 ("mtac", "Print the medium-level Three Address Code representation of the source")
+                ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
                 ("ltac", "Print the low-level Three Address Code representation of the source")
                 
                 ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
