@@ -407,8 +407,7 @@ bool debug(bool b, std::shared_ptr<mtac::Program> program){
             std::cout << "optimization " << i << " returned true" << std::endl;
 
             //Print the program
-            mtac::Printer printer;
-            printer.print(program);
+            print(program);
         } else {
             std::cout << "optimization " << i << " returned false" << std::endl;
         }
@@ -443,8 +442,7 @@ bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const {
     if(option_defined("dev")){
-        mtac::Printer printer;
-        printer.print(program);
+        print(program);
     }
 
     bool optimized;

@@ -30,6 +30,8 @@ struct Printer {
     void printArgument(mtac::Argument& program) const ;
 };
 
+void print(std::shared_ptr<mtac::Program> program);
+
 } //end of mtac
 
 } //end of eddic
