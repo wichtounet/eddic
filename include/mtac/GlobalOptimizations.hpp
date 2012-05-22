@@ -28,6 +28,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shar
         return forward_data_flow(graph, problem);
     } else if(Type == DataFlowType::Backward){
         return backward_data_flow(graph, problem);
+    } else if(Type == DataFlowType::Basic){
+        return basic_data_flow(graph, problem);
     } else {
         ASSERT_PATH_NOT_TAKEN("This data-flow type is not handled");
     }
@@ -120,6 +122,17 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 
 template<DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>>  backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Type, DomainValues>&/* problem*/){
+    typedef mtac::Domain<DomainValues> Domain;
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    //TODO
+
+    return results;
+}
+
+template<DataFlowType Type, typename DomainValues>
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> basic_data_flow(std::shared_ptr<ControlFlowGraph> graph, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
