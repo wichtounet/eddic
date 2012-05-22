@@ -414,6 +414,8 @@ bool debug(bool b){
 
 template<typename Problem>
 bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
+    DebugStopWatch<DebugPerf> timer("Data-flow optimization");
+    
     Problem problem;
 
     bool optimized = false;
