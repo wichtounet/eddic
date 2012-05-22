@@ -11,92 +11,11 @@
 #include <memory>
 
 #include "mtac/BasicBlock.hpp"
+#include "mtac/DataFlowDomain.hpp"
 
 namespace eddic {
 
 namespace mtac {
-
-template<typename DomainValues>
-struct Domain {
-    typedef DomainValues Values;
-
-    boost::optional<DomainValues> int_values;
-
-    Domain(){
-        //Nothing to init
-    }
-
-    Domain(DomainValues values) : int_values(std::move(values)){
-        //Nothing to init
-    }
-
-    DomainValues& values(){
-        return *int_values;
-    }
-
-    bool top() const {
-        return !int_values;
-    }
-};
-
-template<typename Key, typename Value, typename Hasher>
-struct Domain<std::unordered_map<Key, Value, Hasher>> {
-    typedef std::unordered_map<Key, Value, Hasher> Values;
-    
-    boost::optional<Values> int_values;
-
-    Domain(){
-        //Nothing to init
-    }
-
-    Domain(Values values) : int_values(std::move(values)){
-        //Nothing to init
-    }
-
-    Values& values(){
-        return *int_values;
-    }
-
-    Value& operator[](Key key){
-        assert(int_values);
-
-        return (*int_values)[key];
-    }
-
-    typename Values::iterator begin(){
-        assert(int_values);
-
-        return (*int_values).begin();
-    }
-    
-    typename Values::iterator find(Key key){
-        assert(int_values);
-
-        return (*int_values).find(key);
-    }
-
-    typename Values::iterator end(){
-        assert(int_values);
-
-        return (*int_values).end();
-    }
-
-    void erase(Key key){
-        assert(int_values);
-
-        (*int_values).erase(key);
-    }
-    
-    void clear(){
-        assert(int_values);
-
-        (*int_values).clear();
-    }
-
-    bool top() const {
-        return !int_values;
-    }
-};
 
 template<typename Domain>
 struct DataFlowResults {
