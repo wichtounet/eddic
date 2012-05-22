@@ -15,7 +15,18 @@ using namespace eddic;
 typedef mtac::CopyPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::CopyPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    return mtac::union_meet(in, out);
+    auto result = mtac::union_meet(in, out);
+
+    //Remove all the temporary
+    for(auto it = std::begin(result.values()); it != std::end(result.values());){
+        if (it->second->position().isTemporary()){
+            it = result.values().erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    return result;
 }
 
 ProblemDomain mtac::CopyPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
