@@ -11,9 +11,16 @@
 #include <boost/variant.hpp>
 #include <boost/utility/enable_if.hpp>
 
+#include "Utils.hpp"
+#include "VisitorUtils.hpp"
+#include "StringPool.hpp"
+#include "DebugStopWatch.hpp"
+#include "Options.hpp"
+
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Printer.hpp"
 
 //The data-flow problems
 #include "mtac/GlobalOptimizations.hpp"
@@ -30,17 +37,11 @@
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
 
-#include "Utils.hpp"
-#include "VisitorUtils.hpp"
-#include "StringPool.hpp"
-#include "DebugStopWatch.hpp"
-
 using namespace eddic;
 
 namespace {
 
 static const bool DebugPerf = false;
-static const bool Debug = false;
 
 template<typename Visitor>
 bool apply_to_all(std::shared_ptr<mtac::Program> program){
@@ -399,11 +400,15 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
     return optimized; 
 }
 
-template<bool Enabled, int i>
-bool debug(bool b){
-    if(Enabled){
+template<int i>
+bool debug(bool b, std::shared_ptr<mtac::Program> program){
+    if(option_defined("dev")){
         if(b){
             std::cout << "optimization " << i << " returned true" << std::endl;
+
+            //Print the program
+            mtac::Printer printer;
+            printer.print(program);
         } else {
             std::cout << "optimization " << i << " returned false" << std::endl;
         }
@@ -437,53 +442,58 @@ bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
 }
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const {
+    if(option_defined("dev")){
+        mtac::Printer printer;
+        printer.print(program);
+    }
+
     bool optimized;
     do {
         optimized = false;
 
         //Optimize using arithmetic identities
-        optimized |= debug<Debug, 1>(apply_to_all<ArithmeticIdentities>(program));
+        optimized |= debug<1>(apply_to_all<ArithmeticIdentities>(program), program);
         
         //Reduce arithtmetic instructions in strength
-        optimized |= debug<Debug, 2>(apply_to_all<ReduceInStrength>(program));
+        optimized |= debug<2>(apply_to_all<ReduceInStrength>(program), program);
 
         //Constant folding
-        optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
+        optimized |= debug<3>(apply_to_all<ConstantFolding>(program), program);
 
         //Global constant propagation
-        optimized |= debug<Debug, 4>(data_flow_optimization<ConstantPropagationProblem>(program));
+        optimized |= debug<4>(data_flow_optimization<ConstantPropagationProblem>(program), program);
 
         //Offset Constant propagation
-        optimized |= debug<Debug, 6>(data_flow_optimization<OffsetConstantPropagationProblem>(program));
+        optimized |= debug<6>(data_flow_optimization<OffsetConstantPropagationProblem>(program), program);
        
         //Copy propagation
-        optimized |= debug<Debug, 7>(data_flow_optimization<CopyPropagationProblem>(program));
+        optimized |= debug<7>(data_flow_optimization<CopyPropagationProblem>(program), program);
         
         //Offset Copy propagation
-        optimized |= debug<Debug, 8>(data_flow_optimization<OffsetCopyPropagationProblem>(program));
+        optimized |= debug<8>(data_flow_optimization<OffsetCopyPropagationProblem>(program), program);
 
         //Propagate math
-        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
+        optimized |= debug<9>(apply_to_basic_blocks_two_pass<MathPropagation>(program), program);
 
         //Remove unused assignations
-        optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
+        optimized |= debug<10>(apply_to_basic_blocks_two_pass<RemoveAssign>(program), program);
 
         //Remove unused assignations
-        optimized |= debug<Debug, 11>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
+        optimized |= debug<11>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program), program);
        
         //Optimize branches 
-        optimized |= debug<Debug, 12>(optimize_branches(program));
+        optimized |= debug<12>(optimize_branches(program), program);
        
         //Optimize concatenations 
-        optimized |= debug<Debug, 13>(optimize_concat(program, pool));
+        optimized |= debug<13>(optimize_concat(program, pool), program);
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 14>(remove_dead_basic_blocks(program));
+        optimized |= debug<14>(remove_dead_basic_blocks(program), program);
 
         //Remove needless jumps
-        optimized |= debug<Debug, 15>(remove_needless_jumps(program));
+        optimized |= debug<15>(remove_needless_jumps(program), program);
 
         //Merge basic blocks
-        optimized |= debug<Debug, 16>(merge_basic_blocks(program));
+        optimized |= debug<16>(merge_basic_blocks(program), program);
     } while (optimized);
 }

@@ -48,6 +48,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("verbose,v", "Make the compiler verbose")
                 ("version", "Print the version of eddic")
                 ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
+                ("dev,d", "Activate development mode")
 
                 ("ast", "Print the Abstract Syntax Tree representation of the source")
                 ("mtac", "Print the medium-level Three Address Code representation of the source")
