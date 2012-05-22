@@ -58,24 +58,6 @@ bool apply_to_all(std::shared_ptr<mtac::Program> program){
 }
 
 template<typename Visitor>
-bool apply_to_basic_blocks(std::shared_ptr<mtac::Program> program){
-    DebugStopWatch<DebugPerf> timer("apply to basic blocks");
-    bool optimized = false;
-
-    for(auto& function : program->functions){
-        for(auto& block : function->getBasicBlocks()){
-            Visitor visitor;
-
-            visit_each(visitor, block->statements);
-
-            optimized |= visitor.optimized;
-        }
-    }
-
-    return optimized;
-}
-
-template<typename Visitor>
 typename boost::disable_if<boost::is_void<typename Visitor::result_type>, bool>::type 
 apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
