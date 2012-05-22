@@ -54,13 +54,13 @@ struct DataFlowProblem {
 };
 
 template<DataFlowType Type, typename DomainValues>
-typename DataFlowProblem<Type, DomainValues>::ProblemDomain DataFlowProblem<Type, DomainValues>::Boundary(){
+auto DataFlowProblem<Type, DomainValues>::Boundary() -> ProblemDomain {
     //By default, return the default element
     return default_element();
 }
 
 template<DataFlowType Type, typename DomainValues>
-typename DataFlowProblem<Type, DomainValues>::ProblemDomain DataFlowProblem<Type, DomainValues>::Init(){
+auto DataFlowProblem<Type, DomainValues>::Init() -> ProblemDomain {
     //By default, return the top element
     return top_element();
 }

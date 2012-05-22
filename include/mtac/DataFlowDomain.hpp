@@ -61,22 +61,22 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
         return (*int_values)[key];
     }
 
-    typename Values::iterator begin(){
+    auto begin() -> decltype((*int_values).begin()) {
         assert(int_values);
 
         return (*int_values).begin();
+    }
+
+    auto end() -> decltype((*int_values).end()) {
+        assert(int_values);
+
+        return (*int_values).end();
     }
     
     typename Values::iterator find(Key key){
         assert(int_values);
 
         return (*int_values).find(key);
-    }
-
-    typename Values::iterator end(){
-        assert(int_values);
-
-        return (*int_values).end();
     }
 
     void erase(Key key){
