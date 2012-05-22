@@ -26,7 +26,12 @@ struct DataFlowResults {
     std::unordered_map<mtac::Statement, Domain> IN_S;
 };
 
-template<bool Forward, typename DomainValues>
+enum class DataFlowType : unsigned int {
+    Forward,
+    Backward
+};
+
+template<DataFlowType Type, typename DomainValues>
 struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
@@ -47,14 +52,14 @@ struct DataFlowProblem {
     }
 };
 
-template<bool Forward, typename DomainValues>
-typename DataFlowProblem<Forward, DomainValues>::ProblemDomain DataFlowProblem<Forward, DomainValues>::Boundary(){
+template<DataFlowType Type, typename DomainValues>
+typename DataFlowProblem<Type, DomainValues>::ProblemDomain DataFlowProblem<Type, DomainValues>::Boundary(){
     //By default, return the default element
     return default_element();
 }
 
-template<bool Forward, typename DomainValues>
-typename DataFlowProblem<Forward, DomainValues>::ProblemDomain DataFlowProblem<Forward, DomainValues>::Init(){
+template<DataFlowType Type, typename DomainValues>
+typename DataFlowProblem<Type, DomainValues>::ProblemDomain DataFlowProblem<Type, DomainValues>::Init(){
     //By default, return the top element
     return top_element();
 }

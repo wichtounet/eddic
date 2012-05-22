@@ -21,7 +21,7 @@ namespace mtac {
 typedef std::shared_ptr<Variable> OffsetCopyValue;
 typedef std::unordered_map<Offset, OffsetCopyValue, mtac::OffsetHash> OffsetCopyPropagationValues;
 
-struct OffsetCopyPropagationProblem : public DataFlowProblem<true, OffsetCopyPropagationValues> {
+struct OffsetCopyPropagationProblem : public DataFlowProblem<DataFlowType::Forward, OffsetCopyPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
     

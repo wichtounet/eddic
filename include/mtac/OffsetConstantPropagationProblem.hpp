@@ -23,7 +23,7 @@ namespace mtac {
 typedef boost::variant<std::string, double, int> OffsetConstantValue;
 typedef std::unordered_map<Offset, OffsetConstantValue, mtac::OffsetHash> OffsetConstantPropagationValues;
 
-struct OffsetConstantPropagationProblem : public DataFlowProblem<true, OffsetConstantPropagationValues> {
+struct OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, OffsetConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
     

@@ -22,7 +22,7 @@ namespace mtac {
 typedef std::shared_ptr<Variable> CopyValue;
 typedef std::unordered_map<std::shared_ptr<Variable>, CopyValue> CopyPropagationValues;
 
-struct CopyPropagationProblem : public DataFlowProblem<true, CopyPropagationValues> {
+struct CopyPropagationProblem : public DataFlowProblem<DataFlowType::Forward, CopyPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
     

@@ -24,7 +24,7 @@ namespace mtac {
 typedef boost::variant<std::string, double, int> ConstantValue;
 typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
 
-struct ConstantPropagationProblem : public DataFlowProblem<true, ConstantPropagationValues> {
+struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
     
