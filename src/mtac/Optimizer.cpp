@@ -421,9 +421,7 @@ bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
     bool optimized = false;
 
     for(auto& function : program->functions){
-        auto graph = mtac::build_control_flow_graph(function);
-
-        auto results = mtac::data_flow(graph, problem);
+        auto results = mtac::data_flow(function, problem);
 
         //Once the data-flow problem is fixed, statements can be optimized
         for(auto& block : function->getBasicBlocks()){
