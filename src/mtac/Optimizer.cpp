@@ -465,7 +465,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         optimized |= debug<6>(data_flow_optimization<OffsetConstantPropagationProblem>(program), program);
        
         //Copy propagation
-        optimized |= debug<7>(data_flow_optimization<CopyPropagationProblem>(program), program);
+        //optimized |= debug<7>(data_flow_optimization<CopyPropagationProblem>(program), program);
         
         //Offset Copy propagation
         optimized |= debug<8>(data_flow_optimization<OffsetCopyPropagationProblem>(program), program);
