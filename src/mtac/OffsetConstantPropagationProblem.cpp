@@ -15,7 +15,24 @@ using namespace eddic;
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    return mtac::union_meet(in, out);
+    auto result = mtac::union_meet(in, out);
+
+    //Remove all the temporary
+    for(auto it = std::begin(result.values()); it != std::end(result.values());){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
+            auto variable = *ptr;
+
+            if (variable->position().isTemporary()){
+                it = result.values().erase(it);
+            } else {
+                ++it;
+            }
+        } else {
+            ++it;
+        }
+    }
+
+    return result;
 }
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
@@ -34,6 +51,8 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::Statement& 
                 } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg2)){
                     out[offset] = *ptr;
                 } else if(auto* ptr = boost::get<double>(&*quadruple->arg2)){
+                    out[offset] = *ptr;
+                } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
                     out[offset] = *ptr;
                 } else {
                     //The result is not constant at this point
@@ -65,7 +84,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
                     quadruple->arg2.reset();
 
                     changes = true;
-                } 
+                }
             }
         }
     }

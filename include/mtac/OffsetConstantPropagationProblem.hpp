@@ -20,7 +20,7 @@ namespace eddic {
 
 namespace mtac {
 
-typedef boost::variant<std::string, double, int> OffsetConstantValue;
+typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> OffsetConstantValue;
 typedef std::unordered_map<Offset, OffsetConstantValue, mtac::OffsetHash> OffsetConstantPropagationValues;
 
 struct OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, OffsetConstantPropagationValues> {
