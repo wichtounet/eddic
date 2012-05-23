@@ -26,7 +26,6 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/OffsetCopyPropagationProblem.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
