@@ -14,8 +14,20 @@ using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
 
+bool is_distributive(mtac::Operator op){
+    return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
+}
+
 bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
-    return false;
+    if(first->op != second->op){
+        return false;
+    }
+
+    if(is_distributive(first->op)){
+        return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2) || (*first->arg1 == *second->arg2 && *first->arg2 == *second->arg1);
+    } else {
+        return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2);
+    }
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
