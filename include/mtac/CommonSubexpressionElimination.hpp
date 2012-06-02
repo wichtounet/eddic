@@ -26,7 +26,7 @@ typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
-    ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
 };

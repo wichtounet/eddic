@@ -102,7 +102,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
                     for(unsigned i = 0; i < statements.size(); ++i){
                         auto& statement = statements[i];
 
-                        assign(OUT_S[statement], problem.transfer(statement, IN_S[statement]), changes);
+                        assign(OUT_S[statement], problem.transfer(B, statement, IN_S[statement]), changes);
 
                         //The entry value of the next statement are the exit values of the current statement
                         if(i != statements.size() - 1){

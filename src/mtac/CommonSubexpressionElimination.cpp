@@ -57,7 +57,7 @@ bool is_expression(std::shared_ptr<mtac::Quadruple> quadruple){
     return quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::FDIV;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
@@ -105,6 +105,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::Statement& st
             if(!exists){
                 Expression expression;
                 expression.expression = *ptr;
+                expression.source = basic_block;
 
                 out.values().push_back(expression);
             }

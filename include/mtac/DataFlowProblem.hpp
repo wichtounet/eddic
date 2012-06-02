@@ -37,7 +37,7 @@ struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
-    virtual ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) = 0;
+    virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
 
     virtual ProblemDomain Boundary();
     virtual ProblemDomain Init();

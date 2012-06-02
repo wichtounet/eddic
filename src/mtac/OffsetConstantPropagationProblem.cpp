@@ -35,7 +35,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, Pr
     return result;
 }
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
