@@ -53,10 +53,60 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
     }
 }
 
+bool is_expression(std::shared_ptr<mtac::Quadruple> quadruple){
+    return quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::FDIV;
+}
+
 ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
-    //TODO
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+        auto op = (*ptr)->op;
+        if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
+            std::vector<unsigned int> killed;
+            
+            for(unsigned int i = 0; i < in.values().size(); ++i){
+                auto& expression = in.values()[i];
+
+                auto old_size = killed.size();
+
+                if(expression->arg1 && boost::get<std::shared_ptr<Variable>>(&*expression->arg1)){
+                    auto var = boost::get<std::shared_ptr<Variable>>(*expression->arg1);
+
+                    if(var == (*ptr)->result){
+                        killed.push_back(i);
+                    }
+                }
+                
+                if(old_size == killed.size() && expression->arg2 && boost::get<std::shared_ptr<Variable>>(&*expression->arg2)){
+                    auto var = boost::get<std::shared_ptr<Variable>>(*expression->arg2);
+
+                    if(var == (*ptr)->result){
+                        killed.push_back(i);
+                    }
+                }
+            }
+
+            std::reverse(killed.begin(), killed.end());
+
+            for(auto i : killed){
+                out.values().erase(out.values().begin() + i);
+            }
+        }
+
+        if(is_expression(*ptr)){
+            bool exists = false;
+            for(auto& expression : out.values()){
+                if(are_equivalent(*ptr, expression)){
+                    exists = true;
+                }
+            }
+
+            if(!exists){
+                out.values().push_back(*ptr);
+            }
+        }
+    }
 
     return out;
 }
