@@ -11,31 +11,35 @@
 #include <boost/variant.hpp>
 #include <boost/utility/enable_if.hpp>
 
+#include "Utils.hpp"
+#include "VisitorUtils.hpp"
+#include "StringPool.hpp"
+#include "DebugStopWatch.hpp"
+#include "Options.hpp"
+
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Printer.hpp"
+
+//The data-flow problems
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/ConstantPropagationProblem.hpp"
+#include "mtac/OffsetConstantPropagationProblem.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
 #include "mtac/ReduceInStrength.hpp"
 #include "mtac/ConstantFolding.hpp"
-#include "mtac/ConstantPropagation.hpp"
-#include "mtac/CopyPropagation.hpp"
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
-
-#include "Utils.hpp"
-#include "VisitorUtils.hpp"
-#include "StringPool.hpp"
-#include "DebugStopWatch.hpp"
 
 using namespace eddic;
 
 namespace {
 
 static const bool DebugPerf = false;
-static const bool Debug = false;
 
 template<typename Visitor>
 bool apply_to_all(std::shared_ptr<mtac::Program> program){
@@ -50,24 +54,6 @@ bool apply_to_all(std::shared_ptr<mtac::Program> program){
     }
 
     return visitor.optimized;
-}
-
-template<typename Visitor>
-bool apply_to_basic_blocks(std::shared_ptr<mtac::Program> program){
-    DebugStopWatch<DebugPerf> timer("apply to basic blocks");
-    bool optimized = false;
-
-    for(auto& function : program->functions){
-        for(auto& block : function->getBasicBlocks()){
-            Visitor visitor;
-
-            visit_each(visitor, block->statements);
-
-            optimized |= visitor.optimized;
-        }
-    }
-
-    return optimized;
 }
 
 template<typename Visitor>
@@ -202,7 +188,7 @@ bool optimize_branches(std::shared_ptr<mtac::Program> program){
                             statement = goto_;
                             optimized = true;
                         } else if(value == 1){
-                            statement = mtac::NoOp();
+                            statement = std::make_shared<mtac::NoOp>();
                             optimized = true;
                         }
                     }
@@ -211,7 +197,7 @@ bool optimize_branches(std::shared_ptr<mtac::Program> program){
                         int value = boost::get<int>((*ptr)->arg1);
                         
                         if(value == 0){
-                            statement = mtac::NoOp();
+                            statement = std::make_shared<mtac::NoOp>();
                             optimized = true;
                         } else if(value == 1){
                             auto goto_ = std::make_shared<mtac::Goto>();
@@ -377,7 +363,7 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
                     merge = true;
                 } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&last)){
                     merge = safe(*ptr); 
-                } else if(boost::get<mtac::NoOp>(&last)){
+                } else if(boost::get<std::shared_ptr<mtac::NoOp>>(&last)){
                     merge = true;
                 }
 
@@ -412,11 +398,14 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Program> program){
     return optimized; 
 }
 
-template<bool Enabled, int i>
-bool debug(bool b){
-    if(Enabled){
+template<int i>
+bool debug(bool b, std::shared_ptr<mtac::Program> program){
+    if(option_defined("dev")){
         if(b){
             std::cout << "optimization " << i << " returned true" << std::endl;
+
+            //Print the program
+            print(program);
         } else {
             std::cout << "optimization " << i << " returned false" << std::endl;
         }
@@ -425,56 +414,76 @@ bool debug(bool b){
     return b;
 }
 
+template<typename Problem>
+bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
+    DebugStopWatch<DebugPerf> timer("Data-flow optimization");
+    
+    Problem problem;
+
+    bool optimized = false;
+
+    for(auto& function : program->functions){
+        auto results = mtac::data_flow(function, problem);
+
+        //Once the data-flow problem is fixed, statements can be optimized
+        for(auto& block : function->getBasicBlocks()){
+            for(auto& statement : block->statements){
+                optimized |= problem.optimize(statement, results);
+            }
+        }
+    }
+
+    return optimized;
+}
+
 }
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const {
+    if(option_defined("dev")){
+        print(program);
+    }
+
     bool optimized;
     do {
         optimized = false;
 
         //Optimize using arithmetic identities
-        optimized |= debug<Debug, 1>(apply_to_all<ArithmeticIdentities>(program));
+        optimized |= debug<1>(apply_to_all<ArithmeticIdentities>(program), program);
         
         //Reduce arithtmetic instructions in strength
-        optimized |= debug<Debug, 2>(apply_to_all<ReduceInStrength>(program));
+        optimized |= debug<2>(apply_to_all<ReduceInStrength>(program), program);
 
         //Constant folding
-        optimized |= debug<Debug, 3>(apply_to_all<ConstantFolding>(program));
+        optimized |= debug<3>(apply_to_all<ConstantFolding>(program), program);
 
-        //Constant propagation
-        optimized |= debug<Debug, 4>(apply_to_basic_blocks<ConstantPropagation>(program));
+        //Global Constant Propagation
+        optimized |= debug<4>(data_flow_optimization<ConstantPropagationProblem>(program), program);
 
-        //Offset Constant propagation
-        optimized |= debug<Debug, 5>(apply_to_basic_blocks<OffsetConstantPropagation>(program));
-        
-        //Copy propagation
-        optimized |= debug<Debug, 6>(apply_to_basic_blocks<CopyPropagation>(program));
-        
-        //Offset Copy propagation
-        optimized |= debug<Debug, 7>(apply_to_basic_blocks<OffsetCopyPropagation>(program));
+        //Global Offset Constant Propagation
+        optimized |= debug<5>(data_flow_optimization<OffsetConstantPropagationProblem>(program), program);
 
         //Propagate math
-        optimized |= debug<Debug, 8>(apply_to_basic_blocks_two_pass<MathPropagation>(program));
+        optimized |= debug<9>(apply_to_basic_blocks_two_pass<MathPropagation>(program), program);
 
         //Remove unused assignations
-        optimized |= debug<Debug, 9>(apply_to_basic_blocks_two_pass<RemoveAssign>(program));
+        optimized |= debug<10>(apply_to_basic_blocks_two_pass<RemoveAssign>(program), program);
 
         //Remove unused assignations
-        optimized |= debug<Debug, 10>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program));
+        optimized |= debug<11>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(program), program);
        
         //Optimize branches 
-        optimized |= debug<Debug, 11>(optimize_branches(program));
+        optimized |= debug<12>(optimize_branches(program), program);
        
         //Optimize concatenations 
-        optimized |= debug<Debug, 12>(optimize_concat(program, pool));
+        optimized |= debug<13>(optimize_concat(program, pool), program);
 
         //Remove dead basic blocks (unreachable code)
-        optimized |= debug<Debug, 13>(remove_dead_basic_blocks(program));
+        optimized |= debug<14>(remove_dead_basic_blocks(program), program);
 
         //Remove needless jumps
-        optimized |= debug<Debug, 14>(remove_needless_jumps(program));
+        optimized |= debug<15>(remove_needless_jumps(program), program);
 
         //Merge basic blocks
-        optimized |= debug<Debug, 15>(merge_basic_blocks(program));
+        optimized |= debug<16>(merge_basic_blocks(program), program);
     } while (optimized);
 }

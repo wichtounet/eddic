@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <list>
+#include <utility>
 
 #include "SymbolTable.hpp"
 
@@ -24,9 +25,12 @@ namespace tac {
 template<typename BasicBlock, typename Statement>
 class Function {
     public:
-        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
+        typedef typename std::shared_ptr<BasicBlock> BlockPtr;
+        typedef typename std::list<BlockPtr> BlockList;
+        typedef typename BlockList::iterator BlockIterator;
 
-        typedef std::shared_ptr<BasicBlock> BlockPtr;
+    public:
+        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
 
         std::shared_ptr<eddic::Function> definition;
         
@@ -40,14 +44,16 @@ class Function {
         std::string getName() const;
 
         std::vector<Statement>& getStatements();
-        std::list<BlockPtr>& getBasicBlocks();
+        BlockList& getBasicBlocks();
+
+        std::pair<BlockIterator, BlockIterator> blocks();
 
     private:
         //Before being partitioned, the function has only statement
         std::vector<Statement> statements;
         
         //There is no basic blocks at the beginning
-        std::list<BlockPtr> blocks;
+        BlockList basic_blocks;
 
         std::string name;
 };
@@ -62,32 +68,37 @@ void tac::Function<BasicBlock, Statement>::add(Statement statement){
     statements.push_back(statement);
 }
 
-template<typename BasicBlock, typename Statement>
-std::shared_ptr<BasicBlock> tac::Function<BasicBlock, Statement>::currentBasicBlock(){
-    assert(!blocks.empty());
+template<typename BB, typename S>
+typename tac::Function<BB, S>::BlockPtr tac::Function<BB, S>::currentBasicBlock(){
+    assert(!basic_blocks.empty());
 
-    return blocks.back();
+    return basic_blocks.back();
 }
 
-template<typename BasicBlock, typename Statement>
-std::shared_ptr<BasicBlock> tac::Function<BasicBlock, Statement>::newBasicBlock(){
-    blocks.push_back(std::make_shared<BasicBlock>(blocks.size() + 1));
-    return blocks.back();
+template<typename BB, typename S>
+typename tac::Function<BB, S>::BlockPtr tac::Function<BB, S>::newBasicBlock(){
+    basic_blocks.push_back(std::make_shared<BB>(basic_blocks.size() + 1));
+    return basic_blocks.back();
 }   
 
-template<typename BasicBlock, typename Statement>
-std::string tac::Function<BasicBlock, Statement>::getName() const {
+template<typename BB, typename S>
+std::string tac::Function<BB, S>::getName() const {
     return name;
 }
 
-template<typename BasicBlock, typename Statement>
-std::vector<Statement>& tac::Function<BasicBlock, Statement>::getStatements(){
+template<typename BB, typename S>
+std::vector<S>& tac::Function<BB, S>::getStatements(){
     return statements;
 }
 
-template<typename BasicBlock, typename Statement>
-std::list<std::shared_ptr<BasicBlock>>& tac::Function<BasicBlock, Statement>::getBasicBlocks(){
-    return blocks;
+template<typename BB, typename S>
+typename tac::Function<BB, S>::BlockList& tac::Function<BB, S>::getBasicBlocks(){
+    return basic_blocks;
+}
+
+template<typename BB, typename S>
+std::pair<typename tac::Function<BB,S>::BlockIterator, typename tac::Function<BB,S>::BlockIterator> tac::Function<BB,S>::blocks(){
+    return std::make_pair(basic_blocks.begin(), basic_blocks.end());
 }
 
 } //end of tac

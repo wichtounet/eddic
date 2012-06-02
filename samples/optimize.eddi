@@ -54,6 +54,19 @@ void main(){
     } else {
         println(333);
     }
+
+    println(constants());
+}
+
+int constants(){
+    int a = 44;
+    int b = 0;
+
+    for(int i = 0; i < 22; ++i){
+        b += a;
+    }
+
+    return b;
 }
 
 void copy(int a, int b){

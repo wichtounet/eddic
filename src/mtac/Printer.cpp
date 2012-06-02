@@ -22,6 +22,21 @@ namespace {
 
 struct ArgumentToString : public boost::static_visitor<std::string> {
    std::string operator()(std::shared_ptr<Variable>& variable) const {
+        switch(variable->position().type()){
+            case PositionType::STACK:
+                return variable->name() + "(s)";
+            case PositionType::PARAMETER:
+                return variable->name() + "(p)";
+            case PositionType::GLOBAL:
+                return variable->name() + "(g)";
+            case PositionType::CONST:
+                return variable->name() + "(c)";
+            case PositionType::TEMPORARY:
+                return variable->name() + "(t)";
+            case PositionType::PARAM_REGISTER:
+                return variable->name() + "(pr)";
+        }
+
         return variable->name();   
    }
 
@@ -212,7 +227,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << "\tgoto " << printTarget(goto_) << std::endl;
     }
 
-    void operator()(mtac::NoOp&){
+    void operator()(std::shared_ptr<mtac::NoOp>&){
         std::cout << "\tno-op" << std::endl;
     }
 
@@ -258,4 +273,9 @@ void mtac::Printer::printStatement(mtac::Statement& statement) const {
 
 void mtac::Printer::printArgument(mtac::Argument& arg) const {
     std::cout << printArg(arg) << std::endl;
+}
+
+void mtac::print(std::shared_ptr<mtac::Program> program){
+    mtac::Printer printer;
+    printer.print(program);
 }

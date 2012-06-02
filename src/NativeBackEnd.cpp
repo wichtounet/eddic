@@ -36,14 +36,22 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     //Separate into basic blocks
     mtac::BasicBlockExtractor extractor;
     extractor.extract(mtacProgram);
+    
+    //If asked by the user, print the Three Address code representation before optimization
+    if(option_defined("mtac-opt")){
+        mtac::Printer printer;
+        printer.print(mtacProgram);
+    }
 
     //Allocate storage for the temporaries that need to be stored
     mtac::TemporaryAllocator allocator;
     allocator.allocate(mtacProgram);
 
-    mtac::Optimizer optimizer;
-    optimizer.optimize(mtacProgram, get_string_pool());
-
+    if(OLevel >= 2){
+        mtac::Optimizer optimizer;
+        optimizer.optimize(mtacProgram, get_string_pool());
+    }
+    
     //If asked by the user, print the Three Address code representation
     if(option_defined("mtac") || option_defined("mtac-only")){
         mtac::Printer printer;
@@ -62,8 +70,10 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         ltac::Compiler ltacCompiler;
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
-        optimize(ltac_program);
-        
+        if(OLevel >= 1){
+            optimize(ltac_program);
+        }
+
         //If asked by the user, print the Three Address code representation
         if(option_defined("ltac") || option_defined("ltac-only")){
             ltac::Printer printer;
