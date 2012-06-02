@@ -463,6 +463,9 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         //Global Offset Constant Propagation
         optimized |= debug<5>(data_flow_optimization<OffsetConstantPropagationProblem>(program), program);
 
+        //Global Common Subexpression Elimination
+        optimized |= debug<6>(data_flow_optimization<CommonSubexpressionElimination>(program), program);
+
         //Propagate math
         optimized |= debug<9>(apply_to_basic_blocks_two_pass<MathPropagation>(program), program);
 
