@@ -134,7 +134,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>>  backward_data_flow
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> basic_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> basic_data_flow(std::shared_ptr<mtac::Function>/* function*/, DataFlowProblem<Type, DomainValues>&/* problem*/){
     typedef mtac::Domain<DomainValues> Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
