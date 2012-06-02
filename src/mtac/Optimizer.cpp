@@ -456,17 +456,11 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         //Constant folding
         optimized |= debug<3>(apply_to_all<ConstantFolding>(program), program);
 
-        //Global constant propagation
+        //Global Constant Propagation
         optimized |= debug<4>(data_flow_optimization<ConstantPropagationProblem>(program), program);
 
-        //Offset Constant propagation
-        optimized |= debug<6>(data_flow_optimization<OffsetConstantPropagationProblem>(program), program);
-       
-        //Copy propagation
-        //optimized |= debug<7>(data_flow_optimization<CopyPropagationProblem>(program), program);
-        
-        //Offset Copy propagation
-//        optimized |= debug<8>(data_flow_optimization<OffsetCopyPropagationProblem>(program), program);
+        //Global Offset Constant Propagation
+        optimized |= debug<5>(data_flow_optimization<OffsetConstantPropagationProblem>(program), program);
 
         //Propagate math
         optimized |= debug<9>(apply_to_basic_blocks_two_pass<MathPropagation>(program), program);
