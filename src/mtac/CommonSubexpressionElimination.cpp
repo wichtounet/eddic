@@ -14,12 +14,31 @@ using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
 
+bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
+    return false;
+}
+
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
-    /*auto result = mtac::union_meet(in, out);
+    ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
-    //TODO
+    if(in.top()){
+        return out;
+    } else if(out.top()){
+        return in;
+    } else {
+        typename ProblemDomain::Values values;
+        ProblemDomain result(values);
 
-    return result;*/
+        for(auto& in_value : in.values()){
+            for(auto& out_value : out.values()){
+                if(are_equivalent(in_value, out_value)){
+                    values.push_back(in_value);
+                }
+            }
+        }
+
+        return result;
+    }
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::Statement& statement, ProblemDomain& in){
