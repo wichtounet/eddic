@@ -43,7 +43,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
 
         for(auto& in_value : in.values()){
             for(auto& out_value : out.values()){
-                if(are_equivalent(in_value, out_value)){
+                if(are_equivalent(in_value.expression, out_value.expression)){
                     values.push_back(in_value);
                 }
             }
@@ -66,7 +66,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::Statement& st
             std::vector<unsigned int> killed;
             
             for(unsigned int i = 0; i < in.values().size(); ++i){
-                auto& expression = in.values()[i];
+                auto& expression = in.values()[i].expression;
 
                 auto old_size = killed.size();
 
@@ -97,13 +97,16 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::Statement& st
         if(is_expression(*ptr)){
             bool exists = false;
             for(auto& expression : out.values()){
-                if(are_equivalent(*ptr, expression)){
+                if(are_equivalent(*ptr, expression.expression)){
                     exists = true;
                 }
             }
 
             if(!exists){
-                out.values().push_back(*ptr);
+                Expression expression;
+                expression.expression = *ptr;
+
+                out.values().push_back(expression);
             }
         }
     }

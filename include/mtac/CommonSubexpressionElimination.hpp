@@ -17,7 +17,12 @@ namespace eddic {
 
 namespace mtac {
 
-typedef std::vector<std::shared_ptr<mtac::Quadruple>> Expressions;
+struct Expression {
+    std::shared_ptr<mtac::Quadruple> expression;
+    std::shared_ptr<BasicBlock> source;
+};
+
+typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
