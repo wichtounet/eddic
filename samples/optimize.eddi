@@ -58,6 +58,7 @@ void main(){
     println(constants());
     
     common(44, 55);
+    uselessassign();
 }
 
 int constants(){
