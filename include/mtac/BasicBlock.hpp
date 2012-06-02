@@ -23,14 +23,12 @@ class BasicBlock {
         int index;
         std::string label;
 
+        std::vector<mtac::Statement> statements;
+        std::shared_ptr<Context> context;
+
         BasicBlock(int index);
 
         void add(mtac::Statement statement);
-
-        std::vector<mtac::Statement> statements;
-
-    private:
-        std::shared_ptr<Context> context;
 };
 
 } //end of mtac
