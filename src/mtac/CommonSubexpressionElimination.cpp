@@ -116,6 +116,43 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
     return out;
 }
 
+ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::Function> function){
+    if(init){
+        ProblemDomain result(*init);
+        return result;
+    }
+
+    typename ProblemDomain::Values values;
+    ProblemDomain result(values);
+    
+    for(auto& block : function->getBasicBlocks()){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if(is_expression(*ptr)){
+                    bool exists = false;
+                    for(auto& expression : values){
+                        if(are_equivalent(*ptr, expression.expression)){
+                            exists = true;
+                        }
+                    }
+                    
+                    if(!exists){
+                        Expression expression;
+                        expression.expression = *ptr;
+                        expression.source = block;
+
+                        values.push_back(expression);
+                    }
+                }
+            }
+        }
+    }
+
+    init = values;
+    
+    return result;
+}
+
 bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
     auto& results = global_results->IN_S[statement];
 

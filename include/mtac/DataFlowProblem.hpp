@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "mtac/BasicBlock.hpp"
+#include "mtac/Function.hpp"
 #include "mtac/DataFlowDomain.hpp"
 
 namespace eddic {
@@ -40,7 +41,7 @@ struct DataFlowProblem {
     virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
 
     virtual ProblemDomain Boundary();
-    virtual ProblemDomain Init();
+    virtual ProblemDomain Init(std::shared_ptr<mtac::Function> function);
 
     virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& results) = 0;
 
@@ -60,7 +61,7 @@ auto DataFlowProblem<Type, DomainValues>::Boundary() -> ProblemDomain {
 }
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init() -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Init(std::shared_ptr<mtac::Function>/* function*/) -> ProblemDomain {
     //By default, return the top element
     return top_element();
 }

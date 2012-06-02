@@ -9,6 +9,7 @@
 #define MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
 
 #include <memory>
+#include <boost/optional.hpp>
 
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/Quadruple.hpp"
@@ -28,7 +29,11 @@ struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::For
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
+    ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
+    
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
+
+    boost::optional<Expressions> init;
 };
 
 } //end of mtac

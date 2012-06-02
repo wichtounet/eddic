@@ -26,10 +26,10 @@ template<DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     if(Type == DataFlowType::Forward){
         auto graph = mtac::build_control_flow_graph(function);
-        return forward_data_flow(graph, problem);
+        return forward_data_flow(function, graph, problem);
     } else if(Type == DataFlowType::Backward){
         auto graph = mtac::build_control_flow_graph(function);
-        return backward_data_flow(graph, problem);
+        return backward_data_flow(function, graph, problem);
     } else if(Type == DataFlowType::Basic){
         return basic_data_flow(function, problem);
     } else {
@@ -50,7 +50,7 @@ inline void assign(Values& old, Values value, bool& changes){
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<mtac::Function> function, std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
 
     auto graph = cfg->get_graph();
@@ -69,7 +69,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
         //Init all but ENTRY
         if(graph[*it].block->index != -1){
-            OUT[graph[*it].block] = problem.Init();
+            OUT[graph[*it].block] = problem.Init(function);
         }
     }
 
@@ -123,7 +123,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>>  backward_data_flow(std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Type, DomainValues>&/* problem*/){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function>/* function*/, std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Type, DomainValues>&/* problem*/){
     typedef mtac::Domain<DomainValues> Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
