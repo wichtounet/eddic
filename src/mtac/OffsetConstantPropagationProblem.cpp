@@ -15,7 +15,7 @@ using namespace eddic;
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    auto result = mtac::union_meet(in, out);
+    auto result = mtac::intersection_meet(in, out);
 
     //Remove all the temporary
     for(auto it = std::begin(result.values()); it != std::end(result.values());){

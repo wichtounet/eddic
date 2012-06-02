@@ -66,7 +66,7 @@ auto DataFlowProblem<Type, DomainValues>::Init() -> ProblemDomain {
 }
 
 template<typename ProblemDomain>
-ProblemDomain union_meet(ProblemDomain& in, ProblemDomain& out){
+ProblemDomain intersection_meet(ProblemDomain& in, ProblemDomain& out){
     ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){
