@@ -418,12 +418,12 @@ bool debug(bool b, std::shared_ptr<mtac::Program> program){
 template<typename Problem>
 bool data_flow_optimization(std::shared_ptr<mtac::Program> program){
     DebugStopWatch<DebugPerf> timer("Data-flow optimization");
-    
-    Problem problem;
 
     bool optimized = false;
 
     for(auto& function : program->functions){
+        Problem problem;
+
         auto results = mtac::data_flow(function, problem);
 
         //Once the data-flow problem is fixed, statements can be optimized

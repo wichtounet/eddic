@@ -14,3 +14,13 @@ mtac::BasicBlock::BasicBlock(int i) : index(i), label("") {}
 void mtac::BasicBlock::add(mtac::Statement statement){
     statements.push_back(statement);
 }
+
+std::ostream& mtac::operator<<(std::ostream& stream, BasicBlock& block){
+    if(block.index == -1){
+        return stream << "ENTRY";
+    } else if(block.index == -2){
+        return stream << "EXIT";
+    } else {
+        return stream << "B" << block.index;
+    }
+}

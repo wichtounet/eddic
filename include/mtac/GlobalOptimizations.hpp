@@ -9,12 +9,16 @@
 #define MTAC_GLOBAL_OPTIMIZATIONS_H
 
 #include <memory>
+#include <iostream>
 
 #include "assert.hpp"
 
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
+
+#define DEBUG_GLOBAL_ENABLED false
+#define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 namespace eddic {
 
@@ -63,13 +67,16 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
    
-    OUT[cfg->entry()] = problem.Boundary();
+    OUT[cfg->entry()] = problem.Boundary(function);
+    
+    DEBUG_GLOBAL std::cout << "OUT[" << *cfg->entry() << "] set to " << OUT[cfg->entry()] << std::endl;
 
     ControlFlowGraph::BasicBlockIterator it, end;
     for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
         //Init all but ENTRY
         if(graph[*it].block->index != -1){
             OUT[graph[*it].block] = problem.Init(function);
+            DEBUG_GLOBAL std::cout << "OUT[" << *graph[*it].block << "] set to " << OUT[graph[*it].block] << std::endl;
         }
     }
 
@@ -92,7 +99,13 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
                 auto predecessor = boost::source(edge, graph);
                 auto P = graph[predecessor].block;
 
+                DEBUG_GLOBAL std::cout << "Meet B = " << *B << " with P = " << *P << std::endl;
+                DEBUG_GLOBAL std::cout << "IN[B] before " << IN[B] << std::endl;
+                DEBUG_GLOBAL std::cout << "OUT[P] before " << OUT[P] << std::endl;
+
                 assign(IN[B], problem.meet(IN[B], OUT[P]), changes);
+                
+                DEBUG_GLOBAL std::cout << "IN[B] after " << IN[B] << std::endl;
 
                 auto& statements = B->statements;
 

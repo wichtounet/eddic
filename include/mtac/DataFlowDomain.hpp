@@ -96,6 +96,31 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
     }
 };
 
+template<typename DomainValues>
+std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
+    if(domain.top()){
+        return stream << "top";
+    }
+
+    return stream << domain.values();
+}
+
+template<typename T>
+std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
+    stream << "{";
+
+    for(auto& value : values){
+        stream << value << ", ";
+    }
+
+    return stream << "}";
+}
+
+template<typename Key, typename Value, typename Hasher>
+std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Hasher>&/* values*/){
+    return stream << "[map]";
+}
+
 } //end of mtac
 
 } //end of eddic

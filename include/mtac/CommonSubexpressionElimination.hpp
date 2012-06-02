@@ -23,6 +23,8 @@ struct Expression {
     std::shared_ptr<BasicBlock> source;
 };
 
+std::ostream& operator<<(std::ostream& stream, Expression& expression);
+
 typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
@@ -30,6 +32,7 @@ struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::For
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
     ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
 

@@ -7,13 +7,17 @@
 
 #include "assert.hpp"
 #include "Variable.hpp"
-#include "Context.hpp"
+#include "FunctionContext.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
 
 using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
+
+std::ostream& mtac::operator<<(std::ostream& stream, Expression& expression){
+    return stream << "Expression {expression = {}}";
+}
 
 bool is_distributive(mtac::Operator op){
     return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
@@ -31,6 +35,10 @@ bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac
     }
 }
 
+bool is_boundary(ProblemDomain& out){
+   return !out.top() && out.values().size() == 1 && !out.values()[0].source; 
+}
+
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
     ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
@@ -40,7 +48,6 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
         return in;
     } else {
         typename ProblemDomain::Values values;
-        ProblemDomain result(values);
 
         for(auto& in_value : in.values()){
             for(auto& out_value : out.values()){
@@ -50,6 +57,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
             }
         }
 
+        ProblemDomain result(values);
         return result;
     }
 }
@@ -116,6 +124,10 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
     return out;
 }
 
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> function){
+    return default_element();
+}
+
 ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::Function> function){
     if(init){
         ProblemDomain result(*init);
@@ -123,7 +135,6 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
     }
 
     typename ProblemDomain::Values values;
-    ProblemDomain result(values);
     
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
@@ -150,6 +161,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
 
     init = values;
     
+    ProblemDomain result(values);
     return result;
 }
 
@@ -159,51 +171,53 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
     bool changes = false;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        for(auto& expression : results.values()){
-            if(are_equivalent(expression.expression, *ptr)){
-                auto source_statement = expression.expression;
+        if(is_expression(*ptr)){
+            for(auto& expression : results.values()){
+                if(are_equivalent(expression.expression, *ptr)){
+                    auto source_statement = expression.expression;
 
-                mtac::Operator assign_op;
-                if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
-                    assign_op = mtac::Operator::ASSIGN;
-                } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
-                    assign_op = mtac::Operator::FASSIGN;
-                }
-
-                if(source_statement->result->position().isTemporary()){
-                    (*ptr)->op = assign_op;
-                    (*ptr)->arg1 = source_statement->result;
-                } else {
-                    std::shared_ptr<Variable> temp;
+                    mtac::Operator assign_op;
                     if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
-                        temp = expression.source->context->new_temporary(newSimpleType(BaseType::INT));
+                        assign_op = mtac::Operator::ASSIGN;
                     } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
-                        temp = expression.source->context->new_temporary(newSimpleType(BaseType::FLOAT));
+                        assign_op = mtac::Operator::FASSIGN;
                     }
 
-                    auto it = expression.source->statements.begin();
-                    auto end = expression.source->statements.end();
-
-                    while(it != end){
-                        if(boost::get<std::shared_ptr<Quadruple>>(&*it)){
-                            auto target = boost::get<std::shared_ptr<Quadruple>>(*it);
-                            if(target == source_statement){
-                                auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
-
-                                it = expression.source->statements.insert(it, quadruple);
-                            }
+                    if(source_statement->result->position().isTemporary()){
+                        (*ptr)->op = assign_op;
+                        (*ptr)->arg1 = source_statement->result;
+                    } else {
+                        std::shared_ptr<Variable> temp;
+                        if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
+                            temp = expression.source->context->new_temporary(newSimpleType(BaseType::INT));
+                        } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
+                            temp = expression.source->context->new_temporary(newSimpleType(BaseType::FLOAT));
                         }
 
-                        ++it;
+                        auto it = expression.source->statements.begin();
+                        auto end = expression.source->statements.end();
+
+                        while(it != end){
+                            if(boost::get<std::shared_ptr<Quadruple>>(&*it)){
+                                auto target = boost::get<std::shared_ptr<Quadruple>>(*it);
+                                if(target == source_statement){
+                                    auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
+
+                                    it = expression.source->statements.insert(it, quadruple);
+                                }
+                            }
+
+                            ++it;
+                        }
+
+                        source_statement->result = temp;
+
+                        (*ptr)->op = assign_op;
+                        (*ptr)->arg1 = temp;
                     }
 
-                    source_statement->result = temp;
-                    
-                    (*ptr)->op = assign_op;
-                    (*ptr)->arg1 = temp;
+                    break;
                 }
-
-                break;
             }
         }
     }

@@ -24,12 +24,14 @@ class BasicBlock {
         std::string label;
 
         std::vector<mtac::Statement> statements;
-        std::shared_ptr<Context> context;
+        std::shared_ptr<FunctionContext> context;
 
         BasicBlock(int index);
 
         void add(mtac::Statement statement);
 };
+
+std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
 
 } //end of mtac
 
