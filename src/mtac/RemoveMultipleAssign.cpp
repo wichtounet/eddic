@@ -39,7 +39,6 @@ void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& qu
             if(used.find(quadruple->result) == used.end() && lastAssign.find(quadruple->result) != lastAssign.end()){
                 //Mark the last assign as useless
                 removed.insert(lastAssign[quadruple->result]);
-
             }
 
             used.erase(quadruple->result);
@@ -49,6 +48,9 @@ void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& qu
         if(removed.find(quadruple) != removed.end()){
             optimized = true;
             quadruple->op = mtac::Operator::NOP;
+            quadruple->result = nullptr;
+            quadruple->arg1.reset();
+            quadruple->arg2.reset();
         }
     }
 }

@@ -37,6 +37,9 @@ void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple)
         //x = x is never useful
         if((quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN) && *quadruple->arg1 == quadruple->result){
             quadruple->op = mtac::Operator::NOP;
+            quadruple->arg1.reset();
+            quadruple->arg2.reset();
+            quadruple->result = nullptr;
             optimized = true;
             return;
         }
@@ -46,6 +49,9 @@ void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple)
                 //The other kind of variables can be used in other basic block
                 if(quadruple->result->position().isTemporary()){
                     quadruple->op = mtac::Operator::NOP;
+                    quadruple->arg1.reset();
+                    quadruple->arg2.reset();
+                    quadruple->result = nullptr;
                     optimized = true;
                 }
             }
