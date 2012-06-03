@@ -35,7 +35,7 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     return result;
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     //Only quadruple affects variable
@@ -46,7 +46,9 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 out[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                out[quadruple->result] = *ptr;
+                if(*ptr != quadruple->result){
+                    out[quadruple->result] = *ptr;
+                }
             } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
                 out[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
