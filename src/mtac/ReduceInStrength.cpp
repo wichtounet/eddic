@@ -7,6 +7,7 @@
 
 #include "mtac/ReduceInStrength.hpp"
 #include "mtac/OptimizerUtils.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 

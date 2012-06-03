@@ -12,16 +12,14 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "mtac/Quadruple.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
 struct ReduceInStrength : public boost::static_visitor<void> {
-    bool optimized;
-
-    ReduceInStrength() : optimized(false) {}
+    bool optimized = false;
 
     void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
 

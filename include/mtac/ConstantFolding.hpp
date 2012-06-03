@@ -12,18 +12,14 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "mtac/Quadruple.hpp"
-#include "mtac/If.hpp"
-#include "mtac/IfFalse.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
 struct ConstantFolding : public boost::static_visitor<void> {
-    bool optimized;
-
-    ConstantFolding() : optimized(false) {}
+    bool optimized = false;
 
     void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
     void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
