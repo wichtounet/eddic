@@ -12,12 +12,6 @@ namespace eddic {
 
 namespace mtac {
 
-//Use for two pass optimization
-enum class Pass : unsigned int {
-    DATA_MINING,
-    OPTIMIZE
-};
-
 template<typename T>
 inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Argument arg, mtac::Operator op){
     visitor.optimized = true;

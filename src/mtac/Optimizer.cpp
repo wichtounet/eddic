@@ -17,6 +17,7 @@
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
 
+#include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"

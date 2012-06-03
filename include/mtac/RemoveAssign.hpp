@@ -17,9 +17,7 @@
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
 #include "mtac/Param.hpp"
-
-#include "mtac/Optimizer.hpp"
-#include "mtac/OptimizerUtils.hpp"
+#include "mtac/Pass.hpp"
 
 namespace eddic {
 

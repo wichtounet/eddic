@@ -10,16 +10,15 @@
 
 #include <memory>
 #include <unordered_set>
+#include <unordered_map>
 
 #include <boost/variant/static_visitor.hpp>
 
+#include "mtac/Pass.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
 #include "mtac/Param.hpp"
-
-#include "mtac/Optimizer.hpp"
-#include "mtac/OptimizerUtils.hpp"
 
 namespace eddic {
 
