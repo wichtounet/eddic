@@ -29,8 +29,7 @@ struct DataFlowResults {
 
 enum class DataFlowType : unsigned int {
     Forward,    //Common forward data-flow problem
-    Backward,   //Common backward data-flow problem
-    Basic       //Not global, basic block by basic block
+    Backward    //Common backward data-flow problem
 };
 
 template<DataFlowType Type, typename DomainValues>
