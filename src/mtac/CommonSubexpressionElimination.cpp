@@ -216,6 +216,8 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                         (*ptr)->arg1 = temp;
                     }
 
+                    changes = true;
+
                     break;
                 }
             }
