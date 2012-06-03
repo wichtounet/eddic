@@ -440,7 +440,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
                 continue;
             }
 
-            optimized |= debug("Common Subexpression Eliminiation", data_flow_optimization<CommonSubexpressionElimination>(function), function);
+            optimized |= debug("Common Subexpression Elimination", data_flow_optimization<CommonSubexpressionElimination>(function), function);
             optimized |= debug("Math Propagation", apply_to_basic_blocks_two_pass<MathPropagation>(function), function);
             optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<RemoveAssign>(function), function);
             optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(function), function);
