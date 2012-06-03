@@ -156,6 +156,8 @@ struct DebugVisitor : public boost::static_visitor<> {
                 }
 
                 std::cout << std::endl;
+            } else if(op == mtac::Operator::NOP){
+                std::cout << "\tnop" << std::endl;
             }
         }
     }
