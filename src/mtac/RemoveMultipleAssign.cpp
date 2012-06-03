@@ -24,14 +24,14 @@ void mtac::RemoveMultipleAssign::collect(boost::optional<mtac::Argument>& arg){
     }
 }
 
-bool mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     if(pass == mtac::Pass::DATA_MINING){
         collect(quadruple->arg1);
         collect(quadruple->arg2);
         
         //These operators are not erasing result
         if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::ARRAY_ASSIGN){
-            return true;
+            return;
         }
         
         if(quadruple->result){
@@ -40,42 +40,35 @@ bool mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& qu
                 //Mark the last assign as useless
                 removed.insert(lastAssign[quadruple->result]);
 
-                optimized = true;
             }
 
             used.erase(quadruple->result);
             lastAssign[quadruple->result] = quadruple;
         }
-        
-        return true;
     } else {
-        //keep if not found
-        return removed.find(quadruple) == removed.end();
+        if(removed.find(quadruple) != removed.end()){
+            optimized = true;
+            quadruple->op = mtac::Operator::NOP;
+        }
     }
 }
 
-bool mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Param>& param){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Param>& param){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&param->arg);
     }
-
-    return true;
 }
 
-bool mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&ifFalse->arg1);
         collect(ifFalse->arg2);
     }
-
-    return true;
 }
 
-bool mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::If>& if_){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::If>& if_){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&if_->arg1);
         collect(if_->arg2);
     }
-
-    return true;
 }

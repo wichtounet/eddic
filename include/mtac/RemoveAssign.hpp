@@ -27,10 +27,8 @@ namespace mtac {
 
 class RemoveAssign : public boost::static_visitor<void> {
     public:
-        bool optimized;
+        bool optimized = false;
         Pass pass;
-
-        RemoveAssign() : optimized(false) {}
 
         void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
         void operator()(std::shared_ptr<mtac::Param>& param);
