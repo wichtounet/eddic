@@ -15,7 +15,7 @@ using namespace eddic;
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    auto result = mtac::union_meet(in, out);
+    auto result = mtac::intersection_meet(in, out);
 
     //Remove all the temporary
     for(auto it = std::begin(result.values()); it != std::end(result.values());){
@@ -35,7 +35,7 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     return result;
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     //Only quadruple affects variable
@@ -46,7 +46,9 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::Statement& statem
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 out[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                out[quadruple->result] = *ptr;
+                if(*ptr != quadruple->result){
+                    out[quadruple->result] = *ptr;
+                }
             } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
                 out[quadruple->result] = *ptr;
             } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){

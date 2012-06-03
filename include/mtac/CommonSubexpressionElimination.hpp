@@ -5,30 +5,38 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_CONSTANT_PROPAGATION_PROBLEM_H
-#define MTAC_CONSTANT_PROPAGATION_PROBLEM_H
+#ifndef MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
+#define MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
 
-#include <unordered_map>
 #include <memory>
-
-#include <boost/variant.hpp>
+#include <boost/optional.hpp>
 
 #include "mtac/DataFlowProblem.hpp"
+#include "mtac/Quadruple.hpp"
 
 namespace eddic {
 
-class Variable;
-
 namespace mtac {
 
-typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> ConstantValue;
-typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
+struct Expression {
+    std::shared_ptr<mtac::Quadruple> expression;
+    std::shared_ptr<BasicBlock> source;
+};
 
-struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
+std::ostream& operator<<(std::ostream& stream, Expression& expression);
+
+typedef std::vector<Expression> Expressions;
+
+struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
+    ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
+    
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
+
+    boost::optional<Expressions> init;
 };
 
 } //end of mtac

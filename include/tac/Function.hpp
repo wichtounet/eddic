@@ -78,6 +78,7 @@ typename tac::Function<BB, S>::BlockPtr tac::Function<BB, S>::currentBasicBlock(
 template<typename BB, typename S>
 typename tac::Function<BB, S>::BlockPtr tac::Function<BB, S>::newBasicBlock(){
     basic_blocks.push_back(std::make_shared<BB>(basic_blocks.size() + 1));
+    basic_blocks.back()->context = context;
     return basic_blocks.back();
 }   
 

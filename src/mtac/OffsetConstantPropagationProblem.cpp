@@ -15,7 +15,7 @@ using namespace eddic;
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    auto result = mtac::union_meet(in, out);
+    auto result = mtac::intersection_meet(in, out);
 
     //Remove all the temporary
     for(auto it = std::begin(result.values()); it != std::end(result.values());){
@@ -35,7 +35,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, Pr
     return result;
 }
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){

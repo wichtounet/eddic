@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "mtac/BasicBlock.hpp"
+#include "mtac/Function.hpp"
 #include "mtac/DataFlowDomain.hpp"
 
 namespace eddic {
@@ -37,10 +38,10 @@ struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
-    virtual ProblemDomain transfer(mtac::Statement& statement, ProblemDomain& in) = 0;
+    virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
 
-    virtual ProblemDomain Boundary();
-    virtual ProblemDomain Init();
+    virtual ProblemDomain Boundary(std::shared_ptr<mtac::Function> function);
+    virtual ProblemDomain Init(std::shared_ptr<mtac::Function> function);
 
     virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& results) = 0;
 
@@ -54,19 +55,19 @@ struct DataFlowProblem {
 };
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Boundary() -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Boundary(std::shared_ptr<mtac::Function>/* function*/) -> ProblemDomain {
     //By default, return the default element
     return default_element();
 }
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init() -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Init(std::shared_ptr<mtac::Function>/* function*/) -> ProblemDomain {
     //By default, return the top element
     return top_element();
 }
 
 template<typename ProblemDomain>
-ProblemDomain union_meet(ProblemDomain& in, ProblemDomain& out){
+ProblemDomain intersection_meet(ProblemDomain& in, ProblemDomain& out){
     ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){

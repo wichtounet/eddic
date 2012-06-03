@@ -50,6 +50,9 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     if(OLevel >= 2){
         mtac::Optimizer optimizer;
         optimizer.optimize(mtacProgram, get_string_pool());
+    
+        //Allocate storage for the temporaries that need to be stored
+        allocator.allocate(mtacProgram);
     }
     
     //If asked by the user, print the Three Address code representation
