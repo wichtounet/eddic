@@ -15,6 +15,7 @@ namespace mtac {
 class If;
 class IfFalse;
 class Param;
+class Quadruple;
 
 } //end of mtac
 

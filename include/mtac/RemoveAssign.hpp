@@ -13,11 +13,12 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "mtac/forward.hpp"
-#include "mtac/Quadruple.hpp"
 #include "mtac/Pass.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
+
+class Variable;
 
 namespace mtac {
 
@@ -36,9 +37,6 @@ class RemoveAssign : public boost::static_visitor<void> {
             //Nothing to optimize here
         }
     
-        void collect(mtac::Argument* arg);
-        void collect_optional(boost::optional<mtac::Argument>& arg);
-
     private:
         std::unordered_set<std::shared_ptr<Variable>> used;
 };

@@ -8,6 +8,12 @@
 #ifndef MTAC_OPTIMIZER_UTILS_H
 #define MTAC_OPTIMIZER_UTILS_H
 
+#include <memory>
+
+#include "mtac/Quadruple.hpp"
+#include "mtac/Argument.hpp"
+#include "mtac/Operator.hpp"
+
 namespace eddic {
 
 namespace mtac {

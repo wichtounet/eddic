@@ -7,6 +7,8 @@
 
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/OptimizerUtils.hpp"
+
+#include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
 #include "mtac/Param.hpp"
@@ -15,22 +17,22 @@
 
 using namespace eddic;
 
-void mtac::RemoveAssign::collect(mtac::Argument* arg){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+static void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>> used){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
         used.insert(*ptr);
     }
 }
 
-void mtac::RemoveAssign::collect_optional(boost::optional<mtac::Argument>& arg){
+static void collect_optional(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>> used){
     if(arg){
-        collect(&*arg);
+        collect(&*arg, used);
     }
 }
 
 void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     if(pass == mtac::Pass::DATA_MINING){
-        collect_optional(quadruple->arg1);
-        collect_optional(quadruple->arg2);
+        collect_optional(quadruple->arg1, used);
+        collect_optional(quadruple->arg2, used);
     } else {
         //These operators are not erasing result
         if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::ARRAY_ASSIGN){
@@ -64,20 +66,20 @@ void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple)
 
 void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Param>& param){
     if(pass == mtac::Pass::DATA_MINING){
-        collect(&param->arg);
+        collect(&param->arg, used);
     }
 }
 
 void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
     if(pass == mtac::Pass::DATA_MINING){
-        collect(&ifFalse->arg1);
-        collect_optional(ifFalse->arg2);
+        collect(&ifFalse->arg1, used);
+        collect_optional(ifFalse->arg2, used);
     }
 }
 
 void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::If>& if_){
     if(pass == mtac::Pass::DATA_MINING){
-        collect(&if_->arg1);
-        collect_optional(if_->arg2);
+        collect(&if_->arg1, used);
+        collect_optional(if_->arg2, used);
     }
 }

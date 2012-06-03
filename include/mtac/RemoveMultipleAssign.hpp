@@ -15,12 +15,11 @@
 #include <boost/variant/static_visitor.hpp>
 
 #include "mtac/Pass.hpp"
-#include "mtac/Quadruple.hpp"
-#include "mtac/IfFalse.hpp"
-#include "mtac/If.hpp"
-#include "mtac/Param.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
+
+class Variable;
 
 namespace mtac {
 
@@ -39,9 +38,6 @@ class RemoveMultipleAssign : public boost::static_visitor<void> {
             //Nothing to do
         }
     
-        void collect(mtac::Argument* arg);
-        void collect(boost::optional<mtac::Argument>& arg);
-
     private:
         std::unordered_set<std::shared_ptr<Variable>> used;
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::Quadruple>> lastAssign;
