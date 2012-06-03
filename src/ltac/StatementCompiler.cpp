@@ -1147,6 +1147,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
                 break;
             }
+        case mtac::Operator::NOP:
+            //No code necessary
+            break;
     }
 }
 

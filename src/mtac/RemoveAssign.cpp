@@ -24,60 +24,57 @@ void mtac::RemoveAssign::collect_optional(boost::optional<mtac::Argument>& arg){
     }
 }
 
-bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     if(pass == mtac::Pass::DATA_MINING){
         collect_optional(quadruple->arg1);
         collect_optional(quadruple->arg2);
-
-        return true;
     } else {
         //These operators are not erasing result
         if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::ARRAY_ASSIGN){
-            return true;
+            return;
         }
 
         //x = x is never useful
         if((quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN) && *quadruple->arg1 == quadruple->result){
+            quadruple->op = mtac::Operator::NOP;
+            quadruple->arg1.reset();
+            quadruple->arg2.reset();
+            quadruple->result = nullptr;
             optimized = true;
-            return false;
+            return;
         }
 
         if(used.find(quadruple->result) == used.end()){
             if(quadruple->result){
                 //The other kind of variables can be used in other basic block
                 if(quadruple->result->position().isTemporary()){
+                    quadruple->op = mtac::Operator::NOP;
+                    quadruple->arg1.reset();
+                    quadruple->arg2.reset();
+                    quadruple->result = nullptr;
                     optimized = true;
-                    return false;
                 }
             }
         }
-
-        return true;
     }
 }
 
-bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Param>& param){
+void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Param>& param){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&param->arg);
     }
-
-    return true;
 }
 
-bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&ifFalse->arg1);
         collect_optional(ifFalse->arg2);
     }
-
-    return true;
 }
 
-bool mtac::RemoveAssign::operator()(std::shared_ptr<mtac::If>& if_){
+void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::If>& if_){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&if_->arg1);
         collect_optional(if_->arg2);
     }
-
-    return true;
 }

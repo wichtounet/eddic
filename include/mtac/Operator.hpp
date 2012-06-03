@@ -63,7 +63,9 @@ enum class Operator : unsigned int {
     ARRAY,          //result=arg1[arg2]
     ARRAY_ASSIGN,   //result[arg1]=arg2
 
-    RETURN          //return from a function
+    RETURN,         //return from a function
+
+    NOP             //for optimization purpose
 };
 
 mtac::Operator toOperator(ast::Operator op);

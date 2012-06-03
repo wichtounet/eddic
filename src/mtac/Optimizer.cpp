@@ -55,37 +55,7 @@ bool apply_to_all(std::shared_ptr<mtac::Function> function){
 }
 
 template<typename Visitor>
-typename boost::disable_if<boost::is_void<typename Visitor::result_type>, bool>::type 
-apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
-    bool optimized = false;
-
-    for(auto& block : function->getBasicBlocks()){
-        Visitor visitor;
-        visitor.pass = mtac::Pass::DATA_MINING;
-
-        //In the first pass, don't care about the return value
-        visit_each(visitor, block->statements);
-
-        visitor.pass = mtac::Pass::OPTIMIZE;
-
-        auto it = block->statements.begin();
-        auto end = block->statements.end();
-
-        block->statements.erase(
-                std::remove_if(it, end,
-                    [&](mtac::Statement& s){return !visit(visitor, s); }), 
-                end);
-
-        optimized |= visitor.optimized;
-    }
-
-    return optimized;
-}
-
-template<typename Visitor>
-inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, bool>::type
-apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
+bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
     DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
     bool optimized = false;
 

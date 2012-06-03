@@ -25,21 +25,19 @@ namespace eddic {
 
 namespace mtac {
 
-class RemoveAssign : public boost::static_visitor<bool> {
+class RemoveAssign : public boost::static_visitor<void> {
     public:
-        bool optimized;
+        bool optimized = false;
         Pass pass;
 
-        RemoveAssign() : optimized(false) {}
-
-        bool operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
-        bool operator()(std::shared_ptr<mtac::Param>& param);
-        bool operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
-        bool operator()(std::shared_ptr<mtac::If>& if_);
+        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+        void operator()(std::shared_ptr<mtac::Param>& param);
+        void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
+        void operator()(std::shared_ptr<mtac::If>& if_);
 
         template<typename T>
-        bool operator()(T&) const { 
-            return true;
+        void operator()(T&) const { 
+            //Nothing to optimize here
         }
     
         void collect(mtac::Argument* arg);
@@ -48,7 +46,6 @@ class RemoveAssign : public boost::static_visitor<bool> {
     private:
         std::unordered_set<std::shared_ptr<Variable>> used;
 };
-
 
 } //end of mtac
 
