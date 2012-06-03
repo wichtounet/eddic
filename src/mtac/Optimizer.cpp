@@ -444,6 +444,9 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
             //Global Offset Constant Propagation
             optimized |= debug<5>(data_flow_optimization<OffsetConstantPropagationProblem>(function), function);
 
+            //It is better to apply another Constant folding before common subexpression elimination
+            optimized |= debug<3>(apply_to_all<ConstantFolding>(function), function);
+
             //Global Common Subexpression Elimination
             optimized |= debug<6>(data_flow_optimization<CommonSubexpressionElimination>(function), function);
 
