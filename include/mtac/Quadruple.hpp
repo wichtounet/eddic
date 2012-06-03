@@ -9,8 +9,8 @@
 #define MTAC_QUADRUPLE_H
 
 #include <memory>
-
-#include "tac/Quadruple.hpp"
+#include <unordered_map>
+#include <boost/optional.hpp>
 
 #include "mtac/Operator.hpp"
 #include "mtac/Argument.hpp"
@@ -21,7 +21,36 @@ class Variable;
 
 namespace mtac {
 
-typedef tac::Quadruple<std::shared_ptr<Variable>, std::shared_ptr<Variable>, mtac::Argument, mtac::Operator> Quadruple;
+struct Quadruple {
+    std::shared_ptr<Variable> result;
+    boost::optional<mtac::Argument> arg1;
+    boost::optional<mtac::Argument> arg2;
+    mtac::Operator op;
+    
+    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
+
+    //Quadruple should never get copied
+    Quadruple(const Quadruple& rhs) = delete;
+    Quadruple& operator=(const Quadruple& rhs) = delete;
+
+    //Default constructor
+    Quadruple();
+
+    //Quadruples without assign to result and no param
+    Quadruple(mtac::Operator op);
+
+    //Quadruple for unary operators
+    Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op);
+
+    //Quadruple for binary operators
+    Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2);
+
+    //Quadruples without assign to result
+    Quadruple(mtac::Operator op, mtac::Argument arg1);
+
+    //Quadruples without assign to result
+    Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
+};
 
 } //end of mtac
 
