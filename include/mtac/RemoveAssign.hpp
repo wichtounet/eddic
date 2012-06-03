@@ -13,10 +13,8 @@
 
 #include <boost/variant/static_visitor.hpp>
 
+#include "mtac/forward.hpp"
 #include "mtac/Quadruple.hpp"
-#include "mtac/IfFalse.hpp"
-#include "mtac/If.hpp"
-#include "mtac/Param.hpp"
 #include "mtac/Pass.hpp"
 
 namespace eddic {

@@ -7,6 +7,9 @@
 
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/OptimizerUtils.hpp"
+#include "mtac/IfFalse.hpp"
+#include "mtac/If.hpp"
+#include "mtac/Param.hpp"
 
 #include "Variable.hpp"
 
