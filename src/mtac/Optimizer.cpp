@@ -398,16 +398,15 @@ bool data_flow_optimization(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-template<int i>
-bool debug(bool b, std::shared_ptr<mtac::Function> function){
+bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
     if(option_defined("dev")){
         if(b){
-            std::cout << "optimization " << i << " returned true" << std::endl;
+            std::cout << "optimization " << name << " returned true" << std::endl;
 
             //Print the function
             print(function);
         } else {
-            std::cout << "optimization " << i << " returned false" << std::endl;
+            std::cout << "optimization " << name << " returned false" << std::endl;
         }
     }
 
@@ -429,50 +428,27 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         do {
             optimized = false;
 
-            //Optimize using arithmetic identities
-            optimized |= debug<1>(apply_to_all<ArithmeticIdentities>(function), function);
+            optimized |= debug("Aritmetic Identities", apply_to_all<ArithmeticIdentities>(function), function);
+            optimized |= debug("Reduce in Strength", apply_to_all<ReduceInStrength>(function), function);
+            optimized |= debug("Constant folding", apply_to_all<ConstantFolding>(function), function);
 
-            //Reduce arithtmetic instructions in strength
-            optimized |= debug<2>(apply_to_all<ReduceInStrength>(function), function);
+            optimized |= debug("Constant propagation", data_flow_optimization<ConstantPropagationProblem>(function), function);
+            optimized |= debug("Offset Constant Propagation", data_flow_optimization<OffsetConstantPropagationProblem>(function), function);
 
-            //Constant folding
-            optimized |= debug<3>(apply_to_all<ConstantFolding>(function), function);
+            //If there was optimizations here, better to try again before perfoming common subexpression
+            if(optimized){
+                continue;
+            }
 
-            //Global Constant Propagation
-            optimized |= debug<4>(data_flow_optimization<ConstantPropagationProblem>(function), function);
-
-            //Global Offset Constant Propagation
-            optimized |= debug<5>(data_flow_optimization<OffsetConstantPropagationProblem>(function), function);
-
-            //It is better to apply another Constant folding before common subexpression elimination
-            optimized |= debug<3>(apply_to_all<ConstantFolding>(function), function);
-
-            //Global Common Subexpression Elimination
-            optimized |= debug<6>(data_flow_optimization<CommonSubexpressionElimination>(function), function);
-
-            //Propagate math
-            optimized |= debug<9>(apply_to_basic_blocks_two_pass<MathPropagation>(function), function);
-
-            //Remove unused assignations
-            optimized |= debug<10>(apply_to_basic_blocks_two_pass<RemoveAssign>(function), function);
-
-            //Remove unused assignations
-            optimized |= debug<11>(apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(function), function);
-
-            //Optimize branches 
-            optimized |= debug<12>(optimize_branches(function), function);
-
-            //Optimize concatenations 
-            optimized |= debug<13>(optimize_concat(function, pool), function);
-
-            //Remove dead basic blocks (unreachable code)
-            optimized |= debug<14>(remove_dead_basic_blocks(function), function);
-
-            //Remove needless jumps
-            optimized |= debug<15>(remove_needless_jumps(function), function);
-
-            //Merge basic blocks
-            optimized |= debug<16>(merge_basic_blocks(function), function);
+            optimized |= debug("Common Subexpression Eliminiation", data_flow_optimization<CommonSubexpressionElimination>(function), function);
+            optimized |= debug("Math Propagation", apply_to_basic_blocks_two_pass<MathPropagation>(function), function);
+            optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<RemoveAssign>(function), function);
+            optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(function), function);
+            optimized |= debug("Optimize Branches", optimize_branches(function), function);
+            optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
+            optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
+            optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
+            optimized |= debug("Merge basic blocks", merge_basic_blocks(function), function);
         } while (optimized);
     }
 }
