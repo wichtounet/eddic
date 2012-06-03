@@ -34,7 +34,6 @@
 #include "mtac/ConstantFolding.hpp"
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
-#include "mtac/MathPropagation.hpp"
 
 using namespace eddic;
 
