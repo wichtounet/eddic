@@ -31,6 +31,7 @@ struct Printer {
 };
 
 void print(std::shared_ptr<mtac::Program> program);
+void print(std::shared_ptr<mtac::Function> program);
 
 } //end of mtac
 

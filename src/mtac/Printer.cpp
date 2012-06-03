@@ -279,3 +279,8 @@ void mtac::print(std::shared_ptr<mtac::Program> program){
     mtac::Printer printer;
     printer.print(program);
 }
+
+void mtac::print(std::shared_ptr<mtac::Function> function){
+    mtac::Printer printer;
+    printer.printFunction(function);
+}
