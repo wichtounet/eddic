@@ -54,6 +54,22 @@ void main(){
     } else {
         println(333);
     }
+
+    println(constants());
+    
+    common(44, 55);
+    uselessassign();
+}
+
+int constants(){
+    int a = 44;
+    int b = 0;
+
+    for(int i = 0; i < 22; ++i){
+        b += a;
+    }
+
+    return b;
 }
 
 void copy(int a, int b){
@@ -61,6 +77,16 @@ void copy(int a, int b){
     int d = b;
 
     int e = c + d;
+}
+
+void common(int a, int b){
+    int c = a * b;
+
+    if(c > 55){
+        println(444);
+    }
+
+    println(a * b);
 }
 
 void uselessassign(){

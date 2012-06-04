@@ -10,8 +10,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/TerminalNode.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -20,7 +18,7 @@ namespace ast {
  * \class Litteral
  * \brief The AST node for a string litteral.    
  */
-struct Litteral : public TerminalNode {
+struct Litteral {
     std::string value;
     std::string label;
 };

@@ -10,21 +10,13 @@
 
 #include <utility>
 #include <string>
-#include <memory>
 
 #include <boost/variant/variant.hpp>
 
 #include "Types.hpp"
-
 #include "Position.hpp"
 
 namespace eddic {
-
-class Value;
-class IntermediateProgram;
-class Operand;
-
-typedef std::shared_ptr<Operand> OperandPtr;
 
 typedef boost::variant<int, double, std::pair<std::string, int>> Val;
 
@@ -38,8 +30,8 @@ class Variable {
         const Type m_type;
         Position m_position;
         Val v_value;
+
         int references;
-        bool constant;
 
     public:
         Variable(const std::string& name, Type type, Position position);

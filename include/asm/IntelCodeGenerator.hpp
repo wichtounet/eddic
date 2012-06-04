@@ -13,8 +13,6 @@
 
 #include <boost/utility/enable_if.hpp>
 
-#include "tac/Program.hpp"
-
 #include "asm/CodeGenerator.hpp"
 
 namespace eddic {
@@ -32,14 +30,14 @@ class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer);
         
-        void generate(tac::Program& program, StringPool& pool, FunctionTable& table);
+        void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, StringPool& pool);
+        void addGlobalVariables(std::shared_ptr<GlobalContext> context, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
         
-        virtual void writeRuntimeSupport(FunctionTable& table) = 0;
+        virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void compile(std::shared_ptr<tac::Function> function) = 0;
+        virtual void compile(std::shared_ptr<ltac::Function> function) = 0;
 
         virtual void defineDataSection() = 0;
 
@@ -50,27 +48,8 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareIntVariable(const std::string& name, int value) = 0;
         virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
         virtual void declareString(const std::string& label, const std::string& value) = 0;
+        virtual void declareFloat(const std::string& label, double value) = 0;
 };
-
-//Provide utility for registers
-
-template<typename Reg>
-inline typename boost::enable_if<boost::is_enum<Reg>, std::ostream>::type&
-operator<<(std::ostream& os, Reg reg){
-    return os << regToString(reg);
-}
-
-template<typename Reg>
-inline typename boost::enable_if<boost::is_enum<Reg>, std::string>::type
-operator+(const char* left, Reg right) {
-    return left + regToString(right);
-}
-
-template<typename Reg>
-inline typename boost::enable_if<boost::is_enum<Reg>, std::string>::type
-operator+(std::string left, Reg right) {
-    return left + regToString(right);
-}
 
 } //end of as
 

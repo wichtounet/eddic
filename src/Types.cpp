@@ -5,49 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <string>
-
+#include "assert.hpp"
 #include "Types.hpp"
-#include "SemanticalException.hpp"
-#include "Compiler.hpp"
+#include "Platform.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
-
-Type::Type(BaseType base, bool a, unsigned int size, bool constant) : type(base), array(a), const_(constant), m_size(size) {}
-
-BaseType Type::base() const {
-    return type;
-}
-
-bool Type::isArray() const {
-    return array;
-}
-
-bool Type::isConst() const {
-    return const_;
-}
-
-unsigned int Type::size() const {
-    return m_size;
-}
-
-bool eddic::operator==(const Type& lhs, const Type& rhs){
-    return lhs.type == rhs.type && 
-           lhs.array == rhs.array &&
-           lhs.m_size == rhs.m_size; 
-}
-
-bool eddic::operator!=(const Type& lhs, const Type& rhs){
-    return !(lhs == rhs); 
-}
-
-bool eddic::operator==(const Type& lhs, const BaseType& rhs){
-    return lhs.type == rhs && lhs.array == false; 
-}
-
-bool eddic::operator!=(const Type& lhs, const BaseType& rhs){
-    return !(lhs == rhs); 
-}
 
 int eddic::size(BaseType type){
     static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
@@ -64,18 +27,26 @@ int eddic::size(BaseType type){
 }
 
 int eddic::size(Type type){
-    if(type.isArray()){
-        return size(type.base()) * type.size() + size(BaseType::INT); 
+    if(type.is_standard_type()){
+        if(type.isArray()){
+            return size(type.base()) * type.size() + size(BaseType::INT); 
+        } else {
+            return size(type.base());
+        }
     } else {
-        return size(type.base());
+        ASSERT(!type.isArray(), "Array of custom types are not supported for now");
+
+        return symbols.size_of_struct(type.type());
     }
 }
 
-bool eddic::isType(const std::string& type){
+bool eddic::is_standard_type(const std::string& type){
     return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
 }
 
 BaseType stringToBaseType(const std::string& type){
+    ASSERT(is_standard_type(type), "The given type is not standard");
+
     if (type == "int") {
         return BaseType::INT;
     } else if (type == "bool") {
@@ -84,11 +55,9 @@ BaseType stringToBaseType(const std::string& type){
         return BaseType::FLOAT;
     } else if (type == "string"){
         return BaseType::STRING;
-    } else if(type == "void") {
-        return BaseType::VOID;
     }
-
-    throw SemanticalException("Invalid type");
+    
+    return BaseType::VOID;
 }
 
 Type eddic::newType(const std::string& type){
@@ -116,4 +85,8 @@ Type eddic::newArrayType(BaseType baseType, int size){
 
 Type eddic::newArrayType(const std::string& baseType, int size){
     return Type(stringToBaseType(baseType), true, size, false);
+}
+
+Type eddic::new_custom_type(const std::string& type){
+    return Type(type);
 }

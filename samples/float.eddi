@@ -6,6 +6,11 @@ void main(){
     println(-100.0);
     println(+100.0);
 
+    float aaaaa = 4.2;
+    println(aaaaa);
+    aaaaa = 3.33;
+    println(aaaaa);
+
     float a = 1.5;
     println(a);
     float b = 3.0;
@@ -71,6 +76,8 @@ void main(){
 
     testArray(global);
     testArray(array);
+    
+    println(aaaaa);
 }
 
 float test(float a, float b){

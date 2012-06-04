@@ -3,10 +3,10 @@
 */
 
 //Sum the values of the array
-int sum(int[] array]){
+int sum(int[] array){
     int sum = 0;
 
-    for(int value in array){
+    foreach(int value in array){
         sum = sum + value;
     }
 

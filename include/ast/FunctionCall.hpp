@@ -15,7 +15,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 
 namespace eddic {
 

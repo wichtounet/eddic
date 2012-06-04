@@ -16,7 +16,7 @@
 #include "Types.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
@@ -48,10 +48,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     }
     
     //Other values are not strings
-    template<typename T> 
-    std::string operator()(T&) const {
-        assert(false && "This type is not a string");
-    }
+    AUTO_BREAK_OTHERS_CONST()
 };
 
 struct ValueOptimizer : public boost::static_visitor<ast::Value> {
@@ -59,7 +56,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         StringPool& pool;
 
     public:
-        ValueOptimizer(StringPool& p) : pool(p) {}
+        ValueOptimizer(StringPool& p) : pool(p){}
 
         ast::Value operator()(ast::Expression& value) const {
             assert(value.Content->operations.size() > 0); //Should have been transformed before
@@ -123,19 +120,10 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         }
 
         //No optimizations for other kind of values
-        template<typename T>
-        ast::Value operator()(T& value) const {
-            return value;
-        }
+        AUTO_RETURN_OTHERS_CONST(ast::Value)
 };
 
 struct CanBeRemoved : public boost::static_visitor<bool> {
-    private:
-        FunctionTable& functionTable;
-
-    public:
-        CanBeRemoved(FunctionTable& table) : functionTable(table) {}
-
         bool operator()(ast::FirstLevelBlock block){
             return visit(*this, block);
         }
@@ -164,7 +152,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool operator()(ast::FunctionDeclaration& declaration){
-            if(declaration.Content->functionName != "main" && functionTable.referenceCount(declaration.Content->mangledName) <= 0){
+            if(declaration.Content->functionName != "main" && symbols.referenceCount(declaration.Content->mangledName) <= 0){
                 return true;
             }
 
@@ -184,19 +172,18 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
 
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
-        FunctionTable& functionTable;
         StringPool& pool;
         ValueOptimizer optimizer;
 
     public:
-        OptimizationVisitor(FunctionTable& t, StringPool& p) : functionTable(t), pool(p), optimizer(ValueOptimizer(pool)) {}
+        OptimizationVisitor(StringPool& p) : pool(p), optimizer(ValueOptimizer(pool)) {}
 
         template<typename T>
         void removeUnused(std::vector<T>& vector){
             auto iter = vector.begin();
             auto end = vector.end();
 
-            CanBeRemoved visitor(functionTable);
+            CanBeRemoved visitor;
             auto newEnd = remove_if(iter, end, visitor);
 
             vector.erase(newEnd, end);
@@ -273,7 +260,9 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            declaration.Content->value = visit(optimizer, *declaration.Content->value); 
+            if(declaration.Content->value){
+                declaration.Content->value = visit(optimizer, *declaration.Content->value); 
+            }
         }
 
         void operator()(ast::BinaryCondition& binaryCondition){
@@ -281,13 +270,10 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             binaryCondition.Content->rhs = visit(optimizer, binaryCondition.Content->rhs); 
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Nothing to optimize for other types        
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
-void ast::optimizeAST(ast::SourceFile& program, FunctionTable& functionTable, StringPool& pool){
-    OptimizationVisitor visitor(functionTable, pool);
+void ast::optimizeAST(ast::SourceFile& program, StringPool& pool){
+    OptimizationVisitor visitor(pool);
     visitor(program);
 }

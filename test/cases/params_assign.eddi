@@ -1,0 +1,9 @@
+void main(){
+    //Nothing
+}
+
+int sum(int a){
+    a = 5;
+
+    return 2;
+}

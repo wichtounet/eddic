@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/assert.hpp>
+
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/Value.hpp"
@@ -50,6 +52,14 @@ Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->context->getVariable(variable.Content->variableName)->type();
 }
 
+Type ast::GetTypeVisitor::operator()(const ast::StructValue& struct_) const {
+    auto var = (*struct_.Content->context)[struct_.Content->variableName];
+    auto struct_name = var->type().type();
+    auto struct_type = symbols.get_struct(struct_name);
+    
+    return (*struct_type)[struct_.Content->memberName]->type;
+}
+
 Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
     return assign.Content->context->getVariable(assign.Content->variableName)->type();
 }
@@ -72,7 +82,5 @@ Type ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
-    std::string name = call.Content->functionName;
-
     return call.Content->function->returnType;
 }

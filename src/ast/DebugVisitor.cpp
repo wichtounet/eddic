@@ -31,6 +31,8 @@ std::string toStringType(ast::Type type){
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return ptr->type + "[]";
     }
+
+    assert(false);
 }
 
 void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
@@ -68,6 +70,17 @@ void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const 
     print_each_sub(*this, declaration.Content->instructions);
 }
 
+void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
+    std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
+    level++;
+    visit_each_non_variant(*this, struct_.Content->members);    
+    level--;
+}
+
+void ast::DebugVisitor::operator()(ast::MemberDeclaration& declaration) const {
+    std::cout << indent() << declaration.Content->type  << " " << declaration.Content->name << std::endl;
+}
+
 void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {
     std::cout << indent() << "Global Variable" << std::endl; 
 }
@@ -102,6 +115,7 @@ void ast::DebugVisitor::operator()(ast::DoWhile& while_) const {
     std::cout << indent() << "Do while" << std::endl; 
     std::cout << indent() << "Condition:" << std::endl;
     print_sub(*this, while_.Content->condition);
+    std::cout << indent() << "Body:" << std::endl;
     print_each_sub(*this, while_.Content->instructions);
 }
 
@@ -128,7 +142,7 @@ void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
 }
 
 void ast::DebugVisitor::operator()(ast::VariableDeclaration& declaration) const {
-    std::cout << indent() << "Variable declaration" << std::endl; 
+    std::cout << indent() << "Variable declaration [" << declaration.Content->variableName << "]" << std::endl; 
 
     if(declaration.Content->value){
         print_sub(*this, *declaration.Content->value);
@@ -157,6 +171,13 @@ void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
     print_sub(*this, assign.Content->value);
 }
 
+void ast::DebugVisitor::operator()(ast::StructCompoundAssignment& assign) const {
+    std::cout << indent() << "Compound struct member assignment [operator = " << (int) assign.Content->op << " ]"
+        << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
+    
+    print_sub(*this, assign.Content->value);
+}
+
 void ast::DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
     print_sub(*this, return_.Content->value);
@@ -164,6 +185,11 @@ void ast::DebugVisitor::operator()(ast::Return& return_) const {
 
 void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     std::cout << indent() << "Array assignment" << std::endl; 
+    print_sub(*this, assign.Content->value);
+}
+
+void ast::DebugVisitor::operator()(ast::StructAssignment& assign) const {
+    std::cout << indent() << "Struct assignment " << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
     print_sub(*this, assign.Content->value);
 }
 
@@ -193,6 +219,10 @@ void ast::DebugVisitor::operator()(ast::False&) const {
 
 void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
     std::cout << indent() << "Variable [" << value.Content->var->name()  << "]" << std::endl; 
+}
+
+void ast::DebugVisitor::operator()(ast::StructValue& value) const {
+    std::cout << indent() << "Member access " << value.Content->variableName << "." << value.Content->memberName << std::endl; 
 }
 
 void ast::DebugVisitor::operator()(ast::ArrayValue&) const {

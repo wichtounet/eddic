@@ -10,9 +10,7 @@
 
 namespace eddic {
 
-class FunctionTable;
-
-void allocateParams(FunctionTable& functionTable);
+void allocateParams();
 
 } //end of eddic
 

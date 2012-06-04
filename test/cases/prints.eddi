@@ -1,0 +1,33 @@
+void main(){
+    print(111);
+    print("|");
+    print(0);
+    print("|");
+    print(-111);
+    print("|");
+
+    print(false);
+    print("|");
+    print(true);
+    print("|");
+
+    print(999.99);
+    print("|");
+    print(1.009);
+    print("|");
+    print(0.0);
+    print("|");
+    print(-1.009);
+    print("|");
+    print(-999.990);
+    print("|");
+
+    print("");
+    print("|");
+    print("-0");
+    print("|");
+    print("asdf");
+    print("|");
+    print("1234asdf");
+    print("|");
+}

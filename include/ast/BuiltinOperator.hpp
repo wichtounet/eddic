@@ -34,8 +34,7 @@ struct ASTBuiltinOperator {
     BuiltinType type;
     std::vector<Value> values;
 
-    mutable long references;
-    ASTBuiltinOperator() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

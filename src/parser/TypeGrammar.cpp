@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "parser/TypeGrammar.hpp"
+#include "lexer/position.hpp"
 
 using namespace eddic;
 
@@ -13,17 +14,31 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         TypeGrammar::base_type(type, "Type Grammar"),
         position_begin(position_begin){
 
-    arrayType %=
+    member_declaration %=
+            qi::position(position_begin)
+        >>  lexer.identifier
+        >>  lexer.identifier
+        >>  lexer.stop;
+
+    struct_ %=
+            qi::position(position_begin)
+        >>  lexer.struct_
+        >>  lexer.identifier
+        >>  lexer.left_brace
+        >>  *(member_declaration)
+        >>  lexer.right_brace;
+
+    array_type %=
             qi::eps
         >>  lexer.identifier
         >>  lexer.left_bracket
         >>  lexer.right_bracket;
 
-    simpleType %=
+    simple_type %=
             qi::eps
         >>  lexer.identifier;
 
     type %=
-            arrayType
-        |   simpleType;
+            array_type
+        |   simple_type;
 }

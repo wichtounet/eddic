@@ -10,25 +10,23 @@
 #include "ast/TypeTransformer.hpp"
 #include "ast/ASTVisitor.hpp"
 
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"
-#include "Compiler.hpp"
 
 using namespace eddic;
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
-    private:
-        FunctionTable& functionTable;
-
     public:
-        FunctionInserterVisitor(FunctionTable& table) : functionTable(table) {}
-
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
+            if(!is_standard_type(declaration.Content->returnType)){
+                throw SemanticalException("A function can only returns standard types for now", declaration.Content->position);
+            }
+
             auto signature = std::make_shared<Function>(newType(declaration.Content->returnType), declaration.Content->functionName);
 
             if(signature->returnType.isArray()){
@@ -42,28 +40,22 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             
             declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
 
-            if(functionTable.exists(signature->mangledName)){
+            if(symbols.exists(signature->mangledName)){
                 throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
             }
 
-            functionTable.addFunction(signature);
-            functionTable.getFunction(signature->mangledName)->context = declaration.Content->context;
+            symbols.addFunction(signature);
+            symbols.getFunction(signature->mangledName)->context = declaration.Content->context;
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Stop recursion here
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     private:
-        FunctionTable& functionTable;
         std::shared_ptr<Function> currentFunction;
 
     public:
-        FunctionCheckerVisitor(FunctionTable& table) : functionTable(table) {}
-
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_SIMPLE_LOOPS()
@@ -76,7 +68,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ast::FunctionDeclaration& declaration){
-            currentFunction = functionTable.getFunction(declaration.Content->mangledName);
+            currentFunction = symbols.getFunction(declaration.Content->mangledName);
 
             visit_each(*this, declaration.Content->instructions);
         }
@@ -92,13 +84,13 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             std::string mangled = mangle(name, functionCall.Content->values);
 
-            if(!functionTable.exists(mangled)){
+            if(!symbols.exists(mangled)){
                 throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             } 
 
-            functionTable.addReference(mangled);
+            symbols.addReference(mangled);
 
-            functionCall.Content->function = functionTable.getFunction(mangled);
+            functionCall.Content->function = symbols.getFunction(mangled);
             
             visit_each(*this, functionCall.Content->values);
         }
@@ -109,18 +101,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             visit(*this, return_.Content->value);
         }
 
-        template<typename T>        
-        void operator()(T&){
-            //No function calls there
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
-void ast::defineFunctions(ast::SourceFile& program, FunctionTable& functionTable){
+void ast::defineFunctions(ast::SourceFile& program){
     //First phase : Collect functions
-    FunctionInserterVisitor inserterVisitor(functionTable);
+    FunctionInserterVisitor inserterVisitor;
     inserterVisitor(program);
 
     //Second phase : Verify calls
-    FunctionCheckerVisitor checkerVisitor(functionTable);
+    FunctionCheckerVisitor checkerVisitor;
     checkerVisitor(program);
 }

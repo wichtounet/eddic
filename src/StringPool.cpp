@@ -30,7 +30,7 @@ std::string StringPool::label(const std::string& value) {
     return pool[value];
 }
 
-std::string StringPool::value(const std::string& label) {
+std::string StringPool::value(const std::string& label) const {
     for (auto it : pool){
         if(it.second == label){
             return it.first;

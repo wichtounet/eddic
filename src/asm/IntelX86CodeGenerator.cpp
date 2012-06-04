@@ -7,13 +7,13 @@
 
 #include <iostream>
 
+#include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
-#include "FunctionTable.hpp"
+#include "SymbolTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
 
-#include "asm/IntelStatementCompiler.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
 #include "asm/IntelAssemblyUtils.hpp"
 
@@ -23,44 +23,22 @@ as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelC
 
 namespace x86 {
 
-enum class Register : unsigned int {
-    EAX,
-    EBX,
-    ECX,
-    EDX,
+std::string to_string(ltac::Register reg){
+    static std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
 
-    ESP, //Extended stack pointer
-    EBP, //Extended base pointer
+    if(static_cast<int>(reg) == 1000){
+        return "esp"; 
+    } else if(static_cast<int>(reg) == 1001){
+        return "ebp"; 
+    }
 
-    ESI, //Extended source index
-    EDI, //Extended destination index
-    
-    REGISTER_COUNT  
-};
-
-enum class FloatRegister : unsigned int {
-    XMM0,
-    XMM1,
-    XMM2,
-    XMM3,
-    XMM4,
-    XMM5,
-    XMM6,
-    XMM7,
-
-    REGISTER_COUNT
-};
-
-std::string regToString(Register reg){
-    static std::string registers[(int) Register::REGISTER_COUNT] = {"eax", "ebx", "ecx", "edx", "esp", "ebp", "esi", "edi"};
-
-    return registers[(int) reg];
+    return registers[static_cast<int>(reg)];
 }
 
-std::string regToString(FloatRegister reg){
-    static std::string registers[(int) FloatRegister::REGISTER_COUNT] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
+std::string to_string(ltac::FloatRegister reg){
+    static std::string registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
-    return registers[(int) reg];
+    return registers[static_cast<int>(reg)];
 }
 
 void enterFunction(AssemblyFileWriter& writer){
@@ -79,300 +57,260 @@ void leaveFunction(AssemblyFileWriter& writer){
     writer.stream() << "ret" << std::endl;
 }
 
+#include "to_address.inc"
+
+std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
+    if(auto* ptr = boost::get<int>(&arg)){
+        return os << *ptr;
+    } else if(auto* ptr = boost::get<double>(&arg)){
+        return os << "__float32__(" << std::fixed << *ptr << ")";
+    } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
+        return os << to_string(*ptr); 
+    } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
+        return os << to_string(*ptr); 
+    } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
+        return os << to_string(*ptr);
+    } else if(auto* ptr = boost::get<std::string>(&arg)){
+        return os << *ptr;
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
+}
+
 } //end of x86 namespace
 
 using namespace x86;
 
 namespace eddic { namespace as {
 
-struct IntelX86StatementCompiler : public IntelStatementCompiler<Register, FloatRegister>, public boost::static_visitor<> {
-    IntelX86StatementCompiler(AssemblyFileWriter& w, std::shared_ptr<tac::Function> f) : IntelStatementCompiler(w, 
-        {Register::EDI, Register::ESI, Register::ECX, Register::EDX, Register::EBX, Register::EAX}, 
-        {FloatRegister::XMM0, FloatRegister::XMM1, FloatRegister::XMM2, FloatRegister::XMM3, FloatRegister::XMM4, FloatRegister::XMM5, FloatRegister::XMM6, FloatRegister::XMM7}, f) {}
-    
-    std::string getMnemonicSize(){
-        return "dword";
+struct X86StatementCompiler : public boost::static_visitor<> {
+    AssemblyFileWriter& writer;
+
+    X86StatementCompiler(AssemblyFileWriter& writer) : writer(writer) {
+        //Nothing else to init
     }
 
-    std::string getFloatPrefix(){
-        return "__float32__";
-    }
+    void operator()(std::shared_ptr<ltac::Instruction> instruction){
+        switch(instruction->op){
+            case ltac::Operator::MOV:
+                if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
+                    writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else if(boost::get<ltac::Register>(&*instruction->arg1) && boost::get<ltac::FloatRegister>(&*instruction->arg2)){
+                    writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else if(boost::get<ltac::Address>(&*instruction->arg1)){
+                    writer.stream() << "mov dword " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else {
+                    writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                }
 
-    std::string getFloatMove(){
-        return "movss ";
-    }
+                break;
+            case ltac::Operator::FMOV:
+                if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
+                    writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                } else {
+                    writer.stream() << "movss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                }
 
-    std::string getFloatToInteger(){
-        return "cvttss2si ";
-    }
+                break;
+            case ltac::Operator::MEMSET:
+                writer.stream() << "mov ecx, " << *instruction->arg2 << std::endl;
+                writer.stream() << "xor eax, eax" << std::endl;
+                writer.stream() << "lea edi, " << *instruction->arg1 << std::endl;
+                writer.stream() << "std" << std::endl;
+                writer.stream() << "rep stosw" << std::endl;
+                writer.stream() << "cld" << std::endl;
 
-    std::string getIntegerToFloat(){
-        return "cvtsi2ss ";
-    }
-    
-    std::string getFloatAdd(){
-        return "addss ";
-    }
-    
-    std::string getFloatSub(){
-        return "subss ";
-    }
-    
-    std::string getFloatMul(){
-        return "mulss ";
-    }
-    
-    std::string getFloatDiv(){
-        return "divss ";
-    }
-    
-    std::string getSizedMove(){
-        return "movd ";
-    }
+                break;
+            case ltac::Operator::ALLOC_STACK:
+                writer.stream() << "sub esp, " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::FREE_STACK:
+                writer.stream() << "add esp, " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::LEAVE:
+                leaveFunction(writer);
+                break;
+            case ltac::Operator::CMP_INT:
+                writer.stream() << "cmp " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMP_FLOAT:
+                writer.stream() << "ucomiss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::OR:
+                writer.stream() << "or " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::XOR:
+                writer.stream() << "xor " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::PUSH:
+                if(boost::get<ltac::Address>(&*instruction->arg1)){
+                    writer.stream() << "push dword " << *instruction->arg1 << std::endl;
+                } else {
+                    writer.stream() << "push " << *instruction->arg1 << std::endl;
+                }
 
-    Register getReturnRegister1(){
-        return Register::EAX;
-    }
+                break;
+            case ltac::Operator::POP:
+                writer.stream() << "pop " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::LEA:
+                writer.stream() << "lea " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::SHIFT_LEFT:
+                writer.stream() << "sal " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::SHIFT_RIGHT:
+                writer.stream() << "sar " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::ADD:
+                writer.stream() << "add " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::SUB:
+                writer.stream() << "sub " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::MUL:
+                if(instruction->arg3){
+                    writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << ", " << *instruction->arg3 << std::endl;
+                } else {
+                    writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                }
 
-    Register getReturnRegister2(){
-        return Register::EBX;
-    }
-
-    Register getBasePointerRegister(){
-        return Register::EBP;
-    }
-
-    Register getStackPointerRegister(){
-        return Register::ESP;
-    }
-    
-    Register getIntParamRegister(unsigned int position){
-        assert(position == 1);
-
-        return Register::ECX;
-    }
-    
-    FloatRegister getFloatParamRegister(unsigned int position){
-        assert(position == 1);
-
-        return FloatRegister::XMM7;
-    }
-  
-    //Div eax by arg2 
-    void divEax(std::shared_ptr<tac::Quadruple> quadruple){
-        writer.stream() << "mov edx, eax" << std::endl;
-        writer.stream() << "sar edx, 31" << std::endl;
-
-        if(isInt(*quadruple->arg2)){
-            auto reg = getReg();
-            move(*quadruple->arg2, reg);
-
-            writer.stream() << "idiv " << reg << std::endl;
-
-            if(registers.reserved(reg)){
-                registers.release(reg);
-            }
-        } else {
-            writer.stream() << "idiv " << arg(*quadruple->arg2) << std::endl;
+                break;
+            case ltac::Operator::DIV:
+                writer.stream() << "idiv " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::FADD:
+                writer.stream() << "addss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::FSUB:
+                writer.stream() << "subss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::FMUL:
+                writer.stream() << "mulss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::FDIV:
+                writer.stream() << "divss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::INC:
+                writer.stream() << "inc " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::DEC:
+                writer.stream() << "dec " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::NEG:
+                writer.stream() << "neg " << *instruction->arg1 << std::endl;
+                break;
+            case ltac::Operator::I2F:
+                writer.stream() << "cvtsi2ss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::F2I:
+                writer.stream() << "cvttss2si " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVE:
+                writer.stream() << "cmove " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVNE:
+                writer.stream() << "cmovne " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVA:
+                writer.stream() << "cmova " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVAE:
+                writer.stream() << "cmovae " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVB:
+                writer.stream() << "cmovb " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVBE:
+                writer.stream() << "cmovbe " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVG:
+                writer.stream() << "cmovg " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVGE:
+                writer.stream() << "cmovge " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVL:
+                writer.stream() << "cmovl " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::CMOVLE:
+                writer.stream() << "cmovle " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
+            case ltac::Operator::NOP:
+                //Nothing to output for a nop
+                break;
+            default:
+                ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
         }
     }
     
-    void div(std::shared_ptr<tac::Quadruple> quadruple){
-        spills(Register::EDX);
-        registers.reserve(Register::EDX);
-
-        //Form x = x / y
-        if(*quadruple->arg1 == quadruple->result){
-            safeMove(quadruple->result, Register::EAX);
-
-            divEax(quadruple);
-            //Form x = y / z (y: variable)
-        } else if(isVariable(*quadruple->arg1)){
-            spills(Register::EAX);
-            registers.reserve(Register::EAX);
-
-            copy(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), Register::EAX);
-
-            divEax(quadruple);
-
-            registers.release(Register::EAX);
-            registers.setLocation(quadruple->result, Register::EAX);
-        } else {
-            spills(Register::EAX);
-            registers.reserve(Register::EAX);
-
-            copy(*quadruple->arg1, Register::EAX);
-
-            divEax(quadruple);
-
-            registers.release(Register::EAX);
-            registers.setLocation(quadruple->result, Register::EAX);
+    void operator()(std::shared_ptr<ltac::Jump> jump){
+        switch(jump->type){
+            case ltac::JumpType::CALL:
+                writer.stream() << "call " << jump->label << std::endl;
+                break;
+            case ltac::JumpType::ALWAYS:
+                writer.stream() << "jmp " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::NE:
+                writer.stream() << "jne " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::E:
+                writer.stream() << "je " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::GE:
+                writer.stream() << "jge " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::G:
+                writer.stream() << "jg " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::LE:
+                writer.stream() << "jle " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::L:
+                writer.stream() << "jl " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::AE:
+                writer.stream() << "jae " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::A:
+                writer.stream() << "ja" << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::BE:
+                writer.stream() << "jbe " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::B:
+                writer.stream() << "jb " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::P:
+                writer.stream() << "jp " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::Z:
+                writer.stream() << "jz " << "." << jump->label << std::endl;
+                break;
+            case ltac::JumpType::NZ:
+                writer.stream() << "jnz " << "." << jump->label << std::endl;
+                break;
+            default:
+                ASSERT_PATH_NOT_TAKEN("The jump type is not supported");
         }
-
-        registers.release(Register::EDX);
-    }
-    
-    void mod(std::shared_ptr<tac::Quadruple> quadruple){
-        spills(Register::EAX);
-        spills(Register::EDX);
-
-        registers.reserve(Register::EAX);
-        registers.reserve(Register::EDX);
-
-        copy(*quadruple->arg1, Register::EAX);
-
-        divEax(quadruple);
-
-        //result is in edx (no need to move it now)
-        registers.setLocation(quadruple->result, Register::EDX);
-
-        registers.release(Register::EAX);
-    }
-    
-    void operator()(std::shared_ptr<tac::Quadruple>& quadruple){
-        compile(quadruple);
-    }
-    
-    void operator()(std::shared_ptr<tac::Param>& param){
-        compile(param);
-    }
-    
-    void operator()(std::shared_ptr<tac::IfFalse>& ifFalse){
-        compile(ifFalse);
     }
 
-    void operator()(std::shared_ptr<tac::If>& if_){
-        compile(if_);
-    }
-
-    void operator()(std::shared_ptr<tac::Goto>& goto_){
-        compile(goto_);
-    }
-
-    void operator()(std::shared_ptr<tac::Call>& call){
-        compile(call);
-    }
-
-    void operator()(tac::NoOp&){
-        //It's a no-op
-    }
-
-    void operator()(std::string&){
-        assert(false && "No more labels should be there");
+    void operator()(std::string& label){
+        writer.stream() << "." << label << ":" << std::endl;
     }
 };
 
-}} //end of eddic::as
-
-namespace { //anonymous namespace
-
-void compile(AssemblyFileWriter& writer, std::shared_ptr<tac::BasicBlock> block, as::IntelX86StatementCompiler& compiler, std::shared_ptr<Function> definition){
-    compiler.reset();
-    compiler.handleParameters(definition);
-
-    if(compiler.blockUsage.find(block) != compiler.blockUsage.end()){
-        writer.stream() << block->label << ":" << std::endl;
-    }
-
-    for(unsigned int i = 0; i < block->statements.size(); ++i){
-        auto& statement = block->statements[i];
-
-        if(i == block->statements.size() - 1){
-            compiler.setLast(true);
-        } else {
-            compiler.setNext(block->statements[i+1]);
-        }
-        
-        visit(compiler, statement);
-    }
-
-    //If the basic block has not been ended
-    if(!compiler.ended){
-        compiler.endBasicBlock();
-    }
-}
- 
-} //end of anonymous space
-
-namespace eddic { namespace as {
-
-void IntelX86CodeGenerator::compile(std::shared_ptr<tac::Function> function){
+void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     defineFunction(writer, function->getName());
+    //TODO In the future, it is possible that it is up to the ltac compiler to generate the preamble of functions
 
-    auto size = function->context->size();
-    //Only if necessary, allocates size on the stack for the local variables
-    if(size > 0){
-        writer.stream() << "sub esp, " << size << std::endl;
-    }
-    
-    auto iter = function->context->begin();
-    auto end = function->context->end();
+    X86StatementCompiler compiler(writer);
 
-    for(; iter != end; iter++){
-        auto var = iter->second;
-        if(var->type().isArray() && var->position().isStack()){
-            int position = -var->position().offset();
-
-            writer.stream() << "mov dword [ebp + " << position << "], " << var->type().size() << std::endl;
-
-            if(var->type().base() == BaseType::INT){
-                writer.stream() << "mov ecx, " << var->type().size() << std::endl;
-            } else if(var->type().base() == BaseType::STRING){
-                writer.stream() << "mov ecx, " << (var->type().size() * 2) << std::endl;
-            }
-            
-            writer.stream() << "mov eax, 0" << std::endl;
-            writer.stream() << "lea edi, [ebp + " << position << " - 4]" << std::endl;
-            writer.stream() << "std" << std::endl;
-            writer.stream() << "rep stosd" << std::endl;
-            writer.stream() << "cld" << std::endl;
-        }
-    }
-
-    IntelX86StatementCompiler compiler(writer, function);
-
-    tac::computeBlockUsage(function, compiler.blockUsage);
-
-    //First we computes a label for each basic block
-    for(auto& block : function->getBasicBlocks()){
-        block->label = newLabel();
-    }
-
-    //Then we compile each of them
-    for(auto& block : function->getBasicBlocks()){
-        ::compile(writer, block, compiler, function->definition);
-    }
- 
-    if(function->getBasicBlocks().size() > 0){
-        auto& lastBasicBlock = function->getBasicBlocks().back();
-        
-        if(lastBasicBlock->statements.size() > 0){
-            auto lastStatement = lastBasicBlock->statements.back();
-            
-            if(auto* ptr = boost::get<std::shared_ptr<tac::Quadruple>>(&lastStatement)){
-                if((*ptr)->op != tac::Operator::RETURN){
-                    //Only if necessary, deallocates size on the stack for the local variables
-                    if(size > 0){
-                        writer.stream() << "add esp, " << size << std::endl;
-                    }
-
-                    leaveFunction(writer);
-
-                    return;
-                }
-            }
-        }
-    }
-                    
-    //Only if necessary, deallocates size on the stack for the local variables
-    if(size > 0){
-        writer.stream() << "add esp, " << size << std::endl;
-    }
-
-    leaveFunction(writer);
+    visit_each(compiler, function->getStatements());
 }
 
-void IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
+void IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -380,7 +318,7 @@ void IntelX86CodeGenerator::writeRuntimeSupport(FunctionTable& table){
     writer.stream() << "_start:" << std::endl;
 
     //If the user wants the args, we add support for them
-    if(table.getFunction("main")->parameters.size() == 1){
+    if(symbols.getFunction("main")->parameters.size() == 1){
         writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
         writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
         writer.stream() << "push ecx" << std::endl;
@@ -457,6 +395,10 @@ void IntelX86CodeGenerator::declareString(const std::string& label, const std::s
     writer.stream() << label << " dd " << value << std::endl;
 }
 
+void IntelX86CodeGenerator::declareFloat(const std::string& label, double value){
+    writer.stream() << std::fixed << label << " dd __float32__(" << value << ")" << std::endl;
+}
+
 }} //end of eddic::as
 
 namespace { //anonymous namespace
@@ -480,7 +422,7 @@ void restoreFloat32(AssemblyFileWriter& writer, const std::vector<std::string>& 
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov eax, [ebp+8]" << std::endl;
+    writer.stream() << "mov eax, ecx" << std::endl;
     writer.stream() << "xor esi, esi" << std::endl;
 
     //If the number is negative, we print the - and then the number
@@ -555,8 +497,8 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;   //Get the integer part into rbx
-    writer.stream() << "cvtsi2ss xmm1, ebx" << std::endl;   //Move the integer part into xmm1
+    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;      //ebx = integer part
+    writer.stream() << "cvtsi2ss xmm1, ebx" << std::endl;       //xmm1 = integer part
 
     //Print the integer part
     writer.stream() << "mov ecx, ebx" << std::endl;
@@ -567,29 +509,41 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "push 1" << std::endl;
     writer.stream() << "call _F5printS" << std::endl;
     writer.stream() << "add esp, 8" << std::endl;
+
+    //Handle negative numbers
+    writer.stream() << "or ebx, ebx" << std::endl;
+    writer.stream() << "jge .pos" << std::endl;
+    writer.stream() << "mov ebx, __float32__(-1.0)" << std::endl;
+    writer.stream() << "movd xmm2, ebx" << std::endl;
+    writer.stream() << "mulss xmm7, xmm2" << std::endl;
+    writer.stream() << "mulss xmm1, xmm2" << std::endl;
+
+    writer.stream() << ".pos:" << std::endl;
    
     //Remove the integer part from the floating point 
-    writer.stream() << "subss xmm7, xmm1" << std::endl;
+    writer.stream() << "subss xmm7, xmm1" << std::endl;         //xmm7 = decimal part
     
     writer.stream() << "mov ecx, __float32__(10000.0)" << std::endl;
-    writer.stream() << "movd xmm2, ecx" << std::endl;
+    writer.stream() << "movd xmm2, ecx" << std::endl;           //xmm2 = 10'000
     
-    writer.stream() << "mulss xmm7, xmm2" << std::endl;
-    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;
-    writer.stream() << "mov eax, ebx" << std::endl;
+    writer.stream() << "mulss xmm7, xmm2" << std::endl;         //xmm7 = decimal part * 10'000
+    writer.stream() << "cvttss2si ebx, xmm7" << std::endl;      //ebx = decimal part * 10'000
+    writer.stream() << "mov eax, ebx" << std::endl;             //eax = ebx
 
-    //Handle numbers with 0 at the beginning of the decimal part
+    //Handle numbers with no decimal part 
     writer.stream() << "or eax, eax" << std::endl;
     writer.stream() << "je .end" << std::endl;
+    
+    //Handle numbers with 0 at the beginning of the decimal part
+    writer.stream() << "xor ecx, ecx" << std::endl;
     writer.stream() << ".start:" << std::endl;
     writer.stream() << "cmp eax, 1000" << std::endl;
     writer.stream() << "jge .end" << std::endl;
-    writer.stream() << "xor ecx, ecx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add esp, 4" << std::endl;
     writer.stream() << "imul eax, 10" << std::endl;
     writer.stream() << "jmp .start" << std::endl;
     
+    //Print the number itself
     writer.stream() << ".end:" << std::endl;
     writer.stream() << "mov ecx, ebx" << std::endl;
     writer.stream() << "call _F5printI" << std::endl;
@@ -598,7 +552,7 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
 void addPrintFloatFunction(AssemblyFileWriter& writer){
     defineFunction(writer, "_F5printF");
 
-    as::save(writer, {"eax", "ebx"});
+    as::save(writer, {"eax", "ebx", "ecx"});
     saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
 
     addPrintFloatBody(writer);
@@ -626,7 +580,7 @@ void addPrintFloatFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintBoolBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov eax, [ebp-4] " << std::endl;
+    writer.stream() << "mov eax, [ebp+8] " << std::endl;
     writer.stream() << "or eax, eax" << std::endl;
     writer.stream() << "jne .true_print" << std::endl;
     writer.stream() << "xor ecx, ecx" << std::endl;

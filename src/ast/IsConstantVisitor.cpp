@@ -21,6 +21,7 @@ ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::True, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::False, true)
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::ArrayValue, false)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::StructValue, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::FunctionCall, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::SuffixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::PrefixOperation, false)

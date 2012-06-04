@@ -40,8 +40,7 @@ struct ASTForeachIn {
 
     std::vector<Instruction> instructions;
 
-    mutable long references;
-    ASTForeachIn() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

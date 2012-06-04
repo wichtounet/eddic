@@ -23,9 +23,9 @@ class IntelX86_64CodeGenerator : public IntelCodeGenerator {
         IntelX86_64CodeGenerator(AssemblyFileWriter& writer);
         
     protected:        
-        void writeRuntimeSupport(FunctionTable& table);
+        void writeRuntimeSupport();
         void addStandardFunctions();
-        void compile(std::shared_ptr<tac::Function> function);
+        void compile(std::shared_ptr<ltac::Function> function);
         
         /* Functions for global variables */
         void defineDataSection();
@@ -36,6 +36,7 @@ class IntelX86_64CodeGenerator : public IntelCodeGenerator {
         void declareIntVariable(const std::string& name, int value);
         void declareStringVariable(const std::string& name, const std::string& label, int size);
         void declareString(const std::string& label, const std::string& value);
+        void declareFloat(const std::string& label, double value);
 };
 
 } //end of as

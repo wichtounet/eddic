@@ -8,8 +8,6 @@
 #ifndef AST_FALSE_H
 #define AST_FALSE_H
 
-#include "ast/TerminalNode.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -18,7 +16,7 @@ namespace ast {
  * \class False
  * \brief Reprensent a false boolean litteral. 
  */
-struct False : public TerminalNode {
+struct False {
 
 };
 

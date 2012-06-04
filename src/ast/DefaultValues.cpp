@@ -28,30 +28,32 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            Type type = newType(declaration.Content->variableType);
+            if(is_standard_type(declaration.Content->variableType)){
+                Type type = newType(declaration.Content->variableType);
 
-            assert(type == BaseType::INT || type == BaseType::STRING);
+                assert(type == BaseType::INT || type == BaseType::STRING);
 
-            switch(type.base()){
-                case BaseType::INT:{
-                    ast::Integer integer;
-                    integer.value = 0;
+                switch(type.base()){
+                    case BaseType::INT:{
+                        ast::Integer integer;
+                        integer.value = 0;
 
-                    declaration.Content->value = integer;
+                        declaration.Content->value = integer;
 
-                    break;
+                        break;
+                    }
+                    case BaseType::STRING:{
+                        ast::Litteral litteral;
+                        litteral.value = "\"\"";
+                        litteral.label = "S3";
+
+                        declaration.Content->value = litteral;
+
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                case BaseType::STRING:{
-                    ast::Litteral litteral;
-                    litteral.value = "\"\"";
-                    litteral.label = "S3";
-
-                    declaration.Content->value = litteral;
-
-                    break;
-                }
-                default:
-                    break;
             }
         }
     }
@@ -64,10 +66,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
         setDefaultValue(declaration);
     }
 
-    template<typename T>
-    void operator()(T&){
-        //No need to recurse further
-    }
+    AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace

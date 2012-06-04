@@ -8,24 +8,36 @@
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
 
-#include "tac/Program.hpp"
+#include "ltac/Program.hpp"
+#include "FloatPool.hpp"
 
 #include <memory>
 
 namespace eddic {
 
-class FunctionTable;
 class StringPool;
 class AssemblyFileWriter;
 
 namespace as {
 
+/*!
+ * \class CodeGenerator
+ * Generates code for the backend from the LTAC Program. 
+ */
 class CodeGenerator {
     public:
+        /*!
+         * Constructs a CodeGenerator. 
+         * \param The AssemblyFileWriter to use to output code to. 
+         */
         CodeGenerator(AssemblyFileWriter& writer);
         
-        //Entry point
-        virtual void generate(tac::Program& program, StringPool& pool, FunctionTable& table) = 0;
+        /*!
+         * Generates codes from the LTAC Program. 
+         * \param program The source LTAC Program. 
+         * \param pool The string pool to use. 
+         */
+        virtual void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

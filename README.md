@@ -1,12 +1,12 @@
-# EDDI Compiler 0.9.1 #
+# EDDI Compiler 1.0.0 #
 
 The compiler of the EDDI programming language. 
 
 ## Building ##
 
-A compiler supporting the new standard, C++11, is necessary to build the compiler. The compilation has been tested on GCC 4.6 and greater versions. You need Boost 1.47.0 installed on your computer to build this project. 
+A compiler supporting the new standard, C++11, is necessary to build the compiler. The compilation is known to be working on GCC 4.7 and greater. It has not been tested on CLang or on Windows. You need Boost 1.47.0 installed on your computer to build this project. 
 
-You juste have to use cmake to build the compiler : 
+You juste have to use CMake to build the compiler : 
 
     $ git clone git://github.com/wichtounet/eddic.git
     $ cd eddic
@@ -24,6 +24,10 @@ That will create a "a.out" file in the current folder. You can then run this fil
 
     $ ./a.out
 
+For other options, refer to the help usage of the executable:
+
+    $ ./bin/eddic --help
+
 ## Contributors ##
 
 Read `AUTHORS`
@@ -34,7 +38,7 @@ Read `ChangeLog`
 
 ## Contribute ##
 
-The project is open for any kind of contribution : new features, hotfixes, tests, ...
+The project is open for any kind of contribution : ideas, new features, hotfixes, tests, ...
 
 If you want to contribute to this project, you can contact me by [email](baptiste.wicht@gmail.com) or via my [website](http://baptiste-wicht.com/).
 

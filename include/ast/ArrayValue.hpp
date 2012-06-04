@@ -33,8 +33,7 @@ struct ASTArrayValue {
     std::shared_ptr<Variable> var;
     Value indexValue;
 
-    mutable long references;
-    ASTArrayValue() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

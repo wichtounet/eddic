@@ -34,8 +34,7 @@ struct ASTGlobalVariableDeclaration {
     std::string variableName;
     boost::optional<Value> value;
 
-    mutable long references;
-    ASTGlobalVariableDeclaration() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

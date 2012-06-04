@@ -14,15 +14,11 @@
 
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
+#include "Utils.hpp"
 
 #include "parser/SpiritParser.hpp"
 
 using namespace eddic;
-
-bool exists(const std::string& file){
-   std::ifstream ifile(file.c_str());
-   return ifile; 
-}
 
 class DependencyVisitor : public boost::static_visitor<> {
     private:
@@ -44,7 +40,7 @@ class DependencyVisitor : public boost::static_visitor<> {
         void operator()(ast::StandardImport& import){
             auto headerFile = "stdlib/" + import.header + ".eddi";
             
-            if(!exists(headerFile)){
+            if(!file_exists(headerFile)){
                 throw SemanticalException("The header " + import.header + " does not exist");
             }
            
@@ -65,7 +61,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             file.erase(0, 1);
             file.resize(file.size() - 1);
 
-            if(!exists(file)){
+            if(!file_exists(file)){
                 throw SemanticalException("The file " + file + " does not exist");
             }
            
@@ -81,10 +77,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             }
         }
 
-        template<typename T>
-        void operator()(T&){
-            //Nothing to include there
-        }
+        AUTO_IGNORE_OTHERS()
 };
 
 void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser){

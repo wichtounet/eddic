@@ -9,9 +9,9 @@
 
 using namespace eddic;
 
-Position::Position(PositionType type) : m_type(type), m_offset(0), m_name("") {}
-Position::Position(PositionType type, int offset) : m_type(type), m_offset(offset), m_name("") {}
-Position::Position(PositionType type, const std::string& name) : m_type(type), m_offset(0), m_name(name) {}
+Position::Position(PositionType type) : m_type(type) {}
+Position::Position(PositionType type, int offset) : m_type(type), m_offset(offset) {}
+Position::Position(PositionType type, const std::string& name) : m_type(type), m_name(name) {}
 
 bool Position::isStack() const {
     return m_type == PositionType::STACK;
@@ -37,14 +37,14 @@ bool Position::isParamRegister() const {
     return m_type == PositionType::PARAM_REGISTER;
 }
 
-int Position::offset() const {
-    return m_offset;
-}
-
 PositionType Position::type() const {
     return m_type;
 }
 
+int Position::offset() const {
+    return *m_offset;
+}
+
 const std::string& Position::name() const {
-    return m_name;
+    return *m_name;
 }

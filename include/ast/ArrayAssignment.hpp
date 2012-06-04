@@ -34,8 +34,7 @@ struct ASTArrayAssignment {
     Value indexValue;
     Value value;
 
-    mutable long references;
-    ASTArrayAssignment() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

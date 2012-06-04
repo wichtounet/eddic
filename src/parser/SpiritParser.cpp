@@ -33,9 +33,9 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);
    
+    //Collect the size of the file
     in.seekg(0, std::istream::end);
     std::size_t size(static_cast<size_t>(in.tellg()));
-
     in.seekg(0, std::istream::beg);
 
     std::string contents(size, 0);

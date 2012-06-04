@@ -61,13 +61,12 @@ struct Collector : public boost::static_visitor<> {
         void operator()(ast::VariableDeclaration& declaration){
             positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
         }
-        
-        template<typename T>
-        void operator()(T&){
-            //Nothing
-        }
+
+        AUTO_IGNORE_OTHERS()
 
         const ast::Position& getPosition(std::shared_ptr<Variable> var){
+            assert(positions.find(var) != positions.end());
+
             return positions[var];   
         }
 
@@ -77,8 +76,9 @@ struct Collector : public boost::static_visitor<> {
 
 struct Inspector : public boost::static_visitor<> {
     public:
-        Inspector(FunctionTable& table, Collector& collector) : functionTable(table), collector(collector) {}
+        Inspector(Collector& collector) : collector(collector) {}
     
+        /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
@@ -91,6 +91,28 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_ARRAY_ASSIGNMENT()
+
+        /* The following cannot throw a warning  */
+        AUTO_IGNORE_FALSE()
+        AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_LITERAL()
+        AUTO_IGNORE_FLOAT()
+        AUTO_IGNORE_INTEGER()
+        AUTO_IGNORE_INTEGER_SUFFIX()
+        AUTO_IGNORE_IMPORT()
+        AUTO_IGNORE_STANDARD_IMPORT()
+        AUTO_IGNORE_COMPOUND_ASSIGNMENT()
+        AUTO_IGNORE_SWAP()
+        AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT()
+        AUTO_IGNORE_STRUCT_ASSIGNMENT()
+        AUTO_IGNORE_STRUCT_VALUE()
+        AUTO_IGNORE_ARRAY_DECLARATION()
+        AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
+        AUTO_IGNORE_PLUS()
+        AUTO_IGNORE_MINUS()
+        AUTO_IGNORE_PREFIX_OPERATION()
+        AUTO_IGNORE_SUFFIX_OPERATION()
+        AUTO_IGNORE_VARIABLE_VALUE()
 
         void check(std::shared_ptr<Context> context){
             if(WarningUnused){
@@ -119,11 +141,27 @@ struct Inspector : public boost::static_visitor<> {
             visit_each(*this, program.Content->blocks);
         }
         
+        void operator()(ast::Struct& declaration){
+            if(WarningUnused){
+                auto struct_ = symbols.get_struct(declaration.Content->name);
+
+                if(struct_->get_references() == 0){
+                    warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
+                } else {
+                    for(auto member : struct_->members){
+                        if(member->get_references() == 0){
+                            warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+                        }
+                    }
+                }
+            }
+        }
+        
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
             if(WarningUnused){
-                int references = functionTable.referenceCount(declaration.Content->mangledName);
+                int references = symbols.referenceCount(declaration.Content->mangledName);
 
                 if(declaration.Content->functionName != "main" && references == 0){
                     warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
@@ -145,23 +183,17 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
         }
-
-        template<typename T>
-        void operator()(T&){
-            //Nothing to check there
-        }
     
     private:
-        FunctionTable& functionTable;
         Collector& collector;
 };
 
 } //end of anonymous namespace
 
-void ast::checkForWarnings(ast::SourceFile& program, FunctionTable& table){
+void ast::checkForWarnings(ast::SourceFile& program){
     Collector collector;
     visit_non_variant(collector, program);
 
-    Inspector inspector(table, collector);
+    Inspector inspector(collector);
     visit_non_variant(inspector, program);
 }

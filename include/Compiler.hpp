@@ -10,16 +10,7 @@
 
 #include <string>
 
-#include "ast/source_def.hpp"
-
-#include "Platform.hpp"
-
 namespace eddic {
-
-extern Platform platform;
-
-class FunctionTable;
-void checkForMain(FunctionTable& table);
 
 /*!
  * \class Compiler
@@ -29,8 +20,19 @@ void checkForMain(FunctionTable& table);
  * and produce either an executable or an assembly file depending on the provided options. 
  */
 struct Compiler {
+    /*!
+     * Compile the given file. 
+     * \param file The file to compile. 
+     * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
+     */
     int compile (const std::string& file);
-    int compileOnly (const std::string& file, Platform platform);
+    
+    /*!
+     * Compile the given file. The compilation is not timed. 
+     * \param file The file to compile. 
+     * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
+     */
+    int compileOnly (const std::string& file);
 };
 
 } //end of eddic

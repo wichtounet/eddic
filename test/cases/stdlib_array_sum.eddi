@@ -1,0 +1,11 @@
+include<arrays>
+
+void main(){
+    int local[100];
+
+    for(int i = 0; i < size(local); ++i){
+        local[i] = 1;
+    }
+
+    print(sum(local));
+}

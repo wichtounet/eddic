@@ -1,0 +1,15 @@
+include<math>
+
+void main(){
+    print(pow(0, 10));
+    print("|");
+    print(pow(10, 0));
+    print("|");
+    print(pow(10, 1));
+    print("|");
+    print(pow(10, 2));
+    print("|");
+    print(pow(2, 10));
+    print("|");
+    print(pow(1, 100));
+}

@@ -15,7 +15,6 @@
 #include "ast/ASTVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 
-#include "Compiler.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -24,20 +23,31 @@
 #include "Variable.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_MINUS_PLUS_VALUES()
-   
-    void operator()(ast::FunctionDeclaration& declaration){
-        visit_each(*this, declaration.Content->instructions);
-    }
+        
+    AUTO_IGNORE_ARRAY_DECLARATION()
+    AUTO_IGNORE_FALSE()
+    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_FLOAT()
+    AUTO_IGNORE_INTEGER()
+    AUTO_IGNORE_IMPORT()
+    AUTO_IGNORE_STANDARD_IMPORT()
+    AUTO_IGNORE_STRUCT()
+    AUTO_IGNORE_STRUCT_VALUE()
+    AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
+    AUTO_IGNORE_VARIABLE_VALUE()
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
         Type type = newType(declaration.Content->variableType); 
@@ -46,18 +56,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
         }
-    }
-
-    void operator()(ast::Import&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::StandardImport&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::GlobalArrayDeclaration&){
-        //Nothing to check here
     }
     
     void operator()(ast::Foreach& foreach){
@@ -78,7 +76,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != var->type()) {
+        if (valueType != var->type().non_const()) {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
         }
 
@@ -86,7 +84,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it", assignment.Content->position);
         }
 
-        if(var->position().isParameter()){
+        if(var->position().isParameter() || var->position().isParamRegister()){
             throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName, assignment.Content->position);
         }
     }
@@ -97,6 +95,20 @@ struct CheckerVisitor : public boost::static_visitor<> {
     
     void operator()(ast::CompoundAssignment& assignment){
         checkAssignment(assignment);
+    }
+    
+    void operator()(ast::StructCompoundAssignment& assignment){
+        visit(*this, assignment.Content->value);
+        
+        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
+
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+        if (valueType != member_type) {
+            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+        }
     }
 
     template<typename Operation>
@@ -145,19 +157,32 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
     }
-    
-    void operator()(ast::VariableDeclaration& declaration){
-        visit(*this, *declaration.Content->value);
 
-        Type variableType = newType(declaration.Content->variableType);
-        Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
-        if (valueType != variableType) {
-            throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+    void operator()(ast::StructAssignment& assignment){
+        visit(*this, assignment.Content->value);
+        
+        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
+
+        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+        if (valueType != member_type) {
+            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
         }
     }
     
-    void operator()(ast::ArrayDeclaration&){
-        //No need for type checking here
+    void operator()(ast::VariableDeclaration& declaration){
+        if(declaration.Content->value){
+            visit(*this, *declaration.Content->value);
+
+            auto var = (*declaration.Content->context)[declaration.Content->variableName];
+            
+            Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+            if (valueType != var->type().non_const()) {
+                throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+            }
+        }
     }
     
     void operator()(ast::Swap& swap){
@@ -265,14 +290,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         if(suffix != "f"){
             throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
         }
-    }
-
-    void operator()(ast::VariableValue&){
-        //Nothing to check here
-    }
-
-    void operator()(ast::TerminalNode&){
-        //Terminal nodes have no need for type checking    
     }
 };
 

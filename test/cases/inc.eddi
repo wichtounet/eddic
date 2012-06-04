@@ -1,0 +1,30 @@
+void main(){
+    int a = 0;
+    print(a);
+    print("|");
+
+    a++;
+    print(a);
+    print("|");
+
+    ++a;
+    print(a);
+    print("|");
+
+    --a;
+    print(a);
+    print("|");
+
+    a--;
+    print(a);
+    print("|");
+
+    int b = ++a;
+    print(b);
+    print("|");
+    
+    b = a++;
+    print(b);
+    print("|");
+}
+

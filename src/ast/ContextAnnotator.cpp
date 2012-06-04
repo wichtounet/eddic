@@ -33,6 +33,16 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_MINUS_PLUS_VALUES()
         AUTO_RECURSE_CAST_VALUES()
+
+        AUTO_IGNORE_FALSE()
+        AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_LITERAL()
+        AUTO_IGNORE_FLOAT()
+        AUTO_IGNORE_INTEGER()
+        AUTO_IGNORE_INTEGER_SUFFIX()
+        AUTO_IGNORE_IMPORT()
+        AUTO_IGNORE_STANDARD_IMPORT()
+        AUTO_IGNORE_STRUCT()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
@@ -138,7 +148,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->context = currentContext;
             
-            visit(*this, *declaration.Content->value);
+            visit_optional(*this, declaration.Content->value);
         }
         
         void operator()(ast::ArrayDeclaration& declaration){
@@ -157,10 +167,22 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
+        void operator()(ast::StructCompoundAssignment& assignment){
+            assignment.Content->context = currentContext;
+
+            visit(*this, assignment.Content->value);
+        }
+        
         void operator()(ast::ArrayAssignment& assignment){
             assignment.Content->context = currentContext;
 
             visit(*this, assignment.Content->indexValue);
+            visit(*this, assignment.Content->value);
+        }
+        
+        void operator()(ast::StructAssignment& assignment){
+            assignment.Content->context = currentContext;
+
             visit(*this, assignment.Content->value);
         }
         
@@ -188,6 +210,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
             variable.Content->context = currentContext;
         }
         
+        void operator()(ast::StructValue& struct_){
+            struct_.Content->context = currentContext;
+        }
+        
         void operator()(ast::ArrayValue& array){
             array.Content->context = currentContext;
 
@@ -198,18 +224,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
             return_.Content->context = functionContext;
 
             visit(*this, return_.Content->value);
-        }
-        
-        void operator()(ast::Import&){
-            //No context there
-        }
-
-        void operator()(ast::StandardImport&){
-            //No Context there
-        }
-         
-        void operator()(ast::TerminalNode&){
-            //A terminal node has no context
         }
 };
 
