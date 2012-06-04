@@ -1,3 +1,15 @@
+eddic 1.0.0 - 2012.05.04
+
+* Language: Support of structures
+* Optimization Engine: First support for global optimizations (global constant propagation)
+* Optimization Engine: Implemenation of Common Subexpression Elimination
+* Optimization Engine: Use of a peephole optimizer for low-level optimizations
+* Compiler: Use of a new low-level intermediate language
+* Compiler: Review the use of constant floats in generated assembly
+* Compiler: Much more complete unit test suite
+* Compiler: Clear separation of front end and back end
+* Miscellaneous: Boost chrono is no longer needed - Replaced by std::chrono
+
 eddic 0.9.1 - 2012.03.21
 
 * Pass params in registers
