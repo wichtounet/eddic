@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <unordered_set>
+#include <thread>
+#include <algorithm>
 
 #include <boost/variant.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -374,41 +376,62 @@ bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> func
 
 }
 
-void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const {
+void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
+    if(option_defined("dev")){
+        std::cout << "Start optimizations on " << function->getName() << std::endl;
+
+        print(function);
+    }
+
+    bool optimized;
+    do {
+        optimized = false;
+
+        optimized |= debug("Aritmetic Identities", apply_to_all<mtac::ArithmeticIdentities>(function), function);
+        optimized |= debug("Reduce in Strength", apply_to_all<mtac::ReduceInStrength>(function), function);
+        optimized |= debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+
+        optimized |= debug("Constant propagation", data_flow_optimization<mtac::ConstantPropagationProblem>(function), function);
+        optimized |= debug("Offset Constant Propagation", data_flow_optimization<mtac::OffsetConstantPropagationProblem>(function), function);
+
+        //If there was optimizations here, better to try again before perfoming common subexpression
+        if(optimized){
+            continue;
+        }
+
+        optimized |= debug("Common Subexpression Elimination", data_flow_optimization<mtac::CommonSubexpressionElimination>(function), function);
+        optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<mtac::RemoveAssign>(function), function);
+        optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<mtac::RemoveMultipleAssign>(function), function);
+
+        optimized |= debug("Optimize Branches", optimize_branches(function), function);
+        optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
+        optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
+        optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
+        optimized |= debug("Merge basic blocks", merge_basic_blocks(function), function);
+    } while (optimized);
+}
+
+void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
     PerfsTimer timer("Whole optimizations");
 
-    //Optimize all the functions, one after one
-    for(auto& function : program->functions){
-        if(option_defined("dev")){
-            std::cout << "Start optimizations on " << function->getName() << std::endl;
+    auto& functions = program->functions;
 
-            print(function);
-        }
-        
-        bool optimized;
-        do {
-            optimized = false;
+    //Find a better heuristic to configure the number of threads
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
 
-            optimized |= debug("Aritmetic Identities", apply_to_all<ArithmeticIdentities>(function), function);
-            optimized |= debug("Reduce in Strength", apply_to_all<ReduceInStrength>(function), function);
-            optimized |= debug("Constant folding", apply_to_all<ConstantFolding>(function), function);
+    std::vector<std::thread> pool;
+    for(std::size_t tid = 0; tid < threads; ++tid){
+        pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
+            std::size_t i = tid;
 
-            optimized |= debug("Constant propagation", data_flow_optimization<ConstantPropagationProblem>(function), function);
-            optimized |= debug("Offset Constant Propagation", data_flow_optimization<OffsetConstantPropagationProblem>(function), function);
+            while(i < functions.size()){
+                optimize_function(functions[i], string_pool); 
 
-            //If there was optimizations here, better to try again before perfoming common subexpression
-            if(optimized){
-                continue;
+                i += threads;
             }
-
-            optimized |= debug("Common Subexpression Elimination", data_flow_optimization<CommonSubexpressionElimination>(function), function);
-            optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<RemoveAssign>(function), function);
-            optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<RemoveMultipleAssign>(function), function);
-            optimized |= debug("Optimize Branches", optimize_branches(function), function);
-            optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
-            optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
-            optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
-            optimized |= debug("Merge basic blocks", merge_basic_blocks(function), function);
-        } while (optimized);
+        }));
     }
+
+    //Wait for all the threads to finish
+    std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
