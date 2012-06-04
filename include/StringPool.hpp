@@ -10,6 +10,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <mutex>
 
 namespace eddic {
 
@@ -22,6 +23,8 @@ class StringPool {
     private:
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
+
+        mutable std::mutex mutex;
 
     public:
         StringPool();
