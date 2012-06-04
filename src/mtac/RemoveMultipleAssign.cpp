@@ -17,13 +17,13 @@
 
 using namespace eddic;
 
-static void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>> used){
+static void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>>& used){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
         used.insert(*ptr);
     }
 }
 
-static void collect(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>> used){
+static void collect(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>>& used){
     if(arg){
         collect(&*arg, used);
     }
