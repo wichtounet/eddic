@@ -16,6 +16,7 @@
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 
+#include "FrontEnd.hpp"
 #include "FrontEnds.hpp"
 #include "BackEnds.hpp"
 #include "BackEnd.hpp"

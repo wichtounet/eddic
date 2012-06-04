@@ -11,10 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "FrontEnd.hpp"
-#include "Utils.hpp"
-
 namespace eddic {
+
+class FrontEnd;
 
 std::shared_ptr<FrontEnd> get_front_end(const std::string& file);
 

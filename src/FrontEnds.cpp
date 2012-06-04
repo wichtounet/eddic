@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "FrontEnd.hpp"
 #include "FrontEnds.hpp"
 #include "EDDIFrontEnd.hpp"
 #include "Utils.hpp"

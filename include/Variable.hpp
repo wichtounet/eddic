@@ -10,20 +10,13 @@
 
 #include <utility>
 #include <string>
-#include <memory>
 
 #include <boost/variant/variant.hpp>
 
 #include "Types.hpp"
-
 #include "Position.hpp"
 
 namespace eddic {
-
-class IntermediateProgram;
-class Operand;
-
-typedef std::shared_ptr<Operand> OperandPtr;
 
 typedef boost::variant<int, double, std::pair<std::string, int>> Val;
 
