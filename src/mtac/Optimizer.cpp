@@ -14,8 +14,8 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
-#include "DebugStopWatch.hpp"
 #include "Options.hpp"
+#include "PerfsTimer.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
@@ -44,8 +44,6 @@ static const bool DebugPerf = false;
 
 template<typename Visitor>
 bool apply_to_all(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("apply to all clean");
-
     Visitor visitor;
 
     for(auto& block : function->getBasicBlocks()){
@@ -57,7 +55,6 @@ bool apply_to_all(std::shared_ptr<mtac::Function> function){
 
 template<typename Visitor>
 bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("apply to basic blocks two phase");
     bool optimized = false;
 
     for(auto& block : function->getBasicBlocks()){
@@ -77,8 +74,6 @@ bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
 }
 
 bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("Remove dead basic blocks");
-
     std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
 
     auto& blocks = function->getBasicBlocks();
@@ -127,7 +122,6 @@ bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
 }
 
 bool optimize_branches(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("Optimize branches");
     bool optimized = false;
     
     for(auto& block : function->getBasicBlocks()){
@@ -179,7 +173,6 @@ bool isParam(T& statement){
 }
 
 bool optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
-    DebugStopWatch<DebugPerf> timer("Optimize concat");
     bool optimized = false;
     
     auto& blocks = function->getBasicBlocks();
@@ -255,7 +248,6 @@ bool optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<S
 }
 
 bool remove_needless_jumps(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("Remove needless jumps");
     bool optimized = false;
 
     auto& blocks = function->getBasicBlocks();
@@ -289,7 +281,6 @@ bool remove_needless_jumps(std::shared_ptr<mtac::Function> function){
 }
 
 bool merge_basic_blocks(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("Merge basic blocks");
     bool optimized = false;
 
     std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
@@ -350,8 +341,6 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
 template<typename Problem>
 bool data_flow_optimization(std::shared_ptr<mtac::Function> function){
-    DebugStopWatch<DebugPerf> timer("Data-flow optimization");
-
     bool optimized = false;
 
     Problem problem;
@@ -386,6 +375,8 @@ bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> func
 }
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const {
+    PerfsTimer timer("Whole optimizations");
+
     //Optimize all the functions, one after one
     for(auto& function : program->functions){
         if(option_defined("dev")){
