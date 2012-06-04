@@ -12,6 +12,7 @@
 #include "DebugStopWatch.hpp"
 #include "RegisterAllocation.hpp"
 #include "Options.hpp"
+#include "StringPool.hpp"
 
 #include "parser/SpiritParser.hpp"
 
