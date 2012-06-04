@@ -19,6 +19,7 @@
 #include "FrontEnds.hpp"
 #include "BackEnds.hpp"
 #include "BackEnd.hpp"
+#include "Platform.hpp"
 
 //Three Address Code
 #include "mtac/Program.hpp"

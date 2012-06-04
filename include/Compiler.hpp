@@ -10,10 +10,6 @@
 
 #include <string>
 
-#include "ast/source_def.hpp"
-
-#include "Platform.hpp"
-
 namespace eddic {
 
 /*!
