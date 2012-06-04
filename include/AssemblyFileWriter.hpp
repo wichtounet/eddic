@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef ASSEMBLY_FILE_READER_H
-#define ASSEMBLY_FILE_READER_H
+#ifndef ASSEMBLY_FILE_WRITER_H
+#define ASSEMBLY_FILE_WRITER_H
 
 #include <sstream>
 #include <fstream>

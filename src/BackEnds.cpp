@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "BackEnds.hpp"
+#include "BackEnd.hpp"
 #include "NativeBackEnd.hpp"
 
 using namespace eddic;

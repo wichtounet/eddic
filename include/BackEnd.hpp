@@ -11,10 +11,11 @@
 #include <memory>
 #include <string>
 
-#include "StringPool.hpp"
 #include "mtac/Program.hpp"
 
 namespace eddic {
+
+class StringPool;
 
 /*!
  * \class BackEnd

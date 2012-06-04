@@ -10,9 +10,9 @@
 
 #include <memory>
 
-#include "BackEnd.hpp"
-
 namespace eddic {
+
+class BackEnd;
 
 /*!
  * \enum Output
