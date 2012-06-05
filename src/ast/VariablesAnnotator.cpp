@@ -138,13 +138,28 @@ struct VariablesVisitor : public boost::static_visitor<> {
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
         auto struct_name = var->type().type();
         auto struct_type = symbols.get_struct(struct_name);
-
-        if(!struct_type->member_exists(assignment.Content->memberNames[0])){ //TODO Handle several members
-            throw SemanticalException("The struct " + struct_name + " has no member named " + assignment.Content->memberNames[0], assignment.Content->position);
-        }
-
+        
+        //Add a reference to the struct
         struct_type->add_reference();
-        (*struct_type)[assignment.Content->memberNames[0]]->add_reference();
+
+        auto& members = assignment.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = members[i];
+
+            if(!struct_type->member_exists(member)){ 
+                throw SemanticalException("The struct " + struct_name + " has no member named " + member, assignment.Content->position);
+            }
+
+            //Add a reference to the member
+            (*struct_type)[member]->add_reference();
+
+            //If it is not the last member
+            if(i != members.size() - 1){
+                //The next member will be a member of the current member type
+                struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                struct_name = struct_type->name;
+            }
+        }
     }
 
     template<typename Operation>
