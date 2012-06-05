@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -35,7 +36,7 @@ struct ASTStructValue {
 
     Position position;
     std::string variableName;
-    std::string memberName;
+    std::vector<std::string> memberNames;
 
     std::shared_ptr<Variable> variable;
 
@@ -57,7 +58,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::StructValue, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
-    (std::string, Content->memberName)
+    (std::vector<std::string>, Content->memberNames)
 )
 
 #endif

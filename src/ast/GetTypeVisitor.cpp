@@ -57,7 +57,7 @@ Type ast::GetTypeVisitor::operator()(const ast::StructValue& struct_) const {
     auto struct_name = var->type().type();
     auto struct_type = symbols.get_struct(struct_name);
     
-    return (*struct_type)[struct_.Content->memberName]->type;
+    return (*struct_type)[struct_.Content->memberNames[0]]->type; //TODO Handle several members
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {

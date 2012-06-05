@@ -162,8 +162,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     struct_value %= 
             qi::position(position_begin)
         >>  lexer.identifier
-        >>  lexer.dot
-        >>  lexer.identifier;
+        >>  +(
+                    lexer.dot
+                >>  lexer.identifier
+             );
    
     arrayValue %=
             qi::position(position_begin)
