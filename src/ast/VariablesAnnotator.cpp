@@ -139,12 +139,12 @@ struct VariablesVisitor : public boost::static_visitor<> {
         auto struct_name = var->type().type();
         auto struct_type = symbols.get_struct(struct_name);
 
-        if(!struct_type->member_exists(assignment.Content->memberName)){
-            throw SemanticalException("The struct " + struct_name + " has no member named " + assignment.Content->memberName, assignment.Content->position);
+        if(!struct_type->member_exists(assignment.Content->memberNames[0])){ //TODO Handle several members
+            throw SemanticalException("The struct " + struct_name + " has no member named " + assignment.Content->memberNames[0], assignment.Content->position);
         }
 
         struct_type->add_reference();
-        (*struct_type)[assignment.Content->memberName]->add_reference();
+        (*struct_type)[assignment.Content->memberNames[0]]->add_reference();
     }
 
     template<typename Operation>

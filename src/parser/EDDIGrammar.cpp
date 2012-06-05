@@ -164,8 +164,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     struct_assignment %= 
             qi::position(position_begin)
         >>  lexer.identifier 
-        >>  lexer.dot
-        >>  lexer.identifier 
+        >>  +(
+                    lexer.dot
+                >>  lexer.identifier 
+             )
         >>  lexer.assign 
         >>  value;
     

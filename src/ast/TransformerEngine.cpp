@@ -117,7 +117,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         assignment.Content->context = compound.Content->context;
         assignment.Content->variableName = compound.Content->variableName;
-        assignment.Content->memberName = compound.Content->memberName;
+        assignment.Content->memberNames[0] = compound.Content->memberName; //TODO Handle several struct members
 
         ast::StructValue variable;
         variable.Content->context = compound.Content->context;

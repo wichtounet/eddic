@@ -164,7 +164,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
         auto struct_name = var->type().type();
         auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
+        auto member_type = (*struct_type)[assignment.Content->memberNames[0]]->type; //TODO Adapt to several members
 
         Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
         if (valueType != member_type) {

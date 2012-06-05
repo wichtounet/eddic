@@ -916,7 +916,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::StructAssignment& assignment){
             auto struct_name = (*assignment.Content->context)[assignment.Content->variableName]->type().type();
             auto struct_type = symbols.get_struct(struct_name);
-            auto offset = symbols.member_offset(struct_type, assignment.Content->memberName);
+            auto offset = symbols.member_offset(struct_type, assignment.Content->memberNames[0]);
 
             visit(AssignValueToVariableWithOffset(function, assignment.Content->context->getVariable(assignment.Content->variableName), offset), assignment.Content->value);
         }

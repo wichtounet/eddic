@@ -189,7 +189,14 @@ void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
 }
 
 void ast::DebugVisitor::operator()(ast::StructAssignment& assign) const {
-    std::cout << indent() << "Struct assignment " << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
+    std::cout << indent() << "Struct assignment " << assign.Content->variableName;
+    
+    for(auto& member : assign.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
+    
     print_sub(*this, assign.Content->value);
 }
 
