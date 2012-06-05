@@ -167,13 +167,19 @@ void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
 }
 
 void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
-    std::cout << indent() << "Compound variable assignment [operator = " << (int) assign.Content->op << " ]" << std::endl; 
+    std::cout << indent() << "Compound variable assignment [operator = " << static_cast<int>(assign.Content->op) << " ]" << std::endl; 
+    
     print_sub(*this, assign.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::StructCompoundAssignment& assign) const {
-    std::cout << indent() << "Compound struct member assignment [operator = " << (int) assign.Content->op << " ]"
-        << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
+    std::cout << indent() << "Compound struct member assignment [operator = " << static_cast<int>(assign.Content->op) << " ]" << assign.Content->variableName; 
+    
+    for(auto& member : assign.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
     
     print_sub(*this, assign.Content->value);
 }

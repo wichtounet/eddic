@@ -141,8 +141,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     struct_compound_assignment %=
             qi::position(position_begin)
         >>  lexer.identifier
-        >>  lexer.dot
-        >>  lexer.identifier
+        >>  +(
+                    lexer.dot
+                >>  lexer.identifier 
+             )
         >>  qi::adapttokens[compound_op]
         >>  value;
 

@@ -26,7 +26,7 @@ struct ASTStructCompoundAssignment {
     std::shared_ptr<Context> context;
 
     std::string variableName;
-    std::string memberName;
+    std::vector<std::string> memberNames;
     Value value;
     ast::Operator op;
     Position position;
@@ -49,7 +49,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::StructCompoundAssignment, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
-    (std::string, Content->memberName)
+    (std::vector<std::string>, Content->memberNames)
     (eddic::ast::Operator, Content->op)
     (eddic::ast::Value, Content->value)
 )
