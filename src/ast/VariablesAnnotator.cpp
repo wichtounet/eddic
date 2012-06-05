@@ -281,18 +281,32 @@ struct VariablesVisitor : public boost::static_visitor<> {
         auto var = (*struct_.Content->context)[struct_.Content->variableName];
         auto struct_name = var->type().type();
         auto struct_type = symbols.get_struct(struct_name);
-
-        if(!struct_type->member_exists(struct_.Content->memberNames[0])){ //TODO Handle several members
-            throw SemanticalException("The struct " + struct_name + " has no member named " + struct_.Content->memberNames[0], struct_.Content->position);
-        }
-
+        
         //Reference the variable
         struct_.Content->variable = var;
         struct_.Content->variable->addReference();
 
-        //Reference the member
+        //Reference the structure
         struct_type->add_reference();
-        (*struct_type)[struct_.Content->memberNames[0]]->add_reference();
+
+        auto& members = struct_.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = members[i];
+
+            if(!struct_type->member_exists(member)){ 
+                throw SemanticalException("The struct " + struct_name + " has no member named " + member, struct_.Content->position);
+            }
+
+            //Add a reference to the member
+            (*struct_type)[member]->add_reference();
+
+            //If it is not the last member
+            if(i != members.size() - 1){
+                //The next member will be a member of the current member type
+                struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                struct_name = struct_type->name;
+            }
+        }
     }
 
     void operator()(ast::ArrayValue& array){
