@@ -26,11 +26,7 @@ struct StructuresCollector : public boost::static_visitor<> {
         auto signature = std::make_shared<Struct>(struct_.Content->name);
 
         for(auto& member : struct_.Content->members){
-            if(!is_standard_type(member.Content->type)){
-                throw SemanticalException("For now, only standard type are supporterd as members of structures", member.Content->position);
-            }
-
-            Type memberType = newType(member.Content->type);
+            Type memberType = new_type(member.Content->type);
             signature->members.push_back(std::make_shared<Member>(member.Content->name, memberType));
         }
 

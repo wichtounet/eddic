@@ -41,6 +41,7 @@ class Type {
     public:
         Type(BaseType type, bool array, unsigned int size, bool const_);
         Type(const std::string& type);
+        Type(const std::string& type, bool array, unsigned int size, bool const_);
 
         BaseType base() const;
         bool isArray() const;
