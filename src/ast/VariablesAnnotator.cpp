@@ -127,12 +127,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::CompoundAssignment& assignment){
         annotateAssignment(assignment);
     }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
-        annotateAssignment(assignment);
-    }
 
-    void operator()(ast::StructAssignment& assignment){
+    template<typename A>
+    void verify_struct_assignment(A& assignment){
         annotateAssignment(assignment);
 
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
@@ -160,6 +157,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 struct_name = struct_type->name;
             }
         }
+    }
+    
+    void operator()(ast::StructCompoundAssignment& assignment){
+        verify_struct_assignment(assignment);
+    }
+
+    void operator()(ast::StructAssignment& assignment){
+        verify_struct_assignment(assignment);
     }
 
     template<typename Operation>
