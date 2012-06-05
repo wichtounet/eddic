@@ -64,3 +64,9 @@ add_executable (test ${test_files})
 
 target_link_libraries (test boost_program_options)
 target_link_libraries (test boost_unit_test_framework)
+
+# Specifications for the installation of eddic
+
+INSTALL(TARGETS eddic
+    RUNTIME DESTINATION bin
+)
