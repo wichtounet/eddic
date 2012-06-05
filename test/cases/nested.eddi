@@ -1,0 +1,22 @@
+struct A {
+    int first;
+    int second;
+}
+
+struct B {
+    int first;
+    int second;
+}
+
+struct C {
+    A a;
+    B b;
+}
+
+void main(){
+    C c;
+
+    c.a.first = 100;
+
+    println(c.a.first);
+}
