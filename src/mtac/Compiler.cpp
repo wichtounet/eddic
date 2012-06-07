@@ -321,8 +321,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
         }
 
-        std::reverse(values.begin(), values.end());
-
         return values;
     }
             
@@ -388,14 +386,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             member_type = (*struct_type)[member]->type;
 
-            auto member_offset = symbols.member_offset(struct_type, member);
-
-            //Revert the offset for parameter variables
-            if(value.Content->variable->position().isParameter()){
-                member_offset = symbols.member_offset_reverse(struct_type, member);
-            }
-
-            offset += member_offset;
+            offset += symbols.member_offset(struct_type, member);
 
             if(i != members.size() - 1){
                 struct_name = member_type.type();
@@ -408,7 +399,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto t2 = value.Content->context->newTemporary();
         
             if(value.Content->variable->position().isParameter()){
-                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset - getStringOffset(value.Content->variable)));
+                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
                 function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->variable, mtac::Operator::DOT, offset));
             } else {
                 function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset));
@@ -972,16 +963,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto& members = assignment.Content->memberNames;
             for(std::size_t i = 0; i < members.size(); ++i){
                 auto& member = members[i];
-
                 auto member_type = (*struct_type)[member]->type;
-                auto member_offset = symbols.member_offset(struct_type, member);
-
-                //TODO Perhaps necessary to revert the offset for parameter variables
-                /*(if(value.Content->variable->position().isParameter()){
-                    member_offset = symbols.member_offset_reverse(struct_type, member);
-                }*/
-
-                offset += member_offset;
+                
+                offset += symbols.member_offset(struct_type, member);
 
                 if(i != members.size() - 1){
                     struct_name = member_type.type();

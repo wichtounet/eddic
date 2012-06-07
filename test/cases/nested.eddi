@@ -49,4 +49,27 @@ void main(){
     print("|");
     print(c.d.b.second);
     print("|");
+
+    test(c);
+}
+
+void test(C c){
+    print("|");
+    print(c.a.first);
+    print("|");
+    print(c.a.second);
+    print("|");
+    print(c.b.first);
+    print("|");
+    print(c.b.second);
+    print("|");
+    
+    print(c.d.a.first);
+    print("|");
+    print(c.d.a.second);
+    print("|");
+    print(c.d.b.first);
+    print("|");
+    print(c.d.b.second);
+    print("|");
 }
