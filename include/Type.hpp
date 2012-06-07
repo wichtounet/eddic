@@ -30,15 +30,17 @@ enum class BaseType : unsigned int {
  */
 class Type {
     private:
-        bool array;
-        bool const_;
-        bool custom;
+        bool array = false;
+        bool const_ = false;
+        bool custom = false;
         
         boost::optional<BaseType> baseType;
         boost::optional<std::string> m_type;
         boost::optional<unsigned int> m_size;
     
     public:
+        explicit Type();
+
         Type(BaseType type, bool array, unsigned int size, bool const_);
         Type(const std::string& type);
         Type(const std::string& type, bool array, unsigned int size, bool const_);
