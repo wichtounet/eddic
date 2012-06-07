@@ -345,12 +345,29 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::StructValue& value) const {
         auto struct_name = value.Content->variable->type().type();
         auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[value.Content->memberNames[0]]->type; //TODO Handle several members
-        auto offset = symbols.member_offset(struct_type, value.Content->memberNames[0]);
+        Type member_type = Type();
 
-        //Revert the offset for parameter variables
-        if(value.Content->variable->position().isParameter()){
-            offset = symbols.member_offset_reverse(struct_type, value.Content->memberNames[0]);
+        unsigned int offset = 0;
+
+        auto& members = value.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = members[i];
+
+            member_type = (*struct_type)[member]->type;
+
+            auto member_offset = symbols.member_offset(struct_type, member);
+
+            //Revert the offset for parameter variables
+            if(value.Content->variable->position().isParameter()){
+                member_offset = symbols.member_offset_reverse(struct_type, member);
+            }
+
+            offset += member_offset;
+
+            if(i != members.size() - 1){
+                struct_name = member_type.type();
+                struct_type = symbols.get_struct(struct_name);
+            }
         }
 
         if(member_type == BaseType::STRING){
