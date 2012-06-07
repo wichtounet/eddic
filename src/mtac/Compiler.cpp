@@ -269,6 +269,62 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         return {variable};
     }
+
+    void push_struct_member(ast::StructValue& memberValue, Type& type, result_type& values) const {
+        auto struct_name = type.type();
+        auto struct_type = symbols.get_struct(struct_name);
+        
+        for(auto& member : struct_type->members){
+            auto& member_type = member->type;
+
+            memberValue.Content->memberNames.push_back(member->name);
+            
+            if(member_type.is_custom_type()){
+                push_struct_member(memberValue, member_type, values);
+            } else {
+                auto member_values = (*this)(memberValue);
+                std::reverse(member_values.begin(), member_values.end());
+
+                for(auto& v : member_values){
+                    values.push_back(v);
+                }
+            }
+
+            memberValue.Content->memberNames.pop_back();
+        }
+    }
+
+    result_type push_struct(std::shared_ptr<Variable> var, std::shared_ptr<Context> context) const {
+        std::vector<mtac::Argument> values;
+
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+
+        for(auto member : struct_type->members){
+            auto& type = member->type;
+
+            ast::StructValue memberValue;
+            memberValue.Content->context = context;
+            memberValue.Content->variableName = var->name();
+            memberValue.Content->variable = var;
+            memberValue.Content->memberNames = {member->name};
+
+            if(type.is_custom_type()){
+                push_struct_member(memberValue, type, values);
+            } else {
+                auto member_values = (*this)(memberValue);
+                std::reverse(member_values.begin(), member_values.end());
+
+                for(auto& v : member_values){
+                    values.push_back(v);
+                }
+            }
+        }
+
+        std::reverse(values.begin(), values.end());
+
+        return values;
+    }
             
     result_type operator()(ast::VariableValue& value) const {
         auto type = value.Content->var->type();
@@ -302,30 +358,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 return {value.Content->var, temp};
             } else if(type.is_custom_type()) {
-                std::vector<mtac::Argument> values;
-
-                auto struct_name = value.Content->var->type().type();
-                auto struct_type = symbols.get_struct(struct_name);
-
-                for(auto member : struct_type->members){
-                    ast::StructValue memberValue;
-                    memberValue.Content->context = value.Content->context;
-                    memberValue.Content->position = value.Content->position;
-                    memberValue.Content->variableName = value.Content->variableName;
-                    memberValue.Content->variable = value.Content->var;
-                    memberValue.Content->memberNames = {member->name};
-
-                    auto member_values = (*this)(memberValue);
-                    std::reverse(member_values.begin(), member_values.end());
-
-                    for(auto& v : member_values){
-                        values.push_back(v);
-                    }
-                }
-
-                std::reverse(values.begin(), values.end());
-
-                return values;
+                return push_struct(value.Content->var, value.Content->context);
             } else {
                 ASSERT_PATH_NOT_TAKEN("Unhandled type");
             }
