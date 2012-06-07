@@ -253,8 +253,8 @@ BOOST_AUTO_TEST_CASE( structures ){
 }
 
 BOOST_AUTO_TEST_CASE( nested ){
-    assert_output_32("nested.eddi", "100");
-    assert_output_64("nested.eddi", "100");
+    assert_output_32("nested.eddi", "100|");
+    assert_output_64("nested.eddi", "100|");
 }
 
 BOOST_AUTO_TEST_CASE( args ){

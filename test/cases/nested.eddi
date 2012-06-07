@@ -18,5 +18,6 @@ void main(){
 
     c.a.first = 100;
 
-    println(c.a.first);
+    print(c.a.first);
+    print("|");
 }
