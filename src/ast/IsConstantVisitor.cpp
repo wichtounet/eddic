@@ -21,7 +21,6 @@ ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::True, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::False, true)
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::ArrayValue, false)
-ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::StructValue, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::FunctionCall, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::SuffixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::PrefixOperation, false)
@@ -41,7 +40,7 @@ bool ast::IsConstantVisitor::operator()(ast::Cast& cast) const {
 }
 
 bool ast::IsConstantVisitor::operator()(ast::VariableValue& variable) const {
-    return variable.Content->var->type().isConst();
+    return variable.Content->memberNames.empty() && variable.Content->var->type().isConst();
 }
 
 bool ast::IsConstantVisitor::operator()(ast::Expression& value) const {

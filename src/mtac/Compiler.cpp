@@ -270,7 +270,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {variable};
     }
 
-    void push_struct_member(ast::StructValue& memberValue, Type& type, result_type& values) const {
+    void push_struct_member(ast::VariableValue& memberValue, Type& type, result_type& values) const {
         auto struct_name = type.type();
         auto struct_type = symbols.get_struct(struct_name);
         
@@ -303,10 +303,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         for(auto member : struct_type->members){
             auto& type = member->type;
 
-            ast::StructValue memberValue;
+            ast::VariableValue memberValue;
             memberValue.Content->context = context;
             memberValue.Content->variableName = var->name();
-            memberValue.Content->variable = var;
+            memberValue.Content->var = var;
             memberValue.Content->memberNames = {member->name};
 
             if(type.is_custom_type()){
@@ -325,40 +325,89 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
             
     result_type operator()(ast::VariableValue& value) const {
-        auto type = value.Content->var->type();
+        if(value.Content->memberNames.empty()){
+            auto type = value.Content->var->type();
 
-        //If it's a const, we just have to replace it by its constant value
-        if(type.isConst()){
-           auto val = value.Content->var->val();
+            //If it's a const, we just have to replace it by its constant value
+            if(type.isConst()){
+                auto val = value.Content->var->val();
 
-           switch(type.base()){
-               case BaseType::INT:
-               case BaseType::BOOL:
-                   return {boost::get<int>(val)};
-               case BaseType::FLOAT:
-                   return {boost::get<double>(val)};        
-               case BaseType::STRING:{
-                     auto value = boost::get<std::pair<std::string, int>>(val);
+                switch(type.base()){
+                    case BaseType::INT:
+                    case BaseType::BOOL:
+                        return {boost::get<int>(val)};
+                    case BaseType::FLOAT:
+                        return {boost::get<double>(val)};        
+                    case BaseType::STRING:{
+                          auto value = boost::get<std::pair<std::string, int>>(val);
 
-                     return {value.first, value.second};
+                          return {value.first, value.second};
+                      }
+                    default:
+                        ASSERT_PATH_NOT_TAKEN("void is not a type");
                 }
-                default:
-                     ASSERT_PATH_NOT_TAKEN("void is not a type");
-           }
-        } else if(type.isArray()){
-            return {value.Content->var};
-        } else {
-            if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
+            } else if(type.isArray()){
                 return {value.Content->var};
-            } else if(type == BaseType::STRING){
-                auto temp = value.Content->context->newTemporary();
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
-
-                return {value.Content->var, temp};
-            } else if(type.is_custom_type()) {
-                return push_struct(value.Content->var, value.Content->context);
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
+                    return {value.Content->var};
+                } else if(type == BaseType::STRING){
+                    auto temp = value.Content->context->newTemporary();
+                    function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
+
+                    return {value.Content->var, temp};
+                } else if(type.is_custom_type()) {
+                    return push_struct(value.Content->var, value.Content->context);
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                }
+            }
+        } else {
+            auto struct_name = value.Content->var->type().type();
+            auto struct_type = symbols.get_struct(struct_name);
+            Type member_type = Type();
+
+            unsigned int offset = 0;
+
+            auto& members = value.Content->memberNames;
+            for(std::size_t i = 0; i < members.size(); ++i){
+                auto& member = members[i];
+
+                member_type = (*struct_type)[member]->type;
+
+                offset += symbols.member_offset(struct_type, member);
+
+                if(i != members.size() - 1){
+                    struct_name = member_type.type();
+                    struct_type = symbols.get_struct(struct_name);
+                }
+            }
+
+            if(member_type == BaseType::STRING){
+                auto t1 = value.Content->context->newTemporary();
+                auto t2 = value.Content->context->newTemporary();
+
+                if(value.Content->var->position().isParameter()){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, offset + getStringOffset(value.Content->var)));
+                    function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, offset));
+                } else {
+                    function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, offset));
+                    function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, offset + getStringOffset(value.Content->var)));
+                }
+
+                return {t1, t2};
+            } else {
+                auto temp = value.Content->context->new_temporary(member_type);
+
+                if(member_type == BaseType::FLOAT){
+                    function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::FDOT, offset));
+                } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
+                    function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, offset));
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                }
+
+                return {temp};
             }
         }
     }
@@ -371,55 +420,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::SuffixOperation& operation) const {
         return {performSuffixOperation(operation, function)};
-    }
-
-    result_type operator()(ast::StructValue& value) const {
-        auto struct_name = value.Content->variable->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-        Type member_type = Type();
-
-        unsigned int offset = 0;
-
-        auto& members = value.Content->memberNames;
-        for(std::size_t i = 0; i < members.size(); ++i){
-            auto& member = members[i];
-
-            member_type = (*struct_type)[member]->type;
-
-            offset += symbols.member_offset(struct_type, member);
-
-            if(i != members.size() - 1){
-                struct_name = member_type.type();
-                struct_type = symbols.get_struct(struct_name);
-            }
-        }
-
-        if(member_type == BaseType::STRING){
-            auto t1 = value.Content->context->newTemporary();
-            auto t2 = value.Content->context->newTemporary();
-        
-            if(value.Content->variable->position().isParameter()){
-                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
-                function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->variable, mtac::Operator::DOT, offset));
-            } else {
-                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->variable, mtac::Operator::DOT, offset));
-                function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->variable, mtac::Operator::DOT, offset + getStringOffset(value.Content->variable)));
-            }
-
-            return {t1, t2};
-        } else {
-            auto temp = value.Content->context->new_temporary(member_type);
-
-            if(member_type == BaseType::FLOAT){
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->variable, mtac::Operator::FDOT, offset));
-            } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->variable, mtac::Operator::DOT, offset));
-            } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled type");
-            }
-
-            return {temp};
-        }
     }
 
     result_type operator()(ast::ArrayValue& array) const {

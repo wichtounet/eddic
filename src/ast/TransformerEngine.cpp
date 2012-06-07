@@ -24,7 +24,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_FLOAT(ast::Value)
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
-    AUTO_RETURN_STRUCT_VALUE(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
     AUTO_RETURN_PLUS(ast::Value)
     AUTO_RETURN_MINUS(ast::Value)
@@ -119,11 +118,11 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         assignment.Content->variableName = compound.Content->variableName;
         assignment.Content->memberNames = compound.Content->memberNames; 
 
-        ast::StructValue variable;
+        ast::VariableValue variable;
         variable.Content->context = compound.Content->context;
         variable.Content->variableName = compound.Content->variableName;
         variable.Content->memberNames = compound.Content->memberNames;
-        variable.Content->variable = compound.Content->context->getVariable(compound.Content->variableName);
+        variable.Content->var = compound.Content->context->getVariable(compound.Content->variableName);
 
         ast::Expression composed;
         composed.Content->first = variable;
@@ -481,7 +480,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_RETURN()
     AUTO_IGNORE_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_STRUCT_VALUE()
     AUTO_IGNORE_STRUCT_ASSIGNMENT()
     AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_ARRAY_ASSIGNMENT()
