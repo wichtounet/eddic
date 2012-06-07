@@ -933,7 +933,28 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::StructAssignment& assignment){
             auto struct_name = (*assignment.Content->context)[assignment.Content->variableName]->type().type();
             auto struct_type = symbols.get_struct(struct_name);
-            auto offset = symbols.member_offset(struct_type, assignment.Content->memberNames[0]);
+
+            unsigned int offset = 0;
+
+            auto& members = assignment.Content->memberNames;
+            for(std::size_t i = 0; i < members.size(); ++i){
+                auto& member = members[i];
+
+                auto member_type = (*struct_type)[member]->type;
+                auto member_offset = symbols.member_offset(struct_type, member);
+
+                //TODO Perhaps necessary to revert the offset for parameter variables
+                /*(if(value.Content->variable->position().isParameter()){
+                    member_offset = symbols.member_offset_reverse(struct_type, member);
+                }*/
+
+                offset += member_offset;
+
+                if(i != members.size() - 1){
+                    struct_name = member_type.type();
+                    struct_type = symbols.get_struct(struct_name);
+                }
+            }
 
             visit(AssignValueToVariableWithOffset(function, assignment.Content->context->getVariable(assignment.Content->variableName), offset), assignment.Content->value);
         }
