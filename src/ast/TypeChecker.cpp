@@ -118,31 +118,31 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::CompoundAssignment& assignment){
-        checkAssignment(assignment);
-    }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
-        visit(*this, assignment.Content->value);
-        
-        auto var = (*assignment.Content->context)[assignment.Content->variableName];
+        if(assignment.Content->memberNames.empty()){
+            checkAssignment(assignment);
+        } else {
+            visit(*this, assignment.Content->value);
 
-        auto struct_name = var->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
+            auto var = (*assignment.Content->context)[assignment.Content->variableName];
 
-        auto& members = assignment.Content->memberNames;
-        for(std::size_t i = 0; i < members.size(); ++i){
-            auto& member = members[i];
+            auto struct_name = var->type().type();
+            auto struct_type = symbols.get_struct(struct_name);
 
-            auto member_type = (*struct_type)[member]->type;
-            
-            if(i == members.size() - 1){
-                Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-                if (valueType != member_type) {
-                    throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+            auto& members = assignment.Content->memberNames;
+            for(std::size_t i = 0; i < members.size(); ++i){
+                auto& member = members[i];
+
+                auto member_type = (*struct_type)[member]->type;
+
+                if(i == members.size() - 1){
+                    Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+                    if (valueType != member_type) {
+                        throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+                    }
+                } else {
+                    struct_name = member_type.type();
+                    struct_type = symbols.get_struct(struct_name);
                 }
-            } else {
-                struct_name = member_type.type();
-                struct_type = symbols.get_struct(struct_name);
             }
         }
     }

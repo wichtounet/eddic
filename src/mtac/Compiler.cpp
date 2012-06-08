@@ -841,11 +841,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             //There should be no more compound assignment there as they are transformed before into Assignement with composed value
             ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
         }
-        
-        void operator()(ast::StructCompoundAssignment&){
-            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            ASSERT_PATH_NOT_TAKEN("Struct compound assignment should be transformed into Assignment");
-        }
 
         void operator()(ast::While&){
             //This node has been transformed into a do while loop

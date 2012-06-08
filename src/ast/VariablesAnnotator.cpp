@@ -160,11 +160,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::CompoundAssignment& assignment){
-        annotateAssignment(assignment);
-    }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
-        verify_struct_assignment(assignment);
+        if(assignment.Content->memberNames.empty()){
+            annotateAssignment(assignment);
+        } else {
+            verify_struct_assignment(assignment);
+        }
     }
 
     template<typename Operation>

@@ -135,13 +135,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     compound_assignment %=
             qi::position(position_begin)
         >>  lexer.identifier
-        >>  qi::adapttokens[compound_op]
-        >>  value;
-    
-    struct_compound_assignment %=
-            qi::position(position_begin)
-        >>  lexer.identifier
-        >>  +(
+        >>  *(
                     lexer.dot
                 >>  lexer.identifier 
              )
@@ -190,7 +184,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             (value.functionCall > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (compound_assignment > lexer.stop)
-        |   (struct_compound_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
@@ -209,7 +202,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             value.assignment 
         |   swap 
         |   compound_assignment
-        |   struct_compound_assignment
         |   value.suffix_operation
         |   value.prefix_operation
         |   value.functionCall

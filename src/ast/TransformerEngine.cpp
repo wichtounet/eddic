@@ -96,26 +96,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         assignment.Content->context = compound.Content->context;
         assignment.Content->variableName = compound.Content->variableName;
-
-        ast::VariableValue variable;
-        variable.Content->context = compound.Content->context;
-        variable.Content->variableName = compound.Content->variableName;
-        variable.Content->var = compound.Content->context->getVariable(compound.Content->variableName);
-
-        ast::Expression composed;
-        composed.Content->first = variable;
-        composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
-
-        assignment.Content->value = composed;
-
-        return {assignment};
-    }
-    
-    result_type operator()(ast::StructCompoundAssignment& compound) const {
-        ast::Assignment assignment;
-
-        assignment.Content->context = compound.Content->context;
-        assignment.Content->variableName = compound.Content->variableName;
         assignment.Content->memberNames = compound.Content->memberNames; 
 
         ast::VariableValue variable;
@@ -421,10 +401,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::CompoundAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
-        assignment.Content->value = visit(transformer, assignment.Content->value); 
-    }
 
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
@@ -476,7 +452,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_RETURN()
     AUTO_IGNORE_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_ARRAY_ASSIGNMENT()
     AUTO_IGNORE_PLUS()
     AUTO_IGNORE_MINUS()
