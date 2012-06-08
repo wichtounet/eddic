@@ -9,10 +9,8 @@
 #define PERFS_TIMER_H
 
 #include <string>
-#include <iostream>
 
 #include "StopWatch.hpp"
-#include "Options.hpp"
 
 namespace eddic {
 

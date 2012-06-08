@@ -5,14 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
+
+#include "Options.hpp"
 #include "PerfsTimer.hpp"
 
 using namespace eddic;
 
-        PerfsTimer::PerfsTimer(const std::string& n) : name(n) {}
-        
-        PerfsTimer::~PerfsTimer(){
-            if(option_defined("perfs")){
-                std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
-            }
-        }
+PerfsTimer::PerfsTimer(const std::string& n) : name(n) {}
+
+PerfsTimer::~PerfsTimer(){
+    if(option_defined("perfs")){
+        std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
+    }
+}
