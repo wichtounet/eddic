@@ -15,6 +15,8 @@
 namespace eddic {
 
 extern Type BOOL;
+extern Type INT;
+extern Type FLOAT;
 
 /*!
  * \brief Parse the given type into an EDDI Type. 

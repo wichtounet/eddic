@@ -60,7 +60,7 @@ std::shared_ptr<Variable> FunctionContext::newTemporary(){
 
     std::string name = "ti_" + toString(temporary++);
 
-    return variables[name] = std::make_shared<Variable>(name, newSimpleType(BaseType::INT), position); 
+    return variables[name] = std::make_shared<Variable>(name, INT, position); 
 }
 
 std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
@@ -68,7 +68,7 @@ std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
 
     std::string name = "tf_" + toString(temporary++);
 
-    return variables[name] = std::make_shared<Variable>(name, newSimpleType(BaseType::FLOAT), position); 
+    return variables[name] = std::make_shared<Variable>(name, FLOAT, position); 
 }
 
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){

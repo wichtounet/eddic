@@ -189,9 +189,9 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                     } else {
                         std::shared_ptr<Variable> temp;
                         if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
-                            temp = expression.source->context->new_temporary(newSimpleType(BaseType::INT));
+                            temp = expression.source->context->new_temporary(INT);
                         } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
-                            temp = expression.source->context->new_temporary(newSimpleType(BaseType::FLOAT));
+                            temp = expression.source->context->new_temporary(FLOAT);
                         }
 
                         auto it = expression.source->statements.begin();

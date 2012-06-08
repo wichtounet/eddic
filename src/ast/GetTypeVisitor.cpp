@@ -18,11 +18,11 @@ using namespace eddic;
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, newSimpleType(BaseType::INT))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::IntegerSuffix, newSimpleType(BaseType::FLOAT)) //For now, there is only a float (f) suffix
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, newSimpleType(BaseType::INT)) //At this time, all the builtin operators return an int
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, INT)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, INT) //At this time, all the builtin operators return an int
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::IntegerSuffix, FLOAT) //For now, there is only a float (f) suffix
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, newSimpleType(BaseType::FLOAT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, FLOAT)
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, BOOL)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, BOOL)
