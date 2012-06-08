@@ -24,8 +24,8 @@ ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, newSimpleTy
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, newSimpleType(BaseType::FLOAT))
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, newSimpleType(BaseType::BOOL))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, newSimpleType(BaseType::BOOL))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, BOOL)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, BOOL)
 
 Type ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
    return visit(*this, minus.Content->value); 
@@ -84,9 +84,9 @@ Type ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){
-        return newSimpleType(BaseType::BOOL);
+        return BOOL;
     } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        return newSimpleType(BaseType::BOOL);
+        return BOOL;
     } else {
         //No need to recurse into operations because type are enforced in the check variables phase
         return visit(*this, value.Content->first);

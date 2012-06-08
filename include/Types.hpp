@@ -14,6 +14,8 @@
 
 namespace eddic {
 
+extern Type BOOL;
+
 /*!
  * \brief Parse the given type into an EDDI Type. 
  *

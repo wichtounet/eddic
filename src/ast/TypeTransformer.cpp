@@ -14,13 +14,7 @@
 using namespace eddic;
 
 eddic::Type ast::TypeTransformer::operator()(ast::SimpleType& type) const {
-    if(is_standard_type(type.type)){
-        return newSimpleType(type.type);
-    } else {
-        ASSERT(symbols.struct_exists(type.type), "The struct does not exists");
-
-        return new_custom_type(type.type);
-    }
+    return new_type(type.type);
 }
 
 eddic::Type ast::TypeTransformer::operator()(ast::ArrayType& type) const {

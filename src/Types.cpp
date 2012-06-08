@@ -11,6 +11,8 @@
 #include "SymbolTable.hpp"
 
 using namespace eddic;
+    
+Type eddic::BOOL(BaseType::BOOL, false, 0, false);
 
 int eddic::size(BaseType type){
     static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };

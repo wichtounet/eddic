@@ -228,7 +228,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
 
-                Type type = new_custom_type(declaration.Content->variableType);
+                Type type = new_type(declaration.Content->variableType);
 
                 declaration.Content->context->addVariable(declaration.Content->variableName, type);
             } else {
