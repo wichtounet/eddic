@@ -120,14 +120,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
     }
 
-    void operator()(ast::Assignment& assignment){
-        annotateAssignment(assignment);
-    }
-    
-    void operator()(ast::CompoundAssignment& assignment){
-        annotateAssignment(assignment);
-    }
-
     template<typename A>
     void verify_struct_assignment(A& assignment){
         annotateAssignment(assignment);
@@ -158,12 +150,20 @@ struct VariablesVisitor : public boost::static_visitor<> {
             }
         }
     }
+
+    void operator()(ast::Assignment& assignment){
+        if(assignment.Content->memberNames.empty()){
+            annotateAssignment(assignment);
+        } else {
+            verify_struct_assignment(assignment);
+        }
+    }
+    
+    void operator()(ast::CompoundAssignment& assignment){
+        annotateAssignment(assignment);
+    }
     
     void operator()(ast::StructCompoundAssignment& assignment){
-        verify_struct_assignment(assignment);
-    }
-
-    void operator()(ast::StructAssignment& assignment){
         verify_struct_assignment(assignment);
     }
 

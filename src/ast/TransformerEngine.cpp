@@ -112,7 +112,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
     }
     
     result_type operator()(ast::StructCompoundAssignment& compound) const {
-        ast::StructAssignment assignment;
+        ast::Assignment assignment;
 
         assignment.Content->context = compound.Content->context;
         assignment.Content->variableName = compound.Content->variableName;
@@ -434,10 +434,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
         assignment.Content->indexValue = visit(transformer, assignment.Content->indexValue); 
     }
-    
-    void operator()(ast::StructAssignment& assignment){
-        assignment.Content->value = visit(transformer, assignment.Content->value); 
-    }
 
     void operator()(ast::VariableDeclaration& declaration){
         if(declaration.Content->value){
@@ -480,7 +476,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_RETURN()
     AUTO_IGNORE_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_STRUCT_ASSIGNMENT()
     AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_ARRAY_ASSIGNMENT()
     AUTO_IGNORE_PLUS()

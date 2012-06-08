@@ -163,16 +163,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.assign 
         >>  value;
     
-    struct_assignment %= 
-            qi::position(position_begin)
-        >>  lexer.identifier 
-        >>  +(
-                    lexer.dot
-                >>  lexer.identifier 
-             )
-        >>  lexer.assign 
-        >>  value;
-    
     globalDeclaration %= 
             qi::position(position_begin)
         >>  const_
@@ -206,7 +196,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   (array_assignment > lexer.stop)
-        |   (struct_assignment > lexer.stop)
         |   if_
         |   for_
         |   while_
@@ -224,8 +213,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   value.suffix_operation
         |   value.prefix_operation
         |   value.functionCall
-        |   array_assignment
-        |   struct_assignment;
+        |   array_assignment;
     
     arg %= 
             type 

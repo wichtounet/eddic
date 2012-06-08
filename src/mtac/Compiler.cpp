@@ -947,39 +947,45 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            assign(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->value);
+            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
+
+            if(assignment.Content->memberNames.empty()){
+                assign(function, var, assignment.Content->value);
+            } else {
+                auto struct_name = var->type().type();
+                auto struct_type = symbols.get_struct(struct_name);
+
+                unsigned int offset = 0;
+
+                auto& members = assignment.Content->memberNames;
+                for(std::size_t i = 0; i < members.size(); ++i){
+                    auto& member = members[i];
+                    auto member_type = (*struct_type)[member]->type;
+
+                    offset += symbols.member_offset(struct_type, member);
+
+                    if(i != members.size() - 1){
+                        struct_name = member_type.type();
+                        struct_type = symbols.get_struct(struct_name);
+                    }
+                }
+
+                visit(AssignValueToVariableWithOffset(function, var, offset), assignment.Content->value);
+            }
         }
         
         void operator()(ast::ArrayAssignment& assignment){
-            visit(AssignValueToArray(function, assignment.Content->context->getVariable(assignment.Content->variableName), assignment.Content->indexValue), assignment.Content->value);
-        }
+            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        void operator()(ast::StructAssignment& assignment){
-            auto struct_name = (*assignment.Content->context)[assignment.Content->variableName]->type().type();
-            auto struct_type = symbols.get_struct(struct_name);
-
-            unsigned int offset = 0;
-
-            auto& members = assignment.Content->memberNames;
-            for(std::size_t i = 0; i < members.size(); ++i){
-                auto& member = members[i];
-                auto member_type = (*struct_type)[member]->type;
-                
-                offset += symbols.member_offset(struct_type, member);
-
-                if(i != members.size() - 1){
-                    struct_name = member_type.type();
-                    struct_type = symbols.get_struct(struct_name);
-                }
-            }
-
-            visit(AssignValueToVariableWithOffset(function, assignment.Content->context->getVariable(assignment.Content->variableName), offset), assignment.Content->value);
+            visit(AssignValueToArray(function, var, assignment.Content->indexValue), assignment.Content->value);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
             if(declaration.Content->value){
-                if(!declaration.Content->context->getVariable(declaration.Content->variableName)->type().isConst()){
-                    visit(AssignValueToVariable(function, declaration.Content->context->getVariable(declaration.Content->variableName)), *declaration.Content->value);
+                auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+                
+                if(!var->type().isConst()){
+                    visit(AssignValueToVariable(function, var), *declaration.Content->value);
                 }
             }
         }

@@ -162,7 +162,14 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 }
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
-    std::cout << indent() << "Variable assignment" << std::endl; 
+    std::cout << indent() << "Variable assignment " << assign.Content->variableName;
+    
+    for(auto& member : assign.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
+
     print_sub(*this, assign.Content->value);
 }
 
@@ -191,18 +198,6 @@ void ast::DebugVisitor::operator()(ast::Return& return_) const {
 
 void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     std::cout << indent() << "Array assignment" << std::endl; 
-    print_sub(*this, assign.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::StructAssignment& assign) const {
-    std::cout << indent() << "Struct assignment " << assign.Content->variableName;
-    
-    for(auto& member : assign.Content->memberNames){
-        std::cout << "." << member; 
-    }
-
-    std::cout << std::endl;
-    
     print_sub(*this, assign.Content->value);
 }
 

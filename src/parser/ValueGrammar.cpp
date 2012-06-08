@@ -195,6 +195,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     assignment %= 
             qi::position(position_begin)
         >>  lexer.identifier 
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier 
+             )
         >>  lexer.assign 
         >>  value;
     
