@@ -5,15 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/assert.hpp>
+#include "assert.hpp"
+#include "Context.hpp"
+#include "Variable.hpp"
+#include "VisitorUtils.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/Value.hpp"
-
-#include "Context.hpp"
-#include "Variable.hpp"
-#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -49,15 +48,28 @@ Type ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) cons
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    return variable.Content->context->getVariable(variable.Content->variableName)->type();
-}
+    auto var = (*variable.Content->context)[variable.Content->variableName];
 
-Type ast::GetTypeVisitor::operator()(const ast::StructValue& struct_) const {
-    auto var = (*struct_.Content->context)[struct_.Content->variableName];
-    auto struct_name = var->type().type();
-    auto struct_type = symbols.get_struct(struct_name);
-    
-    return (*struct_type)[struct_.Content->memberName]->type;
+    if(variable.Content->memberNames.empty()){
+        return var->type();
+    } else {
+        auto struct_name = var->type().type();
+        auto struct_type = symbols.get_struct(struct_name);
+
+        auto& members = variable.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto member_type = (*struct_type)[members[i]]->type;
+
+            if(i == members.size() - 1){
+                return member_type;
+            } else {
+                struct_name = member_type.type();
+                struct_type = symbols.get_struct(struct_name);
+            }
+        }
+
+        ASSERT_PATH_NOT_TAKEN("Problem with the type of members in nested struct values")
+    }
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {

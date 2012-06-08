@@ -167,22 +167,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
-        void operator()(ast::StructCompoundAssignment& assignment){
-            assignment.Content->context = currentContext;
-
-            visit(*this, assignment.Content->value);
-        }
-        
         void operator()(ast::ArrayAssignment& assignment){
             assignment.Content->context = currentContext;
 
             visit(*this, assignment.Content->indexValue);
-            visit(*this, assignment.Content->value);
-        }
-        
-        void operator()(ast::StructAssignment& assignment){
-            assignment.Content->context = currentContext;
-
             visit(*this, assignment.Content->value);
         }
         
@@ -208,10 +196,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
-        }
-        
-        void operator()(ast::StructValue& struct_){
-            struct_.Content->context = currentContext;
         }
         
         void operator()(ast::ArrayValue& array){

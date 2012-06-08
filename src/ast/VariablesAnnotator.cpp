@@ -120,31 +120,51 @@ struct VariablesVisitor : public boost::static_visitor<> {
         assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
     }
 
-    void operator()(ast::Assignment& assignment){
-        annotateAssignment(assignment);
-    }
-    
-    void operator()(ast::CompoundAssignment& assignment){
-        annotateAssignment(assignment);
-    }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
-        annotateAssignment(assignment);
-    }
-
-    void operator()(ast::StructAssignment& assignment){
+    template<typename A>
+    void verify_struct_assignment(A& assignment){
         annotateAssignment(assignment);
 
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
         auto struct_name = var->type().type();
         auto struct_type = symbols.get_struct(struct_name);
-
-        if(!struct_type->member_exists(assignment.Content->memberName)){
-            throw SemanticalException("The struct " + struct_name + " has no member named " + assignment.Content->memberName, assignment.Content->position);
-        }
-
+        
+        //Add a reference to the struct
         struct_type->add_reference();
-        (*struct_type)[assignment.Content->memberName]->add_reference();
+
+        auto& members = assignment.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = members[i];
+
+            if(!struct_type->member_exists(member)){ 
+                throw SemanticalException("The struct " + struct_name + " has no member named " + member, assignment.Content->position);
+            }
+
+            //Add a reference to the member
+            (*struct_type)[member]->add_reference();
+
+            //If it is not the last member
+            if(i != members.size() - 1){
+                //The next member will be a member of the current member type
+                struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                struct_name = struct_type->name;
+            }
+        }
+    }
+
+    void operator()(ast::Assignment& assignment){
+        if(assignment.Content->memberNames.empty()){
+            annotateAssignment(assignment);
+        } else {
+            verify_struct_assignment(assignment);
+        }
+    }
+    
+    void operator()(ast::CompoundAssignment& assignment){
+        if(assignment.Content->memberNames.empty()){
+            annotateAssignment(assignment);
+        } else {
+            verify_struct_assignment(assignment);
+        }
     }
 
     template<typename Operation>
@@ -251,27 +271,35 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Reference the variable
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
         variable.Content->var->addReference();
-    }
-    
-    void operator()(ast::StructValue& struct_){
-        if (!struct_.Content->context->exists(struct_.Content->variableName)) {
-            throw SemanticalException("Variable " + struct_.Content->variableName + " has not been declared", struct_.Content->position);
+
+        //If there are dereferencing
+        if(!variable.Content->memberNames.empty()){
+            auto var = variable.Content->var;
+            auto struct_name = var->type().type();
+            auto struct_type = symbols.get_struct(struct_name);
+
+            //Reference the structure
+            struct_type->add_reference();
+
+            auto& members = variable.Content->memberNames;
+            for(std::size_t i = 0; i < members.size(); ++i){
+                auto& member = members[i];
+
+                if(!struct_type->member_exists(member)){ 
+                    throw SemanticalException("The struct " + struct_name + " has no member named " + member, variable.Content->position);
+                }
+
+                //Add a reference to the member
+                (*struct_type)[member]->add_reference();
+
+                //If it is not the last member
+                if(i != members.size() - 1){
+                    //The next member will be a member of the current member type
+                    struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                    struct_name = struct_type->name;
+                }
+            }
         }
-        
-        auto var = (*struct_.Content->context)[struct_.Content->variableName];
-        auto struct_name = var->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-
-        if(!struct_type->member_exists(struct_.Content->memberName)){
-            throw SemanticalException("The struct " + struct_name + " has no member named " + struct_.Content->memberName, struct_.Content->position);
-        }
-
-        //Reference the variable
-        struct_.Content->variable = var;
-        struct_.Content->variable->addReference();
-
-        struct_type->add_reference();
-        (*struct_type)[struct_.Content->memberName]->add_reference();
     }
 
     void operator()(ast::ArrayValue& array){

@@ -162,18 +162,26 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 }
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
-    std::cout << indent() << "Variable assignment" << std::endl; 
+    std::cout << indent() << "Variable assignment " << assign.Content->variableName;
+    
+    for(auto& member : assign.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
+
     print_sub(*this, assign.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
-    std::cout << indent() << "Compound variable assignment [operator = " << (int) assign.Content->op << " ]" << std::endl; 
-    print_sub(*this, assign.Content->value);
-}
+    std::cout << indent() << "Compound assignment [operator = " << static_cast<int>(assign.Content->op) << " ]";
+    std::cout << assign.Content->variableName;
+    
+    for(auto& member : assign.Content->memberNames){
+        std::cout << "." << member; 
+    }
 
-void ast::DebugVisitor::operator()(ast::StructCompoundAssignment& assign) const {
-    std::cout << indent() << "Compound struct member assignment [operator = " << (int) assign.Content->op << " ]"
-        << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
+    std::cout << std::endl;
     
     print_sub(*this, assign.Content->value);
 }
@@ -185,11 +193,6 @@ void ast::DebugVisitor::operator()(ast::Return& return_) const {
 
 void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
     std::cout << indent() << "Array assignment" << std::endl; 
-    print_sub(*this, assign.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::StructAssignment& assign) const {
-    std::cout << indent() << "Struct assignment " << assign.Content->variableName << "." << assign.Content->memberName << std::endl; 
     print_sub(*this, assign.Content->value);
 }
 
@@ -218,11 +221,13 @@ void ast::DebugVisitor::operator()(ast::False&) const {
 }
 
 void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
-    std::cout << indent() << "Variable [" << value.Content->var->name()  << "]" << std::endl; 
-}
+    std::cout << indent() << "Variable " << value.Content->var->name();
+    
+    for(auto& member : value.Content->memberNames){
+        std::cout << "." << member; 
+    }
 
-void ast::DebugVisitor::operator()(ast::StructValue& value) const {
-    std::cout << indent() << "Member access " << value.Content->variableName << "." << value.Content->memberName << std::endl; 
+    std::cout << std::endl;
 }
 
 void ast::DebugVisitor::operator()(ast::ArrayValue&) const {

@@ -83,11 +83,6 @@ void operator()(ast::ArrayAssignment& assignment){\
     visit(*this, assignment.Content->value);\
 }
 
-#define AUTO_RECURSE_STRUCT_ASSIGNMENT()\
-void operator()(ast::StructAssignment& assignment){\
-    visit(*this, assignment.Content->value);\
-}
-
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
@@ -162,9 +157,6 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::SuffixOperation&){}
 #define AUTO_IGNORE_STANDARD_IMPORT() void operator()(ast::StandardImport&){}
 #define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
-#define AUTO_IGNORE_STRUCT_ASSIGNMENT() void operator()(ast::StructAssignment&){}
-#define AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT() void operator()(ast::StructCompoundAssignment&){}
-#define AUTO_IGNORE_STRUCT_VALUE() void operator()(ast::StructValue&){}
 #define AUTO_IGNORE_SWAP() void operator()(ast::Swap&){}
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
@@ -199,9 +191,6 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::SuffixOperation& t){return t;}
 #define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return t;}
 #define AUTO_RETURN_STRUCT(return_type) return_type operator()(ast::Struct& t){return t;}
-#define AUTO_RETURN_STRUCT_ASSIGNMENT(return_type) return_type operator()(ast::StructAssignment& t){return t;}
-#define AUTO_RETURN_STRUCT_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::StructCompoundAssignment& t){return t;}
-#define AUTO_RETURN_STRUCT_VALUE(return_type) return_type operator()(ast::StructValue& t){return t;}
 #define AUTO_RETURN_SWAP(return_type) return_type operator()(ast::Swap& t){return t;}
 #define AUTO_RETURN_TRUE(return_type) return_type operator()(ast::True& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}

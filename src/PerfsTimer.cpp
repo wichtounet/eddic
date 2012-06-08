@@ -5,25 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef PERFS_TIMER_H
-#define PERFS_TIMER_H
+#include <iostream>
 
-#include <string>
+#include "Options.hpp"
+#include "PerfsTimer.hpp"
 
-#include "StopWatch.hpp"
+using namespace eddic;
 
-namespace eddic {
+PerfsTimer::PerfsTimer(const std::string& n) : name(n) {}
 
-class PerfsTimer {
-    public:
-        PerfsTimer(const std::string& n);
-        ~PerfsTimer();
-    
-    private:
-        StopWatch timer;
-        std::string name;
-};
-
-} //end of eddic
-
-#endif
+PerfsTimer::~PerfsTimer(){
+    if(option_defined("perfs")){
+        std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
+    }
+}

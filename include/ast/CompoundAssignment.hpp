@@ -9,6 +9,8 @@
 #define AST_COMPOUND_ASSIGNMENT_H
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -26,6 +28,7 @@ struct ASTCompoundAssignment {
     std::shared_ptr<Context> context;
 
     std::string variableName;
+    std::vector<std::string> memberNames;
     Value value;
     ast::Operator op;
     Position position;
@@ -48,6 +51,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::CompoundAssignment, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
+    (std::vector<std::string>, Content->memberNames)
     (eddic::ast::Operator, Content->op)
     (eddic::ast::Value, Content->value)
 )

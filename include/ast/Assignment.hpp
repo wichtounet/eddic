@@ -9,6 +9,8 @@
 #define AST_ASSIGNMENT_H
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -32,6 +34,7 @@ struct ASTAssignment {
 
     Position position;
     std::string variableName;
+    std::vector<std::string> memberNames;
     Value value;
 
     mutable long references = 0;
@@ -52,6 +55,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Assignment, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
+    (std::vector<std::string>, Content->memberNames)
     (eddic::ast::Value, Content->value)
 )
 

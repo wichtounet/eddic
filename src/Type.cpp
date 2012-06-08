@@ -10,8 +10,10 @@
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), custom(false), baseType(base), m_size(size){}
-Type::Type(const std::string& type) : array(false), const_(false), custom(true), m_type(type) {}
+Type::Type(){}
+Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_size(size){}
+Type::Type(const std::string& type) : custom(true), m_type(type) {}
+Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_size(size) {}
 
 BaseType Type::base() const {
     ASSERT(is_standard_type(), "Only standard type have a base type");

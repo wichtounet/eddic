@@ -45,7 +45,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_STRUCT_VALUE()
     AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
     
@@ -90,24 +89,61 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment){
-        checkAssignment(assignment);
+        if(assignment.Content->memberNames.empty()){
+            checkAssignment(assignment);
+        } else {
+            visit(*this, assignment.Content->value);
+
+            auto var = (*assignment.Content->context)[assignment.Content->variableName];
+            auto struct_name = var->type().type();
+            auto struct_type = symbols.get_struct(struct_name);
+
+            auto& members = assignment.Content->memberNames;
+            for(std::size_t i = 0; i < members.size(); ++i){
+                auto& member = members[i];
+
+                auto member_type = (*struct_type)[member]->type;
+
+                if(i == members.size() - 1){
+                    Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+                    if (valueType != member_type) {
+                        throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+                    }
+                } else {
+                    struct_name = member_type.type();
+                    struct_type = symbols.get_struct(struct_name);
+                }
+            }
+        }
     }
     
     void operator()(ast::CompoundAssignment& assignment){
-        checkAssignment(assignment);
-    }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
-        visit(*this, assignment.Content->value);
-        
-        auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
+        if(assignment.Content->memberNames.empty()){
+            checkAssignment(assignment);
+        } else {
+            visit(*this, assignment.Content->value);
 
-        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != member_type) {
-            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+            auto var = (*assignment.Content->context)[assignment.Content->variableName];
+
+            auto struct_name = var->type().type();
+            auto struct_type = symbols.get_struct(struct_name);
+
+            auto& members = assignment.Content->memberNames;
+            for(std::size_t i = 0; i < members.size(); ++i){
+                auto& member = members[i];
+
+                auto member_type = (*struct_type)[member]->type;
+
+                if(i == members.size() - 1){
+                    Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
+                    if (valueType != member_type) {
+                        throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+                    }
+                } else {
+                    struct_name = member_type.type();
+                    struct_type = symbols.get_struct(struct_name);
+                }
+            }
         }
     }
 
@@ -155,20 +191,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         Type indexType = visit(ast::GetTypeVisitor(), assignment.Content->indexValue);
         if (indexType.base() != BaseType::INT) {
             throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
-        }
-    }
-
-    void operator()(ast::StructAssignment& assignment){
-        visit(*this, assignment.Content->value);
-        
-        auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
-
-        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != member_type) {
-            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
         }
     }
     

@@ -1,0 +1,75 @@
+struct A {
+    int first;
+    int second;
+}
+
+struct B {
+    int first;
+    int second;
+}
+
+struct D {
+    A a;
+    B b;
+}
+
+struct C {
+    A a;
+    B b;
+    D d;
+}
+
+void main(){
+    C c;
+
+    c.a.first = 222;
+    c.a.second = 555;
+    c.b.first = 333;
+    c.b.second = 444;
+
+    print(c.a.first);
+    print("|");
+    print(c.a.second);
+    print("|");
+    print(c.b.first);
+    print("|");
+    print(c.b.second);
+    print("|");
+
+    c.d.a.first = 2222;
+    c.d.a.second = 5555;
+    c.d.b.first = 3333;
+    c.d.b.second = 4444;
+
+    print(c.d.a.first);
+    print("|");
+    print(c.d.a.second);
+    print("|");
+    print(c.d.b.first);
+    print("|");
+    print(c.d.b.second);
+    print("|");
+
+    test(c);
+}
+
+void test(C c){
+    print("|");
+    print(c.a.first);
+    print("|");
+    print(c.a.second);
+    print("|");
+    print(c.b.first);
+    print("|");
+    print(c.b.second);
+    print("|");
+    
+    print(c.d.a.first);
+    print("|");
+    print(c.d.a.second);
+    print("|");
+    print(c.d.b.first);
+    print("|");
+    print(c.d.b.second);
+    print("|");
+}

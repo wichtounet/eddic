@@ -7,7 +7,7 @@ set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-#Activate warnings and C++11 support
+# Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS           "-pipe -pthread -std=c++11 -g -pedantic -Wall -Wextra -Wno-long-long")
     set(CMAKE_CXX_FLAGS_DEBUG     "-pipe -pthread -std=c++11 -g -pedantic -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=const -Wall -Wextra -Wno-long-long")
@@ -16,7 +16,7 @@ else()
     MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
 endif()
 
-# add a target to generate API documentation with Doxygen
+# Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in doc/Doxyfile @ONLY)
@@ -26,6 +26,7 @@ if(DOXYGEN_FOUND)
     )
 endif(DOXYGEN_FOUND)
 
+# Add a target to inspect the whole code with cppcheck
 add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src 
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Analysing the code with cppcheck" VERBATIM
@@ -51,11 +52,21 @@ file(
 file(GLOB to_remove src/eddi.cpp)
 list(REMOVE_ITEM test_files ${to_remove})
 
+# Create the eddic executable
+
 add_executable(eddic ${source_files})
 
 target_link_libraries (eddic boost_program_options)
+
+# Create the test executable
 
 add_executable (test ${test_files})
 
 target_link_libraries (test boost_program_options)
 target_link_libraries (test boost_unit_test_framework)
+
+# Specifications for the installation of eddic
+
+INSTALL(TARGETS eddic
+    RUNTIME DESTINATION bin
+)

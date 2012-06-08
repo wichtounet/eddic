@@ -20,6 +20,10 @@ bool operator!=(const Type& lhs, const Type& rhs);
 bool operator==(const Type& lhs, const BaseType& rhs);
 bool operator!=(const Type& lhs, const BaseType& rhs);
 
+//Support all types
+//TODO Make it the only entry point to parse type
+Type new_type(const std::string& type);
+
 /*!
  * \brief Parse the given type into an EDDI Type. 
  *

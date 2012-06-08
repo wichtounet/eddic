@@ -229,11 +229,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << std::endl;
     }
 
-    void operator()(std::shared_ptr<ltac::BasicBlock>&/* block*/){
-        //Nothing to do here
-        //TODO Can be removed in the future
-    }
-
     void operator()(ltac::Statement& statement){
         visit(*this, statement);
     }
