@@ -16,21 +16,14 @@
 
 namespace eddic {
 
-//TODO Move the impl stuff in cpp
-
 class PerfsTimer {
+    public:
+        PerfsTimer(const std::string& n);
+        ~PerfsTimer();
+    
     private:
         StopWatch timer;
         std::string name;
-
-    public:
-        PerfsTimer(const std::string& n) : name(n) {}
-        
-        ~PerfsTimer(){
-            if(option_defined("perfs")){
-                std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
-            }
-        }
 };
 
 } //end of eddic
