@@ -22,6 +22,10 @@ BaseType Type::base() const {
     return *baseType;
 }
 
+Type Type::element_type() const {
+    return Type(*baseType, false, 0, false);
+}
+
 bool Type::isArray() const {
     return array;
 }

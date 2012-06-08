@@ -16,7 +16,7 @@
 
 using namespace eddic;
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, STRING)
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, INT)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, INT) //At this time, all the builtin operators return an int
@@ -77,7 +77,7 @@ Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return newSimpleType(array.Content->context->getVariable(array.Content->arrayName)->type().base());
+    return array.Content->context->getVariable(array.Content->arrayName)->type().element_type();
 }
 
 Type ast::GetTypeVisitor::operator()(const ast::Expression& value) const {

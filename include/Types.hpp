@@ -17,6 +17,8 @@ namespace eddic {
 extern Type BOOL;
 extern Type INT;
 extern Type FLOAT;
+extern Type STRING;
+extern Type VOID;
 
 /*!
  * \brief Parse the given type into an EDDI Type. 
@@ -25,7 +27,6 @@ extern Type FLOAT;
  */
 Type new_type(const std::string& type);
 
-Type newSimpleType(BaseType baseType, bool const_ = false);
 Type newSimpleType(const std::string& baseType, bool const_ = false);
 
 Type newArrayType(BaseType baseType, int size = 0);

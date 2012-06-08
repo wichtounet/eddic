@@ -15,6 +15,8 @@ using namespace eddic;
 Type eddic::BOOL(BaseType::BOOL, false, 0, false);
 Type eddic::INT(BaseType::INT, false, 0, false);
 Type eddic::FLOAT(BaseType::FLOAT, false, 0, false);
+Type eddic::STRING(BaseType::STRING, false, 0, false);
+Type eddic::VOID(BaseType::VOID, false, 0, false);
 
 int eddic::size(BaseType type){
     static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
@@ -81,10 +83,6 @@ Type eddic::new_type(const std::string& type){
     } else {
         return Type(type);
     }
-}
-
-Type eddic::newSimpleType(BaseType baseType, bool const_){
-    return Type(baseType, false, 0, const_);
 }
 
 Type eddic::newSimpleType(const std::string& baseType, bool const_){

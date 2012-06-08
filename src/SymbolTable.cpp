@@ -105,45 +105,45 @@ int SymbolTable::referenceCount(const std::string& function){
     return functions[function]->references;
 }
 
-void SymbolTable::addPrintFunction(const std::string& function, BaseType parameterType){
-    auto printFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "print");
+void SymbolTable::addPrintFunction(const std::string& function, Type parameterType){
+    auto printFunction = std::make_shared<Function>(VOID, "print");
     printFunction->mangledName = function;
-    printFunction->parameters.push_back({"a", newSimpleType(parameterType)});
+    printFunction->parameters.push_back({"a", parameterType});
     addFunction(printFunction);
 }
 
 void SymbolTable::defineStandardFunctions(){
     //print string
-    addPrintFunction("_F5printS", BaseType::STRING);
-    addPrintFunction("_F7printlnS", BaseType::STRING);
+    addPrintFunction("_F5printS", STRING);
+    addPrintFunction("_F7printlnS", STRING);
 
     //print integer
-    addPrintFunction("_F5printI", BaseType::INT);
-    addPrintFunction("_F7printlnI", BaseType::INT);
+    addPrintFunction("_F5printI", INT);
+    addPrintFunction("_F7printlnI", INT);
 
     //print bool
-    addPrintFunction("_F5printB", BaseType::BOOL);
-    addPrintFunction("_F7printlnB", BaseType::BOOL);
+    addPrintFunction("_F5printB", BOOL);
+    addPrintFunction("_F7printlnB", BOOL);
 
     //print float
-    addPrintFunction("_F5printF", BaseType::FLOAT);
-    addPrintFunction("_F7printlnF", BaseType::FLOAT);
+    addPrintFunction("_F5printF", FLOAT);
+    addPrintFunction("_F7printlnF", FLOAT);
     
     //concat function
-    auto concatFunction = std::make_shared<Function>(newSimpleType(BaseType::STRING), "concat");
+    auto concatFunction = std::make_shared<Function>(STRING, "concat");
     concatFunction->mangledName = "_F6concatSS";
-    concatFunction->parameters.push_back({"a", newSimpleType(BaseType::STRING)});
-    concatFunction->parameters.push_back({"b", newSimpleType(BaseType::STRING)});
+    concatFunction->parameters.push_back({"a", STRING});
+    concatFunction->parameters.push_back({"b", STRING});
     addFunction(concatFunction);
     
     //time function
-    auto timeFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "time");
+    auto timeFunction = std::make_shared<Function>(VOID, "time");
     timeFunction->mangledName = "_F4timeAI";
     timeFunction->parameters.push_back({"a", newArrayType(BaseType::INT)});
     addFunction(timeFunction);
     
     //duration function
-    auto durationFunction = std::make_shared<Function>(newSimpleType(BaseType::VOID), "duration");
+    auto durationFunction = std::make_shared<Function>(VOID, "duration");
     durationFunction->mangledName = "_F8durationAIAI";
     durationFunction->parameters.push_back({"a", newArrayType(BaseType::INT)});
     durationFunction->parameters.push_back({"b", newArrayType(BaseType::INT)});
