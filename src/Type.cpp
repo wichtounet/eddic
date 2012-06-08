@@ -14,6 +14,7 @@ Type::Type(){}
 Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_size(size){}
 Type::Type(const std::string& type) : custom(true), m_type(type) {}
 Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_size(size) {}
+Type::Type(std::shared_ptr<Type> sub_type) : sub_type(sub_type), pointer(true) {}
 
 BaseType Type::base() const {
     ASSERT(is_standard_type(), "Only standard type have a base type");
@@ -32,6 +33,10 @@ bool Type::isArray() const {
 
 bool Type::isConst() const {
     return const_;
+}
+
+bool Type::is_pointer() const {
+    return pointer;
 }
 
 unsigned int Type::size() const {
@@ -54,6 +59,12 @@ std::string Type::type() const {
     ASSERT(m_type, "The m_type has not been initialized");
 
     return *m_type;
+}
+
+Type Type::data_type() const {
+    ASSERT(is_pointer(), "Only pointers have a data type");
+
+    return *sub_type;
 }
 
 Type Type::non_const() const {
