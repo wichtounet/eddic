@@ -33,6 +33,7 @@ class Type {
         bool array = false;
         bool const_ = false;
         bool custom = false;
+        bool pointer = false;
         
         boost::optional<BaseType> baseType;
         boost::optional<std::string> m_type;

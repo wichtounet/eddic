@@ -86,7 +86,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
         }
 
-        foreach.Content->context->addVariable(foreach.Content->variableName, newType(foreach.Content->variableType));
+        foreach.Content->context->addVariable(foreach.Content->variableName, new_type(foreach.Content->variableType));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -102,9 +102,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         static int generated = 0;
 
-        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, newType(foreach.Content->variableType));
+        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(foreach.Content->variableType));
         foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), newType("int"));
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), new_type("int"));
 
         visit_each(*this, foreach.Content->instructions);
     }

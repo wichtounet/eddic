@@ -75,19 +75,8 @@ Type eddic::new_type(const std::string& type){
     if(is_standard_type(type)){
         return newSimpleType(type);
     } else {
-        return new_custom_type(type);
+        return Type(type);
     }
-}
-
-Type eddic::newType(const std::string& type){
-    if(type.find("[]") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 2);
-
-        return newArrayType(baseType);
-    } 
-
-    return newSimpleType(type);
 }
 
 Type eddic::newSimpleType(BaseType baseType, bool const_){
@@ -104,8 +93,4 @@ Type eddic::newArrayType(BaseType baseType, int size){
 
 Type eddic::newArrayType(const std::string& baseType, int size){
     return Type(stringToBaseType(baseType), true, size, false);
-}
-
-Type eddic::new_custom_type(const std::string& type){
-    return Type(type);
 }

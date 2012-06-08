@@ -29,7 +29,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
             if(is_standard_type(declaration.Content->variableType)){
-                Type type = newType(declaration.Content->variableType);
+                Type type = new_type(declaration.Content->variableType);
 
                 assert(type == BaseType::INT || type == BaseType::STRING);
 

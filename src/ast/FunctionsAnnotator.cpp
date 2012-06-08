@@ -27,7 +27,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 throw SemanticalException("A function can only returns standard types for now", declaration.Content->position);
             }
 
-            auto signature = std::make_shared<Function>(newType(declaration.Content->returnType), declaration.Content->functionName);
+            auto signature = std::make_shared<Function>(new_type(declaration.Content->returnType), declaration.Content->functionName);
 
             if(signature->returnType.isArray()){
                 throw SemanticalException("Cannot return array from function", declaration.Content->position);
