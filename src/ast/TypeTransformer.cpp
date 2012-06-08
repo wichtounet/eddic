@@ -18,5 +18,5 @@ eddic::Type ast::TypeTransformer::operator()(ast::SimpleType& type) const {
 }
 
 eddic::Type ast::TypeTransformer::operator()(ast::ArrayType& type) const {
-    return newArrayType(type.type);
+    return new_array_type(type.type);
 }

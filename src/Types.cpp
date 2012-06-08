@@ -72,27 +72,27 @@ Type eddic::new_type(const std::string& type){
         baseType.resize(baseType.size() - 2);
 
         if(is_standard_type(baseType)){
-            return newArrayType(baseType);
+            return new_array_type(baseType);
         } else {
             return Type(baseType, true, 0, false); 
         }
     } 
 
     if(is_standard_type(type)){
-        return newSimpleType(type);
+        return new_simple_type(type);
     } else {
         return Type(type);
     }
 }
 
-Type eddic::newSimpleType(const std::string& baseType, bool const_){
+Type eddic::new_simple_type(const std::string& baseType, bool const_){
     return Type(stringToBaseType(baseType), false, 0, const_);
 }
 
-Type eddic::newArrayType(BaseType baseType, int size){
+Type eddic::new_array_type(BaseType baseType, int size){
     return Type(baseType, true, size, false);
 }
 
-Type eddic::newArrayType(const std::string& baseType, int size){
+Type eddic::new_array_type(const std::string& baseType, int size){
     return Type(stringToBaseType(baseType), true, size, false);
 }

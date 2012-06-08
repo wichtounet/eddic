@@ -70,7 +70,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
         
         declaration.Content->context->addVariable(declaration.Content->variableName, 
-                newSimpleType(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
+                new_simple_type(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -78,7 +78,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        declaration.Content->context->addVariable(declaration.Content->arrayName, newArrayType(declaration.Content->arrayType, declaration.Content->arraySize));
+        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(declaration.Content->arrayType, declaration.Content->arraySize));
     }
     
     void operator()(ast::Foreach& foreach){
@@ -205,7 +205,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         //If it's a standard type
         if(is_standard_type(declaration.Content->variableType)){
-            Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
+            Type type = new_simple_type(declaration.Content->variableType, declaration.Content->const_);
 
             if(type.isConst()){
                 if(!declaration.Content->value){
@@ -242,7 +242,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        Type type = newArrayType(declaration.Content->arrayType, declaration.Content->arraySize);
+        Type type = new_array_type(declaration.Content->arrayType, declaration.Content->arraySize);
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     

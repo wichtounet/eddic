@@ -64,6 +64,8 @@ class Type {
         friend bool operator==(const Type& lhs, const BaseType& rhs);
         friend bool operator!=(const Type& lhs, const BaseType& rhs);
 };
+
+/* Relational operators  */
         
 bool operator==(const Type& lhs, const Type& rhs);
 bool operator!=(const Type& lhs, const Type& rhs);

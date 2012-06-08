@@ -27,10 +27,10 @@ extern Type VOID;
  */
 Type new_type(const std::string& type);
 
-Type newSimpleType(const std::string& baseType, bool const_ = false);
+Type new_simple_type(const std::string& baseType, bool const_ = false);
 
-Type newArrayType(BaseType baseType, int size = 0);
-Type newArrayType(const std::string& baseType, int size = 0);
+Type new_array_type(BaseType baseType, int size = 0);
+Type new_array_type(const std::string& baseType, int size = 0);
 
 int size(BaseType type);
 int size(Type type);
