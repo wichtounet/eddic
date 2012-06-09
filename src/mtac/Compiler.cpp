@@ -76,21 +76,21 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argume
     auto position = array->position();
 
     if(position.isGlobal()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * size(array->type()->base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * array->type()->element_type()->size()));
 
         //Compute the offset manually to avoid having ADD then SUB
         //TODO Find a way to make that optimization in the TAC Optimizer
-        int offset = size(array->type()->base()) * array->type()->elements();
-        offset -= size(BaseType::INT);
+        int offset = array->type()->element_type()->size() * array->type()->elements();
+        offset -= INT->size();
 
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, offset));
     } else if(position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type()->base())));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, size(BaseType::INT)));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->element_type()->size()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type()->base())));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, size(BaseType::INT)));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->element_type()->size()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     }
    
@@ -117,7 +117,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
 }
 
 int getStringOffset(std::shared_ptr<Variable> variable){
-    return variable->position().isGlobal() ? size(BaseType::INT) : -size(BaseType::INT);
+    return variable->position().isGlobal() ? INT->size() : -INT->size();
 }
 
 void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
@@ -445,7 +445,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto t3 = array.Content->context->newTemporary();
                 
                 //Assign the second part of the string
-                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -size(BaseType::INT)));
+                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
                 function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
                 
                 return {t1, t2};
@@ -611,7 +611,7 @@ struct AssignValueToArray : public AbstractVisitor {
         function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
 
         auto temp1 = function->context->newTemporary();
-        function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -size(BaseType::INT)));
+        function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -INT->size()));
         function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::ARRAY_ASSIGN, arguments[1]));
     }
 };

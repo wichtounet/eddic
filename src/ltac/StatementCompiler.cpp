@@ -224,7 +224,7 @@ void ltac::StatementCompiler::mul(std::shared_ptr<Variable> result, mtac::Argume
 //Div eax by arg2 
 void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple){
     ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->d_register()), ltac::Register(descriptor->a_register()));
-    ltac::add_instruction(function, ltac::Operator::SHIFT_RIGHT, ltac::Register(descriptor->d_register()), size(BaseType::INT) * 8 - 1);
+    ltac::add_instruction(function, ltac::Operator::SHIFT_RIGHT, ltac::Register(descriptor->d_register()), static_cast<int>(INT->size() * 8 - 1));
 
     if(isInt(*quadruple->arg2)){
         auto reg = manager.get_free_reg();
@@ -525,7 +525,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                 if(position.isGlobal()){
                     auto reg = manager.get_free_reg();
 
-                    auto offset = size((*ptr)->type()->base()) * (*ptr)->type()->elements();
+                    auto offset = (*ptr)->type()->element_type()->size() * (*ptr)->type()->elements();
 
                     ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
                     ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
@@ -571,7 +571,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
 
         if(type->is_array()){
             //Passing an array is just passing an adress
-            total += size(BaseType::INT);
+            total += INT->size();
         } else {
             if(type == BaseType::INT){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it

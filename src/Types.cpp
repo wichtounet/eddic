@@ -8,7 +8,6 @@
 #include "Types.hpp"
 #include "Type.hpp"
 #include "assert.hpp"
-#include "Platform.hpp"
 #include "SymbolTable.hpp"
 
 using namespace eddic;
@@ -18,21 +17,6 @@ std::shared_ptr<Type> eddic::INT = std::make_shared<Type>(BaseType::INT, false, 
 std::shared_ptr<Type> eddic::FLOAT = std::make_shared<Type>(BaseType::FLOAT, false, 0, false);
 std::shared_ptr<Type> eddic::STRING = std::make_shared<Type>(BaseType::STRING, false, 0, false);
 std::shared_ptr<Type> eddic::VOID = std::make_shared<Type>(BaseType::VOID, false, 0, false);
-
-int eddic::size(BaseType type){
-    //TODO Those sizes should be stored directly inside the current platform
-    static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
-    static int typeSizes64[BASETYPE_COUNT] = { 16, 8, 8, 8, 0 };
-
-    switch(platform){
-        case Platform::INTEL_X86:
-            return typeSizes32[(unsigned int) type];
-        case Platform::INTEL_X86_64:
-            return typeSizes64[(unsigned int) type];
-    }
-
-    return -1;
-}
 
 bool eddic::is_standard_type(const std::string& type){
     return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";

@@ -423,7 +423,7 @@ void ltac::RegisterManager::restore_pushed_registers(){
     for(auto& reg : float_pushed){
         if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
             ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
-            ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, size(BaseType::FLOAT));
+            ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
         }
     }
 
@@ -467,7 +467,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                         if(float_registers[reg]->position().isParamRegister()){
                             float_pushed.push_back(reg);
 
-                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, size(BaseType::FLOAT));
+                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
                             ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
                         } else {
                             spills(reg);
