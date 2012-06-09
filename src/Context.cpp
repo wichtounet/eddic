@@ -11,6 +11,7 @@
 #include "assert.hpp"
 #include "Context.hpp"
 #include "Utils.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -45,10 +46,10 @@ std::shared_ptr<Variable> Context::newFloatTemporary(){
     ASSERT_PATH_NOT_TAKEN("Not implemented");
 }
 
-std::shared_ptr<Variable> Context::new_temporary(Type type){
-    ASSERT(type.is_standard_type(), "Temporary can only represent standard types"); 
+std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<Type> type){
+    ASSERT(type->is_standard_type(), "Temporary can only represent standard types"); 
 
-    switch(type.base()){
+    switch(type->base()){
         case BaseType::INT:
         case BaseType::BOOL:
             return newTemporary();

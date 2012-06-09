@@ -15,6 +15,8 @@
 #include "FunctionContext.hpp"
 #include "mangling.hpp"
 #include "Labels.hpp"
+#include "Type.hpp"
+#include "Types.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/Program.hpp"
@@ -74,20 +76,20 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argume
     auto position = array->position();
 
     if(position.isGlobal()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * size(array->type().base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * size(array->type()->base())));
 
         //Compute the offset manually to avoid having ADD then SUB
         //TODO Find a way to make that optimization in the TAC Optimizer
-        int offset = size(array->type().base()) * array->type().size();
+        int offset = size(array->type()->base()) * array->type()->size();
         offset -= size(BaseType::INT);
 
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, offset));
     } else if(position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type().base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type()->base())));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, size(BaseType::INT)));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type().base())));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, size(array->type()->base())));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, size(BaseType::INT)));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     }
@@ -106,7 +108,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     
     auto position = array->position();
     if(position.isGlobal() || position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(t1, array->type().size(), mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(t1, array->type()->size(), mtac::Operator::ASSIGN));
     } else if(position.isParameter()){
         function->add(std::make_shared<mtac::Quadruple>(t1, array, mtac::Operator::ARRAY, 0));
     }
@@ -209,9 +211,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto variable = boost::get<ast::VariableValue>(value).Content->var;
 
                 if(variable->position().isGlobal()){
-                    return {variable->type().size()};
+                    return {variable->type()->size()};
                 } else if(variable->position().isStack()){
-                    return {variable->type().size()};
+                    return {variable->type()->size()};
                 } else if(variable->position().isParameter()){
                     auto t1 = function->context->newTemporary();
 
@@ -231,9 +233,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::FunctionCall& call) const {
-        Type type = call.Content->function->returnType;
+        auto type = call.Content->function->returnType;
 
-        switch(type.base()){
+        switch(type->base()){
             case BaseType::BOOL:
             case BaseType::INT:{
                 auto t1 = function->context->newTemporary();
@@ -270,8 +272,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {variable};
     }
 
-    void push_struct_member(ast::VariableValue& memberValue, Type& type, result_type& values) const {
-        auto struct_name = type.type();
+    void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<Type> type, result_type& values) const {
+        auto struct_name = type->type();
         auto struct_type = symbols.get_struct(struct_name);
         
         for(auto& member : struct_type->members){
@@ -279,7 +281,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             memberValue.Content->memberNames.push_back(member->name);
             
-            if(member_type.is_custom_type()){
+            if(member_type->is_custom_type()){
                 push_struct_member(memberValue, member_type, values);
             } else {
                 auto member_values = (*this)(memberValue);
@@ -297,11 +299,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type push_struct(std::shared_ptr<Variable> var, std::shared_ptr<Context> context) const {
         std::vector<mtac::Argument> values;
 
-        auto struct_name = var->type().type();
+        auto struct_name = var->type()->type();
         auto struct_type = symbols.get_struct(struct_name);
 
         for(auto member : struct_type->members){
-            auto& type = member->type;
+            auto type = member->type;
 
             ast::VariableValue memberValue;
             memberValue.Content->context = context;
@@ -309,7 +311,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             memberValue.Content->var = var;
             memberValue.Content->memberNames = {member->name};
 
-            if(type.is_custom_type()){
+            if(type->is_custom_type()){
                 push_struct_member(memberValue, type, values);
             } else {
                 auto member_values = (*this)(memberValue);
@@ -329,10 +331,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto type = value.Content->var->type();
 
             //If it's a const, we just have to replace it by its constant value
-            if(type.is_const()){
+            if(type->is_const()){
                 auto val = value.Content->var->val();
 
-                switch(type.base()){
+                switch(type->base()){
                     case BaseType::INT:
                     case BaseType::BOOL:
                         return {boost::get<int>(val)};
@@ -346,7 +348,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     default:
                         ASSERT_PATH_NOT_TAKEN("void is not a type");
                 }
-            } else if(type.is_array()){
+            } else if(type->is_array()){
                 return {value.Content->var};
             } else {
                 if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
@@ -356,16 +358,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
 
                     return {value.Content->var, temp};
-                } else if(type.is_custom_type()) {
+                } else if(type->is_custom_type()) {
                     return push_struct(value.Content->var, value.Content->context);
                 } else {
                     ASSERT_PATH_NOT_TAKEN("Unhandled type");
                 }
             }
         } else {
-            auto struct_name = value.Content->var->type().type();
+            auto struct_name = value.Content->var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
-            Type member_type = Type();
+            std::shared_ptr<Type> member_type;
 
             unsigned int offset = 0;
 
@@ -378,7 +380,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 offset += symbols.member_offset(struct_type, member);
 
                 if(i != members.size() - 1){
-                    struct_name = member_type.type();
+                    struct_name = member_type->type();
                     struct_type = symbols.get_struct(struct_name);
                 }
             }
@@ -425,7 +427,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
 
-        switch(array.Content->var->type().base()){
+        switch(array.Content->var->type()->base()){
             case BaseType::BOOL:
             case BaseType::INT:
             case BaseType::FLOAT: {
@@ -454,7 +456,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::Expression& value) const {
-        Type type = ast::GetTypeVisitor()(value);
+        auto type = ast::GetTypeVisitor()(value);
 
         if(type == BaseType::INT){
             return {performIntOperation(value, function)};
@@ -475,7 +477,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::Minus& value) const {
         mtac::Argument arg = moveToArgument(value.Content->value, function);
         
-        Type type = visit(ast::GetTypeVisitor(), value.Content->value);
+        auto type = visit(ast::GetTypeVisitor(), value.Content->value);
 
         if(type == BaseType::FLOAT){
             auto t1 = function->context->newFloatTemporary();
@@ -493,8 +495,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::Cast& cast) const {
         mtac::Argument arg = moveToArgument(cast.Content->value, function);
         
-        Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+        auto srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
+        auto destType = visit(ast::TypeTransformer(), cast.Content->type);
 
         if(srcType != destType){
             if(destType == BaseType::FLOAT){
@@ -540,8 +542,8 @@ struct AbstractVisitor : public boost::static_visitor<> {
     /* Can be of two types */
     
     template<typename T>
-    void complexAssign(Type type, T& value) const {
-        switch(type.base()){
+    void complexAssign(std::shared_ptr<Type> type, T& value) const {
+        switch(type->base()){
             case BaseType::INT:
                 intAssign(ToArgumentsVisitor(function)(value));
                 break;
@@ -680,8 +682,8 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Fun
     auto left = moveToArgument(value.Content->first, function);
     auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
 
-    Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-    Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
+    auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+    auto typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
     ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
     ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only int and floats can be compared");
@@ -947,7 +949,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             if(assignment.Content->memberNames.empty()){
                 assign(function, var, assignment.Content->value);
             } else {
-                auto struct_name = var->type().type();
+                auto struct_name = var->type()->type();
                 auto struct_type = symbols.get_struct(struct_name);
 
                 unsigned int offset = 0;
@@ -960,7 +962,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                     offset += symbols.member_offset(struct_type, member);
 
                     if(i != members.size() - 1){
-                        struct_name = member_type.type();
+                        struct_name = member_type->type();
                         struct_type = symbols.get_struct(struct_name);
                     }
                 }
@@ -979,7 +981,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             if(declaration.Content->value){
                 auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
                 
-                if(!var->type().is_const()){
+                if(!var->type()->is_const()){
                     visit(AssignValueToVariable(function, var), *declaration.Content->value);
                 }
             }
@@ -1152,8 +1154,8 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
         
-        Type typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        Type typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
+        auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+        auto typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
         ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
         ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only float and int values can be compared");

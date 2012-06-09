@@ -9,6 +9,8 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
+#include "Types.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -28,19 +30,19 @@ GlobalContext::GlobalContext() : Context(NULL) {
     variables["eddi_current"]->addReference(); //In order to not display a warning
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<Type> type){
     //A global variable must have a value
-    assert(type.is_array());
+    assert(type->is_array()); //TODO Looks wrong
     
     Position position(PositionType::GLOBAL, variable);
     
     return variables[variable] = std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<Type> type, ast::Value& value){
     auto val = visit(ast::GetConstantValue(), value);
      
-    if(type.is_const()){
+    if(type->is_const()){
         Position position(PositionType::CONST);
         return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
     }

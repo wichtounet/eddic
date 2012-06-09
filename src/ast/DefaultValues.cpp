@@ -12,6 +12,7 @@
 #include "ast/ASTVisitor.hpp"
 
 #include "Types.hpp"
+#include "Type.hpp"
 #include "VisitorUtils.hpp"
 
 using namespace eddic;
@@ -29,11 +30,11 @@ struct SetDefaultValues : public boost::static_visitor<> {
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
             if(is_standard_type(declaration.Content->variableType)){
-                Type type = new_type(declaration.Content->variableType);
+                auto type = new_type(declaration.Content->variableType);
 
                 assert(type == BaseType::INT || type == BaseType::STRING);
 
-                switch(type.base()){
+                switch(type->base()){
                     case BaseType::INT:{
                         ast::Integer integer;
                         integer.value = 0;

@@ -13,17 +13,9 @@
 
 #include <boost/optional.hpp>
 
+#include "BaseType.hpp"
+
 namespace eddic {
-
-#define BASETYPE_COUNT 5
-
-enum class BaseType : unsigned int {
-    STRING,
-    INT,
-    BOOL,
-    FLOAT,
-    VOID 
-};
 
 /*!
  * \struct Type
@@ -61,24 +53,25 @@ class Type {
         unsigned int size() const;
         std::string type() const;
 
-        Type non_const() const;
-        Type element_type() const;
-        Type data_type() const;
+        //TODO Enforce constness for the returned values
+        std::shared_ptr<Type> non_const() const;
+        std::shared_ptr<Type> element_type() const;
+        std::shared_ptr<Type> data_type() const;
 
-        friend bool operator==(const Type& lhs, const Type& rhs);
-        friend bool operator!=(const Type& lhs, const Type& rhs);
+        friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
+        friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
 
-        friend bool operator==(const Type& lhs, const BaseType& rhs);
-        friend bool operator!=(const Type& lhs, const BaseType& rhs);
+        friend bool operator==(std::shared_ptr<const Type> lhs, const BaseType& rhs);
+        friend bool operator!=(std::shared_ptr<const Type> lhs, const BaseType& rhs);
 };
 
 /* Relational operators  */
         
-bool operator==(const Type& lhs, const Type& rhs);
-bool operator!=(const Type& lhs, const Type& rhs);
+bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
+bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
 
-bool operator==(const Type& lhs, const BaseType& rhs);
-bool operator!=(const Type& lhs, const BaseType& rhs);
+bool operator==(std::shared_ptr<const Type> lhs, const BaseType& rhs);
+bool operator!=(std::shared_ptr<const Type> lhs, const BaseType& rhs);
 
 } //end of eddic
 

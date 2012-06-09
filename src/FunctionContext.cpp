@@ -9,19 +9,21 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
+#include "Types.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
 using namespace eddic;
 
 FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : 
-    Context(parent), currentPosition(::size(BaseType::INT)), currentParameter(2 * ::size(BaseType::INT)), temporary(1) {}
+    Context(parent), currentPosition(::size(BaseType::INT)), currentParameter(2 * ::size(BaseType::INT)) {}
 
 int FunctionContext::size() const {
     return currentPosition - ::size(BaseType::INT);
 }
 
-std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, Type type){
+std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<Type> type){
     Position position(PositionType::PARAMETER, currentParameter + (::size(type) - ::size(BaseType::INT)));
 
     currentParameter += ::size(type);
@@ -29,7 +31,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
     return std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<Type> type){
     Position position(PositionType::STACK, currentPosition);
 
     currentPosition += ::size(type);
@@ -37,12 +39,12 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
     return std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<Type> type){
     return variables[variable] = newVariable(variable, type);
 }
 
-std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type, ast::Value& value){
-    assert(type.is_const());
+std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<Type> type, ast::Value& value){
+    assert(type->is_const());
 
     Position position(PositionType::CONST);
 
@@ -51,7 +53,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }
 
-std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, Type type){
+std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<Type> type){
     return variables[parameter] = newParameter(parameter, type);
 }
 

@@ -9,39 +9,36 @@
 #define TYPES_H
 
 #include <string>
+#include <memory>
 
-#include "Type.hpp"
+#include "BaseType.hpp"
 
 namespace eddic {
 
-extern Type BOOL;
-extern Type INT;
-extern Type FLOAT;
-extern Type STRING;
-extern Type VOID;
+class Type;
+
+extern std::shared_ptr<Type> BOOL;
+extern std::shared_ptr<Type> INT;
+extern std::shared_ptr<Type> FLOAT;
+extern std::shared_ptr<Type> STRING;
+extern std::shared_ptr<Type> VOID;
 
 /*!
- * \brief Parse the given type into an EDDI Type. 
+ * \brief Parse the given type into an EDDI std::shared_ptr<Type>. 
  *
  * \param type The type to parse. 
  */
-Type new_type(const std::string& type);
+std::shared_ptr<Type> new_type(const std::string& type);
 
-Type new_simple_type(const std::string& baseType, bool const_ = false);
+std::shared_ptr<Type> new_simple_type(const std::string& baseType, bool const_ = false);
 
-Type new_array_type(BaseType baseType, int size = 0);
-Type new_array_type(const std::string& baseType, int size = 0);
+std::shared_ptr<Type> new_array_type(BaseType baseType, int size = 0);
+std::shared_ptr<Type> new_array_type(const std::string& baseType, int size = 0);
 
 int size(BaseType type);
-int size(Type type);
+int size(std::shared_ptr<Type> type);
 
 bool is_standard_type(const std::string& type);
-
-bool operator==(const Type& lhs, const Type& rhs);
-bool operator!=(const Type& lhs, const Type& rhs);
-
-bool operator==(const Type& lhs, const BaseType& rhs);
-bool operator!=(const Type& lhs, const BaseType& rhs);
 
 } //end of eddic
 

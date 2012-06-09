@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "Variable.hpp"
 #include "FunctionContext.hpp"
+#include "Types.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
 

@@ -43,15 +43,15 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     for(; iter != end; iter++){
         auto var = iter->second;
-        if(var->type().is_array() && var->position().isStack()){
+        if(var->type()->is_array() && var->position().isStack()){
             int position = -var->position().offset();
 
-            ltac::add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type().size()));
+            ltac::add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type()->size()));
 
-            if(var->type().base() == BaseType::INT){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(var->type().size()));
-            } else if(var->type().base() == BaseType::STRING){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(2 * var->type().size()));
+            if(var->type()->base() == BaseType::INT){
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(var->type()->size()));
+            } else if(var->type()->base() == BaseType::STRING){
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(2 * var->type()->size()));
             }
         }
     }

@@ -9,6 +9,8 @@
 
 #include "ltac/Utils.hpp"
 
+#include "Type.hpp"
+
 using namespace eddic;
 
 bool eddic::ltac::is_float_operator(mtac::BinaryOperator op){

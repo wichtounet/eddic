@@ -14,6 +14,7 @@
 #include "ast/ASTVisitor.hpp"
 
 #include "Types.hpp"
+#include "Type.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "SymbolTable.hpp"
@@ -39,11 +40,10 @@ struct GetStringValue : public boost::static_visitor<std::string> {
     }
 
     std::string operator()(ast::VariableValue& variable) const {
-        Type type = variable.Content->var->type();
-        assert(type.is_const() && type == BaseType::STRING);
+        auto type = variable.Content->var->type();
+        assert(type->is_const() && type == BaseType::STRING);
 
         auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
-
         return value.first;
     }
     
@@ -63,7 +63,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 
             //If the value is constant, we can replace it with the results of the computation
             if(ast::IsConstantVisitor()(value)){
-                Type type = ast::GetTypeVisitor()(value);
+                auto type = ast::GetTypeVisitor()(value);
 
                 if(type == BaseType::STRING){
                     ast::Litteral litteral;
@@ -98,9 +98,9 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 
         //Cannot be done in the TAC Optimizer as the string variables are splitted into two parts
         ast::Value operator()(ast::VariableValue& variable) const {
-            Type type = variable.Content->var->type();
+            auto type = variable.Content->var->type();
 
-            if(type.is_const()){
+            if(type->is_const()){
                 if(type == BaseType::INT){
                     ast::Integer integer;
                     integer.value = boost::get<int>(variable.Content->var->val());

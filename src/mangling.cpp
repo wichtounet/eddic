@@ -13,22 +13,23 @@
 #include "Utils.hpp"
 #include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
-std::string eddic::mangle(Type type){
-    if(type.is_standard_type()){
-        switch(type.base()){
+std::string eddic::mangle(std::shared_ptr<Type> type){
+    if(type->is_standard_type()){
+        switch(type->base()){
             case BaseType::INT:
-                return type.is_array() ? "AI" : "I";
+                return type->is_array() ? "AI" : "I";
             case BaseType::STRING:
-                return type.is_array() ? "AS" : "S";
+                return type->is_array() ? "AS" : "S";
             case BaseType::BOOL:
-                return type.is_array() ? "AB" : "B";
+                return type->is_array() ? "AB" : "B";
             case BaseType::FLOAT:
-                return type.is_array() ? "AF" : "F";
+                return type->is_array() ? "AF" : "F";
             case BaseType::VOID:
                 return "V";
         }
@@ -38,8 +39,8 @@ std::string eddic::mangle(Type type){
         std::ostringstream ss;
 
         ss << "C";
-        ss << type.type().length();
-        ss << type.type();
+        ss << type->type().length();
+        ss << type->type();
         
         return ss.str();
     }
@@ -76,7 +77,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
-        Type type = visit(visitor, value);
+        auto type = visit(visitor, value);
         ss << mangle(type);
     }
 

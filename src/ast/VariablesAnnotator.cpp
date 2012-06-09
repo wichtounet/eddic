@@ -21,6 +21,7 @@
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Types.hpp"
+#include "Type.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
@@ -52,7 +53,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = visit(ast::TypeTransformer(), parameter.parameterType);
+            auto type = visit(ast::TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -125,7 +126,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         annotateAssignment(assignment);
 
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type().type();
+        auto struct_name = var->type()->type();
         auto struct_type = symbols.get_struct(struct_name);
         
         //Add a reference to the struct
@@ -145,7 +146,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             //If it is not the last member
             if(i != members.size() - 1){
                 //The next member will be a member of the current member type
-                struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                struct_type = symbols.get_struct((*struct_type)[member]->type->type());
                 struct_name = struct_type->name;
             }
         }
@@ -205,9 +206,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         //If it's a standard type
         if(is_standard_type(declaration.Content->variableType)){
-            Type type = new_simple_type(declaration.Content->variableType, declaration.Content->const_);
+            auto type = new_simple_type(declaration.Content->variableType, declaration.Content->const_);
 
-            if(type.is_const()){
+            if(type->is_const()){
                 if(!declaration.Content->value){
                     throw SemanticalException("A constant variable must have a value", declaration.Content->position);
                 }
@@ -228,7 +229,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
 
-                Type type = new_type(declaration.Content->variableType);
+                auto type = new_type(declaration.Content->variableType);
 
                 declaration.Content->context->addVariable(declaration.Content->variableName, type);
             } else {
@@ -242,7 +243,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        Type type = new_array_type(declaration.Content->arrayType, declaration.Content->arraySize);
+        auto type = new_array_type(declaration.Content->arrayType, declaration.Content->arraySize);
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     
@@ -275,7 +276,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //If there are dereferencing
         if(!variable.Content->memberNames.empty()){
             auto var = variable.Content->var;
-            auto struct_name = var->type().type();
+            auto struct_name = var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
 
             //Reference the structure
@@ -295,7 +296,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 //If it is not the last member
                 if(i != members.size() - 1){
                     //The next member will be a member of the current member type
-                    struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                    struct_type = symbols.get_struct((*struct_type)[member]->type->type());
                     struct_name = struct_type->name;
                 }
             }

@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "FunctionContext.hpp"
 #include "Utils.hpp"
+#include "Type.hpp"
 
 #include "Labels.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -62,7 +63,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         return ltac::Address(ltac::BP, -position.offset() + offset);
     } else if(position.isParameter()){
         //The case of array is special because only the address is passed, not the complete array
-        if(var->type().is_array())
+        if(var->type()->is_array())
         {
             auto reg = manager.get_free_reg();
 
@@ -479,7 +480,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     manager.save_registers(param, descriptor);
 
     if(param->std_param.length() > 0 || param->param){
-        boost::optional<Type> type;
+        std::shared_ptr<Type> type;
         unsigned int position;
 
         //It's a call to a standard function
@@ -493,13 +494,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
             position = param->function->getParameterPositionByType(param->param->name());
         }
 
-        if(*type == BaseType::INT && position <= maxInt){
+        if(type == BaseType::INT && position <= maxInt){
             pass_in_int_register(param->arg, position);
 
             return;
         }
 
-        if(*type == BaseType::FLOAT && position <= maxFloat){
+        if(type == BaseType::FLOAT && position <= maxFloat){
             pass_in_float_register(param->arg, position);
 
             return;
@@ -508,7 +509,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
     //If the param as not been handled as register passing, push it on the stack 
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-        if(!(*ptr)->type().is_array() && ltac::is_float_var(*ptr)){
+        if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
             auto reg1 = manager.get_free_reg();
             auto reg2 = manager.get_float_reg(*ptr);
 
@@ -517,13 +518,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
             manager.release(reg1);
         } else {
-            if((*ptr)->type().is_array()){
+            if((*ptr)->type()->is_array()){
                 auto position = (*ptr)->position();
 
                 if(position.isGlobal()){
                     auto reg = manager.get_free_reg();
 
-                    auto offset = size((*ptr)->type().base()) * (*ptr)->type().size();
+                    auto offset = size((*ptr)->type()->base()) * (*ptr)->type()->size();
 
                     ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
                     ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
@@ -565,9 +566,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
     for(auto& param : call->functionDefinition->parameters){
-        Type type = param.paramType; 
+        auto type = param.paramType; 
 
-        if(type.is_array()){
+        if(type->is_array()){
             //Passing an array is just passing an adress
             total += size(BaseType::INT);
         } else {
@@ -1075,7 +1076,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;            
             }
         case mtac::Operator::ARRAY_ASSIGN:
-            if(quadruple->result->type().base() == BaseType::FLOAT){
+            if(quadruple->result->type()->base() == BaseType::FLOAT){
                 auto reg = manager.get_free_float_reg();
                 manager.copy(*quadruple->arg2, reg);
 

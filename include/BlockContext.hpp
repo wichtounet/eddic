@@ -8,16 +8,11 @@
 #ifndef BLOCK_CONTEXT_H
 #define BLOCK_CONTEXT_H
 
-#include <string>
-#include <memory>
-
-#include "Types.hpp"
 #include "Context.hpp"
 
 namespace eddic {
 
 class FunctionContext;
-class Variable;
 
 /*!
  * \class BlockContext
@@ -30,8 +25,8 @@ class BlockContext : public Context {
     public:
         BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext);
         
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type, ast::Value& value);
 
         std::shared_ptr<Variable> newTemporary();
         std::shared_ptr<Variable> newFloatTemporary();

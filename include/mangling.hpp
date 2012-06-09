@@ -10,19 +10,20 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "ast/Value.hpp"
 
-#include "Types.hpp"
-
 namespace eddic {
+
+class Type;
 
 /*!
  * \brief Return the mangled representation of the given type. 
  * \param type The type to mangle. 
  * \return The mangled type. 
  */
-std::string mangle(Type type);
+std::string mangle(std::shared_ptr<Type> type);
 
 /*!
  * \brief Return the signature of the function from the mangled representation. 

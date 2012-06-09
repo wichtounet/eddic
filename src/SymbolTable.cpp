@@ -7,6 +7,8 @@
 
 #include "assert.hpp"
 #include "SymbolTable.hpp"
+#include "Types.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -105,7 +107,7 @@ int SymbolTable::referenceCount(const std::string& function){
     return functions[function]->references;
 }
 
-void SymbolTable::addPrintFunction(const std::string& function, Type parameterType){
+void SymbolTable::addPrintFunction(const std::string& function, std::shared_ptr<Type> parameterType){
     auto printFunction = std::make_shared<Function>(VOID, "print");
     printFunction->mangledName = function;
     printFunction->parameters.push_back({"a", parameterType});

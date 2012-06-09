@@ -8,11 +8,6 @@
 #ifndef FUNCTION_CONTEXT_H
 #define FUNCTION_CONTEXT_H
 
-#include <string>
-#include <memory>
-
-#include "Types.hpp"
-
 #include "Context.hpp"
 
 namespace eddic {
@@ -26,18 +21,18 @@ class FunctionContext : public Context {
         int currentPosition;
         int currentParameter;
         int m_size;
-        int temporary;
+        int temporary = 1;
 
     public:
         FunctionContext(std::shared_ptr<Context> parent);
         
         int size() const;
 
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
-        std::shared_ptr<Variable> addParameter(const std::string& a, Type type);
-        std::shared_ptr<Variable> newVariable(const std::string& a, Type type);
-        std::shared_ptr<Variable> newParameter(const std::string& a, Type type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type, ast::Value& value);
+        std::shared_ptr<Variable> addParameter(const std::string& a, std::shared_ptr<Type> type);
+        std::shared_ptr<Variable> newVariable(const std::string& a, std::shared_ptr<Type> type);
+        std::shared_ptr<Variable> newParameter(const std::string& a, std::shared_ptr<Type> type);
 
         std::shared_ptr<Variable> newTemporary();
         std::shared_ptr<Variable> newFloatTemporary();

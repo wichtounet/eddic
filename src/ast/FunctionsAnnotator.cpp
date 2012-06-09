@@ -15,6 +15,8 @@
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"
+#include "Type.hpp"
+#include "Types.hpp"
 
 using namespace eddic;
 
@@ -29,12 +31,12 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
             auto signature = std::make_shared<Function>(new_type(declaration.Content->returnType), declaration.Content->functionName);
 
-            if(signature->returnType.is_array()){
+            if(signature->returnType->is_array()){
                 throw SemanticalException("Cannot return array from function", declaration.Content->position);
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = visit(ast::TypeTransformer(), param.parameterType);
+                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             

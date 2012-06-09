@@ -23,10 +23,6 @@ BaseType Type::base() const {
     return *baseType;
 }
 
-Type Type::element_type() const {
-    return Type(*baseType, false, 0, false);
-}
-
 bool Type::is_array() const {
     return array;
 }
@@ -61,37 +57,43 @@ std::string Type::type() const {
     return *m_type;
 }
 
-Type Type::data_type() const {
-    ASSERT(is_pointer(), "Only pointers have a data type");
-
-    return *sub_type;
+std::shared_ptr<Type> Type::element_type() const {
+    return std::make_shared<Type>(*baseType, false, 0, false);
 }
 
-Type Type::non_const() const {
-    Type copy = *this;
+std::shared_ptr<Type> Type::data_type() const {
+    ASSERT(is_pointer(), "Only pointers have a data type");
 
-    copy.const_ = false;
+    return sub_type;
+}
+
+std::shared_ptr<Type> Type::non_const() const {
+    auto copy = std::make_shared<Type>();
+
+    *copy = *this;
+
+    copy->const_ = false;
 
     return copy;
 }
 
-bool eddic::operator==(const Type& lhs, const Type& rhs){
-    return lhs.baseType == rhs.baseType && 
-           lhs.array == rhs.array &&
-           lhs.const_ == rhs.const_ &&
-           lhs.custom == rhs.custom &&
-           lhs.m_size == rhs.m_size && 
-           lhs.m_type == rhs.m_type; 
+bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
+    return lhs->baseType == rhs->baseType && 
+           lhs->array == rhs->array &&
+           lhs->const_ == rhs->const_ &&
+           lhs->custom == rhs->custom &&
+           lhs->m_size == rhs->m_size && 
+           lhs->m_type == rhs->m_type; 
 }
 
-bool eddic::operator!=(const Type& lhs, const Type& rhs){
+bool eddic::operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
     return !(lhs == rhs); 
 }
 
-bool eddic::operator==(const Type& lhs, const BaseType& rhs){
-    return lhs.baseType == rhs && !lhs.array && !lhs.custom; 
+bool eddic::operator==(std::shared_ptr<const Type> lhs, const BaseType& rhs){
+    return lhs->baseType == rhs && !lhs->array && !lhs->custom; 
 }
 
-bool eddic::operator!=(const Type& lhs, const BaseType& rhs){
+bool eddic::operator!=(std::shared_ptr<const Type> lhs, const BaseType& rhs){
     return !(lhs == rhs); 
 }

@@ -9,6 +9,7 @@
 #include "RegisterAllocation.hpp"
 #include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
