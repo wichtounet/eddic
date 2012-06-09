@@ -77,7 +77,7 @@ std::shared_ptr<Type> Type::non_const() const {
     return copy;
 }
 
-bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
+bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
     return lhs->baseType == rhs->baseType && 
            lhs->array == rhs->array &&
            lhs->const_ == rhs->const_ &&
@@ -86,14 +86,14 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
            lhs->m_type == rhs->m_type; 
 }
 
-bool eddic::operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
+bool eddic::operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
     return !(lhs == rhs); 
 }
 
-bool eddic::operator==(std::shared_ptr<const Type> lhs, const BaseType& rhs){
+bool eddic::operator==(std::shared_ptr<Type> lhs, const BaseType& rhs){
     return lhs->baseType == rhs && !lhs->array && !lhs->custom; 
 }
 
-bool eddic::operator!=(std::shared_ptr<const Type> lhs, const BaseType& rhs){
+bool eddic::operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs){
     return !(lhs == rhs); 
 }

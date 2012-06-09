@@ -53,25 +53,24 @@ class Type {
         unsigned int size() const;
         std::string type() const;
 
-        //TODO Enforce constness for the returned values
         std::shared_ptr<Type> non_const() const;
         std::shared_ptr<Type> element_type() const;
         std::shared_ptr<Type> data_type() const;
 
-        friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
-        friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
+        friend bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
+        friend bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
 
-        friend bool operator==(std::shared_ptr<const Type> lhs, const BaseType& rhs);
-        friend bool operator!=(std::shared_ptr<const Type> lhs, const BaseType& rhs);
+        friend bool operator==(std::shared_ptr<Type> lhs, const BaseType& rhs);
+        friend bool operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs);
 };
 
 /* Relational operators  */
         
-bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
-bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
+bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
+bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
 
-bool operator==(std::shared_ptr<const Type> lhs, const BaseType& rhs);
-bool operator!=(std::shared_ptr<const Type> lhs, const BaseType& rhs);
+bool operator==(std::shared_ptr<Type> lhs, const BaseType& rhs);
+bool operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs);
 
 } //end of eddic
 
