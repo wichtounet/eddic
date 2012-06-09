@@ -36,8 +36,6 @@ class Type {
         std::shared_ptr<Type> sub_type;
     
     public:
-        explicit Type();
-
         Type(BaseType type, bool array, unsigned int size, bool const_);
         Type(const std::string& type);
         Type(const std::string& type, bool array, unsigned int size, bool const_);

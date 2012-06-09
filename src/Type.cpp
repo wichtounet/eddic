@@ -13,7 +13,6 @@
 
 using namespace eddic;
 
-Type::Type(){}
 Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_elements(size){}
 Type::Type(const std::string& type) : custom(true), m_type(type) {}
 Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_elements(size) {}
@@ -91,13 +90,15 @@ std::shared_ptr<Type> Type::data_type() const {
 }
 
 std::shared_ptr<Type> Type::non_const() const {
-    auto copy = std::make_shared<Type>();
+    if(is_array()){
+        return std::make_shared<Type>(*baseType, true, elements(), false);
+    } else if(is_custom_type()){
+        return std::make_shared<Type>(type(), false, 0, false);
+    } else if(is_standard_type()){
+        return std::make_shared<Type>(*baseType, false, 0, false);
+    }
 
-    *copy = *this;
-
-    copy->const_ = false;
-
-    return copy;
+    ASSERT_PATH_NOT_TAKEN("Unhandled conversion");
 }
 
 bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
