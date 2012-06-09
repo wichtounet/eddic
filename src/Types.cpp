@@ -38,27 +38,25 @@ BaseType stringToBaseType(const std::string& type){
     return BaseType::VOID;
 }
 
-std::shared_ptr<Type> eddic::new_type(const std::string& type){
+std::shared_ptr<Type> eddic::new_type(const std::string& type, bool const_){
     if(type.find("[]") != std::string::npos){
         std::string baseType = type;
         baseType.resize(baseType.size() - 2);
 
         if(is_standard_type(baseType)){
+            assert(!const_);
             return new_array_type(baseType);
         } else {
-            return std::make_shared<Type>(baseType, true, 0, false); 
+            return std::make_shared<Type>(baseType, true, 0, const_); 
         }
     } 
 
     if(is_standard_type(type)){
-        return new_simple_type(type);
+        return std::make_shared<Type>(stringToBaseType(type), false, 0, const_);
     } else {
+        assert(!const_);
         return std::make_shared<Type>(type);
     }
-}
-
-std::shared_ptr<Type> eddic::new_simple_type(const std::string& baseType, bool const_){
-    return std::make_shared<Type>(stringToBaseType(baseType), false, 0, const_);
 }
 
 std::shared_ptr<Type> eddic::new_array_type(BaseType baseType, int size){

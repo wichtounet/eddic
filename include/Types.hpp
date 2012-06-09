@@ -28,9 +28,7 @@ extern std::shared_ptr<Type> VOID;
  *
  * \param type The type to parse. 
  */
-std::shared_ptr<Type> new_type(const std::string& type);
-
-std::shared_ptr<Type> new_simple_type(const std::string& baseType, bool const_ = false);
+std::shared_ptr<Type> new_type(const std::string& type, bool const_ = false);
 
 std::shared_ptr<Type> new_array_type(BaseType baseType, int size = 0);
 std::shared_ptr<Type> new_array_type(const std::string& baseType, int size = 0);

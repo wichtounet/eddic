@@ -71,7 +71,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
         
         declaration.Content->context->addVariable(declaration.Content->variableName, 
-                new_simple_type(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
+                new_type(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -206,7 +206,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         //If it's a standard type
         if(is_standard_type(declaration.Content->variableType)){
-            auto type = new_simple_type(declaration.Content->variableType, declaration.Content->const_);
+            auto type = new_type(declaration.Content->variableType, declaration.Content->const_);
 
             if(type->is_const()){
                 if(!declaration.Content->value){
