@@ -9,6 +9,7 @@
 #include "FunctionContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+#include "Types.hpp"
 
 #include "Labels.hpp"
 #include "ltac/StatementCompiler.hpp"

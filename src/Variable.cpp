@@ -7,7 +7,6 @@
 
 #include "Variable.hpp"
 #include "Utils.hpp"
-#include "Type.hpp"
 
 using namespace eddic;
 

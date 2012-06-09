@@ -8,7 +8,6 @@
 #include <cassert>
 
 #include "Struct.hpp"
-#include "Type.hpp"
 
 using namespace eddic;
 

@@ -9,6 +9,7 @@
 #include "FunctionContext.hpp"
 #include "VisitorUtils.hpp"
 #include "Platform.hpp"
+#include "Type.hpp"
 
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"

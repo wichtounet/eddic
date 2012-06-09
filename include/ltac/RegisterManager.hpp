@@ -16,8 +16,6 @@
 
 #include "Platform.hpp"
 #include "FloatPool.hpp"
-#include "Type.hpp"
-#include "Types.hpp"
 
 #include "mtac/Program.hpp"
 #include "ltac/Program.hpp"
