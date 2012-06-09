@@ -43,7 +43,6 @@ class Type {
         Type(const std::string& type, bool array, unsigned int size, bool const_);
         Type(std::shared_ptr<Type> sub_type);
 
-        BaseType base() const;
         unsigned int elements() const;
         std::string type() const;
 

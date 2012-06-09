@@ -12,6 +12,7 @@
 #include "Context.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+#include "Types.hpp"
 
 using namespace eddic;
 
@@ -49,14 +50,12 @@ std::shared_ptr<Variable> Context::newFloatTemporary(){
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<Type> type){
     ASSERT(type->is_standard_type(), "Temporary can only represent standard types"); 
 
-    switch(type->base()){
-        case BaseType::INT:
-        case BaseType::BOOL:
-            return newTemporary();
-        case BaseType::FLOAT:
-            return newFloatTemporary();
-        default:
-            ASSERT_PATH_NOT_TAKEN("Temporary can only represent int, bool and float");
+    if(type == INT || type == BOOL){
+        return newTemporary();
+    } else if(type == FLOAT){
+        return newFloatTemporary();
+    } else {
+        ASSERT_PATH_NOT_TAKEN("Temporary can only represent int, bool and float");
     }
 }
 

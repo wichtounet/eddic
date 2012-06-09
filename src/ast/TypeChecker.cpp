@@ -185,7 +185,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         auto value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (value_type->base() != var->type()->base()) {
+        if (value_type != var->type()->element_type()) {
             throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
         
@@ -217,8 +217,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::ArrayValue& array){
         visit(*this, array.Content->indexValue);
 
-        auto valueType = visit(ast::GetTypeVisitor(), array.Content->indexValue);
-        if (valueType->base() != BaseType::INT || valueType->is_array()) {
+        auto index_type = visit(ast::GetTypeVisitor(), array.Content->indexValue);
+        if (index_type != INT || index_type->is_array()) {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
         }
     }

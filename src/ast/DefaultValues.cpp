@@ -34,26 +34,17 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                 assert(type == BaseType::INT || type == BaseType::STRING);
 
-                switch(type->base()){
-                    case BaseType::INT:{
-                        ast::Integer integer;
-                        integer.value = 0;
+                if(type == INT){
+                    ast::Integer integer;
+                    integer.value = 0;
 
-                        declaration.Content->value = integer;
+                    declaration.Content->value = integer;
+                } else if(type == STRING){
+                    ast::Litteral litteral;
+                    litteral.value = "\"\"";
+                    litteral.label = "S3";
 
-                        break;
-                    }
-                    case BaseType::STRING:{
-                        ast::Litteral litteral;
-                        litteral.value = "\"\"";
-                        litteral.label = "S3";
-
-                        declaration.Content->value = litteral;
-
-                        break;
-                    }
-                    default:
-                        break;
+                    declaration.Content->value = litteral;
                 }
             }
         }

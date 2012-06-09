@@ -19,13 +19,6 @@ Type::Type(const std::string& type) : custom(true), m_type(type) {}
 Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_elements(size) {}
 Type::Type(std::shared_ptr<Type> sub_type) : pointer(true), sub_type(sub_type) {}
 
-BaseType Type::base() const {
-    ASSERT(is_standard_type(), "Only standard type have a base type");
-    ASSERT(baseType, "The baseType has not been initialized");
-
-    return *baseType;
-}
-
 bool Type::is_array() const {
     return array;
 }
@@ -71,9 +64,9 @@ int size(BaseType type){
 unsigned int Type::size() const {
     if(is_standard_type()){
         if(is_array()){
-            return ::size(base()) * elements() + INT->size(); 
+            return ::size(*baseType) * elements() + INT->size(); 
         } else {
-            return ::size(base());
+            return ::size(*baseType);
         }
     } else {
         return symbols.size_of_struct(type());

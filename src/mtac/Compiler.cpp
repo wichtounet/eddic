@@ -235,33 +235,28 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::FunctionCall& call) const {
         auto type = call.Content->function->returnType;
 
-        switch(type->base()){
-            case BaseType::BOOL:
-            case BaseType::INT:{
-                auto t1 = function->context->newTemporary();
+        if(type == BOOL || type == INT){
+            auto t1 = function->context->newTemporary();
 
-                executeCall(call, function, t1, {});
+            executeCall(call, function, t1, {});
 
-                return {t1};
-            }
-            case BaseType::FLOAT:{
-                auto t1 = function->context->newFloatTemporary();
+            return {t1};
+        } else if(type == FLOAT){
+            auto t1 = function->context->newFloatTemporary();
 
-                executeCall(call, function, t1, {});
+            executeCall(call, function, t1, {});
 
-                return {t1};
-            }
-            case BaseType::STRING:{
-                auto t1 = function->context->newTemporary();
-                auto t2 = function->context->newTemporary();
+            return {t1};
+        } else if(type == STRING){
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
 
-                executeCall(call, function, t1, t2);
+            executeCall(call, function, t1, t2);
 
-                return {t1, t2};
-            }
-            default:
-                throw SemanticalException("This function doesn't return anything");   
+            return {t1, t2};
         }
+        
+        throw SemanticalException("This function doesn't return anything");   
     }
 
     result_type operator()(ast::Assignment& assignment) const {
@@ -333,21 +328,19 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             //If it's a const, we just have to replace it by its constant value
             if(type->is_const()){
                 auto val = value.Content->var->val();
+                auto nc_type = type->non_const();
 
-                switch(type->base()){
-                    case BaseType::INT:
-                    case BaseType::BOOL:
-                        return {boost::get<int>(val)};
-                    case BaseType::FLOAT:
-                        return {boost::get<double>(val)};        
-                    case BaseType::STRING:{
-                          auto value = boost::get<std::pair<std::string, int>>(val);
+                if(nc_type == INT || nc_type == BOOL){
+                    return {boost::get<int>(val)};
+                } else if(nc_type == FLOAT){
+                    return {boost::get<double>(val)};        
+                } else if(nc_type == STRING){
+                    auto value = boost::get<std::pair<std::string, int>>(val);
 
-                          return {value.first, value.second};
-                      }
-                    default:
-                        ASSERT_PATH_NOT_TAKEN("void is not a type");
-                }
+                    return {value.first, value.second};
+                } 
+
+                ASSERT_PATH_NOT_TAKEN("void is not a type");
             } else if(type->is_array()){
                 return {value.Content->var};
             } else {
@@ -426,33 +419,28 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+        auto type = array.Content->var->type()->element_type();
 
-        switch(array.Content->var->type()->base()){
-            case BaseType::BOOL:
-            case BaseType::INT:
-            case BaseType::FLOAT: {
-                auto temp = array.Content->context->new_temporary(array.Content->var->type());
-                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
+        if(type == BOOL || type == INT || type == FLOAT){
+            auto temp = array.Content->context->new_temporary(type);
+            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
 
-                return {temp};
+            return {temp};
+        } else if (type == STRING){
+            auto t1 = array.Content->context->newTemporary();
+            function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
 
-            }   
-            case BaseType::STRING: {
-                auto t1 = array.Content->context->newTemporary();
-                function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
-                    
-                auto t2 = array.Content->context->newTemporary();
-                auto t3 = array.Content->context->newTemporary();
-                
-                //Assign the second part of the string
-                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
-                function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
-                
-                return {t1, t2};
-            }
-            default:
-                ASSERT_PATH_NOT_TAKEN("void is not a variable");
+            auto t2 = array.Content->context->newTemporary();
+            auto t3 = array.Content->context->newTemporary();
+
+            //Assign the second part of the string
+            function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
+            function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
+
+            return {t1, t2};
         }
+        
+        ASSERT_PATH_NOT_TAKEN("void is not a variable");
     }
 
     result_type operator()(ast::Expression& value) const {
@@ -543,21 +531,16 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     template<typename T>
     void complexAssign(std::shared_ptr<Type> type, T& value) const {
-        switch(type->base()){
-            case BaseType::INT:
-                intAssign(ToArgumentsVisitor(function)(value));
-                break;
-            case BaseType::BOOL:
-                intAssign(ToArgumentsVisitor(function)(value));
-                break;
-            case BaseType::STRING:
-                stringAssign(ToArgumentsVisitor(function)(value));
-                break;
-            case BaseType::FLOAT:
-                floatAssign(ToArgumentsVisitor(function)(value));
-                break;
-            default:
-                throw SemanticalException("Invalid variable type");   
+        if(type == INT){
+            intAssign(ToArgumentsVisitor(function)(value));
+        } else if(type == BOOL){
+            intAssign(ToArgumentsVisitor(function)(value));
+        } else if(type == STRING){
+            stringAssign(ToArgumentsVisitor(function)(value));
+        } else if(type == FLOAT){
+            floatAssign(ToArgumentsVisitor(function)(value));
+        } else {
+            throw SemanticalException("Invalid variable type");   
         }
     }
 
@@ -574,7 +557,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::ArrayValue& array) const {
-        auto type = array.Content->var->type();
+        auto type = array.Content->var->type()->element_type();
 
         complexAssign(type, array);
     }

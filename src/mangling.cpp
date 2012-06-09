@@ -14,24 +14,28 @@
 #include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "Types.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
 std::string eddic::mangle(std::shared_ptr<Type> type){
+    if(type->is_array()){
+        return "A" + mangle(type->element_type());
+    }
+
     if(type->is_standard_type()){
-        switch(type->base()){
-            case BaseType::INT:
-                return type->is_array() ? "AI" : "I";
-            case BaseType::STRING:
-                return type->is_array() ? "AS" : "S";
-            case BaseType::BOOL:
-                return type->is_array() ? "AB" : "B";
-            case BaseType::FLOAT:
-                return type->is_array() ? "AF" : "F";
-            case BaseType::VOID:
-                return "V";
+        if(type == INT){
+            return "I";
+        } else if(type == STRING){
+            return "S";
+        } else if(type == BOOL){
+            return "B";
+        } else if(type == FLOAT){
+            return "F";
+        } else if(type == VOID){
+            return "V";
         }
 
         ASSERT_PATH_NOT_TAKEN("Not a standard type");
