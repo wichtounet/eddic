@@ -141,13 +141,13 @@ void SymbolTable::defineStandardFunctions(){
     //time function
     auto timeFunction = std::make_shared<Function>(VOID, "time");
     timeFunction->mangledName = "_F4timeAI";
-    timeFunction->parameters.push_back({"a", new_array_type(BaseType::INT)});
+    timeFunction->parameters.push_back({"a", new_type("int[]")});
     addFunction(timeFunction);
     
     //duration function
     auto durationFunction = std::make_shared<Function>(VOID, "duration");
     durationFunction->mangledName = "_F8durationAIAI";
-    durationFunction->parameters.push_back({"a", new_array_type(BaseType::INT)});
-    durationFunction->parameters.push_back({"b", new_array_type(BaseType::INT)});
+    durationFunction->parameters.push_back({"a", new_type("int[]")});
+    durationFunction->parameters.push_back({"b", new_type("int[]")});
     addFunction(durationFunction);
 }
