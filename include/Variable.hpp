@@ -10,15 +10,17 @@
 
 #include <utility>
 #include <string>
+#include <memory>
 
 #include <boost/variant/variant.hpp>
 
-#include "Types.hpp"
 #include "Position.hpp"
 
 namespace eddic {
 
 typedef boost::variant<int, double, std::pair<std::string, int>> Val;
+
+class Type;
 
 /*!
  * \class Variable
@@ -27,18 +29,19 @@ typedef boost::variant<int, double, std::pair<std::string, int>> Val;
 class Variable {
     private:
         const std::string m_name;
-        const Type m_type;
+        std::shared_ptr<Type> m_type;
+
         Position m_position;
         Val v_value;
 
         int references;
 
     public:
-        Variable(const std::string& name, Type type, Position position);
-        Variable(const std::string& name, Type type, Position position, Val value);
+        Variable(const std::string& name, std::shared_ptr<Type> type, Position position);
+        Variable(const std::string& name, std::shared_ptr<Type> type, Position position, Val value);
 
         std::string name() const ;
-        Type type() const ;
+        std::shared_ptr<Type> type() const ;
         Position position() const ;
 
         Val val() const ;

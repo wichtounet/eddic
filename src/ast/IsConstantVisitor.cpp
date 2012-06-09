@@ -40,7 +40,7 @@ bool ast::IsConstantVisitor::operator()(ast::Cast& cast) const {
 }
 
 bool ast::IsConstantVisitor::operator()(ast::VariableValue& variable) const {
-    return variable.Content->memberNames.empty() && variable.Content->var->type().isConst();
+    return variable.Content->memberNames.empty() && variable.Content->var->type().is_const();
 }
 
 bool ast::IsConstantVisitor::operator()(ast::Expression& value) const {

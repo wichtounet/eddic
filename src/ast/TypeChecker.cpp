@@ -79,7 +79,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
         }
 
-        if(var->type().isConst()){
+        if(var->type().is_const()){
             throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it", assignment.Content->position);
         }
 
@@ -155,7 +155,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
         }
 
-        if(var->type().isConst()){
+        if(var->type().is_const()){
             throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", operation.Content->position);
         }
     }
@@ -217,7 +217,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit(*this, array.Content->indexValue);
 
         Type valueType = visit(ast::GetTypeVisitor(), array.Content->indexValue);
-        if (valueType.base() != BaseType::INT || valueType.isArray()) {
+        if (valueType.base() != BaseType::INT || valueType.is_array()) {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
         }
     }
@@ -296,7 +296,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         Type type = visit(visitor, builtin.Content->values[0]);
 
         if(builtin.Content->type == ast::BuiltinType::SIZE){
-            if(!type.isArray()){
+            if(!type.is_array()){
                 throw SemanticalException("The builtin size() operator takes only array as arguments", builtin.Content->position);
             }
         } else if(builtin.Content->type == ast::BuiltinType::LENGTH){

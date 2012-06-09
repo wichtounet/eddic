@@ -29,7 +29,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
             auto signature = std::make_shared<Function>(new_type(declaration.Content->returnType), declaration.Content->functionName);
 
-            if(signature->returnType.isArray()){
+            if(signature->returnType.is_array()){
                 throw SemanticalException("Cannot return array from function", declaration.Content->position);
             }
 

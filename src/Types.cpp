@@ -34,13 +34,13 @@ int eddic::size(BaseType type){
 
 int eddic::size(Type type){
     if(type.is_standard_type()){
-        if(type.isArray()){
+        if(type.is_array()){
             return size(type.base()) * type.size() + size(BaseType::INT); 
         } else {
             return size(type.base());
         }
     } else {
-        ASSERT(!type.isArray(), "Array of custom types are not supported for now");
+        ASSERT(!type.is_array(), "Array of custom types are not supported for now");
 
         return symbols.size_of_struct(type.type());
     }

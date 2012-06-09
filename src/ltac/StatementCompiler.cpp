@@ -62,7 +62,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         return ltac::Address(ltac::BP, -position.offset() + offset);
     } else if(position.isParameter()){
         //The case of array is special because only the address is passed, not the complete array
-        if(var->type().isArray())
+        if(var->type().is_array())
         {
             auto reg = manager.get_free_reg();
 
@@ -508,7 +508,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
     //If the param as not been handled as register passing, push it on the stack 
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-        if(!(*ptr)->type().isArray() && ltac::is_float_var(*ptr)){
+        if(!(*ptr)->type().is_array() && ltac::is_float_var(*ptr)){
             auto reg1 = manager.get_free_reg();
             auto reg2 = manager.get_float_reg(*ptr);
 
@@ -517,7 +517,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
             manager.release(reg1);
         } else {
-            if((*ptr)->type().isArray()){
+            if((*ptr)->type().is_array()){
                 auto position = (*ptr)->position();
 
                 if(position.isGlobal()){
@@ -567,7 +567,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
     for(auto& param : call->functionDefinition->parameters){
         Type type = param.paramType; 
 
-        if(type.isArray()){
+        if(type.is_array()){
             //Passing an array is just passing an adress
             total += size(BaseType::INT);
         } else {

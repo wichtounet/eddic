@@ -40,7 +40,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
 
     std::string operator()(ast::VariableValue& variable) const {
         Type type = variable.Content->var->type();
-        assert(type.isConst() && type == BaseType::STRING);
+        assert(type.is_const() && type == BaseType::STRING);
 
         auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
@@ -100,7 +100,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         ast::Value operator()(ast::VariableValue& variable) const {
             Type type = variable.Content->var->type();
 
-            if(type.isConst()){
+            if(type.is_const()){
                 if(type == BaseType::INT){
                     ast::Integer integer;
                     integer.value = boost::get<int>(variable.Content->var->val());

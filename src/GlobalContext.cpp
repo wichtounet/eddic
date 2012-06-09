@@ -30,7 +30,7 @@ GlobalContext::GlobalContext() : Context(NULL) {
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
     //A global variable must have a value
-    assert(type.isArray());
+    assert(type.is_array());
     
     Position position(PositionType::GLOBAL, variable);
     
@@ -40,7 +40,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
     auto val = visit(ast::GetConstantValue(), value);
      
-    if(type.isConst()){
+    if(type.is_const()){
         Position position(PositionType::CONST);
         return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
     }

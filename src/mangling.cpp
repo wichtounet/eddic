@@ -22,13 +22,13 @@ std::string eddic::mangle(Type type){
     if(type.is_standard_type()){
         switch(type.base()){
             case BaseType::INT:
-                return type.isArray() ? "AI" : "I";
+                return type.is_array() ? "AI" : "I";
             case BaseType::STRING:
-                return type.isArray() ? "AS" : "S";
+                return type.is_array() ? "AS" : "S";
             case BaseType::BOOL:
-                return type.isArray() ? "AB" : "B";
+                return type.is_array() ? "AB" : "B";
             case BaseType::FLOAT:
-                return type.isArray() ? "AF" : "F";
+                return type.is_array() ? "AF" : "F";
             case BaseType::VOID:
                 return "V";
         }

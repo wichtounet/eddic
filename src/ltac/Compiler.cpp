@@ -43,7 +43,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     for(; iter != end; iter++){
         auto var = iter->second;
-        if(var->type().isArray() && var->position().isStack()){
+        if(var->type().is_array() && var->position().isStack()){
             int position = -var->position().offset();
 
             ltac::add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type().size()));

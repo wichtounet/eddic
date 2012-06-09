@@ -329,7 +329,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto type = value.Content->var->type();
 
             //If it's a const, we just have to replace it by its constant value
-            if(type.isConst()){
+            if(type.is_const()){
                 auto val = value.Content->var->val();
 
                 switch(type.base()){
@@ -346,7 +346,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     default:
                         ASSERT_PATH_NOT_TAKEN("void is not a type");
                 }
-            } else if(type.isArray()){
+            } else if(type.is_array()){
                 return {value.Content->var};
             } else {
                 if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
@@ -979,7 +979,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             if(declaration.Content->value){
                 auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
                 
-                if(!var->type().isConst()){
+                if(!var->type().is_const()){
                     visit(AssignValueToVariable(function, var), *declaration.Content->value);
                 }
             }

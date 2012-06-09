@@ -52,8 +52,8 @@ class Type {
         Type(std::shared_ptr<Type> sub_type);
 
         BaseType base() const;
-        bool isArray() const;
-        bool isConst() const;
+        bool is_array() const;
+        bool is_const() const;
         bool is_custom_type() const;
         bool is_standard_type() const;
         bool is_pointer() const;

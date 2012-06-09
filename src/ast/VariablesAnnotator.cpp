@@ -207,7 +207,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(is_standard_type(declaration.Content->variableType)){
             Type type = new_simple_type(declaration.Content->variableType, declaration.Content->const_);
 
-            if(type.isConst()){
+            if(type.is_const()){
                 if(!declaration.Content->value){
                     throw SemanticalException("A constant variable must have a value", declaration.Content->position);
                 }

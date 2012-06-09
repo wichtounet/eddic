@@ -128,7 +128,7 @@ void checkForMain(){
     if(function->parameters.size() == 1){
         auto type = function->parameters[0].paramType;
        
-        if(type.base() != BaseType::STRING || !type.isArray()){
+        if(type.base() != BaseType::STRING || !type.is_array()){
             throw SemanticalException("The signature of your main function is not valid");
         }
     }

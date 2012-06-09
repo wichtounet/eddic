@@ -36,11 +36,11 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         Type type = it.second->type();
         
         //The const variables are not stored
-        if(type.isConst()){
+        if(type.is_const()){
             continue;
         }
 
-        if(type.isArray()){
+        if(type.is_array()){
             if(type.base() == BaseType::INT){
                 declareIntArray(it.second->name(), type.size());
             } else if(type.base() == BaseType::FLOAT){

@@ -27,11 +27,11 @@ Type Type::element_type() const {
     return Type(*baseType, false, 0, false);
 }
 
-bool Type::isArray() const {
+bool Type::is_array() const {
     return array;
 }
 
-bool Type::isConst() const {
+bool Type::is_const() const {
     return const_;
 }
 

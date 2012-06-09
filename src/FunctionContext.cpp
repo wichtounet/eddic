@@ -42,7 +42,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 }
 
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, Type type, ast::Value& value){
-    assert(type.isConst());
+    assert(type.is_const());
 
     Position position(PositionType::CONST);
 
