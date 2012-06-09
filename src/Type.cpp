@@ -11,9 +11,9 @@
 using namespace eddic;
 
 Type::Type(){}
-Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_size(size){}
+Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_elements(size){}
 Type::Type(const std::string& type) : custom(true), m_type(type) {}
-Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_size(size) {}
+Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_elements(size) {}
 Type::Type(std::shared_ptr<Type> sub_type) : sub_type(sub_type), pointer(true) {}
 
 BaseType Type::base() const {
@@ -35,11 +35,11 @@ bool Type::is_pointer() const {
     return pointer;
 }
 
-unsigned int Type::size() const {
+unsigned int Type::elements() const {
     ASSERT(is_standard_type(), "Only standard type have a size");
-    ASSERT(m_size, "The m_size has not been initialized");
+    ASSERT(m_elements, "The m_elements has not been initialized");
     
-    return *m_size;
+    return *m_elements;
 }
         
 bool Type::is_custom_type() const {
@@ -82,7 +82,7 @@ bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
            lhs->array == rhs->array &&
            lhs->const_ == rhs->const_ &&
            lhs->custom == rhs->custom &&
-           lhs->m_size == rhs->m_size && 
+           lhs->m_elements == rhs->m_elements && 
            lhs->m_type == rhs->m_type; 
 }
 

@@ -37,7 +37,7 @@ int eddic::size(BaseType type){
 int eddic::size(std::shared_ptr<Type> type){
     if(type->is_standard_type()){
         if(type->is_array()){
-            return size(type->base()) * type->size() + size(BaseType::INT); 
+            return size(type->base()) * type->elements() + size(BaseType::INT); 
         } else {
             return size(type->base());
         }

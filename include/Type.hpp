@@ -31,7 +31,7 @@ class Type {
         
         boost::optional<BaseType> baseType;
         boost::optional<std::string> m_type;
-        boost::optional<unsigned int> m_size;
+        boost::optional<unsigned int> m_elements;
         
         std::shared_ptr<Type> sub_type;
     
@@ -44,18 +44,18 @@ class Type {
         Type(std::shared_ptr<Type> sub_type);
 
         BaseType base() const;
-        bool is_array() const;
-        bool is_const() const;
-        bool is_custom_type() const;
-        bool is_standard_type() const;
-        bool is_pointer() const;
-
-        unsigned int size() const;
+        unsigned int elements() const;
         std::string type() const;
 
         std::shared_ptr<Type> non_const() const;
         std::shared_ptr<Type> element_type() const;
         std::shared_ptr<Type> data_type() const;
+
+        bool is_array() const;
+        bool is_const() const;
+        bool is_custom_type() const;
+        bool is_standard_type() const;
+        bool is_pointer() const;
 
         friend bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
         friend bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);

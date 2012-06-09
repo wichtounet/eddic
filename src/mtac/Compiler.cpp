@@ -80,7 +80,7 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argume
 
         //Compute the offset manually to avoid having ADD then SUB
         //TODO Find a way to make that optimization in the TAC Optimizer
-        int offset = size(array->type()->base()) * array->type()->size();
+        int offset = size(array->type()->base()) * array->type()->elements();
         offset -= size(BaseType::INT);
 
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, offset));
@@ -108,7 +108,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     
     auto position = array->position();
     if(position.isGlobal() || position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(t1, array->type()->size(), mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Quadruple>(t1, array->type()->elements(), mtac::Operator::ASSIGN));
     } else if(position.isParameter()){
         function->add(std::make_shared<mtac::Quadruple>(t1, array, mtac::Operator::ARRAY, 0));
     }
@@ -211,9 +211,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto variable = boost::get<ast::VariableValue>(value).Content->var;
 
                 if(variable->position().isGlobal()){
-                    return {variable->type()->size()};
+                    return {variable->type()->elements()};
                 } else if(variable->position().isStack()){
-                    return {variable->type()->size()};
+                    return {variable->type()->elements()};
                 } else if(variable->position().isParameter()){
                     auto t1 = function->context->newTemporary();
 

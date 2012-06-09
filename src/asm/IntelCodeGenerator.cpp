@@ -43,11 +43,11 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
 
         if(type->is_array()){
             if(type->base() == BaseType::INT){
-                declareIntArray(it.second->name(), type->size());
+                declareIntArray(it.second->name(), type->elements());
             } else if(type->base() == BaseType::FLOAT){
-                declareFloatArray(it.second->name(), type->size());
+                declareFloatArray(it.second->name(), type->elements());
             } else if(type->base() == BaseType::STRING){
-                declareStringArray(it.second->name(), type->size());
+                declareStringArray(it.second->name(), type->elements());
             }
         } else {
             if (type == BaseType::INT) {
