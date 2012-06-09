@@ -40,6 +40,16 @@ class Type {
         Type(const std::string& type);
         Type(const std::string& type, bool array, unsigned int size, bool const_);
         Type(std::shared_ptr<Type> sub_type);
+    
+        /*!
+         * Deleted copy constructor
+         */
+        Type(const Type& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        Type& operator=(const Type& rhs) = delete;
 
         unsigned int elements() const;
         std::string type() const;
