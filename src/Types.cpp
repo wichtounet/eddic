@@ -34,20 +34,6 @@ int eddic::size(BaseType type){
     return -1;
 }
 
-int eddic::size(std::shared_ptr<Type> type){
-    if(type->is_standard_type()){
-        if(type->is_array()){
-            return size(type->base()) * type->elements() + size(BaseType::INT); 
-        } else {
-            return size(type->base());
-        }
-    } else {
-        ASSERT(!type->is_array(), "Array of custom types are not supported for now");
-
-        return symbols.size_of_struct(type->type());
-    }
-}
-
 bool eddic::is_standard_type(const std::string& type){
     return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
 }

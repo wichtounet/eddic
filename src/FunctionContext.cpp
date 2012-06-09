@@ -24,9 +24,9 @@ int FunctionContext::size() const {
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<Type> type){
-    Position position(PositionType::PARAMETER, currentParameter + (::size(type) - ::size(BaseType::INT)));
+    Position position(PositionType::PARAMETER, currentParameter + (type->size() - ::size(BaseType::INT)));
 
-    currentParameter += ::size(type);
+    currentParameter += type->size();
 
     return std::make_shared<Variable>(variable, type, position);
 }
@@ -34,7 +34,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<Type> type){
     Position position(PositionType::STACK, currentPosition);
 
-    currentPosition += ::size(type);
+    currentPosition += type->size();
 
     return std::make_shared<Variable>(variable, type, position);
 }
@@ -49,7 +49,6 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     Position position(PositionType::CONST);
 
     auto val = visit(ast::GetConstantValue(), value);
-
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }
 
@@ -61,7 +60,6 @@ std::shared_ptr<Variable> FunctionContext::newTemporary(){
     Position position(PositionType::TEMPORARY);
 
     std::string name = "ti_" + toString(temporary++);
-
     return variables[name] = std::make_shared<Variable>(name, INT, position); 
 }
 
@@ -69,14 +67,13 @@ std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
     Position position(PositionType::TEMPORARY);
 
     std::string name = "tf_" + toString(temporary++);
-
     return variables[name] = std::make_shared<Variable>(name, FLOAT, position); 
 }
 
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
     Position position(PositionType::STACK, currentPosition);
 
-    currentPosition += ::size(temp->type());
+    currentPosition += temp->type()->size();
    
     temp->setPosition(position); 
 }

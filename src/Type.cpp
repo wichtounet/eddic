@@ -7,6 +7,8 @@
 
 #include "assert.hpp"
 #include "Type.hpp"
+#include "Types.hpp"
+#include "SymbolTable.hpp"
 
 using namespace eddic;
 
@@ -14,7 +16,7 @@ Type::Type(){}
 Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_elements(size){}
 Type::Type(const std::string& type) : custom(true), m_type(type) {}
 Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_elements(size) {}
-Type::Type(std::shared_ptr<Type> sub_type) : sub_type(sub_type), pointer(true) {}
+Type::Type(std::shared_ptr<Type> sub_type) : pointer(true), sub_type(sub_type) {}
 
 BaseType Type::base() const {
     ASSERT(is_standard_type(), "Only standard type have a base type");
@@ -48,6 +50,18 @@ bool Type::is_custom_type() const {
 
 bool Type::is_standard_type() const {
     return !is_custom_type();
+}
+
+unsigned int Type::size() const {
+    if(is_standard_type()){
+        if(is_array()){
+            return ::size(base()) * elements() + ::size(BaseType::INT); 
+        } else {
+            return ::size(base());
+        }
+    } else {
+        return symbols.size_of_struct(type());
+    }
 }
 
 std::string Type::type() const {

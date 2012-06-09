@@ -47,6 +47,8 @@ class Type {
         unsigned int elements() const;
         std::string type() const;
 
+        unsigned int size() const;
+
         std::shared_ptr<Type> non_const() const;
         std::shared_ptr<Type> element_type() const;
         std::shared_ptr<Type> data_type() const;

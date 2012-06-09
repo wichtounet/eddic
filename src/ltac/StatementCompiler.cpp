@@ -578,17 +578,17 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
                 if(maxInt > 0){
                     --maxInt;
                 } else {
-                    total += size(type);
+                    total += type->size();
                 }
             } else if(type == BaseType::FLOAT){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxFloat > 0){
                     --maxFloat;
                 } else {
-                    total += size(type);
+                    total += type->size();
                 }
             } else {
-                total += size(type);
+                total += type->size();
             }
         }
     }

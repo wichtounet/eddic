@@ -36,7 +36,6 @@ std::shared_ptr<Type> new_array_type(BaseType baseType, int size = 0);
 std::shared_ptr<Type> new_array_type(const std::string& baseType, int size = 0);
 
 int size(BaseType type);
-int size(std::shared_ptr<Type> type);
 
 bool is_standard_type(const std::string& type);
 
