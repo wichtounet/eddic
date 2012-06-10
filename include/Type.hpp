@@ -36,10 +36,11 @@ class Type {
         std::shared_ptr<Type> sub_type;
     
     public:
-        Type(BaseType type, bool array, unsigned int size, bool const_);
-        Type(const std::string& type);
-        Type(const std::string& type, bool array, unsigned int size, bool const_);
-        Type(std::shared_ptr<Type> sub_type);
+        Type(BaseType type, bool const_); //For a standard type
+
+        Type(const std::string& type); //For a struct type
+        
+        Type(std::shared_ptr<Type> sub_type, int size = 0); //For array type
     
         /*!
          * Deleted copy constructor

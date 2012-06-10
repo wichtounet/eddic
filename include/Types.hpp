@@ -30,8 +30,7 @@ extern std::shared_ptr<Type> VOID;
  */
 std::shared_ptr<Type> new_type(const std::string& type, bool const_ = false);
 
-std::shared_ptr<Type> new_array_type(BaseType baseType, int size = 0);
-std::shared_ptr<Type> new_array_type(const std::string& baseType, int size = 0);
+std::shared_ptr<Type> new_array_type(std::shared_ptr<Type> data_type, int size = 0);
 
 bool is_standard_type(const std::string& type);
 

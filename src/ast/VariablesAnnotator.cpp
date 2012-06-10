@@ -79,7 +79,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(declaration.Content->arrayType, declaration.Content->arraySize));
+        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize));
     }
     
     void operator()(ast::Foreach& foreach){
@@ -243,7 +243,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        auto type = new_array_type(declaration.Content->arrayType, declaration.Content->arraySize);
+        auto type = new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize);
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     

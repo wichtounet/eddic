@@ -19,5 +19,5 @@ std::shared_ptr<Type> ast::TypeTransformer::operator()(ast::SimpleType& type) co
 }
 
 std::shared_ptr<Type> ast::TypeTransformer::operator()(ast::ArrayType& type) const {
-    return new_array_type(type.type);
+    return new_array_type(new_type(type.type));
 }

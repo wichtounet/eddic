@@ -13,10 +13,9 @@
 
 using namespace eddic;
 
-Type::Type(BaseType base, bool array, unsigned int size, bool constant) : array(array), const_(constant), baseType(base), m_elements(size){}
+Type::Type(BaseType base, bool constant) : const_(constant), baseType(base) {}
 Type::Type(const std::string& type) : custom(true), m_type(type) {}
-Type::Type(const std::string& type, bool array, unsigned int size, bool const_) : array(array), const_(const_), custom(true), m_type(type), m_elements(size) {}
-Type::Type(std::shared_ptr<Type> sub_type) : pointer(true), sub_type(sub_type) {}
+Type::Type(std::shared_ptr<Type> sub_type, int size) : array(true), sub_type(sub_type), m_elements(size) {}
 
 bool Type::is_array() const {
     return array;
@@ -63,7 +62,7 @@ int size(BaseType type){
 unsigned int Type::size() const {
     if(is_standard_type()){
         if(is_array()){
-            return ::size(*baseType) * elements() + INT->size(); 
+            return sub_type->size() * elements() + INT->size(); 
         } else {
             return ::size(*baseType);
         }
@@ -80,7 +79,9 @@ std::string Type::type() const {
 }
 
 std::shared_ptr<Type> Type::element_type() const {
-    return std::make_shared<Type>(*baseType, false, 0, false);
+    ASSERT(is_array(), "Only arrays have an element type");
+    
+    return sub_type;
 }
 
 std::shared_ptr<Type> Type::data_type() const {
@@ -91,17 +92,21 @@ std::shared_ptr<Type> Type::data_type() const {
 
 std::shared_ptr<Type> Type::non_const() const {
     if(is_array()){
-        return std::make_shared<Type>(*baseType, true, elements(), false);
+        return std::make_shared<Type>(sub_type);
     } else if(is_custom_type()){
-        return std::make_shared<Type>(type(), false, 0, false);
+        return std::make_shared<Type>(type());
     } else if(is_standard_type()){
-        return std::make_shared<Type>(*baseType, false, 0, false);
+        return std::make_shared<Type>(*baseType, false);
     }
 
     ASSERT_PATH_NOT_TAKEN("Unhandled conversion");
 }
 
 bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
+    if(lhs->array){
+        return rhs->array && lhs->sub_type == rhs->sub_type && lhs->m_elements == rhs->m_elements;
+    }
+
     return lhs->baseType == rhs->baseType && 
            lhs->array == rhs->array &&
            lhs->const_ == rhs->const_ &&
