@@ -290,7 +290,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Too many arguments to the builtin operator", builtin.Content->position);
         }
         
-        auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0]);
+        auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0])->non_const();
 
         if(builtin.Content->type == ast::BuiltinType::SIZE){
             if(!type->is_array()){
