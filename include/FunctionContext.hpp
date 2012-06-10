@@ -28,11 +28,11 @@ class FunctionContext : public Context {
         
         int size() const;
 
-        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type);
-        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type, ast::Value& value);
-        std::shared_ptr<Variable> addParameter(const std::string& a, std::shared_ptr<Type> type);
-        std::shared_ptr<Variable> newVariable(const std::string& a, std::shared_ptr<Type> type);
-        std::shared_ptr<Variable> newParameter(const std::string& a, std::shared_ptr<Type> type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
+        std::shared_ptr<Variable> addParameter(const std::string& a, std::shared_ptr<const Type> type);
+        std::shared_ptr<Variable> newVariable(const std::string& a, std::shared_ptr<const Type> type);
+        std::shared_ptr<Variable> newParameter(const std::string& a, std::shared_ptr<const Type> type);
 
         std::shared_ptr<Variable> newTemporary();
         std::shared_ptr<Variable> newFloatTemporary();

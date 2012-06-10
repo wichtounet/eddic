@@ -13,10 +13,10 @@
 
 using namespace eddic;
 
-std::shared_ptr<Type> ast::TypeTransformer::operator()(ast::SimpleType& type) const {
+std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::SimpleType& type) const {
     return new_type(type.type);
 }
 
-std::shared_ptr<Type> ast::TypeTransformer::operator()(ast::ArrayType& type) const {
+std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::ArrayType& type) const {
     return new_array_type(new_type(type.type));
 }

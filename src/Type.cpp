@@ -12,11 +12,11 @@
 
 using namespace eddic;
 
-std::shared_ptr<Type> eddic::BOOL = std::make_shared<StandardType>(BaseType::BOOL, false);
-std::shared_ptr<Type> eddic::INT = std::make_shared<StandardType>(BaseType::INT, false);
-std::shared_ptr<Type> eddic::FLOAT = std::make_shared<StandardType>(BaseType::FLOAT, false);
-std::shared_ptr<Type> eddic::STRING = std::make_shared<StandardType>(BaseType::STRING, false);
-std::shared_ptr<Type> eddic::VOID = std::make_shared<StandardType>(BaseType::VOID, false);
+std::shared_ptr<const Type> eddic::BOOL = std::make_shared<StandardType>(BaseType::BOOL, false);
+std::shared_ptr<const Type> eddic::INT = std::make_shared<StandardType>(BaseType::INT, false);
+std::shared_ptr<const Type> eddic::FLOAT = std::make_shared<StandardType>(BaseType::FLOAT, false);
+std::shared_ptr<const Type> eddic::STRING = std::make_shared<StandardType>(BaseType::STRING, false);
+std::shared_ptr<const Type> eddic::VOID = std::make_shared<StandardType>(BaseType::VOID, false);
 
 /* Implementation of Type */ 
 
@@ -85,7 +85,7 @@ std::string Type::type() const {
     ASSERT_PATH_NOT_TAKEN("Not a custom type");
 }
 
-std::shared_ptr<Type> Type::data_type() const {
+std::shared_ptr<const Type> Type::data_type() const {
     ASSERT_PATH_NOT_TAKEN("No data type");
 }
 
@@ -93,7 +93,7 @@ BaseType Type::base() const {
     ASSERT_PATH_NOT_TAKEN("Not a standard type");
 }
 
-std::shared_ptr<Type> Type::non_const() const {
+std::shared_ptr<const Type> Type::non_const() const {
     if(is_array()){
         return std::make_shared<ArrayType>(data_type());
     } 
@@ -113,7 +113,7 @@ std::shared_ptr<Type> Type::non_const() const {
     ASSERT_PATH_NOT_TAKEN("Unhandled conversion");
 }
 
-bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
+bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
     if(lhs->is_array()){
         return rhs->is_array() && lhs->data_type() == rhs->data_type() && lhs->elements() == rhs->elements();
     }
@@ -133,7 +133,7 @@ bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
     return false;
 }
 
-bool eddic::operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
+bool eddic::operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
     return !(lhs == rhs); 
 }
 
@@ -167,13 +167,13 @@ bool CustomType::is_custom_type() const {
         
 /* Implementation of ArrayType  */
 
-ArrayType::ArrayType(std::shared_ptr<Type> sub_type, int size) : sub_type(sub_type), m_elements(size) {}
+ArrayType::ArrayType(std::shared_ptr<const Type> sub_type, int size) : sub_type(sub_type), m_elements(size) {}
 
 unsigned int ArrayType::elements() const {
     return m_elements;
 }
 
-std::shared_ptr<Type> ArrayType::data_type() const {
+std::shared_ptr<const Type> ArrayType::data_type() const {
     return sub_type;
 }
 
@@ -183,9 +183,9 @@ bool ArrayType::is_array() const {
         
 /* Implementation of PointerType  */
 
-PointerType::PointerType(std::shared_ptr<Type> sub_type) : sub_type(sub_type) {} 
+PointerType::PointerType(std::shared_ptr<const Type> sub_type) : sub_type(sub_type) {} 
 
-std::shared_ptr<Type> PointerType::data_type() const {
+std::shared_ptr<const Type> PointerType::data_type() const {
     return sub_type;
 }
 
@@ -211,7 +211,7 @@ BaseType stringToBaseType(const std::string& type){
     return BaseType::VOID;
 }
 
-std::shared_ptr<Type> eddic::new_type(const std::string& type, bool const_){
+std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_){
     if(type.find("[]") != std::string::npos){
         std::string baseType = type;
         baseType.resize(baseType.size() - 2);
@@ -227,7 +227,7 @@ std::shared_ptr<Type> eddic::new_type(const std::string& type, bool const_){
     }
 }
 
-std::shared_ptr<Type> eddic::new_array_type(std::shared_ptr<Type> data_type, int size){
+std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> data_type, int size){
     return std::make_shared<ArrayType>(data_type, size);
 }
 

@@ -35,7 +35,7 @@ class SymbolTable {
         FunctionMap functions;
         StructMap structs;
 
-        void addPrintFunction(const std::string& function, std::shared_ptr<Type> parameterType);
+        void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
 
     public:

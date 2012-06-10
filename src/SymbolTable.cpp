@@ -106,7 +106,7 @@ int SymbolTable::referenceCount(const std::string& function){
     return functions[function]->references;
 }
 
-void SymbolTable::addPrintFunction(const std::string& function, std::shared_ptr<Type> parameterType){
+void SymbolTable::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
     auto printFunction = std::make_shared<Function>(VOID, "print");
     printFunction->mangledName = function;
     printFunction->parameters.push_back({"a", parameterType});

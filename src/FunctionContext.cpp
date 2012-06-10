@@ -22,7 +22,7 @@ int FunctionContext::size() const {
     return currentPosition - ::INT->size();
 }
 
-std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<Type> type){
+std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::PARAMETER, currentParameter + (type->size() - ::INT->size()));
 
     currentParameter += type->size();
@@ -30,7 +30,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
     return std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<Type> type){
+std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::STACK, currentPosition);
 
     currentPosition += type->size();
@@ -38,11 +38,11 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
     return std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<Type> type){
+std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
     return variables[variable] = newVariable(variable, type);
 }
 
-std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<Type> type, ast::Value& value){
+std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
     assert(type->is_const());
 
     Position position(PositionType::CONST);
@@ -51,7 +51,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }
 
-std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<Type> type){
+std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<const Type> type){
     return variables[parameter] = newParameter(parameter, type);
 }
 

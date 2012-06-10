@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-Member::Member(const std::string& n, std::shared_ptr<Type> t) : name(n), type(t) {}
+Member::Member(const std::string& n, std::shared_ptr<const Type> t) : name(n), type(t) {}
 
 void Member::add_reference(){
     ++references;

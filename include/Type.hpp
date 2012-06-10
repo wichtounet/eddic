@@ -36,7 +36,7 @@ class Type {
 
         virtual unsigned int elements() const;
         virtual std::string type() const;
-        virtual std::shared_ptr<Type> data_type() const;
+        virtual std::shared_ptr<const Type> data_type() const;
 
         virtual bool is_array() const;
         virtual bool is_custom_type() const;
@@ -45,10 +45,10 @@ class Type {
         virtual bool is_const() const;
 
         unsigned int size() const;
-        std::shared_ptr<Type> non_const() const;
+        std::shared_ptr<const Type> non_const() const;
 
-        friend bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
-        friend bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
+        friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
+        friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
 
     protected:
         Type();
@@ -104,11 +104,11 @@ class CustomType : public Type {
 
 class ArrayType : public Type {
     private:
-        std::shared_ptr<Type> sub_type;
+        std::shared_ptr<const Type> sub_type;
         unsigned int m_elements = 0;
     
     public:
-        ArrayType(std::shared_ptr<Type> sub_type, int size = 0);
+        ArrayType(std::shared_ptr<const Type> sub_type, int size = 0);
     
         /*!
          * Deleted copy constructor
@@ -122,17 +122,17 @@ class ArrayType : public Type {
 
         unsigned int elements() const override;
 
-        std::shared_ptr<Type> data_type() const override;
+        std::shared_ptr<const Type> data_type() const override;
 
         bool is_array() const override;
 };
 
 class PointerType : public Type {
     private:
-        std::shared_ptr<Type> sub_type;
+        std::shared_ptr<const Type> sub_type;
     
     public:
-        PointerType(std::shared_ptr<Type> sub_type); 
+        PointerType(std::shared_ptr<const Type> sub_type); 
     
         /*!
          * Deleted copy constructor
@@ -144,32 +144,31 @@ class PointerType : public Type {
          */
         PointerType& operator=(const PointerType& rhs) = delete;
 
-        std::shared_ptr<Type> data_type() const override;
+        std::shared_ptr<const Type> data_type() const override;
 
         bool is_pointer() const override;
 };
 
 /* Relational operators  */
         
-bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
-bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
+bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
+bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
 
-extern std::shared_ptr<Type> BOOL;
-extern std::shared_ptr<Type> INT;
-extern std::shared_ptr<Type> FLOAT;
-extern std::shared_ptr<Type> STRING;
-extern std::shared_ptr<Type> VOID;
+extern std::shared_ptr<const Type> BOOL;
+extern std::shared_ptr<const Type> INT;
+extern std::shared_ptr<const Type> FLOAT;
+extern std::shared_ptr<const Type> STRING;
+extern std::shared_ptr<const Type> VOID;
 
 /*!
  * \brief Parse the given type into an EDDI std::shared_ptr<Type>. 
  *
  * \param type The type to parse. 
  */
-std::shared_ptr<Type> new_type(const std::string& type, bool const_ = false);
+std::shared_ptr<const Type> new_type(const std::string& type, bool const_ = false);
 
-std::shared_ptr<Type> new_array_type(std::shared_ptr<Type> data_type, int size = 0);
+std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size = 0);
 
-//TODO Check if still useful
 bool is_standard_type(const std::string& type);
 
 } //end of eddic

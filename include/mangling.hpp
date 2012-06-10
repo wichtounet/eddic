@@ -23,7 +23,7 @@ class Type;
  * \param type The type to mangle. 
  * \return The mangled type. 
  */
-std::string mangle(std::shared_ptr<Type> type);
+std::string mangle(std::shared_ptr<const Type> type);
 
 /*!
  * \brief Return the signature of the function from the mangled representation. 

@@ -29,7 +29,7 @@ class Type;
 class Variable {
     private:
         const std::string m_name;
-        std::shared_ptr<Type> m_type;
+        std::shared_ptr<const Type> m_type;
 
         Position m_position;
         Val v_value;
@@ -37,11 +37,11 @@ class Variable {
         int references;
 
     public:
-        Variable(const std::string& name, std::shared_ptr<Type> type, Position position);
-        Variable(const std::string& name, std::shared_ptr<Type> type, Position position, Val value);
+        Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
+        Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
 
         std::string name() const ;
-        std::shared_ptr<Type> type() const ;
+        std::shared_ptr<const Type> type() const ;
         Position position() const ;
 
         Val val() const ;

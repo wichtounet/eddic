@@ -29,7 +29,7 @@ GlobalContext::GlobalContext() : Context(NULL) {
     variables["eddi_current"]->addReference(); //In order to not display a warning
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<Type> type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
     //A global variable must have a value
     assert(type->is_array()); //TODO Looks wrong
     
@@ -38,7 +38,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
     return variables[variable] = std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<Type> type, ast::Value& value){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
     auto val = visit(ast::GetConstantValue(), value);
      
     if(type->is_const()){

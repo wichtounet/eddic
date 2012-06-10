@@ -46,7 +46,7 @@ std::shared_ptr<Variable> Context::newFloatTemporary(){
     ASSERT_PATH_NOT_TAKEN("Not implemented");
 }
 
-std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<Type> type){
+std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
     ASSERT(type->is_standard_type(), "Temporary can only represent standard types"); 
 
     if(type == INT || type == BOOL){

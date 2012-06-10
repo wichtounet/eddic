@@ -266,7 +266,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {variable};
     }
 
-    void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<Type> type, result_type& values) const {
+    void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, result_type& values) const {
         auto struct_name = type->type();
         auto struct_type = symbols.get_struct(struct_name);
         
@@ -359,7 +359,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else {
             auto struct_name = value.Content->var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
-            std::shared_ptr<Type> member_type;
+            std::shared_ptr<const Type> member_type;
 
             unsigned int offset = 0;
 
@@ -529,7 +529,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     /* Can be of two types */
     
     template<typename T>
-    void complexAssign(std::shared_ptr<Type> type, T& value) const {
+    void complexAssign(std::shared_ptr<const Type> type, T& value) const {
         if(type == INT){
             intAssign(ToArgumentsVisitor(function)(value));
         } else if(type == BOOL){

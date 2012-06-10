@@ -19,7 +19,7 @@
 
 using namespace eddic;
 
-std::string eddic::mangle(std::shared_ptr<Type> type){
+std::string eddic::mangle(std::shared_ptr<const Type> type){
     if(type->is_array()){
         return "A" + mangle(type->data_type());
     }

@@ -25,8 +25,8 @@ class GlobalContext : public Context {
         
         Variables getVariables();
         
-        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type);
-        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<Type> type, ast::Value& value);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
 };
 
 } //end of eddic

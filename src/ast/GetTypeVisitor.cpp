@@ -28,27 +28,27 @@ ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, FLOAT)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, BOOL)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, BOOL)
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
    return visit(*this, minus.Content->value); 
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
    return visit(*this, minus.Content->value); 
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
    return visit(ast::TypeTransformer(), cast.Content->type); 
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
    return operation.Content->variable->type(); 
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
    return operation.Content->variable->type(); 
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     auto var = (*variable.Content->context)[variable.Content->variableName];
 
     if(variable.Content->memberNames.empty()){
@@ -73,15 +73,15 @@ std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& 
     }
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
     return assign.Content->context->getVariable(assign.Content->variableName)->type();
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
     return array.Content->context->getVariable(array.Content->arrayName)->type()->data_type();
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){
@@ -94,6 +94,6 @@ std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Expression& val
     }
 }
 
-std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     return call.Content->function->returnType;
 }

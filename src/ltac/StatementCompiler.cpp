@@ -480,7 +480,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     manager.save_registers(param, descriptor);
 
     if(param->std_param.length() > 0 || param->param){
-        std::shared_ptr<Type> type;
+        std::shared_ptr<const Type> type;
         unsigned int position;
 
         //It's a call to a standard function

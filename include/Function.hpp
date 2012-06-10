@@ -23,9 +23,9 @@ class Type;
  */
 struct ParameterType {
     std::string name;
-    std::shared_ptr<Type> paramType;
+    std::shared_ptr<const Type> paramType;
 
-    ParameterType(const std::string& n, std::shared_ptr<Type> t);
+    ParameterType(const std::string& n, std::shared_ptr<const Type> t);
 };
 
 /*!
@@ -33,16 +33,16 @@ struct ParameterType {
  * \brief A function entry in the function table. 
  */
 struct Function {
-    std::shared_ptr<Type> returnType;
+    std::shared_ptr<const Type> returnType;
     std::string name;
     std::string mangledName;
     std::vector<ParameterType> parameters;
     std::shared_ptr<FunctionContext> context;
     int references;
 
-    Function(std::shared_ptr<Type> ret, const std::string& n);
+    Function(std::shared_ptr<const Type> ret, const std::string& n);
 
-    std::shared_ptr<Type> getParameterType(const std::string& name);
+    std::shared_ptr<const Type> getParameterType(const std::string& name);
     unsigned int getParameterPositionByType(const std::string& name);
 };
 

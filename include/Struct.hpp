@@ -22,9 +22,9 @@ class Type;
  */
 struct Member {
     std::string name;
-    std::shared_ptr<Type> type;
+    std::shared_ptr<const Type> type;
 
-    Member(const std::string& n, std::shared_ptr<Type> t);
+    Member(const std::string& n, std::shared_ptr<const Type> t);
 
     /*!
      * Increment the reference counter of the member. 
