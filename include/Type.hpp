@@ -18,7 +18,7 @@
 namespace eddic {
 
 /*!
- * \struct Type
+ * \class Type
  * \brief A type descriptor.
  * Can describe any type in an EDDI source file. 
  */
@@ -34,28 +34,87 @@ class Type : public std::enable_shared_from_this<Type> {
          */
         Type& operator=(const Type& rhs) = delete;
 
+        /*!
+         * Return the number of elements of the array type. 
+         * \return The number of elements. 
+         */
         virtual unsigned int elements() const;
+
+        /*!
+         * Return the name of the struct type. 
+         * \return the name of the struct;
+         */
         virtual std::string type() const;
+
+        /*!
+         * Return the data type. In the case of an array it is the type of the elements and 
+         * in the case of a pointer, it is the type of the pointed element
+         * \return the data type
+         */
         virtual std::shared_ptr<const Type> data_type() const;
 
+        /*!
+         * Indicates if it is an array type
+         * \return true if it's an array type, false otherwise.
+         */
         virtual bool is_array() const;
+
+        /*!
+         * Indicates if it is a custom type
+         * \return true if it's a custom type, false otherwise.
+         */
         virtual bool is_custom_type() const;
+
+        /*!
+         * Indicates if it is a standard type
+         * \return true if it's a standard type, false otherwise.
+         */
         virtual bool is_standard_type() const;
+
+        /*!
+         * Indicates if it is a pointer type
+         * \return true if it's a pointer type, false otherwise.
+         */
         virtual bool is_pointer() const;
+
+        /*!
+         * Indicates if the type is const
+         * \return true if the type is const, false otherwise.
+         */
         virtual bool is_const() const;
 
+        /*!
+         * Return the size of the type in memory in octets. 
+         * \return the size of the type, in octets.
+         */
         unsigned int size() const;
+
+        /*!
+         * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
+         * \return a non-const version of this type;
+         */
         std::shared_ptr<const Type> non_const() const;
 
         friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
         friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
 
     protected:
+        /*!
+         * Construct a new Type. 
+         */
         Type();
-
+        
+        /*!
+         * Return the base type of a standard type
+         * \return the base type.
+         */
         virtual BaseType base() const;
 };
 
+/*!
+ * \class StandardType
+ * \brief A standard type descriptor.
+ */
 class StandardType : public Type {
     private:
         BaseType base_type;
@@ -80,6 +139,10 @@ class StandardType : public Type {
         bool is_const() const override;
 };
 
+/*!
+ * \class CustomType
+ * \brief A custom type descriptor.
+ */
 class CustomType : public Type {
     private:
         std::string m_type;
@@ -102,6 +165,10 @@ class CustomType : public Type {
         bool is_custom_type() const override;
 };
 
+/*!
+ * \class ArrayType
+ * \brief An array type descriptor.
+ */
 class ArrayType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
@@ -127,6 +194,10 @@ class ArrayType : public Type {
         bool is_array() const override;
 };
 
+/*!
+ * \class PointerType
+ * \brief A pointer type descriptor.
+ */
 class PointerType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
@@ -167,9 +238,26 @@ extern std::shared_ptr<const Type> VOID;
  */
 std::shared_ptr<const Type> new_type(const std::string& type, bool const_ = false);
 
+/*!
+ * Create a new array type of the given type.
+ * \param data_type The type of data hold by the array. 
+ * \param size The number of elements, if known.
+ * \return the created type;
+ */
 std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size = 0);
+
+/*!
+ * Create a new pointer type of the given type.
+ * \param data_type The type of data pointed. 
+ * \return the created type;
+ */
 std::shared_ptr<const Type> new_pointer_type(std::shared_ptr<const Type> data_type);
 
+/*!
+ * Indicates if the given type is a standard type or not. 
+ * \param type The type to test. 
+ * \return true if the type is standard, false otherwise.
+ */
 bool is_standard_type(const std::string& type);
 
 } //end of eddic
