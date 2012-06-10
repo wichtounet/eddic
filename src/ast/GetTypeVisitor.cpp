@@ -9,7 +9,6 @@
 #include "Context.hpp"
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
-#include "Types.hpp"
 #include "Type.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
@@ -79,7 +78,7 @@ std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Assignment& ass
 }
 
 std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return array.Content->context->getVariable(array.Content->arrayName)->type()->element_type();
+    return array.Content->context->getVariable(array.Content->arrayName)->type()->data_type();
 }
 
 std::shared_ptr<Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {

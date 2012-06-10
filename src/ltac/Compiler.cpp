@@ -10,7 +10,6 @@
 #include "VisitorUtils.hpp"
 #include "Platform.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -50,9 +49,9 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
             ltac::add_instruction(target_function, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(var->type()->elements()));
 
-            if(var->type()->element_type() == INT){
+            if(var->type()->data_type() == INT){
                 ltac::add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(var->type()->elements()));
-            } else if(var->type()->element_type() == STRING){
+            } else if(var->type()->data_type() == STRING){
                 ltac::add_instruction(target_function, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position - 8), static_cast<int>(2 * var->type()->elements()));
             }
         }

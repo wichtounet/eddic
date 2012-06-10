@@ -16,7 +16,6 @@
 #include "mangling.hpp"
 #include "Labels.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/Program.hpp"
@@ -76,20 +75,20 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argume
     auto position = array->position();
 
     if(position.isGlobal()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * array->type()->element_type()->size()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * array->type()->data_type()->size()));
 
         //Compute the offset manually to avoid having ADD then SUB
         //TODO Find a way to make that optimization in the TAC Optimizer
-        int offset = array->type()->element_type()->size() * array->type()->elements();
+        int offset = array->type()->data_type()->size() * array->type()->elements();
         offset -= INT->size();
 
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, offset));
     } else if(position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->element_type()->size()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->element_type()->size()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     }
@@ -419,7 +418,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-        auto type = array.Content->var->type()->element_type();
+        auto type = array.Content->var->type()->data_type();
 
         if(type == BOOL || type == INT || type == FLOAT){
             auto temp = array.Content->context->new_temporary(type);
@@ -557,7 +556,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::ArrayValue& array) const {
-        auto type = array.Content->var->type()->element_type();
+        auto type = array.Content->var->type()->data_type();
 
         complexAssign(type, array);
     }

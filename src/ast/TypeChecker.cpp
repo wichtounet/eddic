@@ -24,7 +24,6 @@
 #include "SymbolTable.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 using namespace eddic;
 
@@ -185,7 +184,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         auto value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (value_type != var->type()->element_type()) {
+        if (value_type != var->type()->data_type()) {
             throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
         

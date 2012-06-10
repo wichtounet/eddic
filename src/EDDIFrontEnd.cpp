@@ -14,7 +14,6 @@
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -130,7 +129,7 @@ void checkForMain(){
     if(function->parameters.size() == 1){
         auto type = function->parameters[0].paramType;
        
-        if(type->element_type() != STRING || !type->is_array()){
+        if(type->data_type() != STRING || !type->is_array()){
             throw SemanticalException("The signature of your main function is not valid");
         }
     }

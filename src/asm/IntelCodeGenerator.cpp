@@ -11,7 +11,6 @@
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 using namespace eddic;
 
@@ -43,11 +42,11 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         }
 
         if(type->is_array()){
-            if(type->element_type() == INT){
+            if(type->data_type() == INT){
                 declareIntArray(it.second->name(), type->elements());
-            } else if(type->element_type() == FLOAT){
+            } else if(type->data_type() == FLOAT){
                 declareFloatArray(it.second->name(), type->elements());
-            } else if(type->element_type() == STRING){
+            } else if(type->data_type() == STRING){
                 declareStringArray(it.second->name(), type->elements());
             }
         } else {

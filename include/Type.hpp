@@ -58,7 +58,6 @@ class Type {
         unsigned int size() const;
 
         std::shared_ptr<Type> non_const() const;
-        std::shared_ptr<Type> element_type() const;
         std::shared_ptr<Type> data_type() const;
 
         bool is_array() const;
@@ -81,6 +80,24 @@ bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
 
 bool operator==(std::shared_ptr<Type> lhs, const BaseType& rhs);
 bool operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs);
+
+extern std::shared_ptr<Type> BOOL;
+extern std::shared_ptr<Type> INT;
+extern std::shared_ptr<Type> FLOAT;
+extern std::shared_ptr<Type> STRING;
+extern std::shared_ptr<Type> VOID;
+
+/*!
+ * \brief Parse the given type into an EDDI std::shared_ptr<Type>. 
+ *
+ * \param type The type to parse. 
+ */
+std::shared_ptr<Type> new_type(const std::string& type, bool const_ = false);
+
+std::shared_ptr<Type> new_array_type(std::shared_ptr<Type> data_type, int size = 0);
+
+//Check if still useful
+bool is_standard_type(const std::string& type);
 
 } //end of eddic
 

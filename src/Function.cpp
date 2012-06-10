@@ -9,7 +9,6 @@
 
 #include "Function.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 using namespace eddic;
 

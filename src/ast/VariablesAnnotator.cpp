@@ -20,7 +20,6 @@
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
-#include "Types.hpp"
 #include "Type.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"

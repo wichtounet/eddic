@@ -14,7 +14,6 @@
 #include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 
@@ -22,7 +21,7 @@ using namespace eddic;
 
 std::string eddic::mangle(std::shared_ptr<Type> type){
     if(type->is_array()){
-        return "A" + mangle(type->element_type());
+        return "A" + mangle(type->data_type());
     }
 
     if(type->is_standard_type()){

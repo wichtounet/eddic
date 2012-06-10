@@ -13,7 +13,6 @@
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/ASTVisitor.hpp"
 
-#include "Types.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"

@@ -16,7 +16,6 @@
 #include "mangling.hpp"
 #include "Options.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 using namespace eddic;
 

@@ -10,7 +10,6 @@
 #include "ast/Value.hpp"
 
 #include "VisitorUtils.hpp"
-#include "Types.hpp"
 #include "Type.hpp"
 
 using namespace eddic;

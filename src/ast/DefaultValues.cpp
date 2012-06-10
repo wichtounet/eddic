@@ -11,7 +11,6 @@
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
 
-#include "Types.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 

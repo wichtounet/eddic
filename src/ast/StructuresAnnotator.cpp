@@ -11,7 +11,7 @@
 
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
-#include "Types.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 

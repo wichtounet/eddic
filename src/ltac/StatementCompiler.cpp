@@ -9,7 +9,6 @@
 #include "FunctionContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 #include "Labels.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -525,7 +524,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                 if(position.isGlobal()){
                     auto reg = manager.get_free_reg();
 
-                    auto offset = (*ptr)->type()->element_type()->size() * (*ptr)->type()->elements();
+                    auto offset = (*ptr)->type()->data_type()->size() * (*ptr)->type()->elements();
 
                     ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
                     ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
@@ -1077,7 +1076,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;            
             }
         case mtac::Operator::ARRAY_ASSIGN:
-            if(quadruple->result->type()->element_type() == BaseType::FLOAT){
+            if(quadruple->result->type()->data_type() == BaseType::FLOAT){
                 auto reg = manager.get_free_float_reg();
                 manager.copy(*quadruple->arg2, reg);
 

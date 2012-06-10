@@ -10,7 +10,6 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
-#include "Types.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
