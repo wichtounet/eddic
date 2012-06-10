@@ -22,7 +22,7 @@ namespace eddic {
  * \brief A type descriptor.
  * Can describe any type in an EDDI source file. 
  */
-class Type {
+class Type : public std::enable_shared_from_this<Type> {
     public:
         /*!
          * Deleted copy constructor

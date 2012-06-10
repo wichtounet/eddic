@@ -94,12 +94,16 @@ BaseType Type::base() const {
 }
 
 std::shared_ptr<const Type> Type::non_const() const {
+    if(is_const()){
+        return shared_from_this();
+    }
+
     if(is_array()){
-        return std::make_shared<ArrayType>(data_type());
+        return shared_from_this();
     } 
     
     if(is_custom_type()){
-        return std::make_shared<CustomType>(type());
+        return shared_from_this();
     } 
     
     if(is_standard_type()){
@@ -107,7 +111,7 @@ std::shared_ptr<const Type> Type::non_const() const {
     } 
     
     if(is_pointer()){
-        return std::make_shared<PointerType>(data_type());
+        return shared_from_this();
     }
 
     ASSERT_PATH_NOT_TAKEN("Unhandled conversion");
