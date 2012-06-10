@@ -216,12 +216,21 @@ BaseType stringToBaseType(const std::string& type){
 }
 
 std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_){
+    //Parse array types
     if(type.find("[]") != std::string::npos){
         std::string baseType = type;
         baseType.resize(baseType.size() - 2);
 
         return new_array_type(new_type(baseType));
-    } 
+    }
+    
+    //Parse pointer types
+    if(type.find("*") != std::string::npos){
+        std::string baseType = type;
+        baseType.resize(baseType.size() - 1);
+
+        return new_pointer_type(new_type(baseType));
+    }
 
     if(is_standard_type(type)){
         return std::make_shared<StandardType>(stringToBaseType(type), const_);
@@ -233,6 +242,10 @@ std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_
 
 std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> data_type, int size){
     return std::make_shared<ArrayType>(data_type, size);
+}
+
+std::shared_ptr<const Type> eddic::new_pointer_type(std::shared_ptr<const Type> data_type){
+    return std::make_shared<PointerType>(data_type);
 }
 
 bool eddic::is_standard_type(const std::string& type){

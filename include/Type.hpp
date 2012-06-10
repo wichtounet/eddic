@@ -168,6 +168,7 @@ extern std::shared_ptr<const Type> VOID;
 std::shared_ptr<const Type> new_type(const std::string& type, bool const_ = false);
 
 std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size = 0);
+std::shared_ptr<const Type> new_pointer_type(std::shared_ptr<const Type> data_type);
 
 bool is_standard_type(const std::string& type);
 
