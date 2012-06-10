@@ -23,25 +23,7 @@ namespace eddic {
  * Can describe any type in an EDDI source file. 
  */
 class Type {
-    private:
-        bool array = false;
-        bool const_ = false;
-        bool custom = false;
-        bool pointer = false;
-        
-        boost::optional<BaseType> baseType;
-        boost::optional<std::string> m_type;
-        boost::optional<unsigned int> m_elements;
-        
-        std::shared_ptr<Type> sub_type;
-    
     public:
-        Type(BaseType type, bool const_); //For a standard type
-
-        Type(const std::string& type); //For a struct type
-        
-        Type(std::shared_ptr<Type> sub_type, int size = 0); //For array type
-    
         /*!
          * Deleted copy constructor
          */
@@ -52,22 +34,119 @@ class Type {
          */
         Type& operator=(const Type& rhs) = delete;
 
-        unsigned int elements() const;
-        std::string type() const;
+        virtual unsigned int elements() const;
+        virtual std::string type() const;
+        virtual std::shared_ptr<Type> data_type() const;
+
+        virtual bool is_array() const;
+        virtual bool is_custom_type() const;
+        virtual bool is_standard_type() const;
+        virtual bool is_pointer() const;
+        virtual bool is_const() const;
 
         unsigned int size() const;
-
         std::shared_ptr<Type> non_const() const;
-        std::shared_ptr<Type> data_type() const;
-
-        bool is_array() const;
-        bool is_const() const;
-        bool is_custom_type() const;
-        bool is_standard_type() const;
-        bool is_pointer() const;
 
         friend bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
         friend bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
+
+    protected:
+        Type();
+
+        virtual BaseType base() const;
+};
+
+class StandardType : public Type {
+    private:
+        BaseType base_type;
+        bool const_;
+        
+        BaseType base() const override;
+    
+    public:
+        StandardType(BaseType type, bool const_);
+    
+        /*!
+         * Deleted copy constructor
+         */
+        StandardType(const StandardType& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        StandardType& operator=(const StandardType& rhs) = delete;
+
+        bool is_standard_type() const override;
+        bool is_const() const override;
+};
+
+class CustomType : public Type {
+    private:
+        std::string m_type;
+    
+    public:
+        CustomType(const std::string& type); 
+    
+        /*!
+         * Deleted copy constructor
+         */
+        CustomType(const CustomType& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        CustomType& operator=(const CustomType& rhs) = delete;
+
+        std::string type() const override;
+
+        bool is_custom_type() const override;
+};
+
+class ArrayType : public Type {
+    private:
+        std::shared_ptr<Type> sub_type;
+        unsigned int m_elements = 0;
+    
+    public:
+        ArrayType(std::shared_ptr<Type> sub_type, int size = 0);
+    
+        /*!
+         * Deleted copy constructor
+         */
+        ArrayType(const ArrayType& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        ArrayType& operator=(const ArrayType& rhs) = delete;
+
+        unsigned int elements() const override;
+
+        std::shared_ptr<Type> data_type() const override;
+
+        bool is_array() const override;
+};
+
+class PointerType : public Type {
+    private:
+        std::shared_ptr<Type> sub_type;
+    
+    public:
+        PointerType(std::shared_ptr<Type> sub_type); 
+    
+        /*!
+         * Deleted copy constructor
+         */
+        PointerType(const PointerType& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        PointerType& operator=(const PointerType& rhs) = delete;
+
+        std::shared_ptr<Type> data_type() const override;
+
+        bool is_pointer() const override;
 };
 
 /* Relational operators  */
@@ -90,7 +169,7 @@ std::shared_ptr<Type> new_type(const std::string& type, bool const_ = false);
 
 std::shared_ptr<Type> new_array_type(std::shared_ptr<Type> data_type, int size = 0);
 
-//Check if still useful
+//TODO Check if still useful
 bool is_standard_type(const std::string& type);
 
 } //end of eddic

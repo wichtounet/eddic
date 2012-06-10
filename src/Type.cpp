@@ -12,44 +12,37 @@
 
 using namespace eddic;
 
-std::shared_ptr<Type> eddic::BOOL = std::make_shared<Type>(BaseType::BOOL, false);
-std::shared_ptr<Type> eddic::INT = std::make_shared<Type>(BaseType::INT, false);
-std::shared_ptr<Type> eddic::FLOAT = std::make_shared<Type>(BaseType::FLOAT, false);
-std::shared_ptr<Type> eddic::STRING = std::make_shared<Type>(BaseType::STRING, false);
-std::shared_ptr<Type> eddic::VOID = std::make_shared<Type>(BaseType::VOID, false);
+std::shared_ptr<Type> eddic::BOOL = std::make_shared<StandardType>(BaseType::BOOL, false);
+std::shared_ptr<Type> eddic::INT = std::make_shared<StandardType>(BaseType::INT, false);
+std::shared_ptr<Type> eddic::FLOAT = std::make_shared<StandardType>(BaseType::FLOAT, false);
+std::shared_ptr<Type> eddic::STRING = std::make_shared<StandardType>(BaseType::STRING, false);
+std::shared_ptr<Type> eddic::VOID = std::make_shared<StandardType>(BaseType::VOID, false);
 
-Type::Type(BaseType base, bool constant) : const_(constant), baseType(base) {}
-Type::Type(const std::string& type) : custom(true), m_type(type) {}
-Type::Type(std::shared_ptr<Type> sub_type, int size) : array(true), sub_type(sub_type), m_elements(size) {}
+/* Implementation of Type */ 
+
+Type::Type() {}
 
 bool Type::is_array() const {
-    return array;
-}
-
-bool Type::is_const() const {
-    return const_;
+    return false;
 }
 
 bool Type::is_pointer() const {
-    return pointer;
-}
-
-unsigned int Type::elements() const {
-    ASSERT(is_standard_type(), "Only standard type have a size");
-    ASSERT(m_elements, "The m_elements has not been initialized");
-    
-    return *m_elements;
+    return false;
 }
         
 bool Type::is_custom_type() const {
-    return custom;
+    return false;
 }
 
 bool Type::is_standard_type() const {
-    return !is_custom_type();
+    return false;
 }
 
-int size(BaseType type){
+bool Type::is_const() const {
+    return false;
+}
+
+static int size(BaseType type){
     //TODO Those sizes should be stored directly inside the current platform
     static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
     static int typeSizes64[BASETYPE_COUNT] = { 16, 8, 8, 8, 0 };
@@ -65,62 +58,142 @@ int size(BaseType type){
 }
 
 unsigned int Type::size() const {
+    if(is_array()){
+        return data_type()->size() * elements() + INT->size(); 
+    }
+
     if(is_standard_type()){
-        if(is_array()){
-            return sub_type->size() * elements() + INT->size(); 
-        } else {
-            return ::size(*baseType);
-        }
-    } else {
+        return ::size(base());
+    }
+
+    if(is_custom_type()){
         return symbols.size_of_struct(type());
     }
+
+    if(is_pointer()){
+        return INT->size();
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Unhandled type");
+}
+
+unsigned int Type::elements() const {
+    ASSERT_PATH_NOT_TAKEN("Not an array type");
 }
 
 std::string Type::type() const {
-    ASSERT(is_custom_type(), "Only custom type have a type");
-    ASSERT(m_type, "The m_type has not been initialized");
-
-    return *m_type;
+    ASSERT_PATH_NOT_TAKEN("Not a custom type");
 }
 
 std::shared_ptr<Type> Type::data_type() const {
-    ASSERT(is_pointer() || is_array(), "Only pointers have a data type");
+    ASSERT_PATH_NOT_TAKEN("No data type");
+}
 
-    return sub_type;
+BaseType Type::base() const {
+    ASSERT_PATH_NOT_TAKEN("Not a standard type");
 }
 
 std::shared_ptr<Type> Type::non_const() const {
     if(is_array()){
-        return std::make_shared<Type>(sub_type);
-    } else if(is_custom_type()){
-        return std::make_shared<Type>(type());
-    } else if(is_standard_type()){
-        return std::make_shared<Type>(*baseType, false);
+        return std::make_shared<ArrayType>(data_type());
+    } 
+    
+    if(is_custom_type()){
+        return std::make_shared<CustomType>(type());
+    } 
+    
+    if(is_standard_type()){
+        return std::make_shared<StandardType>(base(), false);
+    } 
+    
+    if(is_pointer()){
+        return std::make_shared<PointerType>(data_type());
     }
 
     ASSERT_PATH_NOT_TAKEN("Unhandled conversion");
 }
 
 bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
-    if(lhs->array){
-        return rhs->array && lhs->sub_type == rhs->sub_type && lhs->m_elements == rhs->m_elements;
+    if(lhs->is_array()){
+        return rhs->is_array() && lhs->data_type() == rhs->data_type() && lhs->elements() == rhs->elements();
     }
 
-    return lhs->baseType == rhs->baseType && 
-           lhs->array == rhs->array &&
-           lhs->const_ == rhs->const_ &&
-           lhs->custom == rhs->custom &&
-           lhs->m_elements == rhs->m_elements && 
-           lhs->m_type == rhs->m_type; 
+    if(lhs->is_pointer()){
+        return rhs->is_pointer() && lhs->data_type() == rhs->data_type();
+    }
+
+    if(lhs->is_custom_type()){
+        return rhs->is_custom_type() && lhs->type() == rhs->type();
+    }
+
+    if(lhs->is_standard_type()){
+        return rhs->is_standard_type() && lhs->base() == rhs->base();
+    }
+
+    return false;
 }
 
 bool eddic::operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
     return !(lhs == rhs); 
 }
 
-bool eddic::is_standard_type(const std::string& type){
-    return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
+/* Implementation of StandardType  */
+
+StandardType::StandardType(BaseType type, bool const_) : base_type(type), const_(const_) {}
+
+BaseType StandardType::base() const {
+    return base_type;
 }
+
+bool StandardType::is_standard_type() const {
+    return true;
+}
+
+bool StandardType::is_const() const {
+    return const_;
+}
+
+/* Implementation of CustomType */
+
+CustomType::CustomType(const std::string& type) : m_type(type) {}
+
+std::string CustomType::type() const {
+    return m_type;
+}
+
+bool CustomType::is_custom_type() const {
+    return true;
+}
+        
+/* Implementation of ArrayType  */
+
+ArrayType::ArrayType(std::shared_ptr<Type> sub_type, int size) : sub_type(sub_type), m_elements(size) {}
+
+unsigned int ArrayType::elements() const {
+    return m_elements;
+}
+
+std::shared_ptr<Type> ArrayType::data_type() const {
+    return sub_type;
+}
+
+bool ArrayType::is_array() const {
+    return true;
+}
+        
+/* Implementation of PointerType  */
+
+PointerType::PointerType(std::shared_ptr<Type> sub_type) : sub_type(sub_type) {} 
+
+std::shared_ptr<Type> PointerType::data_type() const {
+    return sub_type;
+}
+
+bool PointerType::is_pointer() const {
+    return true;
+}
+
+/* Implementation of factories  */
 
 BaseType stringToBaseType(const std::string& type){
     ASSERT(is_standard_type(type), "The given type is not standard");
@@ -147,13 +220,17 @@ std::shared_ptr<Type> eddic::new_type(const std::string& type, bool const_){
     } 
 
     if(is_standard_type(type)){
-        return std::make_shared<Type>(stringToBaseType(type), const_);
+        return std::make_shared<StandardType>(stringToBaseType(type), const_);
     } else {
         assert(!const_);
-        return std::make_shared<Type>(type);
+        return std::make_shared<CustomType>(type);
     }
 }
 
 std::shared_ptr<Type> eddic::new_array_type(std::shared_ptr<Type> data_type, int size){
-    return std::make_shared<Type>(data_type, size);
+    return std::make_shared<ArrayType>(data_type, size);
+}
+
+bool eddic::is_standard_type(const std::string& type){
+    return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
 }
