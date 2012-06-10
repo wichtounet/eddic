@@ -40,7 +40,7 @@ struct GetStringValue : public boost::static_visitor<std::string> {
 
     std::string operator()(ast::VariableValue& variable) const {
         auto type = variable.Content->var->type();
-        assert(type->is_const() && type == BaseType::STRING);
+        assert(type->is_const() && type->non_const() == STRING);
 
         auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
         return value.first;
@@ -64,7 +64,7 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             if(ast::IsConstantVisitor()(value)){
                 auto type = ast::GetTypeVisitor()(value);
 
-                if(type == BaseType::STRING){
+                if(type == STRING){
                     ast::Litteral litteral;
                     litteral.value = GetStringValue()(value);
                     litteral.label = pool.label(litteral.value);
@@ -100,11 +100,11 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
             auto type = variable.Content->var->type();
 
             if(type->is_const()){
-                if(type == BaseType::INT){
+                if(type->non_const() == INT){
                     ast::Integer integer;
                     integer.value = boost::get<int>(variable.Content->var->val());
                     return integer; 
-                } else if(type == BaseType::STRING){
+                } else if(type->non_const() == STRING){
                     auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
                     ast::Litteral litteral;

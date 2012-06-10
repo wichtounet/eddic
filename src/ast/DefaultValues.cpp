@@ -31,7 +31,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
             if(is_standard_type(declaration.Content->variableType)){
                 auto type = new_type(declaration.Content->variableType);
 
-                assert(type == BaseType::INT || type == BaseType::STRING);
+                assert(type == INT || type == STRING);
 
                 if(type == INT){
                     ast::Integer integer;

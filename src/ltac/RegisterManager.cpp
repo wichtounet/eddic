@@ -398,9 +398,9 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
         auto param = definition->context->getVariable(parameter.name);
 
         if(param->position().isParamRegister()){
-            if(param->type() == BaseType::INT){
+            if(param->type() == INT){
                 registers.setLocation(param, ltac::Register(descriptor->int_param_register(param->position().offset())));
-            } else if(param->type() == BaseType::FLOAT){
+            } else if(param->type() == FLOAT){
                 float_registers.setLocation(param, ltac::FloatRegister(descriptor->float_param_register(param->position().offset())));
             }
         }
@@ -444,7 +444,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                 auto type = param->function->getParameterType(parameter.name);
                 unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
-                if(type == BaseType::INT && position <= maxInt){
+                if(type == INT && position <= maxInt){
                     ltac::Register reg(descriptor->int_param_register(position));
 
                     //If the parameter register is already used by a variable or a parent parameter
@@ -458,7 +458,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                     }
                 }
 
-                if(type == BaseType::FLOAT && position <= maxFloat){
+                if(type == FLOAT && position <= maxFloat){
                     ltac::FloatRegister reg(descriptor->float_param_register(position));
 
                     //If the parameter register is already used by a variable or a parent parameter

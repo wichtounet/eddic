@@ -68,18 +68,12 @@ class Type {
 
         friend bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
         friend bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
-
-        friend bool operator==(std::shared_ptr<Type> lhs, const BaseType& rhs);
-        friend bool operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs);
 };
 
 /* Relational operators  */
         
 bool operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
 bool operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs);
-
-bool operator==(std::shared_ptr<Type> lhs, const BaseType& rhs);
-bool operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs);
 
 extern std::shared_ptr<Type> BOOL;
 extern std::shared_ptr<Type> INT;

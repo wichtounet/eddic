@@ -494,13 +494,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
             position = param->function->getParameterPositionByType(param->param->name());
         }
 
-        if(type == BaseType::INT && position <= maxInt){
+        if(type == INT && position <= maxInt){
             pass_in_int_register(param->arg, position);
 
             return;
         }
 
-        if(type == BaseType::FLOAT && position <= maxFloat){
+        if(type == FLOAT && position <= maxFloat){
             pass_in_float_register(param->arg, position);
 
             return;
@@ -572,14 +572,14 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
             //Passing an array is just passing an adress
             total += INT->size();
         } else {
-            if(type == BaseType::INT){
+            if(type == INT){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxInt > 0){
                     --maxInt;
                 } else {
                     total += type->size();
                 }
-            } else if(type == BaseType::FLOAT){
+            } else if(type == FLOAT){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxFloat > 0){
                     --maxFloat;
@@ -598,7 +598,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
     }
 
     if(call->return_){
-        if(call->return_->type() == BaseType::FLOAT){
+        if(call->return_->type() == FLOAT){
             manager.float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
         } else {
             manager.registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
@@ -1076,7 +1076,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;            
             }
         case mtac::Operator::ARRAY_ASSIGN:
-            if(quadruple->result->type()->data_type() == BaseType::FLOAT){
+            if(quadruple->result->type()->data_type() == FLOAT){
                 auto reg = manager.get_free_float_reg();
                 manager.copy(*quadruple->arg2, reg);
 

@@ -12,6 +12,12 @@
 
 using namespace eddic;
 
+std::shared_ptr<Type> eddic::BOOL = std::make_shared<Type>(BaseType::BOOL, false);
+std::shared_ptr<Type> eddic::INT = std::make_shared<Type>(BaseType::INT, false);
+std::shared_ptr<Type> eddic::FLOAT = std::make_shared<Type>(BaseType::FLOAT, false);
+std::shared_ptr<Type> eddic::STRING = std::make_shared<Type>(BaseType::STRING, false);
+std::shared_ptr<Type> eddic::VOID = std::make_shared<Type>(BaseType::VOID, false);
+
 Type::Type(BaseType base, bool constant) : const_(constant), baseType(base) {}
 Type::Type(const std::string& type) : custom(true), m_type(type) {}
 Type::Type(std::shared_ptr<Type> sub_type, int size) : array(true), sub_type(sub_type), m_elements(size) {}
@@ -111,20 +117,6 @@ bool eddic::operator==(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
 bool eddic::operator!=(std::shared_ptr<Type> lhs, std::shared_ptr<Type> rhs){
     return !(lhs == rhs); 
 }
-
-bool eddic::operator==(std::shared_ptr<Type> lhs, const BaseType& rhs){
-    return lhs->baseType == rhs && !lhs->array && !lhs->custom; 
-}
-
-bool eddic::operator!=(std::shared_ptr<Type> lhs, const BaseType& rhs){
-    return !(lhs == rhs); 
-}
-
-std::shared_ptr<Type> eddic::BOOL = std::make_shared<Type>(BaseType::BOOL, false);
-std::shared_ptr<Type> eddic::INT = std::make_shared<Type>(BaseType::INT, false);
-std::shared_ptr<Type> eddic::FLOAT = std::make_shared<Type>(BaseType::FLOAT, false);
-std::shared_ptr<Type> eddic::STRING = std::make_shared<Type>(BaseType::STRING, false);
-std::shared_ptr<Type> eddic::VOID = std::make_shared<Type>(BaseType::VOID, false);
 
 bool eddic::is_standard_type(const std::string& type){
     return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";

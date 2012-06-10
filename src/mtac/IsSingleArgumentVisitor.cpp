@@ -32,5 +32,5 @@ ASSIGN_INSIDE_CONST_CONST(mtac::IsSingleArgumentVisitor, ast::Assignment, false)
 bool mtac::IsSingleArgumentVisitor::operator()(const ast::FunctionCall& call) const {
     auto type = call.Content->function->returnType;
 
-    return type == BaseType::INT || type == BaseType::BOOL;
+    return type == INT || type == BOOL;
 }

@@ -126,13 +126,13 @@ void performPrefixOperation(const Operation& operation, std::shared_ptr<mtac::Fu
     auto var = operation.Content->variable;
 
     if(operation.Content->op == ast::Operator::INC){
-        if(var->type() == BaseType::FLOAT){
+        if(var->type() == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FADD, 1.0));
         } else {
             function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::ADD, 1));
         }
     } else if(operation.Content->op == ast::Operator::DEC){
-        if(var->type() == BaseType::FLOAT){
+        if(var->type() == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FSUB, 1.0));
         } else {
             function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::SUB, 1));
@@ -144,7 +144,7 @@ template<typename Operation>
 std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
     auto var = operation.Content->variable;
 
-    if(var->type() == BaseType::FLOAT){
+    if(var->type() == FLOAT){
         auto temp = operation.Content->context->newFloatTemporary();
 
         function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FASSIGN));
@@ -343,9 +343,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else if(type->is_array()){
                 return {value.Content->var};
             } else {
-                if(type == BaseType::INT || type == BaseType::BOOL || type == BaseType::FLOAT){
+                if(type == INT || type == BOOL || type == FLOAT){
                     return {value.Content->var};
-                } else if(type == BaseType::STRING){
+                } else if(type == STRING){
                     auto temp = value.Content->context->newTemporary();
                     function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
 
@@ -377,7 +377,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 }
             }
 
-            if(member_type == BaseType::STRING){
+            if(member_type == STRING){
                 auto t1 = value.Content->context->newTemporary();
                 auto t2 = value.Content->context->newTemporary();
 
@@ -393,9 +393,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else {
                 auto temp = value.Content->context->new_temporary(member_type);
 
-                if(member_type == BaseType::FLOAT){
+                if(member_type == FLOAT){
                     function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::FDOT, offset));
-                } else if(member_type == BaseType::INT || member_type == BaseType::BOOL){
+                } else if(member_type == INT || member_type == BOOL){
                     function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, offset));
                 } else {
                     ASSERT_PATH_NOT_TAKEN("Unhandled type");
@@ -445,11 +445,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::Expression& value) const {
         auto type = ast::GetTypeVisitor()(value);
 
-        if(type == BaseType::INT){
+        if(type == INT){
             return {performIntOperation(value, function)};
-        } else if(type == BaseType::FLOAT){
+        } else if(type == FLOAT){
             return {performFloatOperation(value, function)};
-        } else if(type == BaseType::BOOL){
+        } else if(type == BOOL){
             return {performBoolOperation(value, function)};
         } else {
             auto t1 = function->context->newTemporary();
@@ -466,7 +466,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         
         auto type = visit(ast::GetTypeVisitor(), value.Content->value);
 
-        if(type == BaseType::FLOAT){
+        if(type == FLOAT){
             auto t1 = function->context->newFloatTemporary();
             function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
 
@@ -486,13 +486,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         auto destType = visit(ast::TypeTransformer(), cast.Content->type);
 
         if(srcType != destType){
-            if(destType == BaseType::FLOAT){
+            if(destType == FLOAT){
                 auto t1 = function->context->newFloatTemporary();
 
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::I2F));
 
                 return {t1};
-            } else if(destType == BaseType::INT){
+            } else if(destType == INT){
                 auto t1 = function->context->newTemporary();
                 
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
@@ -668,11 +668,11 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Fun
     auto typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
     ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
-    ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only int and floats can be compared");
+    ASSERT(typeLeft == INT || typeLeft == FLOAT, "Only int and floats can be compared");
 
-    if(typeLeft == BaseType::INT){
+    if(typeLeft == INT){
         function->add(std::make_shared<Control>(mtac::toBinaryOperator(op), left, right, label));
-    } else if(typeLeft == BaseType::FLOAT){
+    } else if(typeLeft == FLOAT){
         function->add(std::make_shared<Control>(mtac::toFloatBinaryOperator(op), left, right, label));
     } 
 }
@@ -975,12 +975,12 @@ class CompilerVisitor : public boost::static_visitor<> {
             
             auto t1 = swap.Content->context->newTemporary();
 
-            if(lhs_var->type() == BaseType::INT || lhs_var->type() == BaseType::BOOL || lhs_var->type() == BaseType::STRING){
+            if(lhs_var->type() == INT || lhs_var->type() == BOOL || lhs_var->type() == STRING){
                 function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::ASSIGN));  
                 function->add(std::make_shared<mtac::Quadruple>(rhs_var, lhs_var, mtac::Operator::ASSIGN));  
                 function->add(std::make_shared<mtac::Quadruple>(lhs_var, t1, mtac::Operator::ASSIGN));  
                 
-                if( lhs_var->type() == BaseType::STRING){
+                if(lhs_var->type() == STRING){
                     auto t2 = swap.Content->context->newTemporary();
 
                     //t1 = 4(b)
@@ -1140,11 +1140,11 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         auto typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
 
         ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
-        ASSERT(typeLeft == BaseType::INT || typeLeft == BaseType::FLOAT, "Only float and int values can be compared");
+        ASSERT(typeLeft == INT || typeLeft == FLOAT, "Only float and int values can be compared");
 
-        if(typeLeft == BaseType::INT){
+        if(typeLeft == INT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
-        } else if(typeRight == BaseType::FLOAT){
+        } else if(typeRight == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
         }
     } 
