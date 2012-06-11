@@ -1,0 +1,13 @@
+void main(){
+    int a = 44;
+    test(a);
+    test2(a);
+}
+
+void test(int* a){
+   a = null; 
+}
+
+void test2(int* a){
+   *a = 44; 
+}
