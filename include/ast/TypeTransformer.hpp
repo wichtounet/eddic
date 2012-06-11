@@ -25,6 +25,7 @@ namespace ast {
 struct TypeTransformer : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
     std::shared_ptr<const eddic::Type> operator()(ast::SimpleType& type) const;
     std::shared_ptr<const eddic::Type> operator()(ast::ArrayType& type) const;
+    std::shared_ptr<const eddic::Type> operator()(ast::PointerType& type) const;
 };
 
 } //end of ast
