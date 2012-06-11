@@ -159,6 +159,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
 #define AUTO_IGNORE_SWAP() void operator()(ast::Swap&){}
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
 
@@ -193,6 +194,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_STRUCT(return_type) return_type operator()(ast::Struct& t){return t;}
 #define AUTO_RETURN_SWAP(return_type) return_type operator()(ast::Swap& t){return t;}
 #define AUTO_RETURN_TRUE(return_type) return_type operator()(ast::True& t){return t;}
+#define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
 

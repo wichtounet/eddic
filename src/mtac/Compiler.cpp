@@ -199,6 +199,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::True&) const {
         return {1};
     }
+    
+    result_type operator()(ast::Null&) const {
+        return {0};//TODO Check that
+    }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
         auto& value = builtin.Content->values[0];

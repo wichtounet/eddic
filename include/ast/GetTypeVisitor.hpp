@@ -37,6 +37,7 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::Minus& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::True& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::False& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Null& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Cast& cast) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::SuffixOperation& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::PrefixOperation& value) const;

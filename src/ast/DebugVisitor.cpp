@@ -216,6 +216,10 @@ void ast::DebugVisitor::operator()(ast::True&) const {
     std::cout << indent() << "true" << std::endl; 
 }
 
+void ast::DebugVisitor::operator()(ast::Null&) const {
+    std::cout << indent() << "null" << std::endl; 
+}
+
 void ast::DebugVisitor::operator()(ast::False&) const {
     std::cout << indent() << "false" << std::endl; 
 }

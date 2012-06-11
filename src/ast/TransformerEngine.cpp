@@ -20,6 +20,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
     AUTO_RETURN_TRUE(ast::Value)
+    AUTO_RETURN_NULL(ast::Value)
     AUTO_RETURN_LITERAL(ast::Value)
     AUTO_RETURN_FLOAT(ast::Value)
     AUTO_RETURN_INTEGER(ast::Value)
@@ -320,6 +321,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
         
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
@@ -440,6 +442,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_EXPRESSION()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()

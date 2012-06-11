@@ -94,6 +94,7 @@ struct Inspector : public boost::static_visitor<> {
         /* The following cannot throw a warning  */
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_NULL()
         AUTO_IGNORE_LITERAL()
         AUTO_IGNORE_FLOAT()
         AUTO_IGNORE_INTEGER()

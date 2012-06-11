@@ -20,6 +20,7 @@ ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::IntegerSuffix, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Float, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::True, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::False, true)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Null, true)
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::ArrayValue, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::FunctionCall, false)
