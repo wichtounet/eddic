@@ -73,6 +73,8 @@ class SpiritLexer : public lex::lexer<L> {
             comma = ',';
             dot = '.';
 
+            ampersand = '&';
+
             /* Assignment operators */
             swap = "<=>";
             assign = '=';
@@ -120,6 +122,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += increment | decrement;
+            this->self += ampersand;
             this->self += and_ | or_;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
@@ -141,6 +144,7 @@ class SpiritLexer : public lex::lexer<L> {
         FloatToken float_;
         
         CharToken addition, subtraction, multiplication, division, modulo;
+        CharToken ampersand;
         StringToken increment, decrement;
         StringToken compound_add, compound_sub, compound_mul, compound_div, compound_mod;
         StringToken equals, not_equals, greater, less, greater_equals, less_equals;
