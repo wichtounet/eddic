@@ -54,6 +54,7 @@ class SpiritLexer : public lex::lexer<L> {
             const_ = "const";
             include = "include";
             struct_ = "struct";
+            null = "null";
 
             /* Raw values  */
             identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
@@ -72,8 +73,6 @@ class SpiritLexer : public lex::lexer<L> {
             stop = ';';
             comma = ',';
             dot = '.';
-
-            ampersand = '&';
 
             /* Assignment operators */
             swap = "<=>";
@@ -122,9 +121,8 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += increment | decrement;
-            this->self += ampersand;
             this->self += and_ | or_;
-            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_;
+            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += float_ | integer | identifier | litteral;
 
@@ -144,7 +142,6 @@ class SpiritLexer : public lex::lexer<L> {
         FloatToken float_;
         
         CharToken addition, subtraction, multiplication, division, modulo;
-        CharToken ampersand;
         StringToken increment, decrement;
         StringToken compound_add, compound_sub, compound_mul, compound_div, compound_mod;
         StringToken equals, not_equals, greater, less, greater_equals, less_equals;
@@ -159,6 +156,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken true_, false_;
         ConsumedToken const_, include;
         ConsumedToken struct_;
+        ConsumedToken null;
 
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;

@@ -19,6 +19,7 @@
 #include "ast/VariableValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
+#include "ast/Null.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
@@ -35,6 +36,7 @@ typedef boost::variant<
             Expression,
             Minus,
             Plus,
+            Null,
             True,
             False,
             ArrayValue,

@@ -34,10 +34,10 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.left_bracket
         >>  lexer.right_bracket;
     
-    array_type %=
+    pointer_type %=
             qi::eps
         >>  lexer.identifier
-        >>  lexer.ampersand;
+        >>  lexer.multiplication;
 
     simple_type %=
             qi::eps

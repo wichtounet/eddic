@@ -20,6 +20,7 @@ struct Float;
 struct Litteral;
 struct True;
 struct False;
+struct Null;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;

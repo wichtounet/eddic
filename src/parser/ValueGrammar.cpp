@@ -129,9 +129,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   suffix_operation
         |   arrayValue
         |   variable_value
+        |   null
         |   true_
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+    
+    null %= 
+            qi::eps
+        >>  lexer.null;
     
     true_ %= 
             qi::eps
