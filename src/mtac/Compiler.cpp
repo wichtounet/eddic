@@ -269,6 +269,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         return {variable};
     }
+    
+    result_type operator()(ast::DereferenceAssignment& assignment) const {
+        //TODO
+    }
 
     void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, result_type& values) const {
         auto struct_name = type->type();
@@ -955,6 +959,10 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                 visit(AssignValueToVariableWithOffset(function, var, offset), assignment.Content->value);
             }
+        }
+        
+        void operator()(ast::DereferenceAssignment& assignment){
+            //TODO
         }
         
         void operator()(ast::ArrayAssignment& assignment){

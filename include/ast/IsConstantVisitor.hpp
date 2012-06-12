@@ -39,6 +39,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(SuffixOperation& value) const; 
     bool operator()(PrefixOperation& value) const; 
     bool operator()(Assignment& assign) const; 
+    bool operator()(DereferenceAssignment& assign) const; 
 };
 
 } //end of ast

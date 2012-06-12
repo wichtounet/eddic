@@ -76,6 +76,12 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
         return assignment;
     }
+    
+    ast::Value operator()(ast::DereferenceAssignment& assignment){
+        assignment.Content->value = visit(*this, assignment.Content->value);
+
+        return assignment;
+    }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
         auto start = builtin.Content->values.begin();
@@ -399,6 +405,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
     
+    void operator()(ast::DereferenceAssignment& assignment){
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+    }
+    
     void operator()(ast::CompoundAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
@@ -432,6 +442,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
     AUTO_IGNORE_ASSIGNMENT()
+    AUTO_IGNORE_DEREFERENCE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()
     AUTO_IGNORE_VARIABLE_DECLARATION()

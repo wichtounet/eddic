@@ -89,7 +89,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::Assignment& assignment){
+    template<typename T>
+    void check_assignment(T& assignment){
         if(assignment.Content->memberNames.empty()){
             checkAssignment(assignment);
         } else {
@@ -116,6 +117,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 }
             }
         }
+    }
+
+    void operator()(ast::Assignment& assignment){
+        check_assignment(assignment);
+    }
+
+    void operator()(ast::DereferenceAssignment& assignment){
+        check_assignment(assignment);
     }
     
     void operator()(ast::CompoundAssignment& assignment){

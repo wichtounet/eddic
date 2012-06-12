@@ -81,6 +81,10 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignmen
     return assign.Content->context->getVariable(assign.Content->variableName)->type();
 }
 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceAssignment& assign) const {
+    return assign.Content->context->getVariable(assign.Content->variableName)->type();
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
     return array.Content->context->getVariable(array.Content->arrayName)->type()->data_type();
 }

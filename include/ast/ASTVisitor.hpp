@@ -68,6 +68,9 @@ void operator()(ast::ForeachIn& foreach_){\
 void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
+void operator()(ast::DereferenceAssignment& assignment){\
+    visit(*this, assignment.Content->value);\
+}\
 void operator()(ast::VariableDeclaration& declaration){\
     visit_optional(*this, declaration.Content->value);\
 }
@@ -134,6 +137,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
 #define AUTO_IGNORE_ARRAY_VALUE() void operator()(ast::ArrayValue&){}
 #define AUTO_IGNORE_ASSIGNMENT() void operator()(ast::Assignment&){}
+#define AUTO_IGNORE_DEREFERENCE_ASSIGNMENT() void operator()(ast::DereferenceAssignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
 #define AUTO_IGNORE_COMPOUND_ASSIGNMENT() void operator()(ast::CompoundAssignment&){}
@@ -169,6 +173,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
 #define AUTO_RETURN_ARRAY_VALUE(return_type) return_type operator()(ast::ArrayValue& t){return t;}
 #define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
+#define AUTO_RETURN_DEREFERENCE_ASSIGNMENT(return_type) return_type operator()(ast::DereferenceAssignment& t){return t;}
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
 #define AUTO_RETURN_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::CompoundAssignment& t){return t;}

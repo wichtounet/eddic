@@ -177,6 +177,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     instruction %= 
             (value.functionCall > lexer.stop)
         |   (value.assignment > lexer.stop)
+        |   (value.dereference_assignment > lexer.stop)
         |   (compound_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
