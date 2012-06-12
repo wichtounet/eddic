@@ -15,6 +15,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 #include "ast/Position.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -32,7 +33,7 @@ struct ASTVariableDeclaration {
 
     Position position;
     bool const_;
-    std::string variableType;
+    Type variableType;
     std::string variableName;
     boost::optional<Value> value;
 
@@ -54,7 +55,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableDeclaration, 
     (eddic::ast::Position, Content->position)
     (bool, Content->const_)
-    (std::string, Content->variableType)
+    (eddic::ast::Type, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)
 )

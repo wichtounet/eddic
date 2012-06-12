@@ -120,7 +120,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     declaration %= 
             qi::position(position_begin)
         >>  const_
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value);
     
@@ -160,7 +160,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     globalDeclaration %= 
             qi::position(position_begin)
         >>  const_
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value.constant)
         >>  lexer.stop;

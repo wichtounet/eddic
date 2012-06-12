@@ -10,6 +10,7 @@
 #include "ast/DefaultValues.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
@@ -28,9 +29,9 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            if(is_standard_type(declaration.Content->variableType)){
-                auto type = new_type(declaration.Content->variableType);
+            auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
+            if(type->is_standard_type()){
                 assert(type == INT || type == STRING);
 
                 if(type == INT){

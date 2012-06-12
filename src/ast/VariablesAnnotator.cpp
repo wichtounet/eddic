@@ -69,9 +69,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant", declaration.Content->position);
         }
-        
-        declaration.Content->context->addVariable(declaration.Content->variableName, 
-                new_type(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
+
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+        declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -204,10 +204,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         visit_optional(*this, declaration.Content->value);
 
-        //If it's a standard type
-        if(is_standard_type(declaration.Content->variableType)){
-            auto type = new_type(declaration.Content->variableType, declaration.Content->const_);
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
+        //If it's a standard type
+        if(type->is_standard_type()){
             if(type->is_const()){
                 if(!declaration.Content->value){
                     throw SemanticalException("A constant variable must have a value", declaration.Content->position);
@@ -224,16 +224,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
         //If it's a custom type
         else {
-            if(symbols.struct_exists(declaration.Content->variableType)){
+            if(symbols.struct_exists(type->type())){
                 if(declaration.Content->const_){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
 
-                auto type = new_type(declaration.Content->variableType);
-
                 declaration.Content->context->addVariable(declaration.Content->variableName, type);
             } else {
-                throw SemanticalException("The type \"" + declaration.Content->variableType + "\" does not exists", declaration.Content->position);
+                throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
             }
         }
     }

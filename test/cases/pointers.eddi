@@ -9,5 +9,7 @@ void test(int* a){
 }
 
 void test2(int* a){
+   int* b = a;
    *a = 44; 
+   *a = *b;
 }

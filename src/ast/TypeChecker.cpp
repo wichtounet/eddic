@@ -50,7 +50,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_VARIABLE_VALUE()
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
-        auto type = new_type(declaration.Content->variableType); 
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
         auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
         if (valueType != type) {
