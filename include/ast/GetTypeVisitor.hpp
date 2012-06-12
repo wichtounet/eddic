@@ -30,6 +30,7 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& litteral) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Float& litteral) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::VariableValue& variable) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::DereferenceVariableValue& variable) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::ArrayValue& variable) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Expression& value) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::FunctionCall& value) const; 

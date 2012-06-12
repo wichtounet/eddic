@@ -40,6 +40,9 @@ typedef Deferred<ASTDereferenceAssignment> DereferenceAssignment;
 struct ASTVariableValue;
 typedef Deferred<ASTVariableValue> VariableValue;
 
+struct ASTDereferenceVariableValue;
+typedef Deferred<ASTDereferenceVariableValue> DereferenceVariableValue;
+
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
 

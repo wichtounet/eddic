@@ -270,6 +270,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->rhs_var->addReference();
     }
 
+    void operator()(ast::DereferenceVariableValue& variable){
+        //TODO
+    }
+
     void operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);

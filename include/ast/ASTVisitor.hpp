@@ -166,6 +166,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
+#define AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE() void operator()(ast::DereferenceVariableValue&){}
 
 /* auto return macros */ 
 
@@ -202,6 +203,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
+#define AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(return_type) return_type operator()(ast::DereferenceVariableValue& t){return t;}
 
 //The following macros should be used very sparsely as they are increasing the
 //difficulty to add new AST Node in the right way

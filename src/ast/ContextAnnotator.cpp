@@ -205,6 +205,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
             variable.Content->context = currentContext;
         }
         
+        void operator()(ast::DereferenceVariableValue& variable){
+            variable.Content->context = currentContext;
+        }
+        
         void operator()(ast::ArrayValue& array){
             array.Content->context = currentContext;
 

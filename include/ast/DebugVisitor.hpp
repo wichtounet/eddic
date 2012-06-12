@@ -60,6 +60,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(IntegerSuffix& integer) const ;
     void operator()(Float& float_) const ;
     void operator()(VariableValue&) const ;
+    void operator()(DereferenceVariableValue&) const ;
     void operator()(ArrayValue&) const ;
     void operator()(Expression& value) const ;
     void operator()(Cast& cast) const ;

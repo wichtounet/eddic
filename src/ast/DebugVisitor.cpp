@@ -246,6 +246,16 @@ void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
     std::cout << std::endl;
 }
 
+void ast::DebugVisitor::operator()(ast::DereferenceVariableValue& value) const {
+    std::cout << indent() << "Dereference Variable Value" << value.Content->var->name();
+    
+    for(auto& member : value.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
+}
+
 void ast::DebugVisitor::operator()(ast::ArrayValue&) const {
     std::cout << indent() << "Array value" << std::endl; 
 }

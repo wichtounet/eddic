@@ -327,6 +327,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         return values;
     }
+    
+    result_type operator()(ast::DereferenceVariableValue& value) const {
+        //TODO
+    }
             
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){
@@ -561,6 +565,10 @@ struct AbstractVisitor : public boost::static_visitor<> {
         auto type = value.Content->var->type();
 
         complexAssign(type, value);
+    }
+
+    void operator()(ast::DereferenceVariableValue& value) const {
+        //TODO
     }
 
     void operator()(ast::ArrayValue& array) const {
