@@ -225,7 +225,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //If it's a custom type
         else {
             if(symbols.struct_exists(type->type())){
-                if(declaration.Content->const_){
+                if(type->is_const()){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
 

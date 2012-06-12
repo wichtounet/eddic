@@ -24,10 +24,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         ("*=", ast::Operator::MUL)
         ("%=", ast::Operator::MOD)
         ;
-   
-    const_ %=
-            (lexer.const_ > boost::spirit::attr(true))
-        |   boost::spirit::attr(false);
     
     else_if_ %= 
             lexer.else_ 
@@ -119,7 +115,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
 
     declaration %= 
             qi::position(position_begin)
-        >>  const_
         >>  type 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value);
@@ -159,7 +154,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     
     globalDeclaration %= 
             qi::position(position_begin)
-        >>  const_
         >>  type 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value.constant)

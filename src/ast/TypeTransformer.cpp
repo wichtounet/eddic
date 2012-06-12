@@ -14,7 +14,7 @@
 using namespace eddic;
 
 std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::SimpleType& type) const {
-    return new_type(type.type);
+    return new_type(type.type, type.const_);
 }
 
 std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::ArrayType& type) const {

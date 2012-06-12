@@ -13,6 +13,10 @@ using namespace eddic;
 parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         TypeGrammar::base_type(type, "Type Grammar"),
         position_begin(position_begin){
+   
+    const_ %=
+            (lexer.const_ > boost::spirit::attr(true))
+        |   boost::spirit::attr(false);
 
     member_declaration %=
             qi::position(position_begin)
@@ -41,6 +45,7 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
 
     simple_type %=
             qi::eps
+        >>  const_
         >>  lexer.identifier;
 
     type %=

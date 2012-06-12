@@ -234,7 +234,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         ast::VariableDeclaration variable_declaration;
         variable_declaration.Content->context = foreach.Content->context;
-        variable_declaration.Content->const_ = false;
         variable_declaration.Content->value = array_value;
         variable_declaration.Content->variableName = var->name();
         

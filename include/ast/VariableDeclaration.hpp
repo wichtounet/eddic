@@ -32,7 +32,6 @@ struct ASTVariableDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
-    bool const_;
     Type variableType;
     std::string variableName;
     boost::optional<Value> value;
@@ -54,7 +53,6 @@ typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableDeclaration, 
     (eddic::ast::Position, Content->position)
-    (bool, Content->const_)
     (eddic::ast::Type, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)
