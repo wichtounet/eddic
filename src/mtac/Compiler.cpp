@@ -581,6 +581,10 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     template<typename T>
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
+        if(type->is_pointer()){
+            type = type->data_type();
+        }
+
         if(type == INT){
             intAssign(ToArgumentsVisitor(function)(value));
         } else if(type == BOOL){
@@ -590,7 +594,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
         } else if(type == FLOAT){
             floatAssign(ToArgumentsVisitor(function)(value));
         } else {
-            throw SemanticalException("Invalid variable type");   
+            ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
         }
     }
 
