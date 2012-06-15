@@ -53,6 +53,24 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     }
 }
 
+std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
+
+    for(auto type : types){
+        ss << mangle(type);
+    }
+
+    return ss.str();
+}
+
 std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){
     if(functionName == "main"){
         return functionName;
