@@ -378,7 +378,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 } 
 
                 ASSERT_PATH_NOT_TAKEN("void is not a type");
-            } else if(type->is_array()){
+            } else if(type->is_array() || type->is_pointer()){
                 return {value.Content->var};
             } else {
                 if(type == INT || type == BOOL || type == FLOAT){
@@ -431,9 +431,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     
     result_type operator()(ast::DereferenceVariableValue& value) const {
         if(value.Content->memberNames.empty()){
-            auto type = value.Content->var->type();
-
-            ASSERT(type->is_pointer(), "Only pointers can be dereferenced");
+            auto type = value.Content->var->type()->data_type();
 
             if(type == INT || type == BOOL || type == FLOAT){
                 auto temp = value.Content->context->new_temporary(type->data_type());
