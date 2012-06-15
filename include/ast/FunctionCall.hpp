@@ -28,6 +28,7 @@ namespace ast {
  */
 struct ASTFunctionCall {
     std::shared_ptr<eddic::Function> function;
+    std::string mangled_name;
 
     Position position;
     std::string functionName;

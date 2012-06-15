@@ -1149,9 +1149,15 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
     for(auto& value : functionCall.Content->values){
         arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
     }
-    
-    auto functionName = functionCall.Content->function->mangledName;
-    auto definition = symbols.getFunction(functionName);
+
+    std::shared_ptr<eddic::Function> definition;
+    if(functionCall.Content->mangled_name.empty()){
+        definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+    } else if(functionCall.Content->function){
+        definition = functionCall.Content->function;
+    } else {
+        definition = symbols.getFunction(functionCall.Content->mangled_name);
+    }
 
     ASSERT(definition, "All the functions should be in the function table");
 
@@ -1186,7 +1192,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
         }
     }
 
-    function->add(std::make_shared<mtac::Call>(functionName, definition, return_, return2_));
+    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){

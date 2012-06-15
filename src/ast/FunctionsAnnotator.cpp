@@ -97,6 +97,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(symbols.exists(mangled)){
                 symbols.addReference(mangled);
 
+                functionCall.Content->mangled_name = mangled;
                 functionCall.Content->function = symbols.getFunction(mangled);
             } else {
                 //TODO Enhance to test all possibilities, not only a change of a single type
@@ -111,6 +112,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         if(symbols.exists(mangled)){
                             symbols.addReference(mangled);
 
+                            functionCall.Content->mangled_name = mangled;
                             functionCall.Content->function = symbols.getFunction(mangled);
 
                             return;

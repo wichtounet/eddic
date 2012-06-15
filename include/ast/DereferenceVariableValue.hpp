@@ -39,11 +39,15 @@ struct ASTDereferenceVariableValue {
     mutable long references = 0;
 };
 
+struct DereferenceVariableValue : public Deferred<ASTDereferenceVariableValue> {
+    
+};
+
 /*!
  * \typedef DereferenceVariableValue
  * \brief The AST node for a variable value.
 */
-typedef Deferred<ASTDereferenceVariableValue> DereferenceVariableValue;
+//typedef Deferred<ASTDereferenceVariableValue> DereferenceVariableValue;
 
 } //end of ast
 
