@@ -5,7 +5,8 @@ void main(){
 }
 
 void test(int* a){
-   a = null; 
+   int* b = a;
+   b = null; 
 }
 
 void test2(int* a){
