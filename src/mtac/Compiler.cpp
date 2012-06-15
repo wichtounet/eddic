@@ -603,7 +603,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        complexAssign(value.variable()->type()->data_type(), value);
+        complexAssign(value.variable()->type(), value);
     }
 
     void operator()(ast::DereferenceVariableValue& value) const {
