@@ -398,7 +398,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
 
-            boost::tie(offset, member_type) = compute_member(value.Content->var, value.Content->memberNames);
+            boost::tie(offset, member_type) = compute_member(value.variable(), value.Content->memberNames);
 
             if(member_type == STRING){
                 auto t1 = value.Content->context->new_temporary(INT);
@@ -431,20 +431,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     
     result_type operator()(ast::DereferenceVariableValue& value) const {
         if(value.Content->memberNames.empty()){
-            auto type = value.Content->var->type()->data_type();
+            auto type = value.variable()->type()->data_type();
 
             if(type == INT || type == BOOL || type == FLOAT){
-                auto temp = value.Content->context->new_temporary(type);
+                auto temp = value.context()->new_temporary(type);
 
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, 0));
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::DOT, 0));
 
                 return {temp};
             } else if(type == STRING){
-                auto t1 = value.Content->context->new_temporary(INT);
-                auto t2 = value.Content->context->new_temporary(INT);
+                auto t1 = value.context()->new_temporary(INT);
+                auto t2 = value.context()->new_temporary(INT);
 
-                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, 0));
-                function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
+                function->add(std::make_shared<mtac::Quadruple>(t1, value.variable(), mtac::Operator::DOT, 0));
+                function->add(std::make_shared<mtac::Quadruple>(t2, value.variable(), mtac::Operator::DOT, getStringOffset(value.variable())));
 
                 return {t1, t2};
             } else {
@@ -603,15 +603,11 @@ struct AbstractVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        auto type = value.Content->var->type();
-
-        complexAssign(type, value);
+        complexAssign(value.variable()->type()->data_type(), value);
     }
 
     void operator()(ast::DereferenceVariableValue& value) const {
-        auto type = value.Content->var->type()->data_type();
-
-        complexAssign(type, value);
+        complexAssign(value.variable()->type()->data_type(), value);
     }
 
     void operator()(ast::ArrayValue& array) const {

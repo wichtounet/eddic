@@ -37,11 +37,7 @@ typedef Deferred<ASTAssignment> Assignment;
 struct ASTDereferenceAssignment;
 typedef Deferred<ASTDereferenceAssignment> DereferenceAssignment;
 
-struct ASTVariableValue;
-typedef Deferred<ASTVariableValue> VariableValue;
-
-/*struct ASTDereferenceVariableValue;
-typedef Deferred<ASTDereferenceVariableValue> DereferenceVariableValue;*/
+struct VariableValue;
 struct DereferenceVariableValue;
 
 struct ASTExpression;

@@ -29,20 +29,28 @@ namespace ast {
  */
 struct ASTVariableValue {
     std::shared_ptr<Context> context;
+    std::shared_ptr<Variable> var;
 
     Position position;
     std::string variableName;
-    std::shared_ptr<Variable> var;
     std::vector<std::string> memberNames;
 
     mutable long references = 0;
 };
 
 /*!
- * \typedef VariableValue
+ * \struct VariableValue
  * \brief The AST node for a variable value.
 */
-typedef Deferred<ASTVariableValue> VariableValue;
+struct VariableValue : public Deferred<ASTVariableValue> {
+    std::shared_ptr<Variable> variable(){
+        return Content->var;
+    }
+    
+    std::shared_ptr<Context> context(){
+        return Content->context;
+    }
+};
 
 } //end of ast
 
