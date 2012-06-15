@@ -33,8 +33,7 @@ struct ASTFunctionCall {
     std::string functionName;
     std::vector<Value> values;
 
-    mutable long references;
-    ASTFunctionCall() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

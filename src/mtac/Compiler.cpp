@@ -1148,7 +1148,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
         arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
     }
     
-    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
+    auto functionName = functionCall.Content->function->mangledName;
     auto definition = symbols.getFunction(functionName);
 
     ASSERT(definition, "All the functions should be in the function table");
