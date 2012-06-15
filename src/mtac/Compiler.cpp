@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <string>
+#include <utility>
 
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
@@ -171,6 +172,33 @@ std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std
     }
 }
 
+template<typename T>
+std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(const T& value){
+    auto var = value.Content->context->getVariable(value.Content->variableName);
+
+    auto struct_name = var->type()->type();
+    auto struct_type = symbols.get_struct(struct_name);
+    std::shared_ptr<const Type> member_type;
+
+    unsigned int offset = 0;
+
+    auto& members = value.Content->memberNames;
+    for(std::size_t i = 0; i < members.size(); ++i){
+        auto& member = members[i];
+
+        member_type = (*struct_type)[member]->type;
+
+        offset += symbols.member_offset(struct_type, member);
+
+        if(i != members.size() - 1){
+            struct_name = member_type->type();
+            struct_type = symbols.get_struct(struct_name);
+        }
+    }
+
+    return std::make_pair(offset, member_type);
+}
+
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
     
@@ -201,7 +229,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
     
     result_type operator()(ast::Null&) const {
-        return {0};//TODO Check that
+        return {0};
     }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
@@ -328,10 +356,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return values;
     }
     
-    result_type operator()(ast::DereferenceVariableValue& value) const {
-        //TODO
-    }
-            
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){
             auto type = value.Content->var->type();
@@ -369,29 +393,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 }
             }
         } else {
-            auto struct_name = value.Content->var->type()->type();
-            auto struct_type = symbols.get_struct(struct_name);
             std::shared_ptr<const Type> member_type;
-
             unsigned int offset = 0;
 
-            auto& members = value.Content->memberNames;
-            for(std::size_t i = 0; i < members.size(); ++i){
-                auto& member = members[i];
-
-                member_type = (*struct_type)[member]->type;
-
-                offset += symbols.member_offset(struct_type, member);
-
-                if(i != members.size() - 1){
-                    struct_name = member_type->type();
-                    struct_type = symbols.get_struct(struct_name);
-                }
-            }
+            boost::tie(offset, member_type) = compute_member(value);
 
             if(member_type == STRING){
-                auto t1 = value.Content->context->newTemporary();
-                auto t2 = value.Content->context->newTemporary();
+                auto t1 = value.Content->context->new_temporary(INT);
+                auto t2 = value.Content->context->new_temporary(INT);
 
                 if(value.Content->var->position().isParameter()){
                     function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, offset + getStringOffset(value.Content->var)));
@@ -415,6 +424,34 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 return {temp};
             }
+        }
+    }
+    
+    result_type operator()(ast::DereferenceVariableValue& value) const {
+        if(value.Content->memberNames.empty()){
+            auto type = value.Content->var->type();
+
+            ASSERT(type->is_pointer(), "Only pointers can be dereferenced");
+
+            if(type == INT || type == BOOL || type == FLOAT){
+                auto temp = value.Content->context->new_temporary(type->data_type());
+
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, 0));
+
+                return {temp};
+            } else if(type == STRING){
+                auto t1 = value.Content->context->new_temporary(INT);
+                auto t2 = value.Content->context->new_temporary(INT);
+
+                function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, 0));
+                function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, getStringOffset(value.Content->var)));
+
+                return {t1, t2};
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+            }
+        } else {
+            //TODO Not implemented for now
         }
     }
 
@@ -568,7 +605,9 @@ struct AbstractVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::DereferenceVariableValue& value) const {
-        //TODO
+        auto type = value.Content->var->type()->data_type();
+
+        complexAssign(type, value);
     }
 
     void operator()(ast::ArrayValue& array) const {
@@ -947,23 +986,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             if(assignment.Content->memberNames.empty()){
                 assign(function, var, assignment.Content->value);
             } else {
-                auto struct_name = var->type()->type();
-                auto struct_type = symbols.get_struct(struct_name);
-
                 unsigned int offset = 0;
-
-                auto& members = assignment.Content->memberNames;
-                for(std::size_t i = 0; i < members.size(); ++i){
-                    auto& member = members[i];
-                    auto member_type = (*struct_type)[member]->type;
-
-                    offset += symbols.member_offset(struct_type, member);
-
-                    if(i != members.size() - 1){
-                        struct_name = member_type->type();
-                        struct_type = symbols.get_struct(struct_name);
-                    }
-                }
+                std::shared_ptr<const Type> member_type;
+                boost::tie(offset, member_type) = compute_member(assignment);
 
                 visit(AssignValueToVariableWithOffset(function, var, offset), assignment.Content->value);
             }
