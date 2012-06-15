@@ -277,11 +277,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->rhs_var->addReference();
     }
 
-    void operator()(ast::DereferenceVariableValue& variable){
-        //TODO
-    }
-
-    void operator()(ast::VariableValue& variable){
+    template<typename T>
+    void check_variable_values(T& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
         }
@@ -317,6 +314,20 @@ struct VariablesVisitor : public boost::static_visitor<> {
                     struct_name = struct_type->name;
                 }
             }
+        }
+    }
+
+    void operator()(ast::VariableValue& variable){
+        check_variable_values(variable);
+    }
+
+    void operator()(ast::DereferenceVariableValue& variable){
+        check_variable_values(variable);
+
+        auto var = variable.Content->var;
+
+        if(!var->type()->is_pointer()){
+            throw SemanticalException("Only pointer variable can be dereferenced", variable.Content->position);
         }
     }
 
