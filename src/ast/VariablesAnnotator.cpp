@@ -229,9 +229,16 @@ struct VariablesVisitor : public boost::static_visitor<> {
             } else {
                 declaration.Content->context->addVariable(declaration.Content->variableName, type);
             }
-        }
+        } 
+        //If it's a pointer type
+        else if(type->is_pointer()){
+            if(type->is_const()){
+                throw SemanticalException("Pointer types cannot be const", declaration.Content->position);
+            }
+            
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
         //If it's a custom type
-        else {
+        } else {
             if(symbols.struct_exists(type->type())){
                 if(type->is_const()){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
