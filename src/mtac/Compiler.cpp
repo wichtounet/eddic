@@ -434,7 +434,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto type = value.Content->var->type()->data_type();
 
             if(type == INT || type == BOOL || type == FLOAT){
-                auto temp = value.Content->context->new_temporary(type->data_type());
+                auto temp = value.Content->context->new_temporary(type);
 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, 0));
 

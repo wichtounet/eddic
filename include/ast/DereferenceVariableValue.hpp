@@ -29,11 +29,11 @@ namespace ast {
  */
 struct ASTDereferenceVariableValue {
     std::shared_ptr<Context> context;
+    std::shared_ptr<Variable> var;
 
     Position position;
     char op;
     std::string variableName;
-    std::shared_ptr<Variable> var;
     std::vector<std::string> memberNames;
 
     mutable long references = 0;
