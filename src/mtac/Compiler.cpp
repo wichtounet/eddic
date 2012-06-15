@@ -120,8 +120,8 @@ int getStringOffset(std::shared_ptr<Variable> variable){
     return variable->position().isGlobal() ? INT->size() : -INT->size();
 }
 
-void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
-void dereference_assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value);
+void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value);
+void dereference_assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value);
     
 template<typename Operation>
 void performPrefixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
@@ -173,17 +173,14 @@ std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std
     }
 }
 
-template<typename T>
-std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(const T& value){
-    auto var = value.Content->context->getVariable(value.Content->variableName);
-
+std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
     auto struct_name = var->type()->type();
     auto struct_type = symbols.get_struct(struct_name);
     std::shared_ptr<const Type> member_type;
 
     unsigned int offset = 0;
 
-    auto& members = value.Content->memberNames;
+    auto& members = memberNames;
     for(std::size_t i = 0; i < members.size(); ++i){
         auto& member = members[i];
 
@@ -292,28 +289,19 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::Assignment& assignment) const {
-        auto variable = assignment.Content->context->getVariable(assignment.Content->variableName);
+        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        //TODO Certainly something to handle here with memberNames
-        assign(function, variable, assignment.Content->value);
+        assign(function, var, assignment.Content->memberNames, assignment.Content->value);
 
-        return {variable};
+        return {var};
     }
     
     result_type operator()(ast::DereferenceAssignment& assignment) const {
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-        if(assignment.Content->memberNames.empty()){
-            dereference_assign(function, var, assignment.Content->value);
-        } else {
-            unsigned int offset = 0;
-            std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = compute_member(assignment);
+        dereference_assign(function, var, assignment.Content->memberNames, assignment.Content->value);
 
-            visit(DereferenceAssign(function, var, offset), assignment.Content->value);
-        }
-
-        return {variable};
+        return {var};
     }
 
     void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, result_type& values) const {
@@ -410,7 +398,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
 
-            boost::tie(offset, member_type) = compute_member(value);
+            boost::tie(offset, member_type) = compute_member(value.Content->var, value.Content->memberNames);
 
             if(member_type == STRING){
                 auto t1 = value.Content->context->new_temporary(INT);
@@ -713,25 +701,64 @@ struct DereferenceAssign : public AbstractVisitor {
     unsigned int offset;
 
     void intAssign(std::vector<mtac::Argument> arguments) const {
-        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
+        if(offset == 0){
+            function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
+        } else {
+            auto temp = function->context->new_temporary(INT);
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
+            function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
+        }
     }
     
     void floatAssign(std::vector<mtac::Argument> arguments) const {
-        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_FASSIGN, arguments[0]));
+        if(offset == 0){
+            function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
+        } else {
+            auto temp = function->context->new_temporary(INT);
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, offset));
+            function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
+        }
     }
 
     void stringAssign(std::vector<mtac::Argument> arguments) const {
-        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
-        function->add(std::make_shared<mtac::Quadruple>(variable, offset + getStringOffset(variable), mtac::Operator::DOT_ASSIGN, arguments[1]));
+        if(offset == 0){
+            function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
+            function->add(std::make_shared<mtac::Quadruple>(variable, getStringOffset(variable), mtac::Operator::DOT_ASSIGN, arguments[1]));
+        } else {
+            auto temp = function->context->new_temporary(INT);
+            
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
+            function->add(std::make_shared<mtac::Quadruple>(temp, offset + getStringOffset(variable), mtac::Operator::DOT_ASSIGN, arguments[1]));
+        }
     }
 };
 
-void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
-    visit(AssignValueToVariable(function, variable), value);
+void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value){
+    if(memberNames.empty()){
+        visit(AssignValueToVariable(function, variable), value);
+    } else {
+        unsigned int offset = 0;
+        std::shared_ptr<const Type> member_type;
+        boost::tie(offset, member_type) = compute_member(variable, memberNames);
+
+        visit(AssignValueToVariableWithOffset(function, variable, offset), value);
+    }
 }
 
-void dereference_assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, ast::Value& value){
-    visit(DereferenceAssign(function, variable, 0), value);
+void dereference_assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value){
+    if(memberNames.empty()){
+        visit(DereferenceAssign(function, variable, 0), value);
+    } else {
+        unsigned int offset = 0;
+        std::shared_ptr<const Type> member_type;
+        boost::tie(offset, member_type) = compute_member(variable, memberNames);
+
+        visit(DereferenceAssign(function, variable, offset), value);
+    }
 }
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
@@ -1021,29 +1048,13 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Assignment& assignment){
             auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-            if(assignment.Content->memberNames.empty()){
-                assign(function, var, assignment.Content->value);
-            } else {
-                unsigned int offset = 0;
-                std::shared_ptr<const Type> member_type;
-                boost::tie(offset, member_type) = compute_member(assignment);
-
-                visit(AssignValueToVariableWithOffset(function, var, offset), assignment.Content->value);
-            }
+            assign(function, var, assignment.Content->memberNames, assignment.Content->value);
         }
         
         void operator()(ast::DereferenceAssignment& assignment){
             auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
-            if(assignment.Content->memberNames.empty()){
-                dereference_assign(function, var, assignment.Content->value);
-            } else {
-                unsigned int offset = 0;
-                std::shared_ptr<const Type> member_type;
-                boost::tie(offset, member_type) = compute_member(assignment);
-
-                visit(DereferenceAssign(function, var, offset), assignment.Content->value);
-            }
+            dereference_assign(function, var, assignment.Content->memberNames, assignment.Content->value);
         }
         
         void operator()(ast::ArrayAssignment& assignment){
