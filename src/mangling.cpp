@@ -24,6 +24,10 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         return "A" + mangle(type->data_type());
     }
 
+    if(type->is_pointer()){
+        return "P" + mangle(type->data_type());
+    }
+
     if(type->is_standard_type()){
         if(type == INT){
             return "I";
@@ -122,6 +126,12 @@ std::string eddic::unmangle(std::string mangled){
             array = true;
             current = mangled[++i];
         }
+        
+        bool pointer = false;
+        if(current == 'P'){
+            pointer = true;
+            current = mangled[++i];
+        }   
 
         if(current == 'I'){
             function << "int";
@@ -135,6 +145,10 @@ std::string eddic::unmangle(std::string mangled){
 
         if(array){
             function << "[]";
+        }
+
+        if(pointer){
+            function << "&";
         }
 
         if(i < mangled.length() - 1){
