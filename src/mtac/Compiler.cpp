@@ -285,7 +285,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {t1, t2};
         }
         
-        throw SemanticalException("This function doesn't return anything");   
+        ASSERT_PATH_NOT_TAKEN("Unhandled function return type");
     }
 
     result_type operator()(ast::Assignment& assignment) const {
@@ -1101,7 +1101,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                     function->add(std::make_shared<mtac::Quadruple>(lhs_var, getStringOffset(lhs_var), mtac::Operator::DOT_ASSIGN, t1));  
                 }
             } else {
-                throw SemanticalException("Variable of invalid type");
+                ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
             }
         }
 
@@ -1136,7 +1136,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else if(arguments.size() == 2){
                 function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
             } else {
-                throw SemanticalException("Invalid number of arguments");
+                ASSERT_PATH_NOT_TAKEN("Unhandled arguments size");
             }   
         }
 };
