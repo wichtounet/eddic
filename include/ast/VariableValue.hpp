@@ -43,11 +43,11 @@ struct ASTVariableValue {
  * \brief The AST node for a variable value.
 */
 struct VariableValue : public Deferred<ASTVariableValue> {
-    std::shared_ptr<Variable> variable(){
+    std::shared_ptr<Variable> variable() const {
         return Content->var;
     }
     
-    std::shared_ptr<Context> context(){
+    std::shared_ptr<Context> context() const {
         return Content->context;
     }
 };

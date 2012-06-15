@@ -44,11 +44,11 @@ struct ASTDereferenceVariableValue {
  * \brief The AST node for a variable value.
 */
 struct DereferenceVariableValue : public Deferred<ASTDereferenceVariableValue> {
-    std::shared_ptr<Variable> variable(){
+    std::shared_ptr<Variable> variable() const {
         return Content->var;
     }
     
-    std::shared_ptr<Context> context(){
+    std::shared_ptr<Context> context() const {
         return Content->context;
     }
 };

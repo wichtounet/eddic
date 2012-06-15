@@ -77,8 +77,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
     }
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceVariableValue& variable) const {
-    //TODO
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceVariableValue& value) const {
+    return value.variable()->type()->data_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
