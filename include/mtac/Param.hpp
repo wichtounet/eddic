@@ -27,6 +27,7 @@ struct Param {
     std::shared_ptr<Variable> param;
     std::string std_param;
     std::shared_ptr<Function> function;
+    bool address = false;
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 

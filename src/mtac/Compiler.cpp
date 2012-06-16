@@ -1180,10 +1180,18 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
         std::reverse(arguments.begin(), arguments.end());
 
         for(auto& first : arguments){
-            std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
+            auto parameter = parameters[i--];
+            std::shared_ptr<Variable> param = context->getVariable(parameter.name);
+            auto type = parameter.paramType;
 
             for(auto& arg : first){
-                function->add(std::make_shared<mtac::Param>(arg, param, definition));   
+                auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
+
+                if(type->is_pointer()){
+                    mtac_param->address = true;
+                }
+
+                function->add(mtac_param);   
             }
         }
     }

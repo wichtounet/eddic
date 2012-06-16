@@ -214,13 +214,18 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(std::shared_ptr<mtac::Param>& param){
+        std::string address;
+        if(param->address){
+            address = " address ";
+        }
+
         if(param->param){
-            std::cout << "\tparam (" << param->param->name() << ") " << printArg(param->arg) << std::endl;
+            std::cout << "\tparam " << address << "(" << param->param->name() << ") " << printArg(param->arg) << std::endl;
         } else {
             if(param->std_param.length() > 0){
-                std::cout << "\tparam (std::" << param->std_param << ") " << printArg(param->arg) << std::endl;
+                std::cout << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << std::endl;
             } else {
-                std::cout << "\tparam " << printArg(param->arg) << std::endl;
+                std::cout << "\tparam " << address << printArg(param->arg) << std::endl;
             }
         }
     }
