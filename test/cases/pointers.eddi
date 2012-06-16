@@ -1,7 +1,6 @@
 void main(){
     int a = 44;
     test(a);
-    test2(a);
 
     print(a);
     print("|");
@@ -9,12 +8,12 @@ void main(){
 
 //Just here to test the parsing of null
 //Has no effect
-void test(int* a){
+void testparser(int* a){
     int* b = a;
     b = null; 
 }
 
-void test2(int* a){
+void test(int* a){
     int* b = a;
     *a = 55; 
 
