@@ -473,85 +473,113 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto>& goto_){
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     manager.set_current(param);
-
-    unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-    unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
-
     manager.save_registers(param, descriptor);
 
-    if(param->std_param.length() > 0 || param->param){
-        std::shared_ptr<const Type> type;
-        unsigned int position;
+    //Push the address of the var
+    if(param->address){
+        auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg);
+        auto position = (*ptr)->position();
 
-        //It's a call to a standard function
-        if(param->std_param.length() > 0){
-            type = param->function->getParameterType(param->std_param);
-            position = param->function->getParameterPositionByType(param->std_param);
-        } 
-        //It's a call to a user function
-        else if(param->param){
-            type = param->param->type();
-            position = param->function->getParameterPositionByType(param->param->name());
-        }
+        //TODO Certainly some optimizations are possible here
 
-        if(type == INT && position <= maxInt){
-            pass_in_int_register(param->arg, position);
+        if(position.isGlobal()){
+            auto reg = manager.get_free_reg();
 
-            return;
-        }
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
+            ltac::add_instruction(function, ltac::Operator::PUSH, reg);
 
-        if(type == FLOAT && position <= maxFloat){
-            pass_in_float_register(param->arg, position);
+            manager.release(reg);
+        } else if(position.isStack()){
+            auto reg = manager.get_free_reg();
 
-            return;
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
+            ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+            ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+
+            manager.release(reg);
+        } else if(position.isParameter()){
+            ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
         }
     } 
+    //Push by value
+    else {
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
-    //If the param as not been handled as register passing, push it on the stack 
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-        if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
-            auto reg1 = manager.get_free_reg();
-            auto reg2 = manager.get_float_reg(*ptr);
+        if(param->std_param.length() > 0 || param->param){
+            std::shared_ptr<const Type> type;
+            unsigned int position;
 
-            ltac::add_instruction(function, ltac::Operator::MOV, reg1, reg2);
-            ltac::add_instruction(function, ltac::Operator::PUSH, reg1);
-
-            manager.release(reg1);
-        } else {
-            if((*ptr)->type()->is_array()){
-                auto position = (*ptr)->position();
-
-                if(position.isGlobal()){
-                    auto reg = manager.get_free_reg();
-
-                    auto offset = (*ptr)->type()->data_type()->size() * (*ptr)->type()->elements();
-
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
-                    ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
-                    ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-
-                    manager.release(reg);
-                } else if(position.isStack()){
-                    auto reg = manager.get_free_reg();
-
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
-                    ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
-                    ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-
-                    manager.release(reg);
-                } else if(position.isParameter()){
-                    ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
-                }
-            } else {
-                auto reg = manager.get_reg(ltac::get_variable(param->arg));
-                ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+            //It's a call to a standard function
+            if(param->std_param.length() > 0){
+                type = param->function->getParameterType(param->std_param);
+                position = param->function->getParameterPositionByType(param->std_param);
+            } 
+            //It's a call to a user function
+            else if(param->param){
+                type = param->param->type();
+                position = param->function->getParameterPositionByType(param->param->name());
             }
+
+            if(type == INT && position <= maxInt){
+                pass_in_int_register(param->arg, position);
+
+                return;
+            }
+
+            if(type == FLOAT && position <= maxFloat){
+                pass_in_float_register(param->arg, position);
+
+                return;
+            }
+        } 
+
+        //If the param as not been handled as register passing, push it on the stack 
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+            if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
+                auto reg1 = manager.get_free_reg();
+                auto reg2 = manager.get_float_reg(*ptr);
+
+                ltac::add_instruction(function, ltac::Operator::MOV, reg1, reg2);
+                ltac::add_instruction(function, ltac::Operator::PUSH, reg1);
+
+                manager.release(reg1);
+            } else {
+                if((*ptr)->type()->is_array()){
+                    auto position = (*ptr)->position();
+
+                    if(position.isGlobal()){
+                        auto reg = manager.get_free_reg();
+
+                        auto offset = (*ptr)->type()->data_type()->size() * (*ptr)->type()->elements();
+
+                        ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
+                        ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
+                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+
+                        manager.release(reg);
+                    } else if(position.isStack()){
+                        auto reg = manager.get_free_reg();
+
+                        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
+                        ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+
+                        manager.release(reg);
+                    } else if(position.isParameter()){
+                        ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
+                    }
+                } else {
+                    auto reg = manager.get_reg(ltac::get_variable(param->arg));
+                    ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+                }
+            }
+        } else if(auto* ptr = boost::get<double>(&param->arg)){
+            auto label = float_pool->label(*ptr);
+            ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
+        } else {
+            ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
         }
-    } else if(auto* ptr = boost::get<double>(&param->arg)){
-        auto label = float_pool->label(*ptr);
-        ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
-    } else {
-        ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
     }
 }
 
