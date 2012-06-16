@@ -107,7 +107,9 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
         auto& param = *ptr;
 
-        changes |= optimize_arg(&param->arg, results);
+        if(!param->address){
+            changes |= optimize_arg(&param->arg, results);
+        }
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
         auto& ifFalse = *ptr;
         
