@@ -2,17 +2,24 @@ void main(){
     int a = 44;
     test(a);
     test2(a);
+
+    print(a);
+    print("|");
 }
 
 //Just here to test the parsing of null
 //Has no effect
 void test(int* a){
-   int* b = a;
-   b = null; 
+    int* b = a;
+    b = null; 
 }
 
 void test2(int* a){
-   int* b = a;
-   *a = 44; 
-   *a = *b;
+    int* b = a;
+    *a = 55; 
+
+    print(*a);
+    print("|");
+    print(*b);
+    print("|");
 }
