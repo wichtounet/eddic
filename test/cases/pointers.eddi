@@ -4,6 +4,8 @@ void main(){
     test2(a);
 }
 
+//Just here to test the parsing of null
+//Has no effect
 void test(int* a){
    int* b = a;
    b = null; 
