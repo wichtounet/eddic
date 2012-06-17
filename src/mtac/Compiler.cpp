@@ -1054,30 +1054,28 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
 }
 
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    std::vector<std::vector<mtac::Argument>> arguments;
-
-    for(auto& value : functionCall.Content->values){
-        arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
-    }
-    
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
     auto definition = symbols.getFunction(functionName);
 
     ASSERT(definition, "All the functions should be in the function table");
 
     auto context = definition->context;
+    
+    auto values = functionCall.Content->values;
+    std::reverse(values.begin(), values.end());
 
     //If it's a standard function, there are no context
     if(!context){
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
-        std::reverse(arguments.begin(), arguments.end());
-
-        for(auto& first : arguments){
+        for(auto& first : values){
             auto param = parameters[i--].name; 
 
-            for(auto& arg : first){
+            auto args = visit(ToArgumentsVisitor(function), first);
+//            std::reverse(args.begin(), args.end());
+
+            for(auto& arg : args){
                 function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
@@ -1085,12 +1083,13 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
-        std::reverse(arguments.begin(), arguments.end());
-
-        for(auto& first : arguments){
+        for(auto& first : values){
             std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
 
-            for(auto& arg : first){
+            auto args = visit(ToArgumentsVisitor(function), first);
+//            std::reverse(args.begin(), args.end());
+
+            for(auto& arg : args){
                 function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
