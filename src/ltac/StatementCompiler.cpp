@@ -61,30 +61,6 @@ ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var,
 
     auto reg = manager.get_reg(var);
     return ltac::Address(reg, offset);
-
-    /*if(position.isStack()){
-        return ltac::Address(ltac::BP, -position.offset() + offset);
-    } else if(position.isParameter()){
-        //The case of array is special because only the address is passed, not the complete array
-        if(var->type()->is_array())
-        {
-            auto reg = manager.get_free_reg();
-
-            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-
-            manager.release(reg);
-
-            return ltac::Address(reg, offset);
-        }
-        //In the other cases, the value is passed, so we can compute the offset directly
-        else {
-            return ltac::Address(ltac::BP, position.offset() + offset);
-        }
-    } else if(position.isGlobal()){
-        return ltac::Address("V" + position.name(), offset);
-    }*/
-
-    //ASSERT_PATH_NOT_TAKEN("Should never get there");
 }
 
 ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, int offset){
