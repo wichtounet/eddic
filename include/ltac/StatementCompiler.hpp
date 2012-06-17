@@ -78,8 +78,11 @@ class StatementCompiler : public boost::static_visitor<> {
         
         ltac::Register to_register(std::shared_ptr<Variable> var);
         ltac::Argument to_arg(mtac::Argument argument);
+        
         ltac::Address to_address(std::shared_ptr<Variable> var, int offset);
         ltac::Address to_address(std::shared_ptr<Variable> var, mtac::Argument offset);
+        
+        ltac::Address to_pointer(std::shared_ptr<Variable> var, int offset);
 };
 
 } //end of ltac
