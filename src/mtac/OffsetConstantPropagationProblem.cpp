@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Variable.hpp"
+#include "Type.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 
@@ -44,19 +45,21 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
         //Store the value assigned to result+arg1
         if(quadruple->op == mtac::Operator::DOT_ASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                mtac::Offset offset(quadruple->result, *ptr);
+                if(!quadruple->result->type()->is_pointer()){
+                    mtac::Offset offset(quadruple->result, *ptr);
 
-                if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                    out[offset] = *ptr;
-                } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg2)){
-                    out[offset] = *ptr;
-                } else if(auto* ptr = boost::get<double>(&*quadruple->arg2)){
-                    out[offset] = *ptr;
-                } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    out[offset] = *ptr;
-                } else {
-                    //The result is not constant at this point
-                    out.erase(offset);
+                    if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                        out[offset] = *ptr;
+                    } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg2)){
+                        out[offset] = *ptr;
+                    } else if(auto* ptr = boost::get<double>(&*quadruple->arg2)){
+                        out[offset] = *ptr;
+                    } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                        out[offset] = *ptr;
+                    } else {
+                        //The result is not constant at this point
+                        out.erase(offset);
+                    }
                 }
             }
         }

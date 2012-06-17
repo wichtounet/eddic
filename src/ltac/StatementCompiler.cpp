@@ -55,8 +55,6 @@ ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
 }
 
 ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var, int offset){
-    auto position = var->position();
-
     assert(var->type()->is_pointer());
 
     auto reg = manager.get_reg(var);
