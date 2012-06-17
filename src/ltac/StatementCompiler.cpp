@@ -695,7 +695,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             }
         case mtac::Operator::MUL:
             {
-                //This case should never happen unless the optimized has bugs
+                //This case should never happen unless the optimizer has bugs
                 assert(!(isInt(*quadruple->arg1) && isInt(*quadruple->arg2)));
 
                 //Form  x = x * y
