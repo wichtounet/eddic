@@ -24,8 +24,12 @@
  */
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
-    assertCompiles("samples/" #file ".eddi", "--32");\
-    assertCompiles("samples/" #file ".eddi", "--64");\
+    assert_compiles("samples/" #file ".eddi", "--32", "--O0");\
+    assert_compiles("samples/" #file ".eddi", "--32", "--O1");\
+    assert_compiles("samples/" #file ".eddi", "--32", "--O2");\
+    assert_compiles("samples/" #file ".eddi", "--64", "--O0");\
+    assert_compiles("samples/" #file ".eddi", "--64", "--O1");\
+    assert_compiles("samples/" #file ".eddi", "--64", "--O2");\
 }
 
 /* Config Fixture  */
@@ -53,18 +57,19 @@ struct DeleteOutFixture {
     }
 };
 
-inline void parse_options(const std::string& file, const std::string& param){
-    const char* argv[4];
+inline void parse_options(const std::string& file, const std::string& param1, const std::string& param2){
+    const char* argv[5];
     argv[0] = "./bin/test";
-    argv[1] = param.c_str();
+    argv[1] = param1.c_str();
     argv[2] = "--quiet";
-    argv[3] = file.c_str();
+    argv[3] = param2.c_str();
+    argv[4] = file.c_str();
 
-    BOOST_REQUIRE (eddic::parseOptions(4, argv));
+    BOOST_REQUIRE (eddic::parseOptions(5, argv));
 }
 
-void assertCompiles(const std::string& file, const std::string& param){
-    parse_options(file, param);
+void assert_compiles(const std::string& file, const std::string& param1, const std::string& param2){
+    parse_options(file, param1, param2);
 
     eddic::Compiler compiler;
     int code = compiler.compile(file);
@@ -72,8 +77,8 @@ void assertCompiles(const std::string& file, const std::string& param){
     BOOST_REQUIRE_EQUAL (code, 0);
 }
 
-void assert_compilation_error(const std::string& file, const std::string& param){
-    parse_options("test/cases/" + file, param);
+void assert_compilation_error(const std::string& file, const std::string& param1, const std::string& param2){
+    parse_options("test/cases/" + file, param1, param2);
 
     eddic::Compiler compiler;
     int code = compiler.compile("test/cases/" + file);
@@ -81,8 +86,8 @@ void assert_compilation_error(const std::string& file, const std::string& param)
     BOOST_REQUIRE_EQUAL (code, 1);
 }
 
-void assertOutputEquals(const std::string& file, const std::string& output, const std::string& param){
-    assertCompiles("test/cases/" + file, param);
+void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2){
+    assert_compiles("test/cases/" + file, param1, param2);
 
     std::string out = eddic::execCommand("./a.out"); 
     
@@ -90,11 +95,15 @@ void assertOutputEquals(const std::string& file, const std::string& output, cons
 }
 
 void assert_output_32(const std::string& file, const std::string& output){
-    assertOutputEquals(file, output, "--32");
+    assert_output_equals(file, output, "--32", "--O0");
+    assert_output_equals(file, output, "--32", "--O1");
+    assert_output_equals(file, output, "--32", "--O2");
 }
 
 void assert_output_64(const std::string& file, const std::string& output){
-    assertOutputEquals(file, output, "--64");
+    assert_output_equals(file, output, "--64", "--O0");
+    assert_output_equals(file, output, "--64", "--O1");
+    assert_output_equals(file, output, "--64", "--O2");
 }
 
 void assert_output(const std::string& file, const std::string& output){
@@ -207,7 +216,7 @@ BOOST_AUTO_TEST_CASE( globals_ ){
 }
 
 BOOST_AUTO_TEST_CASE( inc ){
-    assert_output("inc.eddi", "0|1|2|1|0|1|2|");
+    assert_output("inc.eddi", "0|1|2|1|0|1|1|");
 }
 
 BOOST_AUTO_TEST_CASE( void_functions ){
@@ -258,7 +267,7 @@ BOOST_AUTO_TEST_CASE( nested ){
 }
 
 BOOST_AUTO_TEST_CASE( args ){
-    assertCompiles("test/cases/args.eddi", "--32");
+    assert_compiles("test/cases/args.eddi", "--32", "--O2");
 
     std::string out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
@@ -266,7 +275,7 @@ BOOST_AUTO_TEST_CASE( args ){
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
     
-    assertCompiles("test/cases/args.eddi", "--64");
+    assert_compiles("test/cases/args.eddi", "--64", "--O2");
 
     out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
@@ -282,8 +291,8 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_FIXTURE_TEST_SUITE(CompilationErrorsSuite, DeleteOutFixture)
 
 BOOST_AUTO_TEST_CASE( params_assign ){
-    assert_compilation_error("params_assign.eddi", "--32");
-    assert_compilation_error("params_assign.eddi", "--64");
+    assert_compilation_error("params_assign.eddi", "--32", "--O2");
+    assert_compilation_error("params_assign.eddi", "--64", "--O2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

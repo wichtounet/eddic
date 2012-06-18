@@ -411,6 +411,16 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     } while (optimized);
 }
 
+void basic_optimize_function(std::shared_ptr<mtac::Function> function){
+    if(option_defined("dev")){
+        std::cout << "Start basic optimizations on " << function->getName() << std::endl;
+
+        print(function);
+    }
+
+    debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+}
+
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
     PerfsTimer timer("Whole optimizations");
 
@@ -426,6 +436,31 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
 
             while(i < functions.size()){
                 optimize_function(functions[i], string_pool); 
+
+                i += threads;
+            }
+        }));
+    }
+
+    //Wait for all the threads to finish
+    std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
+}
+
+void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/) const {
+    PerfsTimer timer("Whole basic optimizations");
+
+    auto& functions = program->functions;
+
+    //Find a better heuristic to configure the number of threads
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+
+    std::vector<std::thread> pool;
+    for(std::size_t tid = 0; tid < threads; ++tid){
+        pool.push_back(std::thread([tid, threads, &functions](){
+            std::size_t i = tid;
+
+            while(i < functions.size()){
+                basic_optimize_function(functions[i]); 
 
                 i += threads;
             }
