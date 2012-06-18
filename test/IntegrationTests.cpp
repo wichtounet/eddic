@@ -197,6 +197,10 @@ BOOST_AUTO_TEST_CASE( do_while_ ){
     assert_output("do_while.eddi", "01234");
 }
 
+BOOST_AUTO_TEST_CASE( defaults ){
+    assert_output("defaults.eddi", "0|0|0.0|0|0|0|0|0.0|0.0|");
+}
+
 BOOST_AUTO_TEST_CASE( float_ ){
     //TODO Could be better to split this test
     assert_output_32("float.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|3.3299|");

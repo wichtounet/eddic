@@ -1,0 +1,32 @@
+void main(){
+    int a;
+    print(a);
+    print("|");
+
+    bool b;
+    print(b);
+    print("|");
+
+    float c;
+    print(c);
+    print("|");
+
+    int array1[2];
+    print(array1[0]);
+    print("|");
+    print(array1[1]);
+    print("|");
+
+    bool array2[2];
+    print(array2[0]);
+    print("|");
+    print(array2[1]);
+    print("|");
+
+    float array3[2];
+    print(array3[0]);
+    print("|");
+    print(array3[1]);
+    print("|");
+}
+
