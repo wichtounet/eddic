@@ -1083,7 +1083,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if(type.is_custom_type()){
+                if((*ptr).Content->memberNames.empty() && type.is_custom_type()){
                     push_struct(function, param, definition, *ptr);
                     struct_by_value = true;
                 }
@@ -1106,7 +1106,7 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if(type.is_custom_type()){
+                if((*ptr).Content->memberNames.empty() && type.is_custom_type()){
                     push_struct(function, param, definition, *ptr);
                     struct_by_value = true;
                 }
