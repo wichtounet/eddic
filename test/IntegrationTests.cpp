@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( do_while_ ){
 }
 
 BOOST_AUTO_TEST_CASE( defaults ){
-    assert_output("defaults.eddi", "0|0|0.0|0|0|0|0|0.0|0.0|");
+    assert_output("defaults.eddi", "0|0|0.0||0|0|0|0|0.0|0.0|||");
 }
 
 BOOST_AUTO_TEST_CASE( float_ ){
