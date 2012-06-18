@@ -31,14 +31,27 @@ struct SetDefaultValues : public boost::static_visitor<> {
             if(is_standard_type(declaration.Content->variableType)){
                 Type type = newType(declaration.Content->variableType);
 
-                assert(type == BaseType::INT || type == BaseType::STRING);
-
                 switch(type.base()){
                     case BaseType::INT:{
                         ast::Integer integer;
                         integer.value = 0;
 
                         declaration.Content->value = integer;
+
+                        break;
+                    }
+                    case BaseType::FLOAT:{
+                        ast::Float float_;
+                        float_.value = 0.0;
+
+                        declaration.Content->value = float_;
+
+                        break;
+                    }
+                    case BaseType::BOOL:{
+                        ast::False false_;
+
+                        declaration.Content->value = false_;
 
                         break;
                     }
@@ -52,6 +65,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
                         break;
                     }
                     default:
+                        ASSERT_PATH_NOT_TAKEN("Unhandled type");
                         break;
                 }
             }
