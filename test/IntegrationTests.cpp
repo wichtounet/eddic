@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( globals_ ){
 }
 
 BOOST_AUTO_TEST_CASE( inc ){
-    assert_output("inc.eddi", "0|1|2|1|0|1|2|");
+    assert_output("inc.eddi", "0|1|2|1|0|1|1|");
 }
 
 BOOST_AUTO_TEST_CASE( void_functions ){
