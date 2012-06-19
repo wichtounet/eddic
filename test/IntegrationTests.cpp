@@ -181,13 +181,16 @@ BOOST_AUTO_TEST_CASE( string_arrays ){
 }
 
 BOOST_AUTO_TEST_CASE( int_pointers ){
-    assert_output_32("int_pointers.eddi", "44|44|55|55|66|66|66|");
-    assert_output_64("int_pointers.eddi", "44|44|55|55|66|66|66|");
+    assert_output("int_pointers.eddi", "44|44|55|55|66|66|66|");
 }
 
 BOOST_AUTO_TEST_CASE( string_pointers ){
-    assert_output_32("string_pointers.eddi", "a|a|b|b|c|c|c|");
-    assert_output_64("string_pointers.eddi", "a|a|b|b|c|c|c|");
+    assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
+}
+
+BOOST_AUTO_TEST_CASE( float_pointers ){
+    assert_output_32("float_pointers.eddi", "44.4000|44.4000|55.5000|55.5000|66.5999|66.5999|66.5999|");
+    assert_output_64("float_pointers.eddi", "44.3999|44.3999|55.5000|55.5000|66.5999|66.5999|66.5999|");
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
