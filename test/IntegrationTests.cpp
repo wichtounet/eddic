@@ -184,6 +184,10 @@ BOOST_AUTO_TEST_CASE( int_pointers ){
     assert_output("int_pointers.eddi", "44|44|55|55|66|66|66|");
 }
 
+BOOST_AUTO_TEST_CASE( bool_pointers ){
+    assert_output("bool_pointers.eddi", "0|0|1|1|0|0|1|");
+}
+
 BOOST_AUTO_TEST_CASE( string_pointers ){
     assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
 }
