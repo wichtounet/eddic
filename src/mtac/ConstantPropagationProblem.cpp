@@ -64,6 +64,21 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
             if(mtac::erase_result(op)){
                 //The result is not constant at this point
                 out.erase(quadruple->result);
+    
+                //Cancel the copy of the variable erased
+                for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
+                        auto variable = *ptr;
+
+                        if (variable == quadruple->result){
+                            it = out.values().erase(it);
+                        } else {
+                            ++it;
+                        }
+                    } else {
+                        ++it;
+                    }
+                }
             }
         }
     }

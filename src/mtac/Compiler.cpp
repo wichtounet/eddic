@@ -304,60 +304,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {var};
     }
 
-    void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, result_type& values) const {
-        auto struct_name = type->type();
-        auto struct_type = symbols.get_struct(struct_name);
-        
-        for(auto& member : struct_type->members){
-            auto& member_type = member->type;
-
-            memberValue.Content->memberNames.push_back(member->name);
-            
-            if(member_type->is_custom_type()){
-                push_struct_member(memberValue, member_type, values);
-            } else {
-                auto member_values = (*this)(memberValue);
-                std::reverse(member_values.begin(), member_values.end());
-
-                for(auto& v : member_values){
-                    values.push_back(v);
-                }
-            }
-
-            memberValue.Content->memberNames.pop_back();
-        }
-    }
-
-    result_type push_struct(std::shared_ptr<Variable> var, std::shared_ptr<Context> context) const {
-        std::vector<mtac::Argument> values;
-
-        auto struct_name = var->type()->type();
-        auto struct_type = symbols.get_struct(struct_name);
-
-        for(auto member : struct_type->members){
-            auto type = member->type;
-
-            ast::VariableValue memberValue;
-            memberValue.Content->context = context;
-            memberValue.Content->variableName = var->name();
-            memberValue.Content->var = var;
-            memberValue.Content->memberNames = {member->name};
-
-            if(type->is_custom_type()){
-                push_struct_member(memberValue, type, values);
-            } else {
-                auto member_values = (*this)(memberValue);
-                std::reverse(member_values.begin(), member_values.end());
-
-                for(auto& v : member_values){
-                    values.push_back(v);
-                }
-            }
-        }
-
-        return values;
-    }
-    
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){
             auto type = value.Content->var->type();
@@ -389,7 +335,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                     return {value.Content->var, temp};
                 } else if(type->is_custom_type()) {
-                    return push_struct(value.Content->var, value.Content->context);
+                    ASSERT_PATH_NOT_TAKEN("Push custom types by value should be handled directly in call");
                 } else {
                     ASSERT_PATH_NOT_TAKEN("Unhandled type");
                 }
@@ -1143,14 +1089,70 @@ class CompilerVisitor : public boost::static_visitor<> {
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function){
     return visit(ToArgumentsVisitor(function), value)[0];
 }
+    
+void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
+    auto struct_name = type->type();
+    auto struct_type = symbols.get_struct(struct_name);
+
+    for(auto& member : struct_type->members){
+        auto member_type = member->type;
+
+        memberValue.Content->memberNames.push_back(member->name);
+
+        if(member_type->is_custom_type()){
+            push_struct_member(memberValue, member_type, function, param, definition);
+        } else {
+            auto member_values = ToArgumentsVisitor(function)(memberValue);
+            std::reverse(member_values.begin(), member_values.end());
+
+            for(auto& v : member_values){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
+                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
+                } else if(auto* ptr = boost::get<std::string>(&param)){
+                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
+                }
+            }
+        }
+
+        memberValue.Content->memberNames.pop_back();
+    }
+}
+
+void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition, ast::VariableValue& value){
+    auto var = value.Content->var;
+    auto context = value.Content->context;
+
+    auto struct_name = var->type()->type();
+    auto struct_type = symbols.get_struct(struct_name);
+
+    for(auto member : struct_type->members){
+        auto type = member->type;
+
+        ast::VariableValue memberValue;
+        memberValue.Content->context = context;
+        memberValue.Content->variableName = var->name();
+        memberValue.Content->var = var;
+        memberValue.Content->memberNames = {member->name};
+
+        if(type->is_custom_type()){
+            push_struct_member(memberValue, type, function, param, definition);
+        } else {
+            auto member_values = ToArgumentsVisitor(function)(memberValue);
+            std::reverse(member_values.begin(), member_values.end());
+
+            for(auto& v : member_values){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
+                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
+                } else if(auto* ptr = boost::get<std::string>(&param)){
+                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
+                }
+            }
+        }
+    }
+}
 
 void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    std::vector<std::vector<mtac::Argument>> arguments;
-
-    for(auto& value : functionCall.Content->values){
-        arguments.push_back(visit(ToArgumentsVisitor(function), value)); 
-    }
-
+    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
     std::shared_ptr<eddic::Function> definition;
     if(functionCall.Content->mangled_name.empty()){
         definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
@@ -1163,40 +1165,61 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
     ASSERT(definition, "All the functions should be in the function table");
 
     auto context = definition->context;
+    
+    auto values = functionCall.Content->values;
+    std::reverse(values.begin(), values.end());
 
     //If it's a standard function, there are no context
     if(!context){
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
-        std::reverse(arguments.begin(), arguments.end());
-
-        for(auto& first : arguments){
+        for(auto& first : values){
             auto param = parameters[i--].name; 
+            bool struct_by_value = false;
 
-            for(auto& arg : first){
-                function->add(std::make_shared<mtac::Param>(arg, param, definition));   
+            if(auto* ptr = boost::get<ast::VariableValue>(&first)){
+                auto type = (*ptr).Content->var->type();
+                if((*ptr).Content->memberNames.empty() && type->is_custom_type()){
+                    push_struct(function, param, definition, *ptr);
+                    struct_by_value = true;
+                }
+            } 
+            
+            if (!struct_by_value) {
+                auto args = visit(ToArgumentsVisitor(function), first);
+                for(auto& arg : args){
+                    function->add(std::make_shared<mtac::Param>(arg, param, definition));   
+                }
             }
         }
     } else {
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
-        std::reverse(arguments.begin(), arguments.end());
+        for(auto& first : values){
+            std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
+            bool struct_by_value = false;
 
-        for(auto& first : arguments){
-            auto parameter = parameters[i--];
-            std::shared_ptr<Variable> param = context->getVariable(parameter.name);
-            auto type = parameter.paramType;
-
-            for(auto& arg : first){
-                auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
-
-                if(type->is_pointer()){
-                    mtac_param->address = true;
+            if(auto* ptr = boost::get<ast::VariableValue>(&first)){
+                auto type = (*ptr).Content->var->type();
+                if((*ptr).Content->memberNames.empty() && type->is_custom_type()){
+                    push_struct(function, param, definition, *ptr);
+                    struct_by_value = true;
                 }
+            } 
+            
+            if (!struct_by_value) {
+                auto args = visit(ToArgumentsVisitor(function), first);
+                for(auto& arg : args){
+                    auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
 
-                function->add(mtac_param);   
+                    if(param->type()->is_pointer()){
+                        mtac_param->address = true;
+                    }
+
+                    function->add(mtac_param);   
+                }
             }
         }
     }

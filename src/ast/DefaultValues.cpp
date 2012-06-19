@@ -32,8 +32,6 @@ struct SetDefaultValues : public boost::static_visitor<> {
             auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
             if(type->is_standard_type()){
-                assert(type == INT || type == STRING);
-
                 if(type == INT){
                     ast::Integer integer;
                     integer.value = 0;
@@ -45,6 +43,17 @@ struct SetDefaultValues : public boost::static_visitor<> {
                     litteral.label = "S3";
 
                     declaration.Content->value = litteral;
+                } else if(type == FLOAT){
+                    ast::Float float_;
+                    float_.value = 0.0;
+
+                    declaration.Content->value = float_;
+                } else if(type == BOOL){
+                    ast::False false_;
+
+                    declaration.Content->value = false_;
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
                 }
             }
         }
