@@ -433,10 +433,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(value.Content->memberNames.empty()){
             auto type = value.variable()->type()->data_type();
 
-            if(type == INT || type == BOOL || type == FLOAT){
+            if(type == INT || type == BOOL){
                 auto temp = value.context()->new_temporary(type);
 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::DOT, 0));
+
+                return {temp};
+            } else if(type == FLOAT){
+                auto temp = value.context()->new_temporary(type);
+
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::FDOT, 0));
 
                 return {temp};
             } else if(type == STRING){
