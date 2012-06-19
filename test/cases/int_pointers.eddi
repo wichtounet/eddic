@@ -6,13 +6,6 @@ void main(){
     print("|");
 }
 
-//Just here to test the parsing of null
-//Has no effect
-void testparser(int* a){
-    int* b = a;
-    b = null; 
-}
-
 void test(int* a){
     print(*a);
     print("|");
@@ -35,4 +28,11 @@ void test(int* a){
     print("|");
     print(*a);
     print("|");
+}
+
+//Just here to test the parsing of null
+//This function has no effect
+void testparser(int* a){
+    int* b = a;
+    b = null; 
 }

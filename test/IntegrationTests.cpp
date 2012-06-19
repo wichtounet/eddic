@@ -180,9 +180,9 @@ BOOST_AUTO_TEST_CASE( string_arrays ){
     assert_output("string_arrays.eddi", "5|6|7|7|5|6|7|7||||a|a|a|a|a||||||2|2|2|7|7||||4|9|4|a|9|9||||4|9|4|2|9|9||||");
 }
 
-BOOST_AUTO_TEST_CASE( pointers ){
-    assert_output_32("pointers.eddi", "44|44|55|55|66|66|66|");
-    assert_output_64("pointers.eddi", "44|44|55|55|66|66|66|");
+BOOST_AUTO_TEST_CASE( int_pointers ){
+    assert_output_32("int_pointers.eddi", "44|44|55|55|66|66|66|");
+    assert_output_64("int_pointers.eddi", "44|44|55|55|66|66|66|");
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
