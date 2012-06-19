@@ -1068,7 +1068,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 int offset = boost::get<int>(*quadruple->arg2);
 
                 auto reg = manager.get_float_reg_no_move(quadruple->result);
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, offset));
+                
+                //TODO Certainly a way to make that the same way for both cases
+                if(variable->type()->is_pointer()){
+                    ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_pointer(variable, offset));
+                } else {
+                    ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, offset));
+                }
 
                 manager.set_written(quadruple->result);
 
