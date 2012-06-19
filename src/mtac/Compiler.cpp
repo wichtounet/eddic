@@ -579,11 +579,10 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     template<typename T>
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
+        //A pointer is just an integer
         if(type->is_pointer()){
-            type = type->data_type();
-        }
-
-        if(type == INT){
+            intAssign(ToArgumentsVisitor(function)(value));
+        } else if(type == INT){
             intAssign(ToArgumentsVisitor(function)(value));
         } else if(type == BOOL){
             intAssign(ToArgumentsVisitor(function)(value));
