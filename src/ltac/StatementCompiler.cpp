@@ -1101,8 +1101,12 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 int offset = boost::get<int>(*quadruple->arg1);
                 auto reg = manager.get_free_float_reg();
                 manager.copy(*quadruple->arg2, reg);
-
-                ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, offset), reg);
+                
+                if(quadruple->result->type()->is_pointer()){
+                    ltac::add_instruction(function, ltac::Operator::FMOV, to_pointer(quadruple->result, offset), reg);
+                } else {
+                    ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, offset), reg);
+                }
 
                 manager.release(reg);
 
