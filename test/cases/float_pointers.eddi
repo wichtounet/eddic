@@ -1,0 +1,31 @@
+void main(){
+    float a = 44.4;
+    test(a);
+
+    print(a);
+    print("|");
+}
+
+void test(float* a){
+    print(*a);
+    print("|");
+
+    float* b = a;
+    
+    print(*b);
+    print("|");
+    
+    *a = 55.5; 
+
+    print(*a);
+    print("|");
+    print(*b);
+    print("|");
+    
+    *b = 66.6;
+    
+    print(*b);
+    print("|");
+    print(*a);
+    print("|");
+}
