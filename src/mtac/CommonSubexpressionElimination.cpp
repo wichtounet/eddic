@@ -11,6 +11,7 @@
 #include "Type.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -72,7 +73,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto op = (*ptr)->op;
-        if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
+        if(mtac::erase_result(op)){
             std::vector<unsigned int> killed;
             
             for(unsigned int i = 0; i < in.values().size(); ++i){

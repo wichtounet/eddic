@@ -34,5 +34,5 @@ bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
 }
 
 bool eddic::mtac::erase_result(mtac::Operator op){
-   return op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::DOT_FASSIGN && op != mtac::Operator::ARRAY_ASSIGN; 
+   return op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::DOT_FASSIGN && op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::RETURN; 
 }

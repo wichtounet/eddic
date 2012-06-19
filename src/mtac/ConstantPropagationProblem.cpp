@@ -9,6 +9,7 @@
 #include "Variable.hpp"
 
 #include "mtac/ConstantPropagationProblem.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -60,8 +61,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
         } else {
             auto op = quadruple->op;
 
-            //Check if the operator erase the contents of the result variable
-            if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
+            if(mtac::erase_result(op)){
                 //The result is not constant at this point
                 out.erase(quadruple->result);
             }
