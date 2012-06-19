@@ -21,24 +21,16 @@ std::ostream& mtac::operator<<(std::ostream& stream, Expression& expression){
     return stream << "Expression {expression = {}}";
 }
 
-bool is_distributive(mtac::Operator op){
-    return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
-}
-
 bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
     if(first->op != second->op){
         return false;
     }
 
-    if(is_distributive(first->op)){
+    if(mtac::is_distributive(first->op)){
         return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2) || (*first->arg1 == *second->arg2 && *first->arg2 == *second->arg1);
     } else {
         return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2);
     }
-}
-
-bool is_boundary(ProblemDomain& out){
-   return !out.top() && out.values().size() == 1 && !out.values()[0].source; 
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
@@ -62,10 +54,6 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
         ProblemDomain result(values);
         return result;
     }
-}
-
-bool is_expression(std::shared_ptr<mtac::Quadruple> quadruple){
-    return quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::FDIV;
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
@@ -105,7 +93,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
             }
         }
 
-        if(is_expression(*ptr)){
+        if(mtac::is_expression((*ptr)->op)){
             bool exists = false;
             for(auto& expression : out.values()){
                 if(are_equivalent(*ptr, expression.expression)){
@@ -141,7 +129,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if(is_expression(*ptr)){
+                if(mtac::is_expression((*ptr)->op)){
                     bool exists = false;
                     for(auto& expression : values){
                         if(are_equivalent(*ptr, expression.expression)){
@@ -173,7 +161,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
     bool changes = false;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        if(is_expression(*ptr)){
+        if(mtac::is_expression((*ptr)->op)){
             for(auto& expression : results.values()){
                 if(are_equivalent(expression.expression, *ptr)){
                     auto source_statement = expression.expression;
