@@ -60,13 +60,23 @@ target_link_libraries (eddic boost_program_options)
 
 # Create the test executable
 
-add_executable (test ${test_files})
+add_executable (eddic_test ${test_files})
 
-target_link_libraries (test boost_program_options)
-target_link_libraries (test boost_unit_test_framework)
+target_link_libraries (eddic_test boost_program_options)
+target_link_libraries (eddic_test boost_unit_test_framework)
 
 # Specifications for the installation of eddic
 
 INSTALL(TARGETS eddic
     RUNTIME DESTINATION bin
 )
+
+# Enable and configure testing
+INCLUDE(CTest)
+
+ENABLE_TESTING()
+
+ADD_TEST(
+    NAME integration_tests 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND eddic_test --show_progress)
