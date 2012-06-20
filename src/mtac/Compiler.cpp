@@ -36,7 +36,7 @@ namespace {
 //TODO Visitors should be moved out of this class in a future clenaup phase
 
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
@@ -267,20 +267,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(type == BOOL || type == INT){
             auto t1 = function->context->newTemporary();
 
-            executeCall(call, function, t1, {});
+            execute_call(call, function, t1, {});
 
             return {t1};
         } else if(type == FLOAT){
             auto t1 = function->context->newFloatTemporary();
 
-            executeCall(call, function, t1, {});
+            execute_call(call, function, t1, {});
 
             return {t1};
         } else if(type == STRING){
             auto t1 = function->context->newTemporary();
             auto t2 = function->context->newTemporary();
 
-            executeCall(call, function, t1, t2);
+            execute_call(call, function, t1, t2);
 
             return {t1, t2};
         }
@@ -335,7 +335,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                     return {value.Content->var, temp};
                 } else if(type->is_custom_type()) {
-                    ASSERT_PATH_NOT_TAKEN("Push custom types by value should be handled directly in call");
+                    //If we are here, it means that we want to pass it by reference
+                    return {value.Content->var};
                 } else {
                     ASSERT_PATH_NOT_TAKEN("Unhandled type");
                 }
@@ -1070,7 +1071,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall& functionCall){
-            executeCall(functionCall, function, {}, {});
+            execute_call(functionCall, function, {}, {});
         }
 
         void operator()(ast::Return& return_){
@@ -1151,7 +1152,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     }
 }
 
-void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
     std::shared_ptr<eddic::Function> definition;
     if(functionCall.Content->mangled_name.empty()){
@@ -1176,21 +1177,14 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
 
         for(auto& first : values){
             auto param = parameters[i--].name; 
-            bool struct_by_value = false;
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
-                auto type = (*ptr).Content->var->type();
-                if((*ptr).Content->memberNames.empty() && type->is_custom_type()){
-                    push_struct(function, param, definition, *ptr);
-                    struct_by_value = true;
-                }
+                ASSERT(!((*ptr).Content->memberNames.empty() && (*ptr).Content->var->type()->is_custom_type()), "Struct by value passing is not handled for standard functions");
             } 
             
-            if (!struct_by_value) {
-                auto args = visit(ToArgumentsVisitor(function), first);
-                for(auto& arg : args){
-                    function->add(std::make_shared<mtac::Param>(arg, param, definition));   
-                }
+            auto args = visit(ToArgumentsVisitor(function), first);
+            for(auto& arg : args){
+                function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
     } else {
@@ -1199,27 +1193,25 @@ void executeCall(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function
 
         for(auto& first : values){
             std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
-            bool struct_by_value = false;
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if((*ptr).Content->memberNames.empty() && type->is_custom_type()){
+                if((*ptr).Content->memberNames.empty() && type->is_custom_type() && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
-                    struct_by_value = true;
+                    std::cout << "push by value" << std::endl;
+                    continue;
                 }
             } 
             
-            if (!struct_by_value) {
-                auto args = visit(ToArgumentsVisitor(function), first);
-                for(auto& arg : args){
-                    auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
+            auto args = visit(ToArgumentsVisitor(function), first);
+            for(auto& arg : args){
+                auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
 
-                    if(param->type()->is_pointer()){
-                        mtac_param->address = true;
-                    }
-
-                    function->add(mtac_param);   
+                if(param->type()->is_pointer()){
+                    mtac_param->address = true;
                 }
+
+                function->add(mtac_param);   
             }
         }
     }
