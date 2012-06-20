@@ -220,21 +220,17 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
 
         std::string members;
-        if(!param->memberNames.empty()){
-            members = " " + param->memberNames[0];
-
-            for(std::size_t i = 1; i < param->memberNames.size(); ++i){
-                members += "." + param->memberNames[i];
-            }
+        for(std::size_t i = 0; i < param->memberNames.size(); ++i){
+            members += "." + param->memberNames[i];
         }
 
         if(param->param){
-            std::cout << "\tparam " << address << "(" << param->param->name() << ") " << printArg(param->arg) << std::endl;
+            std::cout << "\tparam " << address << "(" << param->param->name() << ") " << printArg(param->arg) << members << std::endl;
         } else {
             if(param->std_param.length() > 0){
-                std::cout << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << std::endl;
+                std::cout << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << members << std::endl;
             } else {
-                std::cout << "\tparam " << address << printArg(param->arg) << std::endl;
+                std::cout << "\tparam " << address << printArg(param->arg) << members << std::endl;
             }
         }
     }
