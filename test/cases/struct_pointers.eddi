@@ -1,13 +1,13 @@
 struct A {
     int a;
-    int b;
+    string b;
 }
 
 void main(){
     A a;
 
     a.a = 44;
-    a.b = 444;
+    a.b = "44";
 
     test(a);
 
@@ -31,7 +31,7 @@ void test(A* a){
     print("|");
     
     a.a = 55;
-    a.b = 555;
+    a.b = "55";
 
     print(a.a);
     print("|");
@@ -43,7 +43,7 @@ void test(A* a){
     print("|");
     
     b.a = 66;
-    b.b = 666;
+    b.b = "66";
     
     print(a.a);
     print("|");
