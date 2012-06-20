@@ -478,6 +478,27 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto>& goto_){
     function->add(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
 }
 
+unsigned int compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+    auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
+    auto struct_type = symbols.get_struct(struct_name);
+
+    unsigned int offset = 0;
+
+    auto& members = memberNames;
+    for(std::size_t i = 0; i < members.size(); ++i){
+        auto& member = members[i];
+
+        offset += symbols.member_offset(struct_type, member);
+
+        if(i != members.size() - 1){
+            struct_name = (*struct_type)[member]->type->type();
+            struct_type = symbols.get_struct(struct_name);
+        }
+    }
+
+    return offset;
+}
+
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     manager.set_current(param);
     manager.save_registers(param, descriptor);
@@ -487,12 +508,18 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
         auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg);
         auto position = (*ptr)->position();
 
+        unsigned int offset = 0;
+        if(!param->memberNames.empty()){
+            offset = compute_member(*ptr, param->memberNames);
+        }
+
         //TODO Certainly some optimizations are possible here
 
         if(position.isGlobal()){
             auto reg = manager.get_free_reg();
 
             ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
+            ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
             ltac::add_instruction(function, ltac::Operator::PUSH, reg);
 
             manager.release(reg);
@@ -500,12 +527,12 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
             auto reg = manager.get_free_reg();
 
             ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
-            ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+            ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset() + static_cast<int>(offset));
             ltac::add_instruction(function, ltac::Operator::PUSH, reg);
 
             manager.release(reg);
         } else if(position.isParameter()){
-            ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
+            ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset() + static_cast<int>(offset)));
         }
     } 
     //Push by value
