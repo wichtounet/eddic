@@ -174,7 +174,7 @@ std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std
 }
 
 std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    auto struct_name = var->type()->type();
+    auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
     auto struct_type = symbols.get_struct(struct_name);
     std::shared_ptr<const Type> member_type;
 

@@ -91,7 +91,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             }
         } else {
             auto var = (*assignment.Content->context)[assignment.Content->variableName];
-            auto struct_name = var->type()->type();
+            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
 
             auto& members = assignment.Content->memberNames;
@@ -134,7 +134,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
             }
         } else {
             auto var = (*assignment.Content->context)[assignment.Content->variableName];
-            auto struct_name = var->type()->type();
+            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
 
             auto& members = assignment.Content->memberNames;

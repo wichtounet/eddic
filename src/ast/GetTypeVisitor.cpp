@@ -58,7 +58,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
     if(variable.Content->memberNames.empty()){
         return var->type();
     } else {
-        auto struct_name = var->type()->type();
+        auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
         auto struct_type = symbols.get_struct(struct_name);
 
         auto& members = variable.Content->memberNames;

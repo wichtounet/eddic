@@ -126,7 +126,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         annotateAssignment(assignment);
 
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type()->type();
+        auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
         auto struct_type = symbols.get_struct(struct_name);
         
         //Add a reference to the struct
@@ -290,7 +290,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //If there are dereferencing
         if(!variable.Content->memberNames.empty()){
             auto var = variable.Content->var;
-            auto struct_name = var->type()->type();
+            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
 
             //Reference the structure
