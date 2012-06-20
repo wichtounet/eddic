@@ -404,7 +404,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 ASSERT_PATH_NOT_TAKEN("Unhandled type");
             }
         } else {
-            //TODO Not implemented for now
+            ASSERT_PATH_NOT_TAKEN("For now, pointers inside of struct are not supported");
         }
     }
 

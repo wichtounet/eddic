@@ -17,7 +17,7 @@ using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& stream, Expression& expression){
+std::ostream& mtac::operator<<(std::ostream& stream, Expression& /*expression*/){
     return stream << "Expression {expression = {}}";
 }
 
@@ -114,7 +114,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> /*function*/){
     return default_element();
 }
 
