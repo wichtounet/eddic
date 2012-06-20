@@ -1,0 +1,56 @@
+struct A {
+    int a;
+    int b;
+}
+
+void main(){
+    A a;
+
+    a.a = 44;
+    a.b = 444;
+
+    test(a);
+
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+}
+
+void test(A* a){
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+
+    A* b = a;
+    
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+    
+    a.a = 55;
+    a.b = 555;
+
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+    
+    b.a = 66;
+    b.b = 666;
+    
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+}
