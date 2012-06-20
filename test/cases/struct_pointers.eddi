@@ -1,6 +1,7 @@
 struct A {
     int a;
     string b;
+    float c;
 }
 
 void main(){
@@ -8,12 +9,15 @@ void main(){
 
     a.a = 44;
     a.b = "44";
+    a.c = 44f;
 
     test(a);
 
     print(a.a);
     print("|");
     print(a.b);
+    print("|");
+    print(a.c);
     print("|");
 }
 
@@ -22,6 +26,8 @@ void test(A* a){
     print("|");
     print(a.b);
     print("|");
+    print(a.c);
+    print("|");
 
     A* b = a;
     
@@ -29,28 +35,40 @@ void test(A* a){
     print("|");
     print(b.b);
     print("|");
+    print(b.c);
+    print("|");
     
     a.a = 55;
     a.b = "55";
+    a.c = 55f;
 
     print(a.a);
     print("|");
     print(a.b);
     print("|");
+    print(a.c);
+    print("|");
     print(b.a);
     print("|");
     print(b.b);
     print("|");
+    print(b.c);
+    print("|");
     
     b.a = 66;
     b.b = "66";
+    b.c = 66f;
     
     print(a.a);
     print("|");
     print(a.b);
     print("|");
+    print(a.c);
+    print("|");
     print(b.a);
     print("|");
     print(b.b);
+    print("|");
+    print(b.c);
     print("|");
 }
