@@ -219,6 +219,15 @@ struct DebugVisitor : public boost::static_visitor<> {
             address = " address ";
         }
 
+        std::string members;
+        if(!param->memberNames.empty()){
+            members = " " + param->memberNames[0];
+
+            for(std::size_t i = 1; i < param->memberNames.size(); ++i){
+                members += "." + param->memberNames[i];
+            }
+        }
+
         if(param->param){
             std::cout << "\tparam " << address << "(" << param->param->name() << ") " << printArg(param->arg) << std::endl;
         } else {

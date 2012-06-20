@@ -9,7 +9,8 @@
 #define MTAC_PARAM_H
 
 #include <memory>
-#include <unordered_map>
+#include <string>
+#include <vector>
 
 #include "SymbolTable.hpp"
 
@@ -27,7 +28,9 @@ struct Param {
     std::shared_ptr<Variable> param;
     std::string std_param;
     std::shared_ptr<Function> function;
+    
     bool address = false;
+    std::vector<std::string> memberNames; //Only valid when address == true
     
     std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
