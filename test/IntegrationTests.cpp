@@ -210,6 +210,10 @@ BOOST_AUTO_TEST_CASE( struct_pointers ){
     assert_output("struct_pointers.eddi", "44|44|44.0|44|44|44|44|44.0|44|44|55|55|55.0|55|55|55|55|55.0|55|55|66|66|66.0|66|66|66|66|66.0|66|66|66|66|66.0|66|66|");
 }
 
+BOOST_AUTO_TEST_CASE( member_pointers ){
+    assert_output("member_pointers.eddi", "44|44|55|55|66|66|66|44|44|55|55|66|66|66|");
+}
+
 BOOST_AUTO_TEST_CASE( while_ ){
     assert_output("while.eddi", "01234");
 }
