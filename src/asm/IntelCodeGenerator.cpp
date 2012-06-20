@@ -10,6 +10,7 @@
 #include "Labels.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -33,25 +34,25 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
     defineDataSection();
      
     for(auto it : context->getVariables()){
-        Type type = it.second->type();
+        auto type = it.second->type();
         
         //The const variables are not stored
-        if(type.isConst()){
+        if(type->is_const()){
             continue;
         }
 
-        if(type.isArray()){
-            if(type.base() == BaseType::INT){
-                declareIntArray(it.second->name(), type.size());
-            } else if(type.base() == BaseType::FLOAT){
-                declareFloatArray(it.second->name(), type.size());
-            } else if(type.base() == BaseType::STRING){
-                declareStringArray(it.second->name(), type.size());
+        if(type->is_array()){
+            if(type->data_type() == INT){
+                declareIntArray(it.second->name(), type->elements());
+            } else if(type->data_type() == FLOAT){
+                declareFloatArray(it.second->name(), type->elements());
+            } else if(type->data_type() == STRING){
+                declareStringArray(it.second->name(), type->elements());
             }
         } else {
-            if (type == BaseType::INT) {
+            if (type == INT) {
                 declareIntVariable(it.second->position().name(), boost::get<int>(it.second->val()));
-            } else if (type == BaseType::STRING) {
+            } else if (type == STRING) {
                 auto value = boost::get<std::pair<std::string, int>>(it.second->val());
   
                 //If that's not the case, there is a problem with the pool 

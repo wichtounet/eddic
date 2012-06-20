@@ -18,6 +18,8 @@
 
 namespace eddic {
 
+class Type;
+
 typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
 typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
 
@@ -33,7 +35,7 @@ class SymbolTable {
         FunctionMap functions;
         StructMap structs;
 
-        void addPrintFunction(const std::string& function, BaseType parameterType);
+        void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
 
     public:

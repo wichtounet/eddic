@@ -20,11 +20,13 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
     AUTO_RETURN_TRUE(ast::Value)
+    AUTO_RETURN_NULL(ast::Value)
     AUTO_RETURN_LITERAL(ast::Value)
     AUTO_RETURN_FLOAT(ast::Value)
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
+    AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(ast::Value)
     AUTO_RETURN_PLUS(ast::Value)
     AUTO_RETURN_MINUS(ast::Value)
     AUTO_RETURN_PREFIX_OPERATION(ast::Value)
@@ -71,6 +73,12 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Assignment& assignment){
+        assignment.Content->value = visit(*this, assignment.Content->value);
+
+        return assignment;
+    }
+    
+    ast::Value operator()(ast::DereferenceAssignment& assignment){
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;
@@ -233,7 +241,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         ast::VariableDeclaration variable_declaration;
         variable_declaration.Content->context = foreach.Content->context;
-        variable_declaration.Content->const_ = false;
         variable_declaration.Content->value = array_value;
         variable_declaration.Content->variableName = var->name();
         
@@ -320,6 +327,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
         
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
@@ -398,6 +406,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
     
+    void operator()(ast::DereferenceAssignment& assignment){
+        assignment.Content->value = visit(transformer, assignment.Content->value); 
+    }
+    
     void operator()(ast::CompoundAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
@@ -431,15 +443,18 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
     AUTO_IGNORE_ASSIGNMENT()
+    AUTO_IGNORE_DEREFERENCE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()
     AUTO_IGNORE_VARIABLE_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
+    AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
     AUTO_IGNORE_FUNCTION_CALLS()
     AUTO_IGNORE_SWAP()
     AUTO_IGNORE_EXPRESSION()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()

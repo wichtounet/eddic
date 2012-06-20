@@ -28,13 +28,13 @@ namespace ast {
  */
 struct ASTFunctionCall {
     std::shared_ptr<eddic::Function> function;
+    std::string mangled_name;
 
     Position position;
     std::string functionName;
     std::vector<Value> values;
 
-    mutable long references;
-    ASTFunctionCall() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

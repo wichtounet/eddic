@@ -27,10 +27,12 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(Float& litteral) const;
     bool operator()(Cast& cast) const;
     bool operator()(Plus& plus) const;
+    bool operator()(Null& null) const;
     bool operator()(True& true_) const;
     bool operator()(False& false_) const;
     bool operator()(Minus& minus) const;
     bool operator()(VariableValue& variable) const;
+    bool operator()(DereferenceVariableValue& variable) const;
     bool operator()(ArrayValue& variable) const;
     bool operator()(Expression& value) const; 
     bool operator()(FunctionCall& value) const; 
@@ -38,6 +40,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(SuffixOperation& value) const; 
     bool operator()(PrefixOperation& value) const; 
     bool operator()(Assignment& assign) const; 
+    bool operator()(DereferenceAssignment& assign) const; 
 };
 
 } //end of ast

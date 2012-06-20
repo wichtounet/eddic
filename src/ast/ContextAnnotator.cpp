@@ -36,6 +36,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_NULL()
         AUTO_IGNORE_LITERAL()
         AUTO_IGNORE_FLOAT()
         AUTO_IGNORE_INTEGER()
@@ -161,6 +162,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
+        void operator()(ast::DereferenceAssignment& assignment){
+            assignment.Content->context = currentContext;
+
+            visit(*this, assignment.Content->value);
+        }
+        
         void operator()(ast::CompoundAssignment& assignment){
             assignment.Content->context = currentContext;
 
@@ -195,6 +202,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::VariableValue& variable){
+            variable.Content->context = currentContext;
+        }
+        
+        void operator()(ast::DereferenceVariableValue& variable){
             variable.Content->context = currentContext;
         }
         

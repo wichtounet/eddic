@@ -68,6 +68,9 @@ void operator()(ast::ForeachIn& foreach_){\
 void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->value);\
 }\
+void operator()(ast::DereferenceAssignment& assignment){\
+    visit(*this, assignment.Content->value);\
+}\
 void operator()(ast::VariableDeclaration& declaration){\
     visit_optional(*this, declaration.Content->value);\
 }
@@ -134,6 +137,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
 #define AUTO_IGNORE_ARRAY_VALUE() void operator()(ast::ArrayValue&){}
 #define AUTO_IGNORE_ASSIGNMENT() void operator()(ast::Assignment&){}
+#define AUTO_IGNORE_DEREFERENCE_ASSIGNMENT() void operator()(ast::DereferenceAssignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
 #define AUTO_IGNORE_COMPOUND_ASSIGNMENT() void operator()(ast::CompoundAssignment&){}
@@ -159,8 +163,10 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
 #define AUTO_IGNORE_SWAP() void operator()(ast::Swap&){}
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
+#define AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE() void operator()(ast::DereferenceVariableValue&){}
 
 /* auto return macros */ 
 
@@ -168,6 +174,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
 #define AUTO_RETURN_ARRAY_VALUE(return_type) return_type operator()(ast::ArrayValue& t){return t;}
 #define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
+#define AUTO_RETURN_DEREFERENCE_ASSIGNMENT(return_type) return_type operator()(ast::DereferenceAssignment& t){return t;}
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
 #define AUTO_RETURN_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::CompoundAssignment& t){return t;}
@@ -193,8 +200,10 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_STRUCT(return_type) return_type operator()(ast::Struct& t){return t;}
 #define AUTO_RETURN_SWAP(return_type) return_type operator()(ast::Swap& t){return t;}
 #define AUTO_RETURN_TRUE(return_type) return_type operator()(ast::True& t){return t;}
+#define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
+#define AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(return_type) return_type operator()(ast::DereferenceVariableValue& t){return t;}
 
 //The following macros should be used very sparsely as they are increasing the
 //difficulty to add new AST Node in the right way

@@ -14,8 +14,14 @@
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
+#include <algorithm>
 
 namespace eddic {
+
+template<typename T, typename Function>
+Function for_each(std::vector<T>& values, Function f){
+    return std::for_each(values.begin(), values.end(), f);
+}
 
 /*!
  * \brief Find the index of an element inside a vector. 

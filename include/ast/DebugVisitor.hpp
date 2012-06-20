@@ -48,6 +48,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ArrayDeclaration&) const ;
     void operator()(CompoundAssignment& assign) const ;
     void operator()(Assignment& assign) const ;
+    void operator()(DereferenceAssignment& assign) const ;
     void operator()(Return& return_) const ;
     void operator()(SuffixOperation& operation_) const ;
     void operator()(PrefixOperation& operation_) const ;
@@ -59,11 +60,13 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(IntegerSuffix& integer) const ;
     void operator()(Float& float_) const ;
     void operator()(VariableValue&) const ;
+    void operator()(DereferenceVariableValue&) const ;
     void operator()(ArrayValue&) const ;
     void operator()(Expression& value) const ;
     void operator()(Cast& cast) const ;
     void operator()(Plus& value) const ;
     void operator()(Minus& value) const ;
+    void operator()(Null& value) const ;
     void operator()(False& value) const ;
     void operator()(True& value) const ;
 };

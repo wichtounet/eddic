@@ -173,6 +173,18 @@ void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
     print_sub(*this, assign.Content->value);
 }
 
+void ast::DebugVisitor::operator()(ast::DereferenceAssignment& assign) const {
+    std::cout << indent() << "Dereference Variable assignment " << assign.Content->variableName;
+    
+    for(auto& member : assign.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
+
+    print_sub(*this, assign.Content->value);
+}
+
 void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
     std::cout << indent() << "Compound assignment [operator = " << static_cast<int>(assign.Content->op) << " ]";
     std::cout << assign.Content->variableName;
@@ -216,12 +228,26 @@ void ast::DebugVisitor::operator()(ast::True&) const {
     std::cout << indent() << "true" << std::endl; 
 }
 
+void ast::DebugVisitor::operator()(ast::Null&) const {
+    std::cout << indent() << "null" << std::endl; 
+}
+
 void ast::DebugVisitor::operator()(ast::False&) const {
     std::cout << indent() << "false" << std::endl; 
 }
 
 void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
     std::cout << indent() << "Variable " << value.Content->var->name();
+    
+    for(auto& member : value.Content->memberNames){
+        std::cout << "." << member; 
+    }
+
+    std::cout << std::endl;
+}
+
+void ast::DebugVisitor::operator()(ast::DereferenceVariableValue& value) const {
+    std::cout << indent() << "Dereference Variable Value" << value.Content->var->name();
     
     for(auto& member : value.Content->memberNames){
         std::cout << "." << member; 

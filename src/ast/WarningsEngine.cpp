@@ -21,7 +21,6 @@
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
-#include "Types.hpp"
 #include "Variable.hpp"
 #include "Warnings.hpp"
 #include "Options.hpp"
@@ -95,6 +94,7 @@ struct Inspector : public boost::static_visitor<> {
         /* The following cannot throw a warning  */
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_NULL()
         AUTO_IGNORE_LITERAL()
         AUTO_IGNORE_FLOAT()
         AUTO_IGNORE_INTEGER()
@@ -110,6 +110,7 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_IGNORE_PREFIX_OPERATION()
         AUTO_IGNORE_SUFFIX_OPERATION()
         AUTO_IGNORE_VARIABLE_VALUE()
+        AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
 
         void check(std::shared_ptr<Context> context){
             if(WarningUnused){
@@ -170,13 +171,11 @@ struct Inspector : public boost::static_visitor<> {
     
         void operator()(ast::Cast& cast){
             if(WarningCast){
-                eddic::Type srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-                eddic::Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+                auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
+                auto dest_type = visit(ast::TypeTransformer(), cast.Content->type);
 
-                std::cout << "cast " << (int) srcType.base() << " " << (int) destType.base() << std::endl;
-
-                if(srcType == destType){
-                    warn(cast.Content->position, "cast is not useful");
+                if(src_type == dest_type){
+                    warn(cast.Content->position, "useless cast");
                 }
             }
         }

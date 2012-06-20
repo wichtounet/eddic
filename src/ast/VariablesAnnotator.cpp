@@ -20,7 +20,7 @@
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
-#include "Types.hpp"
+#include "Type.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
@@ -41,6 +41,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
@@ -52,7 +53,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            Type type = visit(ast::TypeTransformer(), parameter.parameterType);
+            auto type = visit(ast::TypeTransformer(), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -68,9 +69,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
             throw SemanticalException("The value must be constant", declaration.Content->position);
         }
-        
-        declaration.Content->context->addVariable(declaration.Content->variableName, 
-                newSimpleType(declaration.Content->variableType, declaration.Content->constant), *declaration.Content->value);
+
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+        declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -78,7 +79,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        declaration.Content->context->addVariable(declaration.Content->arrayName, newArrayType(declaration.Content->arrayType, declaration.Content->arraySize));
+        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize));
     }
     
     void operator()(ast::Foreach& foreach){
@@ -86,7 +87,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
         }
 
-        foreach.Content->context->addVariable(foreach.Content->variableName, newType(foreach.Content->variableType));
+        foreach.Content->context->addVariable(foreach.Content->variableName, new_type(foreach.Content->variableType));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -102,9 +103,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         static int generated = 0;
 
-        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, newType(foreach.Content->variableType));
+        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(foreach.Content->variableType));
         foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), newType("int"));
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), new_type("int"));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -125,7 +126,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         annotateAssignment(assignment);
 
         auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type().type();
+        auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
         auto struct_type = symbols.get_struct(struct_name);
         
         //Add a reference to the struct
@@ -145,13 +146,21 @@ struct VariablesVisitor : public boost::static_visitor<> {
             //If it is not the last member
             if(i != members.size() - 1){
                 //The next member will be a member of the current member type
-                struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                struct_type = symbols.get_struct((*struct_type)[member]->type->type());
                 struct_name = struct_type->name;
             }
         }
     }
 
     void operator()(ast::Assignment& assignment){
+        if(assignment.Content->memberNames.empty()){
+            annotateAssignment(assignment);
+        } else {
+            verify_struct_assignment(assignment);
+        }
+    }
+    
+    void operator()(ast::DereferenceAssignment& assignment){
         if(assignment.Content->memberNames.empty()){
             annotateAssignment(assignment);
         } else {
@@ -203,11 +212,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         visit_optional(*this, declaration.Content->value);
 
-        //If it's a standard type
-        if(is_standard_type(declaration.Content->variableType)){
-            Type type = newSimpleType(declaration.Content->variableType, declaration.Content->const_);
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
-            if(type.isConst()){
+        //If it's a standard type
+        if(type->is_standard_type()){
+            if(type->is_const()){
                 if(!declaration.Content->value){
                     throw SemanticalException("A constant variable must have a value", declaration.Content->position);
                 }
@@ -220,19 +229,24 @@ struct VariablesVisitor : public boost::static_visitor<> {
             } else {
                 declaration.Content->context->addVariable(declaration.Content->variableName, type);
             }
-        }
+        } 
+        //If it's a pointer type
+        else if(type->is_pointer()){
+            if(type->is_const()){
+                throw SemanticalException("Pointer types cannot be const", declaration.Content->position);
+            }
+            
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
         //If it's a custom type
-        else {
-            if(symbols.struct_exists(declaration.Content->variableType)){
-                if(declaration.Content->const_){
+        } else {
+            if(symbols.struct_exists(type->type())){
+                if(type->is_const()){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
 
-                Type type = new_custom_type(declaration.Content->variableType);
-
                 declaration.Content->context->addVariable(declaration.Content->variableName, type);
             } else {
-                throw SemanticalException("The type \"" + declaration.Content->variableType + "\" does not exists", declaration.Content->position);
+                throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
             }
         }
     }
@@ -242,7 +256,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        Type type = newArrayType(declaration.Content->arrayType, declaration.Content->arraySize);
+        auto type = new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize);
         declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     
@@ -263,7 +277,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->rhs_var->addReference();
     }
 
-    void operator()(ast::VariableValue& variable){
+    template<typename T>
+    void check_variable_values(T& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
         }
@@ -275,7 +290,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //If there are dereferencing
         if(!variable.Content->memberNames.empty()){
             auto var = variable.Content->var;
-            auto struct_name = var->type().type();
+            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
             auto struct_type = symbols.get_struct(struct_name);
 
             //Reference the structure
@@ -295,10 +310,24 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 //If it is not the last member
                 if(i != members.size() - 1){
                     //The next member will be a member of the current member type
-                    struct_type = symbols.get_struct((*struct_type)[member]->type.type());
+                    struct_type = symbols.get_struct((*struct_type)[member]->type->type());
                     struct_name = struct_type->name;
                 }
             }
+        }
+    }
+
+    void operator()(ast::VariableValue& variable){
+        check_variable_values(variable);
+    }
+
+    void operator()(ast::DereferenceVariableValue& variable){
+        check_variable_values(variable);
+
+        auto var = variable.Content->var;
+
+        if(!var->type()->is_pointer()){
+            throw SemanticalException("Only pointer variable can be dereferenced", variable.Content->position);
         }
     }
 

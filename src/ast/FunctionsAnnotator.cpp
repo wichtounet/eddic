@@ -9,12 +9,14 @@
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"
 #include "Options.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -27,14 +29,14 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 throw SemanticalException("A function can only returns standard types for now", declaration.Content->position);
             }
 
-            auto signature = std::make_shared<Function>(newType(declaration.Content->returnType), declaration.Content->functionName);
+            auto signature = std::make_shared<Function>(new_type(declaration.Content->returnType), declaration.Content->functionName);
 
-            if(signature->returnType.isArray()){
+            if(signature->returnType->is_array()){
                 throw SemanticalException("Cannot return array from function", declaration.Content->position);
             }
 
             for(auto& param : declaration.Content->parameters){
-                Type paramType = visit(ast::TypeTransformer(), param.parameterType);
+                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
@@ -82,17 +84,44 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 return;
             }
 
-            std::string mangled = mangle(name, functionCall.Content->values);
+            std::vector<std::shared_ptr<const Type>> types;
 
-            if(!symbols.exists(mangled)){
-                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
-            } 
+            ast::GetTypeVisitor visitor;
+            for(auto& value : functionCall.Content->values){
+                auto type = visit(visitor, value);
+                types.push_back(type);
+            }
 
-            symbols.addReference(mangled);
+            std::string mangled = mangle(name, types);
 
-            functionCall.Content->function = symbols.getFunction(mangled);
+            if(symbols.exists(mangled)){
+                symbols.addReference(mangled);
+
+                functionCall.Content->mangled_name = mangled;
+                functionCall.Content->function = symbols.getFunction(mangled);
+            } else {
+                //TODO Enhance to test all possibilities, not only a change of a single type
+                for(std::size_t i = 0; i < types.size(); ++i){
+                    if(!types[i]->is_pointer() && !types[i]->is_array()){
+                        std::vector<std::shared_ptr<const Type>> copy = types;
+                        
+                        copy[i] = new_pointer_type(types[i]);
+
+                        mangled = mangle(name, copy);
+
+                        if(symbols.exists(mangled)){
+                            symbols.addReference(mangled);
+
+                            functionCall.Content->mangled_name = mangled;
+                            functionCall.Content->function = symbols.getFunction(mangled);
+
+                            return;
+                        }
+                    }
+                }
             
-            visit_each(*this, functionCall.Content->values);
+                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+            }
         }
 
         void operator()(ast::Return& return_){

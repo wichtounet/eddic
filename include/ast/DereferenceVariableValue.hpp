@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_VARIABLE_VALUE_H
-#define AST_VARIABLE_VALUE_H
+#ifndef AST_DEREFERENCE_VARIABLE_VALUE_H
+#define AST_DEREFERENCE_VARIABLE_VALUE_H
 
 #include <memory>
 #include <vector>
@@ -23,15 +23,16 @@ class Variable;
 namespace ast {
 
 /*!
- * \class ASTVariableValue
+ * \class ASTDereferenceVariableValue
  * \brief The AST node for a variable value.  
  * Should only be used from the Deferred version (eddic::ast::VariableValue).
  */
-struct ASTVariableValue {
+struct ASTDereferenceVariableValue {
     std::shared_ptr<Context> context;
     std::shared_ptr<Variable> var;
 
     Position position;
+    char op;
     std::string variableName;
     std::vector<std::string> memberNames;
 
@@ -39,10 +40,10 @@ struct ASTVariableValue {
 };
 
 /*!
- * \struct VariableValue
+ * \struct DereferenceVariableValue
  * \brief The AST node for a variable value.
 */
-struct VariableValue : public Deferred<ASTVariableValue> {
+struct DereferenceVariableValue : public Deferred<ASTDereferenceVariableValue> {
     std::shared_ptr<Variable> variable() const {
         return Content->var;
     }
@@ -58,8 +59,9 @@ struct VariableValue : public Deferred<ASTVariableValue> {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::VariableValue, 
+    eddic::ast::DereferenceVariableValue, 
     (eddic::ast::Position, Content->position)
+    (char, Content->op)
     (std::string, Content->variableName)
     (std::vector<std::string>, Content->memberNames)
 )

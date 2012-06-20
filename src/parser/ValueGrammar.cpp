@@ -119,6 +119,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     primaryValue = 
             assignment
+        |   dereference_assignment
         |   integer_suffix
         |   integer
         |   float_
@@ -129,9 +130,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   suffix_operation
         |   arrayValue
         |   variable_value
+        |   dereference_variable_value
+        |   null
         |   true_
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+    
+    null %= 
+            qi::eps
+        >>  lexer.null;
     
     true_ %= 
             qi::eps
@@ -156,6 +163,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     variable_value %= 
             qi::position(position_begin)
+        >>  lexer.identifier
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier
+             );
+   
+    dereference_variable_value %= 
+            qi::position(position_begin)
+        >>  lexer.multiplication
         >>  lexer.identifier
         >>  *(
                     lexer.dot
@@ -194,6 +210,17 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     assignment %= 
             qi::position(position_begin)
+        >>  lexer.identifier 
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier 
+             )
+        >>  lexer.assign 
+        >>  value;
+    
+    dereference_assignment %= 
+            qi::position(position_begin)
+        >>  lexer.multiplication
         >>  lexer.identifier 
         >>  *(
                     lexer.dot

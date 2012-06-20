@@ -10,36 +10,39 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include "Types.hpp"
-
 #include "ast/values_def.hpp"
 
 namespace eddic {
 
+class Type;
+
 namespace ast {
 
 /*!
- * \class GetTypeVisitor
- * \brief Static Visitor to get the Type of a Value from the AST. 
+ * \class Getconst eddic::TypeVisitor
+ * \brief Static Visitor to get the const eddic::Type of a Value from the AST. 
  */
-struct GetTypeVisitor : public boost::static_visitor<eddic::Type> {
-    eddic::Type operator()(const ast::Litteral& litteral) const;
-    eddic::Type operator()(const ast::Integer& litteral) const;
-    eddic::Type operator()(const ast::IntegerSuffix& litteral) const;
-    eddic::Type operator()(const ast::Float& litteral) const;
-    eddic::Type operator()(const ast::VariableValue& variable) const;
-    eddic::Type operator()(const ast::ArrayValue& variable) const;
-    eddic::Type operator()(const ast::Expression& value) const; 
-    eddic::Type operator()(const ast::FunctionCall& value) const; 
-    eddic::Type operator()(const ast::BuiltinOperator& value) const; 
-    eddic::Type operator()(const ast::Assignment& assign) const; 
-    eddic::Type operator()(const ast::Plus& value) const;
-    eddic::Type operator()(const ast::Minus& value) const;
-    eddic::Type operator()(const ast::True& value) const;
-    eddic::Type operator()(const ast::False& value) const;
-    eddic::Type operator()(const ast::Cast& cast) const;
-    eddic::Type operator()(const ast::SuffixOperation& value) const;
-    eddic::Type operator()(const ast::PrefixOperation& value) const;
+struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
+    std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::DereferenceAssignment& assign) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::Litteral& litteral) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Integer& litteral) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& litteral) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Float& litteral) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::VariableValue& variable) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::DereferenceVariableValue& variable) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::ArrayValue& variable) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Expression& value) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::FunctionCall& value) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::BuiltinOperator& value) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::Plus& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Minus& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::True& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::False& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Null& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Cast& cast) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::SuffixOperation& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::PrefixOperation& value) const;
 };
 
 } //end of ast

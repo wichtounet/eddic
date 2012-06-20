@@ -11,7 +11,7 @@
 
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
-#include "Types.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -26,8 +26,8 @@ struct StructuresCollector : public boost::static_visitor<> {
         auto signature = std::make_shared<Struct>(struct_.Content->name);
 
         for(auto& member : struct_.Content->members){
-            Type memberType = new_type(member.Content->type);
-            signature->members.push_back(std::make_shared<Member>(member.Content->name, memberType));
+            auto member_type = new_type(member.Content->type);
+            signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
         }
 
         symbols.add_struct(signature);

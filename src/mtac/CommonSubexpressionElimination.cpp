@@ -8,19 +8,17 @@
 #include "assert.hpp"
 #include "Variable.hpp"
 #include "FunctionContext.hpp"
+#include "Type.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& stream, Expression& expression){
+std::ostream& mtac::operator<<(std::ostream& stream, Expression& /*expression*/){
     return stream << "Expression {expression = {}}";
-}
-
-bool is_distributive(mtac::Operator op){
-    return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
 }
 
 bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
@@ -28,15 +26,11 @@ bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac
         return false;
     }
 
-    if(is_distributive(first->op)){
+    if(mtac::is_distributive(first->op)){
         return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2) || (*first->arg1 == *second->arg2 && *first->arg2 == *second->arg1);
     } else {
         return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2);
     }
-}
-
-bool is_boundary(ProblemDomain& out){
-   return !out.top() && out.values().size() == 1 && !out.values()[0].source; 
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
@@ -62,16 +56,12 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
     }
 }
 
-bool is_expression(std::shared_ptr<mtac::Quadruple> quadruple){
-    return quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::FDIV;
-}
-
 ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto op = (*ptr)->op;
-        if(op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::RETURN){
+        if(mtac::erase_result(op)){
             std::vector<unsigned int> killed;
             
             for(unsigned int i = 0; i < in.values().size(); ++i){
@@ -103,7 +93,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
             }
         }
 
-        if(is_expression(*ptr)){
+        if(mtac::is_expression((*ptr)->op)){
             bool exists = false;
             for(auto& expression : out.values()){
                 if(are_equivalent(*ptr, expression.expression)){
@@ -124,7 +114,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> /*function*/){
     return default_element();
 }
 
@@ -139,7 +129,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if(is_expression(*ptr)){
+                if(mtac::is_expression((*ptr)->op)){
                     bool exists = false;
                     for(auto& expression : values){
                         if(are_equivalent(*ptr, expression.expression)){
@@ -171,7 +161,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
     bool changes = false;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        if(is_expression(*ptr)){
+        if(mtac::is_expression((*ptr)->op)){
             for(auto& expression : results.values()){
                 if(are_equivalent(expression.expression, *ptr)){
                     auto source_statement = expression.expression;
@@ -189,9 +179,9 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                     } else {
                         std::shared_ptr<Variable> temp;
                         if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
-                            temp = expression.source->context->new_temporary(newSimpleType(BaseType::INT));
+                            temp = expression.source->context->new_temporary(INT);
                         } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
-                            temp = expression.source->context->new_temporary(newSimpleType(BaseType::FLOAT));
+                            temp = expression.source->context->new_temporary(FLOAT);
                         }
 
                         auto it = expression.source->statements.begin();

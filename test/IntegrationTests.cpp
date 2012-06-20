@@ -189,6 +189,31 @@ BOOST_AUTO_TEST_CASE( string_arrays ){
     assert_output("string_arrays.eddi", "5|6|7|7|5|6|7|7||||a|a|a|a|a||||||2|2|2|7|7||||4|9|4|a|9|9||||4|9|4|2|9|9||||");
 }
 
+BOOST_AUTO_TEST_CASE( int_pointers ){
+    assert_output("int_pointers.eddi", "44|44|55|55|66|66|66|");
+}
+
+BOOST_AUTO_TEST_CASE( bool_pointers ){
+    assert_output("bool_pointers.eddi", "0|0|1|1|0|0|1|");
+}
+
+BOOST_AUTO_TEST_CASE( string_pointers ){
+    assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
+}
+
+BOOST_AUTO_TEST_CASE( float_pointers ){
+    assert_output_32("float_pointers.eddi", "44.4000|44.4000|55.5000|55.5000|66.5999|66.5999|66.5999|");
+    assert_output_64("float_pointers.eddi", "44.3999|44.3999|55.5000|55.5000|66.5999|66.5999|66.5999|");
+}
+
+BOOST_AUTO_TEST_CASE( struct_pointers ){
+    assert_output("struct_pointers.eddi", "44|44|44.0|44|44|44|44|44.0|44|44|55|55|55.0|55|55|55|55|55.0|55|55|66|66|66.0|66|66|66|66|66.0|66|66|66|66|66.0|66|66|");
+}
+
+BOOST_AUTO_TEST_CASE( member_pointers ){
+    assert_output("member_pointers.eddi", "44|44|55|55|66|66|66|44|44|55|55|66|66|66|");
+}
+
 BOOST_AUTO_TEST_CASE( while_ ){
     assert_output("while.eddi", "01234");
 }

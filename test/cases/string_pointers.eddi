@@ -1,0 +1,31 @@
+void main(){
+    string a = "a";
+    test(a);
+
+    print(a);
+    print("|");
+}
+
+void test(string* a){
+    print(*a);
+    print("|");
+
+    string* b = a;
+    
+    print(*b);
+    print("|");
+    
+    *a = "b"; 
+
+    print(*a);
+    print("|");
+    print(*b);
+    print("|");
+    
+    *b = "c";
+    
+    print(*b);
+    print("|");
+    print(*a);
+    print("|");
+}

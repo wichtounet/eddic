@@ -11,6 +11,7 @@
 #include "ltac/Utils.hpp"
 
 #include "FunctionContext.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -153,8 +154,8 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     
 ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
-    registers(registers, std::make_shared<Variable>("__fake_int__", newSimpleType(BaseType::INT), Position(PositionType::TEMPORARY))),
-    float_registers(float_registers, std::make_shared<Variable>("__fake_float__", newSimpleType(BaseType::FLOAT), Position(PositionType::TEMPORARY))), 
+    registers(registers, std::make_shared<Variable>("__fake_int__", INT, Position(PositionType::TEMPORARY))),
+    float_registers(float_registers, std::make_shared<Variable>("__fake_float__", FLOAT, Position(PositionType::TEMPORARY))), 
     function(function), float_pool(float_pool) {
         //Nothing else to init
 }
@@ -397,9 +398,9 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
         auto param = definition->context->getVariable(parameter.name);
 
         if(param->position().isParamRegister()){
-            if(param->type() == BaseType::INT){
+            if(param->type() == INT){
                 registers.setLocation(param, ltac::Register(descriptor->int_param_register(param->position().offset())));
-            } else if(param->type() == BaseType::FLOAT){
+            } else if(param->type() == FLOAT){
                 float_registers.setLocation(param, ltac::FloatRegister(descriptor->float_param_register(param->position().offset())));
             }
         }
@@ -421,7 +422,7 @@ void ltac::RegisterManager::restore_pushed_registers(){
     for(auto& reg : float_pushed){
         if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
             ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
-            ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, size(BaseType::FLOAT));
+            ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
         }
     }
 
@@ -443,7 +444,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                 auto type = param->function->getParameterType(parameter.name);
                 unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
-                if(type == BaseType::INT && position <= maxInt){
+                if(type == INT && position <= maxInt){
                     ltac::Register reg(descriptor->int_param_register(position));
 
                     //If the parameter register is already used by a variable or a parent parameter
@@ -457,7 +458,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                     }
                 }
 
-                if(type == BaseType::FLOAT && position <= maxFloat){
+                if(type == FLOAT && position <= maxFloat){
                     ltac::FloatRegister reg(descriptor->float_param_register(position));
 
                     //If the parameter register is already used by a variable or a parent parameter
@@ -465,7 +466,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                         if(float_registers[reg]->position().isParamRegister()){
                             float_pushed.push_back(reg);
 
-                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, size(BaseType::FLOAT));
+                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
                             ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
                         } else {
                             spills(reg);

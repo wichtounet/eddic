@@ -17,8 +17,10 @@
 #include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
+#include "ast/DereferenceVariableValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
+#include "ast/Null.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
@@ -32,9 +34,11 @@ typedef boost::variant<
             Float,
             Litteral, 
             VariableValue,
+            DereferenceVariableValue,
             Expression,
             Minus,
             Plus,
+            Null,
             True,
             False,
             ArrayValue,
@@ -42,6 +46,7 @@ typedef boost::variant<
             Cast,
             BuiltinOperator,
             Assignment,
+            DereferenceAssignment,
             SuffixOperation,
             PrefixOperation
         > Value;
@@ -54,6 +59,7 @@ typedef boost::variant<
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Assignment.hpp"
+#include "ast/DereferenceAssignment.hpp"
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"
 #include "ast/Plus.hpp"

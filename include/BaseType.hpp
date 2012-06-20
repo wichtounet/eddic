@@ -5,31 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_ARRAY_TYPE_H
-#define AST_ARRAY_TYPE_H
-
-#include <boost/fusion/include/adapt_struct.hpp>
+#ifndef BASE_TYPE_H
+#define BASE_TYPE_H
 
 namespace eddic {
 
-namespace ast {
+//TODO Verify if this is still necessary
+#define BASETYPE_COUNT 5
 
-/*!
- * \class ArrayType
- * \brief An array type in the AST.  
- */
-struct ArrayType {
-    std::string type;
+enum class BaseType : unsigned int {
+    STRING,
+    INT,
+    BOOL,
+    FLOAT,
+    VOID 
 };
 
-} //end of ast
-
 } //end of eddic
-
-//Adapt the struct for the AST
-BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::ArrayType, 
-    (std::string, type)
-)
 
 #endif

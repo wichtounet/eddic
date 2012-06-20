@@ -14,6 +14,7 @@
 #include "ast/Value.hpp"
 
 #include "Variable.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -38,14 +39,14 @@ Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
-    eddic::Type type = value.Content->var->type();
-    assert(type.isConst());
+    auto type = value.Content->var->type();
+    assert(type->is_const());
         
     auto val = value.Content->var->val();
 
-    if(type == BaseType::INT){
+    if(type == INT){
         return boost::get<int>(val);
-    } else if(type == BaseType::STRING){
+    } else if(type == STRING){
         return boost::get<std::pair<std::string, int>>(val);
     }
 

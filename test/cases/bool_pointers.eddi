@@ -1,0 +1,33 @@
+void main(){
+    bool a = false;
+    test(a);
+
+    print(a);
+    print("|");
+}
+
+void test(bool* a){
+    print(*a);
+    print("|");
+
+    bool* b = a;
+    
+    print(*b);
+    print("|");
+    
+    *a = true; 
+
+    print(*a);
+    print("|");
+    print(*b);
+    print("|");
+    
+    *b = false;
+    
+    print(*b);
+    print("|");
+    print(*a);
+    print("|");
+    
+    *a = true; 
+}

@@ -64,7 +64,7 @@ class Position {
 	 * Indicates if this position is const. 
 	 * \return true if this position is const, otherwise false. 
 	 */
-        bool isConst() const;
+        bool is_const() const;
         
 	/*!
 	 * Indicates if this position is temporary. 

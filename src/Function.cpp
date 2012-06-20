@@ -8,14 +8,15 @@
 #include <cassert>
 
 #include "Function.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
-ParameterType::ParameterType(const std::string& n, Type t) : name(n), paramType(t) {}
+ParameterType::ParameterType(const std::string& n, std::shared_ptr<const Type> t) : name(n), paramType(t) {}
 
-Function::Function(Type ret, const std::string& n) : returnType(ret), name(n), references(0) {}
+Function::Function(std::shared_ptr<const Type> ret, const std::string& n) : returnType(ret), name(n), references(0) {}
 
-Type Function::getParameterType(const std::string& name){
+std::shared_ptr<const Type> Function::getParameterType(const std::string& name){
     for(auto& p : parameters){
         if(p.name == name){
             return p.paramType;

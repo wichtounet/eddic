@@ -9,6 +9,8 @@
 
 #include "ltac/Utils.hpp"
 
+#include "Type.hpp"
+
 using namespace eddic;
 
 bool eddic::ltac::is_float_operator(mtac::BinaryOperator op){
@@ -16,11 +18,11 @@ bool eddic::ltac::is_float_operator(mtac::BinaryOperator op){
 }
 
 bool eddic::ltac::is_float_var(std::shared_ptr<Variable> variable){
-    return variable->type() == BaseType::FLOAT;
+    return variable->type() == FLOAT;
 }
 
 bool eddic::ltac::is_int_var(std::shared_ptr<Variable> variable){
-    return variable->type() == BaseType::INT;
+    return variable->type() == INT;
 }
 
 void eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op){

@@ -5,17 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_VARIABLE_DECLARATION_H
-#define AST_VARIABLE_DECLARATION_H
+#ifndef AST_DEREFERENCE_ASSIGNMENT_H
+#define AST_DEREFERENCE_ASSIGNMENT_H
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/Value.hpp"
 #include "ast/Position.hpp"
-#include "ast/VariableType.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -24,26 +25,27 @@ class Context;
 namespace ast {
 
 /*!
- * \class ASTVariableDeclaration
- * \brief The AST node for a declaration of a local variable. 
- * Should only be used from the Deferred version (eddic::ast::VariableDeclaration).
+ * \class ASTDereferenceAssignment
+ * \brief The AST node for an assignement to a variable.  
+ * Should only be used from the Deferred version (eddic::ast::Assignment).
  */
-struct ASTVariableDeclaration {
+struct ASTDereferenceAssignment {
     std::shared_ptr<Context> context;
 
     Position position;
-    Type variableType;
+    char op;
     std::string variableName;
-    boost::optional<Value> value;
+    std::vector<std::string> memberNames;
+    Value value;
 
     mutable long references = 0;
 };
 
 /*!
- * \typedef VariableDeclaration
- * \brief The AST node for a declaration of a local variable. 
+ * \typedef Assignment
+ * \brief The AST node for an assignment to a variable. 
  */
-typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
+typedef Deferred<ASTDereferenceAssignment> DereferenceAssignment;
 
 } //end of ast
 
@@ -51,11 +53,12 @@ typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::VariableDeclaration, 
+    eddic::ast::DereferenceAssignment, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->variableType)
+    (char, Content->op)
     (std::string, Content->variableName)
-    (boost::optional<eddic::ast::Value>, Content->value)
+    (std::vector<std::string>, Content->memberNames)
+    (eddic::ast::Value, Content->value)
 )
 
 #endif

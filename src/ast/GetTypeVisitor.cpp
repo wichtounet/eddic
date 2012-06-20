@@ -9,6 +9,7 @@
 #include "Context.hpp"
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
@@ -16,44 +17,48 @@
 
 using namespace eddic;
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, newSimpleType(BaseType::STRING))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, STRING)
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, newSimpleType(BaseType::INT))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::IntegerSuffix, newSimpleType(BaseType::FLOAT)) //For now, there is only a float (f) suffix
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, newSimpleType(BaseType::INT)) //At this time, all the builtin operators return an int
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, INT)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, INT) //At this time, all the builtin operators return an int
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::IntegerSuffix, FLOAT) //For now, there is only a float (f) suffix
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, newSimpleType(BaseType::FLOAT))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Float, FLOAT)
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, newSimpleType(BaseType::BOOL))
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, newSimpleType(BaseType::BOOL))
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, BOOL)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, BOOL)
 
-Type ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Null& /*null*/) const {
+    return new_pointer_type(INT); //TODO Check that
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
    return visit(*this, minus.Content->value); 
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
    return visit(*this, minus.Content->value); 
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
    return visit(ast::TypeTransformer(), cast.Content->type); 
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
    return operation.Content->variable->type(); 
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
    return operation.Content->variable->type(); 
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     auto var = (*variable.Content->context)[variable.Content->variableName];
 
     if(variable.Content->memberNames.empty()){
         return var->type();
     } else {
-        auto struct_name = var->type().type();
+        auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
         auto struct_type = symbols.get_struct(struct_name);
 
         auto& members = variable.Content->memberNames;
@@ -63,7 +68,7 @@ Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
             if(i == members.size() - 1){
                 return member_type;
             } else {
-                struct_name = member_type.type();
+                struct_name = member_type->type();
                 struct_type = symbols.get_struct(struct_name);
             }
         }
@@ -72,27 +77,35 @@ Type ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     }
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceVariableValue& value) const {
+    return value.variable()->type()->data_type();
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
     return assign.Content->context->getVariable(assign.Content->variableName)->type();
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return newSimpleType(array.Content->context->getVariable(array.Content->arrayName)->type().base());
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceAssignment& assign) const {
+    return assign.Content->context->getVariable(assign.Content->variableName)->type();
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+    return array.Content->context->getVariable(array.Content->arrayName)->type()->data_type();
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){
-        return newSimpleType(BaseType::BOOL);
+        return BOOL;
     } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        return newSimpleType(BaseType::BOOL);
+        return BOOL;
     } else {
         //No need to recurse into operations because type are enforced in the check variables phase
         return visit(*this, value.Content->first);
     }
 }
 
-Type ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     return call.Content->function->returnType;
 }

@@ -5,31 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_ARRAY_TYPE_H
-#define AST_ARRAY_TYPE_H
-
-#include <boost/fusion/include/adapt_struct.hpp>
+#ifndef AST_NULL_H
+#define AST_NULL_H
 
 namespace eddic {
 
 namespace ast {
 
 /*!
- * \class ArrayType
- * \brief An array type in the AST.  
+ * \class Null
+ * \brief Represent a null pointer. 
  */
-struct ArrayType {
-    std::string type;
+struct Null {
+    
 };
 
 } //end of ast
 
 } //end of eddic
-
-//Adapt the struct for the AST
-BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::ArrayType, 
-    (std::string, type)
-)
 
 #endif

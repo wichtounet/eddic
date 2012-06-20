@@ -62,9 +62,6 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     /* Imports  */
     qi::rule<lexer::Iterator, ast::StandardImport()> standardImport;
     qi::rule<lexer::Iterator, ast::Import()> import;
-
-    /* Helper  */
-    qi::rule<lexer::Iterator, bool()> const_;
     
     qi::symbols<char, ast::Operator> compound_op;
     
