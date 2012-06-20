@@ -351,7 +351,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto t1 = value.Content->context->new_temporary(INT);
                 auto t2 = value.Content->context->new_temporary(INT);
 
-                if(value.Content->var->position().isParameter()){
+                if(value.Content->var->position().isParameter() && !value.Content->var->type()->is_pointer()){
                     function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, offset + getStringOffset(value.Content->var)));
                     function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, offset));
                 } else {
