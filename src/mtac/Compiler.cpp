@@ -1208,6 +1208,8 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
                     mtac_param->memberNames = (*ptr).Content->memberNames;
 
                     function->add(mtac_param);
+
+                    continue;
                 }
             } 
             
