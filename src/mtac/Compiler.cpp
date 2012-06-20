@@ -1198,7 +1198,6 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
                 auto type = (*ptr).Content->var->type();
                 if((*ptr).Content->memberNames.empty() && type->is_custom_type() && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
-                    std::cout << "push by value" << std::endl;
                     continue;
                 }
             } 
