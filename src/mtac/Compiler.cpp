@@ -1200,6 +1200,15 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
+
+                if(!(*ptr).Content->memberNames.empty() && type->is_custom_type() && param->type()->is_pointer()){
+                    auto mtac_param = std::make_shared<mtac::Param>((*ptr).Content->var, param, definition);
+
+                    mtac_param->address = true;
+                    mtac_param->memberNames = (*ptr).Content->memberNames;
+
+                    function->add(mtac_param);
+                }
             } 
             
             auto args = visit(ToArgumentsVisitor(function), first);
