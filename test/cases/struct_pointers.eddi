@@ -2,6 +2,12 @@ struct A {
     int a;
     string b;
     float c;
+    B d;
+}
+
+struct B {
+    int a;
+    string b;
 }
 
 void main(){
@@ -10,6 +16,8 @@ void main(){
     a.a = 44;
     a.b = "44";
     a.c = 44f;
+    a.d.a = 44;
+    a.d.b = "44";
 
     test(a);
 
@@ -18,6 +26,10 @@ void main(){
     print(a.b);
     print("|");
     print(a.c);
+    print("|");
+    print(a.d.a);
+    print("|");
+    print(a.d.b);
     print("|");
 }
 
@@ -28,6 +40,10 @@ void test(A* a){
     print("|");
     print(a.c);
     print("|");
+    print(a.d.a);
+    print("|");
+    print(a.d.b);
+    print("|");
 
     A* b = a;
     
@@ -37,10 +53,16 @@ void test(A* a){
     print("|");
     print(b.c);
     print("|");
+    print(b.d.a);
+    print("|");
+    print(b.d.b);
+    print("|");
     
     a.a = 55;
     a.b = "55";
     a.c = 55f;
+    a.d.a = 55;
+    a.d.b = "55";
 
     print(a.a);
     print("|");
@@ -48,16 +70,26 @@ void test(A* a){
     print("|");
     print(a.c);
     print("|");
+    print(a.d.a);
+    print("|");
+    print(a.d.b);
+    print("|");
     print(b.a);
     print("|");
     print(b.b);
     print("|");
     print(b.c);
     print("|");
+    print(b.d.a);
+    print("|");
+    print(b.d.b);
+    print("|");
     
     b.a = 66;
     b.b = "66";
     b.c = 66f;
+    b.d.a = 66;
+    b.d.b = "66";
     
     print(a.a);
     print("|");
@@ -65,10 +97,18 @@ void test(A* a){
     print("|");
     print(a.c);
     print("|");
+    print(a.d.a);
+    print("|");
+    print(a.d.b);
+    print("|");
     print(b.a);
     print("|");
     print(b.b);
     print("|");
     print(b.c);
+    print("|");
+    print(b.d.a);
+    print("|");
+    print(b.d.b);
     print("|");
 }
