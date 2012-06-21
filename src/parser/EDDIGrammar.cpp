@@ -200,7 +200,14 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     program %=
             qi::eps 
         >>  qi::position(position_begin)
-        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import | type.struct_);
+        >>  *(
+                    function 
+                |   globalDeclaration 
+                |   globalArrayDeclaration 
+                |   standardImport 
+                |   import 
+                |   type.struct_
+            );
 
     /* Debugging rules */
     DEBUG_RULE(program);
