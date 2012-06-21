@@ -37,6 +37,7 @@ enum class Operator : unsigned int {
 };
 
 std::string toString(Operator op);
+std::ostream& operator<< (std::ostream& stream, Operator);
 
 } //end of ast
 

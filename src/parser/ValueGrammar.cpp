@@ -11,6 +11,8 @@
 
 using namespace eddic;
 
+#define DEBUG_RULE(rule_name) rule_name .name(#rule_name); debug(rule_name);
+
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         ValueGrammar::base_type(value, "Value Grammar"),
         type(lexer, position_begin),
@@ -236,4 +238,12 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  lexer.identifier
         >>  qi::adapttokens[suffix_op];
+
+    //Configure debugging
+
+    DEBUG_RULE(assignment);
+    DEBUG_RULE(left_value);
+    DEBUG_RULE(array_value);
+    DEBUG_RULE(variable_value);
+    DEBUG_RULE(dereference_variable_value);
 }

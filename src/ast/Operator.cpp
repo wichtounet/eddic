@@ -11,6 +11,10 @@
 
 using namespace eddic;
 
+std::ostream& ast::operator<< (std::ostream& stream, ast::Operator op){
+    return stream << ast::toString(op);
+}
+
 std::string eddic::ast::toString(Operator op){
     switch(op){
         case ast::Operator::ADD:

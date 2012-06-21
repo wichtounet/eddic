@@ -20,6 +20,8 @@ struct Null {
     
 };
 
+std::ostream& operator<< (std::ostream& stream, Null);
+
 } //end of ast
 
 } //end of eddic

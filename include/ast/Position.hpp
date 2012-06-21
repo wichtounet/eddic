@@ -21,6 +21,8 @@ struct Position {
     int column;
 };
 
+std::ostream& operator<< (std::ostream& stream, Position position);
+
 } //end of ast
 
 } //end of eddic
