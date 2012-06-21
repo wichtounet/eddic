@@ -14,7 +14,6 @@
 #include "ast/Swap.hpp"
 #include "ast/Assignment.hpp"
 #include "ast/DereferenceAssignment.hpp"
-#include "ast/CompoundAssignment.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/ArrayAssignment.hpp"
 #include "ast/Return.hpp"

@@ -140,7 +140,6 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_DEREFERENCE_ASSIGNMENT() void operator()(ast::DereferenceAssignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
-#define AUTO_IGNORE_COMPOUND_ASSIGNMENT() void operator()(ast::CompoundAssignment&){}
 #define AUTO_IGNORE_EXPRESSION() void operator()(ast::Expression&){}
 #define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
 #define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
@@ -177,7 +176,6 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_DEREFERENCE_ASSIGNMENT(return_type) return_type operator()(ast::DereferenceAssignment& t){return t;}
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
-#define AUTO_RETURN_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::CompoundAssignment& t){return t;}
 #define AUTO_RETURN_EXPRESSION(return_type) return_type operator()(ast::Expression& t){return t;}
 #define AUTO_RETURN_FALSE(return_type) return_type operator()(ast::False& t){return t;}
 #define AUTO_RETURN_FLOAT(return_type) return_type operator()(ast::Float& t){return t;}

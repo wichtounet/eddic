@@ -46,7 +46,6 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(If& if_) const ;
     void operator()(VariableDeclaration& declaration) const ;
     void operator()(ArrayDeclaration&) const ;
-    void operator()(CompoundAssignment& assign) const ;
     void operator()(Assignment& assign) const ;
     void operator()(DereferenceAssignment& assign) const ;
     void operator()(Return& return_) const ;

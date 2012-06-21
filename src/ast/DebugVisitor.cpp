@@ -162,7 +162,8 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 }
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
-    std::cout << indent() << "Variable assignment " << assign.Content->variableName;
+    std::cout << indent() << "Variable assignment [operator = " << static_cast<int>(assign.Content->op) << " ]";
+    std::cout << assign.Content->variableName;
     
     for(auto& member : assign.Content->memberNames){
         std::cout << "." << member; 
@@ -182,19 +183,6 @@ void ast::DebugVisitor::operator()(ast::DereferenceAssignment& assign) const {
 
     std::cout << std::endl;
 
-    print_sub(*this, assign.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::CompoundAssignment& assign) const {
-    std::cout << indent() << "Compound assignment [operator = " << static_cast<int>(assign.Content->op) << " ]";
-    std::cout << assign.Content->variableName;
-    
-    for(auto& member : assign.Content->memberNames){
-        std::cout << "." << member; 
-    }
-
-    std::cout << std::endl;
-    
     print_sub(*this, assign.Content->value);
 }
 
