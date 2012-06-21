@@ -216,9 +216,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
 
-    left_value %=
-            variable_value
-        >>  array_value
+    left_value =
+            array_value
+        >>  variable_value
         >>  dereference_variable_value;
     
     assignment %= 
