@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "parser/EDDIGrammar.hpp"
+#include "parser/Utils.hpp"
+
 #include "lexer/adapttokens.hpp"
 #include "lexer/position.hpp"
 
@@ -148,7 +150,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     instruction %= 
-            (value.functionCall > lexer.stop)
+            (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
@@ -168,7 +170,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   swap 
         |   value.suffix_operation
         |   value.prefix_operation
-        |   value.functionCall;
+        |   value.function_call;
     
     arg %= 
             type 
@@ -200,8 +202,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  qi::position(position_begin)
         >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import | type.struct_);
 
-    //Name the rules
-    globalDeclaration.name("EDDI global variable");
-    function.name("EDDI function declaration");
-    program.name("EDDI program");
+    /* Debugging rules */
+    DEBUG_RULE(program);
+    DEBUG_RULE(function);
+    DEBUG_RULE(instruction);
 }

@@ -6,12 +6,12 @@
 //=======================================================================
 
 #include "parser/ValueGrammar.hpp"
+#include "parser/Utils.hpp"
+
 #include "lexer/adapttokens.hpp"
 #include "lexer/position.hpp"
 
 using namespace eddic;
-
-#define DEBUG_RULE(rule_name) rule_name .name(#rule_name); debug(rule_name);
 
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         ValueGrammar::base_type(value, "Value Grammar"),
@@ -135,7 +135,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   float_
         |   litteral
         |   builtin_operator
-        |   functionCall
+        |   function_call
         |   prefix_operation
         |   suffix_operation
         |   array_value
@@ -211,7 +211,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
-    functionCall %=
+    function_call %=
             qi::position(position_begin)
         >>  lexer.identifier
         >>  lexer.left_parenth
@@ -220,8 +220,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     left_value =
             array_value
-        >>  variable_value
-        >>  dereference_variable_value;
+        |   variable_value
+        |   dereference_variable_value;
     
     assignment %= 
             qi::position(position_begin)
@@ -246,4 +246,5 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
     DEBUG_RULE(dereference_variable_value);
+    DEBUG_RULE(function_call);
 }
