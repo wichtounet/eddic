@@ -64,10 +64,11 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::symbols<char, ast::Operator> logical_or_op;
     qi::symbols<char, ast::Operator> suffix_op;
     qi::symbols<char, ast::Operator> prefix_op;
-    
-    TypeGrammar type;
+    qi::symbols<char, ast::Operator> assign_op;
 
     qi::symbols<char, ast::BuiltinType> builtin_op;
+    
+    TypeGrammar type;
     
     const lexer::pos_iterator_type& position_begin;
 };

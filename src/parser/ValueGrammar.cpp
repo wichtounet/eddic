@@ -60,6 +60,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("size", ast::BuiltinType::SIZE)
         ("length", ast::BuiltinType::LENGTH)
         ;
+    
+    assign_op.add
+        ("=",  ast::Operator::ASSIGN)
+        ("+=", ast::Operator::ADD)
+        ("-=", ast::Operator::SUB)
+        ("/=", ast::Operator::DIV)
+        ("*=", ast::Operator::MUL)
+        ("%=", ast::Operator::MOD)
+        ;
 
     //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
 
@@ -215,7 +224,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                     lexer.dot
                 >>  lexer.identifier 
              )
-        >>  lexer.assign 
+        >>  qi::adapttokens[assign_op]
         >>  value;
     
     dereference_assignment %= 

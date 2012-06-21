@@ -15,6 +15,7 @@ namespace eddic {
 namespace ast {
 
 enum class Operator : unsigned int {
+    ASSIGN,
     ADD,
     SUB,
     DIV,

@@ -17,14 +17,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         type(lexer, position_begin),
         position_begin(position_begin){
     
-    compound_op.add
-        ("+=", ast::Operator::ADD)
-        ("-=", ast::Operator::SUB)
-        ("/=", ast::Operator::DIV)
-        ("*=", ast::Operator::MUL)
-        ("%=", ast::Operator::MOD)
-        ;
-    
     else_if_ %= 
             lexer.else_ 
         >>  lexer.if_ 
@@ -127,16 +119,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.integer
         >>  lexer.right_bracket;
 
-    compound_assignment %=
-            qi::position(position_begin)
-        >>  lexer.identifier
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier 
-             )
-        >>  qi::adapttokens[compound_op]
-        >>  value;
-
     return_ %=
             qi::position(position_begin)
         >>  lexer.return_
@@ -178,7 +160,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             (value.functionCall > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (value.dereference_assignment > lexer.stop)
-        |   (compound_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
@@ -196,7 +177,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     repeatable_instruction = 
             value.assignment 
         |   swap 
-        |   compound_assignment
         |   value.suffix_operation
         |   value.prefix_operation
         |   value.functionCall

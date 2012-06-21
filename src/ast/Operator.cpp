@@ -15,6 +15,8 @@ std::string eddic::ast::toString(Operator op){
     switch(op){
         case ast::Operator::ADD:
             return "+";
+        case ast::Operator::ASSIGN:
+            return "=";
         case ast::Operator::SUB:
             return "-";
         case ast::Operator::DIV:

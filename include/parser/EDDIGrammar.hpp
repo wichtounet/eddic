@@ -45,7 +45,6 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
    
     /* Assignments  */
     qi::rule<lexer::Iterator, ast::ArrayAssignment()> array_assignment;
-    qi::rule<lexer::Iterator, ast::CompoundAssignment()> compound_assignment;
 
     /* Loops */
     qi::rule<lexer::Iterator, ast::While()> while_;
@@ -62,9 +61,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     /* Imports  */
     qi::rule<lexer::Iterator, ast::StandardImport()> standardImport;
     qi::rule<lexer::Iterator, ast::Import()> import;
-    
-    qi::symbols<char, ast::Operator> compound_op;
-    
+   
     ValueGrammar value;
     TypeGrammar type;
 
