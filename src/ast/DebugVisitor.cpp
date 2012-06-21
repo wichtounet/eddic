@@ -162,26 +162,8 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 }
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
-    std::cout << indent() << "Variable assignment [operator = " << static_cast<int>(assign.Content->op) << " ]";
-    std::cout << assign.Content->variableName;
-    
-    for(auto& member : assign.Content->memberNames){
-        std::cout << "." << member; 
-    }
-
-    std::cout << std::endl;
-
-    print_sub(*this, assign.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::DereferenceAssignment& assign) const {
-    std::cout << indent() << "Dereference Variable assignment " << assign.Content->variableName;
-    
-    for(auto& member : assign.Content->memberNames){
-        std::cout << "." << member; 
-    }
-
-    std::cout << std::endl;
+    std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] ";
+    visit(*this, assign.Content->left_value);
 
     print_sub(*this, assign.Content->value);
 }
@@ -189,11 +171,6 @@ void ast::DebugVisitor::operator()(ast::DereferenceAssignment& assign) const {
 void ast::DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
     print_sub(*this, return_.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::ArrayAssignment& assign) const {
-    std::cout << indent() << "Array assignment" << std::endl; 
-    print_sub(*this, assign.Content->value);
 }
 
 void ast::DebugVisitor::operator()(ast::Litteral& litteral) const {

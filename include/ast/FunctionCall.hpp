@@ -14,6 +14,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
+#include "ast/Value.hpp"
 
 #include "SymbolTable.hpp"
 

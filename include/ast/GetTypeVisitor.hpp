@@ -24,7 +24,6 @@ namespace ast {
  */
 struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
     std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::DereferenceAssignment& assign) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::Litteral& litteral) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Integer& litteral) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& litteral) const;

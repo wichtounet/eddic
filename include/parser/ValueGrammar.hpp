@@ -12,6 +12,7 @@
 #include "lexer/SpiritLexer.hpp"
 
 #include "ast/Value.hpp"
+#include "ast/LValue.hpp"
 #include "parser/TypeGrammar.hpp"
 
 namespace qi = boost::spirit::qi;
@@ -27,6 +28,7 @@ namespace parser {
 struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
     
+    qi::rule<lexer::Iterator, ast::LValue()> left_value;
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
     qi::rule<lexer::Iterator, ast::Value()> unaryValue;
@@ -46,11 +48,10 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Litteral()> litteral;
     qi::rule<lexer::Iterator, ast::VariableValue()> variable_value;
     qi::rule<lexer::Iterator, ast::DereferenceVariableValue()> dereference_variable_value;
-    qi::rule<lexer::Iterator, ast::ArrayValue()> arrayValue;
+    qi::rule<lexer::Iterator, ast::ArrayValue()> array_value;
     qi::rule<lexer::Iterator, ast::BuiltinOperator()> builtin_operator;
     qi::rule<lexer::Iterator, ast::FunctionCall()> functionCall;
     qi::rule<lexer::Iterator, ast::Assignment()> assignment;
-    qi::rule<lexer::Iterator, ast::DereferenceAssignment()> dereference_assignment;
     qi::rule<lexer::Iterator, ast::True()> true_;
     qi::rule<lexer::Iterator, ast::False()> false_;
     qi::rule<lexer::Iterator, ast::Null()> null;

@@ -34,9 +34,6 @@ typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
 struct ASTAssignment;
 typedef Deferred<ASTAssignment> Assignment;
 
-struct ASTDereferenceAssignment;
-typedef Deferred<ASTDereferenceAssignment> DereferenceAssignment;
-
 struct VariableValue;
 struct DereferenceVariableValue;
 

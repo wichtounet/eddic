@@ -128,7 +128,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     primaryValue = 
             assignment
-        |   dereference_assignment
         |   integer_suffix
         |   integer
         |   float_
@@ -137,7 +136,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   functionCall
         |   prefix_operation
         |   suffix_operation
-        |   arrayValue
+        |   array_value
         |   variable_value
         |   dereference_variable_value
         |   null
@@ -187,7 +186,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                 >>  lexer.identifier
              );
    
-    arrayValue %=
+    array_value %=
             qi::position(position_begin)
         >>  lexer.identifier
         >>  lexer.left_bracket
@@ -216,26 +215,16 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
+
+    left_value %=
+            variable_value
+        >>  array_value
+        >>  dereference_variable_value;
     
     assignment %= 
             qi::position(position_begin)
-        >>  lexer.identifier 
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier 
-             )
+        >>  left_value
         >>  qi::adapttokens[assign_op]
-        >>  value;
-    
-    dereference_assignment %= 
-            qi::position(position_begin)
-        >>  lexer.multiplication
-        >>  lexer.identifier 
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier 
-             )
-        >>  lexer.assign 
         >>  value;
     
     prefix_operation %=

@@ -125,15 +125,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  value
         >>  lexer.stop;
     
-    array_assignment %= 
-            qi::position(position_begin)
-        >>  lexer.identifier 
-        >>  lexer.left_bracket
-        >>  value
-        >>  lexer.right_bracket
-        >>  lexer.assign 
-        >>  value;
-    
     globalDeclaration %= 
             qi::position(position_begin)
         >>  type 
@@ -159,12 +150,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     instruction %= 
             (value.functionCall > lexer.stop)
         |   (value.assignment > lexer.stop)
-        |   (value.dereference_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
-        |   (array_assignment > lexer.stop)
         |   if_
         |   for_
         |   while_
@@ -179,8 +168,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   swap 
         |   value.suffix_operation
         |   value.prefix_operation
-        |   value.functionCall
-        |   array_assignment;
+        |   value.functionCall;
     
     arg %= 
             type 

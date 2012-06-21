@@ -70,84 +70,27 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    template<typename T>
-    void check_assignment(T& assignment){
+    void operator()(ast::Assignment& assignment){
+        visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
-        
-        if(assignment.Content->memberNames.empty()){
-            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
+                    
+        auto left_value_type = visit(ast::GetTypeVisitor(), assignment.Content->left_value);
+        auto right_value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
+            
+        if (left_value_type != right_value_type){
+            throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+        }
 
-            auto valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-            if (valueType != var->type()->non_const()) {
-                throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
-            }
+        //Special rules for assignments of variales
+        if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+            auto var = (*ptr).variable();
 
             if(var->type()->is_const()){
-                throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it", assignment.Content->position);
+                throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", assignment.Content->position);
             }
 
             if(var->position().isParameter() || var->position().isParamRegister()){
-                throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName, assignment.Content->position);
-            }
-        } else {
-            auto var = (*assignment.Content->context)[assignment.Content->variableName];
-            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-            auto struct_type = symbols.get_struct(struct_name);
-
-            auto& members = assignment.Content->memberNames;
-            for(std::size_t i = 0; i < members.size(); ++i){
-                auto& member = members[i];
-
-                auto member_type = (*struct_type)[member]->type;
-
-                if(i == members.size() - 1){
-                    auto value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
-                    if (value_type != member_type) {
-                        throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
-                    }
-                } else {
-                    struct_name = member_type->type();
-                    struct_type = symbols.get_struct(struct_name);
-                }
-            }
-        }
-    }
-
-    void operator()(ast::Assignment& assignment){
-        check_assignment(assignment);
-    }
-
-    void operator()(ast::DereferenceAssignment& assignment){
-        visit(*this, assignment.Content->value);
-        
-        if(assignment.Content->memberNames.empty()){
-
-            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-            auto valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-            if (valueType != var->type()->data_type()) {
-                throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
-            }
-        } else {
-            auto var = (*assignment.Content->context)[assignment.Content->variableName];
-            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-            auto struct_type = symbols.get_struct(struct_name);
-
-            auto& members = assignment.Content->memberNames;
-            for(std::size_t i = 0; i < members.size(); ++i){
-                auto& member = members[i];
-
-                auto member_type = (*struct_type)[member]->type;
-
-                if(i == members.size() - 1){
-                    auto value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
-                    if (value_type != member_type->data_type()) {
-                        throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
-                    }
-                } else {
-                    struct_name = member_type->type();
-                    struct_type = symbols.get_struct(struct_name);
-                }
+                throw SemanticalException("Cannot change the value of the parameter " + var->name(), assignment.Content->position);
             }
         }
     }
@@ -179,23 +122,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto return_type = visit(ast::GetTypeVisitor(), return_.Content->value);
         if(return_type != return_.Content->function->returnType){
             throw SemanticalException("The return value is not of the good type in the function " + return_.Content->function->name, return_.Content->position);
-        }
-    }
-
-    void operator()(ast::ArrayAssignment& assignment){
-        visit(*this, assignment.Content->indexValue);
-        visit(*this, assignment.Content->value);
-
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-        auto value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (value_type != var->type()->data_type()) {
-            throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
-        }
-        
-        auto indexType = visit(ast::GetTypeVisitor(), assignment.Content->indexValue);
-        if (indexType != INT) {
-            throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
         }
     }
     
