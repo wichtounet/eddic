@@ -55,10 +55,10 @@ typedef boost::variant<
 
 } //end of eddic
 
+#include "ast/Assignment.hpp"
 #include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
-#include "ast/Assignment.hpp"
 #include "ast/DereferenceAssignment.hpp"
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"

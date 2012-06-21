@@ -16,7 +16,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
-#include "ast/Value.hpp"
+//#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -36,7 +36,7 @@ struct ASTAssignment {
     std::string variableName;
     std::vector<std::string> memberNames;
     Value value;
-    ast::Operator op;
+    ast::Operator op;// = ast::Operator::ASSIGN; //If not specified, it is not a compound operator
 
     mutable long references = 0;
 };

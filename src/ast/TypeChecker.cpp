@@ -116,10 +116,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::Assignment& assignment){
         check_assignment(assignment);
     }
-    
-    void operator()(ast::CompoundAssignment& assignment){
-        check_assignment(assignment);
-    }
 
     void operator()(ast::DereferenceAssignment& assignment){
         visit(*this, assignment.Content->value);

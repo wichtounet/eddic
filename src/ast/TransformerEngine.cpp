@@ -99,12 +99,10 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 };
 
 struct InstructionTransformer : public boost::static_visitor<std::vector<ast::Instruction>> {
-    result_type operator()(ast::CompoundAssignment& compound) const {
-        ast::Assignment assignment;
-
-        assignment.Content->context = compound.Content->context;
-        assignment.Content->variableName = compound.Content->variableName;
-        assignment.Content->memberNames = compound.Content->memberNames; 
+    result_type operator()(ast::Assignment& compound) const {
+        if(compound.Content->op == ast::Operator::ASSIGN){
+            return {};
+        }
 
         ast::VariableValue variable;
         variable.Content->context = compound.Content->context;
@@ -116,6 +114,10 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         composed.Content->first = variable;
         composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
 
+        ast::Assignment assignment;
+        assignment.Content->context = compound.Content->context;
+        assignment.Content->variableName = compound.Content->variableName;
+        assignment.Content->memberNames = compound.Content->memberNames; 
         assignment.Content->value = composed;
 
         return {assignment};
@@ -409,10 +411,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::DereferenceAssignment& assignment){
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
-    
-    void operator()(ast::CompoundAssignment& assignment){
-        assignment.Content->value = visit(transformer, assignment.Content->value); 
-    }
 
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
@@ -465,7 +463,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
     AUTO_IGNORE_FOREACH_LOOP()
     AUTO_IGNORE_RETURN()
-    AUTO_IGNORE_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_ARRAY_ASSIGNMENT()
     AUTO_IGNORE_PLUS()

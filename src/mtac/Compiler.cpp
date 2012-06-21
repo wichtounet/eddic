@@ -289,6 +289,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::Assignment& assignment) const {
+        ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+
         auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
         assign(function, var, assignment.Content->memberNames, assignment.Content->value);
@@ -891,11 +893,6 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
 
-        void operator()(ast::CompoundAssignment&){
-            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
-        }
-
         void operator()(ast::While&){
             //This node has been transformed into a do while loop
             ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
@@ -996,6 +993,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
+            ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+
             auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
 
             assign(function, var, assignment.Content->memberNames, assignment.Content->value);
