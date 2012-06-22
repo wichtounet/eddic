@@ -66,9 +66,7 @@ void operator()(ast::ForeachIn& foreach_){\
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ast::Assignment& assignment){\
-    visit(*this, assignment.Content->value);\
-}\
-void operator()(ast::DereferenceAssignment& assignment){\
+    visit(*this, assignment.Content->left_value);\
     visit(*this, assignment.Content->value);\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
@@ -78,12 +76,6 @@ void operator()(ast::VariableDeclaration& declaration){\
 #define AUTO_RECURSE_RETURN_VALUES()\
 void operator()(ast::Return& return_){\
     visit(*this, return_.Content->value);\
-}
-
-#define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
-void operator()(ast::ArrayAssignment& assignment){\
-    visit(*this, assignment.Content->indexValue);\
-    visit(*this, assignment.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
@@ -133,14 +125,11 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 
 /* Ignore macros  */
 
-#define AUTO_IGNORE_ARRAY_ASSIGNMENT() void operator()(ast::ArrayAssignment&){}
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
 #define AUTO_IGNORE_ARRAY_VALUE() void operator()(ast::ArrayValue&){}
 #define AUTO_IGNORE_ASSIGNMENT() void operator()(ast::Assignment&){}
-#define AUTO_IGNORE_DEREFERENCE_ASSIGNMENT() void operator()(ast::DereferenceAssignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
-#define AUTO_IGNORE_COMPOUND_ASSIGNMENT() void operator()(ast::CompoundAssignment&){}
 #define AUTO_IGNORE_EXPRESSION() void operator()(ast::Expression&){}
 #define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
 #define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
@@ -170,14 +159,11 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 
 /* auto return macros */ 
 
-#define AUTO_RETURN_ARRAY_ASSIGNMENT(return_type) return_type operator()(ast::ArrayAssignment& t){return t;}
 #define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
 #define AUTO_RETURN_ARRAY_VALUE(return_type) return_type operator()(ast::ArrayValue& t){return t;}
 #define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
-#define AUTO_RETURN_DEREFERENCE_ASSIGNMENT(return_type) return_type operator()(ast::DereferenceAssignment& t){return t;}
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
-#define AUTO_RETURN_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::CompoundAssignment& t){return t;}
 #define AUTO_RETURN_EXPRESSION(return_type) return_type operator()(ast::Expression& t){return t;}
 #define AUTO_RETURN_FALSE(return_type) return_type operator()(ast::False& t){return t;}
 #define AUTO_RETURN_FLOAT(return_type) return_type operator()(ast::Float& t){return t;}

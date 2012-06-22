@@ -20,6 +20,8 @@ struct True {
     
 };
 
+std::ostream& operator<< (std::ostream& stream, True true_);
+
 } //end of ast
 
 } //end of eddic

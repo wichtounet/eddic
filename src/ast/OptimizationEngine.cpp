@@ -246,16 +246,12 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
+            assignment.Content->left_value = to_left_value(visit(optimizer, assignment.Content->left_value));
             assignment.Content->value = visit(optimizer, assignment.Content->value); 
         }
 
         void operator()(ast::Return& return_){
             return_.Content->value = visit(optimizer, return_.Content->value); 
-        }
-
-        void operator()(ast::ArrayAssignment& assignment){
-            assignment.Content->value = visit(optimizer, assignment.Content->value); 
-            assignment.Content->indexValue = visit(optimizer, assignment.Content->indexValue); 
         }
 
         void operator()(ast::VariableDeclaration& declaration){

@@ -77,12 +77,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
         return assignment;
     }
-    
-    ast::Value operator()(ast::DereferenceAssignment& assignment){
-        assignment.Content->value = visit(*this, assignment.Content->value);
-
-        return assignment;
-    }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
         auto start = builtin.Content->values.begin();
@@ -99,23 +93,18 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 };
 
 struct InstructionTransformer : public boost::static_visitor<std::vector<ast::Instruction>> {
-    result_type operator()(ast::CompoundAssignment& compound) const {
-        ast::Assignment assignment;
-
-        assignment.Content->context = compound.Content->context;
-        assignment.Content->variableName = compound.Content->variableName;
-        assignment.Content->memberNames = compound.Content->memberNames; 
-
-        ast::VariableValue variable;
-        variable.Content->context = compound.Content->context;
-        variable.Content->variableName = compound.Content->variableName;
-        variable.Content->memberNames = compound.Content->memberNames;
-        variable.Content->var = compound.Content->context->getVariable(compound.Content->variableName);
+    result_type operator()(ast::Assignment& compound) const {
+        if(compound.Content->op == ast::Operator::ASSIGN){
+            return {};
+        }
 
         ast::Expression composed;
-        composed.Content->first = variable;
+        composed.Content->first = compound.Content->left_value;
         composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
 
+        ast::Assignment assignment;
+        assignment.Content->context = compound.Content->context;
+        assignment.Content->left_value = compound.Content->left_value;
         assignment.Content->value = composed;
 
         return {assignment};
@@ -150,10 +139,15 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
         if_.Content->condition = condition;
+
+        ast::VariableValue left_value;
+        left_value.Content->context = foreach.Content->context;
+        left_value.Content->variableName = foreach.Content->variableName;
+        left_value.Content->var = foreach.Content->context->getVariable(foreach.Content->variableName);
         
         ast::Assignment start_assign;
         start_assign.Content->context = foreach.Content->context;
-        start_assign.Content->variableName = foreach.Content->variableName;
+        start_assign.Content->left_value = left_value;
         start_assign.Content->value = from_value;
 
         if_.Content->instructions.push_back(start_assign);
@@ -181,7 +175,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         
         ast::Assignment repeat_assign;
         repeat_assign.Content->context = foreach.Content->context;
-        repeat_assign.Content->variableName = foreach.Content->variableName;
+        repeat_assign.Content->left_value = left_value;
         repeat_assign.Content->value = addition;
         
         do_while.Content->instructions.push_back(repeat_assign);
@@ -202,9 +196,14 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         ast::Integer init_value;
         init_value.value = 0;
         
+        ast::VariableValue left_value;
+        left_value.Content->context = foreach.Content->context;
+        left_value.Content->variableName = iterVar->name();
+        left_value.Content->var = foreach.Content->context->getVariable(iterVar->name());
+        
         ast::Assignment init_assign;
         init_assign.Content->context = foreach.Content->context;
-        init_assign.Content->variableName = iterVar->name();
+        init_assign.Content->left_value = left_value;
         init_assign.Content->value = init_value;
 
         instructions.push_back(init_assign);
@@ -258,7 +257,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         
         ast::Assignment repeat_assign;
         repeat_assign.Content->context = foreach.Content->context;
-        repeat_assign.Content->variableName = iterVar->name();
+        repeat_assign.Content->left_value = left_value;
         repeat_assign.Content->value = addition;
 
         do_while.Content->instructions.push_back(repeat_assign);
@@ -403,24 +402,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment){
-        assignment.Content->value = visit(transformer, assignment.Content->value); 
-    }
-    
-    void operator()(ast::DereferenceAssignment& assignment){
-        assignment.Content->value = visit(transformer, assignment.Content->value); 
-    }
-    
-    void operator()(ast::CompoundAssignment& assignment){
+        assignment.Content->left_value = ast::to_left_value(visit(transformer, assignment.Content->left_value)); 
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
-    }
-
-    void operator()(ast::ArrayAssignment& assignment){
-        assignment.Content->value = visit(transformer, assignment.Content->value); 
-        assignment.Content->indexValue = visit(transformer, assignment.Content->indexValue); 
     }
 
     void operator()(ast::VariableDeclaration& declaration){
@@ -443,7 +430,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
     AUTO_IGNORE_ASSIGNMENT()
-    AUTO_IGNORE_DEREFERENCE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()
     AUTO_IGNORE_VARIABLE_DECLARATION()
@@ -465,9 +451,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
     AUTO_IGNORE_FOREACH_LOOP()
     AUTO_IGNORE_RETURN()
-    AUTO_IGNORE_COMPOUND_ASSIGNMENT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_ARRAY_ASSIGNMENT()
     AUTO_IGNORE_PLUS()
     AUTO_IGNORE_MINUS()
     AUTO_IGNORE_PREFIX_OPERATION()

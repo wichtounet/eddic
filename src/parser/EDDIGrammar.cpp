@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "parser/EDDIGrammar.hpp"
+#include "parser/Utils.hpp"
+
 #include "lexer/adapttokens.hpp"
 #include "lexer/position.hpp"
 
@@ -16,14 +18,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         value(lexer, position_begin), 
         type(lexer, position_begin),
         position_begin(position_begin){
-    
-    compound_op.add
-        ("+=", ast::Operator::ADD)
-        ("-=", ast::Operator::SUB)
-        ("/=", ast::Operator::DIV)
-        ("*=", ast::Operator::MUL)
-        ("%=", ast::Operator::MOD)
-        ;
     
     else_if_ %= 
             lexer.else_ 
@@ -127,30 +121,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.integer
         >>  lexer.right_bracket;
 
-    compound_assignment %=
-            qi::position(position_begin)
-        >>  lexer.identifier
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier 
-             )
-        >>  qi::adapttokens[compound_op]
-        >>  value;
-
     return_ %=
             qi::position(position_begin)
         >>  lexer.return_
         >>  value
         >>  lexer.stop;
-    
-    array_assignment %= 
-            qi::position(position_begin)
-        >>  lexer.identifier 
-        >>  lexer.left_bracket
-        >>  value
-        >>  lexer.right_bracket
-        >>  lexer.assign 
-        >>  value;
     
     globalDeclaration %= 
             qi::position(position_begin)
@@ -175,15 +150,12 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     instruction %= 
-            (value.functionCall > lexer.stop)
+            (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
-        |   (value.dereference_assignment > lexer.stop)
-        |   (compound_assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
-        |   (array_assignment > lexer.stop)
         |   if_
         |   for_
         |   while_
@@ -196,11 +168,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     repeatable_instruction = 
             value.assignment 
         |   swap 
-        |   compound_assignment
         |   value.suffix_operation
         |   value.prefix_operation
-        |   value.functionCall
-        |   array_assignment;
+        |   value.function_call;
     
     arg %= 
             type 
@@ -230,10 +200,17 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     program %=
             qi::eps 
         >>  qi::position(position_begin)
-        >>  *(function | globalDeclaration | globalArrayDeclaration | standardImport | import | type.struct_);
+        >>  *(
+                    function 
+                |   globalDeclaration 
+                |   globalArrayDeclaration 
+                |   standardImport 
+                |   import 
+                |   type.struct_
+            );
 
-    //Name the rules
-    globalDeclaration.name("EDDI global variable");
-    function.name("EDDI function declaration");
-    program.name("EDDI program");
+    /* Debugging rules */
+    DEBUG_RULE(program);
+    DEBUG_RULE(function);
+    DEBUG_RULE(instruction);
 }

@@ -5,22 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_NULL_H
-#define AST_NULL_H
+#ifndef AST_LVALUE_H
+#define AST_LVALUE_H
+
+#include <boost/variant/variant.hpp>
+
+#include "ast/ArrayValue.hpp"
+#include "ast/VariableValue.hpp"
+#include "ast/DereferenceVariableValue.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-/*!
- * \class Null
- * \brief Represent a null pointer. 
- */
-struct Null {
-    
-};
+typedef boost::variant<
+            VariableValue, 
+            ArrayValue,
+            DereferenceVariableValue
+        > LValue;
 
-std::ostream& operator<< (std::ostream& stream, Null);
+ast::LValue to_left_value(ast::Value left_value);
 
 } //end of ast
 

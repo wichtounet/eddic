@@ -32,8 +32,7 @@ struct ASTIf {
     std::vector<ElseIf> elseIfs;
     boost::optional<Else> else_;
 
-    mutable long references;
-    ASTIf() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

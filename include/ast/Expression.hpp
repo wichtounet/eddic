@@ -39,8 +39,7 @@ struct ASTExpression {
     Value first;
     Operations operations;
 
-    mutable long references;
-    ASTExpression() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

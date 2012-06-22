@@ -5,25 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_NULL_H
-#define AST_NULL_H
+#ifndef PARSER_UTILS_H
+#define PARSER_UTILS_H
 
-namespace eddic {
-
-namespace ast {
-
-/*!
- * \class Null
- * \brief Represent a null pointer. 
- */
-struct Null {
-    
-};
-
-std::ostream& operator<< (std::ostream& stream, Null);
-
-} //end of ast
-
-} //end of eddic
+#define RULE_DEBUGGING false
+#define DEBUG_RULE(rule_name) if(RULE_DEBUGGING){rule_name .name(#rule_name); debug(rule_name);}
 
 #endif

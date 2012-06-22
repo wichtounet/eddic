@@ -120,8 +120,7 @@ int getStringOffset(std::shared_ptr<Variable> variable){
     return variable->position().isGlobal() ? INT->size() : -INT->size();
 }
 
-void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value);
-void dereference_assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value);
+void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
     
 template<typename Operation>
 void performPrefixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
@@ -289,19 +288,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::Assignment& assignment) const {
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
+        ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
-        assign(function, var, assignment.Content->memberNames, assignment.Content->value);
+        assign(function, assignment);
 
-        return {var};
-    }
-    
-    result_type operator()(ast::DereferenceAssignment& assignment) const {
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-        dereference_assign(function, var, assignment.Content->memberNames, assignment.Content->value);
-
-        return {var};
+        return visit(*this, assignment.Content->left_value);
     }
 
     result_type operator()(ast::VariableValue& value) const {
@@ -687,27 +678,41 @@ struct DereferenceAssign : public AbstractVisitor {
     }
 };
 
-void assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value){
-    if(memberNames.empty()){
-        visit(AssignValueToVariable(function, variable), value);
-    } else {
-        unsigned int offset = 0;
-        std::shared_ptr<const Type> member_type;
-        boost::tie(offset, member_type) = compute_member(variable, memberNames);
+void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
+    if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+        auto left = *ptr;
+        
+        auto variable = left.Content->context->getVariable(left.Content->variableName);
 
-        visit(AssignValueToVariableWithOffset(function, variable, offset), value);
-    }
-}
+        if(left.Content->memberNames.empty()){
+            visit(AssignValueToVariable(function, variable), assignment.Content->value);
+        } else {
+            unsigned int offset = 0;
+            std::shared_ptr<const Type> member_type;
+            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
 
-void dereference_assign(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable, const std::vector<std::string>& memberNames, ast::Value& value){
-    if(memberNames.empty()){
-        visit(DereferenceAssign(function, variable, 0), value);
-    } else {
-        unsigned int offset = 0;
-        std::shared_ptr<const Type> member_type;
-        boost::tie(offset, member_type) = compute_member(variable, memberNames);
+            visit(AssignValueToVariableWithOffset(function, variable, offset), assignment.Content->value);
+        }
+    } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
+        auto left = *ptr;
 
-        visit(DereferenceAssign(function, variable, offset), value);
+        auto var = left.Content->context->getVariable(left.Content->arrayName);
+
+        visit(AssignValueToArray(function, var, left.Content->indexValue), assignment.Content->value);
+    } else if(auto* ptr = boost::get<ast::DereferenceVariableValue>(&assignment.Content->left_value)){
+        auto left = *ptr;
+        
+        auto variable = left.Content->context->getVariable(left.Content->variableName);
+
+        if(left.Content->memberNames.empty()){
+            visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
+        } else {
+            unsigned int offset = 0;
+            std::shared_ptr<const Type> member_type;
+            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
+
+            visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
+        }
     }
 }
 
@@ -891,11 +896,6 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
 
-        void operator()(ast::CompoundAssignment&){
-            //There should be no more compound assignment there as they are transformed before into Assignement with composed value
-            ASSERT_PATH_NOT_TAKEN("Compound assignment should be transformed into Assignment");
-        }
-
         void operator()(ast::While&){
             //This node has been transformed into a do while loop
             ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
@@ -996,21 +996,9 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
+            ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
-            assign(function, var, assignment.Content->memberNames, assignment.Content->value);
-        }
-        
-        void operator()(ast::DereferenceAssignment& assignment){
-            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-            dereference_assign(function, var, assignment.Content->memberNames, assignment.Content->value);
-        }
-        
-        void operator()(ast::ArrayAssignment& assignment){
-            auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-            visit(AssignValueToArray(function, var, assignment.Content->indexValue), assignment.Content->value);
+            assign(function, assignment);
         }
 
         void operator()(ast::VariableDeclaration& declaration){

@@ -110,70 +110,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    template<typename A>
-    void annotateAssignment(A& assignment){
-        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
-            throw SemanticalException("Variable " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
-        }
-
-        visit(*this, assignment.Content->value);
-
-        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
-    }
-
-    template<typename A>
-    void verify_struct_assignment(A& assignment){
-        annotateAssignment(assignment);
-
-        auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-        auto struct_type = symbols.get_struct(struct_name);
-        
-        //Add a reference to the struct
-        struct_type->add_reference();
-
-        auto& members = assignment.Content->memberNames;
-        for(std::size_t i = 0; i < members.size(); ++i){
-            auto& member = members[i];
-
-            if(!struct_type->member_exists(member)){ 
-                throw SemanticalException("The struct " + struct_name + " has no member named " + member, assignment.Content->position);
-            }
-
-            //Add a reference to the member
-            (*struct_type)[member]->add_reference();
-
-            //If it is not the last member
-            if(i != members.size() - 1){
-                //The next member will be a member of the current member type
-                struct_type = symbols.get_struct((*struct_type)[member]->type->type());
-                struct_name = struct_type->name;
-            }
-        }
-    }
-
     void operator()(ast::Assignment& assignment){
-        if(assignment.Content->memberNames.empty()){
-            annotateAssignment(assignment);
-        } else {
-            verify_struct_assignment(assignment);
-        }
-    }
-    
-    void operator()(ast::DereferenceAssignment& assignment){
-        if(assignment.Content->memberNames.empty()){
-            annotateAssignment(assignment);
-        } else {
-            verify_struct_assignment(assignment);
-        }
-    }
-    
-    void operator()(ast::CompoundAssignment& assignment){
-        if(assignment.Content->memberNames.empty()){
-            annotateAssignment(assignment);
-        } else {
-            verify_struct_assignment(assignment);
-        }
+        visit(*this, assignment.Content->left_value);
+        visit(*this, assignment.Content->value);
     }
 
     template<typename Operation>
@@ -192,17 +131,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::PrefixOperation& operation){
         annotateSuffixOrPrefixOperation(operation);
-    }
-
-    void operator()(ast::ArrayAssignment& assignment){
-        if (!assignment.Content->context->exists(assignment.Content->variableName)) {
-            throw SemanticalException("Array " + assignment.Content->variableName + " has not  been declared", assignment.Content->position);
-        }
-
-        visit(*this, assignment.Content->indexValue);
-        visit(*this, assignment.Content->value);
-
-        assignment.Content->context->getVariable(assignment.Content->variableName)->addReference();
     }
     
     void operator()(ast::VariableDeclaration& declaration){

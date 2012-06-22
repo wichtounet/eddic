@@ -29,8 +29,7 @@ struct ASTDoWhile {
     Value condition;
     std::vector<Instruction> instructions;
 
-    mutable long references;
-    ASTDoWhile() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

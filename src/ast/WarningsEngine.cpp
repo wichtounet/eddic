@@ -89,7 +89,6 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_RETURN_VALUES()
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
-        AUTO_RECURSE_ARRAY_ASSIGNMENT()
 
         /* The following cannot throw a warning  */
         AUTO_IGNORE_FALSE()
@@ -101,7 +100,6 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_IGNORE_INTEGER_SUFFIX()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
-        AUTO_IGNORE_COMPOUND_ASSIGNMENT()
         AUTO_IGNORE_SWAP()
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
