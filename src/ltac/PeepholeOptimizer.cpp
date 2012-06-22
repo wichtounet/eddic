@@ -158,6 +158,15 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                     i2->arg1.reset();
                     i2->op = ltac::Operator::NOP;
                 }
+
+                if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
+                    if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg1)){
+                        if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
+                            i1->op = ltac::Operator::NOP;
+                            std::cout << "cool" << std::endl;
+                        }
+                    }
+                }
             }
         }
     }
