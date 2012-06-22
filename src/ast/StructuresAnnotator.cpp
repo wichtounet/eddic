@@ -31,7 +31,7 @@ struct StructuresCollector : public boost::static_visitor<> {
         std::vector<std::string> names;
 
         for(auto& member : struct_.Content->members){
-            if(std::find(names.begin(), names.end(), member.Content->name) == names.end()){
+            if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
                 throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
             }
 
