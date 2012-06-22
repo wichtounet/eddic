@@ -47,11 +47,13 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("help,h", "Generate this help message")
                 ("assembly,S", "Generate only the assembly")
                 ("keep,k", "Keep the assembly file")
-                ("quiet,q", "Do not print anything")
-                ("verbose,v", "Make the compiler verbose")
                 ("version", "Print the version of eddic")
                 ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
-                ("dev,d", "Activate development mode")
+                
+                ("quiet,q", "Do not print anything")
+                ("verbose,v", "Make the compiler verbose")
+                ("dev,d", "Activate development mode (very verbose)")
+                ("perfs", "Display performance information")
 
                 ("ast", "Print the Abstract Syntax Tree representation of the source")
                 ("mtac", "Print the medium-level Three Address Code representation of the source")
@@ -149,5 +151,5 @@ void eddic::printHelp(){
 }
 
 void eddic::printVersion(){
-    std::cout << "eddic version 1.0.0" << std::endl;
+    std::cout << "eddic version 1.0.1" << std::endl;
 }

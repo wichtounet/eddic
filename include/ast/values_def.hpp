@@ -20,6 +20,7 @@ struct Float;
 struct Litteral;
 struct True;
 struct False;
+struct Null;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
@@ -33,8 +34,8 @@ typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
 struct ASTAssignment;
 typedef Deferred<ASTAssignment> Assignment;
 
-struct ASTVariableValue;
-typedef Deferred<ASTVariableValue> VariableValue;
+struct VariableValue;
+struct DereferenceVariableValue;
 
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
@@ -47,9 +48,6 @@ typedef Deferred<ASTPlus> Plus;
 
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
-
-struct ASTStructValue;
-typedef Deferred<ASTStructValue> StructValue;
 
 struct ASTSuffixOperation;
 typedef Deferred<ASTSuffixOperation> SuffixOperation;

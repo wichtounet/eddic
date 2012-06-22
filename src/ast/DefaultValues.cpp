@@ -10,8 +10,9 @@
 #include "ast/DefaultValues.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
-#include "Types.hpp"
+#include "Type.hpp"
 #include "VisitorUtils.hpp"
 
 using namespace eddic;
@@ -28,31 +29,31 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            if(is_standard_type(declaration.Content->variableType)){
-                Type type = newType(declaration.Content->variableType);
+            auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
-                assert(type == BaseType::INT || type == BaseType::STRING);
+            if(type->is_standard_type()){
+                if(type == INT){
+                    ast::Integer integer;
+                    integer.value = 0;
 
-                switch(type.base()){
-                    case BaseType::INT:{
-                        ast::Integer integer;
-                        integer.value = 0;
+                    declaration.Content->value = integer;
+                } else if(type == STRING){
+                    ast::Litteral litteral;
+                    litteral.value = "\"\"";
+                    litteral.label = "S3";
 
-                        declaration.Content->value = integer;
+                    declaration.Content->value = litteral;
+                } else if(type == FLOAT){
+                    ast::Float float_;
+                    float_.value = 0.0;
 
-                        break;
-                    }
-                    case BaseType::STRING:{
-                        ast::Litteral litteral;
-                        litteral.value = "\"\"";
-                        litteral.label = "S3";
+                    declaration.Content->value = float_;
+                } else if(type == BOOL){
+                    ast::False false_;
 
-                        declaration.Content->value = litteral;
-
-                        break;
-                    }
-                    default:
-                        break;
+                    declaration.Content->value = false_;
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
                 }
             }
         }

@@ -10,6 +10,7 @@
 #include "FunctionContext.hpp"
 #include "Position.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -17,12 +18,12 @@ using namespace eddic;
 
 BlockContext::BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext) : Context(parent), m_functionContext(functionContext){} 
 
-std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
     return variables[variable] = m_functionContext->newVariable(variable, type);
 }
 
-std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, Type type, ast::Value& value){
-    assert(type.isConst());
+std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
+    assert(type->is_const());
 
     Position position(PositionType::CONST);
 

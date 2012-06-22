@@ -66,6 +66,7 @@ void operator()(ast::ForeachIn& foreach_){\
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ast::Assignment& assignment){\
+    visit(*this, assignment.Content->left_value);\
     visit(*this, assignment.Content->value);\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
@@ -75,17 +76,6 @@ void operator()(ast::VariableDeclaration& declaration){\
 #define AUTO_RECURSE_RETURN_VALUES()\
 void operator()(ast::Return& return_){\
     visit(*this, return_.Content->value);\
-}
-
-#define AUTO_RECURSE_ARRAY_ASSIGNMENT()\
-void operator()(ast::ArrayAssignment& assignment){\
-    visit(*this, assignment.Content->indexValue);\
-    visit(*this, assignment.Content->value);\
-}
-
-#define AUTO_RECURSE_STRUCT_ASSIGNMENT()\
-void operator()(ast::StructAssignment& assignment){\
-    visit(*this, assignment.Content->value);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
@@ -135,13 +125,11 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 
 /* Ignore macros  */
 
-#define AUTO_IGNORE_ARRAY_ASSIGNMENT() void operator()(ast::ArrayAssignment&){}
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
 #define AUTO_IGNORE_ARRAY_VALUE() void operator()(ast::ArrayValue&){}
 #define AUTO_IGNORE_ASSIGNMENT() void operator()(ast::Assignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
-#define AUTO_IGNORE_COMPOUND_ASSIGNMENT() void operator()(ast::CompoundAssignment&){}
 #define AUTO_IGNORE_EXPRESSION() void operator()(ast::Expression&){}
 #define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
 #define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
@@ -162,23 +150,20 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::SuffixOperation&){}
 #define AUTO_IGNORE_STANDARD_IMPORT() void operator()(ast::StandardImport&){}
 #define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
-#define AUTO_IGNORE_STRUCT_ASSIGNMENT() void operator()(ast::StructAssignment&){}
-#define AUTO_IGNORE_STRUCT_COMPOUND_ASSIGNMENT() void operator()(ast::StructCompoundAssignment&){}
-#define AUTO_IGNORE_STRUCT_VALUE() void operator()(ast::StructValue&){}
 #define AUTO_IGNORE_SWAP() void operator()(ast::Swap&){}
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
+#define AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE() void operator()(ast::DereferenceVariableValue&){}
 
 /* auto return macros */ 
 
-#define AUTO_RETURN_ARRAY_ASSIGNMENT(return_type) return_type operator()(ast::ArrayAssignment& t){return t;}
 #define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
 #define AUTO_RETURN_ARRAY_VALUE(return_type) return_type operator()(ast::ArrayValue& t){return t;}
 #define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
-#define AUTO_RETURN_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::CompoundAssignment& t){return t;}
 #define AUTO_RETURN_EXPRESSION(return_type) return_type operator()(ast::Expression& t){return t;}
 #define AUTO_RETURN_FALSE(return_type) return_type operator()(ast::False& t){return t;}
 #define AUTO_RETURN_FLOAT(return_type) return_type operator()(ast::Float& t){return t;}
@@ -199,13 +184,12 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::SuffixOperation& t){return t;}
 #define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return t;}
 #define AUTO_RETURN_STRUCT(return_type) return_type operator()(ast::Struct& t){return t;}
-#define AUTO_RETURN_STRUCT_ASSIGNMENT(return_type) return_type operator()(ast::StructAssignment& t){return t;}
-#define AUTO_RETURN_STRUCT_COMPOUND_ASSIGNMENT(return_type) return_type operator()(ast::StructCompoundAssignment& t){return t;}
-#define AUTO_RETURN_STRUCT_VALUE(return_type) return_type operator()(ast::StructValue& t){return t;}
 #define AUTO_RETURN_SWAP(return_type) return_type operator()(ast::Swap& t){return t;}
 #define AUTO_RETURN_TRUE(return_type) return_type operator()(ast::True& t){return t;}
+#define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
+#define AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(return_type) return_type operator()(ast::DereferenceVariableValue& t){return t;}
 
 //The following macros should be used very sparsely as they are increasing the
 //difficulty to add new AST Node in the right way

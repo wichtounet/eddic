@@ -5,25 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "Variable.hpp"
+
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/OptimizerUtils.hpp"
+#include "mtac/Utils.hpp"
 
 #include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
 #include "mtac/Param.hpp"
 
-#include "Variable.hpp"
-
 using namespace eddic;
 
-static void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>> used){
+static void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>>& used){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
         used.insert(*ptr);
     }
 }
 
-static void collect_optional(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>> used){
+static void collect_optional(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>>& used){
     if(arg){
         collect(&*arg, used);
     }
@@ -34,8 +35,7 @@ void mtac::RemoveAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple)
         collect_optional(quadruple->arg1, used);
         collect_optional(quadruple->arg2, used);
     } else {
-        //These operators are not erasing result
-        if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::ARRAY_ASSIGN){
+        if(!mtac::erase_result(quadruple->op)){
             return;
         }
 

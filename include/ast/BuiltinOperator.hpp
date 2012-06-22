@@ -8,12 +8,14 @@
 #ifndef AST_BUILTIN_OPERATOR_H
 #define AST_BUILTIN_OPERATOR_H
 
+#include <vector>
 #include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -23,6 +25,8 @@ enum class BuiltinType : unsigned int {
     SIZE,
     LENGTH
 };
+
+std::ostream& operator<< (std::ostream& stream, BuiltinType type);
 
 /*!
  * \class ASTFunctionCall

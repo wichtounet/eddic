@@ -19,6 +19,7 @@ namespace ast {
  * \brief A simple (non-array) type in the AST.  
  */
 struct SimpleType {
+    bool const_;
     std::string type;
 };
 
@@ -29,6 +30,7 @@ struct SimpleType {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SimpleType, 
+    (bool, const_)
     (std::string, type)
 )
 

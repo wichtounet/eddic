@@ -6,23 +6,21 @@
 //=======================================================================
 
 #include "assert.hpp"
-#include "Types.hpp"
 #include "SymbolTable.hpp"
+#include "Type.hpp"
 
 #include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 
-eddic::Type ast::TypeTransformer::operator()(ast::SimpleType& type) const {
-    if(is_standard_type(type.type)){
-        return newSimpleType(type.type);
-    } else {
-        ASSERT(symbols.struct_exists(type.type), "The struct does not exists");
-
-        return new_custom_type(type.type);
-    }
+std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::SimpleType& type) const {
+    return new_type(type.type, type.const_);
 }
 
-eddic::Type ast::TypeTransformer::operator()(ast::ArrayType& type) const {
-    return newArrayType(type.type);
+std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::ArrayType& type) const {
+    return new_array_type(new_type(type.type));
+}
+
+std::shared_ptr<const Type> ast::TypeTransformer::operator()(ast::PointerType& type) const {
+    return new_pointer_type(new_type(type.type));
 }

@@ -9,6 +9,7 @@
 #include "RegisterAllocation.hpp"
 #include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -30,10 +31,10 @@ void eddic::allocateParams(){
 
                 Position oldPosition = param->position();
 
-                if(type == BaseType::INT && position <= descriptor->numberOfIntParamRegisters()){
+                if(type == INT && position <= descriptor->numberOfIntParamRegisters()){
                     Position paramPosition(PositionType::PARAM_REGISTER, position);
                     param->setPosition(paramPosition);
-                } else if(type == BaseType::FLOAT && position <= descriptor->numberOfFloatParamRegisters()){
+                } else if(type == FLOAT && position <= descriptor->numberOfFloatParamRegisters()){
                     Position paramPosition(PositionType::PARAM_REGISTER, position);
                     param->setPosition(paramPosition);
                 }

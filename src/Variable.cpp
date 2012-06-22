@@ -5,21 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
-
 #include "Variable.hpp"
 #include "Utils.hpp"
 
 using namespace eddic;
 
-Variable::Variable(const std::string& name, Type type, Position position) : m_name(name), m_type(type), m_position(position) {}
-Variable::Variable(const std::string& name, Type type, Position position, Val value) : m_name(name), m_type(type), m_position(position), v_value(value) {}
+Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position) : m_name(name), m_type(type), m_position(position) {}
+Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value) : m_name(name), m_type(type), m_position(position), v_value(value) {}
 
 std::string Variable::name() const  {
     return m_name;
 }
 
-Type Variable::type() const {
+std::shared_ptr<const Type> Variable::type() const {
     return m_type;
 }
 

@@ -9,6 +9,8 @@
 #define AST_VARIABLE_VALUE_H
 
 #include <memory>
+#include <vector>
+#include <string>
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
@@ -27,20 +29,28 @@ namespace ast {
  */
 struct ASTVariableValue {
     std::shared_ptr<Context> context;
+    std::shared_ptr<Variable> var;
 
     Position position;
     std::string variableName;
-    std::shared_ptr<Variable> var;
+    std::vector<std::string> memberNames;
 
-    mutable long references;
-    ASTVariableValue() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
- * \typedef VariableValue
+ * \struct VariableValue
  * \brief The AST node for a variable value.
 */
-typedef Deferred<ASTVariableValue> VariableValue;
+struct VariableValue : public Deferred<ASTVariableValue> {
+    std::shared_ptr<Variable> variable() const {
+        return Content->var;
+    }
+    
+    std::shared_ptr<Context> context() const {
+        return Content->context;
+    }
+};
 
 } //end of ast
 
@@ -51,6 +61,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableValue, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
+    (std::vector<std::string>, Content->memberNames)
 )
 
 #endif

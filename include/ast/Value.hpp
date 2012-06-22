@@ -17,9 +17,10 @@
 #include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
-#include "ast/StructValue.hpp"
+#include "ast/DereferenceVariableValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
+#include "ast/Null.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
@@ -33,10 +34,11 @@ typedef boost::variant<
             Float,
             Litteral, 
             VariableValue,
-            StructValue,
+            DereferenceVariableValue,
             Expression,
             Minus,
             Plus,
+            Null,
             True,
             False,
             ArrayValue,
@@ -52,10 +54,10 @@ typedef boost::variant<
 
 } //end of eddic
 
+#include "ast/Assignment.hpp"
 #include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"
-#include "ast/Assignment.hpp"
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"
 #include "ast/Plus.hpp"

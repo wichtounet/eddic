@@ -36,6 +36,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
+        AUTO_IGNORE_NULL()
         AUTO_IGNORE_LITERAL()
         AUTO_IGNORE_FLOAT()
         AUTO_IGNORE_INTEGER()
@@ -156,33 +157,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Assignment& assignment){
-            assignment.Content->context = currentContext;
-
-            visit(*this, assignment.Content->value);
-        }
-        
-        void operator()(ast::CompoundAssignment& assignment){
-            assignment.Content->context = currentContext;
-
-            visit(*this, assignment.Content->value);
-        }
-        
-        void operator()(ast::StructCompoundAssignment& assignment){
-            assignment.Content->context = currentContext;
-
-            visit(*this, assignment.Content->value);
-        }
-        
-        void operator()(ast::ArrayAssignment& assignment){
-            assignment.Content->context = currentContext;
-
-            visit(*this, assignment.Content->indexValue);
-            visit(*this, assignment.Content->value);
-        }
-        
-        void operator()(ast::StructAssignment& assignment){
-            assignment.Content->context = currentContext;
-
+            visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
         }
         
@@ -199,8 +174,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Expression& value){
-            value.Content->context = currentContext;
-
             visit(*this, value.Content->first);
             for_each(value.Content->operations.begin(), value.Content->operations.end(), 
                     [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
@@ -210,8 +183,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
             variable.Content->context = currentContext;
         }
         
-        void operator()(ast::StructValue& struct_){
-            struct_.Content->context = currentContext;
+        void operator()(ast::DereferenceVariableValue& variable){
+            variable.Content->context = currentContext;
         }
         
         void operator()(ast::ArrayValue& array){

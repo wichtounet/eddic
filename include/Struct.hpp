@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "Types.hpp"
-
 namespace eddic {
+
+class Type;
 
 /*!
  * \class Member
@@ -22,9 +22,9 @@ namespace eddic {
  */
 struct Member {
     std::string name;
-    Type type;
+    std::shared_ptr<const Type> type;
 
-    Member(const std::string& n, Type t);
+    Member(const std::string& n, std::shared_ptr<const Type> t);
 
     /*!
      * Increment the reference counter of the member. 

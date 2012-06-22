@@ -8,11 +8,6 @@
 #ifndef GLOBAL_CONTEXT_H
 #define GLOBAL_CONTEXT_H
 
-#include <string>
-#include <memory>
-
-#include "Types.hpp"
-
 #include "Context.hpp"
 
 namespace eddic {
@@ -30,8 +25,8 @@ class GlobalContext : public Context {
         
         Variables getVariables();
         
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type);
-        std::shared_ptr<Variable> addVariable(const std::string& a, Type type, ast::Value& value);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
+        std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
 };
 
 } //end of eddic

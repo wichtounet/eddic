@@ -31,4 +31,5 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayType, 
     (std::string, type)
 )
+
 #endif

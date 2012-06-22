@@ -1,10 +1,12 @@
-# EDDI Compiler 1.0.0 #
+# EDDI Compiler 1.0.1 #
 
 The compiler of the EDDI programming language. 
 
+This compiler outputs code for Intel X86 platform. It supports both 32 and 64 bits architecture. Only Linux is supported for now. 
+
 ## Building ##
 
-A compiler supporting the new standard, C++11, is necessary to build the compiler. The compilation is known to be working on GCC 4.7 and greater. It has not been tested on CLang or on Windows. You need Boost 1.47.0 installed on your computer to build this project. 
+A compiler supporting the new C++ standard, C++11, is necessary to build the compiler. The compilation is known to be working on GCC 4.7 and greater. It has not been tested on CLang or on Windows. You need Boost 1.47.0 or superior installed on your computer to build this project. 
 
 You juste have to use CMake to build the compiler : 
 

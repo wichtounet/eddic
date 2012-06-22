@@ -12,12 +12,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
-#include "ast/Assignment.hpp"
-#include "ast/CompoundAssignment.hpp"
-#include "ast/StructCompoundAssignment.hpp"
 #include "ast/FunctionCall.hpp"
-#include "ast/ArrayAssignment.hpp"
-#include "ast/StructAssignment.hpp"
 #include "ast/Return.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
@@ -52,10 +47,6 @@ typedef boost::variant<
             VariableDeclaration,
             ArrayDeclaration,
             Assignment, 
-            CompoundAssignment,
-            StructCompoundAssignment,
-            ArrayAssignment, 
-            StructAssignment,
             Return,
             If, 
             While, 
@@ -71,6 +62,7 @@ typedef boost::variant<
 
 } //end of eddic
 
+#include "ast/Assignment.hpp"
 #include "ast/If.hpp"
 #include "ast/While.hpp"
 #include "ast/DoWhile.hpp"

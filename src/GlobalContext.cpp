@@ -9,6 +9,7 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -21,26 +22,26 @@ std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVar
 GlobalContext::GlobalContext() : Context(NULL) {
     Val zero = 0;
     
-    variables["eddi_remaining"] = std::make_shared<Variable>("eddi_remaining", newType("int"), Position(PositionType::GLOBAL, "eddi_remaining"), zero);
+    variables["eddi_remaining"] = std::make_shared<Variable>("eddi_remaining", new_type("int"), Position(PositionType::GLOBAL, "eddi_remaining"), zero);
     variables["eddi_remaining"]->addReference(); //In order to not display a warning
 
-    variables["eddi_current"] = std::make_shared<Variable>("eddi_current", newType("int"), Position(PositionType::GLOBAL, "eddi_current"), zero);
+    variables["eddi_current"] = std::make_shared<Variable>("eddi_current", new_type("int"), Position(PositionType::GLOBAL, "eddi_current"), zero);
     variables["eddi_current"]->addReference(); //In order to not display a warning
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
     //A global variable must have a value
-    assert(type.isArray());
+    assert(type->is_array()); //TODO Looks wrong
     
     Position position(PositionType::GLOBAL, variable);
     
     return variables[variable] = std::make_shared<Variable>(variable, type, position);
 }
 
-std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, Type type, ast::Value& value){
+std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
     auto val = visit(ast::GetConstantValue(), value);
      
-    if(type.isConst()){
+    if(type->is_const()){
         Position position(PositionType::CONST);
         return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
     }

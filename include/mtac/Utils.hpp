@@ -14,6 +14,7 @@
 #include <boost/variant.hpp>
 
 #include "mtac/Program.hpp"
+#include "mtac/Operator.hpp"
 
 namespace eddic {
 
@@ -52,6 +53,9 @@ inline void assertIntOrVariable(T& variant){
 void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage);
 
 bool safe(std::shared_ptr<mtac::Call> call);
+bool erase_result(mtac::Operator op);
+bool is_distributive(mtac::Operator op);
+bool is_expression(mtac::Operator op);
 
 } //end of mtac
 

@@ -12,6 +12,7 @@
 
 #include "ast/SimpleType.hpp"
 #include "ast/ArrayType.hpp"
+#include "ast/PointerType.hpp"
 
 namespace eddic {
 
@@ -21,7 +22,7 @@ namespace ast {
  * \typedef Type
  * \brief A type in the AST.  
  */
-typedef boost::variant<SimpleType, ArrayType> Type;
+typedef boost::variant<SimpleType, ArrayType, PointerType> Type;
 
 } //end of ast
 

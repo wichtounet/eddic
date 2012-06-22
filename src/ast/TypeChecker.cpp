@@ -5,7 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <algorithm>
 #include <memory>
 #include <boost/variant/variant.hpp>
 
@@ -19,11 +18,12 @@
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
-#include "Types.hpp"
 #include "Variable.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
 #include "SymbolTable.hpp"
+#include "Utils.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -39,20 +39,21 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_STRUCT_VALUE()
     AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
+    AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
-        Type type = newType(declaration.Content->variableType); 
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
 
-        Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+        auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
         if (valueType != type) {
             throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
         }
@@ -69,45 +70,28 @@ struct CheckerVisitor : public boost::static_visitor<> {
         visit_each(*this, foreach.Content->instructions);
     }
 
-    template<typename T>
-    void checkAssignment(T& assignment){
-        visit(*this, assignment.Content->value);
-
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != var->type().non_const()) {
-            throw SemanticalException("Incompatible type in assignment of variable " + assignment.Content->variableName, assignment.Content->position);
-        }
-
-        if(var->type().isConst()){
-            throw SemanticalException("The variable " + assignment.Content->variableName + " is const, cannot edit it", assignment.Content->position);
-        }
-
-        if(var->position().isParameter() || var->position().isParamRegister()){
-            throw SemanticalException("Cannot change the value of the parameter " + assignment.Content->variableName, assignment.Content->position);
-        }
-    }
-
     void operator()(ast::Assignment& assignment){
-        checkAssignment(assignment);
-    }
-    
-    void operator()(ast::CompoundAssignment& assignment){
-        checkAssignment(assignment);
-    }
-    
-    void operator()(ast::StructCompoundAssignment& assignment){
+        visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
-        
-        auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
+                    
+        auto left_value_type = visit(ast::GetTypeVisitor(), assignment.Content->left_value);
+        auto right_value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
+            
+        if (left_value_type != right_value_type){
+            throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+        }
 
-        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != member_type) {
-            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
+        //Special rules for assignments of variales
+        if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+            auto var = (*ptr).variable();
+
+            if(var->type()->is_const()){
+                throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", assignment.Content->position);
+            }
+
+            if((*ptr).Content->memberNames.empty() && (var->position().isParameter() || var->position().isParamRegister())){
+                throw SemanticalException("Cannot change the value of the parameter " + var->name(), assignment.Content->position);
+            }
         }
     }
 
@@ -115,11 +99,11 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void checkSuffixOrPrefixOperation(Operation& operation){
         auto var = operation.Content->variable;
         
-        if(var->type() != BaseType::INT && var->type() != BaseType::FLOAT){
+        if(var->type() != INT && var->type() != FLOAT){
             throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
         }
 
-        if(var->type().isConst()){
+        if(var->type()->is_const()){
             throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", operation.Content->position);
         }
     }
@@ -135,40 +119,9 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::Return& return_){
         visit(*this, return_.Content->value);
        
-        Type returnValueType = visit(ast::GetTypeVisitor(), return_.Content->value);
-        if(returnValueType != return_.Content->function->returnType){
+        auto return_type = visit(ast::GetTypeVisitor(), return_.Content->value);
+        if(return_type != return_.Content->function->returnType){
             throw SemanticalException("The return value is not of the good type in the function " + return_.Content->function->name, return_.Content->position);
-        }
-    }
-
-    void operator()(ast::ArrayAssignment& assignment){
-        visit(*this, assignment.Content->indexValue);
-        visit(*this, assignment.Content->value);
-
-        auto var = assignment.Content->context->getVariable(assignment.Content->variableName);
-
-        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType.base() != var->type().base()) {
-            throw SemanticalException("Incompatible type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
-        }
-        
-        Type indexType = visit(ast::GetTypeVisitor(), assignment.Content->indexValue);
-        if (indexType.base() != BaseType::INT) {
-            throw SemanticalException("Invalid index value type in assignment of array " + assignment.Content->variableName, assignment.Content->position);
-        }
-    }
-
-    void operator()(ast::StructAssignment& assignment){
-        visit(*this, assignment.Content->value);
-        
-        auto var = (*assignment.Content->context)[assignment.Content->variableName];
-        auto struct_name = var->type().type();
-        auto struct_type = symbols.get_struct(struct_name);
-        auto member_type = (*struct_type)[assignment.Content->memberName]->type;
-
-        Type valueType = visit(ast::GetTypeVisitor(), assignment.Content->value);
-        if (valueType != member_type) {
-            throw SemanticalException("Incompatible type in assignment of struct member " + assignment.Content->variableName, assignment.Content->position);
         }
     }
     
@@ -178,8 +131,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
             auto var = (*declaration.Content->context)[declaration.Content->variableName];
             
-            Type valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
-            if (valueType != var->type().non_const()) {
+            auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+            if (valueType != var->type()->non_const()) {
                 throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
             }
         }
@@ -194,18 +147,18 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::ArrayValue& array){
         visit(*this, array.Content->indexValue);
 
-        Type valueType = visit(ast::GetTypeVisitor(), array.Content->indexValue);
-        if (valueType.base() != BaseType::INT || valueType.isArray()) {
+        auto index_type = visit(ast::GetTypeVisitor(), array.Content->indexValue);
+        if (index_type != INT || index_type->is_array()) {
             throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
         }
     }
     
     void operator()(ast::Cast& cast){
-        Type destType = visit(ast::TypeTransformer(), cast.Content->type);
+        auto destType = visit(ast::TypeTransformer(), cast.Content->type);
 
-        if(destType == BaseType::STRING){
+        if(destType == STRING){
             throw SemanticalException("Cannot cast to string", cast.Content->position);
-        } else if(destType == BaseType::VOID){
+        } else if(destType == VOID){
             throw SemanticalException("Cannot cast to void", cast.Content->position);
         }
     }
@@ -213,14 +166,13 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::Expression& value){
         visit(*this, value.Content->first);
         
-        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+        for_each(value.Content->operations, [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
 
         ast::GetTypeVisitor visitor;
-        Type type = visit(visitor, value.Content->first);
+        auto type = visit(visitor, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            Type operationType = visit(visitor, operation.get<1>());
+            auto operationType = visit(visitor, operation.get<1>());
 
             if(type != operationType){
                 throw SemanticalException("Incompatible type", value.Content->position);
@@ -228,7 +180,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 
             auto op = operation.get<0>();
             
-            if(type == BaseType::INT){
+            if(type == INT){
                 if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
                     op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                         op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
@@ -236,7 +188,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 }
             }
 
-            if(type == BaseType::FLOAT){
+            if(type == FLOAT){
                 if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
                     op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                         op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
@@ -244,13 +196,13 @@ struct CheckerVisitor : public boost::static_visitor<> {
                 }
             }
             
-            if(type == BaseType::STRING){
+            if(type == STRING){
                 if(op != ast::Operator::ADD){
                     throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string");
                 }
             }
             
-            if(type == BaseType::BOOL){
+            if(type == BOOL){
                 if(op != ast::Operator::AND && op != ast::Operator::OR){
                     throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool");
                 }
@@ -259,8 +211,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::BuiltinOperator& builtin){
-        for_each(builtin.Content->values.begin(), builtin.Content->values.end(), 
-            [&](ast::Value& value){ visit(*this, value); });
+        for_each(builtin.Content->values, [&](ast::Value& value){ visit(*this, value); });
        
         if(builtin.Content->values.size() < 1){
             throw SemanticalException("Too few arguments to the builtin operator", builtin.Content->position);
@@ -270,15 +221,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("Too many arguments to the builtin operator", builtin.Content->position);
         }
         
-        ast::GetTypeVisitor visitor;
-        Type type = visit(visitor, builtin.Content->values[0]);
+        auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0])->non_const();
 
         if(builtin.Content->type == ast::BuiltinType::SIZE){
-            if(!type.isArray()){
+            if(!type->is_array()){
                 throw SemanticalException("The builtin size() operator takes only array as arguments", builtin.Content->position);
             }
         } else if(builtin.Content->type == ast::BuiltinType::LENGTH){
-            if(type != BaseType::STRING){
+            if(type != STRING){
                 throw SemanticalException("The builtin length() operator takes only string as arguments", builtin.Content->position);
             }
         }

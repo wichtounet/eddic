@@ -10,6 +10,7 @@
 
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -19,14 +20,15 @@ ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::IntegerSuffix, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Float, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::True, true)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::False, true)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Null, true)
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::ArrayValue, false)
-ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::StructValue, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::FunctionCall, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::SuffixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::PrefixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::BuiltinOperator, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Assignment, false)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::DereferenceVariableValue, false)
 
 bool ast::IsConstantVisitor::operator()(ast::Minus& value) const {
     return visit(*this, value.Content->value);
@@ -41,7 +43,7 @@ bool ast::IsConstantVisitor::operator()(ast::Cast& cast) const {
 }
 
 bool ast::IsConstantVisitor::operator()(ast::VariableValue& variable) const {
-    return variable.Content->var->type().isConst();
+    return variable.Content->memberNames.empty() && variable.Content->var->type()->is_const();
 }
 
 bool ast::IsConstantVisitor::operator()(ast::Expression& value) const {

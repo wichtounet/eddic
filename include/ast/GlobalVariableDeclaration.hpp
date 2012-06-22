@@ -13,6 +13,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Value.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -29,8 +30,7 @@ struct ASTGlobalVariableDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
-    bool constant;    
-    std::string variableType;
+    Type variableType;
     std::string variableName;
     boost::optional<Value> value;
 
@@ -51,8 +51,7 @@ typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalVariableDeclaration, 
     (eddic::ast::Position, Content->position)
-    (bool, Content->constant)
-    (std::string, Content->variableType)
+    (eddic::ast::Type, Content->variableType)
     (std::string, Content->variableName)
     (boost::optional<eddic::ast::Value>, Content->value)
 )

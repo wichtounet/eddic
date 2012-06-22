@@ -13,24 +13,32 @@
 #include "Utils.hpp"
 #include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
-std::string eddic::mangle(Type type){
-    if(type.is_standard_type()){
-        switch(type.base()){
-            case BaseType::INT:
-                return type.isArray() ? "AI" : "I";
-            case BaseType::STRING:
-                return type.isArray() ? "AS" : "S";
-            case BaseType::BOOL:
-                return type.isArray() ? "AB" : "B";
-            case BaseType::FLOAT:
-                return type.isArray() ? "AF" : "F";
-            case BaseType::VOID:
-                return "V";
+std::string eddic::mangle(std::shared_ptr<const Type> type){
+    if(type->is_array()){
+        return "A" + mangle(type->data_type());
+    }
+
+    if(type->is_pointer()){
+        return "P" + mangle(type->data_type());
+    }
+
+    if(type->is_standard_type()){
+        if(type == INT){
+            return "I";
+        } else if(type == STRING){
+            return "S";
+        } else if(type == BOOL){
+            return "B";
+        } else if(type == FLOAT){
+            return "F";
+        } else if(type == VOID){
+            return "V";
         }
 
         ASSERT_PATH_NOT_TAKEN("Not a standard type");
@@ -38,11 +46,29 @@ std::string eddic::mangle(Type type){
         std::ostringstream ss;
 
         ss << "C";
-        ss << type.type().length();
-        ss << type.type();
+        ss << type->type().length();
+        ss << type->type();
         
         return ss.str();
     }
+}
+
+std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+    ss << functionName.length();
+    ss << functionName;
+
+    for(auto type : types){
+        ss << mangle(type);
+    }
+
+    return ss.str();
 }
 
 std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){
@@ -76,7 +102,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
-        Type type = visit(visitor, value);
+        auto type = visit(visitor, value);
         ss << mangle(type);
     }
 
@@ -118,6 +144,12 @@ std::string eddic::unmangle(std::string mangled){
             array = true;
             current = mangled[++i];
         }
+        
+        bool pointer = false;
+        if(current == 'P'){
+            pointer = true;
+            current = mangled[++i];
+        }   
 
         if(current == 'I'){
             function << "int";
@@ -131,6 +163,10 @@ std::string eddic::unmangle(std::string mangled){
 
         if(array){
             function << "[]";
+        }
+
+        if(pointer){
+            function << "&";
         }
 
         if(i < mangled.length() - 1){

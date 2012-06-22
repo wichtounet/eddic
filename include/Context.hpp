@@ -13,12 +13,11 @@
 
 #include <unordered_map>
 
-#include "Types.hpp"
-
 #include "ast/Value.hpp"
 
 namespace eddic {
 
+class Type;
 class Variable;
 class IntermediateProgram;
 
@@ -55,7 +54,7 @@ class Context {
          * \param type The type of the variable. 
          * \return The created variable. 
          */
-        virtual std::shared_ptr<Variable> addVariable(const std::string& name, Type type) = 0;
+        virtual std::shared_ptr<Variable> addVariable(const std::string& name, std::shared_ptr<const Type> type) = 0;
         
         /*!
          * Add a new global variable to this context. 
@@ -64,7 +63,7 @@ class Context {
          * \param value The value of the global variable. 
          * \return The created variable. 
          */
-        virtual std::shared_ptr<Variable> addVariable(const std::string& name, Type type, ast::Value& value) = 0;
+        virtual std::shared_ptr<Variable> addVariable(const std::string& name, std::shared_ptr<const Type> type, ast::Value& value) = 0;
         
         /*!
          * Remove the given variable from this context.  
@@ -92,7 +91,7 @@ class Context {
          * \param type The type of variable to create. 
          * \return The created temporary variable. 
          */
-        virtual std::shared_ptr<Variable> new_temporary(Type type);
+        virtual std::shared_ptr<Variable> new_temporary(std::shared_ptr<const Type> type);
 
         /*!
          * Indicates if the given variable exists in this context. 

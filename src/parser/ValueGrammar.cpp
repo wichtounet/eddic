@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "parser/ValueGrammar.hpp"
+#include "parser/Utils.hpp"
+
 #include "lexer/adapttokens.hpp"
 #include "lexer/position.hpp"
 
@@ -59,6 +61,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     builtin_op.add
         ("size", ast::BuiltinType::SIZE)
         ("length", ast::BuiltinType::LENGTH)
+        ;
+    
+    assign_op.add
+        ("=",  ast::Operator::ASSIGN)
+        ("+=", ast::Operator::ADD)
+        ("-=", ast::Operator::SUB)
+        ("/=", ast::Operator::DIV)
+        ("*=", ast::Operator::MUL)
+        ("%=", ast::Operator::MOD)
         ;
 
     //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
@@ -124,15 +135,20 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   float_
         |   litteral
         |   builtin_operator
-        |   functionCall
+        |   function_call
         |   prefix_operation
         |   suffix_operation
-        |   struct_value
-        |   arrayValue
+        |   array_value
         |   variable_value
+        |   dereference_variable_value
+        |   null
         |   true_
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+    
+    null %= 
+            qi::eps
+        >>  lexer.null;
     
     true_ %= 
             qi::eps
@@ -157,15 +173,22 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     variable_value %= 
             qi::position(position_begin)
-        >>  lexer.identifier;
-    
-    struct_value %= 
-            qi::position(position_begin)
         >>  lexer.identifier
-        >>  lexer.dot
-        >>  lexer.identifier;
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier
+             );
    
-    arrayValue %=
+    dereference_variable_value %= 
+            qi::position(position_begin)
+        >>  lexer.multiplication
+        >>  lexer.identifier
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier
+             );
+   
+    array_value %=
             qi::position(position_begin)
         >>  lexer.identifier
         >>  lexer.left_bracket
@@ -188,17 +211,22 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
     
-    functionCall %=
+    function_call %=
             qi::position(position_begin)
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
+
+    left_value =
+            array_value
+        |   variable_value
+        |   dereference_variable_value;
     
     assignment %= 
             qi::position(position_begin)
-        >>  lexer.identifier 
-        >>  lexer.assign 
+        >>  left_value
+        >>  qi::adapttokens[assign_op]
         >>  value;
     
     prefix_operation %=
@@ -210,4 +238,13 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  lexer.identifier
         >>  qi::adapttokens[suffix_op];
+
+    //Configure debugging
+
+    DEBUG_RULE(assignment);
+    DEBUG_RULE(left_value);
+    DEBUG_RULE(array_value);
+    DEBUG_RULE(variable_value);
+    DEBUG_RULE(dereference_variable_value);
+    DEBUG_RULE(function_call);
 }

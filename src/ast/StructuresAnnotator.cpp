@@ -5,13 +5,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <vector>
+#include <string>
+#include <algorithm>
+
 #include "ast/StructuresAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
 
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
-#include "Types.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -24,14 +28,17 @@ struct StructuresCollector : public boost::static_visitor<> {
         }
 
         auto signature = std::make_shared<Struct>(struct_.Content->name);
+        std::vector<std::string> names;
 
         for(auto& member : struct_.Content->members){
-            if(!is_standard_type(member.Content->type)){
-                throw SemanticalException("For now, only standard type are supporterd as members of structures", member.Content->position);
+            if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
+                throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
             }
 
-            Type memberType = newType(member.Content->type);
-            signature->members.push_back(std::make_shared<Member>(member.Content->name, memberType));
+            names.push_back(member.Content->name);
+
+            auto member_type = new_type(member.Content->type);
+            signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
         }
 
         symbols.add_struct(signature);

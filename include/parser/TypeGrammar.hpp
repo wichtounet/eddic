@@ -33,6 +33,10 @@ struct TypeGrammar : qi::grammar<lexer::Iterator, ast::Type()> {
     qi::rule<lexer::Iterator, ast::Type()> type;
     qi::rule<lexer::Iterator, ast::ArrayType()> array_type;
     qi::rule<lexer::Iterator, ast::SimpleType()> simple_type;
+    qi::rule<lexer::Iterator, ast::PointerType()> pointer_type;
+
+    /* Helper  */
+    qi::rule<lexer::Iterator, bool()> const_;
     
     const lexer::pos_iterator_type& position_begin;
 };

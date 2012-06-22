@@ -27,10 +27,10 @@ namespace ast {
  */
 struct ASTArrayValue {
     std::shared_ptr<Context> context;
+    std::shared_ptr<Variable> var;
 
     Position position;
     std::string arrayName;
-    std::shared_ptr<Variable> var;
     Value indexValue;
 
     mutable long references = 0;

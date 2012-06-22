@@ -25,7 +25,7 @@ bool Position::isGlobal() const {
     return m_type == PositionType::GLOBAL;
 }
 
-bool Position::isConst() const {
+bool Position::is_const() const {
     return m_type == PositionType::CONST;
 }
 

@@ -35,8 +35,7 @@ struct ASTFunctionDeclaration {
     std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
 
-    mutable long references;
-    ASTFunctionDeclaration() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
