@@ -53,7 +53,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    auto var = (*variable.Content->context)[variable.Content->variableName];
+    auto var = variable.variable();
 
     if(variable.Content->memberNames.empty()){
         return var->type();
@@ -86,7 +86,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignmen
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return array.Content->context->getVariable(array.Content->arrayName)->type()->data_type();
+    return array.Content->var->type()->data_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {

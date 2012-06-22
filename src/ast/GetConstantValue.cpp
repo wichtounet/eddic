@@ -39,10 +39,9 @@ Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
-    auto type = value.Content->var->type();
-    assert(type->is_const());
-        
-    auto val = value.Content->var->val();
+    auto var = value.variable();
+    auto type = var->type();
+    auto val = var->val();
 
     if(type == INT){
         return boost::get<int>(val);

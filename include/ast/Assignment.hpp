@@ -30,8 +30,6 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::Assignment).
  */
 struct ASTAssignment {
-    std::shared_ptr<Context> context;
-
     Position position;
     LValue left_value;
     Value value;

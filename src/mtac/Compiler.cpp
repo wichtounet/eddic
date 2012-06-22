@@ -681,8 +681,7 @@ struct DereferenceAssign : public AbstractVisitor {
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
     if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
         auto left = *ptr;
-        
-        auto variable = left.Content->context->getVariable(left.Content->variableName);
+        auto variable = left.Content->var;
 
         if(left.Content->memberNames.empty()){
             visit(AssignValueToVariable(function, variable), assignment.Content->value);
@@ -695,14 +694,12 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         }
     } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
         auto left = *ptr;
+        auto variable = left.Content->var;
 
-        auto var = left.Content->context->getVariable(left.Content->arrayName);
-
-        visit(AssignValueToArray(function, var, left.Content->indexValue), assignment.Content->value);
+        visit(AssignValueToArray(function, variable, left.Content->indexValue), assignment.Content->value);
     } else if(auto* ptr = boost::get<ast::DereferenceVariableValue>(&assignment.Content->left_value)){
         auto left = *ptr;
-        
-        auto variable = left.Content->context->getVariable(left.Content->variableName);
+        auto variable = left.Content->var;
 
         if(left.Content->memberNames.empty()){
             visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
@@ -868,8 +865,8 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
         if(i == value.Content->operations.size() - 1){
             function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
         } else {
-            auto t1 = value.Content->context->newTemporary();
-            auto t2 = value.Content->context->newTemporary();
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
             
             function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), t1, t2)); 
           

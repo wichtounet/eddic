@@ -25,14 +25,11 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::MemberDeclaration).
  */
 struct ASTMemberDeclaration {
-    std::shared_ptr<Context> context;
-
     Position position;
     std::string type;
     std::string name;
 
-    mutable long references;
-    ASTMemberDeclaration() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
