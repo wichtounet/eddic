@@ -31,6 +31,12 @@ add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Analysing the code with cppcheck" VERBATIM
 )
+
+# Add a custom target to gather stats
+add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Gathering stats" VERBATIM
+)
  
 set(EXECUTABLE_OUTPUT_PATH bin)
 
