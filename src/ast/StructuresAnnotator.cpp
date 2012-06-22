@@ -42,6 +42,10 @@ struct StructuresCollector : public boost::static_visitor<> {
         }
 
         symbols.add_struct(signature);
+
+        if(symbols.is_recursively_nested(struct_.Content->name)){
+            throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
+        }
     }
 
     AUTO_IGNORE_OTHERS()
