@@ -160,9 +160,26 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                 }
 
                 if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
+                    //Two MOV to the same register => keep only last MOV
                     if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg1)){
                         if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
                             i1->op = ltac::Operator::NOP;
+                        }
+                    } else if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg2)){
+                        if(boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
+                            if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
+                                i2->op = ltac::Operator::NOP;
+                                i2->arg1.reset();
+                                i2->arg2.reset();
+                            }
+                        }
+                    } else if(boost::get<ltac::Register>(&*i1->arg2) && boost::get<ltac::Register>(&*i2->arg1)){
+                        if(boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
+                            if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
+                                i2->op = ltac::Operator::NOP;
+                                i2->arg1.reset();
+                                i2->arg2.reset();
+                            }
                         }
                     }
                 }
