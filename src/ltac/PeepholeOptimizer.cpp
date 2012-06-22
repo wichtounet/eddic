@@ -177,6 +177,13 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                                 i1->op = ltac::Operator::NOP;
                                 i1->arg1.reset();
                                 i1->arg2.reset();
+                            } else if(boost::get<std::string>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                                i2->op = ltac::Operator::LEA;
+                                i2->arg2 = ltac::Address(boost::get<std::string>(*i1->arg2), boost::get<int>(*i2->arg2));
+                                
+                                i1->op = ltac::Operator::NOP;
+                                i1->arg1.reset();
+                                i1->arg2.reset();
                             }
                         }
                     }
