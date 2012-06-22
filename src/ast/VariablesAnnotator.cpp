@@ -48,7 +48,12 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_STRUCT()
+    
+    void operator()(ast::Struct& struct_){
+        if(symbols.is_recursively_nested(struct_.Content->name)){
+            throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
+        }
+    }
    
     void operator()(ast::FunctionDeclaration& declaration){
         //Add all the parameters to the function context
