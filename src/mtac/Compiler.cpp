@@ -681,8 +681,7 @@ struct DereferenceAssign : public AbstractVisitor {
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
     if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
         auto left = *ptr;
-        
-        auto variable = left.Content->context->getVariable(left.Content->variableName);
+        auto variable = left.Content->var;
 
         if(left.Content->memberNames.empty()){
             visit(AssignValueToVariable(function, variable), assignment.Content->value);
@@ -695,14 +694,12 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         }
     } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
         auto left = *ptr;
+        auto variable = left.Content->var;
 
-        auto var = left.Content->context->getVariable(left.Content->arrayName);
-
-        visit(AssignValueToArray(function, var, left.Content->indexValue), assignment.Content->value);
+        visit(AssignValueToArray(function, variable, left.Content->indexValue), assignment.Content->value);
     } else if(auto* ptr = boost::get<ast::DereferenceVariableValue>(&assignment.Content->left_value)){
         auto left = *ptr;
-        
-        auto variable = left.Content->context->getVariable(left.Content->variableName);
+        auto variable = left.Content->var;
 
         if(left.Content->memberNames.empty()){
             visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
