@@ -103,7 +103,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         composed.Content->operations.push_back({compound.Content->op, compound.Content->value});
 
         ast::Assignment assignment;
-        assignment.Content->context = compound.Content->context;
         assignment.Content->left_value = compound.Content->left_value;
         assignment.Content->value = composed;
 
@@ -146,7 +145,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         left_value.Content->var = foreach.Content->context->getVariable(foreach.Content->variableName);
         
         ast::Assignment start_assign;
-        start_assign.Content->context = foreach.Content->context;
         start_assign.Content->left_value = left_value;
         start_assign.Content->value = from_value;
 
@@ -174,7 +172,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         addition.Content->operations.push_back({ast::Operator::ADD, inc});
         
         ast::Assignment repeat_assign;
-        repeat_assign.Content->context = foreach.Content->context;
         repeat_assign.Content->left_value = left_value;
         repeat_assign.Content->value = addition;
         
@@ -202,7 +199,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         left_value.Content->var = foreach.Content->context->getVariable(iterVar->name());
         
         ast::Assignment init_assign;
-        init_assign.Content->context = foreach.Content->context;
         init_assign.Content->left_value = left_value;
         init_assign.Content->value = init_value;
 
@@ -256,7 +252,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         addition.Content->operations.push_back({ast::Operator::ADD, inc});
         
         ast::Assignment repeat_assign;
-        repeat_assign.Content->context = foreach.Content->context;
         repeat_assign.Content->left_value = left_value;
         repeat_assign.Content->value = addition;
 
