@@ -33,8 +33,6 @@ typedef std::vector<Operation> Operations;
  * Should only be used from the Deferred version (eddic::ast::Expression).
  */
 struct ASTExpression {
-    std::shared_ptr<Context> context;
-
     Position position;
     Value first;
     Operations operations;

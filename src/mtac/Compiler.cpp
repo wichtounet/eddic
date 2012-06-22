@@ -868,8 +868,8 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
         if(i == value.Content->operations.size() - 1){
             function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
         } else {
-            auto t1 = value.Content->context->newTemporary();
-            auto t2 = value.Content->context->newTemporary();
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
             
             function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), t1, t2)); 
           

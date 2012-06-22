@@ -174,8 +174,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Expression& value){
-            value.Content->context = currentContext;
-
             visit(*this, value.Content->first);
             for_each(value.Content->operations.begin(), value.Content->operations.end(), 
                     [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
