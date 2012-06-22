@@ -94,6 +94,30 @@ int SymbolTable::size_of_struct(const std::string& struct_name){
     return struct_size;
 }
 
+bool SymbolTable::is_recursively_nested(const std::string& struct_name, unsigned int left){
+    if(left == 0){
+        return true;
+    }
+
+    auto struct_ = get_struct(struct_name);
+
+    for(auto m : struct_->members){
+        auto type = m->type;
+
+        if(type->is_custom_type()){
+            if(is_recursively_nested(type->type(), left - 1)){
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+bool SymbolTable::is_recursively_nested(const std::string& struct_){
+    return is_recursively_nested(struct_, 100);
+}
+
 bool SymbolTable::struct_exists(const std::string& struct_){
     return structs.find(struct_) != structs.end();
 }

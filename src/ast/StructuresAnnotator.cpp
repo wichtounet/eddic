@@ -5,6 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <vector>
+#include <string>
+#include <algorithm>
+
 #include "ast/StructuresAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
@@ -24,13 +28,24 @@ struct StructuresCollector : public boost::static_visitor<> {
         }
 
         auto signature = std::make_shared<Struct>(struct_.Content->name);
+        std::vector<std::string> names;
 
         for(auto& member : struct_.Content->members){
+            if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
+                throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
+            }
+
+            names.push_back(member.Content->name);
+
             auto member_type = new_type(member.Content->type);
             signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
         }
 
         symbols.add_struct(signature);
+
+        if(symbols.is_recursively_nested(struct_.Content->name)){
+            throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
+        }
     }
 
     AUTO_IGNORE_OTHERS()

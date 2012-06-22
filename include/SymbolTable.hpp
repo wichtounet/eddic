@@ -37,6 +37,8 @@ class SymbolTable {
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
+        
+        bool is_recursively_nested(const std::string& struct_, unsigned int left);
 
     public:
         SymbolTable();
@@ -92,6 +94,7 @@ class SymbolTable {
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
         int member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member);
         int size_of_struct(const std::string& struct_);
+        bool is_recursively_nested(const std::string& struct_);
 
         /*!
          * Returns an iterator to the first function. 
