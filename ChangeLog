@@ -1,3 +1,13 @@
+eddic 1.0.1 - 2012.06.22
+
+* Language: Support of pointers
+* Language: Support for struct inside struct
+* Compiler: Better error reporting for struct errors
+* Compiler: More optimizations for the LTAC Statements
+* Optimization Engine: Do optimizations of functions in parralel
+* Tests: New tests
+* Tests: Test all optimization levels
+
 eddic 1.0.0 - 2012.05.04
 
 * Language: Support of structures
