@@ -17,20 +17,20 @@ big_sample="$base_dir/samples/big.eddi"
 #Count Statements in samples
 for file in $sample_dir ; do
     if [ "$file" != "$big_sample" ] ; then
-        count="`$executable --quiet --ltac-only $file | wc -l`"
+        count="`$executable --quiet --ltac-only $file | egrep -v NOP | sed '/^\s*$/d' | wc -l`"
         let "count_ltac += $count"
     
-        count="`$executable --quiet --mtac-only $file | wc -l`"
+        count="`$executable --quiet --mtac-only $file | egrep -v NOP | sed '/^\s*$/d' | wc -l`"
         let "count_mtac += $count"
     fi
 done
 
 #Count Statements in test cases
 for file in $cases_dir ; do
-    count="`$executable --quiet --ltac-only $file | wc -l`"
+    count="`$executable --quiet --ltac-only $file | egrep -v NOP | sed '/^\s*$/d' | wc -l`"
     let "count_ltac += $count"
     
-    count="`$executable --quiet --mtac-only $file | wc -l`"
+    count="`$executable --quiet --mtac-only $file | egrep -v NOP | sed '/^\s*$/d' | wc -l`"
     let "count_mtac += $count"
 done
 
