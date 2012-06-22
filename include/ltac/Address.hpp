@@ -35,6 +35,9 @@ struct Address {
     Address(ltac::Register reg, ltac::Register scaled, unsigned scale, int displacement);
 };
 
+bool operator==(ltac::Address& lhs, ltac::Address& rhs);
+bool operator!=(ltac::Address& lhs, ltac::Address& rhs);
+
 } //end of ltac
 
 } //end of eddic
