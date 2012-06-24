@@ -16,16 +16,28 @@ using namespace eddic;
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
-    //By default, return the top element
     return default_element();
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, ProblemDomain& in){
-    if(in.top()){
+    if(out.top()){
+        return in;
+    } else if(in.top()){
         return out;
     }
-    //TODO
-    return in;
+
+    typename ProblemDomain::Values values;
+    ProblemDomain result(values);
+
+    for(auto& value : in.values()){
+        result.values().insert(value);
+    }
+    
+    for(auto& value : out.values()){
+        result.values().insert(value);
+    }
+
+    return result;
 }
 
 template<typename Arg, typename Values>

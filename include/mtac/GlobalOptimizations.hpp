@@ -17,7 +17,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
 
-#define DEBUG_GLOBAL_ENABLED false
+#define DEBUG_GLOBAL_ENABLED true
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 namespace eddic {
@@ -148,15 +148,16 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     auto& IN_S = results->IN_S;
    
     IN[cfg->exit()] = problem.Boundary(function);
-    
     DEBUG_GLOBAL std::cout << "IN[" << *cfg->exit() << "] set to " << IN[cfg->exit()] << std::endl;
 
     ControlFlowGraph::BasicBlockIterator it, end;
     for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
+        auto block = graph[*it].block;
+
         //Init all but EXIT
-        if(graph[*it].block->index != -2){
-            IN[graph[*it].block] = problem.Init(function);
-            DEBUG_GLOBAL std::cout << "IN[" << *graph[*it].block << "] set to " << IN[graph[*it].block] << std::endl;
+        if(block->index != -2){
+            IN[block] = problem.Init(function);
+            DEBUG_GLOBAL std::cout << "IN[" << *block << "] set to " << IN[block] << std::endl;
         }
     }
 
@@ -179,11 +180,15 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                 auto successor = boost::target(edge, graph);
                 auto S = graph[successor].block;
 
+                /*if(S->index == B->index){
+                    continue;
+                }*/
+
                 DEBUG_GLOBAL std::cout << "Meet B = " << *B << " with S = " << *S << std::endl;
                 DEBUG_GLOBAL std::cout << "OUT[B] before " << OUT[B] << std::endl;
                 DEBUG_GLOBAL std::cout << "IN[S] before " << IN[S] << std::endl;
 
-                assign(OUT[B], problem.meet(OUT[B], IN[S]), changes);
+                OUT[B] = problem.meet(OUT[B], IN[S]);
                 
                 DEBUG_GLOBAL std::cout << "OUT[B] after " << OUT[B] << std::endl;
 
@@ -195,11 +200,11 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                     for(unsigned i = statements.size() - 1; i > 0; --i){
                         auto& statement = statements[i];
 
-                        DEBUG_GLOBAL std::cout << "OUT_S[" << i << "] before transfer " << OUT_S[statement] << std::endl;
+                        DEBUG_GLOBAL std::cout << "IN_S[" << i << "] before transfer " << IN_S[statement] << std::endl;
                         assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
                         DEBUG_GLOBAL std::cout << "IN_S[" << i << "] after transfer " << IN_S[statement] << std::endl;
                             
-                        assign(OUT_S[statements[i-1]], IN_S[statement], changes);
+                        OUT_S[statements[i-1]] = IN_S[statement];
                     }
                         
                     assign(IN_S[statements[0]], problem.transfer(B, statements[0], OUT_S[statements[0]]), changes);

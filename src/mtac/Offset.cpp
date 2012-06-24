@@ -10,5 +10,5 @@
 using namespace eddic;
 
 std::ostream& mtac::operator<<(std::ostream& stream, const Offset& offset){
-    return stream << "(" << offset.variable << ")" << offset;
+    return stream << "(" << offset.variable << ")" << offset.offset;
 }
