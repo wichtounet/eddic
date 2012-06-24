@@ -366,7 +366,7 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function){
     mtac::LiveVariableAnalysisProblem problem;
 
     auto results = mtac::data_flow(function, problem);
-    
+
     for(auto& block : function->getBasicBlocks()){
         auto it = block->statements.begin();
         auto end = block->statements.end();
@@ -376,14 +376,12 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function){
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
-                   if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
-                       mtac::Printer printer;
-                       printer.printStatement(*it);
-                      it = block->statements.erase(it);
-                      end = block->statements.end();
-                      optimized=true;
-                      continue;
-                   }
+                    if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
+                        it = block->statements.erase(it);
+                        end = block->statements.end();
+                        optimized=true;
+                        continue;
+                    }
                 }
             }
 
@@ -437,9 +435,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Common Subexpression Elimination", data_flow_optimization<mtac::CommonSubexpressionElimination>(function), function);
 
         optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
-
-        //optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<mtac::RemoveAssign>(function), function);
-        //optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<mtac::RemoveMultipleAssign>(function), function);
 
         optimized |= debug("Optimize Branches", optimize_branches(function), function);
         optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
