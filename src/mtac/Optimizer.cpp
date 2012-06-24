@@ -43,7 +43,7 @@ using namespace eddic;
 
 namespace {
 
-static const unsigned int MAX_THREADS = 1;
+static const unsigned int MAX_THREADS = 2;
 static const bool DebugPerf = false;
 
 template<typename Visitor>
