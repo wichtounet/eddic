@@ -11,6 +11,7 @@
 #include <utility>
 #include <string>
 #include <memory>
+#include <iostream>
 
 #include <boost/variant/variant.hpp>
 

@@ -367,7 +367,29 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function){
 
     auto results = mtac::data_flow(function, problem);
     
-    //TODO
+    for(auto& block : function->getBasicBlocks()){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if(mtac::erase_result((*ptr)->op)){
+                   if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
+                       mtac::Printer printer;
+                       printer.printStatement(*it);
+                      it = block->statements.erase(it);
+                      end = block->statements.end();
+                      optimized=true;
+                      continue;
+                   }
+                }
+            }
+
+            ++it;
+        }
+    }
 
     return optimized;
 }
@@ -443,7 +465,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(1));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){
@@ -468,7 +490,7 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(1));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){

@@ -17,7 +17,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
 
-#define DEBUG_GLOBAL_ENABLED true
+#define DEBUG_GLOBAL_ENABLED false
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 namespace eddic {
