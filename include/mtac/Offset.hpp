@@ -25,6 +25,8 @@ struct Offset {
     }
 };
 
+std::ostream& operator<<(std::ostream& stream, const Offset& offset);
+
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v){
     std::hash<T> hasher;
