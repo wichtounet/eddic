@@ -60,24 +60,11 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr;
-
-        if(quadruple->arg1 && mtac::isVariable(*quadruple->arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-            
-            if(quadruple->result != var){
-                in.values().insert(var);    
-            }
-        }
         
-        if(quadruple->arg2 && mtac::isVariable(*quadruple->arg2)){
-            auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
-            
-            if(quadruple->result != var){
-                in.values().insert(var);
-            }
-        }
-
         in.values().erase(quadruple->result);
+
+        update_optional((*ptr)->arg1, in.values());
+        update_optional((*ptr)->arg2, in.values());
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
         update((*ptr)->arg, in.values());
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
