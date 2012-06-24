@@ -149,7 +149,6 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     }
 }
 
-
 } //end of anonymous namespace
     
 ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
@@ -364,29 +363,12 @@ ltac::FloatRegister ltac::RegisterManager::get_free_float_reg(){
     return reg;
 }
 
-bool ltac::RegisterManager::is_live(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable){
-    if(liveness.find(variable) != liveness.end()){
-        return liveness[variable];   
-    } else {
-        return !variable->position().isTemporary();
-    }
-}
-
 bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable, mtac::Statement statement){
-    assert(mtac::is<std::shared_ptr<mtac::Quadruple>>(statement) || mtac::is<std::shared_ptr<mtac::IfFalse>>(statement) 
-            || mtac::is<std::shared_ptr<mtac::If>>(statement) || mtac::is<std::shared_ptr<mtac::Param>>(statement));
-
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        return is_live((*ptr)->liveness, variable);
-    } else if (auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-        return is_live((*ptr)->liveness, variable);
-    } else if (auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-        return is_live((*ptr)->liveness, variable);
-    } else if (auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        return is_live((*ptr)->liveness, variable);
-    } 
-
-    return false;
+    if(liveness->IN_S[statement].values().find(variable) != liveness->IN_S[statement].values().end()){
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){

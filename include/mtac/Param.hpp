@@ -31,8 +31,6 @@ struct Param {
     
     bool address = false;
     std::vector<std::string> memberNames; //Only valid when address == true
-    
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     Param(const Param& rhs) = delete;
     Param& operator=(const Param& rhs) = delete;
