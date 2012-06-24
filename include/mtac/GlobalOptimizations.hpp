@@ -134,12 +134,80 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function>/* function*/, std::shared_ptr<ControlFlowGraph>/* graph*/, DataFlowProblem<Type, DomainValues>&/* problem*/){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function> function, std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
+
+    auto graph = cfg->get_graph();
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
     
-    //TODO
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+    
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
+   
+    IN[cfg->exit()] = problem.Boundary(function);
+    
+    DEBUG_GLOBAL std::cout << "IN[" << *cfg->exit() << "] set to " << IN[cfg->exit()] << std::endl;
+
+    ControlFlowGraph::BasicBlockIterator it, end;
+    for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
+        //Init all but EXIT
+        if(graph[*it].block->index != -2){
+            IN[graph[*it].block] = problem.Init(function);
+            DEBUG_GLOBAL std::cout << "IN[" << *graph[*it].block << "] set to " << IN[graph[*it].block] << std::endl;
+        }
+    }
+
+    bool changes = true;
+    while(changes){
+        changes = false;
+
+        for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
+            auto vertex = *it;
+            auto B = graph[vertex].block;
+
+            //Do not consider EXIT
+            if(B->index == -2){
+                continue;
+            }
+
+            ControlFlowGraph::OutEdgeIterator oit, oend;
+            for(boost::tie(oit, oend) = boost::out_edges(vertex, graph); oit != oend; ++oit){
+                auto edge = *oit;
+                auto successor = boost::target(edge, graph);
+                auto S = graph[successor].block;
+
+                DEBUG_GLOBAL std::cout << "Meet B = " << *B << " with S = " << *S << std::endl;
+                DEBUG_GLOBAL std::cout << "OUT[B] before " << OUT[B] << std::endl;
+                DEBUG_GLOBAL std::cout << "IN[P] before " << IN[S] << std::endl;
+
+                assign(OUT[B], problem.meet(OUT[B], IN[S]), changes);
+                
+                DEBUG_GLOBAL std::cout << "OUT[B] after " << OUT[B] << std::endl;
+
+                auto& statements = B->statements;
+
+                if(statements.size() > 0){
+                    assign(OUT_S[statements.back()], OUT[B], changes);
+
+                    for(unsigned i = statements.size() - 1; i > 0; --i){
+                        auto& statement = statements[i];
+
+                        assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
+                    }
+                        
+                    assign(IN_S[statements[0]], problem.transfer(B, statements[0], OUT_S[statements[0]]), changes);
+                    
+                    assign(IN[B], IN_S[statements.front()], changes);
+                } else {
+                    //If the basic block is empty, the IN values are the OUT values
+                    assign(IN[B], OUT[B], changes);
+                }
+            }
+        }
+    }
 
     return results;
 }
