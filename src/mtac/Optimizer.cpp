@@ -453,6 +453,35 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
     }
 
     debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+    
+   /* 
+    //Liveness debugging
+    mtac::LiveVariableAnalysisProblem problem;
+    auto results = mtac::data_flow(function, problem);
+
+    for(auto& block : function->getBasicBlocks()){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            mtac::Printer printer;
+            printer.printStatement(statement);
+            std::cout << "OUT{";
+            for(auto& var : results->OUT_S[statement].values()){
+                std::cout << var->name() << ", ";
+            }
+            std::cout << "}" << std::endl;
+            std::cout << "IN{";
+            for(auto& var : results->IN_S[statement].values()){
+                std::cout << var->name() << ", ";
+            }
+            std::cout << "}" << std::endl;
+
+            ++it;
+        }
+    }*/
 }
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {

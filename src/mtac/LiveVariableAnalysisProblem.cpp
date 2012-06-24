@@ -61,9 +61,9 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr;
         
-        /*if(mtac::erase_result(quadruple->op)){
+        if(mtac::erase_result(quadruple->op)){
             in.values().erase(quadruple->result);
-        }*/
+        }
 
         update_optional((*ptr)->arg1, in.values());
         update_optional((*ptr)->arg2, in.values());
