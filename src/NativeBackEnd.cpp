@@ -16,7 +16,6 @@
 #include "mtac/Program.hpp"
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/TemporaryAllocator.hpp"
-#include "mtac/LivenessAnalyzer.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
 
@@ -66,10 +65,6 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
 
     //If necessary, continue the compilation process
     if(!option_defined("mtac-only")){
-        //Compute liveness of variables
-        mtac::LivenessAnalyzer liveness;
-        liveness.compute(mtacProgram);
-
         auto float_pool = std::make_shared<FloatPool>();
 
         auto ltac_program = std::make_shared<ltac::Program>();
