@@ -8,7 +8,12 @@
 #ifndef MTAC_OFFSET_H
 #define MTAC_OFFSET_H
 
+#include <memory>
+#include <iostream>
+
 namespace eddic {
+
+class Variable;
 
 namespace mtac {
 

@@ -443,7 +443,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(1));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){
@@ -468,7 +468,7 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(1));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){

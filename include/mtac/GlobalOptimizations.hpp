@@ -17,7 +17,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
 
-#define DEBUG_GLOBAL_ENABLED false
+#define DEBUG_GLOBAL_ENABLED true
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 namespace eddic {
@@ -181,7 +181,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
 
                 DEBUG_GLOBAL std::cout << "Meet B = " << *B << " with S = " << *S << std::endl;
                 DEBUG_GLOBAL std::cout << "OUT[B] before " << OUT[B] << std::endl;
-                DEBUG_GLOBAL std::cout << "IN[P] before " << IN[S] << std::endl;
+                DEBUG_GLOBAL std::cout << "IN[S] before " << IN[S] << std::endl;
 
                 assign(OUT[B], problem.meet(OUT[B], IN[S]), changes);
                 
@@ -195,7 +195,11 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                     for(unsigned i = statements.size() - 1; i > 0; --i){
                         auto& statement = statements[i];
 
+                        DEBUG_GLOBAL std::cout << "OUT_S[" << i << "] before transfer " << OUT_S[statement] << std::endl;
                         assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
+                        DEBUG_GLOBAL std::cout << "IN_S[" << i << "] after transfer " << IN_S[statement] << std::endl;
+                            
+                        assign(OUT_S[statements[i-1]], IN_S[statement], changes);
                     }
                         
                     assign(IN_S[statements[0]], problem.transfer(B, statements[0], OUT_S[statements[0]]), changes);
@@ -205,6 +209,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                     //If the basic block is empty, the IN values are the OUT values
                     assign(IN[B], OUT[B], changes);
                 }
+                
+                DEBUG_GLOBAL std::cout << "IN[B] after transfer " << IN[B] << std::endl;
             }
         }
     }
