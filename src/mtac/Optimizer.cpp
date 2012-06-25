@@ -454,8 +454,7 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
 
     debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
     
-   /* 
-    //Liveness debugging
+    /*//Liveness debugging
     mtac::LiveVariableAnalysisProblem problem;
     auto results = mtac::data_flow(function, problem);
 
