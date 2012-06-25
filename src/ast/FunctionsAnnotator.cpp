@@ -114,33 +114,30 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             ast::GetTypeVisitor visitor;
             for(auto& value : functionCall.Content->values){
-                auto type = visit(visitor, value);
-                types.push_back(type);
+                types.push_back(visit(visitor, value));
             }
 
             std::string mangled = mangle(name, types);
 
-            if(symbols.exists(mangled)){
-                symbols.addReference(mangled);
-
-                functionCall.Content->mangled_name = mangled;
-                functionCall.Content->function = symbols.getFunction(mangled);
-            } else {
+            //If the function does not exists, try implicit conversions to pointers
+            if(!symbols.exists(mangled)){
                 auto perms = permutations(types);
 
                 for(auto& perm : perms){
                     mangled = mangle(name, perm);
 
                     if(symbols.exists(mangled)){
-                        symbols.addReference(mangled);
-
-                        functionCall.Content->mangled_name = mangled;
-                        functionCall.Content->function = symbols.getFunction(mangled);
-
-                        return;
+                        break;
                     }
                 }
+            }
             
+            if(symbols.exists(mangled)){
+                symbols.addReference(mangled);
+
+                functionCall.Content->mangled_name = mangled;
+                functionCall.Content->function = symbols.getFunction(mangled);
+            } else {
                 throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             }
         }
