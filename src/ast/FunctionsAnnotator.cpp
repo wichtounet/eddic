@@ -25,14 +25,15 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!is_standard_type(declaration.Content->returnType)){
-                throw SemanticalException("A function can only returns standard types for now", declaration.Content->position);
+            auto return_type = visit(ast::TypeTransformer(), declaration.Content->returnType);
+            auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
+
+            if(return_type->is_array()){
+                throw SemanticalException("Cannot return array from function", declaration.Content->position);
             }
 
-            auto signature = std::make_shared<Function>(new_type(declaration.Content->returnType), declaration.Content->functionName);
-
-            if(signature->returnType->is_array()){
-                throw SemanticalException("Cannot return array from function", declaration.Content->position);
+            if(return_type->is_custom_type()){
+                throw SemanticalException("Cannot return struct from function", declaration.Content->position);
             }
 
             for(auto& param : declaration.Content->parameters){
@@ -74,6 +75,28 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, declaration.Content->instructions);
         }
+        
+        void permute(std::vector<std::vector<std::shared_ptr<const Type>>>& perms, std::vector<std::shared_ptr<const Type>>& types, int start){
+            for(std::size_t i = start; i < types.size(); ++i){
+                if(!types[i]->is_pointer() && !types[i]->is_array()){
+                    std::vector<std::shared_ptr<const Type>> copy = types;
+
+                    copy[i] = new_pointer_type(types[i]);
+
+                    perms.push_back(copy);
+
+                    permute(perms, copy, i + 1);
+                }
+            }
+        }
+
+        std::vector<std::vector<std::shared_ptr<const Type>>> permutations(std::vector<std::shared_ptr<const Type>>& types){
+            std::vector<std::vector<std::shared_ptr<const Type>>> perms;
+
+            permute(perms, types, 0);
+
+            return perms;
+        }
 
         void operator()(ast::FunctionCall& functionCall){
             visit_each(*this, functionCall.Content->values);
@@ -88,38 +111,30 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             ast::GetTypeVisitor visitor;
             for(auto& value : functionCall.Content->values){
-                auto type = visit(visitor, value);
-                types.push_back(type);
+                types.push_back(visit(visitor, value));
             }
 
             std::string mangled = mangle(name, types);
 
+            //If the function does not exists, try implicit conversions to pointers
+            if(!symbols.exists(mangled)){
+                auto perms = permutations(types);
+
+                for(auto& perm : perms){
+                    mangled = mangle(name, perm);
+
+                    if(symbols.exists(mangled)){
+                        break;
+                    }
+                }
+            }
+            
             if(symbols.exists(mangled)){
                 symbols.addReference(mangled);
 
                 functionCall.Content->mangled_name = mangled;
                 functionCall.Content->function = symbols.getFunction(mangled);
             } else {
-                //TODO Enhance to test all possibilities, not only a change of a single type
-                for(std::size_t i = 0; i < types.size(); ++i){
-                    if(!types[i]->is_pointer() && !types[i]->is_array()){
-                        std::vector<std::shared_ptr<const Type>> copy = types;
-                        
-                        copy[i] = new_pointer_type(types[i]);
-
-                        mangled = mangle(name, copy);
-
-                        if(symbols.exists(mangled)){
-                            symbols.addReference(mangled);
-
-                            functionCall.Content->mangled_name = mangled;
-                            functionCall.Content->function = symbols.getFunction(mangled);
-
-                            return;
-                        }
-                    }
-                }
-            
                 throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             }
         }

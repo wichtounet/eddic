@@ -263,7 +263,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::FunctionCall& call) const {
         auto type = call.Content->function->returnType;
 
-        if(type == BOOL || type == INT){
+        if(type == BOOL || type == INT || type->is_pointer()){
             auto t1 = function->context->newTemporary();
 
             execute_call(call, function, t1, {});

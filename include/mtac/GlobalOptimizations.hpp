@@ -64,6 +64,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
+
+    problem.Gather(function);
    
     OUT[cfg->entry()] = problem.Boundary(function);
     
@@ -146,6 +148,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
+
+    problem.Gather(function);
    
     IN[cfg->exit()] = problem.Boundary(function);
     DEBUG_GLOBAL std::cout << "IN[" << *cfg->exit() << "] set to " << IN[cfg->exit()] << std::endl;

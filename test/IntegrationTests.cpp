@@ -260,6 +260,10 @@ BOOST_AUTO_TEST_CASE( int_functions ){
     assert_output("return_int.eddi", "484");
 }
 
+BOOST_AUTO_TEST_CASE( pointer_functions ){
+    assert_output("return_pointers.eddi", "66");
+}
+
 BOOST_AUTO_TEST_CASE( recursive_functions ){
     assert_output("recursive.eddi", "362880");
 }
