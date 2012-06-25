@@ -75,12 +75,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, declaration.Content->instructions);
         }
-
-        std::vector<std::vector<std::shared_ptr<const Type>>> permutations(std::vector<std::shared_ptr<const Type>> types){
-            std::vector<std::vector<std::shared_ptr<const Type>>> perms;
-
-            //TODO Enhance to test all possibilities, not only a change of a single type
-            for(std::size_t i = 0; i < types.size(); ++i){
+        
+        void permute(std::vector<std::vector<std::shared_ptr<const Type>>>& perms, std::vector<std::shared_ptr<const Type>>& types, int start){
+            for(std::size_t i = start; i < types.size(); ++i){
                 if(!types[i]->is_pointer() && !types[i]->is_array()){
                     std::vector<std::shared_ptr<const Type>> copy = types;
 
@@ -88,15 +85,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     perms.push_back(copy);
 
-                    for(std::size_t j = i + 1; j < types.size(); ++j){
-                        if(!types[j]->is_pointer() && !types[j]->is_array()){
-                            copy[j] = new_pointer_type(types[j]);
-                            perms.push_back(copy);
-                            copy[j] = types[j];
-                        }
-                    }
+                    permute(perms, copy, i + 1);
                 }
             }
+        }
+
+        std::vector<std::vector<std::shared_ptr<const Type>>> permutations(std::vector<std::shared_ptr<const Type>>& types){
+            std::vector<std::vector<std::shared_ptr<const Type>>> perms;
+
+            permute(perms, types, 0);
 
             return perms;
         }
