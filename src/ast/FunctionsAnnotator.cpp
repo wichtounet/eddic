@@ -76,6 +76,31 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             visit_each(*this, declaration.Content->instructions);
         }
 
+        std::vector<std::vector<std::shared_ptr<const Type>>> permutations(std::vector<std::shared_ptr<const Type>> types){
+            std::vector<std::vector<std::shared_ptr<const Type>>> perms;
+
+            //TODO Enhance to test all possibilities, not only a change of a single type
+            for(std::size_t i = 0; i < types.size(); ++i){
+                if(!types[i]->is_pointer() && !types[i]->is_array()){
+                    std::vector<std::shared_ptr<const Type>> copy = types;
+
+                    copy[i] = new_pointer_type(types[i]);
+
+                    perms.push_back(copy);
+
+                    for(std::size_t j = i + 1; j < types.size(); ++j){
+                        if(!types[j]->is_pointer() && !types[j]->is_array()){
+                            copy[j] = new_pointer_type(types[j]);
+                            perms.push_back(copy);
+                            copy[j] = types[j];
+                        }
+                    }
+                }
+            }
+
+            return perms;
+        }
+
         void operator()(ast::FunctionCall& functionCall){
             visit_each(*this, functionCall.Content->values);
             
@@ -101,23 +126,18 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 functionCall.Content->mangled_name = mangled;
                 functionCall.Content->function = symbols.getFunction(mangled);
             } else {
-                //TODO Enhance to test all possibilities, not only a change of a single type
-                for(std::size_t i = 0; i < types.size(); ++i){
-                    if(!types[i]->is_pointer() && !types[i]->is_array()){
-                        std::vector<std::shared_ptr<const Type>> copy = types;
-                        
-                        copy[i] = new_pointer_type(types[i]);
+                auto perms = permutations(types);
 
-                        mangled = mangle(name, copy);
+                for(auto& perm : perms){
+                    mangled = mangle(name, perm);
 
-                        if(symbols.exists(mangled)){
-                            symbols.addReference(mangled);
+                    if(symbols.exists(mangled)){
+                        symbols.addReference(mangled);
 
-                            functionCall.Content->mangled_name = mangled;
-                            functionCall.Content->function = symbols.getFunction(mangled);
+                        functionCall.Content->mangled_name = mangled;
+                        functionCall.Content->function = symbols.getFunction(mangled);
 
-                            return;
-                        }
+                        return;
                     }
                 }
             
