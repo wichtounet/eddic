@@ -78,7 +78,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto right_value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
             
         if (left_value_type != right_value_type){
-            throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+            if(left_value_type->is_pointer()){
+                //Addresses are taken implicitly
+                if(left_value_type->data_type() != right_value_type){
+                    throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+                }
+            } else {
+                throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+            }
         }
 
         //Special rules for assignments of variales
