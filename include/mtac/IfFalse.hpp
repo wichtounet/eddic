@@ -10,7 +10,6 @@
 
 #include <string>
 #include <memory>
-#include <unordered_map>
 
 #include <boost/optional.hpp>
 
@@ -18,8 +17,6 @@
 #include "mtac/Argument.hpp"
 
 namespace eddic {
-
-class Variable;
 
 namespace mtac {
 
@@ -30,8 +27,6 @@ struct IfFalse {
     boost::optional<BinaryOperator> op;
     boost::optional<Argument> arg2;
     std::string label;
-    
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
     
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;

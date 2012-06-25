@@ -8,7 +8,12 @@
 #ifndef MTAC_OFFSET_H
 #define MTAC_OFFSET_H
 
+#include <memory>
+#include <iostream>
+
 namespace eddic {
+
+class Variable;
 
 namespace mtac {
 
@@ -24,6 +29,8 @@ struct Offset {
         return variable == b.variable && offset == b.offset;
     }
 };
+
+std::ostream& operator<<(std::ostream& stream, const Offset& offset);
 
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v){

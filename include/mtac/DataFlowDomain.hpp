@@ -9,6 +9,7 @@
 #define MTAC_DATA_FLOW_DOMAIN_H
 
 #include <unordered_map>
+#include <unordered_set>
 
 namespace eddic {
 
@@ -107,7 +108,7 @@ std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
 
 template<typename T>
 std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
-    stream << "{";
+    stream << "vector{";
 
     for(auto& value : values){
         stream << value << ", ";
@@ -117,8 +118,25 @@ std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
 }
 
 template<typename Key, typename Value, typename Hasher>
-std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Hasher>&/* values*/){
-    return stream << "[map]";
+std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Hasher>& values){
+    stream << "map{";
+
+    for(auto& value : values){
+        stream << value.first << ":" << value.second << ", ";
+    }
+
+    return stream << "}";
+}
+
+template<typename Value, typename Hasher>
+std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>& values){
+    stream << "set{";
+
+    for(auto& value : values){
+        stream << value << ", ";
+    }
+
+    return stream << "}";
 }
 
 } //end of mtac

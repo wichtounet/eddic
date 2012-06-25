@@ -5,21 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_LIVENESS_ANALYZER_H
-#define MTAC_LIVENESS_ANALYZER_H
+#include "mtac/Offset.hpp"
 
-#include "mtac/Program.hpp"
+using namespace eddic;
 
-namespace eddic {
-
-namespace mtac {
-
-struct LivenessAnalyzer {
-    void compute(std::shared_ptr<mtac::Program> program);
-};
-
-} //end of ast
-
-} //end of eddic
-
-#endif
+std::ostream& mtac::operator<<(std::ostream& stream, const Offset& offset){
+    return stream << "(" << offset.variable << ")" << offset.offset;
+}

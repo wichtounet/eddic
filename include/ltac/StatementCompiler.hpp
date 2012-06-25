@@ -52,12 +52,12 @@ class StatementCompiler : public boost::static_visitor<> {
         void operator()(std::string& str);
 
         bool ended = false;     //Is the basic block ended ?
+
+        ltac::RegisterManager manager;
    
     private:
         //The function being compiled
         std::shared_ptr<ltac::Function> function;
-
-        ltac::RegisterManager manager;
 
         std::shared_ptr<FloatPool> float_pool;
         

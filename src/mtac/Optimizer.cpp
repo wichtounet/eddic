@@ -30,6 +30,7 @@
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -42,6 +43,7 @@ using namespace eddic;
 
 namespace {
 
+static const unsigned int MAX_THREADS = 2;
 static const bool DebugPerf = false;
 
 template<typename Visitor>
@@ -359,6 +361,38 @@ bool data_flow_optimization(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
+bool dead_code_elimination(std::shared_ptr<mtac::Function> function){
+    bool optimized = false;
+
+    mtac::LiveVariableAnalysisProblem problem;
+
+    auto results = mtac::data_flow(function, problem);
+
+    for(auto& block : function->getBasicBlocks()){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if(mtac::erase_result((*ptr)->op)){
+                    if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
+                        it = block->statements.erase(it);
+                        end = block->statements.end();
+                        optimized=true;
+                        continue;
+                    }
+                }
+            }
+
+            ++it;
+        }
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -400,8 +434,8 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         }
 
         optimized |= debug("Common Subexpression Elimination", data_flow_optimization<mtac::CommonSubexpressionElimination>(function), function);
-        optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<mtac::RemoveAssign>(function), function);
-        optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<mtac::RemoveMultipleAssign>(function), function);
+
+        optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
 
         optimized |= debug("Optimize Branches", optimize_branches(function), function);
         optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
@@ -419,6 +453,35 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
     }
 
     debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+    
+   /* 
+    //Liveness debugging
+    mtac::LiveVariableAnalysisProblem problem;
+    auto results = mtac::data_flow(function, problem);
+
+    for(auto& block : function->getBasicBlocks()){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            mtac::Printer printer;
+            printer.printStatement(statement);
+            std::cout << "OUT{";
+            for(auto& var : results->OUT_S[statement].values()){
+                std::cout << var->name() << ", ";
+            }
+            std::cout << "}" << std::endl;
+            std::cout << "IN{";
+            for(auto& var : results->IN_S[statement].values()){
+                std::cout << var->name() << ", ";
+            }
+            std::cout << "}" << std::endl;
+
+            ++it;
+        }
+    }*/
 }
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
@@ -427,7 +490,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){
@@ -452,7 +515,7 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){
