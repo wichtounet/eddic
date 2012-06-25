@@ -79,9 +79,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 
-    void operator()(ast::GlobalArrayDeclaration& declaration){
+    template<typename ArrayDeclaration>
+    void declare_array(ArrayDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
+            throw SemanticalException("The Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
         auto element_type = visit(ast::TypeTransformer(), declaration.Content->arrayType);
@@ -95,6 +96,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, declaration.Content->arraySize));
+    }
+
+    void operator()(ast::GlobalArrayDeclaration& declaration){
+        declare_array(declaration);
+    }
+    
+    void operator()(ast::ArrayDeclaration& declaration){
+        declare_array(declaration);
     }
     
     void operator()(ast::Foreach& foreach){
@@ -192,15 +201,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
             }
         }
-    }
-    
-    void operator()(ast::ArrayDeclaration& declaration){
-        if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
-        }
-
-        auto type = new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize);
-        declaration.Content->context->addVariable(declaration.Content->arrayName, type);
     }
     
     void operator()(ast::Swap& swap){
