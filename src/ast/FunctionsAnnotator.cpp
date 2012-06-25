@@ -25,14 +25,15 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PROGRAM()
          
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!is_standard_type(declaration.Content->returnType)){
-                throw SemanticalException("A function can only returns standard types for now", declaration.Content->position);
+            auto return_type = visit(ast::TypeTransformer(), declaration.Content->returnType);
+            auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
+
+            if(return_type->is_array()){
+                throw SemanticalException("Cannot return array from function", declaration.Content->position);
             }
 
-            auto signature = std::make_shared<Function>(new_type(declaration.Content->returnType), declaration.Content->functionName);
-
-            if(signature->returnType->is_array()){
-                throw SemanticalException("Cannot return array from function", declaration.Content->position);
+            if(return_type->is_custom_type()){
+                throw SemanticalException("Cannot return struct from function", declaration.Content->position);
             }
 
             for(auto& param : declaration.Content->parameters){
