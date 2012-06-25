@@ -1,0 +1,18 @@
+int* globalArray[2];
+
+void main(){
+    int a = 55;
+    int b = 66;
+
+    globalArray[0] = a;
+    globalArray[1] = b;
+
+    print(*globalArray[0]);
+    print("|");
+    print(*globalArray[1]);
+    print("|");
+}
+
+void second(){
+    int* array[2];
+}
