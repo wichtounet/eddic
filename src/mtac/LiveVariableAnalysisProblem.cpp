@@ -15,6 +15,24 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
+void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> function){
+   for(auto& block : function->getBasicBlocks()){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+                auto& param = *ptr;
+
+                if(param->address){
+                    if(mtac::isVariable(param->arg)){
+                        auto var = boost::get<std::shared_ptr<Variable>>(param->arg);
+
+                        escaped_variables.insert(var);
+                    }
+                }
+            }
+        }
+   }
+}
+
 ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
     return default_element();
 }
@@ -75,6 +93,10 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
         update((*ptr)->arg1, in.values());
         update_optional((*ptr)->arg2, in.values());
+    }
+
+    for(auto& escaped_var : escaped_variables){
+        in.values().insert(escaped_var);
     }
 
     return in;
