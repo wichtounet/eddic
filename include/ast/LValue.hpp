@@ -12,16 +12,17 @@
 
 #include "ast/ArrayValue.hpp"
 #include "ast/VariableValue.hpp"
-#include "ast/DereferenceVariableValue.hpp"
 
 namespace eddic {
 
 namespace ast {
 
+class DereferenceValue;
+
 typedef boost::variant<
             VariableValue, 
             ArrayValue,
-            DereferenceVariableValue
+            DereferenceValue
         > LValue;
 
 ast::LValue to_left_value(ast::Value left_value);
@@ -29,5 +30,7 @@ ast::LValue to_left_value(ast::Value left_value);
 } //end of ast
 
 } //end of eddic
+
+#include "ast/DereferenceValue.hpp"
 
 #endif

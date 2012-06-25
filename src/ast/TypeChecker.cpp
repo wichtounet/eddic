@@ -48,7 +48,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
-    AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
+    AUTO_IGNORE_DEREFERENCE_VALUE()
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
         auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);

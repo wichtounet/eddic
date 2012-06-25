@@ -367,35 +367,41 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
     }
     
-    result_type operator()(ast::DereferenceVariableValue& value) const {
-        if(value.Content->memberNames.empty()){
-            auto type = value.variable()->type()->data_type();
+    result_type operator()(ast::DereferenceValue& dereference_value) const {
+        if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
+            auto& value = *ptr;
 
-            if(type == INT || type == BOOL){
-                auto temp = value.context()->new_temporary(type);
+            if(value.Content->memberNames.empty()){
+                auto type = value.variable()->type()->data_type();
 
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::DOT, 0));
+                if(type == INT || type == BOOL){
+                    auto temp = value.context()->new_temporary(type);
 
-                return {temp};
-            } else if(type == FLOAT){
-                auto temp = value.context()->new_temporary(type);
+                    function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::DOT, 0));
 
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::FDOT, 0));
+                    return {temp};
+                } else if(type == FLOAT){
+                    auto temp = value.context()->new_temporary(type);
 
-                return {temp};
-            } else if(type == STRING){
-                auto t1 = value.context()->new_temporary(INT);
-                auto t2 = value.context()->new_temporary(INT);
+                    function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::FDOT, 0));
 
-                function->add(std::make_shared<mtac::Quadruple>(t1, value.variable(), mtac::Operator::DOT, 0));
-                function->add(std::make_shared<mtac::Quadruple>(t2, value.variable(), mtac::Operator::DOT, getStringOffset(value.variable())));
+                    return {temp};
+                } else if(type == STRING){
+                    auto t1 = value.context()->new_temporary(INT);
+                    auto t2 = value.context()->new_temporary(INT);
 
-                return {t1, t2};
+                    function->add(std::make_shared<mtac::Quadruple>(t1, value.variable(), mtac::Operator::DOT, 0));
+                    function->add(std::make_shared<mtac::Quadruple>(t2, value.variable(), mtac::Operator::DOT, getStringOffset(value.variable())));
+
+                    return {t1, t2};
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                }
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                ASSERT_PATH_NOT_TAKEN("For now, pointers inside of struct are not supported");
             }
         } else {
-            ASSERT_PATH_NOT_TAKEN("For now, pointers inside of struct are not supported");
+            //TODO
         }
     }
 
@@ -549,7 +555,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
         complexAssign(value.variable()->type(), value);
     }
 
-    void operator()(ast::DereferenceVariableValue& value) const {
+    void operator()(ast::DereferenceValue& value) const {
         complexAssign(value.variable()->type()->data_type(), value);
     }
 
@@ -697,18 +703,23 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         auto variable = left.Content->var;
 
         visit(AssignValueToArray(function, variable, left.Content->indexValue), assignment.Content->value);
-    } else if(auto* ptr = boost::get<ast::DereferenceVariableValue>(&assignment.Content->left_value)){
-        auto left = *ptr;
-        auto variable = left.Content->var;
+    } else if(auto* ptr = boost::get<ast::DereferenceValue>(&assignment.Content->left_value)){
+        if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
+            auto left = *var_ptr;
+        
+            auto variable = left.Content->var;
 
-        if(left.Content->memberNames.empty()){
-            visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
+            if(left.Content->memberNames.empty()){
+                visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
+            } else {
+                unsigned int offset = 0;
+                std::shared_ptr<const Type> member_type;
+                boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
+
+                visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
+            }
         } else {
-            unsigned int offset = 0;
-            std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
-
-            visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
+            //TODO
         }
     }
 }

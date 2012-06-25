@@ -35,7 +35,7 @@ struct ASTAssignment;
 typedef Deferred<ASTAssignment> Assignment;
 
 struct VariableValue;
-struct DereferenceVariableValue;
+struct DereferenceValue;
 
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;

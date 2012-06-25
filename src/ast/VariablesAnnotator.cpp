@@ -264,14 +264,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         check_variable_values(variable);
     }
 
-    void operator()(ast::DereferenceVariableValue& variable){
-        check_variable_values(variable);
-
-        auto var = variable.Content->var;
-
-        if(!var->type()->is_pointer()){
-            throw SemanticalException("Only pointer variable can be dereferenced", variable.Content->position);
-        }
+    void operator()(ast::DereferenceValue& variable){
+        visit(*this, variable.Content->ref);
+        //check_variable_values(variable);
+        //TODO
     }
 
     void operator()(ast::ArrayValue& array){
