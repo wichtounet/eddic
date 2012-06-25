@@ -555,10 +555,6 @@ struct AbstractVisitor : public boost::static_visitor<> {
         complexAssign(value.variable()->type(), value);
     }
 
-    void operator()(ast::DereferenceValue& value) const {
-        complexAssign(value.variable()->type()->data_type(), value);
-    }
-
     void operator()(ast::ArrayValue& array) const {
         auto type = array.Content->var->type()->data_type();
 

@@ -32,9 +32,6 @@ typedef boost::variant<ast::VariableValue, ast::ArrayValue> Ref;
  * Should only be used from the Deferred version (eddic::ast::VariableValue).
  */
 struct ASTDereferenceValue {
-    std::shared_ptr<Context> context;
-    std::shared_ptr<Variable> var;
-
     Position position;
     char op;
     Ref ref;
@@ -43,18 +40,10 @@ struct ASTDereferenceValue {
 };
 
 /*!
- * \struct DereferenceValue
+ * \typedef DereferenceValue
  * \brief The AST node for a variable value.
 */
-struct DereferenceValue : public Deferred<ASTDereferenceValue> {
-    std::shared_ptr<Variable> variable() const {
-        return Content->var;
-    }
-    
-    std::shared_ptr<Context> context() const {
-        return Content->context;
-    }
-};
+typedef Deferred<ASTDereferenceValue> DereferenceValue;
 
 } //end of ast
 

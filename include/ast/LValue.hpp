@@ -17,7 +17,8 @@ namespace eddic {
 
 namespace ast {
 
-class DereferenceValue;
+struct ASTDereferenceValue;
+typedef Deferred<ASTDereferenceValue> DereferenceValue;
 
 typedef boost::variant<
             VariableValue, 
