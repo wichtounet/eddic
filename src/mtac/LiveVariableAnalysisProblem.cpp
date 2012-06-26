@@ -17,7 +17,7 @@ using namespace eddic;
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
 void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> function){
-   for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
             //Passing a variable as param by address escape its liveness
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
@@ -46,7 +46,7 @@ void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> f
                 }
             }
         }
-   }
+    }
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
