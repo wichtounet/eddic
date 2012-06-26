@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Variable.hpp"
+#include "Type.hpp"
 
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/Utils.hpp"
@@ -128,8 +129,10 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
         if(quadruple->op != mtac::Operator::ARRAY && quadruple->op != mtac::Operator::DOT){
             changes |= optimize_optional(quadruple->arg1, results);
         }
-
-        changes |= optimize_optional(quadruple->arg2, results);
+        
+        if(!(quadruple->op == mtac::Operator::ARRAY_ASSIGN && quadruple->result->type()->is_array() && quadruple->result->type()->data_type()->is_pointer())){
+            changes |= optimize_optional(quadruple->arg2, results);
+        }
 
         if(!mtac::erase_result(quadruple->op) && quadruple->result){
             if(results.find(quadruple->result) != results.end()){
