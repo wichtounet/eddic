@@ -23,6 +23,7 @@
 #include "mtac/IsSingleArgumentVisitor.hpp"
 #include "mtac/IsParamSafeVisitor.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/Utils.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"
@@ -366,6 +367,32 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
         }
     }
+
+    result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
+        if(type == INT || type == BOOL){
+            auto temp = function->context->new_temporary(type);
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, 0));
+
+            return {temp};
+        } else if(type == FLOAT){
+            auto temp = function->context->new_temporary(type);
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, 0));
+
+            return {temp};
+        } else if(type == STRING){
+            auto t1 = function->context->new_temporary(INT);
+            auto t2 = function->context->new_temporary(INT);
+
+            function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+            function->add(std::make_shared<mtac::Quadruple>(t2, variable, mtac::Operator::DOT, getStringOffset(variable)));
+
+            return {t1, t2};
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled type");
+        }
+    }
     
     result_type operator()(ast::DereferenceValue& dereference_value) const {
         if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
@@ -374,34 +401,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             if(value.Content->memberNames.empty()){
                 auto type = value.variable()->type()->data_type();
 
-                if(type == INT || type == BOOL){
-                    auto temp = value.context()->new_temporary(type);
-
-                    function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::DOT, 0));
-
-                    return {temp};
-                } else if(type == FLOAT){
-                    auto temp = value.context()->new_temporary(type);
-
-                    function->add(std::make_shared<mtac::Quadruple>(temp, value.variable(), mtac::Operator::FDOT, 0));
-
-                    return {temp};
-                } else if(type == STRING){
-                    auto t1 = value.context()->new_temporary(INT);
-                    auto t2 = value.context()->new_temporary(INT);
-
-                    function->add(std::make_shared<mtac::Quadruple>(t1, value.variable(), mtac::Operator::DOT, 0));
-                    function->add(std::make_shared<mtac::Quadruple>(t2, value.variable(), mtac::Operator::DOT, getStringOffset(value.variable())));
-
-                    return {t1, t2};
-                } else {
-                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
-                }
+                return dereference_variable(value.variable(), type);
             } else {
                 ASSERT_PATH_NOT_TAKEN("For now, pointers inside of struct are not supported");
             }
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
+            auto& value = *ptr;
+
+            //As the array hold pointers, the visitor will return a temporary
+            auto values = visit_non_variant(*this, value);
+
+            ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
+
+            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
+
+            return dereference_variable(variable, value.Content->var->type()->data_type());
         } else {
-            //TODO
+            ASSERT_PATH_NOT_TAKEN("Unhandled dereference left value type");
         }
     }
 
