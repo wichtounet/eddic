@@ -162,9 +162,12 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 }
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
-    std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] ";
-    visit(*this, assign.Content->left_value);
+    std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] " << std::endl;
 
+    std::cout << indent() << "Left Value:" << std::endl;
+    print_sub(*this, assign.Content->left_value);
+
+    std::cout << indent() << "Right Value:" << std::endl;
     print_sub(*this, assign.Content->value);
 }
 
@@ -214,6 +217,7 @@ void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
 void ast::DebugVisitor::operator()(ast::DereferenceValue& value) const {
     std::cout << indent() << "Dereference Variable Value" << std::endl;;
 
+    std::cout << indent() << "Left Value:" << std::endl;
     print_sub(*this, value.Content->ref);
 }
 
