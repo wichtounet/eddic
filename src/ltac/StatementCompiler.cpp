@@ -1166,6 +1166,35 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
 
                 manager.release(reg);
+            } else if(quadruple->result->type()->data_type()->is_pointer()){
+                auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2);
+                auto position = (*ptr)->position();
+
+                //TODO Certainly some optimizations are possible here
+
+                if(position.isGlobal()){
+                    auto reg = manager.get_free_reg();
+
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
+
+                    manager.release(reg);
+                } else if(position.isStack()){
+                    auto reg = manager.get_free_reg();
+
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
+                    ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
+
+                    manager.release(reg);
+                } else if(position.isParameter()){
+                    auto reg = manager.get_free_reg();
+                    
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
+                    
+                    manager.release(reg);
+                }
             } else {
                 ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
             }
