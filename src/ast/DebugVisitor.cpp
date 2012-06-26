@@ -221,8 +221,9 @@ void ast::DebugVisitor::operator()(ast::DereferenceValue& value) const {
     print_sub(*this, value.Content->ref);
 }
 
-void ast::DebugVisitor::operator()(ast::ArrayValue&) const {
-    std::cout << indent() << "Array value" << std::endl; 
+void ast::DebugVisitor::operator()(ast::ArrayValue& value) const {
+    std::cout << indent() << "Array value [" << value.Content->arrayName << "]" << std::endl; 
+    print_sub(*this, value.Content->indexValue);
 }
 
 void ast::DebugVisitor::operator()(ast::Expression& value) const {
