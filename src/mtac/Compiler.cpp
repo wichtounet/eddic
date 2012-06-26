@@ -440,6 +440,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
 
             return {temp};
+        } else if (type->is_pointer()){
+            auto temp = array.Content->context->new_temporary(INT);
+            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
+            return {temp};
         } else if (type == STRING){
             auto t1 = array.Content->context->newTemporary();
             function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
