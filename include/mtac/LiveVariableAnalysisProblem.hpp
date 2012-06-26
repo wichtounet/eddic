@@ -18,14 +18,49 @@ namespace eddic {
 class Variable;
 
 namespace mtac {
+    
+typedef std::unordered_set<std::shared_ptr<Variable>> Values;
 
-typedef std::unordered_set<std::shared_ptr<Variable>> LiveVariableValues;
+struct LiveVariableValues {
+    Values values;
+    std::shared_ptr<Values> pointer_escaped;
+
+    void insert(std::shared_ptr<Variable> var){
+        values.insert(var);
+    }
+    
+    void erase(std::shared_ptr<Variable> var){
+        values.erase(var);
+    }
+
+    Values::iterator find(std::shared_ptr<Variable> var){
+        return values.find(var);
+    }
+    
+    Values::iterator begin(){
+        return values.begin();
+    }
+    
+    Values::iterator end(){
+        return values.end();
+    }
+
+    std::size_t size(){
+        return values.size();
+    }
+};
+
+std::ostream& operator<<(std::ostream& stream, LiveVariableValues& expression);
 
 struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backward, LiveVariableValues> {
-    LiveVariableValues escaped_variables;
+    std::shared_ptr<Values> pointer_escaped;
+    Values escaped_variables;
+    
+    LiveVariableAnalysisProblem();
 
     void Gather(std::shared_ptr<mtac::Function> function) override;
     
+    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
     ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;

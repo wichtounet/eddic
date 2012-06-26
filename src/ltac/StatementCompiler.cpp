@@ -689,6 +689,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
                 manager.set_written(quadruple->result);
 
+                //If the address of the variable is escaped, we have to spill its value directly
+                if(manager.is_escaped(quadruple->result)){
+                    manager.spills(reg);
+                }
+
                 break;
             }
         case mtac::Operator::FASSIGN:
@@ -697,6 +702,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 manager.copy(*quadruple->arg1, reg);
 
                 manager.set_written(quadruple->result);
+                
+                //If the address of the variable is escaped, we have to spill its value directly
+                if(manager.is_escaped(quadruple->result)){
+                    manager.spills(reg);
+                }
 
                 break;
             }
