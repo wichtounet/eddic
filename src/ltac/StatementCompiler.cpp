@@ -64,8 +64,6 @@ ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var,
 ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, int offset){
     auto position = var->position();
 
-    assert(!position.isTemporary());
-
     if(position.isStack()){
         return ltac::Address(ltac::BP, -position.offset() + offset);
     } else if(position.isParameter()){
@@ -86,7 +84,10 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         }
     } else if(position.isGlobal()){
         return ltac::Address("V" + position.name(), offset);
-    } 
+    } else if(position.isTemporary()){
+        auto reg = manager.get_reg(var);
+        return ltac::Address(reg);
+    }
 
     ASSERT_PATH_NOT_TAKEN("Should never get there");
 }
