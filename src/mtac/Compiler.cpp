@@ -415,7 +415,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
 
-            return dereference_variable(variable, value.Content->var->type()->data_type());
+            return dereference_variable(variable, value.Content->var->type()->data_type()->data_type());
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled dereference left value type");
         }
