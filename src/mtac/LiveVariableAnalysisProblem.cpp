@@ -47,15 +47,13 @@ void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> f
             else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto& quadruple = *ptr;
 
-                auto type = quadruple->result->type();
-
-                if(quadruple->op == mtac::Operator::ASSIGN && type->is_pointer()){
+                if(quadruple->op == mtac::Operator::ASSIGN && quadruple->result->type()->is_pointer()){
                     if(quadruple->arg1 && mtac::isVariable(*quadruple->arg1)){
                         auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                         escaped_variables.insert(var);
                         pointer_escaped->insert(var);
                     }
-                } else if(quadruple->op == mtac::Operator::ARRAY_ASSIGN && type->is_array() && type->data_type()->is_pointer()){
+                } else if(quadruple->op == mtac::Operator::ARRAY_ASSIGN && quadruple->result->type()->is_array() && quadruple->result->type()->data_type()->is_pointer()){
                     if(quadruple->arg2 && mtac::isVariable(*quadruple->arg2)){
                         auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
                         escaped_variables.insert(var);
