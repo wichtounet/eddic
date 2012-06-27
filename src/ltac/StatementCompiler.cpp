@@ -64,8 +64,6 @@ ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var,
 ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, int offset){
     auto position = var->position();
 
-    assert(!position.isTemporary());
-
     if(position.isStack()){
         return ltac::Address(ltac::BP, -position.offset() + offset);
     } else if(position.isParameter()){
@@ -86,7 +84,10 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         }
     } else if(position.isGlobal()){
         return ltac::Address("V" + position.name(), offset);
-    } 
+    } else if(position.isTemporary()){
+        auto reg = manager.get_reg(var);
+        return ltac::Address(reg, 0);
+    }
 
     ASSERT_PATH_NOT_TAKEN("Should never get there");
 }
@@ -688,6 +689,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
                 manager.set_written(quadruple->result);
 
+                //If the address of the variable is escaped, we have to spill its value directly
+                if(manager.is_escaped(quadruple->result)){
+                    manager.spills(reg);
+                }
+
                 break;
             }
         case mtac::Operator::FASSIGN:
@@ -696,6 +702,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 manager.copy(*quadruple->arg1, reg);
 
                 manager.set_written(quadruple->result);
+                
+                //If the address of the variable is escaped, we have to spill its value directly
+                if(manager.is_escaped(quadruple->result)){
+                    manager.spills(reg);
+                }
 
                 break;
             }
@@ -1165,6 +1176,35 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
 
                 manager.release(reg);
+            } else if(quadruple->result->type()->data_type()->is_pointer()){
+                auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2);
+                auto position = (*ptr)->position();
+
+                //TODO Certainly some optimizations are possible here
+
+                if(position.isGlobal()){
+                    auto reg = manager.get_free_reg();
+
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
+
+                    manager.release(reg);
+                } else if(position.isStack()){
+                    auto reg = manager.get_free_reg();
+
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
+                    ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
+
+                    manager.release(reg);
+                } else if(position.isParameter()){
+                    auto reg = manager.get_free_reg();
+                    
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
+                    
+                    manager.release(reg);
+                }
             } else {
                 ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
             }

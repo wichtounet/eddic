@@ -140,7 +140,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   suffix_operation
         |   array_value
         |   variable_value
-        |   dereference_variable_value
+        |   dereference_value
         |   null
         |   true_
         |   false_
@@ -179,14 +179,13 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                 >>  lexer.identifier
              );
    
-    dereference_variable_value %= 
+    dereference_value %= 
             qi::position(position_begin)
         >>  lexer.multiplication
-        >>  lexer.identifier
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
-             );
+        >>  (
+                    array_value
+                |   variable_value
+            );
    
     array_value %=
             qi::position(position_begin)
@@ -221,7 +220,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     left_value =
             array_value
         |   variable_value
-        |   dereference_variable_value;
+        |   dereference_value;
     
     assignment %= 
             qi::position(position_begin)
@@ -245,6 +244,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(left_value);
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
-    DEBUG_RULE(dereference_variable_value);
+    DEBUG_RULE(dereference_value);
     DEBUG_RULE(function_call);
 }

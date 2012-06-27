@@ -48,7 +48,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
-    AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
+    AUTO_IGNORE_DEREFERENCE_VALUE()
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
         auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
@@ -78,7 +78,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
         auto right_value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
             
         if (left_value_type != right_value_type){
-            throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+            if(left_value_type->is_pointer()){
+                //Addresses are taken implicitly
+                if(left_value_type->data_type() != right_value_type){
+                    throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+                }
+            } else {
+                throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+            }
         }
 
         //Special rules for assignments of variales

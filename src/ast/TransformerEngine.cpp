@@ -7,12 +7,13 @@
 
 #include <boost/variant/static_visitor.hpp>
 
+#include "assert.hpp"
+#include "VisitorUtils.hpp"
+#include "Variable.hpp"
+
 #include "ast/TransformerEngine.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
-
-#include "VisitorUtils.hpp"
-#include "Variable.hpp"
 
 using namespace eddic;
 
@@ -26,7 +27,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
-    AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(ast::Value)
     AUTO_RETURN_PLUS(ast::Value)
     AUTO_RETURN_MINUS(ast::Value)
     AUTO_RETURN_PREFIX_OPERATION(ast::Value)
@@ -55,6 +55,20 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
     ast::Value operator()(ast::ArrayValue& value){
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
+
+        return value;
+    }
+
+    ast::Value operator()(ast::DereferenceValue& value){
+        auto left = visit(*this, value.Content->ref); 
+
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->ref = *ptr;
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+        }
 
         return value;
     }
@@ -429,7 +443,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_CAST()
     AUTO_IGNORE_VARIABLE_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
-    AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
+    AUTO_IGNORE_DEREFERENCE_VALUE()
     AUTO_IGNORE_FUNCTION_CALLS()
     AUTO_IGNORE_SWAP()
     AUTO_IGNORE_EXPRESSION()

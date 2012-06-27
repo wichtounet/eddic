@@ -95,6 +95,7 @@ struct RegisterManager {
         
     bool is_live(std::shared_ptr<Variable> variable, mtac::Statement statement);
     bool is_live(std::shared_ptr<Variable> variable);
+    bool is_escaped(std::shared_ptr<Variable> variable);
     
     void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
 

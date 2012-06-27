@@ -102,7 +102,8 @@ visit_non_variant(Visitor& visitor, Visitable& visitable){
  * \param visitable The object to visit. 
  */
 template<typename Visitor, typename Visitable>
-inline void visit_non_variant(Visitor& visitor, Visitable& visitable){
+inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+visit_non_variant(Visitor& visitor, Visitable& visitable){
     visitor(visitable);
 }
 
@@ -124,7 +125,8 @@ visit_non_variant(const Visitor& visitor, const Visitable& visitable){
  * \param visitable The object to visit. 
  */
 template<typename Visitor, typename Visitable>
-inline void visit_non_variant(const Visitor& visitor, const Visitable& visitable){
+inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+visit_non_variant(const Visitor& visitor, const Visitable& visitable){
     visitor(visitable);
 }
 

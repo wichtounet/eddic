@@ -115,7 +115,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     
     arrayDeclaration %= 
             qi::position(position_begin)
-        >>  lexer.identifier 
+        >>  type
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer
@@ -136,7 +136,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     
     globalArrayDeclaration %= 
             qi::position(position_begin)
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  lexer.left_bracket
         >>  lexer.integer

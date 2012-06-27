@@ -42,7 +42,7 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         }
 
         if(type->is_array()){
-            if(type->data_type() == INT){
+            if(type->data_type() == INT || type->data_type()->is_pointer()){
                 declareIntArray(it.second->name(), type->elements());
             } else if(type->data_type() == FLOAT){
                 declareFloatArray(it.second->name(), type->elements());

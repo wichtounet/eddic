@@ -412,6 +412,10 @@ bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable, mtac::St
     }
 }
 
+bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
+    return liveness->IN_S[current].values().pointer_escaped->find(variable) != liveness->IN_S[current].values().pointer_escaped->end();
+}
+
 bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){
     auto live = is_live(variable, current);
     DEBUG_GLOBAL std::cout << variable->name() << " is live " << live << std::endl;

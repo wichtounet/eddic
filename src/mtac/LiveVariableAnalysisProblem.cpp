@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Variable.hpp"
+#include "Type.hpp"
 
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
@@ -15,26 +16,71 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
+std::ostream& operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
+    stream << "set{";
+
+    for(auto& v : value){
+        stream << v->name() << ", ";
+    }
+
+    return stream << "}";
+}
+
+mtac::LiveVariableAnalysisProblem::LiveVariableAnalysisProblem(){
+    pointer_escaped = std::make_shared<Values>();
+}
+
 void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> function){
-   for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
+            //Passing a variable as param by address escape its liveness
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
                 auto& param = *ptr;
 
                 if(param->address){
                     if(mtac::isVariable(param->arg)){
-                        auto var = boost::get<std::shared_ptr<Variable>>(param->arg);
+                        escaped_variables.insert(boost::get<std::shared_ptr<Variable>>(param->arg));
+                    }
+                }
+            } 
+            //Taking the address of a variable escape its liveness
+            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                auto& quadruple = *ptr;
 
+                auto type = quadruple->result->type();
+
+                if(quadruple->op == mtac::Operator::ASSIGN && type->is_pointer()){
+                    if(quadruple->arg1 && mtac::isVariable(*quadruple->arg1)){
+                        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                         escaped_variables.insert(var);
+                        pointer_escaped->insert(var);
+                    }
+                } else if(quadruple->op == mtac::Operator::ARRAY_ASSIGN && type->is_array() && type->data_type()->is_pointer()){
+                    if(quadruple->arg2 && mtac::isVariable(*quadruple->arg2)){
+                        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
+                        escaped_variables.insert(var);
+                        pointer_escaped->insert(var);
                     }
                 }
             }
         }
-   }
+    }
+}
+
+ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(std::shared_ptr<mtac::Function> /*function*/){
+    auto value = default_element();
+
+    value.values().pointer_escaped = pointer_escaped;
+
+    return value;
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
-    return default_element();
+    auto value = default_element();
+
+    value.values().pointer_escaped = pointer_escaped;
+
+    return value;
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, ProblemDomain& in){
@@ -46,6 +92,7 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, Proble
 
     typename ProblemDomain::Values values;
     ProblemDomain result(values);
+    result.values().pointer_escaped = pointer_escaped;
 
     for(auto& value : in.values()){
         result.values().insert(value);
@@ -81,6 +128,8 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
         
         if(mtac::erase_result(quadruple->op)){
             in.values().erase(quadruple->result);
+        } else {
+            in.values().insert(quadruple->result);
         }
 
         update_optional((*ptr)->arg1, in.values());
