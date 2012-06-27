@@ -443,6 +443,8 @@ void output_function(AssemblyFileWriter& writer, const std::string& function){
 
         writer.stream() << str << std::endl;
     }
+
+    writer.stream() << std::endl;
 }
 
 void addPrintIntegerBody(AssemblyFileWriter& writer){
@@ -649,14 +651,7 @@ void addPrintBoolFunction(AssemblyFileWriter& writer){
 
 void addPrintLineFunction(AssemblyFileWriter& writer){
     if(as::is_enabled_println()){
-        defineFunction(writer, "_F7println");
-
-        writer.stream() << "push S1" << std::endl;
-        writer.stream() << "push 1" << std::endl;
-        writer.stream() << "call _F5printS" << std::endl;
-        writer.stream() << "add rsp, 16" << std::endl;
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_println");
     }
 }
 
@@ -672,157 +667,25 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
 
 void addConcatFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F6concatSS")){
-        defineFunction(writer, "_F6concatSS");
-
-        writer.stream() << "mov rbx, [rbp + 32]" << std::endl;
-        writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
-        writer.stream() << "add rbx, rcx" << std::endl;             //rbx = number of bytes = return 2
-
-        //alloc the total number of bytes
-        writer.stream() << "push rbx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;
-        writer.stream() << "add rsp, 8" << std::endl;
-
-        writer.stream() << "mov rdi, rax" << std::endl;             //destination address for the movsb
-
-        writer.stream() << "mov rcx, [rbp + 32]" << std::endl;      //number of bytes of the source
-        writer.stream() << "mov rsi, [rbp + 40]" << std::endl;      //source address
-
-        writer.stream() << "rep movsb" << std::endl;                //copy the first part of the string into the destination
-
-        writer.stream() << "mov rcx, [rbp + 16]" << std::endl;      //number of bytes of the source
-        writer.stream() << "mov rsi, [rbp + 24]" << std::endl;      //source address
-
-        writer.stream() << "rep movsb" << std::endl;                //copy the second part of the string into the destination
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_concat");
     }
 }
 
 void addAllocFunction(AssemblyFileWriter& writer){
     if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        defineFunction(writer, "eddi_alloc");
-
-        as::save(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
-
-        writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
-        writer.stream() << "mov rbx, [Veddi_remaining]" << std::endl;
-
-        writer.stream() << "cmp rcx, rbx" << std::endl;
-        writer.stream() << "jle .alloc_normal" << std::endl;
-
-        //Get the current address
-        writer.stream() << "mov rax, 12" << std::endl;          //syscall 12 = sys_brk
-        writer.stream() << "xor rdi, rdi" << std::endl;         //get end
-        writer.stream() << "syscall" << std::endl;
-
-        //%eax is the current address 
-        writer.stream() << "mov rsi, rax" << std::endl;
-
-        //Alloc new block of 16384K from the current address
-        writer.stream() << "mov rdi, rax" << std::endl;
-        writer.stream() << "add rdi, 16384" << std::endl;       //rdi = first parameter
-        writer.stream() << "mov rax, 12" << std::endl;          //syscall 12 = sys_brk
-        writer.stream() << "syscall" << std::endl;
-
-        //zero'd the new block
-        writer.stream() << "mov rdi, rax" << std::endl;         //edi = start of block
-
-        writer.stream() << "sub rdi, 4" << std::endl;           //edi points to the last DWORD available to us
-        writer.stream() << "mov rcx, 4096" << std::endl;        //this many DWORDs were allocated
-        writer.stream() << "xor rax, rax"  << std::endl;        //will write with zeroes
-        writer.stream() << "std"  << std::endl;                 //walk backwards
-        writer.stream() << "rep stosb"  << std::endl;           //write all over the reserved area
-        writer.stream() << "cld"  << std::endl;                 //bring back the DF flag to normal state
-
-        writer.stream() << "mov rax, rsi" << std::endl;
-
-        //We now have 16K of available memory starting at %esi
-        writer.stream() << "mov dword [Veddi_remaining], 16384" << std::endl;
-        writer.stream() << "mov [Veddi_current], rsi" << std::endl;
-
-        writer.stream() << ".alloc_normal:" << std::endl;
-
-        //old = current
-        writer.stream() << "mov rax, [Veddi_current]" << std::endl;
-
-        //current += size
-        writer.stream() << "mov rbx, [Veddi_current]" << std::endl;
-        writer.stream() << "add rbx, rcx" << std::endl;
-        writer.stream() << "mov [Veddi_current], rbx" << std::endl;
-
-        //remaining -= size
-        writer.stream() << "mov rbx, [Veddi_remaining]" << std::endl;
-        writer.stream() << "sub rbx, rcx" << std::endl;
-        writer.stream() << "mov [Veddi_remaining], rbx" << std::endl;
-
-        writer.stream() << ".alloc_end:" << std::endl;
-
-        as::restore(writer, {"rbx", "rcx", "rdx", "rdi", "rsi"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_eddi_alloc");
     }
 }
 
 void addTimeFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F4timeAI")){
-        defineFunction(writer, "_F4timeAI");
-
-        writer.stream() << "xor rax, rax" << std::endl;
-        writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
-        writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
-
-        writer.stream() << "mov rsi, [rbp + 16]" << std::endl;
-        writer.stream() << "mov [rsi - 4], eax" << std::endl;
-        writer.stream() << "mov [rsi - 8], edx" << std::endl;
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_time");
     }
 }
 
 void addDurationFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F8durationAIAI")){
-        defineFunction(writer, "_F8durationAIAI");
-
-        writer.stream() << "mov rsi, [rbp + 24]" << std::endl;          //Start time stamp
-        writer.stream() << "mov rdi, [rbp + 16]" << std::endl;           //End time stamp
-
-        //Print the high order bytes
-        writer.stream() << "mov rax, [rsi - 8]" << std::endl;
-        writer.stream() << "mov rbx, [rdi - 8]" << std::endl;
-        writer.stream() << "sub rax, rbx" << std::endl;
-
-        //if the first diff is 0, do not print 0
-        writer.stream() << "cmp rax, 0" << std::endl;
-        writer.stream() << "jz .second" << std::endl;
-
-        //If it's negative, we print the positive only 
-        writer.stream() << "cmp rax, 0" << std::endl;
-        writer.stream() << "jge .push_first" << std::endl;
-        writer.stream() << "neg rax" << std::endl;
-
-        writer.stream() << ".push_first:" << std::endl; 
-        writer.stream() << "push rax" << std::endl;
-        writer.stream() << "call _F5printI" << std::endl;
-        writer.stream() << "add rsp, 8" << std::endl;
-
-        //Print the low order bytes
-        writer.stream() << ".second:" << std::endl;
-        writer.stream() << "mov rax, [rsi - 4]" << std::endl;
-        writer.stream() << "mov rbx, [rdi - 4]" << std::endl;
-        writer.stream() << "sub rax, rbx" << std::endl;
-
-        //If it's negative, we print the positive only 
-        writer.stream() << "cmp rax, 0" << std::endl;
-        writer.stream() << "jge .push_second" << std::endl;
-        writer.stream() << "neg rax" << std::endl;
-
-        writer.stream() << ".push_second:" << std::endl; 
-        writer.stream() << "push rax" << std::endl;
-        writer.stream() << "call _F5printI" << std::endl;
-        writer.stream() << "add rsp, 8" << std::endl;
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_duration");
     }
 }
 
