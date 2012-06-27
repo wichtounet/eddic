@@ -432,6 +432,19 @@ void restoreFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& 
     }
 }
 
+void output_function(AssemblyFileWriter& writer, const std::string& function){
+    std::string name = "functions/" + function + ".s";
+    std::ifstream stream(name.c_str());
+
+    std::string str;
+
+    while(!stream.eof()){
+        std::getline(stream, str);
+
+        writer.stream() << str << std::endl;
+    }
+}
+
 void addPrintIntegerBody(AssemblyFileWriter& writer){
     //The parameter is in r14
     writer.stream() << "mov rax, r14" << std::endl;//We move it to rax for rax is the register source division register
@@ -647,39 +660,13 @@ void addPrintLineFunction(AssemblyFileWriter& writer){
     }
 }
 
-void addPrintStringBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, 1" << std::endl;           //syscall 1 = write
-    writer.stream() << "mov rdi, 1" << std::endl;           //stdout
-    writer.stream() << "mov rsi, [rbp + 24]" << std::endl;  //length
-    writer.stream() << "mov rdx, [rbp + 16]" << std::endl;  //source
-    writer.stream() << "syscall" << std::endl;
-}
-
 void addPrintStringFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
-        defineFunction(writer, "_F5printS");
-
-        as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
-
-        addPrintStringBody(writer);
-
-        as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printS");
     }
    
     if(symbols.referenceCount("_F7printlnS")){ 
-        defineFunction(writer, "_F7printlnS");
-
-        as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
-
-        addPrintStringBody(writer);
-
-        writer.stream() << "call _F7println" << std::endl;
-
-        as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printlnS");
     }
 }
 
