@@ -734,8 +734,17 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
             }
-        } else {
-            //TODO
+        } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&(*ptr).Content->ref)){
+            auto left = *array_ptr;
+
+            //As the array hold pointers, the visitor will return a temporary
+            auto values = ToArgumentsVisitor(function)(left);
+
+            ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
+
+            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
+
+            visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
         }
     }
 }
