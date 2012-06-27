@@ -102,10 +102,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             visit_each(*this, functionCall.Content->values);
             
             std::string name = functionCall.Content->functionName;
-            
-            if(name == "println" || name == "print" || name == "duration"){
-                return;
-            }
 
             std::vector<std::shared_ptr<const Type>> types;
 
@@ -115,6 +111,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
 
             std::string mangled = mangle(name, types);
+            
+            if(name == "println" || name == "print" || name == "duration"){
+                symbols.addReference(mangled);
+
+                return;
+            }
 
             //If the function does not exists, try implicit conversions to pointers
             if(!symbols.exists(mangled)){
