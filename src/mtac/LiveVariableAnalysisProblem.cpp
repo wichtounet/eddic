@@ -128,6 +128,8 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
         
         if(mtac::erase_result(quadruple->op)){
             in.values().erase(quadruple->result);
+        } else {
+            in.values().insert(quadruple->result);
         }
 
         update_optional((*ptr)->arg1, in.values());
