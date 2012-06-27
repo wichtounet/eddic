@@ -264,6 +264,11 @@ BOOST_AUTO_TEST_CASE( pointer_functions ){
     assert_output("return_pointers.eddi", "66");
 }
 
+BOOST_AUTO_TEST_CASE( pointer_arrays ){
+    assert_output("pointer_arrays.eddi", "55|66|555|666|55|66|555|666|");
+}
+
+
 BOOST_AUTO_TEST_CASE( recursive_functions ){
     assert_output("recursive.eddi", "362880");
 }
