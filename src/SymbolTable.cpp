@@ -138,6 +138,10 @@ void SymbolTable::addPrintFunction(const std::string& function, std::shared_ptr<
 }
 
 void SymbolTable::defineStandardFunctions(){
+    auto printLineFunction = std::make_shared<Function>(VOID, "print");
+    printLineFunction->mangledName = "_F7println";
+    addFunction(printLineFunction);
+
     //print string
     addPrintFunction("_F5printS", STRING);
     addPrintFunction("_F7printlnS", STRING);
