@@ -193,7 +193,7 @@ bool optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<S
 
         if(block->statements.size() > 0){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
-                if((*ptr)->function == "concat"){
+                if((*ptr)->function == "_F6concatSS"){
                     //The params are on the previous block
                     auto& paramBlock = *previous;
 

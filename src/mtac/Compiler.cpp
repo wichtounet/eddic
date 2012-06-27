@@ -901,12 +901,12 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
         symbols.addReference("_F6concatSS");
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
+            function->add(std::make_shared<mtac::Call>("_F6concatSS", symbols.getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = function->context->newTemporary();
             auto t2 = function->context->newTemporary();
             
-            function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), t1, t2)); 
+            function->add(std::make_shared<mtac::Call>("_F6concatSS", symbols.getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);

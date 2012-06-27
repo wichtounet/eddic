@@ -666,7 +666,7 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
 }
 
 void addConcatFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "concat");
+    defineFunction(writer, "_F6concatSS");
 
     writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
     writer.stream() << "mov ecx, [ebp + 8]" << std::endl;

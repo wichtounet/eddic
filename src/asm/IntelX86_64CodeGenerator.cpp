@@ -702,7 +702,7 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
 
 void addConcatFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F6concatSS")){
-        defineFunction(writer, "concat");
+        defineFunction(writer, "_F6concatSS");
 
         writer.stream() << "mov rbx, [rbp + 32]" << std::endl;
         writer.stream() << "mov rcx, [rbp + 16]" << std::endl;
