@@ -11,8 +11,37 @@ void main(){
     print("|");
     print(*globalArray[1]);
     print("|");
+
+    *globalArray[0] = 555;
+    *globalArray[1] = 666;
+
+    print(*globalArray[0]);
+    print("|");
+    print(*globalArray[1]);
+    print("|");
+
+    second();
 }
 
 void second(){
     int* array[2];
+    
+    int a = 55;
+    int b = 66;
+
+    array[0] = a;
+    array[1] = b;
+
+    print(*array[0]);
+    print("|");
+    print(*array[1]);
+    print("|");
+
+    *array[0] = 555;
+    *array[1] = 666;
+
+    print(*array[0]);
+    print("|");
+    print(*array[1]);
+    print("|");
 }
