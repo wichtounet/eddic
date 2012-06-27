@@ -47,7 +47,7 @@ void assembleWithoutDebug(Platform platform, const std::string& output, bool ver
             exec("ld -S -m elf_x86_64 output.o -o " + output, verbose);
 
             break;
-   } 
+    }
 }
 
 void assembleWithDebug(Platform platform, const std::string& output, bool verbose){
@@ -62,7 +62,7 @@ void assembleWithDebug(Platform platform, const std::string& output, bool verbos
             exec("ld -m elf_x86_64 output.o -o " + output, verbose);
 
         break;
-   } 
+   }
 }
 
 } //end of anonymous namespace

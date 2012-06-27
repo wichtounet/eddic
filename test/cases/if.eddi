@@ -1,7 +1,21 @@
 void main(){
     if(5 > 3){
-        print("Cool");
+        print(1);
     } else {
-        print("Pas cool");
+        print(0);
     }
+
+    print("|");
+
+    second();
+}
+
+void second(){
+    if(3 > 5){
+        print(0);
+    } else {
+        print(1);
+    }
+
+    print("|");
 }

@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( compound ){
 }
 
 BOOST_AUTO_TEST_CASE( if_ ){
-    assert_output("if.eddi", "Cool");
+    assert_output("if.eddi", "1|1|");
 }
 
 BOOST_AUTO_TEST_CASE( includes ){
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE( string_functions ){
 }
 
 BOOST_AUTO_TEST_CASE( int_functions ){
-    assert_output("return_int.eddi", "484");
+    assert_output("return_int.eddi", "484|");
 }
 
 BOOST_AUTO_TEST_CASE( pointer_functions ){
@@ -267,7 +267,6 @@ BOOST_AUTO_TEST_CASE( pointer_functions ){
 BOOST_AUTO_TEST_CASE( pointer_arrays ){
     assert_output("pointer_arrays.eddi", "55|66|555|666|55|66|555|666|");
 }
-
 
 BOOST_AUTO_TEST_CASE( recursive_functions ){
     assert_output("recursive.eddi", "362880");
