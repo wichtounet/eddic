@@ -441,7 +441,11 @@ void output_function(AssemblyFileWriter& writer, const std::string& function){
     while(!stream.eof()){
         std::getline(stream, str);
 
-        writer.stream() << str << std::endl;
+        if(!str.empty()){
+            if(str[0] != ';'){
+                writer.stream() << str << std::endl;
+            }
+        }
     }
 
     writer.stream() << std::endl;
