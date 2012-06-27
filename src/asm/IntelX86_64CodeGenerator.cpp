@@ -480,30 +480,49 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << ".exit" << ":" << std::endl;
 }
 
+bool is_enabled_printI(){
+    return symbols.referenceCount("_F5printI") || 
+            symbols.referenceCount("_F5printB") || 
+            symbols.referenceCount("_F7printlnB") || 
+            symbols.referenceCount("_F5printF") || 
+            symbols.referenceCount("_F7printlnF") ||
+            symbols.referenceCount("_F8durationAIAI");
+}
+
+bool is_enabled_println(){
+    return symbols.referenceCount("_F7println") || 
+            symbols.referenceCount("_F7printlnS") || 
+            symbols.referenceCount("_F7printlnI") || 
+            symbols.referenceCount("_F7printlnB") || 
+            symbols.referenceCount("_F7printlnF");
+}
+
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printI");
+    if(is_enabled_printI()){
+        defineFunction(writer, "_F5printI");
 
-    as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
+        as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
-    addPrintIntegerBody(writer);
+        addPrintIntegerBody(writer);
 
-    as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
+        as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
    
-    /* println version */
-    
-    defineFunction(writer, "_F7printlnI");
+    if(symbols.referenceCount("_F7printlnI")){
+        defineFunction(writer, "_F7printlnI");
 
-    as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
+        as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
-    addPrintIntegerBody(writer);
+        addPrintIntegerBody(writer);
 
-    writer.stream() << "call _F7println" << std::endl;
+        writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
+        as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
@@ -560,33 +579,35 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printF");
+    if(symbols.referenceCount("_F5printF")){
+        defineFunction(writer, "_F5printF");
 
-    as::save(writer, {"rax", "rbx", "r14"});
-    saveFloat64(writer, {"xmm1", "xmm2"});
+        as::save(writer, {"rax", "rbx", "r14"});
+        saveFloat64(writer, {"xmm1", "xmm2"});
 
-    addPrintFloatBody(writer);
+        addPrintFloatBody(writer);
 
-    restoreFloat64(writer, {"xmm1", "xmm2"});
-    as::restore(writer, {"rax", "rbx", "r14"});
+        restoreFloat64(writer, {"xmm1", "xmm2"});
+        as::restore(writer, {"rax", "rbx", "r14"});
 
-    leaveFunction(writer);
-   
-    /* println version */
+        leaveFunction(writer);
+    }
     
-    defineFunction(writer, "_F7printlnF");
+    if(symbols.referenceCount("_F7printlnF")){
+        defineFunction(writer, "_F7printlnF");
 
-    as::save(writer, {"rax", "rbx", "r14"});
-    saveFloat64(writer, {"xmm1", "xmm2"});
+        as::save(writer, {"rax", "rbx", "r14"});
+        saveFloat64(writer, {"xmm1", "xmm2"});
 
-    addPrintFloatBody(writer);
+        addPrintFloatBody(writer);
 
-    writer.stream() << "call _F7println" << std::endl;
+        writer.stream() << "call _F7println" << std::endl;
 
-    restoreFloat64(writer, {"xmm1", "xmm2"});
-    as::restore(writer, {"rax", "rbx", "r14"});
+        restoreFloat64(writer, {"xmm1", "xmm2"});
+        as::restore(writer, {"rax", "rbx", "r14"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintBoolBody(AssemblyFileWriter& writer){
@@ -603,40 +624,44 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
 }
 
 void addPrintBoolFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printB");
+    if(symbols.referenceCount("_F5printB")){
+        defineFunction(writer, "_F5printB");
 
-    as::save(writer, {"rax"});
+        as::save(writer, {"rax"});
 
-    addPrintBoolBody(writer);
+        addPrintBoolBody(writer);
 
-    as::restore(writer, {"rax"});
+        as::restore(writer, {"rax"});
 
-    leaveFunction(writer);
-   
-    /* println version */
+        leaveFunction(writer);
+    }
     
-    defineFunction(writer, "_F7printlnB");
+    if(symbols.referenceCount("_F7printlnB")){
+        defineFunction(writer, "_F7printlnB");
 
-    as::save(writer, {"rax"});
+        as::save(writer, {"rax"});
 
-    addPrintBoolBody(writer);
+        addPrintBoolBody(writer);
 
-    writer.stream() << "call _F7println" << std::endl;
+        writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"rax"});
+        as::restore(writer, {"rax"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintLineFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F7println");
+    if(is_enabled_println()){
+        defineFunction(writer, "_F7println");
 
-    writer.stream() << "push S1" << std::endl;
-    writer.stream() << "push 1" << std::endl;
-    writer.stream() << "call _F5printS" << std::endl;
-    writer.stream() << "add rsp, 16" << std::endl;
+        writer.stream() << "push S1" << std::endl;
+        writer.stream() << "push 1" << std::endl;
+        writer.stream() << "call _F5printS" << std::endl;
+        writer.stream() << "add rsp, 16" << std::endl;
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintStringBody(AssemblyFileWriter& writer){
@@ -648,29 +673,31 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 }
 
 void addPrintStringFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printS");
-    
-    as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
+    if(symbols.referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+        defineFunction(writer, "_F5printS");
 
-    addPrintStringBody(writer);
+        as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
-    as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
+        addPrintStringBody(writer);
 
-    leaveFunction(writer);
+        as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
+
+        leaveFunction(writer);
+    }
    
-    /* println version */
-    
-    defineFunction(writer, "_F7printlnS");
-    
-    as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
+    if(symbols.referenceCount("_F7printlnS")){ 
+        defineFunction(writer, "_F7printlnS");
 
-    addPrintStringBody(writer);
+        as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
 
-    writer.stream() << "call _F7println" << std::endl;
+        addPrintStringBody(writer);
 
-    as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
+        writer.stream() << "call _F7println" << std::endl;
 
-    leaveFunction(writer);
+        as::restore(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});
+
+        leaveFunction(writer);
+    }
 }
 
 void addConcatFunction(AssemblyFileWriter& writer){
@@ -764,61 +791,65 @@ void addAllocFunction(AssemblyFileWriter& writer){
 }
 
 void addTimeFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F4timeAI");
+    if(symbols.referenceCount("_F4timeAI")){
+        defineFunction(writer, "_F4timeAI");
 
-    writer.stream() << "xor rax, rax" << std::endl;
-    writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
-    writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
+        writer.stream() << "xor rax, rax" << std::endl;
+        writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
+        writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
 
-    writer.stream() << "mov rsi, [rbp + 16]" << std::endl;
-    writer.stream() << "mov [rsi - 4], eax" << std::endl;
-    writer.stream() << "mov [rsi - 8], edx" << std::endl;
+        writer.stream() << "mov rsi, [rbp + 16]" << std::endl;
+        writer.stream() << "mov [rsi - 4], eax" << std::endl;
+        writer.stream() << "mov [rsi - 8], edx" << std::endl;
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addDurationFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F8durationAIAI");
+    if(symbols.referenceCount("_F8durationAIAI")){
+        defineFunction(writer, "_F8durationAIAI");
 
-    writer.stream() << "mov rsi, [rbp + 24]" << std::endl;          //Start time stamp
-    writer.stream() << "mov rdi, [rbp + 16]" << std::endl;           //End time stamp
+        writer.stream() << "mov rsi, [rbp + 24]" << std::endl;          //Start time stamp
+        writer.stream() << "mov rdi, [rbp + 16]" << std::endl;           //End time stamp
 
-    //Print the high order bytes
-    writer.stream() << "mov rax, [rsi - 8]" << std::endl;
-    writer.stream() << "mov rbx, [rdi - 8]" << std::endl;
-    writer.stream() << "sub rax, rbx" << std::endl;
-   
-    //if the first diff is 0, do not print 0
-    writer.stream() << "cmp rax, 0" << std::endl;
-    writer.stream() << "jz .second" << std::endl;
+        //Print the high order bytes
+        writer.stream() << "mov rax, [rsi - 8]" << std::endl;
+        writer.stream() << "mov rbx, [rdi - 8]" << std::endl;
+        writer.stream() << "sub rax, rbx" << std::endl;
 
-    //If it's negative, we print the positive only 
-    writer.stream() << "cmp rax, 0" << std::endl;
-    writer.stream() << "jge .push_first" << std::endl;
-    writer.stream() << "neg rax" << std::endl;
-    
-    writer.stream() << ".push_first:" << std::endl; 
-    writer.stream() << "push rax" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
+        //if the first diff is 0, do not print 0
+        writer.stream() << "cmp rax, 0" << std::endl;
+        writer.stream() << "jz .second" << std::endl;
 
-    //Print the low order bytes
-    writer.stream() << ".second:" << std::endl;
-    writer.stream() << "mov rax, [rsi - 4]" << std::endl;
-    writer.stream() << "mov rbx, [rdi - 4]" << std::endl;
-    writer.stream() << "sub rax, rbx" << std::endl;
-   
-    //If it's negative, we print the positive only 
-    writer.stream() << "cmp rax, 0" << std::endl;
-    writer.stream() << "jge .push_second" << std::endl;
-    writer.stream() << "neg rax" << std::endl;
-   
-    writer.stream() << ".push_second:" << std::endl; 
-    writer.stream() << "push rax" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "add rsp, 8" << std::endl;
+        //If it's negative, we print the positive only 
+        writer.stream() << "cmp rax, 0" << std::endl;
+        writer.stream() << "jge .push_first" << std::endl;
+        writer.stream() << "neg rax" << std::endl;
 
-    leaveFunction(writer);
+        writer.stream() << ".push_first:" << std::endl; 
+        writer.stream() << "push rax" << std::endl;
+        writer.stream() << "call _F5printI" << std::endl;
+        writer.stream() << "add rsp, 8" << std::endl;
+
+        //Print the low order bytes
+        writer.stream() << ".second:" << std::endl;
+        writer.stream() << "mov rax, [rsi - 4]" << std::endl;
+        writer.stream() << "mov rbx, [rdi - 4]" << std::endl;
+        writer.stream() << "sub rax, rbx" << std::endl;
+
+        //If it's negative, we print the positive only 
+        writer.stream() << "cmp rax, 0" << std::endl;
+        writer.stream() << "jge .push_second" << std::endl;
+        writer.stream() << "neg rax" << std::endl;
+
+        writer.stream() << ".push_second:" << std::endl; 
+        writer.stream() << "push rax" << std::endl;
+        writer.stream() << "call _F5printI" << std::endl;
+        writer.stream() << "add rsp, 8" << std::endl;
+
+        leaveFunction(writer);
+    }
 }
 
 } //end of anonymous namespace
