@@ -897,6 +897,8 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
         }
 
         arguments.clear();
+        
+        symbols.addReference("_F6concatSS");
 
         if(i == value.Content->operations.size() - 1){
             function->add(std::make_shared<mtac::Call>("concat", symbols.getFunction("_F6concatSS"), v1, v2)); 
