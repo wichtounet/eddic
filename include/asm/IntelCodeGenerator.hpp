@@ -22,6 +22,9 @@ class GlobalContext;
 
 namespace as {
 
+bool is_enabled_printI();
+bool is_enabled_println();
+
 /*!
  * \class IntelCodeGenerator
  * \brief Base class for code generator on Intel platform. 

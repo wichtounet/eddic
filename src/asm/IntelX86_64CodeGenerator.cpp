@@ -480,25 +480,8 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
     writer.stream() << ".exit" << ":" << std::endl;
 }
 
-bool is_enabled_printI(){
-    return symbols.referenceCount("_F5printI") || 
-            symbols.referenceCount("_F5printB") || 
-            symbols.referenceCount("_F7printlnB") || 
-            symbols.referenceCount("_F5printF") || 
-            symbols.referenceCount("_F7printlnF") ||
-            symbols.referenceCount("_F8durationAIAI");
-}
-
-bool is_enabled_println(){
-    return symbols.referenceCount("_F7println") || 
-            symbols.referenceCount("_F7printlnS") || 
-            symbols.referenceCount("_F7printlnI") || 
-            symbols.referenceCount("_F7printlnB") || 
-            symbols.referenceCount("_F7printlnF");
-}
-
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
-    if(is_enabled_printI()){
+    if(as::is_enabled_printI()){
         defineFunction(writer, "_F5printI");
 
         as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
@@ -652,7 +635,7 @@ void addPrintBoolFunction(AssemblyFileWriter& writer){
 }
 
 void addPrintLineFunction(AssemblyFileWriter& writer){
-    if(is_enabled_println()){
+    if(as::is_enabled_println()){
         defineFunction(writer, "_F7println");
 
         writer.stream() << "push S1" << std::endl;
@@ -673,7 +656,7 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 }
 
 void addPrintStringFunction(AssemblyFileWriter& writer){
-    if(symbols.referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
         defineFunction(writer, "_F5printS");
 
         as::save(writer, {"rax", "rcx", "rdi", "rsi", "rdx"});

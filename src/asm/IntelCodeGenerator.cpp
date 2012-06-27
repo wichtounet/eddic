@@ -71,3 +71,21 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         declareFloat(it.second, it.first);
     }
 }
+
+bool as::is_enabled_printI(){
+    return symbols.referenceCount("_F5printI") || 
+            symbols.referenceCount("_F5printB") || 
+            symbols.referenceCount("_F7printlnB") || 
+            symbols.referenceCount("_F5printF") || 
+            symbols.referenceCount("_F7printlnF") ||
+            symbols.referenceCount("_F8durationAIAI");
+}
+
+bool as::is_enabled_println(){
+    return symbols.referenceCount("_F7println") || 
+            symbols.referenceCount("_F7printlnS") || 
+            symbols.referenceCount("_F7printlnI") || 
+            symbols.referenceCount("_F7printlnB") || 
+            symbols.referenceCount("_F7printlnF");
+}
+

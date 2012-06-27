@@ -471,29 +471,31 @@ void addPrintIntegerBody(AssemblyFileWriter& writer){
 }
 
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printI");
+    if(as::is_enabled_printI()){
+        defineFunction(writer, "_F5printI");
 
-    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    addPrintIntegerBody(writer);
+        addPrintIntegerBody(writer);
 
-    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    leaveFunction(writer);
-   
-    /* println version */
+        leaveFunction(writer);
+    }
     
-    defineFunction(writer, "_F7printlnI");
+    if(symbols.referenceCount("_F7printlnI")){
+        defineFunction(writer, "_F7printlnI");
 
-    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    addPrintIntegerBody(writer);
+        addPrintIntegerBody(writer);
 
-    writer.stream() << "call _F7println" << std::endl;
+        writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintFloatBody(AssemblyFileWriter& writer){
@@ -550,33 +552,35 @@ void addPrintFloatBody(AssemblyFileWriter& writer){
 }
 
 void addPrintFloatFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printF");
+    if(symbols.referenceCount("_F5printF")){
+        defineFunction(writer, "_F5printF");
 
-    as::save(writer, {"eax", "ebx", "ecx"});
-    saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
+        as::save(writer, {"eax", "ebx", "ecx"});
+        saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
 
-    addPrintFloatBody(writer);
+        addPrintFloatBody(writer);
 
-    restoreFloat32(writer, {"xmm0", "xmm1", "xmm2"});
-    as::restore(writer, {"eax", "ebx", "ecx"});
+        restoreFloat32(writer, {"xmm0", "xmm1", "xmm2"});
+        as::restore(writer, {"eax", "ebx", "ecx"});
 
-    leaveFunction(writer);
-   
-    /* println version */
+        leaveFunction(writer);
+    }
     
-    defineFunction(writer, "_F7printlnF");
+    if(symbols.referenceCount("_F7printlnF")){
+        defineFunction(writer, "_F7printlnF");
 
-    as::save(writer, {"eax", "ebx", "ecx"});
-    saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
+        as::save(writer, {"eax", "ebx", "ecx"});
+        saveFloat32(writer, {"xmm0", "xmm1", "xmm2"});
 
-    addPrintFloatBody(writer);
+        addPrintFloatBody(writer);
 
-    writer.stream() << "call _F7println" << std::endl;
+        writer.stream() << "call _F7println" << std::endl;
 
-    restoreFloat32(writer, {"xmm0", "xmm1", "xmm2"});
-    as::restore(writer, {"eax", "ebx", "ecx"});
+        restoreFloat32(writer, {"xmm0", "xmm1", "xmm2"});
+        as::restore(writer, {"eax", "ebx", "ecx"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintBoolBody(AssemblyFileWriter& writer){
@@ -593,40 +597,44 @@ void addPrintBoolBody(AssemblyFileWriter& writer){
 }
 
 void addPrintBoolFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printB");
+    if(symbols.referenceCount("_F5printB")){
+        defineFunction(writer, "_F5printB");
 
-    as::save(writer, {"eax", "ecx"});
+        as::save(writer, {"eax", "ecx"});
 
-    addPrintBoolBody(writer);
+        addPrintBoolBody(writer);
 
-    as::restore(writer, {"eax", "ecx"});
+        as::restore(writer, {"eax", "ecx"});
 
-    leaveFunction(writer);
-   
-    /* println version */
+        leaveFunction(writer);
+    }
     
-    defineFunction(writer, "_F7printlnB");
+    if(symbols.referenceCount("_F7printlnB")){
+        defineFunction(writer, "_F7printlnB");
 
-    as::save(writer, {"eax", "ecx"});
+        as::save(writer, {"eax", "ecx"});
 
-    addPrintBoolBody(writer);
+        addPrintBoolBody(writer);
 
-    writer.stream() << "call _F7println" << std::endl;
+        writer.stream() << "call _F7println" << std::endl;
 
-    as::restore(writer, {"eax", "ecx"});
+        as::restore(writer, {"eax", "ecx"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintLineFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F7println");
+    if(as::is_enabled_println()){
+        defineFunction(writer, "_F7println");
 
-    writer.stream() << "push S1" << std::endl;
-    writer.stream() << "push 1" << std::endl;
-    writer.stream() << "call _F5printS" << std::endl;
-    writer.stream() << "add esp, 8" << std::endl;
+        writer.stream() << "push S1" << std::endl;
+        writer.stream() << "push 1" << std::endl;
+        writer.stream() << "call _F5printS" << std::endl;
+        writer.stream() << "add esp, 8" << std::endl;
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addPrintStringBody(AssemblyFileWriter& writer){
@@ -640,175 +648,185 @@ void addPrintStringBody(AssemblyFileWriter& writer){
 }
 
 void addPrintStringFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F5printS");
+    if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
+        defineFunction(writer, "_F5printS");
+
+        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+
+        addPrintStringBody(writer);
+
+        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+
+        leaveFunction(writer);
+    }
     
-    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+    if(symbols.referenceCount("_F7printlnS")){ 
+        defineFunction(writer, "_F7printlnS");
 
-    addPrintStringBody(writer);
+        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+        addPrintStringBody(writer);
 
-    leaveFunction(writer);
-   
-    /* println version */
-    
-    defineFunction(writer, "_F7printlnS");
-    
-    as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
+        writer.stream() << "call _F7println" << std::endl;
 
-    addPrintStringBody(writer);
+        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
-    writer.stream() << "call _F7println" << std::endl;
-
-    as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addConcatFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F6concatSS");
+    if(symbols.referenceCount("_F6concatSS")){
+        defineFunction(writer, "_F6concatSS");
 
-    writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
-    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
-    writer.stream() << "add ebx, ecx" << std::endl;             //ebx = number of bytes = return 2
+        writer.stream() << "mov ebx, [ebp + 16]" << std::endl;
+        writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
+        writer.stream() << "add ebx, ecx" << std::endl;             //ebx = number of bytes = return 2
 
-    //alloc the total number of bytes
-    writer.stream() << "push ebx" << std::endl;
-    writer.stream() << "call eddi_alloc" << std::endl;
-    writer.stream() << "add esp, 8" << std::endl;
+        //alloc the total number of bytes
+        writer.stream() << "push ebx" << std::endl;
+        writer.stream() << "call eddi_alloc" << std::endl;
+        writer.stream() << "add esp, 8" << std::endl;
 
-    writer.stream() << "mov edi, eax" << std::endl;             //destination address for the movsb
-    
-    writer.stream() << "mov ecx, [ebp + 16]" << std::endl;      //number of bytes of the source
-    writer.stream() << "mov esi, [ebp + 20]" << std::endl;      //source address
+        writer.stream() << "mov edi, eax" << std::endl;             //destination address for the movsb
 
-    writer.stream() << "rep movsb" << std::endl;                //copy the first part of the string into the destination
+        writer.stream() << "mov ecx, [ebp + 16]" << std::endl;      //number of bytes of the source
+        writer.stream() << "mov esi, [ebp + 20]" << std::endl;      //source address
 
-    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;      //number of bytes of the source
-    writer.stream() << "mov esi, [ebp + 12]" << std::endl;      //source address
+        writer.stream() << "rep movsb" << std::endl;                //copy the first part of the string into the destination
 
-    writer.stream() << "rep movsb" << std::endl;                //copy the second part of the string into the destination
+        writer.stream() << "mov ecx, [ebp + 8]" << std::endl;      //number of bytes of the source
+        writer.stream() << "mov esi, [ebp + 12]" << std::endl;      //source address
 
-    leaveFunction(writer);
+        writer.stream() << "rep movsb" << std::endl;                //copy the second part of the string into the destination
+
+        leaveFunction(writer);
+    }
 }
 
 void addAllocFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "eddi_alloc");
+    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
+        defineFunction(writer, "eddi_alloc");
 
-    as::save(writer, {"ebx", "ecx", "edx"});
+        as::save(writer, {"ebx", "ecx", "edx"});
 
-    writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
-    writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
+        writer.stream() << "mov ecx, [ebp + 8]" << std::endl;
+        writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
 
-    writer.stream() << "cmp ecx, ebx" << std::endl;
-    writer.stream() << "jle .alloc_normal" << std::endl;
+        writer.stream() << "cmp ecx, ebx" << std::endl;
+        writer.stream() << "jle .alloc_normal" << std::endl;
 
-    //Get the current address
-    writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
-    writer.stream() << "xor ebx, ebx" << std::endl;         //get end
-    writer.stream() << "int 80h" << std::endl;
+        //Get the current address
+        writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
+        writer.stream() << "xor ebx, ebx" << std::endl;         //get end
+        writer.stream() << "int 80h" << std::endl;
 
-    //%eax is the current address 
-    writer.stream() << "mov esi, eax" << std::endl;
+        //%eax is the current address 
+        writer.stream() << "mov esi, eax" << std::endl;
 
-    //Alloc new block of 16384K from the current address
-    writer.stream() << "mov ebx, eax" << std::endl;
-    writer.stream() << "add ebx, 16384" << std::endl;
-    writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
-    writer.stream() << "int 80h" << std::endl;
+        //Alloc new block of 16384K from the current address
+        writer.stream() << "mov ebx, eax" << std::endl;
+        writer.stream() << "add ebx, 16384" << std::endl;
+        writer.stream() << "mov eax, 45" << std::endl;          //45 = sys_brk
+        writer.stream() << "int 80h" << std::endl;
 
-    //zero'd the new block
-    writer.stream() << "mov edi, eax" << std::endl;         //edi = start of block
+        //zero'd the new block
+        writer.stream() << "mov edi, eax" << std::endl;         //edi = start of block
 
-    writer.stream() << "sub edi, 4" << std::endl;           //edi points to the last DWORD available to us
-    writer.stream() << "mov ecx, 4096" << std::endl;        //this many DWORDs were allocated
-    writer.stream() << "xor eax, eax"  << std::endl;        //will write with zeroes
-    writer.stream() << "std"  << std::endl;                 //walk backwards
-    writer.stream() << "rep stosb"  << std::endl;           //write all over the reserved area
-    writer.stream() << "cld"  << std::endl;                 //bring back the DF flag to normal state
+        writer.stream() << "sub edi, 4" << std::endl;           //edi points to the last DWORD available to us
+        writer.stream() << "mov ecx, 4096" << std::endl;        //this many DWORDs were allocated
+        writer.stream() << "xor eax, eax"  << std::endl;        //will write with zeroes
+        writer.stream() << "std"  << std::endl;                 //walk backwards
+        writer.stream() << "rep stosb"  << std::endl;           //write all over the reserved area
+        writer.stream() << "cld"  << std::endl;                 //bring back the DF flag to normal state
 
-    writer.stream() << "mov eax, esi" << std::endl;
+        writer.stream() << "mov eax, esi" << std::endl;
 
-    //We now have 16K of available memory starting at %esi
-    writer.stream() << "mov dword [Veddi_remaining], 16384" << std::endl;
-    writer.stream() << "mov [Veddi_current], esi" << std::endl;
+        //We now have 16K of available memory starting at %esi
+        writer.stream() << "mov dword [Veddi_remaining], 16384" << std::endl;
+        writer.stream() << "mov [Veddi_current], esi" << std::endl;
 
-    writer.stream() << ".alloc_normal:" << std::endl;
+        writer.stream() << ".alloc_normal:" << std::endl;
 
-    //old = current
-    writer.stream() << "mov eax, [Veddi_current]" << std::endl;
+        //old = current
+        writer.stream() << "mov eax, [Veddi_current]" << std::endl;
 
-    //current += size
-    writer.stream() << "mov ebx, [Veddi_current]" << std::endl;
-    writer.stream() << "add ebx, ecx" << std::endl;
-    writer.stream() << "mov [Veddi_current], ebx" << std::endl;
+        //current += size
+        writer.stream() << "mov ebx, [Veddi_current]" << std::endl;
+        writer.stream() << "add ebx, ecx" << std::endl;
+        writer.stream() << "mov [Veddi_current], ebx" << std::endl;
 
-    //remaining -= size
-    writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
-    writer.stream() << "sub ebx, ecx" << std::endl;
-    writer.stream() << "mov [Veddi_remaining], ebx" << std::endl;
+        //remaining -= size
+        writer.stream() << "mov ebx, [Veddi_remaining]" << std::endl;
+        writer.stream() << "sub ebx, ecx" << std::endl;
+        writer.stream() << "mov [Veddi_remaining], ebx" << std::endl;
 
-    writer.stream() << ".alloc_end:" << std::endl;
+        writer.stream() << ".alloc_end:" << std::endl;
 
-    as::restore(writer, {"ebx", "ecx", "edx"});
+        as::restore(writer, {"ebx", "ecx", "edx"});
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addTimeFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F4timeAI");
+    if(symbols.referenceCount("_F4timeAI")){
+        defineFunction(writer, "_F4timeAI");
 
-    writer.stream() << "xor eax, eax" << std::endl;
-    writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
-    writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
+        writer.stream() << "xor eax, eax" << std::endl;
+        writer.stream() << "cpuid" << std::endl;                //only to serialize instruction stream
+        writer.stream() << "rdtsc" << std::endl;                //edx:eax = timestamp
 
-    writer.stream() << "mov esi, [ebp + 8]" << std::endl;
-    writer.stream() << "mov [esi - 4], eax" << std::endl;
-    writer.stream() << "mov [esi - 8], edx" << std::endl;
+        writer.stream() << "mov esi, [ebp + 8]" << std::endl;
+        writer.stream() << "mov [esi - 4], eax" << std::endl;
+        writer.stream() << "mov [esi - 8], edx" << std::endl;
 
-    leaveFunction(writer);
+        leaveFunction(writer);
+    }
 }
 
 void addDurationFunction(AssemblyFileWriter& writer){
-    defineFunction(writer, "_F8durationAIAI");
+    if(symbols.referenceCount("_F8durationAIAI")){
+        defineFunction(writer, "_F8durationAIAI");
 
-    writer.stream() << "mov esi, [ebp + 12]" << std::endl;          //Start time stamp
-    writer.stream() << "mov edi, [ebp + 8]" << std::endl;           //End time stamp
+        writer.stream() << "mov esi, [ebp + 12]" << std::endl;          //Start time stamp
+        writer.stream() << "mov edi, [ebp + 8]" << std::endl;           //End time stamp
 
-    //Print the high order bytes
-    writer.stream() << "mov eax, [esi - 8]" << std::endl;
-    writer.stream() << "mov ebx, [edi - 8]" << std::endl;
-    writer.stream() << "sub eax, ebx" << std::endl;
-   
-    //if the first diff is 0, do not print 0
-    writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jz .second" << std::endl;
+        //Print the high order bytes
+        writer.stream() << "mov eax, [esi - 8]" << std::endl;
+        writer.stream() << "mov ebx, [edi - 8]" << std::endl;
+        writer.stream() << "sub eax, ebx" << std::endl;
 
-    //If it's negative, we print the positive only 
-    writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jge .push_first" << std::endl;
-    writer.stream() << "neg eax" << std::endl;
-    
-    writer.stream() << ".push_first:" << std::endl; 
-    writer.stream() << "push eax" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
+        //if the first diff is 0, do not print 0
+        writer.stream() << "cmp eax, 0" << std::endl;
+        writer.stream() << "jz .second" << std::endl;
 
-    //Print the low order bytes
-    writer.stream() << ".second:" << std::endl;
-    writer.stream() << "mov eax, [esi - 4]" << std::endl;
-    writer.stream() << "mov ebx, [edi - 4]" << std::endl;
-    writer.stream() << "sub eax, ebx" << std::endl;
-   
-    //If it's negative, we print the positive only 
-    writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jge .push_second" << std::endl;
-    writer.stream() << "neg eax" << std::endl;
-   
-    writer.stream() << ".push_second:" << std::endl; 
-    writer.stream() << "push eax" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
+        //If it's negative, we print the positive only 
+        writer.stream() << "cmp eax, 0" << std::endl;
+        writer.stream() << "jge .push_first" << std::endl;
+        writer.stream() << "neg eax" << std::endl;
 
-    leaveFunction(writer);
+        writer.stream() << ".push_first:" << std::endl; 
+        writer.stream() << "push eax" << std::endl;
+        writer.stream() << "call _F5printI" << std::endl;
+
+        //Print the low order bytes
+        writer.stream() << ".second:" << std::endl;
+        writer.stream() << "mov eax, [esi - 4]" << std::endl;
+        writer.stream() << "mov ebx, [edi - 4]" << std::endl;
+        writer.stream() << "sub eax, ebx" << std::endl;
+
+        //If it's negative, we print the positive only 
+        writer.stream() << "cmp eax, 0" << std::endl;
+        writer.stream() << "jge .push_second" << std::endl;
+        writer.stream() << "neg eax" << std::endl;
+
+        writer.stream() << ".push_second:" << std::endl; 
+        writer.stream() << "push eax" << std::endl;
+        writer.stream() << "call _F5printI" << std::endl;
+
+        leaveFunction(writer);
+    }
 }
 
 } //end of anonymous namespace
