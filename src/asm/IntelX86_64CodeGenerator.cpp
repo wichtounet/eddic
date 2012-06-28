@@ -451,205 +451,33 @@ void output_function(AssemblyFileWriter& writer, const std::string& function){
     writer.stream() << std::endl;
 }
 
-void addPrintIntegerBody(AssemblyFileWriter& writer){
-    //The parameter is in r14
-    writer.stream() << "mov rax, r14" << std::endl;//We move it to rax for rax is the register source division register
-    writer.stream() << "xor r14, r14" << std::endl;//We use r14 to be the counter (start with 0)
-
-    //If the number is negative, we print the - and then the number
-    writer.stream() << "or rax, rax" << std::endl;
-    writer.stream() << "jge .loop" << std::endl;
-
-    writer.stream() << "neg rax" << std::endl;
-
-    //Print "-" 
-    writer.stream() << "push S2" << std::endl;
-    writer.stream() << "push 1" << std::endl;
-    writer.stream() << "call _F5printS" << std::endl;
-    writer.stream() << "add rsp, 16" << std::endl;
-
-    //Divide rax until there is nothing to divide
-    writer.stream() << ".loop" << ":" << std::endl;
-    writer.stream() << "xor rdx, rdx" << std::endl;
-    writer.stream() << "mov rbx, 10" << std::endl;
-    writer.stream() << "div rbx" << std::endl;
-    writer.stream() << "add rdx, 48" << std::endl;
-    writer.stream() << "push rdx" << std::endl;
-    writer.stream() << "inc r14" << std::endl;
-    writer.stream() << "or rax, rax" << std::endl;
-    writer.stream() << "jz .next" << std::endl;
-    writer.stream() << "jmp .loop" << std::endl;
-
-    //Print each of the char, one by one
-    writer.stream() << ".next" << ":" << std::endl;
-    writer.stream() << "or r14, r14" << std::endl;
-    writer.stream() << "jz .exit" << std::endl;
-    writer.stream() << "dec r14" << std::endl;
-
-    writer.stream() << "mov rax, 1" << std::endl;       //syscall 1 = write
-    writer.stream() << "mov rdi, 1" << std::endl;       //stdout
-    writer.stream() << "mov rsi, rsp" << std::endl;     //read from the stack
-    writer.stream() << "mov rdx, 1" << std::endl;       //length
-    writer.stream() << "syscall" << std::endl;          //syscall
-
-    writer.stream() << "add rsp, 8" << std::endl;
-
-    writer.stream() << "jmp .next" << std::endl;
-
-    writer.stream() << ".exit" << ":" << std::endl;
-}
-
 void addPrintIntegerFunction(AssemblyFileWriter& writer){
     if(as::is_enabled_printI()){
-        defineFunction(writer, "_F5printI");
-
-        as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
-
-        addPrintIntegerBody(writer);
-
-        as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printI");
     }
    
     if(symbols.referenceCount("_F7printlnI")){
-        defineFunction(writer, "_F7printlnI");
-
-        as::save(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
-
-        addPrintIntegerBody(writer);
-
-        writer.stream() << "call _F7println" << std::endl;
-
-        as::restore(writer, {"rax", "rbx", "rcx", "rdx", "rsi", "rdi"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printlnI");
     }
-}
-
-void addPrintFloatBody(AssemblyFileWriter& writer){
-    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = integer part
-    writer.stream() << "cvtsi2sd xmm1, rbx" << std::endl;       //xmm1 = integer part
-
-    //Print the integer part
-    writer.stream() << "mov r14, rbx" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
-
-    //Print the dot char
-    writer.stream() << "push S4" << std::endl;
-    writer.stream() << "push 1" << std::endl;
-    writer.stream() << "call _F5printS" << std::endl;
-    writer.stream() << "add rsp, 16" << std::endl;
-
-    //Handle negative numbers
-    writer.stream() << "or rbx, rbx" << std::endl;
-    writer.stream() << "jge .pos" << std::endl;
-    writer.stream() << "mov rbx, __float64__(-1.0)" << std::endl;
-    writer.stream() << "movq xmm2, rbx" << std::endl;
-    writer.stream() << "mulsd xmm7, xmm2" << std::endl;
-    writer.stream() << "mulsd xmm1, xmm2" << std::endl;
-
-    writer.stream() << ".pos:" << std::endl;
-   
-    //Remove the integer part from the floating point 
-    writer.stream() << "subsd xmm7, xmm1" << std::endl;         //xmm7 = decimal part
-    
-    writer.stream() << "mov rcx, __float64__(10000.0)" << std::endl;
-    writer.stream() << "movq xmm2, rcx" << std::endl;           //xmm2 = 10'000
-    
-    writer.stream() << "mulsd xmm7, xmm2" << std::endl;         //xmm7 = decimal part * 10'000
-    writer.stream() << "cvttsd2si rbx, xmm7" << std::endl;      //rbx = decimal part * 10'000
-    writer.stream() << "mov rax, rbx" << std::endl;             //rax = rbx
-
-    //Handle numbers with no decimal part 
-    writer.stream() << "or rax, rax" << std::endl;
-    writer.stream() << "je .end" << std::endl;
-    
-    //Handle numbers with 0 at the beginning of the decimal part
-    writer.stream() << "xor r14, r14" << std::endl;
-    writer.stream() << ".start:" << std::endl;
-    writer.stream() << "cmp rax, 1000" << std::endl;
-    writer.stream() << "jge .end" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "imul rax, 10" << std::endl;
-    writer.stream() << "jmp .start" << std::endl;
-    
-    //Print the number itself
-    writer.stream() << ".end:" << std::endl;
-    writer.stream() << "mov r14, rbx" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
 }
 
 void addPrintFloatFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F5printF")){
-        defineFunction(writer, "_F5printF");
-
-        as::save(writer, {"rax", "rbx", "r14"});
-        saveFloat64(writer, {"xmm1", "xmm2"});
-
-        addPrintFloatBody(writer);
-
-        restoreFloat64(writer, {"xmm1", "xmm2"});
-        as::restore(writer, {"rax", "rbx", "r14"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printF");
     }
     
     if(symbols.referenceCount("_F7printlnF")){
-        defineFunction(writer, "_F7printlnF");
-
-        as::save(writer, {"rax", "rbx", "r14"});
-        saveFloat64(writer, {"xmm1", "xmm2"});
-
-        addPrintFloatBody(writer);
-
-        writer.stream() << "call _F7println" << std::endl;
-
-        restoreFloat64(writer, {"xmm1", "xmm2"});
-        as::restore(writer, {"rax", "rbx", "r14"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printlnF");
     }
-}
-
-void addPrintBoolBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov rax, [rbp + 16] " << std::endl;
-    writer.stream() << "or rax, rax" << std::endl;
-    writer.stream() << "jne .true_print" << std::endl;
-    writer.stream() << "xor r14, r14" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << "jmp .end" << std::endl;
-    writer.stream() << ".true_print:" << std::endl;
-    writer.stream() << "mov r14, 1" << std::endl;
-    writer.stream() << "call _F5printI" << std::endl;
-    writer.stream() << ".end:" << std::endl;
 }
 
 void addPrintBoolFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F5printB")){
-        defineFunction(writer, "_F5printB");
-
-        as::save(writer, {"rax"});
-
-        addPrintBoolBody(writer);
-
-        as::restore(writer, {"rax"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printB");
     }
     
     if(symbols.referenceCount("_F7printlnB")){
-        defineFunction(writer, "_F7printlnB");
-
-        as::save(writer, {"rax"});
-
-        addPrintBoolBody(writer);
-
-        writer.stream() << "call _F7println" << std::endl;
-
-        as::restore(writer, {"rax"});
-
-        leaveFunction(writer);
+        output_function(writer, "x86_64_printlnB");
     }
 }
 
