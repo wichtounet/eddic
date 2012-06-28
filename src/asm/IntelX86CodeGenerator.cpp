@@ -421,83 +421,6 @@ void restoreFloat32(AssemblyFileWriter& writer, const std::vector<std::string>& 
     }
 }
 
-void addPrintIntegerBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov eax, ecx" << std::endl;
-    writer.stream() << "xor esi, esi" << std::endl;
-
-    //If the number is negative, we print the - and then the number
-    writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jge .loop" << std::endl;
-
-    writer.stream() << "neg eax" << std::endl;
-    writer.stream() << "push eax" << std::endl; //We push eax to not loose it from print_string
-
-    //Print "-" 
-    writer.stream() << "push S2" << std::endl;
-    writer.stream() << "push 1" << std::endl;
-    writer.stream() << "call _F5printS" << std::endl;
-    writer.stream() << "add esp, 8" << std::endl;
-
-    //Get the the valueof eax again
-    writer.stream() << "pop eax" << std::endl;
-
-    writer.stream() << ".loop" << ":" << std::endl;
-    writer.stream() << "mov edx, 0" << std::endl;
-    writer.stream() << "mov ebx, 10" << std::endl;
-    writer.stream() << "div ebx" << std::endl;
-    writer.stream() << "add edx, 48" << std::endl;
-    writer.stream() << "push edx" << std::endl;
-    writer.stream() << "inc esi" << std::endl;
-    writer.stream() << "cmp eax, 0" << std::endl;
-    writer.stream() << "jz .next" << std::endl;
-    writer.stream() << "jmp .loop" << std::endl;
-
-    writer.stream() << ".next" << ":" << std::endl;
-    writer.stream() << "cmp esi, 0" << std::endl;
-    writer.stream() << "jz .exit" << std::endl;
-    writer.stream() << "dec esi" << std::endl;
-
-    writer.stream() << "mov eax, 4" << std::endl;
-    writer.stream() << "mov ecx, esp" << std::endl;
-    writer.stream() << "mov ebx, 1" << std::endl;
-    writer.stream() << "mov edx, 1" << std::endl;
-    writer.stream() << "int 80h" << std::endl;
-
-    writer.stream() << "add esp, 4" << std::endl;
-
-    writer.stream() << "jmp .next" << std::endl;
-
-    writer.stream() << ".exit" << ":" << std::endl;
-}
-
-void addPrintIntegerFunction(AssemblyFileWriter& writer){
-    if(as::is_enabled_printI()){
-        defineFunction(writer, "_F5printI");
-
-        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        addPrintIntegerBody(writer);
-
-        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        leaveFunction(writer);
-    }
-    
-    if(symbols.referenceCount("_F7printlnI")){
-        defineFunction(writer, "_F7printlnI");
-
-        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        addPrintIntegerBody(writer);
-
-        writer.stream() << "call _F7println" << std::endl;
-
-        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        leaveFunction(writer);
-    }
-}
-
 void addPrintFloatBody(AssemblyFileWriter& writer){
     writer.stream() << "cvttss2si ebx, xmm7" << std::endl;      //ebx = integer part
     writer.stream() << "cvtsi2ss xmm1, ebx" << std::endl;       //xmm1 = integer part
@@ -632,44 +555,6 @@ void addPrintLineFunction(AssemblyFileWriter& writer){
         writer.stream() << "push 1" << std::endl;
         writer.stream() << "call _F5printS" << std::endl;
         writer.stream() << "add esp, 8" << std::endl;
-
-        leaveFunction(writer);
-    }
-}
-
-void addPrintStringBody(AssemblyFileWriter& writer){
-    writer.stream() << "mov esi, 0" << std::endl;
-
-    writer.stream() << "mov eax, 4" << std::endl;
-    writer.stream() << "mov ebx, 1" << std::endl;
-    writer.stream() << "mov ecx, [ebp + 12]" << std::endl;
-    writer.stream() << "mov edx, [ebp + 8]" << std::endl;
-    writer.stream() << "int 80h" << std::endl;
-}
-
-void addPrintStringFunction(AssemblyFileWriter& writer){
-    if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
-        defineFunction(writer, "_F5printS");
-
-        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        addPrintStringBody(writer);
-
-        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        leaveFunction(writer);
-    }
-    
-    if(symbols.referenceCount("_F7printlnS")){ 
-        defineFunction(writer, "_F7printlnS");
-
-        as::save(writer, {"eax", "ebx", "ecx", "edx", "esi"});
-
-        addPrintStringBody(writer);
-
-        writer.stream() << "call _F7println" << std::endl;
-
-        as::restore(writer, {"eax", "ebx", "ecx", "edx", "esi"});
 
         leaveFunction(writer);
     }
@@ -832,13 +717,28 @@ void addDurationFunction(AssemblyFileWriter& writer){
 } //end of anonymous namespace
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-   addPrintIntegerFunction(writer); 
-   addPrintFloatFunction(writer); 
-   addPrintBoolFunction(writer);
-   addPrintLineFunction(writer); 
-   addPrintStringFunction(writer); 
-   addConcatFunction(writer);
-   addAllocFunction(writer);
-   addTimeFunction(writer);
-   addDurationFunction(writer);
+    if(as::is_enabled_printI()){
+        output_function("x86_32_printI");
+    }
+    
+    if(symbols.referenceCount("_F7printlnI")){
+        output_function("x86_32_printlnI");
+    }
+
+    addPrintFloatFunction(writer); 
+    addPrintBoolFunction(writer);
+    addPrintLineFunction(writer); 
+    
+    if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
+        output_function("x86_32_printS");
+    }
+    
+    if(symbols.referenceCount("_F7printlnS")){ 
+        output_function("x86_32_printlnS");
+    }
+    
+    addConcatFunction(writer);
+    addAllocFunction(writer);
+    addTimeFunction(writer);
+    addDurationFunction(writer);
 }
