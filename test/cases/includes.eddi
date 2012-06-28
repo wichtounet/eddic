@@ -1,4 +1,4 @@
-include "samples/included.eddi"
+include "test/cases/included.eddi"
 
 void main(){
     print(sum(9));

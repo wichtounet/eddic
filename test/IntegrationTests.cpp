@@ -24,12 +24,12 @@
  */
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
-    assert_compiles("samples/" #file ".eddi", "--32", "--O0");\
-    assert_compiles("samples/" #file ".eddi", "--32", "--O1");\
-    assert_compiles("samples/" #file ".eddi", "--32", "--O2");\
-    assert_compiles("samples/" #file ".eddi", "--64", "--O0");\
-    assert_compiles("samples/" #file ".eddi", "--64", "--O1");\
-    assert_compiles("samples/" #file ".eddi", "--64", "--O2");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O0");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O1");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O2");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O0");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O1");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O2");\
 }
 
 /* Config Fixture  */
