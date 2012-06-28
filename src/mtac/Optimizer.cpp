@@ -333,7 +333,7 @@ bool remove_empty_functions(std::shared_ptr<mtac::Program> program){
                                 //The parameters are in the previous block
                                 if(fit == block->statements.begin()){
                                     auto pit = bit;
-                                    --bit;
+                                    --pit;
                                     auto previous = *pit;
 
                                     auto fend = previous->statements.end();
