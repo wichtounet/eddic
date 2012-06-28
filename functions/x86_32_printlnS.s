@@ -12,7 +12,7 @@ mov ebx, 1
 mov ecx, [ebp + 12]
 mov edx, [ebp + 8]
 int 80h
-class _F7println
+call _F7println
 pop esi
 pop edx
 pop ecx
