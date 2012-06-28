@@ -285,6 +285,98 @@ bool remove_needless_jumps(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
+bool remove_empty_functions(std::shared_ptr<mtac::Program> program){
+    bool optimized = false;
+
+    std::vector<std::string> removed_functions;
+
+   auto it = program->functions.begin();
+    
+    while(it != program->functions.end()){
+        auto function = *it;
+
+        unsigned int statements = 0;
+
+        for(auto& block : function->getBasicBlocks()){
+            statements += block->statements.size();
+        }
+
+        if(statements == 0){
+            removed_functions.push_back(function->getName());
+            it = program->functions.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    if(!removed_functions.empty()){
+        for(auto& function : program->functions){
+            auto& blocks = function->getBasicBlocks();
+
+            auto bit = blocks.begin();
+
+            while(bit != blocks.end()){
+                auto block = *bit;
+
+                auto fit = block->statements.begin();
+
+                while(fit != block->statements.end()){
+                    auto statement = *fit;
+                    
+                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                        auto function = (*ptr)->function;
+
+                        if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
+                            int parameters = (*ptr)->functionDefinition->parameters.size();
+
+                            if(parameters > 0){
+                                //The parameters are in the previous block
+                                if(fit == block->statements.begin()){
+                                    auto pit = bit;
+                                    --pit;
+                                    auto previous = *pit;
+
+                                    auto fend = previous->statements.end();
+                                    --fend;
+
+                                    while(parameters > 0){
+                                        fend = previous->statements.erase(fend);
+                                        --fend;
+
+                                        --parameters;
+                                    }
+                                   
+                                    fit = block->statements.erase(fit);
+                                } 
+                                //The parameters are in the same block
+                                else {
+                                    while(parameters >= 0){
+                                        fit = block->statements.erase(fit);
+                                        --fit;
+
+                                        --parameters;
+                                    }
+                                }
+
+                            } else {
+                                fit = block->statements.erase(fit);
+                            }
+                            
+                            continue;
+                        }
+                    }
+
+                    ++fit;
+                }
+
+                ++bit;
+            }
+        }
+    }
+
+    return optimized;
+}
+
 bool merge_basic_blocks(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
@@ -442,7 +534,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
         optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
         optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
-        optimized |= debug("Merge basic blocks", merge_basic_blocks(function), function);
     } while (optimized);
 }
 
@@ -484,7 +575,7 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
     }*/
 }
 
-void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
+void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool){
     PerfsTimer timer("Whole optimizations");
 
     auto& functions = program->functions;
@@ -507,6 +598,16 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
 
     //Wait for all the threads to finish
     std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
+}
+
+void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
+    bool optimized = false;
+
+    do{
+        optimize_all_functions(program, string_pool);
+
+        optimized = remove_empty_functions(program);
+    } while(optimized);
 }
 
 void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/) const {

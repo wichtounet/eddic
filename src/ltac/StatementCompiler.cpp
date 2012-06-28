@@ -567,7 +567,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
                 return;
             }
-        } 
+        }
 
         //If the param as not been handled as register passing, push it on the stack 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
