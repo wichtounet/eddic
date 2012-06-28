@@ -7,6 +7,7 @@
 
 #include "asm/IntelCodeGenerator.hpp"
 
+#include "assert.hpp"
 #include "Labels.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
@@ -71,6 +72,28 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         declareFloat(it.second, it.first);
     }
 }
+
+void as::IntelCodeGenerator::output_function(const std::string& function){
+    std::string name = "functions/" + function + ".s";
+    std::ifstream stream(name.c_str());
+
+    ASSERT(stream, "One file in the functions folder does not exist");
+
+    std::string str;
+
+    while(!stream.eof()){
+        std::getline(stream, str);
+
+        if(!str.empty()){
+            if(str[0] != ';'){
+                writer.stream() << str << std::endl;
+            }
+        }
+    }
+
+    writer.stream() << std::endl;
+}
+
 
 bool as::is_enabled_printI(){
     return symbols.referenceCount("_F5printI") || 

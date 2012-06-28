@@ -18,6 +18,7 @@
 #include "StringPool.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
+#include "likely.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
@@ -92,7 +93,7 @@ bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
 
         usage.insert(block);
 
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             auto& last = block->statements[block->statements.size() - 1];
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
@@ -191,7 +192,7 @@ bool optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<S
     while(it != end){
         auto block = *it;
 
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
                 if((*ptr)->function == "_F6concatSS"){
                     //The params are on the previous block
@@ -262,7 +263,7 @@ bool remove_needless_jumps(std::shared_ptr<mtac::Function> function){
     while(it != end){
         auto& block = *it;
 
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             auto& last = block->statements[block->statements.size() - 1];
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
@@ -300,7 +301,7 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     while(it != blocks.end()){
         auto& block = *it;
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             auto& last = block->statements[block->statements.size() - 1];
 
             bool merge = false;
