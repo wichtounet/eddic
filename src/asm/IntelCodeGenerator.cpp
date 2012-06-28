@@ -72,6 +72,26 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
     }
 }
 
+void as::IntelCodeGenerator::output_function(const std::string& function){
+    std::string name = "functions/" + function + ".s";
+    std::ifstream stream(name.c_str());
+
+    std::string str;
+
+    while(!stream.eof()){
+        std::getline(stream, str);
+
+        if(!str.empty()){
+            if(str[0] != ';'){
+                writer.stream() << str << std::endl;
+            }
+        }
+    }
+
+    writer.stream() << std::endl;
+}
+
+
 bool as::is_enabled_printI(){
     return symbols.referenceCount("_F5printI") || 
             symbols.referenceCount("_F5printB") || 

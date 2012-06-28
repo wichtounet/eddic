@@ -412,75 +412,56 @@ void IntelX86_64CodeGenerator::declareFloat(const std::string& label, double val
 
 }} //end of eddic::as
 
-void output_function(AssemblyFileWriter& writer, const std::string& function){
-    std::string name = "functions/" + function + ".s";
-    std::ifstream stream(name.c_str());
-
-    std::string str;
-
-    while(!stream.eof()){
-        std::getline(stream, str);
-
-        if(!str.empty()){
-            if(str[0] != ';'){
-                writer.stream() << str << std::endl;
-            }
-        }
-    }
-
-    writer.stream() << std::endl;
-}
-
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
     if(as::is_enabled_printI()){
-        output_function(writer, "x86_64_printI");
+        output_function("x86_64_printI");
     }
    
     if(symbols.referenceCount("_F7printlnI")){
-        output_function(writer, "x86_64_printlnI");
+        output_function("x86_64_printlnI");
     }
     
     if(symbols.referenceCount("_F5printB")){
-        output_function(writer, "x86_64_printB");
+        output_function("x86_64_printB");
     }
     
     if(symbols.referenceCount("_F7printlnB")){
-        output_function(writer, "x86_64_printlnB");
+        output_function("x86_64_printlnB");
     }
     
     if(symbols.referenceCount("_F5printF")){
-        output_function(writer, "x86_64_printF");
+        output_function("x86_64_printF");
     }
     
     if(symbols.referenceCount("_F7printlnF")){
-        output_function(writer, "x86_64_printlnF");
+        output_function("x86_64_printlnF");
     }
     
     if(as::is_enabled_println()){
-        output_function(writer, "x86_64_println");
+        output_function("x86_64_println");
     }
     
     if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
-        output_function(writer, "x86_64_printS");
+        output_function("x86_64_printS");
     }
    
     if(symbols.referenceCount("_F7printlnS")){ 
-        output_function(writer, "x86_64_printlnS");
+        output_function("x86_64_printlnS");
     }
     
     if(symbols.referenceCount("_F6concatSS")){
-        output_function(writer, "x86_64_concat");
+        output_function("x86_64_concat");
     }
     
     if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        output_function(writer, "x86_64_eddi_alloc");
+        output_function("x86_64_eddi_alloc");
     }
     
     if(symbols.referenceCount("_F4timeAI")){
-        output_function(writer, "x86_64_time");
+        output_function("x86_64_time");
     }
     
     if(symbols.referenceCount("_F8durationAIAI")){
-        output_function(writer, "x86_64_duration");
+        output_function("x86_64_duration");
     }
 }
