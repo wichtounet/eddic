@@ -439,18 +439,18 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
     }
     
     if(symbols.referenceCount("_F6concatSS")){
-        output_function("x86_32_concat.s");
+        output_function("x86_32_concat");
     }
     
     if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        output_function("x86_32_eddi_alloc.s");
+        output_function("x86_32_eddi_alloc");
     }
     
     if(symbols.referenceCount("_F4timeAI")){
-        output_function("x86_32_time.s");
+        output_function("x86_32_time");
     }
     
     if(symbols.referenceCount("_F8durationAIAI")){
-        output_function("x86_32_duration.s");
+        output_function("x86_32_duration");
     }
 }

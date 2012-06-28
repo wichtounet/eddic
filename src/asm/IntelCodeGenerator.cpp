@@ -7,6 +7,7 @@
 
 #include "asm/IntelCodeGenerator.hpp"
 
+#include "assert.hpp"
 #include "Labels.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
@@ -75,6 +76,8 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
 void as::IntelCodeGenerator::output_function(const std::string& function){
     std::string name = "functions/" + function + ".s";
     std::ifstream stream(name.c_str());
+
+    ASSERT(stream, "One file in the functions folder does not exist");
 
     std::string str;
 
