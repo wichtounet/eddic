@@ -412,26 +412,6 @@ void IntelX86_64CodeGenerator::declareFloat(const std::string& label, double val
 
 }} //end of eddic::as
 
-namespace { //anonymous namespace
-
-void saveFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
-    for(auto& reg : registers){
-        writer.stream() << "sub rsp, 8" << std::endl;
-        writer.stream() << "movq [rsp], " << reg << std::endl;
-    }
-}
-
-void restoreFloat64(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
-    auto it = registers.rbegin();
-    auto end = registers.rend();
-
-    while(it != end){
-        writer.stream() << "movq " << *it << ", [rsp]" << std::endl;
-        writer.stream() << "add rsp, 8" << std::endl;
-        ++it;
-    }
-}
-
 void output_function(AssemblyFileWriter& writer, const std::string& function){
     std::string name = "functions/" + function + ".s";
     std::ifstream stream(name.c_str());
@@ -451,7 +431,7 @@ void output_function(AssemblyFileWriter& writer, const std::string& function){
     writer.stream() << std::endl;
 }
 
-void addPrintIntegerFunction(AssemblyFileWriter& writer){
+void as::IntelX86_64CodeGenerator::addStandardFunctions(){
     if(as::is_enabled_printI()){
         output_function(writer, "x86_64_printI");
     }
@@ -459,19 +439,7 @@ void addPrintIntegerFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F7printlnI")){
         output_function(writer, "x86_64_printlnI");
     }
-}
-
-void addPrintFloatFunction(AssemblyFileWriter& writer){
-    if(symbols.referenceCount("_F5printF")){
-        output_function(writer, "x86_64_printF");
-    }
     
-    if(symbols.referenceCount("_F7printlnF")){
-        output_function(writer, "x86_64_printlnF");
-    }
-}
-
-void addPrintBoolFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F5printB")){
         output_function(writer, "x86_64_printB");
     }
@@ -479,15 +447,19 @@ void addPrintBoolFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F7printlnB")){
         output_function(writer, "x86_64_printlnB");
     }
-}
-
-void addPrintLineFunction(AssemblyFileWriter& writer){
+    
+    if(symbols.referenceCount("_F5printF")){
+        output_function(writer, "x86_64_printF");
+    }
+    
+    if(symbols.referenceCount("_F7printlnF")){
+        output_function(writer, "x86_64_printlnF");
+    }
+    
     if(as::is_enabled_println()){
         output_function(writer, "x86_64_println");
     }
-}
-
-void addPrintStringFunction(AssemblyFileWriter& writer){
+    
     if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
         output_function(writer, "x86_64_printS");
     }
@@ -495,42 +467,20 @@ void addPrintStringFunction(AssemblyFileWriter& writer){
     if(symbols.referenceCount("_F7printlnS")){ 
         output_function(writer, "x86_64_printlnS");
     }
-}
-
-void addConcatFunction(AssemblyFileWriter& writer){
+    
     if(symbols.referenceCount("_F6concatSS")){
         output_function(writer, "x86_64_concat");
     }
-}
-
-void addAllocFunction(AssemblyFileWriter& writer){
+    
     if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
         output_function(writer, "x86_64_eddi_alloc");
     }
-}
-
-void addTimeFunction(AssemblyFileWriter& writer){
+    
     if(symbols.referenceCount("_F4timeAI")){
         output_function(writer, "x86_64_time");
     }
-}
-
-void addDurationFunction(AssemblyFileWriter& writer){
+    
     if(symbols.referenceCount("_F8durationAIAI")){
         output_function(writer, "x86_64_duration");
     }
-}
-
-} //end of anonymous namespace
-
-void as::IntelX86_64CodeGenerator::addStandardFunctions(){
-   addPrintIntegerFunction(writer); 
-   addPrintBoolFunction(writer);
-   addPrintFloatFunction(writer);
-   addPrintLineFunction(writer); 
-   addPrintStringFunction(writer); 
-   addConcatFunction(writer);
-   addAllocFunction(writer);
-   addTimeFunction(writer);
-   addDurationFunction(writer);
 }
