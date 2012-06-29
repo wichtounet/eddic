@@ -1,0 +1,30 @@
+struct A {
+    int a;
+    int* b;
+}
+
+void main(){
+    int a = 55;
+
+    A a;
+
+    a.a = 44;
+    a.b = a;
+
+    print(*a.b);
+    print("|");
+
+    a.b = a.a;
+
+    print(*a.b);
+    print("|");
+
+    *a.b = 66;
+
+    print(*a.b);
+    print("|");
+    
+    print(a.a);
+    print("|");
+}
+
