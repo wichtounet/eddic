@@ -646,7 +646,7 @@ struct AssignValueToVariable : public AbstractVisitor {
 
 struct AssignValueToVariableWithOffset : public AbstractVisitor {
     AssignValueToVariableWithOffset(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
-    AssignValueToVariableWithOffset(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, std::shared_ptr<const Type> type, unsigned int offset) : AbstractVisitor(f), variable(v), type(type), offset(offset) {}
+    AssignValueToVariableWithOffset(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, unsigned int offset, std::shared_ptr<const Type> type) : AbstractVisitor(f), variable(v), type(type), offset(offset) {}
     
     std::shared_ptr<Variable> variable;
     std::shared_ptr<const Type> type;
@@ -671,6 +671,19 @@ struct AssignValueToVariableWithOffset : public AbstractVisitor {
         } else {
             complexAssign(value.variable()->type(), value);
         }
+    }
+
+    void operator()(ast::FunctionCall& call) const {
+        complexAssign(call.Content->function->returnType, call);
+    }
+
+    void operator()(ast::ArrayValue& array) const {
+        complexAssign(array.Content->var->type()->data_type(), array);
+    }
+
+    template<typename T>
+    void operator()(T& value) const {
+        complexAssign(ast::GetTypeVisitor()(value), value);
     }
 };
 
@@ -729,7 +742,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             std::shared_ptr<const Type> member_type;
             boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
 
-            visit(AssignValueToVariableWithOffset(function, variable, offset), assignment.Content->value);
+            visit(AssignValueToVariableWithOffset(function, variable, offset, member_type), assignment.Content->value);
         }
     } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
         auto left = *ptr;
