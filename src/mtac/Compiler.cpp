@@ -302,6 +302,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){
+            if(take_address){
+                return {value.Content->var};
+            }
+
             auto type = value.Content->var->type();
 
             //If it's a const, we just have to replace it by its constant value
@@ -700,7 +704,11 @@ struct AssignValueToVariableWithOffset : public AbstractVisitor {
     
     void operator()(ast::VariableValue& value) const {
         if(type){
-            complexAssign(type, value);
+            if(type->is_pointer()){
+                pointerAssign(ToArgumentsVisitor(function, true)(value));
+            } else {
+                complexAssign(type, value);
+            }
         } else {
             complexAssign(value.variable()->type(), value);
         }
@@ -1309,8 +1317,14 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
                     continue;
                 }
             } 
+
+            std::vector<mtac::Argument> args;
+            if(param->type()->is_pointer()){
+                args = visit(ToArgumentsVisitor(function, true), first);
+            } else {
+                args = visit(ToArgumentsVisitor(function), first);
+            }
             
-            auto args = visit(ToArgumentsVisitor(function), first);
             for(auto& arg : args){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
 
