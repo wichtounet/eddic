@@ -1120,6 +1120,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;
             }
         case mtac::Operator::DOT_ASSIGN:
+        case mtac::Operator::DOT_PASSIGN:
             {
                 ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
 
@@ -1130,16 +1131,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 } else {
                     ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, offset), to_arg(*quadruple->arg2));
                 }
-
-                break;
-            }
-        case mtac::Operator::DOT_PASSIGN:
-            {
-                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-
-                int offset = boost::get<int>(*quadruple->arg1);
-
-                ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
 
                 break;
             }
