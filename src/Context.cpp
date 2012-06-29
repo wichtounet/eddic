@@ -47,9 +47,7 @@ std::shared_ptr<Variable> Context::newFloatTemporary(){
 }
 
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
-    ASSERT(type->is_standard_type(), "Temporary can only represent standard types"); 
-
-    if(type == INT || type == BOOL){
+    if(type == INT || type == BOOL || type->is_pointer()){ //TODO Perhaps the temporary should be of a special pointer type ?
         return newTemporary();
     } else if(type == FLOAT){
         return newFloatTemporary();
