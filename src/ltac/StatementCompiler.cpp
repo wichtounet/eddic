@@ -1120,6 +1120,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;
             }
         case mtac::Operator::DOT_ASSIGN:
+        case mtac::Operator::DOT_PASSIGN:
             {
                 ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
 

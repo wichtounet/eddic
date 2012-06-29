@@ -664,8 +664,7 @@ struct AssignValueToVariableWithOffset : public AbstractVisitor {
     }
     
     void pointerAssign(std::vector<mtac::Argument> arguments) const {
-        //TODO
-        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, offset, mtac::Operator::DOT_PASSIGN, arguments[0]));
     }
     
     void floatAssign(std::vector<mtac::Argument> arguments) const {
@@ -717,8 +716,14 @@ struct DereferenceAssign : public AbstractVisitor {
     }
     
     void pointerAssign(std::vector<mtac::Argument> arguments) const {
-        //TODO
-        intAssign(arguments);
+        if(offset == 0){
+            function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
+        } else {
+            auto temp = function->context->new_temporary(INT);
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
+            function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
+        }
     }
     
     void floatAssign(std::vector<mtac::Argument> arguments) const {
