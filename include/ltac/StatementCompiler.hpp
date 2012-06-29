@@ -77,6 +77,8 @@ class StatementCompiler : public boost::static_visitor<> {
         void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple);
         
         ltac::Register to_register(std::shared_ptr<Variable> var);
+        ltac::Register get_address_in_reg(std::shared_ptr<Variable> var, int offset);
+
         ltac::Argument to_arg(mtac::Argument argument);
         
         ltac::Address to_address(std::shared_ptr<Variable> var, int offset);

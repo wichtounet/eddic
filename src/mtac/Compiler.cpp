@@ -201,8 +201,10 @@ std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_
 
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
+    ToArgumentsVisitor(std::shared_ptr<mtac::Function> f, bool take_address) : function(f), take_address(take_address) {}
     
     mutable std::shared_ptr<mtac::Function> function;
+    bool take_address = false;
 
     result_type operator()(ast::Litteral& litteral) const {
         return {litteral.label, (int) litteral.value.size() - 2};
