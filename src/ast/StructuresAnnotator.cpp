@@ -39,6 +39,11 @@ struct StructuresCollector : public boost::static_visitor<> {
             names.push_back(member.Content->name);
 
             auto member_type = visit(ast::TypeTransformer(), member.Content->type);
+
+            if(member_type->is_array()){
+                throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
+            }
+
             signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
         }
 
