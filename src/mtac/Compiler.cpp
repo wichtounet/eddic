@@ -607,8 +607,7 @@ struct AssignValueToArray : public AbstractVisitor {
     void pointerAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
-        //TODO
-        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_PASSIGN, arguments[0]));
     }
     
     void floatAssign(std::vector<mtac::Argument> arguments) const {
@@ -625,6 +624,27 @@ struct AssignValueToArray : public AbstractVisitor {
         auto temp1 = function->context->newTemporary();
         function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -INT->size()));
         function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::ARRAY_ASSIGN, arguments[1]));
+    }
+    
+    void operator()(ast::VariableValue& value) const {
+        if(variable->type()->data_type()->is_pointer()){
+            pointerAssign(ToArgumentsVisitor(function)(value));
+        } else {
+            complexAssign(value.variable()->type(), value);
+        }
+    }
+
+    void operator()(ast::FunctionCall& call) const {
+        complexAssign(call.Content->function->returnType, call);
+    }
+
+    void operator()(ast::ArrayValue& array) const {
+        complexAssign(array.Content->var->type()->data_type(), array);
+    }
+
+    template<typename T>
+    void operator()(T& value) const {
+        complexAssign(ast::GetTypeVisitor()(value), value);
     }
 };
  
