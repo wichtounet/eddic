@@ -1171,6 +1171,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;            
             }
         case mtac::Operator::ARRAY_ASSIGN:
+        case mtac::Operator::ARRAY_PASSIGN:
             if(quadruple->result->type()->data_type() == FLOAT){
                 auto reg = manager.get_free_float_reg();
                 manager.copy(*quadruple->arg2, reg);
