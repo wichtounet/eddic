@@ -12,6 +12,7 @@
 #include "ast/StructuresAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 #include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
@@ -37,7 +38,7 @@ struct StructuresCollector : public boost::static_visitor<> {
 
             names.push_back(member.Content->name);
 
-            auto member_type = new_type(member.Content->type);
+            auto member_type = visit(ast::TypeTransformer(), member.Content->type);
             signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
         }
 

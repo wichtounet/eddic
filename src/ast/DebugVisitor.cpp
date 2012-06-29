@@ -78,7 +78,7 @@ void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
 }
 
 void ast::DebugVisitor::operator()(ast::MemberDeclaration& declaration) const {
-    std::cout << indent() << declaration.Content->type  << " " << declaration.Content->name << std::endl;
+    std::cout << indent() << toStringType(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
 }
 
 void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {

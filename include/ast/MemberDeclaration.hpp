@@ -12,6 +12,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -26,7 +27,7 @@ namespace ast {
  */
 struct ASTMemberDeclaration {
     Position position;
-    std::string type;
+    Type type;
     std::string name;
 
     mutable long references = 0;
@@ -46,7 +47,7 @@ typedef Deferred<ASTMemberDeclaration> MemberDeclaration;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::MemberDeclaration, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->type)
+    (eddic::ast::Type, Content->type)
     (std::string, Content->name)
 )
 
