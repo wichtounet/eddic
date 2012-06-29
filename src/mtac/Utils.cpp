@@ -34,7 +34,13 @@ bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
 }
 
 bool eddic::mtac::erase_result(mtac::Operator op){
-   return op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::DOT_FASSIGN && op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::RETURN; 
+   return 
+            op != mtac::Operator::DOT_ASSIGN 
+        &&  op != mtac::Operator::DOT_FASSIGN 
+        &&  op != mtac::Operator::DOT_PASSIGN 
+        &&  op != mtac::Operator::ARRAY_ASSIGN 
+        &&  op != mtac::Operator::ARRAY_PASSIGN 
+        &&  op != mtac::Operator::RETURN; 
 }
 
 bool eddic::mtac::is_distributive(mtac::Operator op){
