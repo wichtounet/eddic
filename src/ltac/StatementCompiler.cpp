@@ -513,6 +513,10 @@ ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Varia
         ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset() + static_cast<int>(offset));
     } else if(position.isParameter()){
         ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset() + static_cast<int>(offset)));
+    } else {
+        auto reg2 = manager.get_reg(var);
+        
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
     }
     
     return reg;
