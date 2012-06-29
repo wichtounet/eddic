@@ -18,6 +18,7 @@ enum class Operator : unsigned int {
     /* Assignment operators  */
     ASSIGN,
     FASSIGN,
+    PASSIGN,
 
     /* Integer operators */
     ADD,

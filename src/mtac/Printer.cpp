@@ -95,6 +95,8 @@ struct DebugVisitor : public boost::static_visitor<> {
             std::cout << "\t" << quadruple->result->name() << " = (normal) " << printArg(*quadruple->arg1) << std::endl;
         } else if(op == mtac::Operator::FASSIGN){
             std::cout << "\t" << quadruple->result->name() << " = (float) " << printArg(*quadruple->arg1) << std::endl;
+        } else if(op == mtac::Operator::PASSIGN){
+            std::cout << "\t" << quadruple->result->name() << " = (pointer) " << printArg(*quadruple->arg1) << std::endl;
         } else if(op == mtac::Operator::ADD){
             std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + " << printArg(*quadruple->arg2) << std::endl;
         } else if(op == mtac::Operator::FADD){
