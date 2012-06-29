@@ -683,6 +683,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:
+        case mtac::Operator::PASSIGN:
             {
                 auto reg = manager.get_reg_no_move(quadruple->result);
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
