@@ -22,7 +22,7 @@ using namespace eddic;
 
 ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
-        function(function), manager(registers, float_registers, function, float_pool), float_pool(float_pool) {
+        manager(registers, float_registers, function, float_pool), function(function), float_pool(float_pool) {
     descriptor = getPlatformDescriptor(platform);
 }
 
@@ -1142,11 +1142,15 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 auto offset = boost::get<int>(*quadruple->arg1);
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
 
+                auto reg = get_address_in_reg(variable, 0);
+
                 if(quadruple->result->type()->is_pointer()){
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), reg);
                 } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, offset), to_arg(*quadruple->arg2));
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, offset), reg); 
                 }
+
+                manager.release(reg);
 
                 break;
             }
