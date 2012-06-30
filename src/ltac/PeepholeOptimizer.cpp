@@ -135,6 +135,11 @@ void single_statement_optimizations(std::shared_ptr<ltac::Program> program){
     }
 }
 
+template<typename T>
+inline bool is_reg(const T& value){
+    return boost::get<ltac::Register>(&value);
+}
+
 void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
     for(auto& function : program->functions){
         auto& statements = function->getStatements();
@@ -160,12 +165,25 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                 }
 
                 if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
-                    //Two MOV to the same register => keep only last MOV
-                    if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg1)){
-                        if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
+                    if(is_reg(*i1->arg1) && is_reg(*i1->arg2) && is_reg(*i2->arg1) && is_reg(*i2->arg2)){
+                        auto reg11 = boost::get<ltac::Register>(*i1->arg1);
+                        auto reg12 = boost::get<ltac::Register>(*i1->arg2);
+                        auto reg21 = boost::get<ltac::Register>(*i2->arg1);
+                        auto reg22 = boost::get<ltac::Register>(*i2->arg2);
+                        
+                        //cross MOV (ir4 = ir5, ir5 = ir4), keep only the first
+                        if (reg11 == reg22 && reg12 == reg21){
+                            i2->op = ltac::Operator::NOP;
+                        }
+                    } else if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
+                        auto reg11 = boost::get<ltac::Register>(*i1->arg1);
+                        auto reg21 = boost::get<ltac::Register>(*i2->arg1);
+
+                        //Two MOV to the same register => keep only last MOV
+                        if(reg11 == reg21){
                             i1->op = ltac::Operator::NOP;
                         }
-                    } else if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg2)){
+                    } else if(is_reg(*i1->arg1) && is_reg(*i2->arg2)){
                         if(boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
                             if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
                                 i2->op = ltac::Operator::NOP;
@@ -173,7 +191,7 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                                 i2->arg2.reset();
                             }
                         }
-                    } else if(boost::get<ltac::Register>(&*i1->arg2) && boost::get<ltac::Register>(&*i2->arg1)){
+                    } else if(is_reg(*i1->arg2) && is_reg(*i2->arg1)){
                         if(boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
                             if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
                                 i2->op = ltac::Operator::NOP;
@@ -185,7 +203,7 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
                 }
                 
                 if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::ADD){
-                    if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg1)){
+                    if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
                         if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
                             if(boost::get<ltac::Register>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
                                 i2->op = ltac::Operator::LEA;
