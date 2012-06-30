@@ -210,10 +210,42 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
     }
 }
 
-void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
-    //Optimizations that looks at only one statement
-    single_statement_optimizations(program);
+void clean_nop(std::shared_ptr<ltac::Program> program){
+    for(auto& function : program->functions){
+        auto& statements = function->getStatements();
 
-    //Optimizations that looks at several statements at once
-    multiple_statement_optimizations(program);
+        auto it = statements.begin();
+        auto end = statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            if(mtac::is<std::shared_ptr<ltac::Instruction>>(statement)){
+                auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+
+                if(instruction->op == ltac::Operator::NOP){
+                    it = statements.erase(it);
+                    end = statements.end();
+
+                    continue;
+                }
+            }
+
+            ++it;
+        }
+    }
+}
+
+void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
+    //TODO Make something comparable to the optimization model for MTAC
+    for(int i = 0; i < 2; ++i){
+        //Optimizations that looks at only one statement
+        single_statement_optimizations(program);
+
+        //Optimizations that looks at several statements at once
+        multiple_statement_optimizations(program);
+
+        //Clean NOP because they can block further optimizations
+        clean_nop(program);
+    }
 }
