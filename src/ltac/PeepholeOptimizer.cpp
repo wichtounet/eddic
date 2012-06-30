@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 
 #include "Utils.hpp"
+#include "PerfsTimer.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 
@@ -255,6 +256,8 @@ void clean_nop(std::shared_ptr<ltac::Program> program){
 }
 
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
+    PerfsTimer("Peephole optimizations");
+
     //TODO Make something comparable to the optimization model for MTAC
     for(int i = 0; i < 2; ++i){
         //Optimizations that looks at only one statement
