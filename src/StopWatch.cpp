@@ -9,13 +9,25 @@
 
 using namespace eddic;
 
+typedef std::chrono::milliseconds milliseconds;
+typedef std::chrono::microseconds microseconds;
+
 StopWatch::StopWatch() {
     startTime = Clock::now();
 }
 
-double StopWatch::elapsed() {
+template<typename Precision>
+inline double elapsed_time(Clock::time_point& start){
     Clock::time_point endTime = Clock::now();
-    milliseconds ms = std::chrono::duration_cast<milliseconds>(endTime - startTime);
+    Precision ms = std::chrono::duration_cast<Precision>(endTime - start);
     
     return ms.count();
+}
+
+double StopWatch::elapsed() {
+    return elapsed_time<milliseconds>(startTime);
+}
+
+double StopWatch::micro_elapsed() {
+    return elapsed_time<microseconds>(startTime);
 }

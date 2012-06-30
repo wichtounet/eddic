@@ -17,11 +17,14 @@ namespace eddic {
 class PerfsTimer {
     public:
         PerfsTimer(const std::string& n);
+        PerfsTimer(const std::string& n, bool precise);
+
         ~PerfsTimer();
     
     private:
         StopWatch timer;
         std::string name;
+        bool precise = false;
 };
 
 } //end of eddic
