@@ -17,20 +17,25 @@
 
 using namespace eddic;
 
+template<typename T>
+inline bool is_reg(const T& value){
+    return is_reg(&value);
+}
+
 void optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
 
         if(instruction->op == ltac::Operator::MOV){
             //MOV reg, 0 can be transformed into XOR reg, reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
                 instruction->op = ltac::Operator::XOR;
                 instruction->arg2 = instruction->arg1;
 
                 return;
             }
 
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<ltac::Register>(*instruction->arg2)){
+            if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
                 auto& reg1 = boost::get<ltac::Register>(*instruction->arg1); 
                 auto& reg2 = boost::get<ltac::Register>(*instruction->arg2); 
             
@@ -45,7 +50,7 @@ void optimize_statement(ltac::Statement& statement){
 
         if(instruction->op == ltac::Operator::ADD){
             //ADD reg, 1 can be transformed into INC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
                 instruction->op = ltac::Operator::INC;
                 instruction->arg2.reset();
 
@@ -53,7 +58,7 @@ void optimize_statement(ltac::Statement& statement){
             }
             
             //ADD reg, -1 can be transformed into DEC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
                 instruction->op = ltac::Operator::DEC;
                 instruction->arg2.reset();
 
@@ -63,7 +68,7 @@ void optimize_statement(ltac::Statement& statement){
         
         if(instruction->op == ltac::Operator::SUB){
             //SUB reg, 1 can be transformed into DEC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
                 instruction->op = ltac::Operator::DEC;
                 instruction->arg2.reset();
 
@@ -71,7 +76,7 @@ void optimize_statement(ltac::Statement& statement){
             }
             
             //SUB reg, -1 can be transformed into INC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
                 instruction->op = ltac::Operator::INC;
                 instruction->arg2.reset();
 
@@ -81,7 +86,7 @@ void optimize_statement(ltac::Statement& statement){
 
         if(instruction->op == ltac::Operator::MUL){
             //Optimize multiplications with SHIFTs or LEAs
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
+            if(is_reg(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
                 int constant = boost::get<int>(*instruction->arg2);
 
                 auto reg = boost::get<ltac::Register>(*instruction->arg1);
@@ -118,7 +123,7 @@ void optimize_statement(ltac::Statement& statement){
 
         if(instruction->op == ltac::Operator::CMP_INT){
             //Optimize comparisons with 0 with or reg, reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
                 instruction->op = ltac::Operator::OR;
                 instruction->arg2 = instruction->arg1;
 
@@ -134,11 +139,6 @@ void single_statement_optimizations(std::shared_ptr<ltac::Program> program){
             optimize_statement(statement);
         }
     }
-}
-
-template<typename T>
-inline bool is_reg(const T& value){
-    return boost::get<ltac::Register>(&value);
 }
 
 void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
