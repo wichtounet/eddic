@@ -1105,6 +1105,24 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
                 break;
             }
+        case mtac::Operator::PDOT:
+            {
+                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+                assert(boost::get<int>(&*quadruple->arg2));
+
+                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                int offset = boost::get<int>(*quadruple->arg2);
+                    
+                auto reg = manager.get_reg_no_move(quadruple->result);
+                auto reg2 = get_address_in_reg(variable, offset);
+
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+
+                manager.set_written(quadruple->result);
+                manager.release(reg2);
+
+                break;
+            }
         case mtac::Operator::FDOT:
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
