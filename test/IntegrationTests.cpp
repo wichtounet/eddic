@@ -298,6 +298,10 @@ BOOST_AUTO_TEST_CASE( structures ){
     assert_output_64("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
 }
 
+BOOST_AUTO_TEST_CASE( struct_member_pointers ){
+    assert_output("struct_member_pointers.eddi", "55|44|66|66|");
+}
+
 BOOST_AUTO_TEST_CASE( nested ){
     assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
