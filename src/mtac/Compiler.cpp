@@ -347,6 +347,15 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             boost::tie(offset, member_type) = compute_member(value.variable(), value.Content->memberNames);
 
+            if(take_address){
+                auto temp = value.Content->context->new_temporary(INT);
+                
+                //TODO Use a PDOT
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, offset));
+
+                return {temp};
+            }
+
             if(member_type == STRING){
                 auto t1 = value.Content->context->new_temporary(INT);
                 auto t2 = value.Content->context->new_temporary(INT);
