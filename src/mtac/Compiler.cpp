@@ -350,8 +350,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             if(take_address){
                 auto temp = value.Content->context->new_temporary(INT);
                 
-                //TODO Use a PDOT
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, offset));
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
 
                 return {temp};
             }
