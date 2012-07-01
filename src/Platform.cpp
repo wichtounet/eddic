@@ -5,8 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
-
+#include "assert.hpp"
 #include "Platform.hpp"
 
 //32 bits by default
@@ -141,5 +140,5 @@ PlatformDescriptor* eddic::getPlatformDescriptor(Platform platform){
             return &x86_64Descriptor;
     }
 
-    assert(false);
+    ASSERT_PATH_NOT_TAKEN("Unhandled platform");
 }

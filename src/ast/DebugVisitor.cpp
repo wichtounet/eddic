@@ -10,6 +10,7 @@
 #include "ast/DebugVisitor.hpp"
 #include "ast/SourceFile.hpp"
 
+#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
@@ -30,9 +31,9 @@ std::string toStringType(ast::Type type){
         return ptr->type;
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return ptr->type + "[]";
+    } else {
+        ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }
-
-    assert(false);
 }
 
 void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
