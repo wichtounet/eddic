@@ -49,10 +49,10 @@ include_directories(include)
 file(
 	GLOB_RECURSE
 	compiler_files
-	src/*
+	src/*.cpp
 )
 
-file(GLOB to_remove src/eddi.cpp src/asm/to_address.inc)
+file(GLOB to_remove src/eddi.cpp)
 list(REMOVE_ITEM compiler_files ${to_remove})
 
 add_library(Compiler OBJECT ${compiler_files})
