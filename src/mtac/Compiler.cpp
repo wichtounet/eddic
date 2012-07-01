@@ -176,7 +176,17 @@ std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std
 }
 
 std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
+    auto type = var->type();
+
+    std::string struct_name;
+    if(type->is_pointer()){
+        struct_name = type->data_type()->type();
+    } else if(type->is_array()){
+        struct_name = type->data_type()->type();
+    } else {
+        struct_name = type->type();
+    }
+
     auto struct_type = symbols.get_struct(struct_name);
     std::shared_ptr<const Type> member_type;
 
@@ -815,7 +825,20 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         auto left = *ptr;
         auto variable = left.Content->var;
 
-        visit(AssignValueToArray(function, variable, left.Content->indexValue), assignment.Content->value);
+        if(left.Content->memberNames.empty()){
+            visit(AssignValueToArray(function, variable, left.Content->indexValue), assignment.Content->value);
+        } else {
+            unsigned int offset = 0;
+            std::shared_ptr<const Type> member_type;
+            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
+        
+            auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
+            
+            auto temp = left.Content->context->new_temporary(INT);
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PARRAY, index));
+            
+            visit(AssignValueToVariableWithOffset(function, temp, offset, member_type), assignment.Content->value);
+        }
     } else if(auto* ptr = boost::get<ast::DereferenceValue>(&assignment.Content->left_value)){
         if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
             auto left = *var_ptr;
