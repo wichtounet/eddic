@@ -147,7 +147,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
         auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
 
         //The seconde LEAVE is dead
-        if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
+        if(i1->op == ltac::Operator::LEAVE && (i2->op == ltac::Operator::LEAVE || i2->op == ltac::Operator::FREE_STACK)){
             return transform_to_nop(i2);
         }
 
