@@ -8,6 +8,8 @@
 #ifndef AST_NULL_H
 #define AST_NULL_H
 
+#include <ostream>
+
 namespace eddic {
 
 namespace ast {

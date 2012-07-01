@@ -133,7 +133,7 @@ inline void optimize_statement(ltac::Statement& statement){
     }
 }
 
-inline multiple_statement_optimizations(ltac::Statement& s1, ltac::Statement& s2){
+inline void multiple_statement_optimizations(ltac::Statement& s1, ltac::Statement& s2){
     if(mtac::is<std::shared_ptr<ltac::Instruction>>(s1) && mtac::is<std::shared_ptr<ltac::Instruction>>(s2)){
         auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
         auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
@@ -252,6 +252,8 @@ void optimize_all_statements(std::shared_ptr<ltac::Program> program){
 
             //Optimizations that looks at several statements at once
             multiple_statement_optimizations(s1, s2);
+
+            //TODO Integrate directly clean nop here
         }
     }
 }
