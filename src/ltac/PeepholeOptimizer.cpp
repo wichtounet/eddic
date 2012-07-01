@@ -212,49 +212,42 @@ inline void multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
     }
 }
 
-void clean_nop(std::shared_ptr<ltac::Program> program){
-    for(auto& function : program->functions){
-        auto& statements = function->getStatements();
+inline bool is_nop(ltac::Statement& statement){
+    if(mtac::is<std::shared_ptr<ltac::Instruction>>(statement)){
+        auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
 
-        auto it = statements.begin();
-        auto end = statements.end();
-
-        while(it != end){
-            auto statement = *it;
-
-            if(mtac::is<std::shared_ptr<ltac::Instruction>>(statement)){
-                auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
-
-                if(instruction->op == ltac::Operator::NOP){
-                    it = statements.erase(it);
-                    end = statements.end();
-
-                    continue;
-                }
-            }
-
-            ++it;
+        if(instruction->op == ltac::Operator::NOP){
+            return true;
         }
     }
+
+    return false;
 }
 
-void optimize_all_statements(std::shared_ptr<ltac::Program> program){
-    for(auto& function : program->functions){
-        auto& statements = function->getStatements();
+void basic_optimizations(std::shared_ptr<ltac::Function> function){
+    auto& statements = function->getStatements();
 
-        for(size_t i = 1; i < statements.size(); ++i){
-            auto& s1 = statements[i -  1];
-            auto& s2 = statements[i];
+    auto it = statements.begin();
+    auto end = statements.end() - 1;
 
-            //Optimizations that looks at only one statement
-            optimize_statement(s1);
-            optimize_statement(s2);
+    while(it != end){
+        auto& s1 = *it;
+        auto& s2 = *(it + 1);
 
-            //Optimizations that looks at several statements at once
-            multiple_statement_optimizations(s1, s2);
+        //Optimizations that looks at only one statement
+        optimize_statement(s1);
 
-            //TODO Integrate directly clean nop here
+        //Optimizations that looks at several statements at once
+        multiple_statement_optimizations(s1, s2);
+
+        if(is_nop(s1)){
+            it = statements.erase(it);
+            end = statements.end() - 1;
+
+            continue;
         }
+
+        ++it;
     }
 }
 
@@ -263,9 +256,8 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
 
     //TODO Make something comparable to the optimization model for MTAC
     for(int i = 0; i < 2; ++i){
-        optimize_all_statements(program);
-
-        //Clean NOP because they can block further optimizations
-        clean_nop(program);
+        for(auto& function : program->functions){
+            basic_optimizations(function);
+        }
     }
 }
