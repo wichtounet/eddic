@@ -39,6 +39,7 @@
 #include "mtac/ConstantFolding.hpp"
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
+#include "mtac/MathPropagation.hpp"
 
 using namespace eddic;
 
@@ -528,6 +529,8 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
 
         optimized |= debug("Common Subexpression Elimination", data_flow_optimization<mtac::CommonSubexpressionElimination>(function), function);
 
+        optimized |= debug("Math Propagation", apply_to_basic_blocks_two_pass<mtac::MathPropagation>(function), function);
+        
         optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
 
         optimized |= debug("Optimize Branches", optimize_branches(function), function);
