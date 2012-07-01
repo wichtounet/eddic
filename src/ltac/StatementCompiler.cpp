@@ -84,12 +84,12 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         }
     } else if(position.isGlobal()){
         return ltac::Address("V" + position.name(), offset);
-    } else if(position.isTemporary()){
-        auto reg = manager.get_reg(var);
-        return ltac::Address(reg, offset);
-    }
-
-    ASSERT_PATH_NOT_TAKEN("Should never get there");
+    } 
+    
+    assert(position.isTemporary());
+    
+    auto reg = manager.get_reg(var);
+    return ltac::Address(reg, offset);
 }
 
 ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, mtac::Argument offset){
@@ -114,11 +114,10 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         manager.release(reg);
 
         return ltac::Address(reg, offsetReg);
-    } else if(position.isGlobal()){
-        return ltac::Address("V" + position.name(), offsetReg);
     } 
-
-    ASSERT_PATH_NOT_TAKEN("Should never get there");
+    
+    assert(position.isGlobal());
+    return ltac::Address("V" + position.name(), offsetReg);
 }
 
 void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int position){
@@ -518,14 +517,13 @@ ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Vari
     } else if(position.isParameter()){
         ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
         ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    } else if(position.isTemporary()){
+    } else {
+        assert(position.isTemporary());
         auto reg2 = manager.get_reg(var);
         
         ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
         ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Should never get there");
-    }
+    } 
     
     return reg;
 }
@@ -544,12 +542,11 @@ ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Varia
     } else if(position.isParameter()){
         ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
         ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
-    } else if(position.isTemporary()){
+    } else {
+        assert(position.isTemporary());
         auto reg2 = manager.get_reg(var);
         
         ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Should never get there");
     }
     
     return reg;
