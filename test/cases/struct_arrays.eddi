@@ -21,5 +21,18 @@ void main(){
     print("|");
     print(a[1].real);
     print("|");
+
+    test(a);
 }
 
+void test(Complex[] a){
+    print(a[0].imag);
+    print("|");
+    print(a[0].real);
+    print("|");
+    
+    print(a[1].imag);
+    print("|");
+    print(a[1].real);
+    print("|");
+}
