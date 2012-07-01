@@ -310,6 +310,35 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return visit(*this, assignment.Content->left_value);
     }
 
+    result_type get_member(unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var) const {
+        if(member_type == STRING){
+            auto t1 = function->context->new_temporary(INT);
+            auto t2 = function->context->new_temporary(INT);
+
+            if(var->position().isParameter() && !var->type()->is_pointer()){
+                function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset + getStringOffset(var)));
+                function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset));
+            } else {
+                function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
+                function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + getStringOffset(var)));
+            }
+
+            return {t1, t2};
+        } else {
+            auto temp = function->context->new_temporary(member_type);
+
+            if(member_type == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
+            } else if(member_type == INT || member_type == BOOL || member_type->is_pointer()){
+                function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+            }
+
+            return {temp};
+        }
+    }
+
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){
             if(take_address){
@@ -354,7 +383,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else {
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
-
             boost::tie(offset, member_type) = compute_member(value.variable(), value.Content->memberNames);
 
             if(take_address){
@@ -365,32 +393,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 return {temp};
             }
 
-            if(member_type == STRING){
-                auto t1 = value.Content->context->new_temporary(INT);
-                auto t2 = value.Content->context->new_temporary(INT);
-
-                if(value.Content->var->position().isParameter() && !value.Content->var->type()->is_pointer()){
-                    function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, offset + getStringOffset(value.Content->var)));
-                    function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, offset));
-                } else {
-                    function->add(std::make_shared<mtac::Quadruple>(t1, value.Content->var, mtac::Operator::DOT, offset));
-                    function->add(std::make_shared<mtac::Quadruple>(t2, value.Content->var, mtac::Operator::DOT, offset + getStringOffset(value.Content->var)));
-                }
-
-                return {t1, t2};
-            } else {
-                auto temp = value.Content->context->new_temporary(member_type);
-
-                if(member_type == FLOAT){
-                    function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::FDOT, offset));
-                } else if(member_type == INT || member_type == BOOL || member_type->is_pointer()){
-                    function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, offset));
-                } else {
-                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
-                }
-
-                return {temp};
-            }
+            return get_member(offset, member_type, value.Content->var);
         }
     }
 
@@ -497,7 +500,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else {
             auto temp = array.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PARRAY, index));
-            return dereference_variable(temp, visit_non_variant(ast::GetTypeVisitor(), array));
+            
+            std::shared_ptr<const Type> member_type;
+            unsigned int offset = 0;
+            boost::tie(offset, member_type) = compute_member(array.Content->var, array.Content->memberNames);
+            
+            return get_member(offset, member_type, temp);
         }
     }
 

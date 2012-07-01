@@ -86,7 +86,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         return ltac::Address("V" + position.name(), offset);
     } else if(position.isTemporary()){
         auto reg = manager.get_reg(var);
-        return ltac::Address(reg, 0);
+        return ltac::Address(reg, offset);
     }
 
     ASSERT_PATH_NOT_TAKEN("Should never get there");
