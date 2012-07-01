@@ -244,6 +244,7 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
 
         //Optimizations that looks at only one statement
         optimized |= optimize_statement(s1);
+        optimized |= optimize_statement(s2);
 
         //Optimizations that looks at several statements at once
         optimized |= multiple_statement_optimizations(s1, s2);
@@ -281,7 +282,6 @@ bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> func
 
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
     PerfsTimer("Peephole optimizations", true);
-    
 
     for(auto& function : program->functions){
         if(option_defined("dev")){
