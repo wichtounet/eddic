@@ -458,30 +458,36 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
         auto type = array.Content->var->type()->data_type();
 
-        if(type == BOOL || type == INT || type == FLOAT){
-            auto temp = array.Content->context->new_temporary(type);
-            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
+        if(array.Content->memberNames.empty()){
+            if(type == BOOL || type == INT || type == FLOAT){
+                auto temp = array.Content->context->new_temporary(type);
+                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
 
-            return {temp};
-        } else if (type->is_pointer()){
+                return {temp};
+            } else if (type->is_pointer()){
+                auto temp = array.Content->context->new_temporary(INT);
+                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
+                return {temp};
+            } else if (type == STRING){
+                auto t1 = array.Content->context->newTemporary();
+                function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
+
+                auto t2 = array.Content->context->newTemporary();
+                auto t3 = array.Content->context->newTemporary();
+
+                //Assign the second part of the string
+                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
+                function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
+
+                return {t1, t2};
+            } else {
+                ASSERT_PATH_NOT_TAKEN("void is not a variable");
+            }
+        } else {
             auto temp = array.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
-            return {temp};
-        } else if (type == STRING){
-            auto t1 = array.Content->context->newTemporary();
-            function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
-
-            auto t2 = array.Content->context->newTemporary();
-            auto t3 = array.Content->context->newTemporary();
-
-            //Assign the second part of the string
-            function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
-            function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
-
-            return {t1, t2};
+            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PARRAY, index));
+            return dereference_variable(temp, type);
         }
-        
-        ASSERT_PATH_NOT_TAKEN("void is not a variable");
     }
 
     result_type operator()(ast::Expression& value) const {

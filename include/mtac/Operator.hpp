@@ -64,6 +64,8 @@ enum class Operator : unsigned int {
     DOT_PASSIGN,    //result+arg1=arg2
     
     ARRAY,          //result=arg1[arg2]
+    PARRAY,         //result= address of arg1[arg2]
+
     ARRAY_ASSIGN,   //result[arg1]=arg2
     ARRAY_PASSIGN,  //result[arg1]=arg2
 

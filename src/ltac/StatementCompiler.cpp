@@ -1197,18 +1197,35 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;
             }
         case mtac::Operator::ARRAY:
+            assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+
+            if(ltac::is_float_var(quadruple->result)){
+                auto reg = manager.get_float_reg_no_move(quadruple->result);
+
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(ltac::get_variable(*quadruple->arg1), *quadruple->arg2));
+            } else {
+                auto reg = manager.get_reg_no_move(quadruple->result);
+
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(ltac::get_variable(*quadruple->arg1), *quadruple->arg2));
+            }
+
+            manager.set_written(quadruple->result);
+
+            break;            
+        case mtac::Operator::PARRAY:
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+                assert(boost::get<int>(&*quadruple->arg2));
 
-                if(ltac::is_float_var(quadruple->result)){
-                    auto reg = manager.get_float_reg_no_move(quadruple->result);
+                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                int offset = boost::get<int>(*quadruple->arg2);
 
-                    ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(ltac::get_variable(*quadruple->arg1), *quadruple->arg2));
-                } else {
-                    auto reg = manager.get_reg_no_move(quadruple->result);
+                auto reg = manager.get_reg_no_move(quadruple->result);
+                auto reg2 = get_address_in_reg(variable, offset);
 
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(ltac::get_variable(*quadruple->arg1), *quadruple->arg2));
-                }
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+
+                manager.release(reg2);
 
                 manager.set_written(quadruple->result);
 
