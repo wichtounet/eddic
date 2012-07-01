@@ -27,6 +27,10 @@ inline bool is_reg(T value){
 }
 
 inline bool transform_to_nop(std::shared_ptr<ltac::Instruction> instruction){
+    if(instruction->op == ltac::Operator::NOP){
+        return false;
+    }
+    
     instruction->op = ltac::Operator::NOP;
     instruction->arg1.reset();
     instruction->arg2.reset();
@@ -150,8 +154,8 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
         auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
         auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
 
-        //The seconde LEAVE is dead
-        if(i1->op == ltac::Operator::LEAVE && (i2->op == ltac::Operator::LEAVE || i2->op == ltac::Operator::FREE_STACK)){
+        //Statements after LEAVE are dead
+        if(i1->op == ltac::Operator::LEAVE){
             return transform_to_nop(i2);
         }
 
@@ -281,7 +285,7 @@ bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> func
 } //end of anonymous namespace
 
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
-    PerfsTimer("Peephole optimizations", true);
+    PerfsTimer timer("Peephole optimizations", true);
 
     for(auto& function : program->functions){
         if(option_defined("dev")){
