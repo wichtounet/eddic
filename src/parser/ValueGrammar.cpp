@@ -192,7 +192,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
-        >>  lexer.right_bracket;
+        >>  lexer.right_bracket
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier
+            );
     
     litteral %= 
             qi::eps 
