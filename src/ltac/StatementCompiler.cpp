@@ -771,7 +771,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                             ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
                         }
                     } else {
-                        if(ltac::is_variable(*quadruple->arg1)){
+                        if(ltac::is_variable(*quadruple->arg2)){
                             ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), manager.get_reg(ltac::get_variable(*quadruple->arg2)));
                         } else {
                             ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), boost::get<int>(*quadruple->arg2));
