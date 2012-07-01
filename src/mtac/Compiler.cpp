@@ -456,9 +456,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::ArrayValue& array) const {
         auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-        auto type = array.Content->var->type()->data_type();
 
         if(array.Content->memberNames.empty()){
+            auto type = array.Content->var->type()->data_type();
+            
             if(type == BOOL || type == INT || type == FLOAT){
                 auto temp = array.Content->context->new_temporary(type);
                 function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
@@ -486,7 +487,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else {
             auto temp = array.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PARRAY, index));
-            return dereference_variable(temp, type);
+            return dereference_variable(temp, visit_non_variant(ast::GetTypeVisitor(), array));
         }
     }
 
