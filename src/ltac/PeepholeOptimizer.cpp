@@ -22,6 +22,14 @@ inline bool is_reg(T value){
     return mtac::is<ltac::Register>(value);
 }
 
+inline bool transform_to_nop(std::shared_ptr<ltac::Instruction> instruction){
+    instruction->op = ltac::Operator::NOP;
+    instruction->arg1.reset();
+    instruction->arg2.reset();
+
+    return true;
+}
+
 inline bool optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
@@ -41,11 +49,7 @@ inline bool optimize_statement(ltac::Statement& statement){
             
                 //MOV reg, reg is useless
                 if(reg1 == reg2){
-                    instruction->op = ltac::Operator::NOP;
-                    instruction->arg1.reset();
-                    instruction->arg2.reset();
-                    
-                    return true;
+                    return transform_to_nop(instruction);
                 }
             }
         }
@@ -56,7 +60,7 @@ inline bool optimize_statement(ltac::Statement& statement){
                 instruction->op = ltac::Operator::INC;
                 instruction->arg2.reset();
 
-                    return true;
+                return true;
             }
             
             //ADD reg, -1 can be transformed into DEC reg
@@ -144,19 +148,14 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
 
         //The seconde LEAVE is dead
         if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
-            i2->op = ltac::Operator::NOP;
-            
-            return true;
+            return transform_to_nop(i2);
         }
 
         //Combine two FREE STACK into one
         if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
             i1->arg1 = boost::get<int>(*i1->arg1) + boost::get<int>(*i2->arg1);
             
-            i2->op = ltac::Operator::NOP;
-            i2->arg1.reset();
-            
-            return true;
+            return transform_to_nop(i2);
         }
 
         if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
@@ -168,9 +167,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
 
                 //cross MOV (ir4 = ir5, ir5 = ir4), keep only the first
                 if (reg11 == reg22 && reg12 == reg21){
-                    i2->op = ltac::Operator::NOP;
-                    
-                    return true;
+                    return transform_to_nop(i2);
                 }
             } else if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
                 auto reg11 = boost::get<ltac::Register>(*i1->arg1);
@@ -178,28 +175,18 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
 
                 //Two MOV to the same register => keep only last MOV
                 if(reg11 == reg21){
-                    i1->op = ltac::Operator::NOP;
-                    
-                    return true;
+                    return transform_to_nop(i1);
                 }
             } else if(is_reg(*i1->arg1) && is_reg(*i2->arg2)){
                 if(boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
                     if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
-                        i2->op = ltac::Operator::NOP;
-                        i2->arg1.reset();
-                        i2->arg2.reset();
-                        
-                        return true;
+                        return transform_to_nop(i2);
                     }
                 }
             } else if(is_reg(*i1->arg2) && is_reg(*i2->arg1)){
                 if(boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
                     if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
-                        i2->op = ltac::Operator::NOP;
-                        i2->arg1.reset();
-                        i2->arg2.reset();
-                        
-                        return true;
+                        return transform_to_nop(i2);
                     }
                 }
             }
@@ -212,20 +199,12 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                         i2->op = ltac::Operator::LEA;
                         i2->arg2 = ltac::Address(boost::get<ltac::Register>(*i1->arg2), boost::get<int>(*i2->arg2));
 
-                        i1->op = ltac::Operator::NOP;
-                        i1->arg1.reset();
-                        i1->arg2.reset();
-                        
-                        return true;
+                        return transform_to_nop(i1);
                     } else if(boost::get<std::string>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
                         i2->op = ltac::Operator::LEA;
                         i2->arg2 = ltac::Address(boost::get<std::string>(*i1->arg2), boost::get<int>(*i2->arg2));
 
-                        i1->op = ltac::Operator::NOP;
-                        i1->arg1.reset();
-                        i1->arg2.reset();
-                        
-                        return true;
+                        return transform_to_nop(i1);
                     }
                 }
             }
