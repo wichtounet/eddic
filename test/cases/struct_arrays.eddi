@@ -1,0 +1,38 @@
+struct Complex {
+    int imag;
+    int real;
+}
+
+void main(){
+    Complex a[2];
+
+    a[0].imag = 99;
+    a[0].real = 111;
+    
+    a[1].imag = 999;
+    a[1].real = 1111;
+
+    print(a[0].imag);
+    print("|");
+    print(a[0].real);
+    print("|");
+    
+    print(a[1].imag);
+    print("|");
+    print(a[1].real);
+    print("|");
+
+    test(a);
+}
+
+void test(Complex[] a){
+    print(a[0].imag);
+    print("|");
+    print(a[0].real);
+    print("|");
+    
+    print(a[1].imag);
+    print("|");
+    print(a[1].real);
+    print("|");
+}

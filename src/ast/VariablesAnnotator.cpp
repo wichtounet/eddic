@@ -86,10 +86,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         auto element_type = visit(ast::TypeTransformer(), declaration.Content->arrayType);
-
-        if(element_type->is_custom_type()){
-            throw SemanticalException("Arrays of structures are not supported", declaration.Content->position);
-        }
         
         if(element_type->is_array()){
             throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
@@ -280,6 +276,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
+
+        //TODO Check the members 
     }
 
     void operator()(ast::Expression& value){
