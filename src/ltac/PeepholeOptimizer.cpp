@@ -10,12 +10,16 @@
 
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
+#include "Options.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
+#include "ltac/Printer.hpp"
 
 #include "mtac/Utils.hpp"
 
 using namespace eddic;
+
+namespace {
 
 template<typename T>
 inline bool is_reg(T value){
@@ -257,15 +261,42 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
+    if(option_defined("dev")){
+        if(b){
+            std::cout << "optimization " << name << " returned true" << std::endl;
+
+            //Print the function
+            ltac::Printer printer;
+            printer.print(function);
+        } else {
+            std::cout << "optimization " << name << " returned false" << std::endl;
+        }
+    }
+
+    return b;
+}
+
+} //end of anonymous namespace
+
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
     PerfsTimer("Peephole optimizations", true);
+    
 
     for(auto& function : program->functions){
+        if(option_defined("dev")){
+            std::cout << "Start optimizations on " << function->getName() << std::endl;
+
+            //Print the function
+            ltac::Printer printer;
+            printer.print(function);
+        }
+
         bool optimized;
         do {
             optimized = false;
             
-            optimized |= basic_optimizations(function);
+            optimized |= debug("Basic optimizations", basic_optimizations(function), function);
         } while(optimized);
     }
 }
