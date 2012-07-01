@@ -14,6 +14,8 @@
 #include <boost/variant/get.hpp>
 #include <boost/variant/static_visitor.hpp>
 
+#include "assert.hpp"
+
 #include "ast/values_def.hpp"
 
 namespace eddic {
@@ -38,7 +40,7 @@ struct GetConstantValue : public boost::static_visitor<Val> {
 
     template<typename T>
     Val operator()(const T&) const {
-        assert(false && "Value not constant");
+        ASSERT_PATH_NOT_TAKEN("This variable is of a type that cannot be constant");
     }
 };
 

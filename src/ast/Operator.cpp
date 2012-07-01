@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
+#include "assert.hpp"
 
 #include "ast/Operator.hpp"
 
@@ -51,5 +51,5 @@ std::string eddic::ast::toString(Operator op){
             return ">=";
     }
 
-    assert(false && "This operator cannot be converted to string");
+    ASSERT_PATH_NOT_TAKEN("This operator cannot be converted to string");
 }

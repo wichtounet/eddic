@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
+#include "assert.hpp"
 
 #include "mtac/Operator.hpp"
 
@@ -24,7 +24,7 @@ mtac::Operator mtac::toOperator(ast::Operator op){
         case ast::Operator::MOD:
             return mtac::Operator::MOD;
         default:
-            assert(false && "Not an int operator");
+            ASSERT_PATH_NOT_TAKEN("Not an int operator"); 
     }
 }
 
@@ -39,7 +39,7 @@ mtac::Operator mtac::toFloatOperator(ast::Operator op){
         case ast::Operator::MUL:
             return mtac::Operator::FMUL;
         default:
-            assert(false && "Not a float operator");
+            ASSERT_PATH_NOT_TAKEN("Not a float operator"); 
     }
 }
 
@@ -58,7 +58,7 @@ mtac::Operator mtac::toRelationalOperator(ast::Operator op){
         case ast::Operator::GREATER_EQUALS:
             return mtac::Operator::GREATER_EQUALS;
         default:
-            assert(false && "Not a relational operator");
+            ASSERT_PATH_NOT_TAKEN("Not a relational operator"); 
     }
 }
 
@@ -77,6 +77,6 @@ mtac::Operator mtac::toFloatRelationalOperator(ast::Operator op){
         case ast::Operator::GREATER_EQUALS:
             return mtac::Operator::FGE;
         default:
-            assert(false && "Not a float relational operator");
+            ASSERT_PATH_NOT_TAKEN("Not a float relational operator"); 
     }
 }

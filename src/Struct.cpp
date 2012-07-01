@@ -5,8 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
-
+#include "assert.hpp"
 #include "Struct.hpp"
 
 using namespace eddic;
@@ -40,7 +39,7 @@ std::shared_ptr<Member> Struct::operator[](const std::string& n){
         }
     }
 
-    assert(false && "This member is not contained in the struct");
+    ASSERT_PATH_NOT_TAKEN("This member is not contained in the struct");
 }
     
 void Struct::add_reference(){
