@@ -11,6 +11,7 @@
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
+#include "likely.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
@@ -253,7 +254,7 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
         //Optimizations that looks at several statements at once
         optimized |= multiple_statement_optimizations(s1, s2);
 
-        if(is_nop(s1)){
+        if(unlikely(is_nop(s1))){
             it = statements.erase(it);
             end = statements.end() - 1;
 
