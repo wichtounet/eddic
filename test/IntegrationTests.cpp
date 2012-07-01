@@ -302,6 +302,10 @@ BOOST_AUTO_TEST_CASE( struct_member_pointers ){
     assert_output("struct_member_pointers.eddi", "55|44|66|66|");
 }
 
+BOOST_AUTO_TEST_CASE( struct_array ){
+    assert_output("struct_arrays.eddi", "99|111|999|1111|");
+}
+
 BOOST_AUTO_TEST_CASE( nested ){
     assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
