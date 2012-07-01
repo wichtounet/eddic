@@ -12,9 +12,7 @@
 
 namespace eddic {
 
-//Chrono typedefs
 typedef std::chrono::high_resolution_clock Clock;
-typedef std::chrono::milliseconds milliseconds;
 
 /*!
  * \class StopWatch
@@ -26,6 +24,7 @@ class StopWatch {
     public:
         StopWatch();
         double elapsed();
+        double micro_elapsed();
 	
     private:
         Clock::time_point startTime;

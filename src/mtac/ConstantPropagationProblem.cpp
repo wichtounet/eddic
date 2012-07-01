@@ -130,7 +130,7 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
             changes |= optimize_optional(quadruple->arg1, results);
         }
         
-        if(!(quadruple->op == mtac::Operator::ARRAY_ASSIGN && quadruple->result->type()->is_array() && quadruple->result->type()->data_type()->is_pointer())){
+        if(quadruple->op != mtac::Operator::ARRAY_PASSIGN && quadruple->op != mtac::Operator::DOT_PASSIGN){
             changes |= optimize_optional(quadruple->arg2, results);
         }
 

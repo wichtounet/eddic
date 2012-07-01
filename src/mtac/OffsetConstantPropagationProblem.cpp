@@ -62,6 +62,15 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
                     }
                 }
             }
+        } 
+        //PDOT Lets escape an offset
+        else if(quadruple->op == mtac::Operator::PDOT){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                
+                mtac::Offset offset(variable, *ptr);
+                escaped.insert(offset);
+            }
         }
     }
     //Passing a variable by pointer erases its value
@@ -81,6 +90,17 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
                     ++it;
                 }
             }
+        }
+    }
+            
+    //Remove escaped variables from the result
+    for(auto it = std::begin(out.values()); it != std::end(out.values());){
+        auto offset = it->first;
+
+        if(escaped.find(offset) == escaped.end()){
+            ++it;
+        } else {
+            it = out.values().erase(it);
         }
     }
 

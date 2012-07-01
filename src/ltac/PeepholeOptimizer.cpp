@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 
 #include "Utils.hpp"
+#include "PerfsTimer.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 
@@ -16,20 +17,25 @@
 
 using namespace eddic;
 
-void optimize_statement(ltac::Statement& statement){
+template<typename T>
+inline bool is_reg(T value){
+    return mtac::is<ltac::Register>(value);
+}
+
+inline void optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
 
         if(instruction->op == ltac::Operator::MOV){
             //MOV reg, 0 can be transformed into XOR reg, reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
                 instruction->op = ltac::Operator::XOR;
                 instruction->arg2 = instruction->arg1;
 
                 return;
             }
 
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<ltac::Register>(*instruction->arg2)){
+            if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
                 auto& reg1 = boost::get<ltac::Register>(*instruction->arg1); 
                 auto& reg2 = boost::get<ltac::Register>(*instruction->arg2); 
             
@@ -44,7 +50,7 @@ void optimize_statement(ltac::Statement& statement){
 
         if(instruction->op == ltac::Operator::ADD){
             //ADD reg, 1 can be transformed into INC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
                 instruction->op = ltac::Operator::INC;
                 instruction->arg2.reset();
 
@@ -52,7 +58,7 @@ void optimize_statement(ltac::Statement& statement){
             }
             
             //ADD reg, -1 can be transformed into DEC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
                 instruction->op = ltac::Operator::DEC;
                 instruction->arg2.reset();
 
@@ -62,7 +68,7 @@ void optimize_statement(ltac::Statement& statement){
         
         if(instruction->op == ltac::Operator::SUB){
             //SUB reg, 1 can be transformed into DEC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 1)){
                 instruction->op = ltac::Operator::DEC;
                 instruction->arg2.reset();
 
@@ -70,7 +76,7 @@ void optimize_statement(ltac::Statement& statement){
             }
             
             //SUB reg, -1 can be transformed into INC reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, -1)){
                 instruction->op = ltac::Operator::INC;
                 instruction->arg2.reset();
 
@@ -80,7 +86,7 @@ void optimize_statement(ltac::Statement& statement){
 
         if(instruction->op == ltac::Operator::MUL){
             //Optimize multiplications with SHIFTs or LEAs
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
+            if(is_reg(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
                 int constant = boost::get<int>(*instruction->arg2);
 
                 auto reg = boost::get<ltac::Register>(*instruction->arg1);
@@ -117,7 +123,7 @@ void optimize_statement(ltac::Statement& statement){
 
         if(instruction->op == ltac::Operator::CMP_INT){
             //Optimize comparisons with 0 with or reg, reg
-            if(mtac::is<ltac::Register>(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
+            if(is_reg(*instruction->arg1) && mtac::equals<int>(*instruction->arg2, 0)){
                 instruction->op = ltac::Operator::OR;
                 instruction->arg2 = instruction->arg1;
 
@@ -127,82 +133,78 @@ void optimize_statement(ltac::Statement& statement){
     }
 }
 
-void single_statement_optimizations(std::shared_ptr<ltac::Program> program){
-    for(auto& function : program->functions){
-        for(auto& statement : function->getStatements()){
-            optimize_statement(statement);
+inline void multiple_statement_optimizations(ltac::Statement& s1, ltac::Statement& s2){
+    if(mtac::is<std::shared_ptr<ltac::Instruction>>(s1) && mtac::is<std::shared_ptr<ltac::Instruction>>(s2)){
+        auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
+        auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
+
+        //The seconde LEAVE is dead
+        if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
+            i2->op = ltac::Operator::NOP;
         }
-    }
-}
 
-void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
-    for(auto& function : program->functions){
-        auto& statements = function->getStatements();
+        //Combine two FREE STACK into one
+        if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
+            i1->arg1 = boost::get<int>(*i1->arg1) + boost::get<int>(*i2->arg1);
+            i2->arg1.reset();
+            i2->op = ltac::Operator::NOP;
+        }
 
-        for(size_t i = 1; i < statements.size(); ++i){
-            auto& s1 = statements[i -  1];
-            auto& s2 = statements[i];
+        if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
+            if(is_reg(*i1->arg1) && is_reg(*i1->arg2) && is_reg(*i2->arg1) && is_reg(*i2->arg2)){
+                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg12 = boost::get<ltac::Register>(*i1->arg2);
+                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
+                auto reg22 = boost::get<ltac::Register>(*i2->arg2);
 
-            if(mtac::is<std::shared_ptr<ltac::Instruction>>(s1) && mtac::is<std::shared_ptr<ltac::Instruction>>(s2)){
-                auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
-                auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
-
-                //The seconde LEAVE is dead
-                if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
+                //cross MOV (ir4 = ir5, ir5 = ir4), keep only the first
+                if (reg11 == reg22 && reg12 == reg21){
                     i2->op = ltac::Operator::NOP;
                 }
+            } else if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
+                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
 
-                //Combine two FREE STACK into one
-                if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
-                    i1->arg1 = boost::get<int>(*i1->arg1) + boost::get<int>(*i2->arg1);
-                    i2->arg1.reset();
-                    i2->op = ltac::Operator::NOP;
+                //Two MOV to the same register => keep only last MOV
+                if(reg11 == reg21){
+                    i1->op = ltac::Operator::NOP;
                 }
-
-                if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
-                    //Two MOV to the same register => keep only last MOV
-                    if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg1)){
-                        if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
-                            i1->op = ltac::Operator::NOP;
-                        }
-                    } else if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg2)){
-                        if(boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
-                            if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
-                                i2->op = ltac::Operator::NOP;
-                                i2->arg1.reset();
-                                i2->arg2.reset();
-                            }
-                        }
-                    } else if(boost::get<ltac::Register>(&*i1->arg2) && boost::get<ltac::Register>(&*i2->arg1)){
-                        if(boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
-                            if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
-                                i2->op = ltac::Operator::NOP;
-                                i2->arg1.reset();
-                                i2->arg2.reset();
-                            }
-                        }
+            } else if(is_reg(*i1->arg1) && is_reg(*i2->arg2)){
+                if(boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
+                    if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
+                        i2->op = ltac::Operator::NOP;
+                        i2->arg1.reset();
+                        i2->arg2.reset();
                     }
                 }
-                
-                if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::ADD){
-                    if(boost::get<ltac::Register>(&*i1->arg1) && boost::get<ltac::Register>(&*i2->arg1)){
-                        if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
-                            if(boost::get<ltac::Register>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
-                                i2->op = ltac::Operator::LEA;
-                                i2->arg2 = ltac::Address(boost::get<ltac::Register>(*i1->arg2), boost::get<int>(*i2->arg2));
-                                
-                                i1->op = ltac::Operator::NOP;
-                                i1->arg1.reset();
-                                i1->arg2.reset();
-                            } else if(boost::get<std::string>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
-                                i2->op = ltac::Operator::LEA;
-                                i2->arg2 = ltac::Address(boost::get<std::string>(*i1->arg2), boost::get<int>(*i2->arg2));
-                                
-                                i1->op = ltac::Operator::NOP;
-                                i1->arg1.reset();
-                                i1->arg2.reset();
-                            }
-                        }
+            } else if(is_reg(*i1->arg2) && is_reg(*i2->arg1)){
+                if(boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
+                    if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
+                        i2->op = ltac::Operator::NOP;
+                        i2->arg1.reset();
+                        i2->arg2.reset();
+                    }
+                }
+            }
+        }
+
+        if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::ADD){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
+                if(boost::get<ltac::Register>(*i1->arg1) == boost::get<ltac::Register>(*i2->arg1)){
+                    if(boost::get<ltac::Register>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                        i2->op = ltac::Operator::LEA;
+                        i2->arg2 = ltac::Address(boost::get<ltac::Register>(*i1->arg2), boost::get<int>(*i2->arg2));
+
+                        i1->op = ltac::Operator::NOP;
+                        i1->arg1.reset();
+                        i1->arg2.reset();
+                    } else if(boost::get<std::string>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                        i2->op = ltac::Operator::LEA;
+                        i2->arg2 = ltac::Address(boost::get<std::string>(*i1->arg2), boost::get<int>(*i2->arg2));
+
+                        i1->op = ltac::Operator::NOP;
+                        i1->arg1.reset();
+                        i1->arg2.reset();
                     }
                 }
             }
@@ -210,10 +212,60 @@ void multiple_statement_optimizations(std::shared_ptr<ltac::Program> program){
     }
 }
 
-void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
-    //Optimizations that looks at only one statement
-    single_statement_optimizations(program);
+void clean_nop(std::shared_ptr<ltac::Program> program){
+    for(auto& function : program->functions){
+        auto& statements = function->getStatements();
 
-    //Optimizations that looks at several statements at once
-    multiple_statement_optimizations(program);
+        auto it = statements.begin();
+        auto end = statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            if(mtac::is<std::shared_ptr<ltac::Instruction>>(statement)){
+                auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+
+                if(instruction->op == ltac::Operator::NOP){
+                    it = statements.erase(it);
+                    end = statements.end();
+
+                    continue;
+                }
+            }
+
+            ++it;
+        }
+    }
+}
+
+void optimize_all_statements(std::shared_ptr<ltac::Program> program){
+    for(auto& function : program->functions){
+        auto& statements = function->getStatements();
+
+        for(size_t i = 1; i < statements.size(); ++i){
+            auto& s1 = statements[i -  1];
+            auto& s2 = statements[i];
+
+            //Optimizations that looks at only one statement
+            optimize_statement(s1);
+            optimize_statement(s2);
+
+            //Optimizations that looks at several statements at once
+            multiple_statement_optimizations(s1, s2);
+
+            //TODO Integrate directly clean nop here
+        }
+    }
+}
+
+void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
+    PerfsTimer("Peephole optimizations", true);
+
+    //TODO Make something comparable to the optimization model for MTAC
+    for(int i = 0; i < 2; ++i){
+        optimize_all_statements(program);
+
+        //Clean NOP because they can block further optimizations
+        clean_nop(program);
+    }
 }

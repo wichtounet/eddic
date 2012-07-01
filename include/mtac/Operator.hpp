@@ -18,6 +18,7 @@ enum class Operator : unsigned int {
     /* Assignment operators  */
     ASSIGN,
     FASSIGN,
+    PASSIGN,
 
     /* Integer operators */
     ADD,
@@ -56,12 +57,15 @@ enum class Operator : unsigned int {
     
     DOT,            //result = (arg1)+arg2
     FDOT,           //result = (arg1)+arg2
+    PDOT,           //result = address of arg1 + arg2
     
     DOT_ASSIGN,     //result+arg1=arg2
     DOT_FASSIGN,    //result+arg1=arg2
+    DOT_PASSIGN,    //result+arg1=arg2
     
     ARRAY,          //result=arg1[arg2]
     ARRAY_ASSIGN,   //result[arg1]=arg2
+    ARRAY_PASSIGN,  //result[arg1]=arg2
 
     RETURN,         //return from a function
 
