@@ -295,7 +295,13 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
                         }
                     }
                 } else if(instruction->op == ltac::Operator::MOV){
-                    //TODO
+                    if(is_reg(*instruction->arg1)){
+                        if (auto* valuePtr = boost::get<int>(&*instruction->arg2)){
+                            auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                            constants[reg1] = *valuePtr;
+                        }
+                    }
                 }
             } else {
                 //At this point, the basic block is at its end
