@@ -277,7 +277,6 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
 
     while(bb < statements.size()){
-        //Collect informations
         std::size_t i = bb;
         for(; i < statements.size(); ++i){
             auto statement = statements[i];
@@ -285,6 +284,14 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 auto instruction = *ptr;
 
+                //Erase constant
+                if(instruction->arg1 && is_reg(*instruction->arg1)){
+                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                    constants.erase(reg1);
+                }
+
+                //Collect constants
                 if(instruction->op == ltac::Operator::XOR){
                     if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
                         auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
@@ -298,24 +305,12 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
                     if(is_reg(*instruction->arg1)){
                         if (auto* valuePtr = boost::get<int>(&*instruction->arg2)){
                             auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-
                             constants[reg1] = *valuePtr;
                         }
                     }
                 }
-            } else {
-                //At this point, the basic block is at its end
-                break;
-            }
-        }
-
-        //Optimize the current basic block
-        for(std::size_t j = bb; j < i + 1 && j < statements.size(); ++j){
-            auto statement = statements[j];
-
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                auto instruction = *ptr;
-
+                
+                //Optimize MOV
                 if(instruction->op == ltac::Operator::MOV){
                     if(is_reg(*instruction->arg2)){
                         auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
@@ -326,7 +321,10 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
                         }
                     }
                 }
-            } 
+            } else {
+                //At this point, the basic block is at its end
+                break;
+            }
         }
 
         //Start optimizations for the next basic block
