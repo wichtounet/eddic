@@ -273,10 +273,10 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     auto& statements = function->getStatements();
     
     std::size_t bb = 0;
+    
+    std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
 
     while(bb < statements.size()){
-        std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
-        
         //Collect informations
         std::size_t i = bb;
         for(; i < statements.size(); ++i){
@@ -331,6 +331,7 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
 
         //Start optimizations for the next basic block
         bb = i + 1;
+        constants.clear();
     }
 
     return optimized;
@@ -355,7 +356,7 @@ bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> func
 } //end of anonymous namespace
 
 void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
-    PerfsTimer timer("Peephole optimizations", true);
+    PerfsTimer timer("Peephole optimizations");
 
     for(auto& function : program->functions){
         if(option_defined("dev")){
