@@ -11,6 +11,8 @@
 #include <memory>
 #include <iostream>
 
+#include <boost/functional/hash.hpp>
+
 namespace eddic {
 
 class Variable;
@@ -32,17 +34,13 @@ struct Offset {
 
 std::ostream& operator<<(std::ostream& stream, const Offset& offset);
 
-template <class T>
-inline void hash_combine(std::size_t& seed, const T& v){
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-}
-
 struct OffsetHash : std::unary_function<Offset, std::size_t> {
     std::size_t operator()(const Offset& p) const {
         std::size_t seed = 0;
-        hash_combine(seed, p.variable);
-        hash_combine(seed, p.offset);
+
+        std::hash<std::shared_ptr<Variable>> hasher;
+        boost::hash_combine(seed, hasher(p.variable));
+        boost::hash_combine(seed, p.offset);
         return seed;
     }
 };

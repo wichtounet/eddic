@@ -267,6 +267,69 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+bool constant_propagation(std::shared_ptr<ltac::Function> function){
+    bool optimized = false;
+
+    auto& statements = function->getStatements();
+    
+    std::size_t bb = 0;
+
+    while(bb < statements.size()){
+        std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
+        
+        //Collect informations
+        std::size_t i = bb;
+        for(; i < statements.size(); ++i){
+            auto statement = statements[i];
+
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
+
+                if(instruction->op == ltac::Operator::XOR){
+                    if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
+                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                        if(reg1 == reg2){
+                            constants[reg1] = 0;
+                        }
+                    }
+                } else if(instruction->op == ltac::Operator::MOV){
+                    //TODO
+                }
+            } else {
+                //At this point, the basic block is at its end
+                break;
+            }
+        }
+
+        //Optimize the current basic block
+        for(std::size_t j = bb; j < i + 1 && j < statements.size(); ++j){
+            auto statement = statements[j];
+
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
+
+                if(instruction->op == ltac::Operator::MOV){
+                    if(is_reg(*instruction->arg2)){
+                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                        if(constants.find(reg2) != constants.end()){
+                            instruction->arg2 = constants[reg2];
+                            optimized = true;
+                        }
+                    }
+                }
+            } 
+        }
+
+        //Start optimizations for the next basic block
+        bb = i + 1;
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -302,6 +365,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             optimized = false;
             
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
+            optimized |= debug("Constant propagation", constant_propagation(function), function);
         } while(optimized);
     }
 }
