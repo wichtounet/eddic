@@ -272,64 +272,55 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
 
     auto& statements = function->getStatements();
     
-    std::size_t bb = 0;
-    
     std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
 
-    while(bb < statements.size()){
-        std::size_t i = bb;
-        for(; i < statements.size(); ++i){
-            auto statement = statements[i];
+    for(std::size_t i = 0; i < statements.size(); ++i){
+        auto statement = statements[i];
 
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                auto instruction = *ptr;
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
 
-                //Erase constant
-                if(instruction->arg1 && is_reg(*instruction->arg1)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+            //Erase constant
+            if(instruction->arg1 && is_reg(*instruction->arg1)){
+                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
-                    constants.erase(reg1);
-                }
-
-                //Collect constants
-                if(instruction->op == ltac::Operator::XOR){
-                    if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
-                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
-
-                        if(reg1 == reg2){
-                            constants[reg1] = 0;
-                        }
-                    }
-                } else if(instruction->op == ltac::Operator::MOV){
-                    if(is_reg(*instruction->arg1)){
-                        if (auto* valuePtr = boost::get<int>(&*instruction->arg2)){
-                            auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                            constants[reg1] = *valuePtr;
-                        }
-                    }
-                }
-                
-                //Optimize MOV
-                if(instruction->op == ltac::Operator::MOV){
-                    if(is_reg(*instruction->arg2)){
-                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
-
-                        if(constants.find(reg2) != constants.end()){
-                            instruction->arg2 = constants[reg2];
-                            optimized = true;
-                        }
-                    }
-                }
-            } else {
-                //At this point, the basic block is at its end
-                break;
+                constants.erase(reg1);
             }
-        }
 
-        //Start optimizations for the next basic block
-        bb = i + 1;
-        constants.clear();
+            //Collect constants
+            if(instruction->op == ltac::Operator::XOR){
+                if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
+                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                    if(reg1 == reg2){
+                        constants[reg1] = 0;
+                    }
+                }
+            } else if(instruction->op == ltac::Operator::MOV){
+                if(is_reg(*instruction->arg1)){
+                    if (auto* valuePtr = boost::get<int>(&*instruction->arg2)){
+                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                        constants[reg1] = *valuePtr;
+                    }
+                }
+            }
+
+            //Optimize MOV
+            if(instruction->op == ltac::Operator::MOV){
+                if(is_reg(*instruction->arg2)){
+                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                    if(constants.find(reg2) != constants.end()){
+                        instruction->arg2 = constants[reg2];
+                        optimized = true;
+                    }
+                }
+            }
+        } else {
+            //At this point, the basic block is at its end
+            constants.clear();
+        }
     }
 
     return optimized;
