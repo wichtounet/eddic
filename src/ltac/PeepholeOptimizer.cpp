@@ -384,14 +384,18 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     if(usage.find(reg1) == usage.end()){
                         optimized = transform_to_nop(instruction);
                     }
+                    
+                    usage.erase(reg1);
                 }
             } else if(instruction->op == ltac::Operator::XOR){
-                if(is_reg(*instruction->arg1) || is_reg(*instruction->arg2)){
+                if(is_reg(*instruction->arg1) && is_reg(*instruction->arg2)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
                     auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
 
                     if(reg1 == reg2 && usage.find(reg1) == usage.end()){
                         optimized = transform_to_nop(instruction);
+                    
+                        usage.erase(reg1);
                     }
                 }
             }
