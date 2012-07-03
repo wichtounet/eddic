@@ -12,6 +12,7 @@
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
 #include "likely.hpp"
+#include "Platform.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
@@ -326,6 +327,86 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
+
+//TODO This can be optimized by doing it context dependent to avoid saving each register
+void add_escaped_registers(RegisterUsage& usage){
+    auto descriptor = getPlatformDescriptor(platform);
+
+    usage.insert(ltac::Register(descriptor->int_return_register1()));
+    usage.insert(ltac::Register(descriptor->int_return_register2()));
+
+    for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
+        usage.insert(ltac::Register(descriptor->int_param_register(i)));
+    }
+}
+
+bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
+    bool optimized = false;
+
+    auto& statements = function->getStatements();
+    
+    RegisterUsage usage; 
+    add_escaped_registers(usage);
+
+    for(long i = statements.size() - 1; i >= 0; --i){
+        auto statement = statements[i];
+
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            //Optimize MOV and XOR
+            if(instruction->op == ltac::Operator::MOV){
+                if(is_reg(*instruction->arg1)){
+                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                    if(usage.find(reg1) == usage.end()){
+                        optimized = transform_to_nop(instruction);
+                    }
+                }
+            } else if(instruction->op == ltac::Operator::XOR){
+                if(is_reg(*instruction->arg1) || is_reg(*instruction->arg2)){
+                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                    if(reg1 == reg2 && usage.find(reg1) == usage.end()){
+                        optimized = transform_to_nop(instruction);
+                    }
+                }
+            }
+            
+            //Collect usage 
+            if(instruction->arg1 && is_reg(*instruction->arg1)){
+                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                usage.insert(reg1);
+            }
+            
+            if(instruction->arg2 && is_reg(*instruction->arg2)){
+                auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+                usage.insert(reg2);
+            }
+            
+            if(instruction->arg3 && is_reg(*instruction->arg3)){
+                auto reg3 = boost::get<ltac::Register>(*instruction->arg3);
+                usage.insert(reg3);
+            }
+
+            //Erase usage if the register gets written to
+            if(instruction->arg1 && is_reg(*instruction->arg1)){
+                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                usage.erase(reg1);
+            }
+        } else {
+            //At this point, the basic block is at its end
+            usage.clear();
+            add_escaped_registers(usage);
+        }
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -362,6 +443,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
+            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
         } while(optimized);
     }
 }
