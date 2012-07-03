@@ -23,14 +23,18 @@ void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, st
     }
 }
 
-bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
-    auto function = call->function;
-
+bool eddic::mtac::safe(const std::string& function){
     //These functions are considered as safe because they save/restore all the registers and does not return anything 
     return 
         function == "_F5printB" || function == "_F5printI" || function == "_F5printF" || function == "_F5printS" ||
         function == "_F7printlnB" || function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || 
         function == "_F7println"; 
+}
+
+bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
+    auto function = call->function;
+
+    return safe(function);
 }
 
 bool eddic::mtac::erase_result(mtac::Operator op){

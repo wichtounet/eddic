@@ -400,14 +400,14 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
             collect_usage(usage, instruction->arg1);
             collect_usage(usage, instruction->arg2);
             collect_usage(usage, instruction->arg3);
-
-            //Erase usage if the register gets written to
-            /*if(instruction->arg1 && is_reg(*instruction->arg1)){
-                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-
-                usage.erase(reg1);
-            }*/
         } else {
+            //Takes care of safe functions
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
+                    continue;
+                }
+            }
+            
             //At this point, the basic block is at its end
             usage.clear();
             add_escaped_registers(usage);
