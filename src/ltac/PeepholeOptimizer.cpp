@@ -319,6 +319,13 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
                 }
             }
         } else {
+            //Takes care of safe functions
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
+                    continue;
+                }
+            }
+
             //At this point, the basic block is at its end
             constants.clear();
         }
@@ -399,6 +406,8 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     }
                 }
             }
+
+            //TODO Take in account more instructions that erase results, optimize them and remove them from the usage
             
             //Collect usage 
             collect_usage(usage, instruction->arg1);
