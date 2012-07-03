@@ -341,6 +341,27 @@ void add_escaped_registers(RegisterUsage& usage){
     }
 }
 
+void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
+    if(arg){
+        if(is_reg(*arg)){
+            auto reg1 = boost::get<ltac::Register>(*arg);
+            usage.insert(reg1);
+        }
+
+        if(boost::get<ltac::Address>(&*arg)){
+            auto address = boost::get<ltac::Address>(*arg);
+
+            if(address.scaled_register){
+                usage.insert(*address.scaled_register);
+            }
+            
+            if(address.base_register){
+                usage.insert(*address.base_register);
+            }
+        }
+    }   
+}
+
 bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     bool optimized = false;
 
@@ -376,27 +397,16 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
             }
             
             //Collect usage 
-            if(instruction->arg1 && is_reg(*instruction->arg1)){
-                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                usage.insert(reg1);
-            }
-            
-            if(instruction->arg2 && is_reg(*instruction->arg2)){
-                auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
-                usage.insert(reg2);
-            }
-            
-            if(instruction->arg3 && is_reg(*instruction->arg3)){
-                auto reg3 = boost::get<ltac::Register>(*instruction->arg3);
-                usage.insert(reg3);
-            }
+            collect_usage(usage, instruction->arg1);
+            collect_usage(usage, instruction->arg2);
+            collect_usage(usage, instruction->arg3);
 
             //Erase usage if the register gets written to
-            if(instruction->arg1 && is_reg(*instruction->arg1)){
+            /*if(instruction->arg1 && is_reg(*instruction->arg1)){
                 auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
                 usage.erase(reg1);
-            }
+            }*/
         } else {
             //At this point, the basic block is at its end
             usage.clear();
