@@ -10,8 +10,11 @@
 
 #include <memory>
 #include <string>
+#include <iostream>
 
 #include <boost/utility/enable_if.hpp>
+
+#include "AssemblyFileWriter.hpp"
 
 #include "asm/CodeGenerator.hpp"
 
@@ -21,6 +24,9 @@ class AssemblyFileWriter;
 class GlobalContext;
 
 namespace as {
+
+bool is_enabled_printI();
+bool is_enabled_println();
 
 /*!
  * \class IntelCodeGenerator
@@ -49,6 +55,8 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
         virtual void declareString(const std::string& label, const std::string& value) = 0;
         virtual void declareFloat(const std::string& label, double value) = 0;
+
+        void output_function(const std::string& function);
 };
 
 } //end of as

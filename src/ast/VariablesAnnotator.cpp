@@ -79,12 +79,27 @@ struct VariablesVisitor : public boost::static_visitor<> {
         declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 
-    void operator()(ast::GlobalArrayDeclaration& declaration){
+    template<typename ArrayDeclaration>
+    void declare_array(ArrayDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The global Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
+            throw SemanticalException("The Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize));
+        auto element_type = visit(ast::TypeTransformer(), declaration.Content->arrayType);
+        
+        if(element_type->is_array()){
+            throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
+        }
+
+        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, declaration.Content->arraySize));
+    }
+
+    void operator()(ast::GlobalArrayDeclaration& declaration){
+        declare_array(declaration);
+    }
+    
+    void operator()(ast::ArrayDeclaration& declaration){
+        declare_array(declaration);
     }
     
     void operator()(ast::Foreach& foreach){
@@ -184,15 +199,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(ast::ArrayDeclaration& declaration){
-        if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
-        }
-
-        auto type = new_array_type(new_type(declaration.Content->arrayType), declaration.Content->arraySize);
-        declaration.Content->context->addVariable(declaration.Content->arrayName, type);
-    }
-    
     void operator()(ast::Swap& swap){
         if (swap.Content->lhs == swap.Content->rhs) {
             throw SemanticalException("Cannot swap a variable with itself", swap.Content->position);
@@ -254,14 +260,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         check_variable_values(variable);
     }
 
-    void operator()(ast::DereferenceVariableValue& variable){
-        check_variable_values(variable);
-
-        auto var = variable.Content->var;
-
-        if(!var->type()->is_pointer()){
-            throw SemanticalException("Only pointer variable can be dereferenced", variable.Content->position);
-        }
+    void operator()(ast::DereferenceValue& variable){
+        visit(*this, variable.Content->ref);
+        //check_variable_values(variable);
+        //TODO
     }
 
     void operator()(ast::ArrayValue& array){
@@ -274,6 +276,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
+
+        //TODO Check the members 
     }
 
     void operator()(ast::Expression& value){

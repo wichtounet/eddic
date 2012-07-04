@@ -52,41 +52,51 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
    return operation.Content->variable->type(); 
 }
 
+std::shared_ptr<const Type> get_member_type(std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
+    auto struct_name = type->type();
+    auto struct_type = symbols.get_struct(struct_name);
+
+    for(std::size_t i = 0; i < memberNames.size(); ++i){
+        auto member_type = (*struct_type)[memberNames[i]]->type;
+
+        if(i == memberNames.size() - 1){
+            return member_type;
+        } else {
+            struct_name = member_type->type();
+            struct_type = symbols.get_struct(struct_name);
+        }
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Problem with the type of members in nested struct values")
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    auto var = variable.variable();
+    auto type = variable.variable()->type();
 
     if(variable.Content->memberNames.empty()){
-        return var->type();
+        return type;
     } else {
-        auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-        auto struct_type = symbols.get_struct(struct_name);
-
-        auto& members = variable.Content->memberNames;
-        for(std::size_t i = 0; i < members.size(); ++i){
-            auto member_type = (*struct_type)[members[i]]->type;
-
-            if(i == members.size() - 1){
-                return member_type;
-            } else {
-                struct_name = member_type->type();
-                struct_type = symbols.get_struct(struct_name);
-            }
-        }
-
-        ASSERT_PATH_NOT_TAKEN("Problem with the type of members in nested struct values")
+        return get_member_type(type->is_pointer() ? type->data_type() : type, variable.Content->memberNames);
     }
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceVariableValue& value) const {
-    return value.variable()->type()->data_type();
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
+    auto type = array.Content->var->type()->data_type();
+    
+    if(array.Content->memberNames.empty()){
+        return type;
+    } else {
+        return get_member_type(type, array.Content->memberNames);
+    }
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceValue& value) const {
+    auto type = visit(*this, value.Content->ref);
+    return type->data_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
     return visit(*this, assign.Content->left_value);
-}
-
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    return array.Content->var->type()->data_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {

@@ -8,6 +8,8 @@
 #ifndef LTAC_REGISTER_H
 #define LTAC_REGISTER_H
 
+#include <boost/functional/hash.hpp>
+
 namespace eddic {
 
 namespace ltac {
@@ -37,6 +39,14 @@ static const Register SP(1000);
  * Represent the base pointer. 
  */
 static const Register BP(1001);
+
+struct RegisterHash : std::unary_function<Register, std::size_t> {
+    std::size_t operator()(const Register& r) const {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, r.reg);
+        return seed;
+    }
+};
 
 } //end of ltac
 

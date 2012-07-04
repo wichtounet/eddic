@@ -16,6 +16,8 @@
 #include "ltac/Utils.hpp"
 
 #include "mtac/Utils.hpp"
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 
 using namespace eddic;
 
@@ -82,6 +84,10 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     }
 
     StatementCompiler compiler(registers, float_registers, target_function, float_pool);
+    
+    //Compute Liveness
+    mtac::LiveVariableAnalysisProblem problem;
+    compiler.manager.liveness = mtac::data_flow(src_function, problem);
 
     //Then we compile each of them
     for(auto block : src_function->getBasicBlocks()){

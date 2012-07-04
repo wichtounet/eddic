@@ -59,6 +59,7 @@ void main(){
     
     common(44, 55);
     uselessassign();
+    useless(111, 222);
 }
 
 int constants(){
@@ -93,4 +94,8 @@ void uselessassign(){
     int a = 6;
     a = 7;
     a = 9;
+}
+
+void useless(int a, int b){
+    //Nothing
 }

@@ -12,6 +12,8 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/VariableType.hpp"
+
 namespace eddic {
 
 class Context;
@@ -27,7 +29,7 @@ struct ASTGlobalArrayDeclaration {
     std::shared_ptr<Context> context;
     
     Position position;
-    std::string arrayType;
+    Type arrayType;
     std::string arrayName;
     int arraySize;
 
@@ -48,7 +50,7 @@ typedef Deferred<ASTGlobalArrayDeclaration> GlobalArrayDeclaration;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalArrayDeclaration, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->arrayType)
+    (eddic::ast::Type, Content->arrayType)
     (std::string, Content->arrayName)
     (int, Content->arraySize)
 )

@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Variable.hpp"
+#include "Type.hpp"
 
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/Utils.hpp"
@@ -125,11 +126,25 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
         auto& quadruple = *ptr;
 
         //Do not replace a variable by a constant when used in offset
-        if(quadruple->op != mtac::Operator::ARRAY && quadruple->op != mtac::Operator::DOT){
+        if(quadruple->op != mtac::Operator::ARRAY && quadruple->op != mtac::Operator::PARRAY && quadruple->op != mtac::Operator::DOT){
             changes |= optimize_optional(quadruple->arg1, results);
         }
+        
+        if(quadruple->op != mtac::Operator::ARRAY_PASSIGN && quadruple->op != mtac::Operator::DOT_PASSIGN){
+            changes |= optimize_optional(quadruple->arg2, results);
+        }
 
-        changes |= optimize_optional(quadruple->arg2, results);
+        if(!mtac::erase_result(quadruple->op) && quadruple->result){
+            if(results.find(quadruple->result) != results.end()){
+                if(mtac::isVariable(results[quadruple->result])){
+                    auto var = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
+
+                    if(!var->position().isTemporary()){
+                        quadruple->result = var;
+                    }
+                }
+            }
+        }
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
         auto& param = *ptr;
 

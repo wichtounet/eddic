@@ -8,6 +8,8 @@
 #ifndef AST_TRUE_H
 #define AST_TRUE_H
 
+#include <ostream>
+
 namespace eddic {
 
 namespace ast {

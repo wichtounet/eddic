@@ -6,10 +6,11 @@
 //=======================================================================
 
 #include "assert.hpp"
+#include "Type.hpp"
 
 #include "ltac/Utils.hpp"
 
-#include "Type.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -56,17 +57,18 @@ ltac::Argument eddic::ltac::to_arg(mtac::Argument argument, ltac::RegisterManage
         return manager.float_pool->label(*ptr);
     } else if(auto* ptr = boost::get<std::string>(&argument)){
         return *ptr;
-    } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        if(ltac::is_float_var(*ptr)){
-            if((*ptr)->position().isTemporary()){
-                return manager.get_float_reg_no_move(*ptr);
+    } else {
+        assert(mtac::isVariable(argument));
+        auto variable = boost::get<std::shared_ptr<Variable>>(argument);
+
+        if(ltac::is_float_var(variable)){
+            if(variable->position().isTemporary()){
+                return manager.get_float_reg_no_move(variable);
             } else {
-                return manager.get_float_reg(*ptr);
+                return manager.get_float_reg(variable);
             }
         } else {
-            return to_register(*ptr, manager);
+            return to_register(variable, manager);
         }
     }
-
-    ASSERT_PATH_NOT_TAKEN("Should never get there");
 }

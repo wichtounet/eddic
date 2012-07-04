@@ -5,8 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
-
+#include "assert.hpp"
 #include "Function.hpp"
 #include "Type.hpp"
 
@@ -22,8 +21,8 @@ std::shared_ptr<const Type> Function::getParameterType(const std::string& name){
             return p.paramType;
         }
     }
-    
-    assert(false && "This parameter does not exists in the given function");
+
+    ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
 }
 
 unsigned int Function::getParameterPositionByType(const std::string& name){
@@ -41,5 +40,5 @@ unsigned int Function::getParameterPositionByType(const std::string& name){
         }
     }
 
-    assert(false && "The parameter does not exists in the function");
+    ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
 }

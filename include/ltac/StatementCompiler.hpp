@@ -52,12 +52,12 @@ class StatementCompiler : public boost::static_visitor<> {
         void operator()(std::string& str);
 
         bool ended = false;     //Is the basic block ended ?
+
+        ltac::RegisterManager manager;
    
     private:
         //The function being compiled
         std::shared_ptr<ltac::Function> function;
-
-        ltac::RegisterManager manager;
 
         std::shared_ptr<FloatPool> float_pool;
         
@@ -77,6 +77,10 @@ class StatementCompiler : public boost::static_visitor<> {
         void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple);
         
         ltac::Register to_register(std::shared_ptr<Variable> var);
+        
+        ltac::Register get_address_in_reg(std::shared_ptr<Variable> var, int offset);
+        ltac::Register get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset);
+
         ltac::Argument to_arg(mtac::Argument argument);
         
         ltac::Address to_address(std::shared_ptr<Variable> var, int offset);

@@ -70,11 +70,9 @@ unsigned int Type::size() const {
         return symbols.size_of_struct(type());
     }
 
-    if(is_pointer()){
-        return INT->size();
-    }
+    assert(is_pointer());
 
-    ASSERT_PATH_NOT_TAKEN("Unhandled type");
+    return INT->size();
 }
 
 unsigned int Type::elements() const {
@@ -109,12 +107,10 @@ std::shared_ptr<const Type> Type::non_const() const {
     if(is_standard_type()){
         return std::make_shared<StandardType>(base(), false);
     } 
-    
-    if(is_pointer()){
-        return shared_from_this();
-    }
 
-    ASSERT_PATH_NOT_TAKEN("Unhandled conversion");
+    assert(is_pointer());
+    
+    return shared_from_this();
 }
 
 bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){

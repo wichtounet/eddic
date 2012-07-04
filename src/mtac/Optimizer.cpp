@@ -18,6 +18,7 @@
 #include "StringPool.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
+#include "likely.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
@@ -30,6 +31,7 @@
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -37,11 +39,13 @@
 #include "mtac/ConstantFolding.hpp"
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
+#include "mtac/MathPropagation.hpp"
 
 using namespace eddic;
 
 namespace {
 
+static const unsigned int MAX_THREADS = 2;
 static const bool DebugPerf = false;
 
 template<typename Visitor>
@@ -90,7 +94,7 @@ bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
 
         usage.insert(block);
 
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             auto& last = block->statements[block->statements.size() - 1];
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
@@ -189,9 +193,9 @@ bool optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<S
     while(it != end){
         auto block = *it;
 
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
-                if((*ptr)->function == "concat"){
+                if((*ptr)->function == "_F6concatSS"){
                     //The params are on the previous block
                     auto& paramBlock = *previous;
 
@@ -260,7 +264,7 @@ bool remove_needless_jumps(std::shared_ptr<mtac::Function> function){
     while(it != end){
         auto& block = *it;
 
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             auto& last = block->statements[block->statements.size() - 1];
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
@@ -282,6 +286,98 @@ bool remove_needless_jumps(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
+bool remove_empty_functions(std::shared_ptr<mtac::Program> program){
+    bool optimized = false;
+
+    std::vector<std::string> removed_functions;
+
+   auto it = program->functions.begin();
+    
+    while(it != program->functions.end()){
+        auto function = *it;
+
+        unsigned int statements = 0;
+
+        for(auto& block : function->getBasicBlocks()){
+            statements += block->statements.size();
+        }
+
+        if(statements == 0){
+            removed_functions.push_back(function->getName());
+            it = program->functions.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    if(!removed_functions.empty()){
+        for(auto& function : program->functions){
+            auto& blocks = function->getBasicBlocks();
+
+            auto bit = blocks.begin();
+
+            while(bit != blocks.end()){
+                auto block = *bit;
+
+                auto fit = block->statements.begin();
+
+                while(fit != block->statements.end()){
+                    auto statement = *fit;
+                    
+                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                        auto function = (*ptr)->function;
+
+                        if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
+                            int parameters = (*ptr)->functionDefinition->parameters.size();
+
+                            if(parameters > 0){
+                                //The parameters are in the previous block
+                                if(fit == block->statements.begin()){
+                                    auto pit = bit;
+                                    --pit;
+                                    auto previous = *pit;
+
+                                    auto fend = previous->statements.end();
+                                    --fend;
+
+                                    while(parameters > 0){
+                                        fend = previous->statements.erase(fend);
+                                        --fend;
+
+                                        --parameters;
+                                    }
+                                   
+                                    fit = block->statements.erase(fit);
+                                } 
+                                //The parameters are in the same block
+                                else {
+                                    while(parameters >= 0){
+                                        fit = block->statements.erase(fit);
+                                        --fit;
+
+                                        --parameters;
+                                    }
+                                }
+
+                            } else {
+                                fit = block->statements.erase(fit);
+                            }
+                            
+                            continue;
+                        }
+                    }
+
+                    ++fit;
+                }
+
+                ++bit;
+            }
+        }
+    }
+
+    return optimized;
+}
+
 bool merge_basic_blocks(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
@@ -298,7 +394,7 @@ bool merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     while(it != blocks.end()){
         auto& block = *it;
-        if(block->statements.size() > 0){
+        if(likely(!block->statements.empty())){
             auto& last = block->statements[block->statements.size() - 1];
 
             bool merge = false;
@@ -359,6 +455,38 @@ bool data_flow_optimization(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
+bool dead_code_elimination(std::shared_ptr<mtac::Function> function){
+    bool optimized = false;
+
+    mtac::LiveVariableAnalysisProblem problem;
+
+    auto results = mtac::data_flow(function, problem);
+
+    for(auto& block : function->getBasicBlocks()){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if(mtac::erase_result((*ptr)->op)){
+                    if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
+                        it = block->statements.erase(it);
+                        end = block->statements.end();
+                        optimized=true;
+                        continue;
+                    }
+                }
+            }
+
+            ++it;
+        }
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -400,14 +528,15 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         }
 
         optimized |= debug("Common Subexpression Elimination", data_flow_optimization<mtac::CommonSubexpressionElimination>(function), function);
-        optimized |= debug("Remove assign", apply_to_basic_blocks_two_pass<mtac::RemoveAssign>(function), function);
-        optimized |= debug("Remove multiple assign", apply_to_basic_blocks_two_pass<mtac::RemoveMultipleAssign>(function), function);
+
+        optimized |= debug("Math Propagation", apply_to_basic_blocks_two_pass<mtac::MathPropagation>(function), function);
+        
+        optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
 
         optimized |= debug("Optimize Branches", optimize_branches(function), function);
         optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
         optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
         optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
-        optimized |= debug("Merge basic blocks", merge_basic_blocks(function), function);
     } while (optimized);
 }
 
@@ -419,15 +548,43 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
     }
 
     debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+    
+    /*//Liveness debugging
+    mtac::LiveVariableAnalysisProblem problem;
+    auto results = mtac::data_flow(function, problem);
+
+    for(auto& block : function->getBasicBlocks()){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
+
+        while(it != end){
+            auto statement = *it;
+
+            mtac::Printer printer;
+            printer.printStatement(statement);
+            std::cout << "OUT{";
+            for(auto& var : results->OUT_S[statement].values()){
+                std::cout << var->name() << ", ";
+            }
+            std::cout << "}" << std::endl;
+            std::cout << "IN{";
+            for(auto& var : results->IN_S[statement].values()){
+                std::cout << var->name() << ", ";
+            }
+            std::cout << "}" << std::endl;
+
+            ++it;
+        }
+    }*/
 }
 
-void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
+void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool){
     PerfsTimer timer("Whole optimizations");
 
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){
@@ -446,13 +603,23 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
 
+void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
+    bool optimized = false;
+
+    do{
+        optimize_all_functions(program, string_pool);
+
+        optimized = remove_empty_functions(program);
+    } while(optimized);
+}
+
 void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/) const {
     PerfsTimer timer("Whole basic optimizations");
 
     auto& functions = program->functions;
 
     //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(2));
+    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){

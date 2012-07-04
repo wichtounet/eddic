@@ -9,6 +9,7 @@
 #define AST_POSITION_H
 
 #include <string>
+#include <ostream>
 
 namespace eddic {
 

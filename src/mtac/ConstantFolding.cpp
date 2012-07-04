@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
+
 #include "mtac/ConstantFolding.hpp"
 #include "mtac/OptimizerUtils.hpp"
 #include "mtac/Utils.hpp"
@@ -96,7 +98,7 @@ bool computeValueInt(T& if_){
         case mtac::BinaryOperator::GREATER_EQUALS:
             return left >= right;
         default:
-            assert(false);
+            ASSERT_PATH_NOT_TAKEN("Unhandled operator");
     }
 }
 
@@ -119,7 +121,7 @@ bool computeValueFloat(T& if_){
         case mtac::BinaryOperator::FGE:
             return left >= right;
         default:
-            assert(false);
+            ASSERT_PATH_NOT_TAKEN("Unhandled operator");
     }
 }
 

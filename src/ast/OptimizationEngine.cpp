@@ -227,7 +227,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach&){
-            assert(false && "Foreach should have been tranformed into a For"); 
+            ASSERT_PATH_NOT_TAKEN("Foreach should have been tranformed into a For"); 
         }
 
         void operator()(ast::ForeachIn& foreach){

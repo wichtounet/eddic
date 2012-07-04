@@ -18,6 +18,8 @@
 #include "FloatPool.hpp"
 
 #include "mtac/Program.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
+
 #include "ltac/Program.hpp"
 
 #include "asm/Registers.hpp"
@@ -33,6 +35,9 @@ struct RegisterManager {
 
     //Keep track of the written variables to spills them
     std::unordered_set<std::shared_ptr<Variable>> written;
+
+    //Liveness information
+    std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;
 
     //The function being compiled
     std::shared_ptr<ltac::Function> function;
@@ -88,9 +93,9 @@ struct RegisterManager {
 
     void set_current(mtac::Statement statement);
         
-    bool is_live(std::unordered_map<std::shared_ptr<Variable>, bool>& liveness, std::shared_ptr<Variable> variable);
     bool is_live(std::shared_ptr<Variable> variable, mtac::Statement statement);
     bool is_live(std::shared_ptr<Variable> variable);
+    bool is_escaped(std::shared_ptr<Variable> variable);
     
     void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
 

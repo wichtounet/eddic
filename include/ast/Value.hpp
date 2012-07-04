@@ -17,7 +17,7 @@
 #include "ast/Float.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
-#include "ast/DereferenceVariableValue.hpp"
+#include "ast/DereferenceValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/Null.hpp"
@@ -34,7 +34,7 @@ typedef boost::variant<
             Float,
             Litteral, 
             VariableValue,
-            DereferenceVariableValue,
+            DereferenceValue,
             Expression,
             Minus,
             Plus,

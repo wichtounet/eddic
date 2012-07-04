@@ -9,7 +9,6 @@
 #define MTAC_QUADRUPLE_H
 
 #include <memory>
-#include <unordered_map>
 #include <boost/optional.hpp>
 
 #include "mtac/Operator.hpp"
@@ -26,8 +25,6 @@ struct Quadruple {
     boost::optional<mtac::Argument> arg1;
     boost::optional<mtac::Argument> arg2;
     mtac::Operator op;
-    
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;

@@ -10,6 +10,7 @@
 #include "ast/DebugVisitor.hpp"
 #include "ast/SourceFile.hpp"
 
+#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
@@ -30,9 +31,9 @@ std::string toStringType(ast::Type type){
         return ptr->type;
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return ptr->type + "[]";
+    } else {
+        ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }
-
-    assert(false);
 }
 
 void ast::DebugVisitor::operator()(ast::SourceFile& program) const {
@@ -78,7 +79,7 @@ void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
 }
 
 void ast::DebugVisitor::operator()(ast::MemberDeclaration& declaration) const {
-    std::cout << indent() << declaration.Content->type  << " " << declaration.Content->name << std::endl;
+    std::cout << indent() << toStringType(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
 }
 
 void ast::DebugVisitor::operator()(ast::GlobalVariableDeclaration&) const {
@@ -162,9 +163,12 @@ void ast::DebugVisitor::operator()(ast::PrefixOperation& op) const {
 }
 
 void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
-    std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] ";
-    visit(*this, assign.Content->left_value);
+    std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] " << std::endl;
 
+    std::cout << indent() << "Left Value:" << std::endl;
+    print_sub(*this, assign.Content->left_value);
+
+    std::cout << indent() << "Right Value:" << std::endl;
     print_sub(*this, assign.Content->value);
 }
 
@@ -211,18 +215,16 @@ void ast::DebugVisitor::operator()(ast::VariableValue& value) const {
     std::cout << std::endl;
 }
 
-void ast::DebugVisitor::operator()(ast::DereferenceVariableValue& value) const {
-    std::cout << indent() << "Dereference Variable Value" << value.Content->var->name();
-    
-    for(auto& member : value.Content->memberNames){
-        std::cout << "." << member; 
-    }
+void ast::DebugVisitor::operator()(ast::DereferenceValue& value) const {
+    std::cout << indent() << "Dereference Variable Value" << std::endl;;
 
-    std::cout << std::endl;
+    std::cout << indent() << "Left Value:" << std::endl;
+    print_sub(*this, value.Content->ref);
 }
 
-void ast::DebugVisitor::operator()(ast::ArrayValue&) const {
-    std::cout << indent() << "Array value" << std::endl; 
+void ast::DebugVisitor::operator()(ast::ArrayValue& value) const {
+    std::cout << indent() << "Array value [" << value.Content->arrayName << "]" << std::endl; 
+    print_sub(*this, value.Content->indexValue);
 }
 
 void ast::DebugVisitor::operator()(ast::Expression& value) const {

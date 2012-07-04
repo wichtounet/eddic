@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
+#include "assert.hpp"
 
 #include "mtac/BinaryOperator.hpp"
 
@@ -26,7 +26,7 @@ mtac::BinaryOperator eddic::mtac::toBinaryOperator(ast::Operator op){
         return mtac::BinaryOperator::LESS;
     }
 
-    assert(false && "Not an int binary operator"); 
+    ASSERT_PATH_NOT_TAKEN("Not an int binary operator"); 
 }
 
 mtac::BinaryOperator eddic::mtac::toFloatBinaryOperator(ast::Operator op){
@@ -44,5 +44,5 @@ mtac::BinaryOperator eddic::mtac::toFloatBinaryOperator(ast::Operator op){
         return mtac::BinaryOperator::FL;
     }
 
-    assert(false && "Not a float binary operator"); 
+    ASSERT_PATH_NOT_TAKEN("Not a float binary operator"); 
 }

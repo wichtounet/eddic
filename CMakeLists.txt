@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 
 project("EDDI Compiler")
 
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 1)
+set(VERSION_PATCH 2)
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -38,35 +38,40 @@ add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_
     COMMENT "Gathering stats" VERBATIM
 )
  
+# The compiler and the tests should go to the bin directory
 set(EXECUTABLE_OUTPUT_PATH bin)
 
+# All the headers are in the include directory
 include_directories(include)
 
-file(
-	GLOB_RECURSE
-	source_files
-	src/*
-)
+# Create a pseudo library grouping all object files
 
 file(
 	GLOB_RECURSE
-	test_files
-	test/*
-    src/*
+	compiler_files
+	src/*.cpp
 )
 
 file(GLOB to_remove src/eddi.cpp)
-list(REMOVE_ITEM test_files ${to_remove})
+list(REMOVE_ITEM compiler_files ${to_remove})
+
+add_library(Compiler OBJECT ${compiler_files})
 
 # Create the eddic executable
 
-add_executable(eddic ${source_files})
+add_executable(eddic $<TARGET_OBJECTS:Compiler> src/eddi.cpp)
 
 target_link_libraries (eddic boost_program_options)
 
 # Create the test executable
 
-add_executable (eddic_test ${test_files})
+file(
+	GLOB_RECURSE
+	test_files
+	test/*
+)
+
+add_executable(eddic_test $<TARGET_OBJECTS:Compiler> ${test_files})
 
 target_link_libraries (eddic_test boost_program_options)
 target_link_libraries (eddic_test boost_unit_test_framework)

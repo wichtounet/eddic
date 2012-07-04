@@ -162,51 +162,51 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
    }
    
    std::string operator()(ltac::Address& address) const {
-    if(address.absolute){
-        if(address.displacement){
-            return "[" + *address.absolute + " + " + toString(*address.displacement) + "]";
-        }
+       if(address.absolute){
+           if(address.displacement){
+               return "[" + *address.absolute + " + " + toString(*address.displacement) + "]";
+           }
 
-        if(address.base_register){
-            return "[" + *address.absolute + " + " + printArg(*address.base_register) + "]";
-        }
+           if(address.base_register){
+               return "[" + *address.absolute + " + " + printArg(*address.base_register) + "]";
+           }
 
-        return "[" + *address.absolute + "]";
-    }
-        
-    if(address.base_register){
-        if(address.scaled_register){
-            if(address.scale){
-                if(address.displacement){
-                    return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
-                }
-                
-                return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
-            }
-                
-            if(address.displacement){
-                return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
-            }
-            
-            return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + "]";
-        }
-        
-        if(address.displacement){
-            return "[" + printArg(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
-        }
+           return "[" + *address.absolute + "]";
+       }
 
-        return "[" + printArg(*address.base_register) + "]";
-    }
+       if(address.base_register){
+           if(address.scaled_register){
+               if(address.scale){
+                   if(address.displacement){
+                       return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
+                   }
 
-    if(address.displacement){
-        return "[" + ::toString(*address.displacement) + "]";
-    }
+                   return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
+               }
 
-    ASSERT_PATH_NOT_TAKEN("Invalid address type");
+               if(address.displacement){
+                   return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
+               }
+
+               return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + "]";
+           }
+
+           if(address.displacement){
+               return "[" + printArg(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
+           }
+
+           return "[" + printArg(*address.base_register) + "]";
+       }
+
+       if(address.displacement){
+           return "[" + ::toString(*address.displacement) + "]";
+       }
+
+       ASSERT_PATH_NOT_TAKEN("Invalid address type");
    }
-   
+
    std::string operator()(std::string& str) const {
-        return str;
+       return str;
    }
 };
 
@@ -259,4 +259,9 @@ struct DebugVisitor : public boost::static_visitor<> {
 void ltac::Printer::print(std::shared_ptr<ltac::Program> program) const {
    DebugVisitor visitor;
    visitor(program); 
+}
+
+void ltac::Printer::print(std::shared_ptr<ltac::Function> function) const {
+   DebugVisitor visitor;
+   visitor(function); 
 }

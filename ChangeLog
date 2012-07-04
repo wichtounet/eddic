@@ -1,19 +1,31 @@
+eddic 1.0.2 - 2012.07.04
+
+* Language: Functions can now return pointers
+* Language: Arrays can contains struct and pointers
+* Language: Struct can have pointers members
+* Optimizer: Global Dead-Code Elimination
+* Optimizer: Global Live-Variable Analysis
+* Optimizer: Empty functions are removed 
+* Peephole Optimizer: Support some local optimizations like dead-code elimination and simple constant propagation
+* Native Backend: Output only the native methods that are used
+* Native Backend: The standard functions are now in external files
+
 eddic 1.0.1 - 2012.06.22
 
 * Language: Support of pointers
 * Language: Support for struct inside struct
 * Compiler: Better error reporting for struct errors
-* Compiler: More optimizations for the LTAC Statements
-* Optimization Engine: Do optimizations of functions in parralel
+* Peephole Optimizer: More optimizations for the LTAC Statements
+* Optimizer: Do optimizations of functions in parralel
 * Tests: New tests
 * Tests: Test all optimization levels
 
 eddic 1.0.0 - 2012.05.04
 
 * Language: Support of structures
-* Optimization Engine: First support for global optimizations (global constant propagation)
-* Optimization Engine: Implemenation of Common Subexpression Elimination
-* Optimization Engine: Use of a peephole optimizer for low-level optimizations
+* Optimizater: First support for global optimizations (global constant propagation)
+* Optimizater: Implemenation of Common Subexpression Elimination
+* Optimizater: Use of a peephole optimizer for low-level optimizations
 * Compiler: Use of a new low-level intermediate language
 * Compiler: Review the use of constant floats in generated assembly
 * Compiler: Much more complete unit test suite

@@ -13,9 +13,14 @@
 using namespace eddic;
 
 PerfsTimer::PerfsTimer(const std::string& n) : name(n) {}
+PerfsTimer::PerfsTimer(const std::string& n, bool precise) : name(n), precise(precise) {}
 
 PerfsTimer::~PerfsTimer(){
     if(option_defined("perfs")){
-        std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
+        if(precise){
+            std::cout << name << " took " << timer.micro_elapsed() << "us" << std::endl;
+        } else {
+            std::cout << name << " took " << timer.elapsed() << "ms" << std::endl;
+        }
     }
 }

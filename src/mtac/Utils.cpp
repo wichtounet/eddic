@@ -23,9 +23,7 @@ void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, st
     }
 }
 
-bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
-    auto function = call->function;
-
+bool eddic::mtac::safe(const std::string& function){
     //These functions are considered as safe because they save/restore all the registers and does not return anything 
     return 
         function == "_F5printB" || function == "_F5printI" || function == "_F5printF" || function == "_F5printS" ||
@@ -33,8 +31,20 @@ bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
         function == "_F7println"; 
 }
 
+bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
+    auto function = call->function;
+
+    return safe(function);
+}
+
 bool eddic::mtac::erase_result(mtac::Operator op){
-   return op != mtac::Operator::DOT_ASSIGN && op != mtac::Operator::DOT_FASSIGN && op != mtac::Operator::ARRAY_ASSIGN && op != mtac::Operator::RETURN; 
+   return 
+            op != mtac::Operator::DOT_ASSIGN 
+        &&  op != mtac::Operator::DOT_FASSIGN 
+        &&  op != mtac::Operator::DOT_PASSIGN 
+        &&  op != mtac::Operator::ARRAY_ASSIGN 
+        &&  op != mtac::Operator::ARRAY_PASSIGN 
+        &&  op != mtac::Operator::RETURN; 
 }
 
 bool eddic::mtac::is_distributive(mtac::Operator op){

@@ -24,12 +24,12 @@
  */
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
-    assert_compiles("samples/" #file ".eddi", "--32", "--O0");\
-    assert_compiles("samples/" #file ".eddi", "--32", "--O1");\
-    assert_compiles("samples/" #file ".eddi", "--32", "--O2");\
-    assert_compiles("samples/" #file ".eddi", "--64", "--O0");\
-    assert_compiles("samples/" #file ".eddi", "--64", "--O1");\
-    assert_compiles("samples/" #file ".eddi", "--64", "--O2");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O0");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O1");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O2");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O0");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O1");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O2");\
 }
 
 /* Config Fixture  */
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( compound ){
 }
 
 BOOST_AUTO_TEST_CASE( if_ ){
-    assert_output("if.eddi", "Cool");
+    assert_output("if.eddi", "1|1|");
 }
 
 BOOST_AUTO_TEST_CASE( includes ){
@@ -257,7 +257,15 @@ BOOST_AUTO_TEST_CASE( string_functions ){
 }
 
 BOOST_AUTO_TEST_CASE( int_functions ){
-    assert_output("return_int.eddi", "484");
+    assert_output("return_int.eddi", "484|");
+}
+
+BOOST_AUTO_TEST_CASE( pointer_functions ){
+    assert_output("return_pointers.eddi", "66");
+}
+
+BOOST_AUTO_TEST_CASE( pointer_arrays ){
+    assert_output("pointer_arrays.eddi", "55|66|555|666|55|66|555|666|");
 }
 
 BOOST_AUTO_TEST_CASE( recursive_functions ){
@@ -288,6 +296,14 @@ BOOST_AUTO_TEST_CASE( prints ){
 BOOST_AUTO_TEST_CASE( structures ){
     assert_output_32("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3299|1|ertz|333|888|4.3299|1|ertz|");
     assert_output_64("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
+}
+
+BOOST_AUTO_TEST_CASE( struct_member_pointers ){
+    assert_output("struct_member_pointers.eddi", "55|44|66|66|");
+}
+
+BOOST_AUTO_TEST_CASE( struct_array ){
+    assert_output("struct_arrays.eddi", "99|111|999|1111|99|111|999|1111|");
 }
 
 BOOST_AUTO_TEST_CASE( nested ){

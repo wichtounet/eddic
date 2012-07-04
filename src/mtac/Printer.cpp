@@ -89,76 +89,84 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
-        if(quadruple->op == mtac::Operator::ASSIGN){
+        auto op = quadruple->op;
+
+        if(op == mtac::Operator::ASSIGN){
             std::cout << "\t" << quadruple->result->name() << " = (normal) " << printArg(*quadruple->arg1) << std::endl;
-        } else if(quadruple->op == mtac::Operator::FASSIGN){
+        } else if(op == mtac::Operator::FASSIGN){
             std::cout << "\t" << quadruple->result->name() << " = (float) " << printArg(*quadruple->arg1) << std::endl;
-        } else {
-            mtac::Operator op = quadruple->op;
+        } else if(op == mtac::Operator::PASSIGN){
+            std::cout << "\t" << quadruple->result->name() << " = (pointer) " << printArg(*quadruple->arg1) << std::endl;
+        } else if(op == mtac::Operator::ADD){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::FADD){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + (float) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::SUB){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " - " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::FSUB){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " - (float) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::MUL){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " * " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::FMUL){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " * (float) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::DIV){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " / " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::FDIV){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " / (float) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::MOD){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " % " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::EQUALS || op == mtac::Operator::FE){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::NOT_EQUALS || op == mtac::Operator::FNE){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " != " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::GREATER || op == mtac::Operator::FG){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " > " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::GREATER_EQUALS || op == mtac::Operator::FGE){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " >= " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::LESS || op == mtac::Operator::FL){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " < " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::LESS_EQUALS || op == mtac::Operator::FLE){
+            std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " <= " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::MINUS){
+            std::cout << "\t" << quadruple->result->name() << " = - " << printArg(*quadruple->arg1) << std::endl;
+        } else if(op == mtac::Operator::I2F){
+            std::cout << "\t" << quadruple->result->name() << " = (cast float) " << printArg(*quadruple->arg1) << std::endl;
+        } else if(op == mtac::Operator::F2I){
+            std::cout << "\t" << quadruple->result->name() << " = (cast int) " << printArg(*quadruple->arg1) << std::endl;
+        } else if(op == mtac::Operator::DOT){
+            std::cout << "\t" << quadruple->result->name() << " = (normal) (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::FDOT){
+            std::cout << "\t" << quadruple->result->name() << " = (float) (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::PDOT){
+            std::cout << "\t" << quadruple->result->name() << " = (pointer) (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::DOT_ASSIGN){
+            std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (normal) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::DOT_FASSIGN){
+            std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (float) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::DOT_PASSIGN){
+            std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (pointer) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::ARRAY){
+            std::cout << "\t" << quadruple->result->name() << " = (normal) " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
+        } else if(op == mtac::Operator::PARRAY){
+            std::cout << "\t" << quadruple->result->name() << " = (pointer) " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
+        } else if(op == mtac::Operator::ARRAY_ASSIGN){
+            std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = (normal) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::ARRAY_PASSIGN){
+            std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = (pointer) " << printArg(*quadruple->arg2) << std::endl;
+        } else if(op == mtac::Operator::RETURN){
+            std::cout << "\treturn";
 
-            if(op == mtac::Operator::ADD){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::FADD){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " + (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::SUB){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " - " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::FSUB){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " - (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::MUL){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " * " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::FMUL){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " * (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::DIV){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " / " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::FDIV){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " / (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::MOD){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " % " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::EQUALS || op == mtac::Operator::FE){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::NOT_EQUALS || op == mtac::Operator::FNE){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " != " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::GREATER || op == mtac::Operator::FG){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " > " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::GREATER_EQUALS || op == mtac::Operator::FGE){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " >= " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::LESS || op == mtac::Operator::FL){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " < " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::LESS_EQUALS || op == mtac::Operator::FLE){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " <= " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::MINUS){
-                std::cout << "\t" << quadruple->result->name() << " = - " << printArg(*quadruple->arg1) << std::endl;
-            } else if(op == mtac::Operator::I2F){
-                std::cout << "\t" << quadruple->result->name() << " = (cast float) " << printArg(*quadruple->arg1) << std::endl;
-            } else if(op == mtac::Operator::F2I){
-                std::cout << "\t" << quadruple->result->name() << " = (cast int) " << printArg(*quadruple->arg1) << std::endl;
-            } else if(op == mtac::Operator::DOT){
-                std::cout << "\t" << quadruple->result->name() << " = (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::FDOT){
-                std::cout << "\t" << quadruple->result->name() << " = (float) (" << printArg(*quadruple->arg1) << ")" << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::DOT_ASSIGN){
-                std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::DOT_FASSIGN){
-                std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (float) " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::ARRAY){
-                std::cout << "\t" << quadruple->result->name() << " = " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
-            } else if(op == mtac::Operator::ARRAY_ASSIGN){
-                std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = " << printArg(*quadruple->arg2) << std::endl;
-            } else if(op == mtac::Operator::RETURN){
-                std::cout << "\treturn";
-
-                if(quadruple->arg1){
-                    std::cout << " " << printArg(*quadruple->arg1);
-                }
-
-                if(quadruple->arg2){
-                    std::cout << ", " << printArg(*quadruple->arg2);
-                }
-
-                std::cout << std::endl;
-            } else if(op == mtac::Operator::NOP){
-                std::cout << "\tnop" << std::endl;
+            if(quadruple->arg1){
+                std::cout << " " << printArg(*quadruple->arg1);
             }
+
+            if(quadruple->arg2){
+                std::cout << ", " << printArg(*quadruple->arg2);
+            }
+
+            std::cout << std::endl;
+        } else if(op == mtac::Operator::NOP){
+            std::cout << "\tnop" << std::endl;
         }
     }
 

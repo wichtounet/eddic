@@ -8,8 +8,9 @@
 #ifndef MTAC_OFFSET_CONSTANT_PROPAGATION_PROBLEM_H
 #define MTAC_OFFSET_CONSTANT_PROPAGATION_PROBLEM_H
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <boost/variant.hpp>
 
@@ -24,6 +25,8 @@ typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> Offs
 typedef std::unordered_map<Offset, OffsetConstantValue, mtac::OffsetHash> OffsetConstantPropagationValues;
 
 struct OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, OffsetConstantPropagationValues> {
+    std::unordered_set<Offset, mtac::OffsetHash> escaped;
+
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     

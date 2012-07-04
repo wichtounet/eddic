@@ -1,6 +1,6 @@
 include <math>
 
-include "samples/included.eddi"
+include "eddi_samples/included.eddi"
 
 void main(){
     println(factorial(9));

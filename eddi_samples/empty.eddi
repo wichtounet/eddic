@@ -1,0 +1,4 @@
+void main(){
+    //This sample does not do anything 
+    //Just here as a test and to verify that as least as possible assembly code is outputted
+}

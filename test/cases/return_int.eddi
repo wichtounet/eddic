@@ -1,5 +1,6 @@
 void main(){
     print(first(22));
+    print("|");
 }
 
 int first(int a){

@@ -5,21 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_LIVENESS_ANALYZER_H
-#define MTAC_LIVENESS_ANALYZER_H
+#ifndef LIKELY_H
+#define LIKELY_H
 
-#include "mtac/Program.hpp"
+#ifdef __GNUC__
 
-namespace eddic {
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
-namespace mtac {
+#else
 
-struct LivenessAnalyzer {
-    void compute(std::shared_ptr<mtac::Program> program);
-};
+#define likely(x)   x
+#define unlikely(x) x
 
-} //end of ast
-
-} //end of eddic
+#endif
 
 #endif

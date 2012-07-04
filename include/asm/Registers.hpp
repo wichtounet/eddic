@@ -218,6 +218,7 @@ void Registers<Reg>::setLocation(std::shared_ptr<Variable> variable, Reg reg){
     descriptors.at(static_cast<int>(reg)) = variable;
     
     assert((*this)[(*this)[variable]] == variable);
+    assert(inRegister(variable, reg));
 }
 
 template<typename Reg>
@@ -255,13 +256,17 @@ void Registers<Reg>::reserve(Reg reg){
     assert(!used(reg));
 
     descriptors.at(static_cast<int>(reg)) = retainVariable;
+
+    assert(reserved(reg));
 }
 
 template<typename Reg>
 void Registers<Reg>::release(Reg reg){
-   assert(descriptors[static_cast<int>(reg)] == retainVariable);
-   
-   descriptors.at(static_cast<int>(reg)) = nullptr;
+    assert(descriptors[static_cast<int>(reg)] == retainVariable);
+
+    descriptors.at(static_cast<int>(reg)) = nullptr;
+
+    assert(!reserved(reg));
 }
 
 template<typename Reg>

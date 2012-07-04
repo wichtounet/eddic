@@ -18,20 +18,6 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             (lexer.const_ > boost::spirit::attr(true))
         |   boost::spirit::attr(false);
 
-    member_declaration %=
-            qi::position(position_begin)
-        >>  lexer.identifier
-        >>  lexer.identifier
-        >>  lexer.stop;
-
-    struct_ %=
-            qi::position(position_begin)
-        >>  lexer.struct_
-        >>  lexer.identifier
-        >>  lexer.left_brace
-        >>  *(member_declaration)
-        >>  lexer.right_brace;
-
     array_type %=
             qi::eps
         >>  lexer.identifier
@@ -52,4 +38,18 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             array_type
         |   pointer_type
         |   simple_type;
+
+    member_declaration %=
+            qi::position(position_begin)
+        >>  type
+        >>  lexer.identifier
+        >>  lexer.stop;
+
+    struct_ %=
+            qi::position(position_begin)
+        >>  lexer.struct_
+        >>  lexer.identifier
+        >>  lexer.left_brace
+        >>  *(member_declaration)
+        >>  lexer.right_brace;
 }

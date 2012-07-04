@@ -7,6 +7,7 @@
 
 #include "asm/IntelCodeGenerator.hpp"
 
+#include "assert.hpp"
 #include "Labels.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
@@ -42,7 +43,7 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         }
 
         if(type->is_array()){
-            if(type->data_type() == INT){
+            if(type->data_type() == INT || type->data_type()->is_pointer()){
                 declareIntArray(it.second->name(), type->elements());
             } else if(type->data_type() == FLOAT){
                 declareFloatArray(it.second->name(), type->elements());
@@ -71,3 +72,43 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> c
         declareFloat(it.second, it.first);
     }
 }
+
+void as::IntelCodeGenerator::output_function(const std::string& function){
+    std::string name = "functions/" + function + ".s";
+    std::ifstream stream(name.c_str());
+
+    ASSERT(stream, "One file in the functions folder does not exist");
+
+    std::string str;
+
+    while(!stream.eof()){
+        std::getline(stream, str);
+
+        if(!str.empty()){
+            if(str[0] != ';'){
+                writer.stream() << str << std::endl;
+            }
+        }
+    }
+
+    writer.stream() << std::endl;
+}
+
+
+bool as::is_enabled_printI(){
+    return symbols.referenceCount("_F5printI") || 
+            symbols.referenceCount("_F5printB") || 
+            symbols.referenceCount("_F7printlnB") || 
+            symbols.referenceCount("_F5printF") || 
+            symbols.referenceCount("_F7printlnF") ||
+            symbols.referenceCount("_F8durationAIAI");
+}
+
+bool as::is_enabled_println(){
+    return symbols.referenceCount("_F7println") || 
+            symbols.referenceCount("_F7printlnS") || 
+            symbols.referenceCount("_F7printlnI") || 
+            symbols.referenceCount("_F7printlnB") || 
+            symbols.referenceCount("_F7printlnF");
+}
+

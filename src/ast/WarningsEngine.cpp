@@ -108,7 +108,7 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_IGNORE_PREFIX_OPERATION()
         AUTO_IGNORE_SUFFIX_OPERATION()
         AUTO_IGNORE_VARIABLE_VALUE()
-        AUTO_IGNORE_DEREFERENCE_VARIABLE_VALUE()
+        AUTO_IGNORE_DEREFERENCE_VALUE()
 
         void check(std::shared_ptr<Context> context){
             if(WarningUnused){
