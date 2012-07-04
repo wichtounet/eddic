@@ -10,6 +10,7 @@
 #include "VisitorUtils.hpp"
 #include "Platform.hpp"
 #include "Type.hpp"
+#include "PerfsTimer.hpp"
 
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -34,6 +35,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 }
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool){
+    PerfsTimer timer("LTAC Compilation");
+
     auto size = src_function->context->size();
     
     //Only if necessary, allocates size on the stack for the local variables

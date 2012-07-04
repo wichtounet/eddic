@@ -43,6 +43,15 @@ inline bool transform_to_nop(std::shared_ptr<ltac::Instruction> instruction){
 inline bool optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+        
+        //Combine two FREE STACK into one
+        if(instruction->op == ltac::Operator::FREE_STACK){
+            auto size = boost::get<int>(*instruction->arg1);
+
+            if(size <= 0){
+                return transform_to_nop(instruction);
+            }
+        }
 
         if(instruction->op == ltac::Operator::MOV){
             //MOV reg, 0 can be transformed into XOR reg, reg
