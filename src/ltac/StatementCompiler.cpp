@@ -1170,9 +1170,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
         case mtac::Operator::FDOT:
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-                assert(boost::get<int>(&*quadruple->arg2));
-
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                
+                assert(boost::get<int>(&*quadruple->arg2));
                 int offset = boost::get<int>(*quadruple->arg2);
 
                 auto reg = manager.get_float_reg_no_move(quadruple->result);
@@ -1189,17 +1189,15 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                 break;
             }
         case mtac::Operator::DOT_ASSIGN:
-            {
-                if(quadruple->result->type()->is_pointer()){
-                    ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-                    int offset = boost::get<int>(*quadruple->arg1);
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
-                }
-
-                break;
+            if(quadruple->result->type()->is_pointer()){
+                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+                int offset = boost::get<int>(*quadruple->arg1);
+                ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
+            } else {
+                ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
             }
+
+            break;
         case mtac::Operator::DOT_PASSIGN:
             {
                 ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
