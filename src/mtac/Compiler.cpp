@@ -79,13 +79,8 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argume
 
     if(position.isGlobal()){
         function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * array->type()->data_type()->size()));
-
-        //Compute the offset manually to avoid having ADD then SUB
-        //TODO Find a way to make that optimization in the TAC Optimizer
-        int offset = array->type()->data_type()->size() * array->type()->elements();
-        offset -= INT->size();
-
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, offset));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, array->type()->data_type()->size() * array->type()->elements()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::SUB, INT->size()));
     } else if(position.isStack()){
         function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
@@ -1324,10 +1319,6 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
 
         for(auto& first : values){
             auto param = parameters[i--].name; 
-
-            if(auto* ptr = boost::get<ast::VariableValue>(&first)){
-                ASSERT(!((*ptr).Content->memberNames.empty() && (*ptr).Content->var->type()->is_custom_type()), "Struct by value passing is not handled for standard functions");
-            } 
             
             auto args = visit(ToArgumentsVisitor(function), first);
             for(auto& arg : args){
