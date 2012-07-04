@@ -539,10 +539,6 @@ struct AbstractVisitor : public boost::static_visitor<> {
     virtual void floatAssign(std::vector<mtac::Argument> arguments) const = 0;
     virtual void stringAssign(std::vector<mtac::Argument> arguments) const = 0;
     
-    void operator()(ast::Litteral& litteral) const {
-        stringAssign(ToArgumentsVisitor(function)(litteral));
-    }
-    
     template<typename T>
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
         if(type->is_pointer()){
@@ -556,18 +552,6 @@ struct AbstractVisitor : public boost::static_visitor<> {
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
         }
-    }
-
-    void operator()(ast::FunctionCall& call) const {
-        complexAssign(call.Content->function->returnType, call);
-    }
-
-    virtual void operator()(ast::VariableValue& value) const {
-        complexAssign(value.variable()->type(), value);
-    }
-
-    void operator()(ast::ArrayValue& array) const {
-        complexAssign(array.Content->var->type()->data_type(), array);
     }
 
     template<typename T>
@@ -652,14 +636,6 @@ struct AssignValueToVariable : public AbstractVisitor {
                 complexAssign(value.variable()->type(), value);
             }
         }
-    }
-
-    void operator()(ast::FunctionCall& call) const {
-        complexAssign(call.Content->function->returnType, call);
-    }
-
-    void operator()(ast::ArrayValue& array) const {
-        complexAssign(array.Content->var->type()->data_type(), array);
     }
 
     template<typename T>
