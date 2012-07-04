@@ -1224,19 +1224,10 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
                 }
             } 
 
-            std::vector<mtac::Argument> args;
-            if(param->type()->is_pointer()){
-                args = visit(ToArgumentsVisitor(function, true), first);
-            } else {
-                args = visit(ToArgumentsVisitor(function), first);
-            }
-            
+            auto args = visit(ToArgumentsVisitor(function, param->type()->is_pointer()), first);
             for(auto& arg : args){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
-
-                if(param->type()->is_pointer()){
-                    mtac_param->address = true;
-                }
+                mtac_param->address = param->type()->is_pointer();
 
                 function->add(mtac_param);   
             }
@@ -1251,8 +1242,6 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
    
     //The first operator defines the kind of operation 
     auto op = value.Content->operations[0].get<0>();
-
-    ASSERT(op == ast::Operator::AND || op == ast::Operator::OR || (op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS), "Invalid operator on bool");
 
     //Logical and operators (&&)
     if(op == ast::Operator::AND){
@@ -1300,14 +1289,9 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
         
         auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        auto typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
-
-        ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
-        ASSERT(typeLeft == INT || typeLeft == FLOAT, "Only float and int values can be compared");
-
         if(typeLeft == INT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
-        } else if(typeRight == FLOAT){
+        } else if(typeLeft == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
         }
     } 
