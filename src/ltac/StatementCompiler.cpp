@@ -1116,16 +1116,21 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                    
-                auto reg = manager.get_reg_no_move(quadruple->result);
 
                 if(variable->type()->is_pointer()){
                     assert(boost::get<int>(&*quadruple->arg2));
                     int offset = boost::get<int>(*quadruple->arg2);
 
+                    auto reg = manager.get_reg_no_move(quadruple->result);
                     ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
                 } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+                    if(ltac::is_float_var(quadruple->result)){
+                        auto reg = manager.get_float_reg_no_move(quadruple->result);
+                        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
+                    } else {
+                        auto reg = manager.get_reg_no_move(quadruple->result);
+                        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+                    }
                 }
 
                 manager.set_written(quadruple->result);
