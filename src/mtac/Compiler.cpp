@@ -37,9 +37,11 @@ namespace {
 
 //TODO Visitors should be moved out of this class in a future clenaup phase
 
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
+void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
@@ -71,8 +73,6 @@ std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::sha
     return performOperation(value, function, function->context->newFloatTemporary(), &mtac::toFloatOperator);
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
-
 mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<mtac::Function> function){
     mtac::Argument index = moveToArgument(indexValue, function);
     
@@ -100,8 +100,6 @@ int getStringOffset(std::shared_ptr<Variable> variable){
     return variable->position().isGlobal() ? INT->size() : -INT->size();
 }
 
-void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
-    
 template<typename Operation>
 void performPrefixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
     auto var = operation.Content->variable;
@@ -257,14 +255,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::FunctionCall& call) const {
         auto type = call.Content->function->returnType;
 
-        if(type == BOOL || type == INT || type->is_pointer()){
-            auto t1 = function->context->newTemporary();
-
-            execute_call(call, function, t1, {});
-
-            return {t1};
-        } else if(type == FLOAT){
-            auto t1 = function->context->newFloatTemporary();
+        if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
+            auto t1 = function->context->new_temporary(type);
 
             execute_call(call, function, t1, {});
 
