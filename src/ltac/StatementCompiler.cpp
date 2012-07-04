@@ -627,10 +627,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
         }
     }
 
-    //TODO Do that in the peephole optimizer
-    if(total > 0){
-        ltac::add_instruction(function, ltac::Operator::FREE_STACK, total);
-    }
+    ltac::add_instruction(function, ltac::Operator::FREE_STACK, total);
 
     if(call->return_){
         if(call->return_->type() == FLOAT){
@@ -1238,9 +1235,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
         }
     }
 
-    if(function->context->size() > 0){
-        ltac::add_instruction(function, ltac::Operator::FREE_STACK, function->context->size());
-    }
+    ltac::add_instruction(function, ltac::Operator::FREE_STACK, function->context->size());
 
     //The basic block must be ended before the jump
     end_basic_block();
