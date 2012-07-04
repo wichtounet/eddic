@@ -1200,21 +1200,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
                 break;
             }
-        case mtac::Operator::ARRAY_ASSIGN:
-        case mtac::Operator::ARRAY_PASSIGN:
-            if(quadruple->result->type()->data_type()->is_pointer()){
-                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
-
-                auto reg = get_address_in_reg(variable, 0);
-
-                ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg);
-
-                manager.release(reg);
-            } else {
-                ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
-            }
-
-            break;
         case mtac::Operator::DOT_PASSIGN:
             {
                 ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");

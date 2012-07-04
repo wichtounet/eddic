@@ -63,9 +63,6 @@ enum class Operator : unsigned int {
     DOT_FASSIGN,    //result+arg1=arg2
     DOT_PASSIGN,    //result+arg1=arg2
     
-    ARRAY_ASSIGN,   //result[arg1]=arg2
-    ARRAY_PASSIGN,  //result[arg1]=arg2
-
     RETURN,         //return from a function
 
     NOP             //for optimization purpose

@@ -42,8 +42,6 @@ bool eddic::mtac::erase_result(mtac::Operator op){
             op != mtac::Operator::DOT_ASSIGN 
         &&  op != mtac::Operator::DOT_FASSIGN 
         &&  op != mtac::Operator::DOT_PASSIGN 
-        &&  op != mtac::Operator::ARRAY_ASSIGN 
-        &&  op != mtac::Operator::ARRAY_PASSIGN 
         &&  op != mtac::Operator::RETURN; 
 }
 
