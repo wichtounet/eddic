@@ -713,581 +713,663 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
     manager.restore_pushed_registers();
 }
 
+void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto reg = manager.get_reg_no_move(quadruple->result);
+    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
+
+    manager.set_written(quadruple->result);
+
+    //If the address of the variable is escaped, we have to spill its value directly
+    if(manager.is_escaped(quadruple->result)){
+        manager.spills(reg);
+    }
+}
+
+void ltac::StatementCompiler::compile_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto reg = manager.get_float_reg_no_move(quadruple->result);
+    manager.copy(*quadruple->arg1, reg);
+
+    manager.set_written(quadruple->result);
+
+    //If the address of the variable is escaped, we have to spill its value directly
+    if(manager.is_escaped(quadruple->result)){
+        manager.spills(reg);
+    }
+}
+
+void ltac::StatementCompiler::compile_ADD(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto result = quadruple->result;
+
+    //Optimize the special form a = a + b by using only one ADD instruction
+    if(*quadruple->arg1 == result){
+        auto reg = manager.get_reg(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
+    } 
+    //Optimize the special form a = b + a by using only one ADD instruction
+    else if(*quadruple->arg2 == result){
+        auto reg = manager.get_reg(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
+    } 
+    //In the other cases, use lea to perform the addition
+    else {
+        auto reg = manager.get_reg_no_move(quadruple->result);
+
+        if(ltac::is_variable(*quadruple->arg1)){
+            if(ltac::is_variable(*quadruple->arg2)){
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), to_register(ltac::get_variable(*quadruple->arg2))));
+            } else {
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
+            }
+        } else {
+            if(ltac::is_variable(*quadruple->arg2)){
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), manager.get_reg(ltac::get_variable(*quadruple->arg2)));
+            } else {
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), boost::get<int>(*quadruple->arg2));
+            }
+        }
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_SUB(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto result = quadruple->result;
+
+    //Optimize the special form a = a - b by using only one SUB instruction
+    if(*quadruple->arg1 == result){
+        auto reg = manager.get_reg(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
+    } 
+    //In the other cases, move the first arg into the result register and then subtract the second arg into it
+    else {
+        auto reg = manager.get_reg_no_move(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
+        ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_MUL(std::shared_ptr<mtac::Quadruple> quadruple){
+    //This case should never happen unless the optimizer has bugs
+    assert(!(isInt(*quadruple->arg1) && isInt(*quadruple->arg2)));
+
+    //Form  x = x * y
+    if(*quadruple->arg1 == quadruple->result){
+        mul(quadruple->result, *quadruple->arg2);
+    }
+    //Form x = y * x
+    else if(*quadruple->arg2 == quadruple->result){
+        mul(quadruple->result, *quadruple->arg1);
+    }
+    //Form x = y * z (z: immediate)
+    else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
+        ltac::add_instruction(function, ltac::Operator::MUL, manager.get_reg_no_move(quadruple->result), to_arg(*quadruple->arg1), to_arg(*quadruple->arg2));
+    }
+    //Form x = y * z (y: immediate)
+    else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+        ltac::add_instruction(function, ltac::Operator::MUL, manager.get_reg_no_move(quadruple->result), to_arg(*quadruple->arg2), to_arg(*quadruple->arg1));
+    }
+    //Form x = y * z (both variables)
+    else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
+        auto reg = manager.get_reg_no_move(quadruple->result);
+        manager.copy(*quadruple->arg1, reg);
+        ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(*quadruple->arg2));
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadruple){
+    //This optimization cannot be done in the peephole optimizer
+    //Form x = x / y when y is power of two
+    if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
+        int constant = boost::get<int>(*quadruple->arg2);
+
+        if(isPowerOfTwo(constant)){
+            ltac::add_instruction(function, ltac::Operator::SHIFT_RIGHT, manager.get_reg(quadruple->result), powerOfTwo(constant));
+
+            manager.set_written(quadruple->result);
+
+            return;
+        }
+    }
+
+    div(quadruple);
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_MOD(std::shared_ptr<mtac::Quadruple> quadruple){
+    mod(quadruple);
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_FADD(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto result = quadruple->result;
+
+    //Optimize the special form a = a + b
+    if(*quadruple->arg1 == result){
+        auto reg = manager.get_float_reg(result);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FADD, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FADD, reg, to_arg(*quadruple->arg2));
+        }
+    }
+    //Optimize the special form a = b + a by using only one instruction
+    else if(*quadruple->arg2 == result){
+        auto reg = manager.get_float_reg(result);
+
+        if(mtac::isFloat(*quadruple->arg1)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg1, reg2);
+            ltac::add_instruction(function, ltac::Operator::FADD, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FADD, reg, to_arg(*quadruple->arg1));
+        }
+    }
+    //In the other forms, use two instructions
+    else {
+        auto reg = manager.get_float_reg_no_move(result);
+        manager.copy(*quadruple->arg1, reg);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FADD, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FADD, reg, to_arg(*quadruple->arg2));
+        }
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_FSUB(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto result = quadruple->result;
+
+    //Optimize the special form a = a - b
+    if(*quadruple->arg1 == result){
+        auto reg = manager.get_float_reg(result);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FSUB, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FSUB, reg, to_arg(*quadruple->arg2));
+        }
+    } else {
+        auto reg = manager.get_float_reg_no_move(result);
+        manager.copy(*quadruple->arg1, reg);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FSUB, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FSUB, reg, to_arg(*quadruple->arg2));
+        }
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_FMUL(std::shared_ptr<mtac::Quadruple> quadruple){
+    //Form  x = x * y
+    if(*quadruple->arg1 == quadruple->result){
+        auto reg = manager.get_float_reg(quadruple->result);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FMUL, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FMUL, reg, to_arg(*quadruple->arg2));
+        }
+    }
+    //Form x = y * x
+    else if(*quadruple->arg2 == quadruple->result){
+        auto reg = manager.get_float_reg(quadruple->result);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FMUL, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FMUL, reg, to_arg(*quadruple->arg2));
+        }
+    } 
+    //General form
+    else  {
+        auto reg = manager.get_float_reg_no_move(quadruple->result);
+        manager.copy(*quadruple->arg1, reg);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FMUL, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FMUL, reg, to_arg(*quadruple->arg2));
+        }
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_FDIV(std::shared_ptr<mtac::Quadruple> quadruple){
+    //Form x = x / y
+    if(*quadruple->arg1 == quadruple->result){
+        auto reg = manager.get_float_reg(quadruple->result);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FDIV, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FDIV, reg, to_arg(*quadruple->arg2));
+        }
+    } 
+    //General form
+    else {
+        auto reg = manager.get_float_reg_no_move(quadruple->result);
+        manager.copy(*quadruple->arg1, reg);
+
+        if(mtac::isFloat(*quadruple->arg2)){
+            auto reg2 = manager.get_free_float_reg();
+            manager.copy(*quadruple->arg2, reg2);
+            ltac::add_instruction(function, ltac::Operator::FDIV, reg, reg2);
+            manager.release(reg2);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::FDIV, reg, to_arg(*quadruple->arg2));
+        }
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_NOT_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVNE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_GREATER(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVG, quadruple);
+}
+
+void ltac::StatementCompiler::compile_GREATER_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVGE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_LESS(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVL, quadruple);
+}
+
+void ltac::StatementCompiler::compile_LESS_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVLE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_FE(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_FNE(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVNE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_FG(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVA, quadruple);
+}
+
+void ltac::StatementCompiler::compile_FGE(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVAE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_FLE(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVBE, quadruple);
+}
+
+void ltac::StatementCompiler::compile_FL(std::shared_ptr<mtac::Quadruple> quadruple){
+    set_if_cc(ltac::Operator::CMOVB, quadruple);
+}
+
+void ltac::StatementCompiler::compile_MINUS(std::shared_ptr<mtac::Quadruple> quadruple){
+    //Constants should have been replaced by the optimizer
+    assert(isVariable(*quadruple->arg1));
+
+    ltac::add_instruction(function, ltac::Operator::NEG, manager.get_reg(ltac::get_variable(*quadruple->arg1)));
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_FMINUS(std::shared_ptr<mtac::Quadruple> quadruple){
+    //Constants should have been replaced by the optimizer
+    assert(isVariable(*quadruple->arg1));
+
+    auto reg = manager.get_free_float_reg();
+    manager.copy(-1.0, reg);
+
+    ltac::add_instruction(function, ltac::Operator::FMUL, manager.get_float_reg(ltac::get_variable(*quadruple->arg1)), reg);
+
+    manager.release(reg);
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_I2F(std::shared_ptr<mtac::Quadruple> quadruple){
+    //Constants should have been replaced by the optimizer
+    assert(isVariable(*quadruple->arg1));
+
+    auto reg = manager.get_reg(ltac::get_variable(*quadruple->arg1));
+    auto resultReg = manager.get_float_reg_no_move(quadruple->result);
+
+    ltac::add_instruction(function, ltac::Operator::I2F, resultReg, reg);
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_F2I(std::shared_ptr<mtac::Quadruple> quadruple){
+    //Constants should have been replaced by the optimizer
+    assert(isVariable(*quadruple->arg1));
+
+    auto reg = manager.get_float_reg(ltac::get_variable(*quadruple->arg1));
+    auto resultReg = manager.get_reg_no_move(quadruple->result);
+
+    ltac::add_instruction(function, ltac::Operator::F2I, resultReg, reg);
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_DOT(std::shared_ptr<mtac::Quadruple> quadruple){
+    assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+
+    if(variable->type()->is_pointer()){
+        assert(boost::get<int>(&*quadruple->arg2));
+        int offset = boost::get<int>(*quadruple->arg2);
+
+        auto reg = manager.get_reg_no_move(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
+    } else {
+        if(ltac::is_float_var(quadruple->result)){
+            auto reg = manager.get_float_reg_no_move(quadruple->result);
+            ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
+        } else {
+            auto reg = manager.get_reg_no_move(quadruple->result);
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+        }
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_FDOT(std::shared_ptr<mtac::Quadruple> quadruple){
+    assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+
+    assert(boost::get<int>(&*quadruple->arg2));
+    int offset = boost::get<int>(*quadruple->arg2);
+
+    auto reg = manager.get_float_reg_no_move(quadruple->result);
+
+    //TODO Certainly a way to make that the same way for both cases
+    if(variable->type()->is_pointer()){
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_pointer(variable, offset));
+    } else {
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, offset));
+    }
+
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quadruple){
+    assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
+    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+
+    auto reg = manager.get_reg_no_move(quadruple->result);
+
+    if(mtac::is<int>(*quadruple->arg2)){
+        int offset = boost::get<int>(*quadruple->arg2);
+
+        auto reg2 = get_address_in_reg(variable, offset);
+
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+
+        manager.release(reg2);
+    } else {
+        assert(ltac::is_variable(*quadruple->arg2));
+
+        auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
+        auto reg2 = get_address_in_reg2(variable, offset);
+
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+
+        manager.release(reg2);
+    }
+                
+    manager.set_written(quadruple->result);
+}
+
+void ltac::StatementCompiler::compile_DOT_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
+    if(quadruple->result->type()->is_pointer()){
+        ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+        int offset = boost::get<int>(*quadruple->arg1);
+        ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
+    } else {
+        ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
+    }
+}
+
+void ltac::StatementCompiler::compile_DOT_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto reg = manager.get_free_float_reg();
+    manager.copy(*quadruple->arg2, reg);
+
+    if(quadruple->result->type()->is_pointer()){
+        ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+        int offset = boost::get<int>(*quadruple->arg1);
+        ltac::add_instruction(function, ltac::Operator::FMOV, to_pointer(quadruple->result, offset), reg);
+    } else {
+        ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
+    }
+
+    manager.release(reg);
+}
+
+void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
+    ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
+    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
+
+    auto reg = get_address_in_reg(variable, 0);
+
+    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
+
+    manager.release(reg);
+}
+
+void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple){
+    //A return without args is the same as exiting from the function
+    if(quadruple->arg1){
+        if(isFloat(*quadruple->arg1)){
+            manager.spills(ltac::FloatRegister(descriptor->float_return_register()));
+            manager.move(*quadruple->arg1, ltac::FloatRegister(descriptor->float_return_register()));
+        } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && ltac::is_float_var(ltac::get_variable(*quadruple->arg1))){
+            auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+
+            auto reg = manager.get_float_reg(variable);
+            if(reg != ltac::FloatRegister(descriptor->float_return_register())){
+                manager.spills(ltac::FloatRegister(descriptor->float_return_register()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_return_register()), reg);
+            }
+        } else {
+            auto reg1 = ltac::Register(descriptor->int_return_register1());
+            auto reg2 = ltac::Register(descriptor->int_return_register2());
+
+            manager.spills_if_necessary(reg1, *quadruple->arg1);
+
+            bool necessary = true;
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                if(manager.registers.inRegister(*ptr, reg1)){
+                    necessary = false;
+                }
+            }    
+
+            if(necessary){
+                ltac::add_instruction(function, ltac::Operator::MOV, reg1, to_arg(*quadruple->arg1));
+            }
+
+            if(quadruple->arg2){
+                manager.spills_if_necessary(reg2, *quadruple->arg2);
+
+                necessary = true;
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                    if(manager.registers.inRegister(*ptr, reg2)){
+                        necessary = false;
+                    }
+                }    
+
+                if(necessary){
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg2, to_arg(*quadruple->arg2));
+                }
+            }
+        }
+    }
+
+    if(function->context->size() > 0){
+        ltac::add_instruction(function, ltac::Operator::FREE_STACK, function->context->size());
+    }
+
+    //The basic block must be ended before the jump
+    end_basic_block();
+
+    ltac::add_instruction(function, ltac::Operator::LEAVE);
+}
+
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
     set_current(quadruple);
 
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:
+            compile_ASSIGN(quadruple);
+            break;
         case mtac::Operator::PASSIGN:
-            {
-                auto reg = manager.get_reg_no_move(quadruple->result);
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
-
-                manager.set_written(quadruple->result);
-
-                //If the address of the variable is escaped, we have to spill its value directly
-                if(manager.is_escaped(quadruple->result)){
-                    manager.spills(reg);
-                }
-
-                break;
-            }
+            compile_ASSIGN(quadruple);
+            break;
         case mtac::Operator::FASSIGN:
-            {
-                auto reg = manager.get_float_reg_no_move(quadruple->result);
-                manager.copy(*quadruple->arg1, reg);
-
-                manager.set_written(quadruple->result);
-                
-                //If the address of the variable is escaped, we have to spill its value directly
-                if(manager.is_escaped(quadruple->result)){
-                    manager.spills(reg);
-                }
-
-                break;
-            }
+            compile_FASSIGN(quadruple);
+            break;
         case mtac::Operator::ADD:
-            {
-                auto result = quadruple->result;
-
-                //Optimize the special form a = a + b by using only one ADD instruction
-                if(*quadruple->arg1 == result){
-                    auto reg = manager.get_reg(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
-                } 
-                //Optimize the special form a = b + a by using only one ADD instruction
-                else if(*quadruple->arg2 == result){
-                    auto reg = manager.get_reg(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::ADD, reg, to_arg(*quadruple->arg2));
-                } 
-                //In the other cases, use lea to perform the addition
-                else {
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-
-                    if(ltac::is_variable(*quadruple->arg1)){
-                        if(ltac::is_variable(*quadruple->arg2)){
-                            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), to_register(ltac::get_variable(*quadruple->arg2))));
-                        } else {
-                            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
-                        }
-                    } else {
-                        if(ltac::is_variable(*quadruple->arg2)){
-                            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), manager.get_reg(ltac::get_variable(*quadruple->arg2)));
-                        } else {
-                            ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), boost::get<int>(*quadruple->arg2));
-                        }
-                    }
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_ADD(quadruple);
+            break;            
         case mtac::Operator::SUB:
-            {
-                auto result = quadruple->result;
-
-                //Optimize the special form a = a - b by using only one SUB instruction
-                if(*quadruple->arg1 == result){
-                    auto reg = manager.get_reg(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
-                } 
-                //In the other cases, move the first arg into the result register and then subtract the second arg into it
-                else {
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
-                    ltac::add_instruction(function, ltac::Operator::SUB, reg, to_arg(*quadruple->arg2));
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_SUB(quadruple);
+            break;            
         case mtac::Operator::MUL:
-            {
-                //This case should never happen unless the optimizer has bugs
-                assert(!(isInt(*quadruple->arg1) && isInt(*quadruple->arg2)));
-
-                //Form  x = x * y
-                if(*quadruple->arg1 == quadruple->result){
-                    mul(quadruple->result, *quadruple->arg2);
-                }
-                //Form x = y * x
-                else if(*quadruple->arg2 == quadruple->result){
-                    mul(quadruple->result, *quadruple->arg1);
-                }
-                //Form x = y * z (z: immediate)
-                else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
-                    ltac::add_instruction(function, ltac::Operator::MUL, manager.get_reg_no_move(quadruple->result), to_arg(*quadruple->arg1), to_arg(*quadruple->arg2));
-                }
-                //Form x = y * z (y: immediate)
-                else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                    ltac::add_instruction(function, ltac::Operator::MUL, manager.get_reg_no_move(quadruple->result), to_arg(*quadruple->arg2), to_arg(*quadruple->arg1));
-                }
-                //Form x = y * z (both variables)
-                else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    manager.copy(*quadruple->arg1, reg);
-                    ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(*quadruple->arg2));
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;            
-            }
+            compile_MUL(quadruple);
+            break;            
         case mtac::Operator::DIV:
-            //This optimization cannot be done in the peephole optimizer
-            //Form x = x / y when y is power of two
-            if(*quadruple->arg1 == quadruple->result && isInt(*quadruple->arg2)){
-                int constant = boost::get<int>(*quadruple->arg2);
-
-                if(isPowerOfTwo(constant)){
-                    ltac::add_instruction(function, ltac::Operator::SHIFT_RIGHT, manager.get_reg(quadruple->result), powerOfTwo(constant));
-
-                    manager.set_written(quadruple->result);
-
-                    return;
-                }
-            }
-
-            div(quadruple);
-
-            manager.set_written(quadruple->result);
-
+            compile_DIV(quadruple);
             break;            
         case mtac::Operator::MOD:
-            mod(quadruple);
-
-            manager.set_written(quadruple->result);
-
+            compile_MOD(quadruple);
             break;
         case mtac::Operator::FADD:
-            {
-                auto result = quadruple->result;
-
-                //Optimize the special form a = a + b
-                if(*quadruple->arg1 == result){
-                    auto reg = manager.get_float_reg(result);
-
-                    if(mtac::isFloat(*quadruple->arg2)){
-                        auto reg2 = manager.get_free_float_reg();
-                        manager.copy(*quadruple->arg2, reg2);
-                        ltac::add_instruction(function, ltac::Operator::FADD, reg, reg2);
-                        manager.release(reg2);
-                    } else {
-                        ltac::add_instruction(function, ltac::Operator::FADD, reg, to_arg(*quadruple->arg2));
-                    }
-                }
-                //Optimize the special form a = b + a by using only one instruction
-                else if(*quadruple->arg2 == result){
-                    auto reg = manager.get_float_reg(result);
-
-                    if(mtac::isFloat(*quadruple->arg1)){
-                        auto reg2 = manager.get_free_float_reg();
-                        manager.copy(*quadruple->arg1, reg2);
-                        ltac::add_instruction(function, ltac::Operator::FADD, reg, reg2);
-                        manager.release(reg2);
-                    } else {
-                        ltac::add_instruction(function, ltac::Operator::FADD, reg, to_arg(*quadruple->arg1));
-                    }
-                }
-                //In the other forms, use two instructions
-                else {
-                    auto reg = manager.get_float_reg_no_move(result);
-                    manager.copy(*quadruple->arg1, reg);
-
-                    if(mtac::isFloat(*quadruple->arg2)){
-                        auto reg2 = manager.get_free_float_reg();
-                        manager.copy(*quadruple->arg2, reg2);
-                        ltac::add_instruction(function, ltac::Operator::FADD, reg, reg2);
-                        manager.release(reg2);
-                    } else {
-                        ltac::add_instruction(function, ltac::Operator::FADD, reg, to_arg(*quadruple->arg2));
-                    }
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_FADD(quadruple);
+            break;
         case mtac::Operator::FSUB:
-            {
-                auto result = quadruple->result;
-
-                //Optimize the special form a = a - b
-                if(*quadruple->arg1 == result){
-                    auto reg = manager.get_float_reg(result);
-
-                    if(mtac::isFloat(*quadruple->arg2)){
-                        auto reg2 = manager.get_free_float_reg();
-                        manager.copy(*quadruple->arg2, reg2);
-                        ltac::add_instruction(function, ltac::Operator::FSUB, reg, reg2);
-                        manager.release(reg2);
-                    } else {
-                        ltac::add_instruction(function, ltac::Operator::FSUB, reg, to_arg(*quadruple->arg2));
-                    }
-                } else {
-                    auto reg = manager.get_float_reg_no_move(result);
-                    manager.copy(*quadruple->arg1, reg);
-
-                    if(mtac::isFloat(*quadruple->arg2)){
-                        auto reg2 = manager.get_free_float_reg();
-                        manager.copy(*quadruple->arg2, reg2);
-                        ltac::add_instruction(function, ltac::Operator::FSUB, reg, reg2);
-                        manager.release(reg2);
-                    } else {
-                        ltac::add_instruction(function, ltac::Operator::FSUB, reg, to_arg(*quadruple->arg2));
-                    }
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_FSUB(quadruple);
+            break;
         case mtac::Operator::FMUL:
-            //Form  x = x * y
-            if(*quadruple->arg1 == quadruple->result){
-                auto reg = manager.get_float_reg(quadruple->result);
-
-                if(mtac::isFloat(*quadruple->arg2)){
-                    auto reg2 = manager.get_free_float_reg();
-                    manager.copy(*quadruple->arg2, reg2);
-                    ltac::add_instruction(function, ltac::Operator::FMUL, reg, reg2);
-                    manager.release(reg2);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FMUL, reg, to_arg(*quadruple->arg2));
-                }
-            }
-            //Form x = y * x
-            else if(*quadruple->arg2 == quadruple->result){
-                auto reg = manager.get_float_reg(quadruple->result);
-
-                if(mtac::isFloat(*quadruple->arg2)){
-                    auto reg2 = manager.get_free_float_reg();
-                    manager.copy(*quadruple->arg2, reg2);
-                    ltac::add_instruction(function, ltac::Operator::FMUL, reg, reg2);
-                    manager.release(reg2);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FMUL, reg, to_arg(*quadruple->arg2));
-                }
-            } 
-            //General form
-            else  {
-                auto reg = manager.get_float_reg_no_move(quadruple->result);
-                manager.copy(*quadruple->arg1, reg);
-
-                if(mtac::isFloat(*quadruple->arg2)){
-                    auto reg2 = manager.get_free_float_reg();
-                    manager.copy(*quadruple->arg2, reg2);
-                    ltac::add_instruction(function, ltac::Operator::FMUL, reg, reg2);
-                    manager.release(reg2);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FMUL, reg, to_arg(*quadruple->arg2));
-                }
-            }
-
-            manager.set_written(quadruple->result);
-
-            break;            
+            compile_FMUL(quadruple);
+            break;
         case mtac::Operator::FDIV:
-            //Form x = x / y
-            if(*quadruple->arg1 == quadruple->result){
-                auto reg = manager.get_float_reg(quadruple->result);
-
-                if(mtac::isFloat(*quadruple->arg2)){
-                    auto reg2 = manager.get_free_float_reg();
-                    manager.copy(*quadruple->arg2, reg2);
-                    ltac::add_instruction(function, ltac::Operator::FDIV, reg, reg2);
-                    manager.release(reg2);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FDIV, reg, to_arg(*quadruple->arg2));
-                }
-            } 
-            //General form
-            else {
-                auto reg = manager.get_float_reg_no_move(quadruple->result);
-                manager.copy(*quadruple->arg1, reg);
-
-                if(mtac::isFloat(*quadruple->arg2)){
-                    auto reg2 = manager.get_free_float_reg();
-                    manager.copy(*quadruple->arg2, reg2);
-                    ltac::add_instruction(function, ltac::Operator::FDIV, reg, reg2);
-                    manager.release(reg2);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FDIV, reg, to_arg(*quadruple->arg2));
-                }
-            }
-
-            manager.set_written(quadruple->result);
-
-            break;            
+            compile_FDIV(quadruple);
+            break;
         case mtac::Operator::I2F:
-            {
-                //Constants should have been replaced by the optimizer
-                assert(isVariable(*quadruple->arg1));
-
-                auto reg = manager.get_reg(ltac::get_variable(*quadruple->arg1));
-                auto resultReg = manager.get_float_reg_no_move(quadruple->result);
-
-                ltac::add_instruction(function, ltac::Operator::I2F, resultReg, reg);
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_I2F(quadruple);
+            break;
         case mtac::Operator::F2I:
-            {
-                //Constants should have been replaced by the optimizer
-                assert(isVariable(*quadruple->arg1));
-
-                auto reg = manager.get_float_reg(ltac::get_variable(*quadruple->arg1));
-                auto resultReg = manager.get_reg_no_move(quadruple->result);
-
-                ltac::add_instruction(function, ltac::Operator::F2I, resultReg, reg);
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_F2I(quadruple);
+            break;
         case mtac::Operator::MINUS:
-            {
-                //Constants should have been replaced by the optimizer
-                assert(isVariable(*quadruple->arg1));
-
-                ltac::add_instruction(function, ltac::Operator::NEG, manager.get_reg(ltac::get_variable(*quadruple->arg1)));
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_MINUS(quadruple);
+            break;
         case mtac::Operator::FMINUS:
-            {
-                //Constants should have been replaced by the optimizer
-                assert(isVariable(*quadruple->arg1));
-
-                auto reg = manager.get_free_float_reg();
-                manager.copy(-1.0, reg);
-
-                ltac::add_instruction(function, ltac::Operator::FMUL, manager.get_float_reg(ltac::get_variable(*quadruple->arg1)), reg);
-
-                manager.release(reg);
-
-                manager.set_written(quadruple->result);
-
-                break;    
-            }
+            compile_FMINUS(quadruple);
+            break;
         case mtac::Operator::GREATER:
-            set_if_cc(ltac::Operator::CMOVG, quadruple);
+            compile_GREATER(quadruple);
             break;
         case mtac::Operator::GREATER_EQUALS:
-            set_if_cc(ltac::Operator::CMOVGE, quadruple);
+            compile_GREATER_EQUALS(quadruple);
             break;
         case mtac::Operator::LESS:
-            set_if_cc(ltac::Operator::CMOVL, quadruple);
+            compile_LESS(quadruple);
             break;
         case mtac::Operator::LESS_EQUALS:
-            set_if_cc(ltac::Operator::CMOVLE, quadruple);
+            compile_LESS_EQUALS(quadruple);
             break;
         case mtac::Operator::EQUALS:
-            set_if_cc(ltac::Operator::CMOVE, quadruple);
+            compile_EQUALS(quadruple);
             break;
         case mtac::Operator::NOT_EQUALS:
-            set_if_cc(ltac::Operator::CMOVNE, quadruple);
+            compile_NOT_EQUALS(quadruple);
             break;
         case mtac::Operator::FG:
-            set_if_cc(ltac::Operator::CMOVA, quadruple);
+            compile_FG(quadruple);
             break;
         case mtac::Operator::FGE:
-            set_if_cc(ltac::Operator::CMOVAE, quadruple);
+            compile_FGE(quadruple);
             break;
         case mtac::Operator::FL:
-            set_if_cc(ltac::Operator::CMOVB, quadruple);
+            compile_FL(quadruple);
             break;
         case mtac::Operator::FLE:
-            set_if_cc(ltac::Operator::CMOVBE, quadruple);
+            compile_FLE(quadruple);
             break;
         case mtac::Operator::FE:
-            set_if_cc(ltac::Operator::CMOVE, quadruple);
+            compile_FE(quadruple);
             break;
         case mtac::Operator::FNE:
-            set_if_cc(ltac::Operator::CMOVNE, quadruple);
+            compile_FNE(quadruple);
             break;
         case mtac::Operator::DOT:
-            {
-                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-
-                if(variable->type()->is_pointer()){
-                    assert(boost::get<int>(&*quadruple->arg2));
-                    int offset = boost::get<int>(*quadruple->arg2);
-
-                    auto reg = manager.get_reg_no_move(quadruple->result);
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
-                } else {
-                    if(ltac::is_float_var(quadruple->result)){
-                        auto reg = manager.get_float_reg_no_move(quadruple->result);
-                        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
-                    } else {
-                        auto reg = manager.get_reg_no_move(quadruple->result);
-                        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
-                    }
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_DOT(quadruple);
+            break;
         case mtac::Operator::PDOT:
-            {
-                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                    
-                auto reg = manager.get_reg_no_move(quadruple->result);
-                
-                if(mtac::is<int>(*quadruple->arg2)){
-                    int offset = boost::get<int>(*quadruple->arg2);
-                    
-                    auto reg2 = get_address_in_reg(variable, offset);
-
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
-
-                    manager.release(reg2);
-                } else {
-                    assert(ltac::is_variable(*quadruple->arg2));
-
-                    auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
-                    auto reg2 = get_address_in_reg2(variable, offset);
-
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
-
-                    manager.release(reg2);
-                }
-                
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_PDOT(quadruple);
+            break;
         case mtac::Operator::FDOT:
-            {
-                assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                
-                assert(boost::get<int>(&*quadruple->arg2));
-                int offset = boost::get<int>(*quadruple->arg2);
-
-                auto reg = manager.get_float_reg_no_move(quadruple->result);
-                
-                //TODO Certainly a way to make that the same way for both cases
-                if(variable->type()->is_pointer()){
-                    ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_pointer(variable, offset));
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, offset));
-                }
-
-                manager.set_written(quadruple->result);
-
-                break;
-            }
+            compile_FDOT(quadruple);
+            break;
         case mtac::Operator::DOT_ASSIGN:
-            if(quadruple->result->type()->is_pointer()){
-                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-                int offset = boost::get<int>(*quadruple->arg1);
-                ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
-            } else {
-                ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
-            }
-
+            compile_DOT_ASSIGN(quadruple);
             break;
         case mtac::Operator::DOT_PASSIGN:
-            {
-                ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
-                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
-
-                auto reg = get_address_in_reg(variable, 0);
-
-                ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
-
-                manager.release(reg);
-
-                break;
-            }
+            compile_DOT_PASSIGN(quadruple);
+            break;
         case mtac::Operator::DOT_FASSIGN:
-            {
-                auto reg = manager.get_free_float_reg();
-                manager.copy(*quadruple->arg2, reg);
-                
-                if(quadruple->result->type()->is_pointer()){
-                    ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-                    int offset = boost::get<int>(*quadruple->arg1);
-                    ltac::add_instruction(function, ltac::Operator::FMOV, to_pointer(quadruple->result, offset), reg);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
-                }
-
-                manager.release(reg);
-
-                break;
-            }
+            compile_DOT_FASSIGN(quadruple);
+            break;
         case mtac::Operator::RETURN:
-            {
-                //A return without args is the same as exiting from the function
-                if(quadruple->arg1){
-                    if(isFloat(*quadruple->arg1)){
-                        manager.spills(ltac::FloatRegister(descriptor->float_return_register()));
-                        manager.move(*quadruple->arg1, ltac::FloatRegister(descriptor->float_return_register()));
-                    } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && ltac::is_float_var(ltac::get_variable(*quadruple->arg1))){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-
-                        auto reg = manager.get_float_reg(variable);
-                        if(reg != ltac::FloatRegister(descriptor->float_return_register())){
-                            manager.spills(ltac::FloatRegister(descriptor->float_return_register()));
-                            ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_return_register()), reg);
-                        }
-                    } else {
-                        auto reg1 = ltac::Register(descriptor->int_return_register1());
-                        auto reg2 = ltac::Register(descriptor->int_return_register2());
-
-                        manager.spills_if_necessary(reg1, *quadruple->arg1);
-
-                        bool necessary = true;
-                        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            if(manager.registers.inRegister(*ptr, reg1)){
-                                necessary = false;
-                            }
-                        }    
-
-                        if(necessary){
-                            ltac::add_instruction(function, ltac::Operator::MOV, reg1, to_arg(*quadruple->arg1));
-                        }
-
-                        if(quadruple->arg2){
-                            manager.spills_if_necessary(reg2, *quadruple->arg2);
-
-                            necessary = true;
-                            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                                if(manager.registers.inRegister(*ptr, reg2)){
-                                    necessary = false;
-                                }
-                            }    
-
-                            if(necessary){
-                                ltac::add_instruction(function, ltac::Operator::MOV, reg2, to_arg(*quadruple->arg2));
-                            }
-                        }
-                    }
-                }
-
-                if(function->context->size() > 0){
-                    ltac::add_instruction(function, ltac::Operator::FREE_STACK, function->context->size());
-                }
-
-                //The basic block must be ended before the jump
-                end_basic_block();
-
-                ltac::add_instruction(function, ltac::Operator::LEAVE);
-
-                break;
-            }
+            compile_RETURN(quadruple);
+            break;
         case mtac::Operator::NOP:
             //No code necessary
             break;
