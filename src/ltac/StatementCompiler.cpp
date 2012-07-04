@@ -1115,18 +1115,17 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
         case mtac::Operator::DOT:
             {
                 assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-                assert(boost::get<int>(&*quadruple->arg2));
-
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                int offset = boost::get<int>(*quadruple->arg2);
                     
                 auto reg = manager.get_reg_no_move(quadruple->result);
 
-                //TODO Certainly a way to make that the same way for both cases
                 if(variable->type()->is_pointer()){
+                    assert(boost::get<int>(&*quadruple->arg2));
+                    int offset = boost::get<int>(*quadruple->arg2);
+
                     ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
                 } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, offset));
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
                 }
 
                 manager.set_written(quadruple->result);
