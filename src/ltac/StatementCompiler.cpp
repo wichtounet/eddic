@@ -436,55 +436,19 @@ unsigned int compute_member(std::shared_ptr<Variable> var, const std::vector<std
     return offset;
 }
 
-//TODO It should be possible to use to_address and LEA to avoid most of the duplications that 
-//is in the following functions
-
-ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
+inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
     auto reg = manager.get_free_reg();
-    auto position = var->position();
-
-    //TODO Certainly some optimizations are possible here
-    if(position.isGlobal()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    } else if(position.isStack()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
-    } else if(position.isParameter()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    } else {
-        assert(position.isTemporary());
-        auto reg2 = manager.get_reg(var);
-        
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    } 
+    
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, to_address(var, 0));
+    ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
     
     return reg;
 }
 
-ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
+inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
     auto reg = manager.get_free_reg();
-    auto position = var->position();
 
-    //TODO Certainly some optimizations are possible here
-    if(position.isGlobal()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
-    } else if(position.isStack()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset() + static_cast<int>(offset));
-    } else if(position.isParameter()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-        ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
-    } else {
-        assert(position.isTemporary());
-        auto reg2 = manager.get_reg(var);
-        
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
-    }
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, to_address(var, offset));
     
     return reg;
 }
@@ -1113,7 +1077,6 @@ void ltac::StatementCompiler::compile_FDOT(std::shared_ptr<mtac::Quadruple> quad
 
     auto reg = manager.get_float_reg_no_move(quadruple->result);
 
-    //TODO Certainly a way to make that the same way for both cases
     if(variable->type()->is_pointer()){
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_pointer(variable, offset));
     } else {
