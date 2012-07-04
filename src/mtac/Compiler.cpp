@@ -73,7 +73,9 @@ std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::sha
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
 
-mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argument index, std::shared_ptr<mtac::Function> function){
+mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<mtac::Function> function){
+    mtac::Argument index = moveToArgument(indexValue, function);
+    
     auto temp = function->context->newTemporary();
     auto position = array->position();
 
@@ -92,25 +94,6 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, mtac::Argume
     }
    
     return temp;
-}
-
-mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value& indexValue, std::shared_ptr<mtac::Function> function){
-    mtac::Argument index = moveToArgument(indexValue, function);
-
-    return computeIndexOfArray(array, index, function);
-}
-
-std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, std::shared_ptr<mtac::Function> function){
-    auto t1 = function->context->newTemporary();
-    
-    auto position = array->position();
-    if(position.isGlobal() || position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(t1, array->type()->elements(), mtac::Operator::ASSIGN));
-    } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(t1, array, mtac::Operator::DOT, 0));
-    }
-
-    return t1;
 }
 
 int getStringOffset(std::shared_ptr<Variable> variable){
