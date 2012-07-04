@@ -1207,13 +1207,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
 
                 auto reg = get_address_in_reg(variable, 0);
 
-                if(quadruple->result->type()->is_pointer()){
-                    ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-                    auto offset = boost::get<int>(*quadruple->arg1);
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), reg);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
-                }
+                ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
 
                 manager.release(reg);
 
