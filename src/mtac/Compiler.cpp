@@ -499,7 +499,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
         } else {
             auto temp = array.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PARRAY, index));
+            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
@@ -843,7 +843,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
             
             auto temp = left.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PARRAY, index));
+            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
             
             visit(AssignValueToVariableWithOffset(function, temp, offset, member_type), assignment.Content->value);
         }
