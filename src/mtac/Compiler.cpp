@@ -111,7 +111,7 @@ std::shared_ptr<Variable> computeLengthOfArray(std::shared_ptr<Variable> array, 
     if(position.isGlobal() || position.isStack()){
         function->add(std::make_shared<mtac::Quadruple>(t1, array->type()->elements(), mtac::Operator::ASSIGN));
     } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(t1, array, mtac::Operator::ARRAY, 0));
+        function->add(std::make_shared<mtac::Quadruple>(t1, array, mtac::Operator::DOT, 0));
     }
 
     return t1;
@@ -475,23 +475,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             
             if(type == BOOL || type == INT || type == FLOAT){
                 auto temp = array.Content->context->new_temporary(type);
-                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
+                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
 
                 return {temp};
             } else if (type->is_pointer()){
                 auto temp = array.Content->context->new_temporary(INT);
-                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::ARRAY, index));
+                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
                 return {temp};
             } else if (type == STRING){
                 auto t1 = array.Content->context->newTemporary();
-                function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::ARRAY, index));
+                function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::DOT, index));
 
                 auto t2 = array.Content->context->newTemporary();
                 auto t3 = array.Content->context->newTemporary();
 
                 //Assign the second part of the string
                 function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
-                function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::ARRAY, t3));
+                function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::DOT, t3));
 
                 return {t1, t2};
             } else {
