@@ -220,13 +220,6 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
     }
 }
 
-void ltac::StatementCompiler::mul(std::shared_ptr<Variable> result, mtac::Argument& arg2){
-    mtac::assertIntOrVariable(arg2);
-
-    auto reg = manager.get_reg(result);
-    ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(arg2));
-}
-
 //Div eax by arg2 
 void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple){
     ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->d_register()), ltac::Register(descriptor->a_register()));
@@ -244,62 +237,6 @@ void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple
     } else {
         ltac::add_instruction(function, ltac::Operator::DIV, to_arg(*quadruple->arg2));
     }
-}
-
-void ltac::StatementCompiler::div(std::shared_ptr<mtac::Quadruple> quadruple){
-    manager.spills(ltac::Register(descriptor->d_register()));
-    manager.reserve(ltac::Register(descriptor->d_register()));
-
-    //Form x = x / y
-    if(*quadruple->arg1 == quadruple->result){
-        manager.safe_move(quadruple->result, ltac::Register(descriptor->a_register()));
-
-        div_eax(quadruple);
-
-    } 
-    //Form x = y / z (y: variable)
-    else if(ltac::is_variable(*quadruple->arg1)){
-        auto A = ltac::Register(descriptor->a_register());
-
-        manager.spills(A);
-        manager.reserve(A);
-
-        manager.copy(ltac::get_variable(*quadruple->arg1), A);
-
-        div_eax(quadruple);
-
-        manager.release(A);
-        manager.registers.setLocation(quadruple->result, A);
-    } else {
-        manager.spills(ltac::Register(descriptor->a_register()));
-        manager.reserve(ltac::Register(descriptor->a_register()));
-
-        manager.copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
-
-        div_eax(quadruple);
-
-        manager.release(ltac::Register(descriptor->a_register()));
-        manager.registers.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
-    }
-
-    manager.release(ltac::Register(descriptor->d_register()));
-}
-
-void ltac::StatementCompiler::mod(std::shared_ptr<mtac::Quadruple> quadruple){
-    manager.spills(ltac::Register(descriptor->a_register()));
-    manager.spills(ltac::Register(descriptor->d_register()));
-
-    manager.reserve(ltac::Register(descriptor->a_register()));
-    manager.reserve(ltac::Register(descriptor->d_register()));
-
-    manager.copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
-
-    div_eax(quadruple);
-
-    //result is in edx (no need to move it now)
-    manager.registers.setLocation(quadruple->result, ltac::Register(descriptor->d_register()));
-
-    manager.release(ltac::Register(descriptor->a_register()));
 }
 
 void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple){
@@ -796,11 +733,13 @@ void ltac::StatementCompiler::compile_MUL(std::shared_ptr<mtac::Quadruple> quadr
 
     //Form  x = x * y
     if(*quadruple->arg1 == quadruple->result){
-        mul(quadruple->result, *quadruple->arg2);
+        auto reg = manager.get_reg(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(*quadruple->arg2));
     }
     //Form x = y * x
     else if(*quadruple->arg2 == quadruple->result){
-        mul(quadruple->result, *quadruple->arg1);
+        auto reg = manager.get_reg(quadruple->result);
+        ltac::add_instruction(function, ltac::Operator::MUL, reg, to_arg(*quadruple->arg1));
     }
     //Form x = y * z (z: immediate)
     else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
@@ -835,13 +774,61 @@ void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadr
         }
     }
 
-    div(quadruple);
+    manager.spills(ltac::Register(descriptor->d_register()));
+    manager.reserve(ltac::Register(descriptor->d_register()));
+
+    //Form x = x / y
+    if(*quadruple->arg1 == quadruple->result){
+        manager.safe_move(quadruple->result, ltac::Register(descriptor->a_register()));
+
+        div_eax(quadruple);
+
+    } 
+    //Form x = y / z (y: variable)
+    else if(ltac::is_variable(*quadruple->arg1)){
+        auto A = ltac::Register(descriptor->a_register());
+
+        manager.spills(A);
+        manager.reserve(A);
+
+        manager.copy(ltac::get_variable(*quadruple->arg1), A);
+
+        div_eax(quadruple);
+
+        manager.release(A);
+        manager.registers.setLocation(quadruple->result, A);
+    } else {
+        manager.spills(ltac::Register(descriptor->a_register()));
+        manager.reserve(ltac::Register(descriptor->a_register()));
+
+        manager.copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
+
+        div_eax(quadruple);
+
+        manager.release(ltac::Register(descriptor->a_register()));
+        manager.registers.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
+    }
+
+    manager.release(ltac::Register(descriptor->d_register()));
 
     manager.set_written(quadruple->result);
 }
 
 void ltac::StatementCompiler::compile_MOD(std::shared_ptr<mtac::Quadruple> quadruple){
-    mod(quadruple);
+    manager.spills(ltac::Register(descriptor->a_register()));
+    manager.spills(ltac::Register(descriptor->d_register()));
+
+    manager.reserve(ltac::Register(descriptor->a_register()));
+    manager.reserve(ltac::Register(descriptor->d_register()));
+
+    manager.copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
+
+    div_eax(quadruple);
+
+    //result is in edx (no need to move it now)
+    manager.registers.setLocation(quadruple->result, ltac::Register(descriptor->d_register()));
+
+    manager.release(ltac::Register(descriptor->a_register()));
 
     manager.set_written(quadruple->result);
 }
