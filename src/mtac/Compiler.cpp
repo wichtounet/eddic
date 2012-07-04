@@ -156,9 +156,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_
     auto type = var->type();
 
     std::string struct_name;
-    if(type->is_pointer()){
-        struct_name = type->data_type()->type();
-    } else if(type->is_array()){
+    if(type->is_pointer() || type->is_array()){
         struct_name = type->data_type()->type();
     } else {
         struct_name = type->type();
@@ -410,7 +408,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             if(value.Content->memberNames.empty()){
                 auto type = value.variable()->type()->data_type();
-
                 return dereference_variable(value.variable(), type);
             } else {
                 return dereference_sub(value);
@@ -489,7 +486,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         mtac::Argument arg = moveToArgument(value.Content->value, function);
         
         auto type = visit(ast::GetTypeVisitor(), value.Content->value);
-        
         auto t1 = function->context->new_temporary(type);
 
         if(type == FLOAT){
