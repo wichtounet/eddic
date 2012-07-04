@@ -145,8 +145,6 @@ struct DebugVisitor : public boost::static_visitor<> {
             std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (float) " << printArg(*quadruple->arg2) << std::endl;
         } else if(op == mtac::Operator::DOT_PASSIGN){
             std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (pointer) " << printArg(*quadruple->arg2) << std::endl;
-        } else if(op == mtac::Operator::PARRAY){
-            std::cout << "\t" << quadruple->result->name() << " = (pointer) " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
         } else if(op == mtac::Operator::ARRAY_ASSIGN){
             std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = (normal) " << printArg(*quadruple->arg2) << std::endl;
         } else if(op == mtac::Operator::ARRAY_PASSIGN){
