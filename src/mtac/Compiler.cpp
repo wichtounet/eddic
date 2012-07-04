@@ -719,14 +719,14 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         if(left.Content->memberNames.empty()){
             visit(AssignValueToVariable(function, variable, left.Content->indexValue), assignment.Content->value);
         } else {
-            unsigned int offset = 0;
-            std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
-        
             auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
             
             auto temp = left.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
+            
+            unsigned int offset = 0;
+            std::shared_ptr<const Type> member_type;
+            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
             
             visit(AssignValueToVariable(function, temp, offset, member_type), assignment.Content->value);
         }
@@ -784,10 +784,6 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Fun
     auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
 
     auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-    auto typeRight = visit(ast::GetTypeVisitor(), value.Content->operations[0].get<1>());
-
-    ASSERT(typeLeft == typeRight, "Only values of the same type can be compared");
-    ASSERT(typeLeft == INT || typeLeft == FLOAT, "Only int and floats can be compared");
 
     if(typeLeft == INT){
         function->add(std::make_shared<Control>(mtac::toBinaryOperator(op), left, right, label));
@@ -941,25 +937,11 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_STRUCT()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
-
-        void operator()(ast::While&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("While should have been transformed into a DoWhile loop"); 
-        }
-        
-        void operator()(ast::For&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("For should have been transformed into a DoWhile loop"); 
-        }
-
-        void operator()(ast::Foreach&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("Foreach should have been transformed into a DoWhile loop"); 
-        }
        
-        void operator()(ast::ForeachIn&){
-            //This node has been transformed into a do while loop
-            ASSERT_PATH_NOT_TAKEN("ForeachIn should have been transformed into a DoWhile loop"); 
+        void operator()(ast::Assignment& assignment){
+            ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+
+            assign(function, assignment);
         }
         
         void operator()(ast::SourceFile& p){
@@ -1041,12 +1023,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::Assignment& assignment){
-            ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
-
-            assign(function, assignment);
-        }
-
         void operator()(ast::VariableDeclaration& declaration){
             if(declaration.Content->value){
                 auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
@@ -1118,6 +1094,11 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else {
                 ASSERT_PATH_NOT_TAKEN("Unhandled arguments size");
             }   
+        }
+
+        template<typename T>
+        void operator()(T&){
+            ASSERT_PATH_NOT_TAKEN("This element should have been transformed"); 
         }
 };
 
