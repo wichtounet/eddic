@@ -360,7 +360,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_fals
                     function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
                     break;
                 default:
-                    assert(false && "This operation is not a float operator");
+                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
                     break;
             }
         } else {
@@ -386,7 +386,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_fals
                     function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::L));
                     break;
                 default:
-                    assert(false && "This operation is not a float operator");
+                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
                     break;
             }
         }
@@ -431,7 +431,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
                     function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
                     break;
                 default:
-                    assert(false && "This operation is not a float operator");
+                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
                     break;
             }
         } else {
@@ -457,7 +457,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
                     function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::GE));
                     break;
                 default:
-                    assert(false && "This operation is not a float operator");
+                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
                     break;
             }
         }
@@ -771,7 +771,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
                             ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
                         }
                     } else {
-                        if(ltac::is_variable(*quadruple->arg1)){
+                        if(ltac::is_variable(*quadruple->arg2)){
                             ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), manager.get_reg(ltac::get_variable(*quadruple->arg2)));
                         } else {
                             ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(boost::get<int>(*quadruple->arg1)), boost::get<int>(*quadruple->arg2));

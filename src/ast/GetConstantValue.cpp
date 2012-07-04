@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <cassert>
-
 #include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
@@ -49,5 +47,5 @@ Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
         return boost::get<std::pair<std::string, int>>(val);
     }
 
-    assert(false && "This variable is of a type that cannot be constant");
+    ASSERT_PATH_NOT_TAKEN("This variable is of a type that cannot be constant");
 }
