@@ -17,6 +17,7 @@
 #include "mangling.hpp"
 #include "Labels.hpp"
 #include "Type.hpp"
+#include "PerfsTimer.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/Program.hpp"
@@ -1458,6 +1459,8 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
 } //end of anonymous namespace
 
 void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const {
+    PerfsTimer timer("MTAC Compilation");
+
     CompilerVisitor visitor(pool, mtacProgram);
     visitor(program);
 }
