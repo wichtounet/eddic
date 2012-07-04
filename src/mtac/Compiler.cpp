@@ -393,6 +393,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             ASSERT_PATH_NOT_TAKEN("Unhandled type");
         }
     }
+
+    template<typename Value>
+    result_type dereference_sub(Value& value) const {
+        auto values = visit_non_variant(*this, value);
+
+        ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
+
+        auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
+        return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
+    }
     
     result_type operator()(ast::DereferenceValue& dereference_value) const {
         if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
@@ -403,26 +413,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 return dereference_variable(value.variable(), type);
             } else {
-                //As the struct member is pointer, the visitor will return a temporary
-                auto values = visit_non_variant(*this, value);
-
-                ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
-
-                auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
-
-                return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
+                return dereference_sub(value);
             }
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
-            auto& value = *ptr;
-
-            //As the array hold pointers, the visitor will return a temporary
-            auto values = visit_non_variant(*this, value);
-
-            ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
-
-            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
-
-            return dereference_variable(variable, value.Content->var->type()->data_type()->data_type());
+            return dereference_sub(*ptr);
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled dereference left value type");
         }
@@ -444,13 +438,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(array.Content->memberNames.empty()){
             auto type = array.Content->var->type()->data_type();
             
-            if(type == BOOL || type == INT || type == FLOAT){
+            if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
                 auto temp = array.Content->context->new_temporary(type);
-                function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
-
-                return {temp};
-            } else if (type->is_pointer()){
-                auto temp = array.Content->context->new_temporary(INT);
                 function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
                 return {temp};
             } else if (type == STRING){
