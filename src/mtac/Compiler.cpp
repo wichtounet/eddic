@@ -640,29 +640,29 @@ struct AssignValueToArray : public AbstractVisitor {
     void intAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
-        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_ASSIGN, arguments[0]));
     }
 
     void pointerAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
-        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_PASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_PASSIGN, arguments[0]));
     }
     
     void floatAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
 
-        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_FASSIGN, arguments[0]));
     }
 
     void stringAssign(std::vector<mtac::Argument> arguments) const {
         auto index = computeIndexOfArray(variable, indexValue, function); 
         
-        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::ARRAY_ASSIGN, arguments[0]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_ASSIGN, arguments[0]));
 
         auto temp1 = function->context->newTemporary();
         function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -INT->size()));
-        function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::ARRAY_ASSIGN, arguments[1]));
+        function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::DOT_ASSIGN, arguments[1]));
     }
     
     void operator()(ast::VariableValue& value) const {

@@ -1190,66 +1190,19 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             }
         case mtac::Operator::DOT_ASSIGN:
             {
-                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-
-                int offset = boost::get<int>(*quadruple->arg1);
-
                 if(quadruple->result->type()->is_pointer()){
+                    ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+                    int offset = boost::get<int>(*quadruple->arg1);
                     ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
                 } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, offset), to_arg(*quadruple->arg2));
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
                 }
-
-                break;
-            }
-        case mtac::Operator::DOT_PASSIGN:
-            {
-                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-                ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
-
-                auto offset = boost::get<int>(*quadruple->arg1);
-                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
-
-                auto reg = get_address_in_reg(variable, 0);
-
-                if(quadruple->result->type()->is_pointer()){
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), reg);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, offset), reg); 
-                }
-
-                manager.release(reg);
-
-                break;
-            }
-        case mtac::Operator::DOT_FASSIGN:
-            {
-                ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-
-                int offset = boost::get<int>(*quadruple->arg1);
-                auto reg = manager.get_free_float_reg();
-                manager.copy(*quadruple->arg2, reg);
-                
-                if(quadruple->result->type()->is_pointer()){
-                    ltac::add_instruction(function, ltac::Operator::FMOV, to_pointer(quadruple->result, offset), reg);
-                } else {
-                    ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, offset), reg);
-                }
-
-                manager.release(reg);
 
                 break;
             }
         case mtac::Operator::ARRAY_ASSIGN:
         case mtac::Operator::ARRAY_PASSIGN:
-            if(quadruple->result->type()->data_type() == FLOAT){
-                auto reg = manager.get_free_float_reg();
-                manager.copy(*quadruple->arg2, reg);
-
-                ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
-
-                manager.release(reg);
-            } else if(quadruple->result->type()->data_type()->is_pointer()){
+            if(quadruple->result->type()->data_type()->is_pointer()){
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
 
                 auto reg = get_address_in_reg(variable, 0);
@@ -1262,6 +1215,42 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             }
 
             break;
+        case mtac::Operator::DOT_PASSIGN:
+            {
+                ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
+                auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
+
+                auto reg = get_address_in_reg(variable, 0);
+
+                if(quadruple->result->type()->is_pointer()){
+                    ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+                    auto offset = boost::get<int>(*quadruple->arg1);
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), reg);
+                } else {
+                    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
+                }
+
+                manager.release(reg);
+
+                break;
+            }
+        case mtac::Operator::DOT_FASSIGN:
+            {
+                auto reg = manager.get_free_float_reg();
+                manager.copy(*quadruple->arg2, reg);
+                
+                if(quadruple->result->type()->is_pointer()){
+                    ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
+                    int offset = boost::get<int>(*quadruple->arg1);
+                    ltac::add_instruction(function, ltac::Operator::FMOV, to_pointer(quadruple->result, offset), reg);
+                } else {
+                    ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
+                }
+
+                manager.release(reg);
+
+                break;
+            }
         case mtac::Operator::RETURN:
             {
                 //A return without args is the same as exiting from the function
