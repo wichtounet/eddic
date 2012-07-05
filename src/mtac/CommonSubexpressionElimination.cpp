@@ -9,6 +9,7 @@
 #include "Variable.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
+#include "mtac/Printer.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
 #include "mtac/Utils.hpp"
@@ -173,10 +174,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                         assign_op = mtac::Operator::FASSIGN;
                     }
 
-                    if(source_statement->result->position().isTemporary()){
-                        (*ptr)->op = assign_op;
-                        (*ptr)->arg1 = source_statement->result;
-                    } else {
+                    if(optimized.find(source_statement->result) == optimized.end()){
                         std::shared_ptr<Variable> temp;
                         if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
                             temp = expression.source->context->new_temporary(INT);
@@ -193,7 +191,9 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                                 if(target == source_statement){
                                     auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
 
-                                    it = expression.source->statements.insert(it, quadruple);
+                                    expression.source->statements.insert(it+1, quadruple);
+
+                                    break;
                                 }
                             }
 
@@ -204,11 +204,15 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
 
                         (*ptr)->op = assign_op;
                         (*ptr)->arg1 = temp;
+                        
+                        optimized[source_statement->result] = temp;
+                    } else {
+                        (*ptr)->op = assign_op;
+                        (*ptr)->arg1 = source_statement->result;
+                        
                     }
 
                     changes = true;
-
-                    break;
                 }
             }
         }
