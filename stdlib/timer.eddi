@@ -1,3 +1,7 @@
+/* 
+ * Standard Library : Interface to time some code.
+*/
+
 struct Timer {
     int start1;
     int start2;
@@ -5,7 +9,7 @@ struct Timer {
     int end2;
 }
 
-void start(Timer& timer){
+void start(Timer* timer){
     int start[2];
     time(start);
     
@@ -13,7 +17,7 @@ void start(Timer& timer){
     timer.start2 = start[1];
 }
 
-void end(Timer& timer){
+void end(Timer* timer){
     int end[2];
     time(end);
     
@@ -21,7 +25,7 @@ void end(Timer& timer){
     timer.end2 = end[1];
 }
 
-void print(Timer& timer){
+void print(Timer* timer){
     int start[2];
     int end[2];
 
