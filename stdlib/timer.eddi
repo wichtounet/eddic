@@ -15,10 +15,6 @@ void start_timer(Timer* timer){
     
     timer.start1 = start[0];
     timer.start2 = start[1];
-
-    println("start");
-    println(timer.start1);
-    println(timer.start2);
 }
 
 void end_timer(Timer* timer){
@@ -27,10 +23,6 @@ void end_timer(Timer* timer){
     
     timer.end1 = end[0];
     timer.end2 = end[1];
-
-    println("end");
-    println(timer.end1);
-    println(timer.end2);
 }
 
 void print_timer(Timer* timer){
