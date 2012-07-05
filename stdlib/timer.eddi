@@ -9,7 +9,7 @@ struct Timer {
     int end2;
 }
 
-void start(Timer* timer){
+void start_timer(Timer* timer){
     int start[2];
     time(start);
     
@@ -17,7 +17,7 @@ void start(Timer* timer){
     timer.start2 = start[1];
 }
 
-void end(Timer* timer){
+void end_timer(Timer* timer){
     int end[2];
     time(end);
     
@@ -25,7 +25,7 @@ void end(Timer* timer){
     timer.end2 = end[1];
 }
 
-void print(Timer* timer){
+void print_timer(Timer* timer){
     int start[2];
     int end[2];
 
