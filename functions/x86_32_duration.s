@@ -12,7 +12,7 @@ cmp eax, 0
 jge .push_first
 neg eax
 .push_first:
-push eax
+mov ecx, eax
 call _F5printI
 .second:
 mov eax, [esi - 4]
@@ -22,7 +22,7 @@ cmp eax, 0
 jge .push_second
 neg eax
 .push_second:
-push eax
+mov ecx, eax
 call _F5printI
 leave
 ret
