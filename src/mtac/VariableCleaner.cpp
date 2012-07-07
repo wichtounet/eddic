@@ -34,6 +34,7 @@ void eddic::mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                usage.insert((*ptr)->result);
                 collect_optional(usage, (*ptr)->arg1);
                 collect_optional(usage, (*ptr)->arg2);
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
