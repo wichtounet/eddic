@@ -14,6 +14,7 @@
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/IsConstantVisitor.hpp"
+#include "ast/GetConstantValue.hpp"
 #include "ast/ASTVisitor.hpp"
 
 #include "SemanticalException.hpp"
@@ -91,7 +92,18 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
         }
 
-        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, declaration.Content->arraySize));
+        visit(*this, declaration.Content->size);
+
+        auto constant = visit(ast::IsConstantVisitor(), declaration.Content->size);
+
+        if(!constant){
+            throw SemanticalException("Array size must be constant", declaration.Content->position);
+        }
+
+        auto value = visit(ast::GetConstantValue(), declaration.Content->size);
+        auto size = boost::get<int>(value);
+
+        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, size));
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){

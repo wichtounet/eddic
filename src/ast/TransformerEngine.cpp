@@ -343,8 +343,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
     AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
-    AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
     AUTO_IGNORE_SWAP()
@@ -402,6 +400,14 @@ struct CleanerVisitor : public boost::static_visitor<> {
 
             ++start;
         }
+    }
+    
+    void operator()(ast::GlobalArrayDeclaration& declaration){
+        declaration.Content->size = visit(transformer, declaration.Content->size); 
+    }
+    
+    void operator()(ast::ArrayDeclaration& declaration){
+        declaration.Content->size = visit(transformer, declaration.Content->size); 
     }
 
     void operator()(ast::GlobalVariableDeclaration& declaration){
