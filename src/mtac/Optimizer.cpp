@@ -10,9 +10,6 @@
 #include <thread>
 #include <algorithm>
 
-#include <boost/variant.hpp>
-#include <boost/utility/enable_if.hpp>
-
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "StringPool.hpp"
@@ -85,53 +82,6 @@ bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
-
-    auto& blocks = function->getBasicBlocks();
-
-    unsigned int before = blocks.size();
-
-    auto it = blocks.begin();
-    auto end = blocks.end();
-
-    while(it != end){
-        auto& block = *it;
-
-        usage.insert(block);
-
-        if(likely(!block->statements.empty())){
-            auto& last = block->statements[block->statements.size() - 1];
-
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                if(usage.find((*ptr)->block) == usage.end()){
-                    it = std::find(blocks.begin(), blocks.end(), (*ptr)->block);
-                    continue;
-                }
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
-                usage.insert((*ptr)->block); 
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last)){
-                usage.insert((*ptr)->block); 
-            }
-        }
-
-        ++it;
-    }
-
-    //The ENTRY and EXIT blocks should not be removed
-    usage.insert(blocks.front());
-    usage.insert(blocks.back());
-
-    it = blocks.begin();
-    end = blocks.end();
-
-    blocks.erase(
-            std::remove_if(it, end, 
-                [&](std::shared_ptr<mtac::BasicBlock>& b){ return usage.find(b) == usage.end(); }), 
-            end);
-
-    return blocks.size() < before;
-}
 
 bool optimize_branches(std::shared_ptr<mtac::Function> function){
     bool optimized = false;

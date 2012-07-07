@@ -17,6 +17,7 @@ namespace eddic {
 namespace mtac {
 
 bool merge_basic_blocks(std::shared_ptr<mtac::Function> function);
+bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function);
 
 } //end of mtac
 
