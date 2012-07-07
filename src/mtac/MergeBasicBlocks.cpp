@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "FunctionContext.hpp"
+#include "likely.hpp"
 
 #include "mtac/MergeBasicBlocks.hpp"
 #include "mtac/Utils.hpp"
