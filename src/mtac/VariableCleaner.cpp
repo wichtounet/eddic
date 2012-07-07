@@ -57,8 +57,8 @@ void eddic::mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     while(it != end){
         auto variable = it->second;
 
-        //Temporary are not interesting, because they dot not take any space
-        if(!variable->position().isTemporary()){
+        //Temporary and parameters are not interesting, because they dot not take any space
+        if(!variable->position().isTemporary() && !variable->position().isParameter() && !variable->position().isParamRegister()){
             if(usage.find(variable) == usage.end()){
                 unused.push_back(variable);
             }
