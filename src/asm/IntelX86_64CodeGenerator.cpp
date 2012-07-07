@@ -72,13 +72,6 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     return os << converter.to_string(arg);
 }
 
-void defineFunction(AssemblyFileWriter& writer, const std::string& function){
-    writer.stream() << std::endl << function << ":" << std::endl;
-    
-    writer.stream() << "push rbp" << std::endl;
-    writer.stream() << "mov rbp, rsp" << std::endl;
-}
-
 } //end of x86_64 namespace
 
 using namespace x86_64;
@@ -301,11 +294,9 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 };
 
 void IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
-    defineFunction(writer, function->getName());
-    //TODO In the future, it is possible that it is up to the ltac compiler to generate the preamble of functions
+    writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86_64StatementCompiler compiler(writer);
-
     visit_each(compiler, function->getStatements());
 }
 

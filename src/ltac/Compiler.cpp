@@ -38,7 +38,12 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     PerfsTimer timer("LTAC Compilation");
 
     auto size = src_function->context->size();
+
+    //Prepare stack frame
+    ltac::add_instruction(target_function, ltac::Operator::PUSH, ltac::BP);
+    ltac::add_instruction(target_function, ltac::Operator::MOV, ltac::BP, ltac::SP);
     
+    //Alloc stack space for locals
     ltac::add_instruction(target_function, ltac::Operator::SUB, ltac::SP, size);
     
     auto iter = src_function->context->begin();
