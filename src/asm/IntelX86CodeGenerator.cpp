@@ -69,18 +69,11 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     return os << converter.to_string(arg);
 }
 
-void enterFunction(AssemblyFileWriter& writer){
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
-}
-
 void defineFunction(AssemblyFileWriter& writer, const std::string& function){
     writer.stream() << std::endl << function << ":" << std::endl;
     
-    enterFunction(writer);
-}
-
-void leaveFunction(AssemblyFileWriter& writer){
+    writer.stream() << "push ebp" << std::endl;
+    writer.stream() << "mov ebp, esp" << std::endl;
 }
 
 } //end of x86 namespace
