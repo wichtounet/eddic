@@ -15,6 +15,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -33,7 +34,7 @@ struct ASTArrayDeclaration {
     Position position;
     Type arrayType;
     std::string arrayName;
-    int arraySize;
+    Value size;
 
     mutable long references = 0;
 };
@@ -54,7 +55,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (eddic::ast::Type, Content->arrayType)
     (std::string, Content->arrayName)
-    (int, Content->arraySize)
+    (eddic::ast::Value, Content->size)
 )
 
 #endif

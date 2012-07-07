@@ -118,7 +118,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type
         >>  lexer.identifier 
         >>  lexer.left_bracket
-        >>  lexer.integer
+        >>  value
         >>  lexer.right_bracket;
 
     return_ %=
@@ -139,7 +139,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type 
         >>  lexer.identifier 
         >>  lexer.left_bracket
-        >>  lexer.integer
+        >>  value
         >>  lexer.right_bracket
         >>  lexer.stop;
 
