@@ -28,10 +28,6 @@ std::string to_string(ltac::Operator op){
             return "FMOV"; 
         case ltac::Operator::MEMSET:
             return "MEMSET"; 
-        case ltac::Operator::ALLOC_STACK:
-            return "ALLOC_STACK"; 
-        case ltac::Operator::FREE_STACK:
-            return "FREE_STACK"; 
         case ltac::Operator::LEAVE:
             return "LEAVE"; 
         case ltac::Operator::RET:

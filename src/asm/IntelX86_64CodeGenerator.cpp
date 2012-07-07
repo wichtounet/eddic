@@ -123,12 +123,6 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "cld" << std::endl;
 
                 break;
-            case ltac::Operator::ALLOC_STACK:
-                writer.stream() << "sub rsp, " << *instruction->arg1 << std::endl;
-                break;
-            case ltac::Operator::FREE_STACK:
-                writer.stream() << "add rsp, " << *instruction->arg1 << std::endl;
-                break;
             case ltac::Operator::LEAVE:
                 writer.stream() << "leave" << std::endl;
                 break;
