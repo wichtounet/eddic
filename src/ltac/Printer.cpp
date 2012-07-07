@@ -160,7 +160,13 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
    }
    
    std::string operator()(ltac::Register& reg) const {
-        return "ir" + ::toString(reg.reg);
+       if(reg == ltac::SP){
+           return "sp";
+       } else if(reg == ltac::BP){
+           return "bp";
+       }
+
+       return "ir" + ::toString(reg.reg);
    }
    
    std::string operator()(ltac::Address& address) const {
