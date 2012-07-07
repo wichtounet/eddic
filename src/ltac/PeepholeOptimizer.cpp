@@ -165,8 +165,8 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
         auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
         auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
 
-        //Statements after LEAVE are dead
-        if(i1->op == ltac::Operator::LEAVE){
+        //Statements after RET are dead
+        if(i1->op == ltac::Operator::RET){
             return transform_to_nop(i2);
         }
 
