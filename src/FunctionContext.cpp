@@ -76,3 +76,29 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
    
     temp->setPosition(position); 
 }
+
+void FunctionContext::removeVariable(const std::string& variable){
+    auto var = getVariable(variable);
+    
+    variables.erase(variable);
+
+    //If its a temporary, no need to recalculate positions
+    if(!var->position().isTemporary()){
+        currentPosition = INT->size();
+
+        auto it = variables.begin();
+        auto end = variables.end();
+
+        while(it != end){
+            auto v = it->second;
+
+            if(v->position().isStack()){
+                Position position(PositionType::STACK, currentPosition);
+                currentPosition += v->type()->size();
+                v->setPosition(position);
+            }
+
+            ++it;
+        }
+    }
+}
