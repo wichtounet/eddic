@@ -8,7 +8,6 @@
 #include <memory>
 #include <thread>
 
-//#include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
