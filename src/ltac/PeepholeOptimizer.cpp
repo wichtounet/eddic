@@ -44,12 +44,14 @@ inline bool optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
         
-        //Combine two FREE STACK into one
-        if(instruction->op == ltac::Operator::FREE_STACK){
-            auto size = boost::get<int>(*instruction->arg1);
-
-            if(size <= 0){
-                return transform_to_nop(instruction);
+        //SUB or ADD 0 has no effect
+        if(instruction->op == ltac::Operator::ADD || instruction->op == ltac::Operator::SUB){
+            if(is_reg(*instruction->arg1) && boost::get<int>(&*instruction->arg2)){
+                auto value = boost::get<int>(*instruction->arg2);
+                
+                if(value == 0){
+                    return transform_to_nop(instruction);
+                }
             }
         }
 
