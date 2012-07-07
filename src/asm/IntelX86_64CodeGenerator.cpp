@@ -135,6 +135,8 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 break;
             case ltac::Operator::LEAVE:
                 writer.stream() << "leave" << std::endl;
+                break;
+            case ltac::Operator::RET:
                 writer.stream() << "ret" << std::endl;
                 break;
             case ltac::Operator::CMP_INT:

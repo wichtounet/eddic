@@ -121,4 +121,5 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     }
         
     ltac::add_instruction(target_function, ltac::Operator::LEAVE);
+    ltac::add_instruction(target_function, ltac::Operator::RET);
 }
