@@ -10,7 +10,7 @@
 #include "FunctionContext.hpp"
 #include "likely.hpp"
 
-#include "mtac/MergeBasicBlocks.hpp"
+#include "mtac/BasicBlockOptimizations.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;

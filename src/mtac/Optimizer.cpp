@@ -44,7 +44,7 @@
 #include "mtac/VariableCleaner.hpp"
 #include "mtac/RemoveEmptyFunctions.hpp"
 #include "mtac/DeadCodeElimination.hpp"
-#include "mtac/MergeBasicBlocks.hpp"
+#include "mtac/BasicBlockOptimizations.hpp"
 #include "mtac/ConcatReduction.hpp"
 
 using namespace eddic;
