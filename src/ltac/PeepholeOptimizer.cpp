@@ -175,11 +175,32 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
             return transform_to_nop(i2);
         }
 
-        //Combine two FREE STACK into one
-        if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
-            i1->arg1 = boost::get<int>(*i1->arg1) + boost::get<int>(*i2->arg1);
-            
-            return transform_to_nop(i2);
+        //Combine two ADD into one
+        if(i1->op == ltac::Operator::ADD && i2->op == ltac::Operator::ADD){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1) && boost::get<int>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                auto reg1 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg2 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg1 == reg2){
+                    i1->arg2 = boost::get<int>(*i1->arg2) + boost::get<int>(*i2->arg2);
+
+                    return transform_to_nop(i2);
+                }
+            }
+        }
+        
+        //Combine two SUB into one
+        if(i1->op == ltac::Operator::SUB && i2->op == ltac::Operator::SUB){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1) && boost::get<int>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                auto reg1 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg2 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg1 == reg2){
+                    i1->arg2 = boost::get<int>(*i1->arg2) + boost::get<int>(*i2->arg2);
+
+                    return transform_to_nop(i2);
+                }
+            }
         }
 
         if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){

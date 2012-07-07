@@ -591,7 +591,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
         }
     }
 
-    ltac::add_instruction(function, ltac::Operator::FREE_STACK, total);
+    ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, total);
 
     if(call->return_){
         if(call->return_->type() == FLOAT){
