@@ -6,13 +6,10 @@
 //=======================================================================
 
 #include <memory>
-#include <unordered_set>
 #include <thread>
-#include <algorithm>
 
-#include "Utils.hpp"
+//#include "Utils.hpp"
 #include "VisitorUtils.hpp"
-#include "StringPool.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
 #include "likely.hpp"
@@ -20,14 +17,14 @@
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
 
-//The data-flow problems
-#include "mtac/GlobalOptimizations.hpp"
-#include "mtac/ConstantPropagationProblem.hpp"
-#include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/CommonSubexpressionElimination.hpp"
+//The custom optimizations
+#include "mtac/VariableCleaner.hpp"
+#include "mtac/RemoveEmptyFunctions.hpp"
+#include "mtac/DeadCodeElimination.hpp"
+#include "mtac/BasicBlockOptimizations.hpp"
+#include "mtac/ConcatReduction.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -37,12 +34,11 @@
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
 
-//Other optimizations
-#include "mtac/VariableCleaner.hpp"
-#include "mtac/RemoveEmptyFunctions.hpp"
-#include "mtac/DeadCodeElimination.hpp"
-#include "mtac/BasicBlockOptimizations.hpp"
-#include "mtac/ConcatReduction.hpp"
+//The data-flow problems
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/ConstantPropagationProblem.hpp"
+#include "mtac/OffsetConstantPropagationProblem.hpp"
+#include "mtac/CommonSubexpressionElimination.hpp"
 
 using namespace eddic;
 
