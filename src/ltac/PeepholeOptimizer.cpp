@@ -377,9 +377,6 @@ typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
 void add_escaped_registers(RegisterUsage& usage){
     auto descriptor = getPlatformDescriptor(platform);
 
-    usage.insert(ltac::SP);
-    usage.insert(ltac::BP);
-
     usage.insert(ltac::Register(descriptor->int_return_register1()));
     usage.insert(ltac::Register(descriptor->int_return_register2()));
 

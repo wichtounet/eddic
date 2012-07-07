@@ -24,6 +24,8 @@ std::string to_string(ltac::Operator op){
     switch(op){
         case ltac::Operator::MOV:
             return "MOV"; 
+        case ltac::Operator::ENTER:
+            return "ENTER"; 
         case ltac::Operator::FMOV:
             return "FMOV"; 
         case ltac::Operator::MEMSET:

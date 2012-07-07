@@ -19,6 +19,9 @@ enum class Operator : unsigned int {
     //Set the memory to 0
     MEMSET,
 
+    //Enter stack frame
+    ENTER,
+
     //Leave stack frame
     LEAVE,
 

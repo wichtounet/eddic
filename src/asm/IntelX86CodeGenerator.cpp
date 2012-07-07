@@ -113,8 +113,13 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "cld" << std::endl;
 
                 break;
+            case ltac::Operator::ENTER:
+                writer.stream() << "push ebp" << std::endl;
+                writer.stream() << "mov ebp, esp" << std::endl;
+                break;
             case ltac::Operator::LEAVE:
-                writer.stream() << "leave" << std::endl;
+                writer.stream() << "mov esp, ebp" << std::endl;
+                writer.stream() << "pop ebp" << std::endl;
                 break;
             case ltac::Operator::RET:
                 writer.stream() << "ret" << std::endl;
