@@ -586,6 +586,10 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
     //Find a better heuristic to configure the number of threads
     std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
 
+    if(option_defined("dev")){
+        threads = 1;
+    }
+
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){
         pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
@@ -620,6 +624,10 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
 
     //Find a better heuristic to configure the number of threads
     std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
+
+    if(option_defined("dev")){
+        threads = 1;
+    }
 
     std::vector<std::thread> pool;
     for(std::size_t tid = 0; tid < threads; ++tid){

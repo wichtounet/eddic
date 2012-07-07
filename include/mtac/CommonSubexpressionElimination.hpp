@@ -9,6 +9,7 @@
 #define MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
 
 #include <memory>
+#include <unordered_map>
 #include <boost/optional.hpp>
 
 #include "mtac/DataFlowProblem.hpp"
@@ -28,6 +29,8 @@ std::ostream& operator<<(std::ostream& stream, Expression& expression);
 typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
+    std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> optimized;
+
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
