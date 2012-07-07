@@ -1198,7 +1198,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
         }
     }
 
-    ltac::add_instruction(function, ltac::Operator::FREE_STACK, function->context->size());
+    ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, function->context->size());
 
     //The basic block must be ended before the jump
     end_basic_block();
