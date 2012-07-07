@@ -19,7 +19,6 @@
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
 #include "likely.hpp"
-#include "FunctionContext.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
@@ -41,6 +40,9 @@
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
+
+//Other optimizations
+#include "mtac/VariableCleaner.hpp"
 
 using namespace eddic;
 
@@ -488,63 +490,6 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-template<typename T>
-void collect(std::unordered_set<std::shared_ptr<Variable>>& usage, T arg){
-    if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-        usage.insert(*variablePtr);
-    }
-}
-
-template<typename T>
-void collect_optional(std::unordered_set<std::shared_ptr<Variable>>& usage, T opt){
-    if(opt){
-        collect(usage, *opt);
-    }
-}
-
-void clean_variables(std::shared_ptr<mtac::Function> function){
-    std::unordered_set<std::shared_ptr<Variable>> usage;
-
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                collect_optional(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                collect(usage, (*ptr)->arg);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                collect(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                collect(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            }
-        }
-    }
-    
-    std::vector<std::shared_ptr<Variable>> unused;
-    
-    auto it = function->context->begin();
-    auto end = function->context->end();
-
-    while(it != end){
-        auto variable = it->second;
-
-        //Temporary are not interesting, because they dot not take any space
-        if(!variable->position().isTemporary()){
-            if(usage.find(variable) == usage.end()){
-                unused.push_back(variable);
-            }
-        }
-
-        ++it;
-    }
-
-    for(auto& variable : unused){
-        function->context->removeVariable(variable->name());
-    }
-}
-
 bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -597,6 +542,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
     } while (optimized);
 
+    //Remove variables that are not used after optimizations
     clean_variables(function);
 }
 
