@@ -23,8 +23,11 @@ enum class Operator : unsigned int {
     ALLOC_STACK,
     FREE_STACK,
 
-    //Leave from a function
+    //Leave stack frame
     LEAVE,
+
+    //Return from function
+    RET,
 
     //Comparisons
     CMP_INT,

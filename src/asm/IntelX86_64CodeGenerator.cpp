@@ -83,11 +83,6 @@ void defineFunction(AssemblyFileWriter& writer, const std::string& function){
     enterFunction(writer);
 }
 
-void leaveFunction(AssemblyFileWriter& writer){
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
-}
-    
 } //end of x86_64 namespace
 
 using namespace x86_64;
@@ -139,7 +134,8 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "add rsp, " << *instruction->arg1 << std::endl;
                 break;
             case ltac::Operator::LEAVE:
-                leaveFunction(writer);
+                writer.stream() << "leave" << std::endl;
+                writer.stream() << "ret" << std::endl;
                 break;
             case ltac::Operator::CMP_INT:
                 writer.stream() << "cmp " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
