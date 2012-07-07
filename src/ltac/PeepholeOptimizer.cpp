@@ -296,6 +296,8 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
             it = statements.erase(it);
             end = statements.end() - 1;
 
+            optimized = true;
+
             continue;
         }
 
@@ -467,6 +469,53 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+bool remove_stack_frames(std::shared_ptr<ltac::Function> function){
+    //In debug mode, always keep stack frames
+    if(option_defined("debug")){
+        return false;
+    }
+
+    bool leaf = true;
+
+    auto& statements = function->getStatements();
+    
+    RegisterUsage usage; 
+
+    for(auto& statement : statements){
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            //Collect usage 
+            collect_usage(usage, instruction->arg1);
+            collect_usage(usage, instruction->arg2);
+            collect_usage(usage, instruction->arg3);
+        } 
+        
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+            auto jump = *ptr;
+
+            if(jump->type == ltac::JumpType::CALL){
+                leaf = false;
+            }
+        }
+    }
+    
+    bool optimized = false;
+    if(usage.find(ltac::BP) == usage.end()){
+        for(auto& statement : statements){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
+
+                if(instruction->op == ltac::Operator::ENTER || instruction->op == ltac::Operator::LEAVE){
+                    optimized |= transform_to_nop(instruction);
+                }
+            } 
+        }
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -504,6 +553,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
             optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
+            optimized |= debug("Dead-Code Elimination", remove_stack_frames(function), function);
         } while(optimized);
     }
 }

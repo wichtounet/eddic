@@ -271,3 +271,8 @@ void ltac::Printer::print(std::shared_ptr<ltac::Function> function) const {
    DebugVisitor visitor;
    visitor(function); 
 }
+
+void ltac::Printer::print(ltac::Statement& statement) const {
+   DebugVisitor visitor;
+   visit(visitor, statement); 
+}
