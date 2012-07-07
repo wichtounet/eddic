@@ -10,6 +10,7 @@
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+#include "iterators.hpp"
 
 #include "ast/TransformerEngine.hpp"
 #include "ast/SourceFile.hpp"
@@ -38,14 +39,9 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         }
 
         value.Content->first = visit(*this, value.Content->first);
-
-        auto start = value.Content->operations.begin();
-        auto end = value.Content->operations.end();
-
-        while(start != end){
-            start->get<1>() = visit(*this, start->get<1>());
-
-            ++start;
+        
+        for(auto it = iterate(value.Content->operations); it.has_next(); ++it){
+            (*it).get<1>() = visit(*this, (*it).get<1>());
         }
 
         assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
@@ -74,13 +70,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
-        auto start = functionCall.Content->values.begin();
-        auto end = functionCall.Content->values.end();
-
-        while(start != end){
-            *start = visit(*this, *start);
-
-            ++start;
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
         }
 
         return functionCall;
@@ -93,13 +84,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
-        auto start = builtin.Content->values.begin();
-        auto end = builtin.Content->values.end();
-
-        while(start != end){
-            *start = visit(*this, *start);
-
-            ++start;
+        for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
         }
 
         return builtin;
@@ -381,24 +367,14 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& functionCall){
-        auto start = functionCall.Content->values.begin();
-        auto end = functionCall.Content->values.end();
-
-        while(start != end){
-            *start = visit(transformer, *start);
-
-            ++start;
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
         }
     }
     
     void operator()(ast::BuiltinOperator& builtin){
-        auto start = builtin.Content->values.begin();
-        auto end = builtin.Content->values.end();
-
-        while(start != end){
-            *start = visit(transformer, *start);
-
-            ++start;
+        for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
         }
     }
     
