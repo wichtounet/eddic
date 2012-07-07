@@ -34,6 +34,8 @@ std::string to_string(ltac::Operator op){
             return "FREE_STACK"; 
         case ltac::Operator::LEAVE:
             return "LEAVE"; 
+        case ltac::Operator::RET:
+            return "RET"; 
         case ltac::Operator::CMP_INT:
             return "CMP_INT"; 
         case ltac::Operator::CMP_FLOAT:

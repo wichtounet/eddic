@@ -1204,6 +1204,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     end_basic_block();
 
     ltac::add_instruction(function, ltac::Operator::LEAVE);
+    ltac::add_instruction(function, ltac::Operator::RET);
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){

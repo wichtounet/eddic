@@ -169,6 +169,11 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
         if(i1->op == ltac::Operator::RET){
             return transform_to_nop(i2);
         }
+        
+        //Two following LEAVE are not useful
+        if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
+            return transform_to_nop(i2);
+        }
 
         //Combine two FREE STACK into one
         if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
