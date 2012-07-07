@@ -44,12 +44,14 @@ inline bool optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
         
-        //Combine two FREE STACK into one
-        if(instruction->op == ltac::Operator::FREE_STACK){
-            auto size = boost::get<int>(*instruction->arg1);
-
-            if(size <= 0){
-                return transform_to_nop(instruction);
+        //SUB or ADD 0 has no effect
+        if(instruction->op == ltac::Operator::ADD || instruction->op == ltac::Operator::SUB){
+            if(is_reg(*instruction->arg1) && boost::get<int>(&*instruction->arg2)){
+                auto value = boost::get<int>(*instruction->arg2);
+                
+                if(value == 0){
+                    return transform_to_nop(instruction);
+                }
             }
         }
 
@@ -165,16 +167,42 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
         auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
         auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
 
-        //Statements after LEAVE are dead
-        if(i1->op == ltac::Operator::LEAVE){
+        //Statements after RET are dead
+        if(i1->op == ltac::Operator::RET){
+            return transform_to_nop(i2);
+        }
+        
+        //Two following LEAVE are not useful
+        if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
             return transform_to_nop(i2);
         }
 
-        //Combine two FREE STACK into one
-        if(i1->op == ltac::Operator::FREE_STACK && i2->op == ltac::Operator::FREE_STACK){
-            i1->arg1 = boost::get<int>(*i1->arg1) + boost::get<int>(*i2->arg1);
-            
-            return transform_to_nop(i2);
+        //Combine two ADD into one
+        if(i1->op == ltac::Operator::ADD && i2->op == ltac::Operator::ADD){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1) && boost::get<int>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                auto reg1 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg2 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg1 == reg2){
+                    i1->arg2 = boost::get<int>(*i1->arg2) + boost::get<int>(*i2->arg2);
+
+                    return transform_to_nop(i2);
+                }
+            }
+        }
+        
+        //Combine two SUB into one
+        if(i1->op == ltac::Operator::SUB && i2->op == ltac::Operator::SUB){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1) && boost::get<int>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
+                auto reg1 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg2 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg1 == reg2){
+                    i1->arg2 = boost::get<int>(*i1->arg2) + boost::get<int>(*i2->arg2);
+
+                    return transform_to_nop(i2);
+                }
+            }
         }
 
         if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
@@ -267,6 +295,8 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
         if(unlikely(is_nop(s1))){
             it = statements.erase(it);
             end = statements.end() - 1;
+
+            optimized = true;
 
             continue;
         }
@@ -439,6 +469,53 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+bool remove_stack_frames(std::shared_ptr<ltac::Function> function){
+    //In debug mode, always keep stack frames
+    if(option_defined("debug")){
+        return false;
+    }
+
+    bool leaf = true;
+
+    auto& statements = function->getStatements();
+    
+    RegisterUsage usage; 
+
+    for(auto& statement : statements){
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            //Collect usage 
+            collect_usage(usage, instruction->arg1);
+            collect_usage(usage, instruction->arg2);
+            collect_usage(usage, instruction->arg3);
+        } 
+        
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+            auto jump = *ptr;
+
+            if(jump->type == ltac::JumpType::CALL){
+                leaf = false;
+            }
+        }
+    }
+    
+    bool optimized = false;
+    if(usage.find(ltac::BP) == usage.end()){
+        for(auto& statement : statements){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
+
+                if(instruction->op == ltac::Operator::ENTER || instruction->op == ltac::Operator::LEAVE){
+                    optimized |= transform_to_nop(instruction);
+                }
+            } 
+        }
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -476,6 +553,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
             optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
+            optimized |= debug("Dead-Code Elimination", remove_stack_frames(function), function);
         } while(optimized);
     }
 }

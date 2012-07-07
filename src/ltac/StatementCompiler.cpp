@@ -591,7 +591,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
         }
     }
 
-    ltac::add_instruction(function, ltac::Operator::FREE_STACK, total);
+    ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, total);
 
     if(call->return_){
         if(call->return_->type() == FLOAT){
@@ -1198,12 +1198,13 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
         }
     }
 
-    ltac::add_instruction(function, ltac::Operator::FREE_STACK, function->context->size());
+    ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, function->context->size());
 
     //The basic block must be ended before the jump
     end_basic_block();
 
     ltac::add_instruction(function, ltac::Operator::LEAVE);
+    ltac::add_instruction(function, ltac::Operator::RET);
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){

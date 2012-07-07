@@ -69,22 +69,6 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     return os << converter.to_string(arg);
 }
 
-void enterFunction(AssemblyFileWriter& writer){
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
-}
-
-void defineFunction(AssemblyFileWriter& writer, const std::string& function){
-    writer.stream() << std::endl << function << ":" << std::endl;
-    
-    enterFunction(writer);
-}
-
-void leaveFunction(AssemblyFileWriter& writer){
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
-}
-
 } //end of x86 namespace
 
 using namespace x86;
@@ -129,14 +113,16 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "cld" << std::endl;
 
                 break;
-            case ltac::Operator::ALLOC_STACK:
-                writer.stream() << "sub esp, " << *instruction->arg1 << std::endl;
-                break;
-            case ltac::Operator::FREE_STACK:
-                writer.stream() << "add esp, " << *instruction->arg1 << std::endl;
+            case ltac::Operator::ENTER:
+                writer.stream() << "push ebp" << std::endl;
+                writer.stream() << "mov ebp, esp" << std::endl;
                 break;
             case ltac::Operator::LEAVE:
-                leaveFunction(writer);
+                writer.stream() << "mov esp, ebp" << std::endl;
+                writer.stream() << "pop ebp" << std::endl;
+                break;
+            case ltac::Operator::RET:
+                writer.stream() << "ret" << std::endl;
                 break;
             case ltac::Operator::CMP_INT:
                 writer.stream() << "cmp " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
@@ -310,8 +296,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 };
 
 void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
-    defineFunction(writer, function->getName());
-    //TODO In the future, it is possible that it is up to the ltac compiler to generate the preamble of functions
+    writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86StatementCompiler compiler(writer);
 

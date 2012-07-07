@@ -23,6 +23,7 @@ namespace ltac {
 struct Printer {
     void print(std::shared_ptr<ltac::Program> program) const ;
     void print(std::shared_ptr<ltac::Function> function) const ;
+    void print(ltac::Statement& statement) const ;
 };
 
 } //end of ltac
