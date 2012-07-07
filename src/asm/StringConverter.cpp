@@ -5,7 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-std::string to_string(eddic::ltac::Address& address){
+#include "Utils.hpp"
+
+#include "asm/StringConverter.hpp"
+
+using namespace eddic;
+
+std::string as::StringConverter::address_to_string(eddic::ltac::Address& address) const {
     if(address.absolute){
         if(address.displacement){
             return "[" + *address.absolute + " + " + ::toString(*address.displacement) + "]";
