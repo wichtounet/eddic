@@ -196,6 +196,8 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                 ++it;
                                 continue;//TODO Temporary
                             }
+
+                            optimized = true;
                             
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_function->definition->mangledName << std::endl;
 
