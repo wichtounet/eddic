@@ -196,6 +196,8 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
 
                                     bit = dest_function->getBasicBlocks().insert(bit, new_bb);
                                     bend = dest_function->getBasicBlocks().end();
+
+                                    ++bit;
                                 }
                             }
 
