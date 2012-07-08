@@ -42,6 +42,11 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = newVariable(variable, type);
 }
 
+std::shared_ptr<Variable> FunctionContext::newVariable(std::shared_ptr<Variable> source){
+    std::string name = "g_" + source->name() + "_" + toString(temporary++);
+    return addVariable(name, source->type());
+}
+
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
     assert(type->is_const());
 
