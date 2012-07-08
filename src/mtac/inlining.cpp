@@ -44,7 +44,7 @@ void update_usage_optional(Clones& clones, Opt& opt){
     }
 }
 
-void update_usages(std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> clones, mtac::Statement& statement){
+void update_usages(Clones& clones, mtac::Statement& statement){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr; 
 
@@ -68,6 +68,74 @@ void update_usages(std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr
         
         update_usage(clones, if_->arg1);
         update_usage_optional(clones, if_->arg2);
+    }
+}
+
+void clone(std::vector<mtac::Statement>& sources, std::vector<mtac::Statement>& destination){
+    for(auto& statement : sources){
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+            auto quadruple = *ptr; 
+
+            auto copy = std::make_shared<mtac::Quadruple>();
+
+            copy->result = quadruple->result;
+            copy->arg1 = quadruple->arg1;
+            copy->arg2 = quadruple->arg2;
+            copy->op = quadruple->op;
+
+            destination.push_back(copy);
+        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+            auto param = *ptr; 
+
+            auto copy = std::make_shared<mtac::Param>();
+            
+            copy->arg = param->arg;
+            copy->param = param->param;
+            copy->std_param = param->std_param;
+            copy->function = param->function;
+            copy->address = param->address;
+            copy->memberNames = param->memberNames;
+    
+            destination.push_back(copy);
+        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
+            auto if_ = *ptr; 
+            
+            auto copy = std::make_shared<mtac::IfFalse>();
+            
+            copy->op = if_->op;
+            copy->arg1 = if_->arg1;
+            copy->arg2 = if_->arg2;
+            copy->label = if_->label;
+            copy->block = if_->block;
+            
+            destination.push_back(copy);
+        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
+            auto if_ = *ptr; 
+
+            auto copy = std::make_shared<mtac::If>();
+            
+            copy->op = if_->op;
+            copy->arg1 = if_->arg1;
+            copy->arg2 = if_->arg2;
+            copy->label = if_->label;
+            copy->block = if_->block;
+            
+            destination.push_back(copy);
+        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
+            auto goto_ = *ptr; 
+
+            auto copy = std::make_shared<mtac::Goto>(goto_->label, goto_->type);
+            copy->block = goto_->block;
+            destination.push_back(copy);
+        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+            auto call = *ptr; 
+
+            destination.push_back(std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_));
+        } else if(auto* ptr = boost::get<std::string>(&statement)){
+            destination.push_back(*ptr);
+        } 
+
+        //No need to copy NOP
     }
 }
 
@@ -149,7 +217,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                 if(block->index >= 0){
                                     auto new_bb = std::make_shared<mtac::BasicBlock>(dest_function->getBasicBlocks().size() + 1);
                                     new_bb->context = block->context;
-                                    new_bb->statements = block->statements;
+                                    clone(block->statements, new_bb->statements);
 
                                     if(!clones.empty() || source_definition->returnType != VOID){
                                         auto ssit = new_bb->statements.begin();
