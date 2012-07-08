@@ -24,6 +24,7 @@
 #include "mtac/BasicBlockOptimizations.hpp"
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/ConcatReduction.hpp"
+#include "mtac/inlining.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -225,6 +226,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         optimize_all_functions(program, string_pool);
 
         optimized = mtac::remove_empty_functions(program);
+        optimized = mtac::inline_functions(program);
     } while(optimized);
 }
 
