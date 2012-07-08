@@ -201,18 +201,17 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                             
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_function->definition->mangledName << std::endl;
 
-                            std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> clones;
-
+                            std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> variable_clones;
                             for(auto variable_pair : *source_definition->context){
                                 auto variable = variable_pair.second;
-                                auto clone = dest_function->definition->context->newVariable(variable);
-
-                                clones[variable] = clone;
-
-                                std::cout << "Clone variable " << variable->name() << " into " << clone->name() << std::endl;
+                                variable_clones[variable] = dest_function->definition->context->newVariable(variable);
                             }
+                            
+                            std::unordered_map<std::shared_ptr<BasicBlock>, std::shared_ptr<mtac::BasicBlock>> bb_clones;
 
                             auto saved_bit = bit;
+
+                            std::size_t cloned_bb = 0;
 
                             for(auto block : source_function->getBasicBlocks()){
                                 //Copy all basic blocks except ENTRY and EXIT
@@ -221,54 +220,67 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                     new_bb->context = block->context;
                                     clone(block->statements, new_bb->statements);
 
-                                    if(!clones.empty() || source_definition->returnType != VOID){
-                                        auto ssit = new_bb->statements.begin();
-                                        auto ssend = new_bb->statements.end();
+                                    bb_clones[block] = new_bb;
 
-                                        while(ssit != ssend){
-                                            update_usages(clones, *ssit);
-
-                                            if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*ssit)){
-                                                auto quadruple = *ret_ptr;
-
-                                                if(quadruple->op == mtac::Operator::RETURN){
-                                                    if(!call->return_){
-                                                        //If the caller does not care about the return value, return has no effect
-                                                        ssit = new_bb->statements.erase(it);
-                                                        ssend = new_bb->statements.end();
-                                                    } else {
-                                                        mtac::Operator op;
-                                                        if(source_definition->returnType == FLOAT){
-                                                            op = mtac::Operator::FASSIGN;
-                                                        } else if(source_definition->returnType->is_pointer()){
-                                                            op = mtac::Operator::PASSIGN;
-                                                        } else {
-                                                            op = mtac::Operator::ASSIGN;
-                                                        }
-
-                                                        if(call->return2_){
-                                                            auto new_quadruple = std::make_shared<mtac::Quadruple>(call->return2_, *quadruple->arg2, op);
-
-                                                            ssit = new_bb->statements.insert(it, new_quadruple);
-                                                            ssend = new_bb->statements.end();
-                                                        }
-                                                        
-                                                        quadruple->op = op;
-                                                        quadruple->result = call->return_;
-                                                        quadruple->arg2.reset();
-                                                    }
-                                                }
-                                            }
-
-                                            ++ssit;
-                                        }
-                                    }
+                                    ++cloned_bb;
 
                                     bit = dest_function->getBasicBlocks().insert(bit, new_bb);
                                     bend = dest_function->getBasicBlocks().end();
 
                                     ++bit;
                                 }
+                            }
+
+                            bit = saved_bit;
+
+                            while(cloned_bb > 0){
+                                auto new_bb = *bit;
+
+                                auto ssit = new_bb->statements.begin();
+                                auto ssend = new_bb->statements.end();
+
+                                while(ssit != ssend){
+                                    update_usages(variable_clones, *ssit);
+
+                                    //TODO Update usages of all the old basic blocks in the new basic blocks
+
+                                    if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*ssit)){
+                                        auto quadruple = *ret_ptr;
+
+                                        if(quadruple->op == mtac::Operator::RETURN){
+                                            if(!call->return_){
+                                                //If the caller does not care about the return value, return has no effect
+                                                ssit = new_bb->statements.erase(it);
+                                                ssend = new_bb->statements.end();
+                                            } else {
+                                                mtac::Operator op;
+                                                if(source_definition->returnType == FLOAT){
+                                                    op = mtac::Operator::FASSIGN;
+                                                } else if(source_definition->returnType->is_pointer()){
+                                                    op = mtac::Operator::PASSIGN;
+                                                } else {
+                                                    op = mtac::Operator::ASSIGN;
+                                                }
+
+                                                if(call->return2_){
+                                                    auto new_quadruple = std::make_shared<mtac::Quadruple>(call->return2_, *quadruple->arg2, op);
+
+                                                    ssit = new_bb->statements.insert(it, new_quadruple);
+                                                    ssend = new_bb->statements.end();
+                                                }
+
+                                                quadruple->op = op;
+                                                quadruple->result = call->return_;
+                                                quadruple->arg2.reset();
+                                            }
+                                        }
+                                    }
+
+                                    ++ssit;
+                                }
+
+                                --cloned_bb;
+                                ++bit;
                             }
 
                             bit = saved_bit;
