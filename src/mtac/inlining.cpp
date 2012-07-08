@@ -7,6 +7,9 @@
 
 #include <vector>
 
+#include "SymbolTable.hpp"
+#include "Options.hpp"
+
 #include "mtac/inlining.hpp"
 
 using namespace eddic;
@@ -22,6 +25,10 @@ std::size_t size_of(std::shared_ptr<mtac::Function> function){
 }
 
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
+    if(option_defined("fno-inline")){
+        return false;
+    }
+
     bool optimized = false;
 
     std::vector<std::shared_ptr<mtac::Function>> inlined;
