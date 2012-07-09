@@ -35,11 +35,12 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
         if(block->index == -1){
             ++it;
             continue;
-        }
-
-        if(block->index == -2){
+        } else if(block->index == -2){
             break;
         }
+                
+        auto next = it;
+        ++next;
 
         if(unlikely(block->statements.empty())){
             if(usage.find(*it) == usage.end()){
@@ -49,9 +50,6 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                 --it;
                 continue;
             } else {
-                auto next = it;
-                ++next;
-                
                 if(next != blocks.end() && (*next)->index != -2 && usage.find(*next) == usage.end()){
                     block->statements = (*next)->statements;
                     
@@ -73,10 +71,14 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                 merge = safe(*ptr); 
             } else if(boost::get<std::shared_ptr<mtac::NoOp>>(&last)){
                 merge = true;
-            }
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
+                merge = (next != blocks.end() && (*ptr)->block == *next);
 
-            auto next = it;
-            ++next;
+                if(merge){
+                    block->statements.pop_back();
+                    computeBlockUsage(function, usage);
+                }
+            }
 
             if(merge && next != blocks.end() && (*next)->index != -2){
                 //Only if the next block is not used because we will remove its label
@@ -102,6 +104,10 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
         }
 
         ++it;
+    }
+
+    if(optimized){
+        merge_basic_blocks(function);
     }
    
     return optimized; 

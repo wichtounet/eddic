@@ -56,37 +56,3 @@ bool mtac::optimize_branches(std::shared_ptr<mtac::Function> function){
 
     return optimized;
 }
-
-bool mtac::remove_needless_jumps(std::shared_ptr<mtac::Function> function){
-    bool optimized = false;
-
-    auto& blocks = function->getBasicBlocks();
-
-    auto it = blocks.begin();
-    auto end = blocks.end();
-
-    while(it != end){
-        auto& block = *it;
-
-        if(likely(!block->statements.empty())){
-            auto& last = block->statements[block->statements.size() - 1];
-
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                auto next = it;
-                ++next;
-
-                //If the target block is the next in the list 
-                if((*ptr)->block == *next){
-                    block->statements.pop_back();
-
-                    optimized = true;
-                }
-            }
-        }
-
-        ++it;
-    }
-
-    return optimized;
-}
-

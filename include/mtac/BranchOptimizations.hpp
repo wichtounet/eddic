@@ -17,7 +17,6 @@ namespace eddic {
 namespace mtac {
 
 bool optimize_branches(std::shared_ptr<mtac::Function> function);
-bool remove_needless_jumps(std::shared_ptr<mtac::Function> function);
 
 } //end of mtac
 
