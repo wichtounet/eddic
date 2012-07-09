@@ -207,6 +207,24 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     return true;
 }
 
+bool will_inline(std::shared_ptr<mtac::Function> function){
+    if(can_be_inlined(function)){
+        //function called once
+        if(symbols.referenceCount(function->getName()) == 1){
+            return true;
+        } else {
+            auto size = size_of(function);
+
+            //Inline little functions
+            if(size < 10){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
     if(option_defined("fno-inline")){
         return false;
@@ -214,29 +232,20 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
 
     bool optimized = false;
 
-    std::vector<std::shared_ptr<mtac::Function>> inlined;
-
-    for(auto function : program->functions){
-        if(can_be_inlined(function)){
-            //function called once
-            if(symbols.referenceCount(function->getName()) == 1){
-                inlined.push_back(function); 
-            } else {
-                auto size = size_of(function);
-
-                //Inline little functions
-                if(size < 10){
-                    inlined.push_back(function);
-                }
-            }
+    for(auto source_function : program->functions){
+        if(!will_inline(source_function)){
+            continue;
         }
-    }
 
-    for(auto source_function : inlined){
         auto source_definition = source_function->definition;
        
         for(auto dest_function : program->functions){
             if(dest_function == source_function){
+                continue;
+            }
+        
+            //If the function has already been inlined
+            if(dest_function->getName() != "main" && symbols.referenceCount(dest_function->getName()) <= 0){
                 continue;
             }
 
@@ -259,6 +268,8 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
 
                         if(call->functionDefinition == source_definition){
                             optimized = true;
+
+                            symbols.removeReference(source_function->getName());
                             
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_definition->mangledName << std::endl;
 
