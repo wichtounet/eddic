@@ -24,6 +24,7 @@
 #include "mtac/BasicBlockOptimizations.hpp"
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/ConcatReduction.hpp"
+#include "mtac/inlining.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -144,6 +145,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Optimize Branches", optimize_branches(function), function);
         optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
         optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
+        optimized |= debug("Merge basic block", merge_basic_blocks(function), function);
         optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
     } while (optimized);
 
@@ -225,6 +227,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         optimize_all_functions(program, string_pool);
 
         optimized = mtac::remove_empty_functions(program);
+        optimized = mtac::inline_functions(program);
     } while(optimized);
 }
 

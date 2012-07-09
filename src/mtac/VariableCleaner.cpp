@@ -50,21 +50,15 @@ void eddic::mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     }
     
     std::vector<std::shared_ptr<Variable>> unused;
-    
-    auto it = function->context->begin();
-    auto end = function->context->end();
-
-    while(it != end){
-        auto variable = it->second;
+    for(auto variable_pair : function->context->stored_variables()){
+        auto variable = variable_pair.second;
 
         //Temporary and parameters are not interesting, because they dot not take any space
-        if(!variable->position().isTemporary() && !variable->position().isParameter() && !variable->position().isParamRegister()){
+        if(!variable->position().isParameter() && !variable->position().isParamRegister()){
             if(usage.find(variable) == usage.end()){
                 unused.push_back(variable);
             }
         }
-
-        ++it;
     }
 
     for(auto& variable : unused){

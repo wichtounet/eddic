@@ -5,10 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/Return.hpp"
+#ifndef MTAC_INLINING_H
+#define MTAC_INLINING_H
 
-using namespace eddic;
+#include <memory>
 
-mtac::Return::Return(){}
-mtac::Return::Return(Argument a1) : arg1(a1) {}
-mtac::Return::Return(Argument a1, Argument a2) : arg1(a1), arg2(a2) {}
+#include "mtac/Program.hpp"
+
+namespace eddic {
+
+namespace mtac {
+
+bool inline_functions(std::shared_ptr<mtac::Program> program);
+
+} //end of mtac
+
+} //end of eddic
+
+#endif
