@@ -112,6 +112,30 @@ bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> func
     return b;
 }
 
+template<typename Functor>
+bool debug(const std::string& name, Functor functor, std::shared_ptr<mtac::Function> function){
+    bool b;
+    {
+        PerfsTimer timer(name);
+
+        b = functor(function);
+    }
+
+    return debug(name, b, function);
+}
+
+template<typename Functor, typename Arg2>
+bool debug(const std::string& name, Functor functor, std::shared_ptr<mtac::Function> function, Arg2& arg2){
+    bool b;
+    {
+        PerfsTimer timer(name);
+
+        b = functor(function, arg2);
+    }
+
+    return debug(name, b, function);
+}
+
 void remove_nop(std::shared_ptr<mtac::Function> function){
     for(auto& block : function->getBasicBlocks()){
         auto it = iterate(block->statements);
@@ -145,29 +169,29 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     do {
         optimized = false;
 
-        optimized |= debug("Aritmetic Identities", apply_to_all<mtac::ArithmeticIdentities>(function), function);
-        optimized |= debug("Reduce in Strength", apply_to_all<mtac::ReduceInStrength>(function), function);
-        optimized |= debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+        optimized |= debug("Aritmetic Identities", &apply_to_all<mtac::ArithmeticIdentities>, function);
+        optimized |= debug("Reduce in Strength", &apply_to_all<mtac::ReduceInStrength>, function);
+        optimized |= debug("Constant folding", &apply_to_all<mtac::ConstantFolding>, function);
 
-        optimized |= debug("Constant propagation", data_flow_optimization<mtac::ConstantPropagationProblem>(function), function);
-        optimized |= debug("Offset Constant Propagation", data_flow_optimization<mtac::OffsetConstantPropagationProblem>(function), function);
+        optimized |= debug("Constant propagation", &data_flow_optimization<mtac::ConstantPropagationProblem>, function);
+        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem>, function);
 
         //If there was optimizations here, better to try again before perfoming common subexpression
         if(optimized){
             continue;
         }
 
-        optimized |= debug("Common Subexpression Elimination", data_flow_optimization<mtac::CommonSubexpressionElimination>(function), function);
+        optimized |= debug("Common Subexpression Elimination", &data_flow_optimization<mtac::CommonSubexpressionElimination>, function);
 
-        optimized |= debug("Math Propagation", apply_to_basic_blocks_two_pass<mtac::MathPropagation>(function), function);
+        optimized |= debug("Math Propagation", &apply_to_basic_blocks_two_pass<mtac::MathPropagation>, function);
         
-        optimized |= debug("Dead-Code Elimination", mtac::dead_code_elimination(function), function);
+        optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
 
-        optimized |= debug("Optimize Branches", optimize_branches(function), function);
-        optimized |= debug("Optimize Concat", optimize_concat(function, pool), function);
-        optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
-        optimized |= debug("Merge basic block", merge_basic_blocks(function), function);
-        optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
+        optimized |= debug("Optimize Branches", &mtac::optimize_branches, function);
+        optimized |= debug("Optimize Concat", &mtac::optimize_concat, function, pool);
+        optimized |= debug("Remove dead basic block", &mtac::remove_dead_basic_blocks, function);
+        optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
+        optimized |= debug("Remove needless jumps", &mtac::remove_needless_jumps, function);
 
         remove_nop(function);
     } while (optimized);
