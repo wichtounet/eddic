@@ -52,7 +52,16 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 
 std::shared_ptr<Variable> FunctionContext::newVariable(std::shared_ptr<Variable> source){
     std::string name = "g_" + source->name() + "_" + toString(temporary++);
-    return addVariable(name, source->type());
+    
+    if(source->position().isTemporary()){
+        Position position(PositionType::TEMPORARY);
+
+        auto var = std::make_shared<Variable>(name, source->type(), position); 
+        storage[name] = var;
+        return variables[name] = var;
+    } else {
+        return addVariable(name, source->type());
+    }
 }
 
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
