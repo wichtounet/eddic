@@ -52,7 +52,6 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                 if(usage.find(*next) == usage.end()){
                     if(!(*next)->statements.empty()){
                         if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(*(*next)->statements.begin()))){
-                            std::cout << (*ptr)->function << std::endl;
                             if(!safe(*ptr)){
                                 ++it;
                                 continue;

@@ -163,6 +163,21 @@ void clone(std::vector<mtac::Statement>& sources, std::vector<mtac::Statement>& 
     }
 }
 
+bool can_be_inlined(std::shared_ptr<mtac::Function> function){
+    //The main function cannot be inlined
+    if(function->getName() == "main"){
+        return false;
+    }
+
+    for(auto& param : function->definition->parameters){
+        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
     if(option_defined("fno-inline")){
         return false;
@@ -173,20 +188,17 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
     std::vector<std::shared_ptr<mtac::Function>> inlined;
 
     for(auto function : program->functions){
-        //The main function cannot be inlined
-        if(function->getName() == "main"){
-            continue;
-        }
+        if(can_be_inlined(function)){
+            //function called once
+            if(symbols.referenceCount(function->getName()) == 1){
+                inlined.push_back(function); 
+            } else {
+                auto size = size_of(function);
 
-        //function called once
-        if(symbols.referenceCount(function->getName()) == 1){
-            inlined.push_back(function); 
-        } else {
-            auto size = size_of(function);
-
-            //Inline little functions
-            if(size < 10){
-                inlined.push_back(function);
+                //Inline little functions
+                if(size < 10){
+                    inlined.push_back(function);
+                }
             }
         }
     }
@@ -244,7 +256,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                         variable_clones[(*ptr)->param] = param_var;
                                         quadruple->result = param_var;
 
-                                        if(param.paramType == INT){
+                                        if(param.paramType == INT || param.paramType == BOOL){
                                             quadruple->op = mtac::Operator::ASSIGN; 
                                         } else {
                                             quadruple->op = mtac::Operator::FASSIGN; 
