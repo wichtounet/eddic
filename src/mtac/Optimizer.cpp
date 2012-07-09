@@ -11,6 +11,8 @@
 #include "VisitorUtils.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
+#include "iterators.hpp"
+#include "likely.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
@@ -111,6 +113,26 @@ bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> func
     return b;
 }
 
+void remove_nop(std::shared_ptr<mtac::Function> function){
+    for(auto& block : function->getBasicBlocks()){
+        auto it = iterate(block->statements);
+
+        while(it.has_next()){
+            if(unlikely(boost::get<std::shared_ptr<mtac::NoOp>>(&*it))){
+                it.erase();
+                continue;
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
+                if((*ptr)->op == mtac::Operator::NOP){
+                    it.erase();
+                    continue;
+                }
+            }
+
+            ++it;
+        }
+    }
+}
+
 }
 
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
@@ -147,6 +169,8 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Remove dead basic block", remove_dead_basic_blocks(function), function);
         optimized |= debug("Merge basic block", merge_basic_blocks(function), function);
         optimized |= debug("Remove needless jumps", remove_needless_jumps(function), function);
+
+        remove_nop(function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations
