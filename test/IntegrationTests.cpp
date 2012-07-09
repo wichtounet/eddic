@@ -69,6 +69,7 @@ inline void parse_options(const std::string& file, const std::string& param1, co
 }
 
 void assert_compiles(const std::string& file, const std::string& param1, const std::string& param2){
+    BOOST_TEST_MESSAGE( "Compile with options " + param1 + " "  + param2 ); 
     parse_options(file, param1, param2);
 
     eddic::Compiler compiler;

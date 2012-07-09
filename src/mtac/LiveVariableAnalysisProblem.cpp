@@ -16,11 +16,15 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
-std::ostream& operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
+std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
     stream << "set{";
 
     for(auto& v : value){
-        stream << v->name() << ", ";
+        if(!v){
+            stream << "null, ";
+        } else {
+            stream << v->name() << ", ";
+        }
     }
 
     return stream << "}";
@@ -104,15 +108,14 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, Proble
 }
 
 template<typename Arg, typename Values>
-void update(Arg& arg, Values& values){
-    if(mtac::isVariable(arg)){
-        auto var = boost::get<std::shared_ptr<Variable>>(arg);
-        values.insert(var);
+inline void update(Arg& arg, Values& values){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+        values.insert(*ptr);
     }
 }
 
 template<typename Arg, typename Values>
-void update_optional(Arg& arg, Values& values){
+inline void update_optional(Arg& arg, Values& values){
     if(arg){
         update(*arg, values);
     }

@@ -31,7 +31,36 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     while(it != blocks.end()){
         auto& block = *it;
-        if(likely(!block->statements.empty())){
+        
+        if(block->index == -1){
+            ++it;
+            continue;
+        } else if(block->index == -2){
+            break;
+        }
+                
+        auto next = it;
+        ++next;
+
+        if(unlikely(block->statements.empty())){
+            if(usage.find(*it) == usage.end()){
+                it = blocks.erase(it);
+                optimized = true;
+
+                --it;
+                continue;
+            } else {
+                if(next != blocks.end() && (*next)->index != -2 && usage.find(*next) == usage.end()){
+                    block->statements = (*next)->statements;
+                    
+                    it = blocks.erase(next);
+                    optimized = true;
+
+                    --it;
+                    continue;
+                }
+            }
+        } else {
             auto& last = block->statements[block->statements.size() - 1];
 
             bool merge = false;
@@ -42,10 +71,14 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                 merge = safe(*ptr); 
             } else if(boost::get<std::shared_ptr<mtac::NoOp>>(&last)){
                 merge = true;
-            }
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
+                merge = (next != blocks.end() && (*ptr)->block == *next);
 
-            auto next = it;
-            ++next;
+                if(merge){
+                    block->statements.pop_back();
+                    computeBlockUsage(function, usage);
+                }
+            }
 
             if(merge && next != blocks.end() && (*next)->index != -2){
                 //Only if the next block is not used because we will remove its label
@@ -71,6 +104,10 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
         }
 
         ++it;
+    }
+
+    if(optimized){
+        merge_basic_blocks(function);
     }
    
     return optimized; 

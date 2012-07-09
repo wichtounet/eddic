@@ -16,6 +16,7 @@
 
 #include "mtac/inlining.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -308,20 +309,6 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
     }
 }
 
-bool is_recursive(std::shared_ptr<mtac::Function> function){
-    for(auto& basic_block : function->getBasicBlocks()){
-        for(auto& statement : basic_block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->functionDefinition == function->definition){
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
 bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     //The main function cannot be inlined
     if(function->getName() == "main"){
@@ -334,7 +321,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
         }
     }
 
-    if(is_recursive(function)){
+    if(mtac::is_recursive(function)){
         return false;
     }
 

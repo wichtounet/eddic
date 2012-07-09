@@ -16,7 +16,6 @@ bool mtac::dead_code_elimination(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
     mtac::LiveVariableAnalysisProblem problem;
-
     auto results = mtac::data_flow(function, problem);
 
     for(auto& block : function->getBasicBlocks()){

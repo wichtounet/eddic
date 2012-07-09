@@ -52,6 +52,8 @@ inline void assertIntOrVariable(T& variant){
 
 void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage);
 
+bool is_recursive(std::shared_ptr<mtac::Function> function);
+
 bool safe(const std::string& call);
 bool safe(std::shared_ptr<mtac::Call> call);
 bool erase_result(mtac::Operator op);
