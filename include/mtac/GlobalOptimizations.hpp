@@ -20,6 +20,8 @@
 #define DEBUG_GLOBAL_ENABLED false
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
+#include "PerfsTimer.hpp"
+
 namespace eddic {
 
 namespace mtac {
@@ -39,9 +41,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shar
     }
 }
 
-//TODO Find a way to improve it in order to pass value by reference
-template<typename Values>
-inline void assign(Values& old, Values value, bool& changes){
+template<typename Left, typename Right>
+inline void assign(Left& old, Right&& value, bool& changes){
     if(old.top()){
         changes = !value.top();
     } else if(old.values().size() != value.values().size()){
@@ -103,14 +104,14 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
                 DEBUG_GLOBAL std::cout << "IN[B] before " << IN[B] << std::endl;
                 DEBUG_GLOBAL std::cout << "OUT[P] before " << OUT[P] << std::endl;
 
-                assign(IN[B], problem.meet(IN[B], OUT[P]), changes);
+                IN[B] = problem.meet(IN[B], OUT[P]);
                 
                 DEBUG_GLOBAL std::cout << "IN[B] after " << IN[B] << std::endl;
 
                 auto& statements = B->statements;
 
                 if(statements.size() > 0){
-                    assign(IN_S[statements.front()], IN[B], changes);
+                    IN_S[statements.front()] = IN[B];
 
                     for(unsigned i = 0; i < statements.size(); ++i){
                         auto& statement = statements[i];
@@ -119,7 +120,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 
                         //The entry value of the next statement are the exit values of the current statement
                         if(i != statements.size() - 1){
-                            assign(IN_S[statements[i+1]], OUT_S[statement], changes);
+                            IN_S[statements[i+1]] = OUT_S[statement];
                         }
                     }
                     

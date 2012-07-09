@@ -117,6 +117,17 @@ std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
     return stream << "}";
 }
 
+template<typename T>
+std::ostream& operator<<(std::ostream& stream, std::list<T>& values){
+    stream << "list{";
+
+    for(auto& value : values){
+        stream << value << ", ";
+    }
+
+    return stream << "}";
+}
+
 template<typename Key, typename Value, typename Hasher>
 std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Hasher>& values){
     stream << "map{";

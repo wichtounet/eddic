@@ -26,7 +26,7 @@ struct Expression {
 
 std::ostream& operator<<(std::ostream& stream, Expression& expression);
 
-typedef std::vector<Expression> Expressions;
+typedef std::list<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> optimized;
