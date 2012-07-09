@@ -31,6 +31,11 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     while(it != blocks.end()){
         auto& block = *it;
+        
+        if(block->index == -1){
+            ++it;
+            continue;
+        }
 
         if(block->index == -2){
             break;
