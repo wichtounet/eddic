@@ -7,18 +7,48 @@
 
 #include <vector>
 
-#include "mtac/RemoveEmptyFunctions.hpp"
+#include "iterators.hpp"
+#include "SymbolTable.hpp"
+
+#include "mtac/FunctionOptimizations.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
+
+bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
+    bool optimized = false;
+
+    auto it = iterate(program->functions);
+
+    while(it.has_next()){
+        auto function = *it;
+        
+        if(function->getName() != "main"){
+            if(mtac::is_recursive(function) && symbols.referenceCount(function->getName()) == 1){
+                it.erase();
+                continue;
+            } 
+            
+            if(symbols.referenceCount(function->getName()) == 0){
+                it.erase();
+                continue;
+            }
+        }
+
+        ++it;
+    }
+
+    return optimized;
+}
 
 bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
     bool optimized = false;
 
     std::vector<std::string> removed_functions;
 
-    auto it = program->functions.begin();
+    auto it = iterate(program->functions);
 
-    while(it != program->functions.end()){
+    while(it.has_next()){
         auto function = *it;
 
         unsigned int statements = 0;
@@ -29,7 +59,7 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
 
         if(statements == 0){
             removed_functions.push_back(function->getName());
-            it = program->functions.erase(it);
+            it.erase();
         } else {
             ++it;
         }

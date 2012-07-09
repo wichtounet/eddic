@@ -19,7 +19,7 @@
 
 //The custom optimizations
 #include "mtac/VariableCleaner.hpp"
-#include "mtac/RemoveEmptyFunctions.hpp"
+#include "mtac/FunctionOptimizations.hpp"
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/BasicBlockOptimizations.hpp"
 #include "mtac/BranchOptimizations.hpp"
@@ -224,6 +224,8 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     bool optimized = false;
 
     do{
+        mtac::remove_unused_functions(program);
+
         optimize_all_functions(program, string_pool);
 
         optimized = mtac::remove_empty_functions(program);

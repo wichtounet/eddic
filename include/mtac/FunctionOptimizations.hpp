@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_REMOVE_EMPTY_FUNCTIONS_H
-#define MTAC_REMOVE_EMPTY_FUNCTIONS_H
+#ifndef MTAC_FUNCTION_OPTIMIZATIONS_H
+#define MTAC_FUNCTION_OPTIMIZATIONS_H
 
 #include <memory>
 
@@ -16,6 +16,7 @@ namespace eddic {
 
 namespace mtac {
 
+bool remove_unused_functions(std::shared_ptr<mtac::Program> program);
 bool remove_empty_functions(std::shared_ptr<mtac::Program> program);
 
 } //end of mtac

@@ -9,6 +9,20 @@
 
 using namespace eddic;
 
+bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
+    for(auto& basic_block : function->getBasicBlocks()){
+        for(auto& statement : basic_block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                if((*ptr)->functionDefinition == function->definition){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
