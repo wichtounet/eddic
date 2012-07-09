@@ -215,7 +215,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                         auto call = *ptr;
 
                         if(call->functionDefinition == source_definition){
-                            //optimized = true;
+                            optimized = true;
                             
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_function->definition->mangledName << std::endl;
 
