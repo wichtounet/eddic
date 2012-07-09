@@ -184,13 +184,13 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Common Subexpression Elimination", &data_flow_optimization<mtac::CommonSubexpressionElimination>, function);
 
         optimized |= debug("Math Propagation", &apply_to_basic_blocks_two_pass<mtac::MathPropagation>, function);
-        
-        optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
 
         optimized |= debug("Optimize Branches", &mtac::optimize_branches, function);
         optimized |= debug("Optimize Concat", &mtac::optimize_concat, function, pool);
         optimized |= debug("Remove dead basic block", &mtac::remove_dead_basic_blocks, function);
         optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
+        
+        optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
 
         remove_nop(function);
     } while (optimized);
