@@ -70,6 +70,16 @@ void update_usages(VariableClones& clones, mtac::Statement& statement){
         
         update_usage(clones, if_->arg1);
         update_usage_optional(clones, if_->arg2);
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+        auto call_ = *ptr; 
+
+        if(call_->return_ && clones.find(call_->return_) != clones.end()){
+            call_->return_ = clones[call_->return_];
+        }
+
+        if(call_->return2_ && clones.find(call_->return2_) != clones.end()){
+            call_->return2_ = clones[call_->return2_];
+        }
     }
 }
 
