@@ -26,10 +26,11 @@ std::size_t size_of(std::shared_ptr<mtac::Function> function){
     return size;
 }
 
-typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> Clones;
+typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> VariableClones;
+typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>> BBClones;
 
 template<typename Value>
-void update_usage(Clones& clones, Value& value){
+void update_usage(VariableClones& clones, Value& value){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&value)){
         if(clones.find(*ptr) != clones.end()){
             value = clones[*ptr];
@@ -38,13 +39,13 @@ void update_usage(Clones& clones, Value& value){
 }
 
 template<typename Opt>
-void update_usage_optional(Clones& clones, Opt& opt){
+void update_usage_optional(VariableClones& clones, Opt& opt){
     if(opt){
         update_usage(clones, *opt);
     }
 }
 
-void update_usages(Clones& clones, mtac::Statement& statement){
+void update_usages(VariableClones& clones, mtac::Statement& statement){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr; 
 
@@ -68,6 +69,28 @@ void update_usages(Clones& clones, mtac::Statement& statement){
         
         update_usage(clones, if_->arg1);
         update_usage_optional(clones, if_->arg2);
+    }
+}
+
+void update_usages(BBClones& clones, mtac::Statement& statement){
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
+        auto if_ = *ptr; 
+
+        if(clones.find(if_->block) != clones.end()){
+            if_->block = clones[if_->block];
+        }
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
+        auto if_ = *ptr; 
+
+        if(clones.find(if_->block) != clones.end()){
+            if_->block = clones[if_->block];
+        }
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
+        auto goto_ = *ptr; 
+
+        if(clones.find(goto_->block) != clones.end()){
+            goto_->block = clones[goto_->block];
+        }
     }
 }
 
@@ -201,13 +224,13 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                             
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_function->definition->mangledName << std::endl;
 
-                            std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> variable_clones;
+                            VariableClones variable_clones;
                             for(auto variable_pair : *source_definition->context){
                                 auto variable = variable_pair.second;
                                 variable_clones[variable] = dest_function->definition->context->newVariable(variable);
                             }
                             
-                            std::unordered_map<std::shared_ptr<BasicBlock>, std::shared_ptr<mtac::BasicBlock>> bb_clones;
+                            BBClones bb_clones;
 
                             auto saved_bit = bit;
 
@@ -241,8 +264,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
 
                                 while(ssit != ssend){
                                     update_usages(variable_clones, *ssit);
-
-                                    //TODO Update usages of all the old basic blocks in the new basic blocks
+                                    update_usages(bb_clones, *ssit);
 
                                     if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*ssit)){
                                         auto quadruple = *ret_ptr;
