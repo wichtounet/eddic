@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <vector>
+#include <unordered_map>
 
 #include "SymbolTable.hpp"
 #include "Options.hpp"
@@ -349,8 +350,10 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                         if(quadruple->op == mtac::Operator::RETURN){
                                             if(!call->return_){
                                                 //If the caller does not care about the return value, return has no effect
-                                                ssit = new_bb->statements.erase(it);
+                                                ssit = new_bb->statements.erase(ssit);
                                                 ssend = new_bb->statements.end();
+
+                                                continue;
                                             } else {
                                                 mtac::Operator op;
                                                 if(source_definition->returnType == FLOAT){
@@ -366,6 +369,8 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
 
                                                     ssit = new_bb->statements.insert(ssit, new_quadruple);
                                                     ssend = new_bb->statements.end();
+
+                                                    ++ssit;
                                                 }
 
                                                 quadruple->op = op;
