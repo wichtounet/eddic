@@ -12,6 +12,7 @@
 #include "Options.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
+#include "iterators.hpp"
 
 #include "mtac/inlining.hpp"
 #include "mtac/Printer.hpp"
@@ -187,7 +188,7 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
 
             bb_clones[block] = new_bb;
 
-            bit = dest_function->getBasicBlocks().insert(bit, new_bb);
+            bit.insert(new_bb);
 
             ++bit;
         }
@@ -251,10 +252,9 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
     while(cloned_bb > 0){
         auto new_bb = *bit;
 
-        auto ssit = new_bb->statements.begin();
-        auto ssend = new_bb->statements.end();
+        auto ssit = iterate(new_bb->statements);
 
-        while(ssit != ssend){
+        while(ssit.has_next()){
             update_usages(variable_clones, *ssit);
             update_usages(bb_clones, *ssit);
 
@@ -267,9 +267,8 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
 
                     if(!call->return_){
                         //If the caller does not care about the return value, return has no effect
-                        ssit = new_bb->statements.erase(ssit);
-                        ssit = new_bb->statements.insert(ssit, goto_);
-                        ssend = new_bb->statements.end();
+                        ssit.erase();
+                        ssit.insert(goto_);
 
                         continue;
                     } else {
@@ -283,10 +282,7 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
                         }
 
                         if(call->return2_){
-                            auto new_quadruple = std::make_shared<mtac::Quadruple>(call->return2_, *quadruple->arg2, op);
-
-                            ssit = new_bb->statements.insert(ssit, new_quadruple);
-                            ssend = new_bb->statements.end();
+                            ssit.insert(std::make_shared<mtac::Quadruple>(call->return2_, *quadruple->arg2, op));
 
                             ++ssit;
                         }
@@ -295,8 +291,9 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
                         quadruple->result = call->return_;
                         quadruple->arg2.reset();
 
-                        ssit = new_bb->statements.insert(ssit+1, goto_);
-                        ssend = new_bb->statements.end();
+                        ++ssit;
+                        
+                        ssit.insert(goto_);
 
                         continue;
                     }
@@ -386,18 +383,12 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                 continue;
             }
 
-            auto dest_definition = dest_function->definition;
-
-            auto bit = dest_function->getBasicBlocks().begin();
-            auto bend = dest_function->getBasicBlocks().end();
-
-            while(bit != bend){
+            for(auto bit = iterate(dest_function->getBasicBlocks()); bit.has_next(); ++bit){
                 auto basic_block = *bit;
 
-                auto it = basic_block->statements.begin();
-                auto end = basic_block->statements.end();
+                auto it = iterate(basic_block->statements);
 
-                while(it != end){
+                while(it.has_next()){
                     auto statement = *it;
 
                     if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
@@ -410,7 +401,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                             //Allocate storage for the local variables of the inlined function
                             for(auto variable_pair : source_definition->context->stored_variables()){
                                 auto variable = variable_pair.second;
-                                variable_clones[variable] = dest_definition->context->newVariable(variable);
+                                variable_clones[variable] = dest_function->definition->context->newVariable(variable);
                             }
 
                             //Clone all the source basic blocks in the dest function
@@ -420,8 +411,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                             adapt_instructions(variable_clones, bb_clones, call, bit);
 
                             //Erase the original call
-                            it = basic_block->statements.erase(it);
-                            end = basic_block->statements.end();
+                            it.erase();
 
                             symbols.removeReference(source_function->getName());
                             optimized = true;
@@ -432,8 +422,6 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
 
                     ++it;
                 }
-
-                ++bit;
             }
         }
     }
