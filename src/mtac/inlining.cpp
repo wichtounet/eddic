@@ -315,6 +315,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                 ++bit;
                             }
                             
+                            //Allocate storage for the local variables of the inlined function
                             for(auto variable_pair : source_definition->context->stored_variables()){
                                 auto variable = variable_pair.second;
                                 variable_clones[variable] = dest_definition->context->newVariable(variable);
@@ -359,9 +360,13 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                         auto quadruple = *ret_ptr;
 
                                         if(quadruple->op == mtac::Operator::RETURN){
+                                            auto goto_ = std::make_shared<mtac::Goto>();
+                                            goto_->block = basic_block;
+
                                             if(!call->return_){
                                                 //If the caller does not care about the return value, return has no effect
                                                 ssit = new_bb->statements.erase(ssit);
+                                                ssit = new_bb->statements.insert(ssit, goto_);
                                                 ssend = new_bb->statements.end();
 
                                                 continue;
@@ -387,6 +392,11 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                                 quadruple->op = op;
                                                 quadruple->result = call->return_;
                                                 quadruple->arg2.reset();
+                                                
+                                                ssit = new_bb->statements.insert(ssit+1, goto_);
+                                                ssend = new_bb->statements.end();
+
+                                                continue;
                                             }
                                         }
                                     }
