@@ -189,10 +189,10 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Optimize Concat", &mtac::optimize_concat, function, pool);
         optimized |= debug("Remove dead basic block", &mtac::remove_dead_basic_blocks, function);
         optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
-        
-        optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
 
         remove_nop(function);
+        
+        optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations
