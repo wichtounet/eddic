@@ -336,7 +336,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                                 if(call->return2_){
                                                     auto new_quadruple = std::make_shared<mtac::Quadruple>(call->return2_, *quadruple->arg2, op);
 
-                                                    ssit = new_bb->statements.insert(it, new_quadruple);
+                                                    ssit = new_bb->statements.insert(ssit, new_quadruple);
                                                     ssend = new_bb->statements.end();
                                                 }
 
