@@ -38,6 +38,19 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
                 --it;
                 continue;
+            } else {
+                auto next = it;
+                ++next;
+                
+                if(next != blocks.end() && (*next)->index != -2 && usage.find(*next) == usage.end()){
+                    block->statements = (*next)->statements;
+                    
+                    it = blocks.erase(it);
+                    optimized = true;
+
+                    --it;
+                    continue;
+                }
             }
         } else {
             auto& last = block->statements[block->statements.size() - 1];
