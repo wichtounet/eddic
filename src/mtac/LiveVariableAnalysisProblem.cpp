@@ -16,11 +16,15 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
-std::ostream& operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
+std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
     stream << "set{";
 
     for(auto& v : value){
-        stream << v->name() << ", ";
+        if(!v){
+            stream << "null, ";
+        } else {
+            stream << v->name() << ", ";
+        }
     }
 
     return stream << "}";
