@@ -31,7 +31,15 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     while(it != blocks.end()){
         auto& block = *it;
-        if(likely(!block->statements.empty())){
+        if(unlikely(block->statements.empty())){
+            if(usage.find(*it) == usage.end()){
+                it = blocks.erase(it);
+                optimized = true;
+
+                --it;
+                continue;
+            }
+        } else {
             auto& last = block->statements[block->statements.size() - 1];
 
             bool merge = false;
