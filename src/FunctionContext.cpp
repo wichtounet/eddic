@@ -35,7 +35,15 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
 
     currentPosition += type->size();
 
-    return std::make_shared<Variable>(variable, type, position);
+    auto var = std::make_shared<Variable>(variable, type, position);
+
+    storage[variable] = var;
+
+    return var;
+}
+
+FunctionContext::Variables FunctionContext::stored_variables(){
+    return storage;
 }
 
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
@@ -53,7 +61,9 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     Position position(PositionType::CONST);
 
     auto val = visit(ast::GetConstantValue(), value);
-    return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
+    
+    auto var = std::make_shared<Variable>(variable, type, position, val);
+    return variables[variable] = var;
 }
 
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<const Type> type){
@@ -64,14 +74,18 @@ std::shared_ptr<Variable> FunctionContext::newTemporary(){
     Position position(PositionType::TEMPORARY);
 
     std::string name = "ti_" + toString(temporary++);
-    return variables[name] = std::make_shared<Variable>(name, INT, position); 
+    auto var = std::make_shared<Variable>(name, INT, position); 
+    storage[name] = var;
+    return variables[name] = var;
 }
 
 std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
     Position position(PositionType::TEMPORARY);
 
     std::string name = "tf_" + toString(temporary++);
-    return variables[name] = std::make_shared<Variable>(name, FLOAT, position); 
+    auto var = std::make_shared<Variable>(name, FLOAT, position); 
+    storage[name] = var;
+    return variables[name] = var;
 }
 
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
@@ -83,16 +97,16 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
 }
 
 void FunctionContext::removeVariable(const std::string& variable){
-    auto var = getVariable(variable);
+    auto var = storage[variable];
     
-    variables.erase(variable);
+    storage.erase(variable);
 
     //If its a temporary, no need to recalculate positions
     if(!var->position().isTemporary()){
         currentPosition = INT->size();
 
-        auto it = variables.begin();
-        auto end = variables.end();
+        auto it = storage.begin();
+        auto end = storage.end();
 
         while(it != end){
             auto v = it->second;

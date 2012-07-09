@@ -23,6 +23,9 @@ class FunctionContext : public Context {
         int m_size;
         int temporary = 1;
 
+        //Refer all variables that are stored, including temporary
+        Variables storage;
+
     public:
         FunctionContext(std::shared_ptr<Context> parent);
         
@@ -41,6 +44,8 @@ class FunctionContext : public Context {
         void removeVariable(const std::string& variable) override;
 
         void storeTemporary(std::shared_ptr<Variable> temp);
+
+        Variables stored_variables();
 };
 
 } //end of eddic

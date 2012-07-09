@@ -225,7 +225,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_function->definition->mangledName << std::endl;
 
                             VariableClones variable_clones;
-                            for(auto variable_pair : *source_definition->context){
+                            for(auto variable_pair : source_definition->context->stored_variables()){
                                 auto variable = variable_pair.second;
                                 variable_clones[variable] = dest_function->definition->context->newVariable(variable);
                             }
