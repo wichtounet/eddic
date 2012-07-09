@@ -389,9 +389,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                 auto it = iterate(basic_block->statements);
 
                 while(it.has_next()){
-                    auto statement = *it;
-
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
                         auto call = *ptr;
 
                         if(call->functionDefinition == source_definition){
