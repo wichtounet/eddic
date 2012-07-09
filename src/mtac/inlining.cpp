@@ -13,6 +13,7 @@
 #include "FunctionContext.hpp"
 
 #include "mtac/inlining.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -214,25 +215,60 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                         auto call = *ptr;
 
                         if(call->functionDefinition == source_definition){
-                            //Handle parameters
-                            if(source_definition->parameters.size() > 0){
-                                ++it;
-                                continue;//TODO Temporary
-                            }
-
-                            optimized = true;
+                            //optimized = true;
                             
                             std::cout << "inline " << source_definition->mangledName << " in function " << dest_function->definition->mangledName << std::endl;
 
+                            auto saved_bit = bit;
+
                             VariableClones variable_clones;
+
+                            //Handle parameters
+                            if(source_definition->parameters.size() > 0){
+                                //Param are in the previous block
+                                --bit;
+
+                                auto pit = (*bit)->statements.end() - 1;
+
+                                for(int i = source_definition->parameters.size() - 1; i >= 0;){
+                                    auto statement = *pit;
+
+                                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+                                        mtac::Printer printer;
+                                        printer.printStatement(statement);
+                                        auto param = source_definition->parameters[i];
+                                        
+                                        auto quadruple = std::make_shared<mtac::Quadruple>();
+                                            
+                                        auto param_var = dest_function->definition->context->new_temporary(param.paramType);
+                                        variable_clones[(*ptr)->param] = param_var;
+                                        quadruple->result = param_var;
+
+                                        if(param.paramType == INT){
+                                            quadruple->op = mtac::Operator::ASSIGN; 
+                                        } else {
+                                            quadruple->op = mtac::Operator::FASSIGN; 
+                                        }
+
+                                        quadruple->arg1 = (*ptr)->arg;
+
+                                        *pit = quadruple;
+
+                                        --i;
+                                    }
+
+                                    --pit;
+                                }
+                                
+                                ++bit;
+                            }
+                            
                             for(auto variable_pair : source_definition->context->stored_variables()){
                                 auto variable = variable_pair.second;
                                 variable_clones[variable] = dest_function->definition->context->newVariable(variable);
                             }
                             
                             BBClones bb_clones;
-
-                            auto saved_bit = bit;
 
                             std::size_t cloned_bb = 0;
 
