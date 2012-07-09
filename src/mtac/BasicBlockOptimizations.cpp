@@ -26,7 +26,7 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     auto it = blocks.begin();
 
-    //The ENTRY Basic block should not been merged
+    //The ENTRY Basic block should not be merged
     ++it;
 
     while(it != blocks.end()){
@@ -50,10 +50,13 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
             if(merge && next != blocks.end() && (*next)->index != -2){
                 //Only if the next block is not used because we will remove its label
                 if(usage.find(*next) == usage.end()){
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(*(*next)->statements.begin()))){
-                        if(!safe(*ptr)){
-                            ++it;
-                            continue;
+                    if(!(*next)->statements.empty()){
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(*(*next)->statements.begin()))){
+                            std::cout << (*ptr)->function << std::endl;
+                            if(!safe(*ptr)){
+                                ++it;
+                                continue;
+                            }
                         }
                     }
 
