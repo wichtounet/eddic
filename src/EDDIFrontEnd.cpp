@@ -10,7 +10,6 @@
 #include "EDDIFrontEnd.hpp"
 #include "SemanticalException.hpp"
 #include "DebugStopWatch.hpp"
-#include "RegisterAllocation.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
@@ -38,6 +37,7 @@
 #include "ast/DebugVisitor.hpp"
 
 #include "mtac/Compiler.hpp"
+#include "mtac/RegisterAllocation.hpp"
 
 using namespace eddic;
 
@@ -75,7 +75,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::defineFunctions(program);
 
         //Allocate registers to params
-        allocateParams();
+        mtac::register_param_allocation();
 
         //Static analysis
         ast::checkTypes(program);

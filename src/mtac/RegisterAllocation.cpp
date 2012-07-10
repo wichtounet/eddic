@@ -6,14 +6,15 @@
 //=======================================================================
 
 #include "Platform.hpp"
-#include "RegisterAllocation.hpp"
 #include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
 
+#include "mtac/RegisterAllocation.hpp"
+
 using namespace eddic;
 
-void eddic::allocateParams(){
+void mtac::register_param_allocation(){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
     for(auto function_info : symbols){
@@ -47,4 +48,8 @@ void eddic::allocateParams(){
             }
         }
     }
+}
+
+void mtac::register_variable_allocation(){
+    //TODO
 }

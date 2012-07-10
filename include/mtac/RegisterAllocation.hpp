@@ -10,7 +10,13 @@
 
 namespace eddic {
 
-void allocateParams();
+namespace mtac {
+
+void register_param_allocation();
+
+void register_variable_allocation();
+
+} //end of mtac
 
 } //end of eddic
 

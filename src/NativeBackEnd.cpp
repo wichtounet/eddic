@@ -18,6 +18,7 @@
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/RegisterAllocation.hpp"
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
@@ -56,6 +57,8 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     } else {
         optimizer.basic_optimize(mtacProgram, get_string_pool());
     }
+
+    mtac::register_variable_allocation();
     
     //If asked by the user, print the Three Address code representation
     if(option_defined("mtac") || option_defined("mtac-only")){
