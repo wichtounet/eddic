@@ -133,6 +133,15 @@ void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, u
     reallocate_storage();
 }
 
+void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_){
+    assert(variable->position().isParameter()); 
+
+    Position position(PositionType::PARAM_REGISTER, register_);
+    variable->setPosition(position);
+
+    reallocate_storage();
+}
+
 void FunctionContext::removeVariable(const std::string& variable){
     auto var = storage[variable];
     

@@ -31,15 +31,11 @@ void mtac::register_param_allocation(){
                 unsigned int position = function->getParameterPositionByType(parameter.name);
                 auto param = function->context->getVariable(parameter.name);
 
-                Position oldPosition = param->position();
-
                 if((type == INT && position <= descriptor->numberOfIntParamRegisters()) || (type == FLOAT && position <= descriptor->numberOfFloatParamRegisters())){
-                    Position paramPosition(PositionType::PARAM_REGISTER, position);
-                    param->setPosition(paramPosition);
-                }
+                    Position oldPosition = param->position();
 
-                //If the parameter has been changed
-                if(param->position().isParamRegister()){
+                    function->context->allocate_in_param_register(param, position);
+                    
                     //We have to change the position of the all the following parameters
                     for(unsigned int j = i + 1; j < function->parameters.size(); ++j){
                         auto p = function->context->getVariable(function->parameters[j].name);
@@ -89,10 +85,12 @@ void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
             for(auto variable_pair : function->context->stored_variables()){
                 auto variable = variable_pair.second;
 
-                if(variable->type() == INT){
-                    search_candidates(usage, int_var, variable, descriptor->number_of_variable_registers());
-                } else if(variable->type() == FLOAT){
-                    search_candidates(usage, float_var, variable, descriptor->number_of_float_variable_registers());
+                if(usage[variable] > 0){
+                    if(variable->type() == INT){
+                        search_candidates(usage, int_var, variable, descriptor->number_of_variable_registers());
+                    } else if(variable->type() == FLOAT){
+                        search_candidates(usage, float_var, variable, descriptor->number_of_float_variable_registers());
+                    }
                 }
             }
 

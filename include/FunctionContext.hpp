@@ -46,7 +46,9 @@ class FunctionContext : public Context {
         void removeVariable(const std::string& variable) override;
 
         void storeTemporary(std::shared_ptr<Variable> temp);
-        void allocate_in_register(std::shared_ptr<Variable> variable, unsigned int position);
+
+        void allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_);
+        void allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_);
 
         Variables stored_variables();
 };
