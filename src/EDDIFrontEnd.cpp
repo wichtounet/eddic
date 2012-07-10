@@ -74,9 +74,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::defineVariables(program);
         ast::defineFunctions(program);
 
-        //Allocate registers to params
-        mtac::register_param_allocation();
-
         //Static analysis
         ast::checkTypes(program);
 
