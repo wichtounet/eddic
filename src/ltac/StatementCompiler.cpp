@@ -46,6 +46,10 @@ void ltac::StatementCompiler::collect_parameters(std::shared_ptr<eddic::Function
     manager.collect_parameters(definition, descriptor);
 }
 
+void ltac::StatementCompiler::collect_variables(std::shared_ptr<eddic::Function> definition){
+    manager.collect_variables(definition, descriptor);
+}
+
 ltac::Register ltac::StatementCompiler::to_register(std::shared_ptr<Variable> var){
     return ltac::to_register(var, manager);
 }

@@ -436,6 +436,20 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
     }
 }
 
+void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor){
+    for(auto& variable_pair : definition->context->stored_variables()){
+        auto variable = variable_pair.second;
+
+        if(variable->position().is_register()){
+            if(variable->type() == INT){
+                registers.setLocation(variable, ltac::Register(descriptor->int_variable_register(variable->position().offset())));
+            } else if(variable->type() == FLOAT){
+                float_registers.setLocation(variable, ltac::FloatRegister(descriptor->float_variable_register(variable->position().offset())));
+            }
+        }
+    }
+}
+
 void ltac::RegisterManager::restore_pushed_registers(){
     std::reverse(int_pushed.begin(), int_pushed.end());
     std::reverse(float_pushed.begin(), float_pushed.end());

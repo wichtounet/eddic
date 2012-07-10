@@ -100,9 +100,10 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
             target_function->add(block->label);
         }
     
-        //Handle parameters
+        //Handle parameters and register-allocated variables
         compiler.reset();
         compiler.collect_parameters(src_function->definition);
+        compiler.collect_variables(src_function->definition);
     
         for(unsigned int i = 0; i < block->statements.size(); ++i){
             auto& statement = block->statements[i];
