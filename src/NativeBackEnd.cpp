@@ -18,6 +18,7 @@
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/RegisterAllocation.hpp"
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
@@ -55,6 +56,14 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         allocator.allocate(mtacProgram);
     } else {
         optimizer.basic_optimize(mtacProgram, get_string_pool());
+    }
+
+    //Allocate parameters into registers
+    mtac::register_param_allocation();
+
+    //Allocate variables into registers
+    if(OLevel >= 2){
+        mtac::register_variable_allocation(mtacProgram);
     }
     
     //If asked by the user, print the Three Address code representation

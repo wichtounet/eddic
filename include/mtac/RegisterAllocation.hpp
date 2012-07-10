@@ -8,9 +8,19 @@
 #ifndef REGISTER_ALLOCATION_H
 #define REGISTER_ALLOCATION_H
 
+#include <memory>
+
+#include "mtac/Program.hpp"
+
 namespace eddic {
 
-void allocateParams();
+namespace mtac {
+
+void register_param_allocation();
+
+void register_variable_allocation(std::shared_ptr<mtac::Program> program);
+
+} //end of mtac
 
 } //end of eddic
 

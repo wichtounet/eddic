@@ -38,6 +38,26 @@ struct X86Descriptor : public PlatformDescriptor {
         return {0, 1, 2, 3, 4, 5, 6, 7};
     }
 
+    unsigned int number_of_variable_registers(){
+        return 0;
+    }
+
+    unsigned int number_of_float_variable_registers(){
+        return 1;
+    }
+    
+    unsigned short int_variable_register(unsigned int /*position*/){
+        ASSERT_PATH_NOT_TAKEN("No int variable register");
+
+        return 0;
+    }
+
+    unsigned short float_variable_register(unsigned int position){
+        assert(position == 1);
+
+        return 6; //xmm6
+    };
+
     unsigned short int_param_register(unsigned int position){
         assert(position == 1);
 
@@ -47,7 +67,7 @@ struct X86Descriptor : public PlatformDescriptor {
     unsigned short float_param_register(unsigned int position){
         assert(position  == 1);
 
-        return 7;
+        return 7; //xmm7
     }
     
     unsigned short int_return_register1(){
@@ -95,6 +115,26 @@ struct X86_64Descriptor : public PlatformDescriptor {
     std::vector<unsigned short> symbolic_float_registers(){
         return {0, 1, 2, 3, 4, 5, 6, 7};
     }
+    
+    unsigned int number_of_variable_registers(){
+        return 2;
+    }
+
+    unsigned int number_of_float_variable_registers(){
+        return 1;
+    }
+    
+    unsigned short int_variable_register(unsigned int position){
+        assert(position == 1 || position == 2);
+
+        return position == 1 ? 10 : 11; //r12 and r13
+    }
+
+    unsigned short float_variable_register(unsigned int position){
+        assert(position == 1);
+
+        return 6; //xmm6
+    };
 
     unsigned short int_param_register(unsigned int position){
         assert(position == 1 || position == 2);

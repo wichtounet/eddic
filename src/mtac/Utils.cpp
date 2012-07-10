@@ -23,6 +23,44 @@ bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
     return false;
 }
 
+template<typename T>
+void collect(mtac::VariableUsage& usage, T arg){
+    if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
+        ++usage[*variablePtr];
+    }
+}
+
+template<typename T>
+void collect_optional(mtac::VariableUsage& usage, T opt){
+    if(opt){
+        collect(usage, *opt);
+    }
+}
+
+mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function> function){
+    mtac::VariableUsage usage;
+
+    for(auto& block : function->getBasicBlocks()){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                ++usage[(*ptr)->result];
+                collect_optional(usage, (*ptr)->arg1);
+                collect_optional(usage, (*ptr)->arg2);
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+                collect(usage, (*ptr)->arg);
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
+                collect(usage, (*ptr)->arg1);
+                collect_optional(usage, (*ptr)->arg2);
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
+                collect(usage, (*ptr)->arg1);
+                collect_optional(usage, (*ptr)->arg2);
+            }
+        }
+    }
+
+    return usage;
+}
+
 void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
