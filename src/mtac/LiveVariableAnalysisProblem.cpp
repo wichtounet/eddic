@@ -43,7 +43,9 @@ void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> f
 
                 if(param->address){
                     if(mtac::isVariable(param->arg)){
-                        escaped_variables.insert(boost::get<std::shared_ptr<Variable>>(param->arg));
+                        auto var = boost::get<std::shared_ptr<Variable>>(param->arg);
+                        escaped_variables.insert(var);
+                        pointer_escaped->insert(var);
                     }
                 }
             } 
