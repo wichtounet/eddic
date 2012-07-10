@@ -26,6 +26,8 @@ class FunctionContext : public Context {
         //Refer all variables that are stored, including temporary
         Variables storage;
 
+        void reallocate_storage();
+
     public:
         FunctionContext(std::shared_ptr<Context> parent);
         
@@ -44,6 +46,7 @@ class FunctionContext : public Context {
         void removeVariable(const std::string& variable) override;
 
         void storeTemporary(std::shared_ptr<Variable> temp);
+        void allocate_in_register(std::shared_ptr<Variable> variable, unsigned int position);
 
         Variables stored_variables();
 };

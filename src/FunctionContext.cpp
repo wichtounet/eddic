@@ -105,6 +105,34 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
     temp->setPosition(position); 
 }
 
+void FunctionContext::reallocate_storage(){
+    currentPosition = INT->size();
+
+    auto it = storage.begin();
+    auto end = storage.end();
+
+    while(it != end){
+        auto v = it->second;
+
+        if(v->position().isStack()){
+            Position position(PositionType::STACK, currentPosition);
+            currentPosition += v->type()->size();
+            v->setPosition(position);
+        }
+
+        ++it;
+    }
+}
+
+void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_){
+    assert(variable->position().isStack()); 
+
+    Position position(PositionType::REGISTER, register_);
+    variable->setPosition(position);
+
+    reallocate_storage();
+}
+
 void FunctionContext::removeVariable(const std::string& variable){
     auto var = storage[variable];
     
@@ -112,21 +140,6 @@ void FunctionContext::removeVariable(const std::string& variable){
 
     //If its a temporary, no need to recalculate positions
     if(!var->position().isTemporary()){
-        currentPosition = INT->size();
-
-        auto it = storage.begin();
-        auto end = storage.end();
-
-        while(it != end){
-            auto v = it->second;
-
-            if(v->position().isStack()){
-                Position position(PositionType::STACK, currentPosition);
-                currentPosition += v->type()->size();
-                v->setPosition(position);
-            }
-
-            ++it;
-        }
+        reallocate_storage();
     }
 }

@@ -53,6 +53,29 @@ void mtac::register_param_allocation(){
     }
 }
 
+typedef std::set<std::shared_ptr<Variable>> Candidates;
+
+void search_candidates(mtac::VariableUsage& usage, Candidates& candidates, std::shared_ptr<Variable> variable, unsigned int variables){
+    if(candidates.size() < variables){
+        candidates.insert(variable);
+    } else {
+        std::shared_ptr<Variable> min_var;
+
+        for(auto& v : candidates){
+            if(!min_var){
+                min_var = v;
+            } else if(usage[v] < usage[min_var]){
+                min_var = v;
+            }
+        }
+
+        if(usage[variable] > usage[min_var]){
+            candidates.erase(min_var);
+            candidates.insert(variable);
+        }
+    }
+}
+
 void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
@@ -60,34 +83,27 @@ void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
         for(auto function : program->functions){
             auto usage = mtac::compute_variable_usage(function);
 
-            std::set<std::shared_ptr<Variable>> int_var;
-            std::set<std::shared_ptr<Variable>> float_var;
+            Candidates int_var;
+            Candidates float_var;
 
             for(auto variable_pair : function->context->stored_variables()){
                 auto variable = variable_pair.second;
 
                 if(variable->type() == INT){
-                    if(int_var.size() < descriptor->number_of_variable_registers()){
-                        int_var.insert(variable);
-                    } else {
-                        std::shared_ptr<Variable> min_var;
-
-                        for(auto& v : int_var){
-                            if(!min_var){
-                                min_var = v;
-                            } else if(usage[v] < usage[min_var]){
-                                min_var = v;
-                            }
-                        }
-
-                        if(usage[variable] > usage[min_var]){
-                            int_var.erase(min_var);
-                            int_var.insert(variable);
-                        }
-                    }
+                    search_candidates(usage, int_var, variable, descriptor->number_of_variable_registers());
                 } else if(variable->type() == FLOAT){
-
+                    search_candidates(usage, float_var, variable, descriptor->number_of_float_variable_registers());
                 }
+            }
+
+            unsigned int position = 0;
+            for(auto variable : int_var){
+                function->context->allocate_in_register(variable, ++position);
+            }
+
+            position = 0;
+            for(auto variable : float_var){
+                function->context->allocate_in_register(variable, ++position);
             }
         }
     }
