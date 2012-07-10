@@ -50,25 +50,12 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("version", "Print the version of eddic")
                 ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
                 
+                ("debug,g", "Add debugging symbols")
+                
                 ("quiet,q", "Do not print anything")
                 ("verbose,v", "Make the compiler verbose")
                 ("dev,d", "Activate development mode (very verbose)")
                 ("perfs", "Display performance information")
-
-                ("ast", "Print the Abstract Syntax Tree representation of the source")
-                ("mtac", "Print the medium-level Three Address Code representation of the source")
-                ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
-                ("ltac", "Print the low-level Three Address Code representation of the source")
-                
-                ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
-                ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
-                ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
-                
-                ("debug,g", "Add debugging symbols")
-
-                ("warning-all", "Enable all the warnings")
-                ("warning-unused", po::bool_switch(&WarningUnused), "Enable warnings for unused variables, parameters and functions")
-                ("warning-cast", po::bool_switch(&WarningCast), "Enable warnings for casts")
 
                 ("O0", "Disable all optimizations")
                 ("O1", "Enable low-level optimizations")
@@ -77,6 +64,20 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 
                 ("32", "Force the compilation for 32 bits platform")
                 ("64", "Force the compilation for 64 bits platform")
+
+                ("warning-all", "Enable all the warning messages")
+                ("warning-unused", po::bool_switch(&WarningUnused), "Warn about unused variables, parameters and functions")
+                ("warning-cast", po::bool_switch(&WarningCast), "Warn about useless casts")
+
+                ("ast", "Print the Abstract Syntax Tree representation of the source")
+                ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
+
+                ("mtac", "Print the medium-level Three Address Code representation of the source")
+                ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
+                ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
+
+                ("ltac", "Print the low-level Three Address Code representation of the source")
+                ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
                
                 ("input", po::value<std::string>(), "Input file");
             
