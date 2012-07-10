@@ -347,7 +347,7 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
 }
 
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
-    if(option_defined("fno-inline")){
+    if(option_defined("fno-inline-functions")){
         return false;
     }
 

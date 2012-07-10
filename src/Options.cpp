@@ -60,7 +60,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("O0", "Disable all optimizations")
                 ("O1", "Enable low-level optimizations")
                 ("O2", "Enable all optimizations. This can be slow for big programs.")
-                ("fno-inline", "Disable inlining")
+                ("fno-inline-functions", "Disable inlining")
                 
                 ("32", "Force the compilation for 32 bits platform")
                 ("64", "Force the compilation for 64 bits platform")
