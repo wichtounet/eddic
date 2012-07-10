@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -25,6 +26,7 @@ bool eddic::WarningCast;
 int eddic::OLevel = 2;
 
 std::shared_ptr<po::variables_map> options;
+std::vector<std::pair<std::string, std::vector<std::string>>> triggers;
 
 bool desc_init = false;
 po::options_description desc("Usage : eddic [options] source.eddi");
@@ -37,6 +39,10 @@ std::pair<std::string, std::string> numeric_parser(const std::string& s){
     } else {
         return make_pair(std::string(), std::string());
     }
+}
+
+void add_trigger(const std::string& option, std::vector<std::string> childs){
+   triggers.push_back(std::make_pair(option, childs)); 
 }
 
 bool eddic::parseOptions(int argc, const char* argv[]) {
@@ -80,6 +86,8 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
                
                 ("input", po::value<std::string>(), "Input file");
+
+            add_trigger("warning-all", {"warning-unused", "warning-cast"});
             
             desc_init = true;
         }
@@ -94,6 +102,16 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         //Parse the command line options
         po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), *options);
         po::notify(*options);
+
+        //Triggers dependent options
+        for(auto& trigger : triggers){
+            if(option_defined(trigger.first)){
+                for(auto& child : trigger.second){
+                    boost::any test = std::string("true");
+                    const_cast<boost::program_options::variable_value&>((*options)[child]).value() = test;
+                }
+            }
+        }
 
         if(options->count("O0") + options->count("O1") + options->count("O2") > 1){
             std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
