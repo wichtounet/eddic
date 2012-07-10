@@ -24,7 +24,7 @@ void eddic::mtac::clean_variables(std::shared_ptr<mtac::Function> function){
 
         //Temporary and parameters are not interesting, because they dot not take any space
         if(!variable->position().isParameter() && !variable->position().isParamRegister()){
-            if(variable_usage[variable] > 0){
+            if(variable_usage[variable] == 0){
                 unused.push_back(variable);
             }
         }
