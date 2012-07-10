@@ -13,6 +13,7 @@
 #include "Type.hpp"
 
 #include "mtac/RegisterAllocation.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -52,22 +53,42 @@ void mtac::register_param_allocation(){
     }
 }
 
-typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
-
-VariableUsage compute_variable_usage(std::shared_ptr<mtac::Function> function){
-    VariableUsage usage;
-
-    return usage;
-}
-
 void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
-    for(auto function : program->functions){
-        auto usage = compute_variable_usage(function);
+    if(descriptor->number_of_variable_registers() > 0 || descriptor->number_of_float_variable_registers() > 0){
+        for(auto function : program->functions){
+            auto usage = mtac::compute_variable_usage(function);
 
-        for(auto variable_pair : function->context->stored_variables()){
-            
+            std::set<std::shared_ptr<Variable>> int_var;
+            std::set<std::shared_ptr<Variable>> float_var;
+
+            for(auto variable_pair : function->context->stored_variables()){
+                auto variable = variable_pair.second;
+
+                if(variable->type() == INT){
+                    if(int_var.size() < descriptor->number_of_variable_registers()){
+                        int_var.insert(variable);
+                    } else {
+                        std::shared_ptr<Variable> min_var;
+
+                        for(auto& v : int_var){
+                            if(!min_var){
+                                min_var = v;
+                            } else if(usage[v] < usage[min_var]){
+                                min_var = v;
+                            }
+                        }
+
+                        if(usage[variable] > usage[min_var]){
+                            int_var.erase(min_var);
+                            int_var.insert(variable);
+                        }
+                    }
+                } else if(variable->type() == FLOAT){
+
+                }
+            }
         }
     }
 }
