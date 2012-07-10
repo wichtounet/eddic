@@ -20,6 +20,9 @@ struct FloatRegister {
 
     operator int();
 
+    bool operator<(const FloatRegister& rhs) const;
+    bool operator>(const FloatRegister& rhs) const;
+
     bool operator==(const FloatRegister& rhs) const;
     bool operator!=(const FloatRegister& rhs) const;
 };

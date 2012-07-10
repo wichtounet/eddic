@@ -483,37 +483,44 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
             unsigned int maxInt = descriptor->numberOfIntParamRegisters();
             unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
             
+            std::set<ltac::Register> overriden_registers;
+            std::set<ltac::FloatRegister> overriden_float_registers;
+            
             for(auto& parameter : param->function->parameters){
                 auto type = param->function->getParameterType(parameter.name);
                 unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
                 if(type == INT && position <= maxInt){
-                    ltac::Register reg(descriptor->int_param_register(position));
-
-                    //If the parameter register is already used by a variable or a parent parameter
-                    if(registers.used(reg)){
-                        if(registers[reg]->position().isParamRegister()){
-                            int_pushed.push_back(reg);
-                            ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        } else {
-                            spills(reg);
-                        }
-                    }
+                    overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
                 }
 
                 if(type == FLOAT && position <= maxFloat){
-                    ltac::FloatRegister reg(descriptor->float_param_register(position));
+                    overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
+                }
+            }
 
-                    //If the parameter register is already used by a variable or a parent parameter
-                    if(float_registers.used(reg)){
-                        if(float_registers[reg]->position().isParamRegister()){
-                            float_pushed.push_back(reg);
+            for(auto& reg : overriden_registers){
+                //If the parameter register is already used by a variable or a parent parameter
+                if(registers.used(reg)){
+                    if(registers[reg]->position().isParamRegister()){
+                        int_pushed.push_back(reg);
+                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+                    } else {
+                        spills(reg);
+                    }
+                }
+            }
+            
+            for(auto& reg : overriden_float_registers){
+                //If the parameter register is already used by a variable or a parent parameter
+                if(float_registers.used(reg)){
+                    if(float_registers[reg]->position().isParamRegister()){
+                        float_pushed.push_back(reg);
 
-                            ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
-                            ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
-                        } else {
-                            spills(reg);
-                        }
+                        ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
+                        ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
+                    } else {
+                        spills(reg);
                     }
                 }
             }
