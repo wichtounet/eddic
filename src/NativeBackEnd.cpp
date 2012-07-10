@@ -58,7 +58,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         optimizer.basic_optimize(mtacProgram, get_string_pool());
     }
 
-    mtac::register_variable_allocation();
+    mtac::register_variable_allocation(mtacProgram);
     
     //If asked by the user, print the Three Address code representation
     if(option_defined("mtac") || option_defined("mtac-only")){

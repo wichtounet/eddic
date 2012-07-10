@@ -50,6 +50,6 @@ void mtac::register_param_allocation(){
     }
 }
 
-void mtac::register_variable_allocation(){
+void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
     //TODO
 }
