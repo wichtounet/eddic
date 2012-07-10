@@ -16,12 +16,10 @@ using namespace eddic;
 void eddic::allocateParams(){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
-    auto it = symbols.begin();
-    auto end = symbols.end();
+    for(auto function_info : symbols){
+        auto function = function_info.second;
 
-    while(it != end){
-        auto function = it->second;
-
+        //Only custom functions have a context
         if(function->context){
             for(unsigned int i = 0; i < function->parameters.size(); ++i){
                 auto& parameter = function->parameters[i];
@@ -31,10 +29,7 @@ void eddic::allocateParams(){
 
                 Position oldPosition = param->position();
 
-                if(type == INT && position <= descriptor->numberOfIntParamRegisters()){
-                    Position paramPosition(PositionType::PARAM_REGISTER, position);
-                    param->setPosition(paramPosition);
-                } else if(type == FLOAT && position <= descriptor->numberOfFloatParamRegisters()){
+                if((type == INT && position <= descriptor->numberOfIntParamRegisters()) || (type == FLOAT && position <= descriptor->numberOfFloatParamRegisters())){
                     Position paramPosition(PositionType::PARAM_REGISTER, position);
                     param->setPosition(paramPosition);
                 }
@@ -51,7 +46,5 @@ void eddic::allocateParams(){
                 }
             }
         }
-
-        ++it;
     }
 }
