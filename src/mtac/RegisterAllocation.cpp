@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <unordered_map>
+
 #include "Platform.hpp"
 #include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
@@ -50,6 +52,22 @@ void mtac::register_param_allocation(){
     }
 }
 
+typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
+
+VariableUsage compute_variable_usage(std::shared_ptr<mtac::Function> function){
+    VariableUsage usage;
+
+    return usage;
+}
+
 void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
-    //TODO
+    PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+
+    for(auto function : program->functions){
+        auto usage = compute_variable_usage(function);
+
+        for(auto variable_pair : function->context->stored_variables()){
+            
+        }
+    }
 }
