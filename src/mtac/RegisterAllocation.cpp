@@ -52,6 +52,10 @@ void mtac::register_param_allocation(){
 typedef std::set<std::shared_ptr<Variable>> Candidates;
 
 void search_candidates(mtac::VariableUsage& usage, Candidates& candidates, std::shared_ptr<Variable> variable, unsigned int variables){
+    if(variables == 0){
+        return;
+    }
+
     if(candidates.size() < variables){
         candidates.insert(variable);
     } else {
