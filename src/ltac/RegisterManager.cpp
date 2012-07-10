@@ -5,6 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <set>
+#include <boost/range/adaptors.hpp>
+
 #include "assert.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
@@ -30,7 +33,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
             return reg;
         } 
         
-        if(!registers.reserved(reg) && !manager.is_live(registers[reg]) && !registers[reg]->position().isParamRegister()){
+        if(!registers.reserved(reg) && !manager.is_live(registers[reg]) && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
             registers.remove(registers[reg]);
 
             return reg;
@@ -43,7 +46,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
     //First, try to take a register that doesn't need to be spilled (variable has not modified)
     for(Reg remaining : registers){
-        if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister()){
+        if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
             if(!manager.is_written(registers[remaining])){
                 reg = remaining;
                 found = true;
@@ -55,7 +58,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     //If there is no registers that doesn't need to be spilled, take the first one not reserved 
     if(!found){
         for(Reg remaining : registers){
-            if(!registers.reserved(remaining) && !registers[reg]->position().isTemporary() && !registers[reg]->position().isParamRegister()){
+            if(!registers.reserved(remaining) && !registers[reg]->position().isTemporary() && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
                 reg = remaining;
                 found = true;
                 break;
@@ -122,8 +125,8 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
     if(registers.used(reg)){
         auto variable = registers[reg];
 
-        //Do no spills param stored in register
-        if(variable->position().isParamRegister()){
+        //Do no spills variable stored in register
+        if(variable->position().isParamRegister() || variable->position().is_register()){
             return;
         }
 
@@ -451,22 +454,15 @@ void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> d
 }
 
 void ltac::RegisterManager::restore_pushed_registers(){
-    std::reverse(int_pushed.begin(), int_pushed.end());
-    std::reverse(float_pushed.begin(), float_pushed.end());
-
     //Restore the int parameters in registers (in the reverse order they were pushed)
-    for(auto& reg : int_pushed){
-        if(registers.used(reg) && registers[reg]->position().isParamRegister()){
-            ltac::add_instruction(function, ltac::Operator::POP, reg);
-        }
+    for(auto& reg : boost::adaptors::reverse(int_pushed)){
+        ltac::add_instruction(function, ltac::Operator::POP, reg);
     }
 
     //Restore the float parameters in registers (in the reverse order they were pushed)
-    for(auto& reg : float_pushed){
-        if(float_registers.used(reg) && float_registers[reg]->position().isParamRegister()){
-            ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
-            ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
-        }
+    for(auto& reg : boost::adaptors::reverse(float_pushed)){
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
+        ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
     }
 
     //Each register has been restored
@@ -499,10 +495,24 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                 }
             }
 
+            if(param->function->context){
+                for(auto variable_pair : param->function->context->stored_variables()){
+                    auto variable = variable_pair.second;
+
+                    if(variable->position().is_register()){
+                        if(variable->type() == INT){
+                            overriden_registers.insert(ltac::Register(variable->position().offset()));
+                        } else {
+                            overriden_float_registers.insert(ltac::FloatRegister(variable->position().offset()));
+                        }
+                    }
+                }
+            }
+
             for(auto& reg : overriden_registers){
                 //If the parameter register is already used by a variable or a parent parameter
                 if(registers.used(reg)){
-                    if(registers[reg]->position().isParamRegister()){
+                    if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
                     } else {
@@ -514,7 +524,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
             for(auto& reg : overriden_float_registers){
                 //If the parameter register is already used by a variable or a parent parameter
                 if(float_registers.used(reg)){
-                    if(float_registers[reg]->position().isParamRegister()){
+                    if(float_registers[reg]->position().isParamRegister() || float_registers[reg]->position().is_register()){
                         float_pushed.push_back(reg);
 
                         ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
