@@ -385,6 +385,10 @@ void add_escaped_registers(RegisterUsage& usage){
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
+
+    for(unsigned int i = 1; i <= descriptor->number_of_variable_registers(); ++i){
+        usage.insert(ltac::Register(descriptor->int_variable_register(i)));
+    }
 }
 
 void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
