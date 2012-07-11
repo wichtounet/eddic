@@ -99,6 +99,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("O1", "Enable low-level optimizations")
                 ("O2", "Enable all optimizations. This can be slow for big programs.")
                 
+                ("fglobal-optimization", "Enable optimizer engine")
                 ("fpeephole-optimization", "Enable peephole optimizer")
                 ("fno-inline-functions", "Disable inlining");
             
@@ -117,6 +118,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             
             //TODO Should be a better way to do that
             add_trigger("__1", {"fpeephole-optimization"});
+            add_trigger("__2", {"fglobal-optimization"});
             
             desc_init = true;
         }
@@ -178,9 +180,12 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             }
         }
 
-        //Triggers options depending of the optimization levels
         if(option_int_value("Opt") >= 1){
             trigger_childs(triggers["__1"]);
+        } 
+        
+        if(option_int_value("Opt") >= 2){
+            trigger_childs(triggers["__2"]);
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;

@@ -49,7 +49,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     
     mtac::Optimizer optimizer;
 
-    if(option_int_value("Opt") >= 2){
+    if(option_defined("fglobal-optimization")){
         optimizer.optimize(mtacProgram, get_string_pool());
     
         //Allocate storage for the temporaries that need to be stored
