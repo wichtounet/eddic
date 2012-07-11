@@ -94,7 +94,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
             po::options_description optimization("Optimization options");
             optimization.add_options()
-                ("Opt,O", po::value<int>()->implicit_value(0), "Define the optimization level")
+                ("Opt,O", po::value<int>()->implicit_value(0)->default_value(2), "Define the optimization level")
                 ("O0", "Disable all optimizations")
                 ("O1", "Enable low-level optimizations")
                 ("O2", "Enable all optimizations. This can be slow for big programs.")
