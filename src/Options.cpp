@@ -162,11 +162,11 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         //TODO Perhaps a more clear way to do that
         if(options.count("O0")){
-            configuration->values["O"].value = 0;
+            configuration->values["Opt"].value = 0;
         } else if(options.count("O1")){
-            configuration->values["O"].value = 1;
+            configuration->values["Opt"].value = 1;
         } else if(options.count("O2")){
-            configuration->values["O"].value = 2;
+            configuration->values["Opt"].value = 2;
         } 
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
