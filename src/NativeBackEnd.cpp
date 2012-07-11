@@ -80,7 +80,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         ltac::Compiler ltacCompiler;
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
-        if(option_int_value("Opt") >= 1){
+        if(option_defined("fpeephole-optimization")){
             optimize(ltac_program);
         }
 

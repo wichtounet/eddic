@@ -32,7 +32,7 @@ struct Configuration {
 };
 
 std::shared_ptr<Configuration> configuration;
-std::vector<std::pair<std::string, std::vector<std::string>>> triggers;
+std::unordered_map<std::string, std::vector<std::string>> triggers;
 
 bool desc_init = false;
 po::options_description visible("Usage : eddic [options] source.eddi");
@@ -49,7 +49,14 @@ std::pair<std::string, std::string> numeric_parser(const std::string& s){
 }
 
 void add_trigger(const std::string& option, std::vector<std::string> childs){
-   triggers.push_back(std::make_pair(option, childs)); 
+   triggers[option] = childs; 
+}
+
+inline void trigger_childs(const std::vector<std::string>& childs){
+    for(auto& child : childs){
+        configuration->values[child].defined = true;
+        configuration->values[child].value = std::string("true");
+    }
 }
 
 bool eddic::parseOptions(int argc, const char* argv[]) {
@@ -91,6 +98,8 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("O0", "Disable all optimizations")
                 ("O1", "Enable low-level optimizations")
                 ("O2", "Enable all optimizations. This can be slow for big programs.")
+                
+                ("fpeephole-optimization", "Enable peephole optimizer")
                 ("fno-inline-functions", "Disable inlining");
             
             po::options_description backend("Backend options");
@@ -105,6 +114,9 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             visible.add(general).add(display).add(optimization);
 
             add_trigger("warning-all", {"warning-unused", "warning-cast"});
+            
+            //TODO Should be a better way to do that
+            add_trigger("__1", {"fpeephole-optimization"});
             
             desc_init = true;
         }
@@ -138,16 +150,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             configuration->values[option->long_name()] = value;
         }
 
-        //Triggers dependent options
-        for(auto& trigger : triggers){
-            if(option_defined(trigger.first)){
-                for(auto& child : trigger.second){
-                    configuration->values[child].defined = true;
-                    configuration->values[child].value = std::string("true");
-                }
-            }
-        }
-
         if(options.count("O0") + options.count("O1") + options.count("O2") > 1){
             std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
 
@@ -167,7 +169,19 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             configuration->values["Opt"].value = 1;
         } else if(options.count("O2")){
             configuration->values["Opt"].value = 2;
-        } 
+        }
+
+        //Triggers dependent options
+        for(auto& trigger : triggers){
+            if(option_defined(trigger.first)){
+                trigger_childs(trigger.second);
+            }
+        }
+
+        //Triggers options depending of the optimization levels
+        if(option_int_value("Opt") >= 1){
+            trigger_childs(triggers["__1"]);
+        }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
