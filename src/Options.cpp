@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -21,10 +22,18 @@ using namespace eddic;
 
 namespace po = boost::program_options;
 
-bool eddic::WarningUnused;
-bool eddic::WarningCast;
+struct ConfigValue {
+    bool defined;
+    boost::any value;
+};
+
+struct Configuration {
+    std::unordered_map<std::string, ConfigValue> values;
+};
+
 int eddic::OLevel = 2;
 
+std::shared_ptr<Configuration> configuration;
 std::shared_ptr<po::variables_map> options;
 std::vector<std::pair<std::string, std::vector<std::string>>> triggers;
 
@@ -72,8 +81,8 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("64", "Force the compilation for 64 bits platform")
 
                 ("warning-all", "Enable all the warning messages")
-                ("warning-unused", po::bool_switch(&WarningUnused), "Warn about unused variables, parameters and functions")
-                ("warning-cast", po::bool_switch(&WarningCast), "Warn about useless casts")
+                ("warning-unused", "Warn about unused variables, parameters and functions")
+                ("warning-cast", "Warn about useless casts")
 
                 ("ast", "Print the Abstract Syntax Tree representation of the source")
                 ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
@@ -99,16 +108,35 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         //Create a new set of options
         options = std::make_shared<po::variables_map>();
 
+        //Create a new configuration
+        configuration = std::make_shared<Configuration>();
+
         //Parse the command line options
         po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), *options);
         po::notify(*options);
+
+        for(auto& option : desc.options()){
+            auto key = option->long_name();
+
+            ConfigValue value;
+
+            if(options->count(key)){
+                value.defined = true;
+                value.value = (*options)[key].value();
+            } else {
+                value.defined = false;
+                value.value = std::string("false");
+            }
+
+            configuration->values[key] = value;
+        }
 
         //Triggers dependent options
         for(auto& trigger : triggers){
             if(option_defined(trigger.first)){
                 for(auto& child : trigger.second){
-                    boost::any test = std::string("true");
-                    const_cast<boost::program_options::variable_value&>((*options)[child]).value() = test;
+                    configuration->values[child].defined = true;
+                    configuration->values[child].value = std::string("true");
                 }
             }
         }
@@ -132,11 +160,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         } else if(options->count("O2")){
             OLevel = 2;
         } 
-
-        if(options->count("warning-all")){
-            WarningUnused = true;
-            WarningCast = true;
-        }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
@@ -155,15 +178,15 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 }
 
 bool eddic::option_defined(const std::string& option_name){
-    ASSERT(options, "The options have not been initialized");
+    ASSERT(configuration, "The configuration have not been initialized");
 
-    return options->count(option_name);
+    return configuration->values[option_name].defined;
 }
 
 std::string eddic::option_value(const std::string& option_name){
-    ASSERT(options, "The options have not been initialized");
+    ASSERT(configuration, "The configuration have not been initialized");
 
-    return (*options)[option_name].as<std::string>();
+    return boost::any_cast<std::string>(configuration->values[option_name].value);
 }
 
 void eddic::printHelp(){

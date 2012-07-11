@@ -13,16 +13,6 @@
 namespace eddic {
 
 /*!
- * \brief Bolean flag indicating if warnings are outputted for unused declarations. 
- */
-extern bool WarningUnused;
-
-/*!
- * \brief Bolean flag indicating if warnings are outputted for casts.
- */
-extern bool WarningCast;
-
-/*!
  * \brief Level of optimization engine.  
  */
 extern int OLevel;
