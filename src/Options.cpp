@@ -35,7 +35,8 @@ std::shared_ptr<Configuration> configuration;
 std::vector<std::pair<std::string, std::vector<std::string>>> triggers;
 
 bool desc_init = false;
-po::options_description desc("Usage : eddic [options] source.eddi");
+po::options_description visible("Usage : eddic [options] source.eddi");
+po::options_description all("Usage : eddic [options] source.eddi");
 
 std::pair<std::string, std::string> numeric_parser(const std::string& s){
     if (s.find("-32") == 0) {
@@ -55,33 +56,25 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
     try {
         //Only if the description has not been already defined
         if(!desc_init){
-            desc.add_options()
+            po::options_description general("General options");
+            general.add_options()
                 ("help,h", "Generate this help message")
                 ("assembly,S", "Generate only the assembly")
                 ("keep,k", "Keep the assembly file")
                 ("version", "Print the version of eddic")
                 ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
-                
+               
                 ("debug,g", "Add debugging symbols")
-                
-                ("quiet,q", "Do not print anything")
-                ("verbose,v", "Make the compiler verbose")
-                ("dev,d", "Activate development mode (very verbose)")
-                ("perfs", "Display performance information")
-
-                ("Opt,O", po::value<int>()->implicit_value(0), "Define the optimization level")
-                ("O0", "Disable all optimizations")
-                ("O1", "Enable low-level optimizations")
-                ("O2", "Enable all optimizations. This can be slow for big programs.")
-                ("fno-inline-functions", "Disable inlining")
                 
                 ("32", "Force the compilation for 32 bits platform")
                 ("64", "Force the compilation for 64 bits platform")
 
                 ("warning-all", "Enable all the warning messages")
                 ("warning-unused", "Warn about unused variables, parameters and functions")
-                ("warning-cast", "Warn about useless casts")
-
+                ("warning-cast", "Warn about useless casts");
+            
+            po::options_description display("Display options");
+            display.add_options()
                 ("ast", "Print the Abstract Syntax Tree representation of the source")
                 ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
 
@@ -90,9 +83,26 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
 
                 ("ltac", "Print the low-level Three Address Code representation of the source")
-                ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
-               
+                ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)");
+
+            po::options_description optimization("Optimization options");
+            optimization.add_options()
+                ("Opt,O", po::value<int>()->implicit_value(0), "Define the optimization level")
+                ("O0", "Disable all optimizations")
+                ("O1", "Enable low-level optimizations")
+                ("O2", "Enable all optimizations. This can be slow for big programs.")
+                ("fno-inline-functions", "Disable inlining");
+            
+            po::options_description backend("Backend options");
+            backend.add_options()
+                ("quiet,q", "Do not print anything")
+                ("verbose,v", "Make the compiler verbose")
+                ("dev,d", "Activate development mode (very verbose)")
+                ("perfs", "Display performance information")
                 ("input", po::value<std::string>(), "Input file");
+
+            all.add(general).add(display).add(optimization).add(backend);
+            visible.add(general).add(display).add(optimization);
 
             add_trigger("warning-all", {"warning-unused", "warning-cast"});
             
@@ -110,11 +120,11 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         configuration = std::make_shared<Configuration>();
 
         //Parse the command line options
-        po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), options);
+        po::store(po::command_line_parser(argc, argv).options(all).extra_parser(numeric_parser).positional(p).run(), options);
         po::notify(options);
 
         //Transfer the options in the eddic configuration
-        for(auto& option : desc.options()){
+        for(auto& option : all.options()){
             ConfigValue value;
 
             if(options.count(option->long_name())){
@@ -194,7 +204,7 @@ int eddic::option_int_value(const std::string& option_name){
 }
 
 void eddic::print_help(){
-    std::cout << desc << std::endl;
+    std::cout << visible << std::endl;
 }
 
 void eddic::print_version(){
