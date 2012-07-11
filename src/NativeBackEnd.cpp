@@ -49,7 +49,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     
     mtac::Optimizer optimizer;
 
-    if(OLevel >= 2){
+    if(option_int_value("Opt") >= 2){
         optimizer.optimize(mtacProgram, get_string_pool());
     
         //Allocate storage for the temporaries that need to be stored
@@ -62,7 +62,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     mtac::register_param_allocation();
 
     //Allocate variables into registers
-    if(OLevel >= 2){
+    if(option_int_value("Opt") >= 2){
         mtac::register_variable_allocation(mtacProgram);
     }
     
@@ -80,7 +80,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         ltac::Compiler ltacCompiler;
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
-        if(OLevel >= 1){
+        if(option_int_value("Opt") >= 1){
             optimize(ltac_program);
         }
 

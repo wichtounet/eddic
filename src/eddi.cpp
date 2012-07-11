@@ -20,18 +20,18 @@ int main(int argc, const char* argv[]) {
     }
 
     if(option_defined("help")){
-        printHelp();
+        print_help();
         return 0;
     }
 
     if(option_defined("version")){
-        printVersion();
+        print_version();
         return 0;
     }
 
     if (!option_defined("input")) {
         std::cout << "eddic: no input files" << std::endl;
-        printHelp();
+        print_help();
         return -1;
     }
 

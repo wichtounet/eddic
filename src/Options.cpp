@@ -31,10 +31,7 @@ struct Configuration {
     std::unordered_map<std::string, ConfigValue> values;
 };
 
-int eddic::OLevel = 2;
-
 std::shared_ptr<Configuration> configuration;
-std::shared_ptr<po::variables_map> options;
 std::vector<std::pair<std::string, std::vector<std::string>>> triggers;
 
 bool desc_init = false;
@@ -72,6 +69,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("dev,d", "Activate development mode (very verbose)")
                 ("perfs", "Display performance information")
 
+                ("Opt,O", po::value<int>()->implicit_value(0), "Define the optimization level")
                 ("O0", "Disable all optimizations")
                 ("O1", "Enable low-level optimizations")
                 ("O2", "Enable all optimizations. This can be slow for big programs.")
@@ -106,29 +104,28 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         p.add("input", -1);
 
         //Create a new set of options
-        options = std::make_shared<po::variables_map>();
+        po::variables_map options;
 
         //Create a new configuration
         configuration = std::make_shared<Configuration>();
 
         //Parse the command line options
-        po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), *options);
-        po::notify(*options);
+        po::store(po::command_line_parser(argc, argv).options(desc).extra_parser(numeric_parser).positional(p).run(), options);
+        po::notify(options);
 
+        //Transfer the options in the eddic configuration
         for(auto& option : desc.options()){
-            auto key = option->long_name();
-
             ConfigValue value;
 
-            if(options->count(key)){
+            if(options.count(option->long_name())){
                 value.defined = true;
-                value.value = (*options)[key].value();
+                value.value = options[option->long_name()].value();
             } else {
                 value.defined = false;
                 value.value = std::string("false");
             }
 
-            configuration->values[key] = value;
+            configuration->values[option->long_name()] = value;
         }
 
         //Triggers dependent options
@@ -141,24 +138,25 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             }
         }
 
-        if(options->count("O0") + options->count("O1") + options->count("O2") > 1){
+        if(options.count("O0") + options.count("O1") + options.count("O2") > 1){
             std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
 
             return false;
         }
 
-        if(options->count("64") && options->count("32")){
+        if(options.count("64") && options.count("32")){
             std::cout << "Invalid command line options : a compilation cannot be both 32 and 64 bits" << std::endl;
 
             return false;
         }
 
-        if(options->count("O0")){
-            OLevel = 0;
-        } else if(options->count("O1")){
-            OLevel = 1;
-        } else if(options->count("O2")){
-            OLevel = 2;
+        //TODO Perhaps a more clear way to do that
+        if(options.count("O0")){
+            configuration->values["O"].value = 0;
+        } else if(options.count("O1")){
+            configuration->values["O"].value = 1;
+        } else if(options.count("O2")){
+            configuration->values["O"].value = 2;
         } 
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
@@ -189,10 +187,16 @@ std::string eddic::option_value(const std::string& option_name){
     return boost::any_cast<std::string>(configuration->values[option_name].value);
 }
 
-void eddic::printHelp(){
+int eddic::option_int_value(const std::string& option_name){
+    ASSERT(configuration, "The configuration have not been initialized");
+
+    return boost::any_cast<int>(configuration->values[option_name].value);
+}
+
+void eddic::print_help(){
     std::cout << desc << std::endl;
 }
 
-void eddic::printVersion(){
+void eddic::print_version(){
     std::cout << "eddic version 1.0.2" << std::endl;
 }
