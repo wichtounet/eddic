@@ -2,6 +2,7 @@ eddic 1.0.3 - 2012.07.13
 
 * Language: Allow a const variable as the size of a global array
 * Optimizer: Add inlining
+* Optimizer: Allocate variables into registers
 * Optimizer: Remove unused variable
 * Optimizer: Remove unused functions (support for recursive functions)
 * Optimizer: Improve overall performances of the optimization engine
