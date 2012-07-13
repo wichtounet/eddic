@@ -15,7 +15,6 @@
 //Medium-level Three Address Code
 #include "mtac/Program.hpp"
 #include "mtac/BasicBlockExtractor.hpp"
-#include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/RegisterAllocation.hpp"
@@ -42,27 +41,16 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         mtac::Printer printer;
         printer.print(mtacProgram);
     }
-
-    //Allocate storage for the temporaries that need to be stored
-    mtac::TemporaryAllocator allocator;
-    allocator.allocate(mtacProgram);
     
+    //Optimize MTAC
     mtac::Optimizer optimizer;
-
-    if(option_defined("fglobal-optimization")){
-        optimizer.optimize(mtacProgram, get_string_pool());
-    
-        //Allocate storage for the temporaries that need to be stored
-        allocator.allocate(mtacProgram);
-    } else {
-        optimizer.basic_optimize(mtacProgram, get_string_pool());
-    }
+    optimizer.optimize(mtacProgram, get_string_pool());
 
     //Allocate parameters into registers
     mtac::register_param_allocation();
 
     //Allocate variables into registers
-    if(option_int_value("Opt") >= 2){
+    if(option_defined("fvariable-allocation")){
         mtac::register_variable_allocation(mtacProgram);
     }
     

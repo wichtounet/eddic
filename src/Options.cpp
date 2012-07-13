@@ -100,7 +100,9 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("O2", "Enable all optimizations. This can be slow for big programs.")
                 
                 ("fglobal-optimization", "Enable optimizer engine")
+                ("fvariable-allocation", "Enable variable allocation in register")
                 ("fpeephole-optimization", "Enable peephole optimizer")
+                ("finline-functions", "Enable inlining")
                 ("fno-inline-functions", "Disable inlining");
             
             po::options_description backend("Backend options");
@@ -118,7 +120,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             
             //TODO Should be a better way to do that
             add_trigger("__1", {"fpeephole-optimization"});
-            add_trigger("__2", {"fglobal-optimization"});
+            add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "finline-functions"});
             
             desc_init = true;
         }
