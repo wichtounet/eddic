@@ -1,3 +1,16 @@
+eddic 1.0.3 - 2012.07.13
+
+* Language: Allow a const variable as the size of a global array
+* Optimizer: Add inlining
+* Optimizer: Remove unused variable
+* Optimizer: Remove unused functions (support for recursive functions)
+* Optimizer: Improve overall performances of the optimization engine
+* Intermediate Representation: Cleanup MTAC/LTAC operators
+* Native Backend: Improve preamble and prologue generation
+* Native Backend: When possible, stack frames are not printed
+* Standard Library: Add a timer utility
+* Compiler: Improve the configuration of the compiler
+
 eddic 1.0.2 - 2012.07.04
 
 * Language: Functions can now return pointers
@@ -23,9 +36,9 @@ eddic 1.0.1 - 2012.06.22
 eddic 1.0.0 - 2012.05.04
 
 * Language: Support of structures
-* Optimizater: First support for global optimizations (global constant propagation)
-* Optimizater: Implemenation of Common Subexpression Elimination
-* Optimizater: Use of a peephole optimizer for low-level optimizations
+* Optimizer: First support for global optimizations (global constant propagation)
+* Optimizer: Implemenation of Common Subexpression Elimination
+* Optimizer: Use of a peephole optimizer for low-level optimizations
 * Compiler: Use of a new low-level intermediate language
 * Compiler: Review the use of constant floats in generated assembly
 * Compiler: Much more complete unit test suite
