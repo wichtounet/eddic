@@ -10,6 +10,7 @@
 #include "VisitorUtils.hpp"
 #include "Platform.hpp"
 #include "Type.hpp"
+#include "PerfsTimer.hpp"
 
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -34,12 +35,15 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 }
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool){
+    PerfsTimer timer("LTAC Compilation");
+
     auto size = src_function->context->size();
+
+    //Enter stack frame
+    ltac::add_instruction(target_function, ltac::Operator::ENTER);
     
-    //Only if necessary, allocates size on the stack for the local variables
-    if(size > 0){
-        ltac::add_instruction(target_function, ltac::Operator::ALLOC_STACK, size);
-    }
+    //Alloc stack space for locals
+    ltac::add_instruction(target_function, ltac::Operator::SUB, ltac::SP, size);
     
     auto iter = src_function->context->begin();
     auto end = src_function->context->end();
@@ -96,9 +100,10 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
             target_function->add(block->label);
         }
     
-        //Handle parameters
+        //Handle parameters and register-allocated variables
         compiler.reset();
         compiler.collect_parameters(src_function->definition);
+        compiler.collect_variables(src_function->definition);
     
         for(unsigned int i = 0; i < block->statements.size(); ++i){
             auto& statement = block->statements[i];
@@ -112,10 +117,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         }
     }
     
-    //Only if necessary, deallocates size on the stack for the local variables
-    if(size > 0){
-        ltac::add_instruction(target_function, ltac::Operator::FREE_STACK, size);
-    }
+    ltac::add_instruction(target_function, ltac::Operator::ADD, ltac::SP, size);
         
     ltac::add_instruction(target_function, ltac::Operator::LEAVE);
+    ltac::add_instruction(target_function, ltac::Operator::RET);
 }

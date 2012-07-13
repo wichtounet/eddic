@@ -1,3 +1,5 @@
+include <timer>
+
 int array[1000];
 
 void main(){
@@ -5,29 +7,16 @@ void main(){
         array[i] = size(array) - i;
     }
 
-    /*println("Before sort");
-
-    foreach(int a in array){
-        println(a);
-    }*/
-
-    int start[2];
-    time(start);
+    Timer timer;
+    start_timer(timer);
     
     bubblesort();
     
-    int end[2];
-    time(end);
+    end_timer(timer);
 
     print("Bubble Sort took ");
-    duration(start, end);
+    print_timer(timer);
     println(" clock cycles");
-
-    /*println("After sort");
-
-    foreach(int a in array){
-        println(a);
-    }*/
 }
 
 void bubblesort(){

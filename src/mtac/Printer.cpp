@@ -10,11 +10,12 @@
 
 #include <boost/variant.hpp>
 
+#include "assert.hpp"
+#include "Utils.hpp"
+#include "VisitorUtils.hpp"
+
 #include "mtac/Printer.hpp"
 #include "mtac/Program.hpp"
-
-#include "VisitorUtils.hpp"
-#include "Utils.hpp"
 
 using namespace eddic;
 
@@ -33,11 +34,13 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
                 return variable->name() + "(c)";
             case PositionType::TEMPORARY:
                 return variable->name() + "(t)";
+            case PositionType::REGISTER:
+                return variable->name() + "(r)";
             case PositionType::PARAM_REGISTER:
                 return variable->name() + "(pr)";
+            default:
+                ASSERT_PATH_NOT_TAKEN("Unhandled position type");
         }
-
-        return variable->name();   
    }
 
    std::string operator()(int& integer) const {
@@ -145,14 +148,6 @@ struct DebugVisitor : public boost::static_visitor<> {
             std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (float) " << printArg(*quadruple->arg2) << std::endl;
         } else if(op == mtac::Operator::DOT_PASSIGN){
             std::cout << "\t(" << quadruple->result->name() << ")" << printArg(*quadruple->arg1) << " = (pointer) " << printArg(*quadruple->arg2) << std::endl;
-        } else if(op == mtac::Operator::ARRAY){
-            std::cout << "\t" << quadruple->result->name() << " = (normal) " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
-        } else if(op == mtac::Operator::PARRAY){
-            std::cout << "\t" << quadruple->result->name() << " = (pointer) " << printArg(*quadruple->arg1) << " [" << printArg(*quadruple->arg2) << "]" << std::endl;
-        } else if(op == mtac::Operator::ARRAY_ASSIGN){
-            std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = (normal) " << printArg(*quadruple->arg2) << std::endl;
-        } else if(op == mtac::Operator::ARRAY_PASSIGN){
-            std::cout << "\t" << quadruple->result->name() << "[" << printArg(*quadruple->arg1) << "] = (pointer) " << printArg(*quadruple->arg2) << std::endl;
         } else if(op == mtac::Operator::RETURN){
             std::cout << "\treturn";
 

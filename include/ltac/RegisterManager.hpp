@@ -98,6 +98,7 @@ struct RegisterManager {
     bool is_escaped(std::shared_ptr<Variable> variable);
     
     void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
+    void collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
 
     void save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor);
     void restore_pushed_registers();

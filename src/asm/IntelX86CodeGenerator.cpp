@@ -14,6 +14,7 @@
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
 
+#include "asm/StringConverter.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
 #include "asm/IntelAssemblyUtils.hpp"
 
@@ -21,60 +22,51 @@ using namespace eddic;
 
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
+struct X86_32StringConverter : public as::StringConverter {
+    std::string to_string(eddic::ltac::Register reg) const {
+        static std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
+
+        if(static_cast<int>(reg) == 1000){
+            return "esp"; 
+        } else if(static_cast<int>(reg) == 1001){
+            return "ebp"; 
+        }
+
+        return registers[static_cast<int>(reg)];
+    }
+
+    std::string to_string(eddic::ltac::FloatRegister reg) const {
+        static std::string registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
+
+        return registers[static_cast<int>(reg)];
+    }
+    
+    std::string to_string(eddic::ltac::Argument& arg) const {
+        if(auto* ptr = boost::get<int>(&arg)){
+            return ::toString(*ptr);
+        } else if(auto* ptr = boost::get<double>(&arg)){
+            std::stringstream ss;
+            ss << "__float32__(" << std::fixed << *ptr << ")";
+            return ss.str();
+        } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
+            return to_string(*ptr); 
+        } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
+            return to_string(*ptr); 
+        } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
+            return address_to_string(*ptr);
+        } else if(auto* ptr = boost::get<std::string>(&arg)){
+            return *ptr;
+        }
+
+        ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
+    }
+};
+
 namespace x86 {
 
-std::string to_string(ltac::Register reg){
-    static std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
-
-    if(static_cast<int>(reg) == 1000){
-        return "esp"; 
-    } else if(static_cast<int>(reg) == 1001){
-        return "ebp"; 
-    }
-
-    return registers[static_cast<int>(reg)];
-}
-
-std::string to_string(ltac::FloatRegister reg){
-    static std::string registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
-
-    return registers[static_cast<int>(reg)];
-}
-
-void enterFunction(AssemblyFileWriter& writer){
-    writer.stream() << "push ebp" << std::endl;
-    writer.stream() << "mov ebp, esp" << std::endl;
-}
-
-void defineFunction(AssemblyFileWriter& writer, const std::string& function){
-    writer.stream() << std::endl << function << ":" << std::endl;
-    
-    enterFunction(writer);
-}
-
-void leaveFunction(AssemblyFileWriter& writer){
-    writer.stream() << "leave" << std::endl;
-    writer.stream() << "ret" << std::endl;
-}
-
-#include "to_address.inc"
-
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
-    if(auto* ptr = boost::get<int>(&arg)){
-        return os << *ptr;
-    } else if(auto* ptr = boost::get<double>(&arg)){
-        return os << "__float32__(" << std::fixed << *ptr << ")";
-    } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
-        return os << to_string(*ptr); 
-    } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
-        return os << to_string(*ptr); 
-    } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
-        return os << to_string(*ptr);
-    } else if(auto* ptr = boost::get<std::string>(&arg)){
-        return os << *ptr;
-    }
-
-    ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
+    X86_32StringConverter converter;
+    return os << converter.to_string(arg);
 }
 
 } //end of x86 namespace
@@ -121,14 +113,16 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "cld" << std::endl;
 
                 break;
-            case ltac::Operator::ALLOC_STACK:
-                writer.stream() << "sub esp, " << *instruction->arg1 << std::endl;
-                break;
-            case ltac::Operator::FREE_STACK:
-                writer.stream() << "add esp, " << *instruction->arg1 << std::endl;
+            case ltac::Operator::ENTER:
+                writer.stream() << "push ebp" << std::endl;
+                writer.stream() << "mov ebp, esp" << std::endl;
                 break;
             case ltac::Operator::LEAVE:
-                leaveFunction(writer);
+                writer.stream() << "mov esp, ebp" << std::endl;
+                writer.stream() << "pop ebp" << std::endl;
+                break;
+            case ltac::Operator::RET:
+                writer.stream() << "ret" << std::endl;
                 break;
             case ltac::Operator::CMP_INT:
                 writer.stream() << "cmp " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
@@ -302,8 +296,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 };
 
 void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
-    defineFunction(writer, function->getName());
-    //TODO In the future, it is possible that it is up to the ltac compiler to generate the preamble of functions
+    writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86StatementCompiler compiler(writer);
 

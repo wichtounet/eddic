@@ -57,6 +57,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::GlobalArrayDeclaration& declaration){
             declaration.Content->context = currentContext;
+            
+            visit(*this, declaration.Content->size);
         }
 
         void operator()(ast::FunctionDeclaration& function){
@@ -154,6 +156,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::ArrayDeclaration& declaration){
             declaration.Content->context = currentContext;
+            
+            visit(*this, declaration.Content->size);
         }
         
         void operator()(ast::Assignment& assignment){

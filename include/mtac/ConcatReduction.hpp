@@ -5,29 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_RETURN_H
-#define MTAC_RETURN_H
+#ifndef MTAC_CONCAT_REDUCTION_H
+#define MTAC_CONCAT_REDUCTION_H
 
-#include <unordered_map>
+#include <memory>
 
-#include <boost/optional.hpp>
-
-#include "mtac/Argument.hpp"
+#include "mtac/Function.hpp"
 
 namespace eddic {
 
+class StringPool;
+
 namespace mtac {
 
-struct Return {
-    boost::optional<Argument> arg1;
-    boost::optional<Argument> arg2;
-
-    std::unordered_map<std::shared_ptr<Variable>, bool> liveness;
-
-    Return();
-    Return(Argument arg1);
-    Return(Argument arg1, Argument arg2);
-};
+bool optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool);
 
 } //end of mtac
 

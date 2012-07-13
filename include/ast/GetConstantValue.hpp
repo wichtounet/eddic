@@ -40,7 +40,7 @@ struct GetConstantValue : public boost::static_visitor<Val> {
 
     template<typename T>
     Val operator()(const T&) const {
-        ASSERT_PATH_NOT_TAKEN("This variable is of a type that cannot be constant");
+        ASSERT_PATH_NOT_TAKEN("Is not constant");
     }
 };
 

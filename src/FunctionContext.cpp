@@ -35,11 +35,33 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
 
     currentPosition += type->size();
 
-    return std::make_shared<Variable>(variable, type, position);
+    auto var = std::make_shared<Variable>(variable, type, position);
+
+    storage[variable] = var;
+
+    return var;
+}
+
+FunctionContext::Variables FunctionContext::stored_variables(){
+    return storage;
 }
 
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
     return variables[variable] = newVariable(variable, type);
+}
+
+std::shared_ptr<Variable> FunctionContext::newVariable(std::shared_ptr<Variable> source){
+    std::string name = "g_" + source->name() + "_" + toString(temporary++);
+    
+    if(source->position().isTemporary()){
+        Position position(PositionType::TEMPORARY);
+
+        auto var = std::make_shared<Variable>(name, source->type(), position); 
+        storage[name] = var;
+        return variables[name] = var;
+    } else {
+        return addVariable(name, source->type());
+    }
 }
 
 std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
@@ -48,7 +70,9 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     Position position(PositionType::CONST);
 
     auto val = visit(ast::GetConstantValue(), value);
-    return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
+    
+    auto var = std::make_shared<Variable>(variable, type, position, val);
+    return variables[variable] = var;
 }
 
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<const Type> type){
@@ -59,14 +83,18 @@ std::shared_ptr<Variable> FunctionContext::newTemporary(){
     Position position(PositionType::TEMPORARY);
 
     std::string name = "ti_" + toString(temporary++);
-    return variables[name] = std::make_shared<Variable>(name, INT, position); 
+    auto var = std::make_shared<Variable>(name, INT, position); 
+    storage[name] = var;
+    return variables[name] = var;
 }
 
 std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
     Position position(PositionType::TEMPORARY);
 
     std::string name = "tf_" + toString(temporary++);
-    return variables[name] = std::make_shared<Variable>(name, FLOAT, position); 
+    auto var = std::make_shared<Variable>(name, FLOAT, position); 
+    storage[name] = var;
+    return variables[name] = var;
 }
 
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
@@ -75,4 +103,52 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
     currentPosition += temp->type()->size();
    
     temp->setPosition(position); 
+}
+
+void FunctionContext::reallocate_storage(){
+    currentPosition = INT->size();
+
+    auto it = storage.begin();
+    auto end = storage.end();
+
+    while(it != end){
+        auto v = it->second;
+
+        if(v->position().isStack()){
+            Position position(PositionType::STACK, currentPosition);
+            currentPosition += v->type()->size();
+            v->setPosition(position);
+        }
+
+        ++it;
+    }
+}
+
+void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_){
+    assert(variable->position().isStack()); 
+
+    Position position(PositionType::REGISTER, register_);
+    variable->setPosition(position);
+
+    reallocate_storage();
+}
+
+void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_){
+    assert(variable->position().isParameter()); 
+
+    Position position(PositionType::PARAM_REGISTER, register_);
+    variable->setPosition(position);
+
+    reallocate_storage();
+}
+
+void FunctionContext::removeVariable(const std::string& variable){
+    auto var = storage[variable];
+    
+    storage.erase(variable);
+
+    //If its a temporary, no need to recalculate positions
+    if(!var->position().isTemporary()){
+        reallocate_storage();
+    }
 }

@@ -5,12 +5,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef REGISTER_ALLOCATION_H
-#define REGISTER_ALLOCATION_H
+#ifndef MTAC_BRANCH_OPTIMIZATIONS_H
+#define MTAC_BRANCH_OPTIMIZATIONS_H
+
+#include <memory>
+
+#include "mtac/Function.hpp"
 
 namespace eddic {
 
-void allocateParams();
+namespace mtac {
+
+bool optimize_branches(std::shared_ptr<mtac::Function> function);
+
+} //end of mtac
 
 } //end of eddic
 

@@ -24,16 +24,16 @@ std::string to_string(ltac::Operator op){
     switch(op){
         case ltac::Operator::MOV:
             return "MOV"; 
+        case ltac::Operator::ENTER:
+            return "ENTER"; 
         case ltac::Operator::FMOV:
             return "FMOV"; 
         case ltac::Operator::MEMSET:
             return "MEMSET"; 
-        case ltac::Operator::ALLOC_STACK:
-            return "ALLOC_STACK"; 
-        case ltac::Operator::FREE_STACK:
-            return "FREE_STACK"; 
         case ltac::Operator::LEAVE:
             return "LEAVE"; 
+        case ltac::Operator::RET:
+            return "RET"; 
         case ltac::Operator::CMP_INT:
             return "CMP_INT"; 
         case ltac::Operator::CMP_FLOAT:
@@ -158,7 +158,13 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
    }
    
    std::string operator()(ltac::Register& reg) const {
-        return "ir" + ::toString(reg.reg);
+       if(reg == ltac::SP){
+           return "sp";
+       } else if(reg == ltac::BP){
+           return "bp";
+       }
+
+       return "ir" + ::toString(reg.reg);
    }
    
    std::string operator()(ltac::Address& address) const {
@@ -264,4 +270,9 @@ void ltac::Printer::print(std::shared_ptr<ltac::Program> program) const {
 void ltac::Printer::print(std::shared_ptr<ltac::Function> function) const {
    DebugVisitor visitor;
    visitor(function); 
+}
+
+void ltac::Printer::print(ltac::Statement& statement) const {
+   DebugVisitor visitor;
+   visit(visitor, statement); 
 }

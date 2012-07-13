@@ -5,10 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/Return.hpp"
+#ifndef MTAC_DEAD_CODE_ELIMINATION_H
+#define MTAC_DEAD_CODE_ELIMINATION_H
 
-using namespace eddic;
+#include <memory>
 
-mtac::Return::Return(){}
-mtac::Return::Return(Argument a1) : arg1(a1) {}
-mtac::Return::Return(Argument a1, Argument a2) : arg1(a1), arg2(a2) {}
+#include "mtac/Function.hpp"
+
+namespace eddic {
+
+namespace mtac {
+
+bool dead_code_elimination(std::shared_ptr<mtac::Function> function);
+
+} //end of mtac
+
+} //end of eddic
+
+#endif

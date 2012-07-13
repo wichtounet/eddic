@@ -13,21 +13,6 @@
 namespace eddic {
 
 /*!
- * \brief Bolean flag indicating if warnings are outputted for unused declarations. 
- */
-extern bool WarningUnused;
-
-/*!
- * \brief Bolean flag indicating if warnings are outputted for casts.
- */
-extern bool WarningCast;
-
-/*!
- * \brief Level of optimization engine.  
- */
-extern int OLevel;
-
-/*!
  * Indicates if the given option has been defined. 
  * \param option_name The name of the option to test. 
  * \return true if the option has been defined, otherwise false. 
@@ -41,6 +26,8 @@ bool option_defined(const std::string& option_name);
  */
 std::string option_value(const std::string& option_name);
 
+int option_int_value(const std::string& option_name);
+
 /*!
  * \brief Parse the options of the command line filling the options. 
  * \param argc The number of argument
@@ -52,12 +39,12 @@ bool parseOptions(int argc, const char* argv[]);
 /*!
  * \brief Print the help.
  */
-void printHelp();
+void print_help();
 
 /*!
  * \brief Print the usage.
  */
-void printVersion();
+void print_version();
 
 } //end of eddic
 

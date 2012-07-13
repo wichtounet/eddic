@@ -126,6 +126,10 @@ void SymbolTable::addReference(const std::string& function){
     ++(functions[function]->references);
 }
 
+void SymbolTable::removeReference(const std::string& function){
+    --(functions[function]->references);
+}
+
 int SymbolTable::referenceCount(const std::string& function){
     return functions[function]->references;
 }

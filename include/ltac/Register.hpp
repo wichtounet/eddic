@@ -26,6 +26,9 @@ struct Register {
     
     operator int();
 
+    bool operator<(const Register& rhs) const;
+    bool operator>(const Register& rhs) const;
+
     bool operator==(const Register& rhs) const;
     bool operator!=(const Register& rhs) const;
 };

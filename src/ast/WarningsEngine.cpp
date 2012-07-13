@@ -111,7 +111,7 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_IGNORE_DEREFERENCE_VALUE()
 
         void check(std::shared_ptr<Context> context){
-            if(WarningUnused){
+            if(option_defined("warning-unused")){
                 auto iter = context->begin();
                 auto end = context->end();
 
@@ -138,7 +138,7 @@ struct Inspector : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& declaration){
-            if(WarningUnused){
+            if(option_defined("warning-unused")){
                 auto struct_ = symbols.get_struct(declaration.Content->name);
 
                 if(struct_->get_references() == 0){
@@ -156,7 +156,7 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
-            if(WarningUnused){
+            if(option_defined("warning-unused")){
                 int references = symbols.referenceCount(declaration.Content->mangledName);
 
                 if(declaration.Content->functionName != "main" && references == 0){
@@ -168,7 +168,7 @@ struct Inspector : public boost::static_visitor<> {
         }
     
         void operator()(ast::Cast& cast){
-            if(WarningCast){
+            if(option_defined("warning-cast")){
                 auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
                 auto dest_type = visit(ast::TypeTransformer(), cast.Content->type);
 

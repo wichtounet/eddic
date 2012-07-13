@@ -9,6 +9,58 @@
 
 using namespace eddic;
 
+bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
+    for(auto& basic_block : function->getBasicBlocks()){
+        for(auto& statement : basic_block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                if((*ptr)->functionDefinition == function->definition){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+template<typename T>
+void collect(mtac::VariableUsage& usage, T arg){
+    if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
+        ++usage[*variablePtr];
+    }
+}
+
+template<typename T>
+void collect_optional(mtac::VariableUsage& usage, T opt){
+    if(opt){
+        collect(usage, *opt);
+    }
+}
+
+mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function> function){
+    mtac::VariableUsage usage;
+
+    for(auto& block : function->getBasicBlocks()){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                ++usage[(*ptr)->result];
+                collect_optional(usage, (*ptr)->arg1);
+                collect_optional(usage, (*ptr)->arg2);
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
+                collect(usage, (*ptr)->arg);
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
+                collect(usage, (*ptr)->arg1);
+                collect_optional(usage, (*ptr)->arg2);
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
+                collect(usage, (*ptr)->arg1);
+                collect_optional(usage, (*ptr)->arg2);
+            }
+        }
+    }
+
+    return usage;
+}
+
 void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
@@ -42,8 +94,6 @@ bool eddic::mtac::erase_result(mtac::Operator op){
             op != mtac::Operator::DOT_ASSIGN 
         &&  op != mtac::Operator::DOT_FASSIGN 
         &&  op != mtac::Operator::DOT_PASSIGN 
-        &&  op != mtac::Operator::ARRAY_ASSIGN 
-        &&  op != mtac::Operator::ARRAY_PASSIGN 
         &&  op != mtac::Operator::RETURN; 
 }
 

@@ -9,6 +9,7 @@
 #include "Variable.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
+#include "iterators.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
 #include "mtac/Utils.hpp"
@@ -21,16 +22,8 @@ std::ostream& mtac::operator<<(std::ostream& stream, Expression& /*expression*/)
     return stream << "Expression {expression = {}}";
 }
 
-bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
-    if(first->op != second->op){
-        return false;
-    }
-
-    if(mtac::is_distributive(first->op)){
-        return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2) || (*first->arg1 == *second->arg2 && *first->arg2 == *second->arg1);
-    } else {
-        return (*first->arg1 == *second->arg1 && *first->arg2 == *second->arg2);
-    }
+inline bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
+    return first->op == second->op && *first->arg1 == *second->arg1 && *first->arg2 == *second->arg2;
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
@@ -62,34 +55,30 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto op = (*ptr)->op;
         if(mtac::erase_result(op)){
-            std::vector<unsigned int> killed;
-            
-            for(unsigned int i = 0; i < in.values().size(); ++i){
-                auto& expression = in.values()[i].expression;
+            auto it = iterate(out.values());
 
-                auto old_size = killed.size();
+            while(it.has_next()){
+                auto& expression = (*it).expression;
 
-                if(expression->arg1 && boost::get<std::shared_ptr<Variable>>(&*expression->arg1)){
-                    auto var = boost::get<std::shared_ptr<Variable>>(*expression->arg1);
-
-                    if(var == (*ptr)->result){
-                        killed.push_back(i);
+                if(expression->arg1){
+                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*expression->arg1)){
+                        if(*var_ptr == (*ptr)->result){
+                            it.erase();
+                            continue;
+                        }
                     }
                 }
                 
-                if(old_size == killed.size() && expression->arg2 && boost::get<std::shared_ptr<Variable>>(&*expression->arg2)){
-                    auto var = boost::get<std::shared_ptr<Variable>>(*expression->arg2);
-
-                    if(var == (*ptr)->result){
-                        killed.push_back(i);
+                if(expression->arg2){
+                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*expression->arg2)){
+                        if(*var_ptr == (*ptr)->result){
+                            it.erase();
+                            continue;
+                        }
                     }
                 }
-            }
 
-            std::reverse(killed.begin(), killed.end());
-
-            for(auto i : killed){
-                out.values().erase(out.values().begin() + i);
+                ++it;
             }
         }
 
@@ -98,6 +87,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
             for(auto& expression : out.values()){
                 if(are_equivalent(*ptr, expression.expression)){
                     exists = true;
+                    break;
                 }
             }
 
@@ -134,6 +124,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
                     for(auto& expression : values){
                         if(are_equivalent(*ptr, expression.expression)){
                             exists = true;
+                            break;
                         }
                     }
                     
@@ -165,7 +156,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
             for(auto& expression : results.values()){
                 if(are_equivalent(expression.expression, *ptr)){
                     auto source_statement = expression.expression;
-
+                    
                     mtac::Operator assign_op;
                     if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
                         assign_op = mtac::Operator::ASSIGN;
@@ -173,10 +164,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                         assign_op = mtac::Operator::FASSIGN;
                     }
 
-                    if(source_statement->result->position().isTemporary()){
-                        (*ptr)->op = assign_op;
-                        (*ptr)->arg1 = source_statement->result;
-                    } else {
+                    if(optimized.find(source_statement->result) == optimized.end()){
                         std::shared_ptr<Variable> temp;
                         if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
                             temp = expression.source->context->new_temporary(INT);
@@ -193,7 +181,9 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                                 if(target == source_statement){
                                     auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
 
-                                    it = expression.source->statements.insert(it, quadruple);
+                                    expression.source->statements.insert(it+1, quadruple);
+
+                                    break;
                                 }
                             }
 
@@ -204,11 +194,15 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
 
                         (*ptr)->op = assign_op;
                         (*ptr)->arg1 = temp;
+                        
+                        optimized[source_statement->result] = temp;
+                    } else {
+                        (*ptr)->op = assign_op;
+                        (*ptr)->arg1 = source_statement->result;
+                        
                     }
 
                     changes = true;
-
-                    break;
                 }
             }
         }

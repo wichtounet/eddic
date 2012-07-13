@@ -15,9 +15,9 @@
 //Medium-level Three Address Code
 #include "mtac/Program.hpp"
 #include "mtac/BasicBlockExtractor.hpp"
-#include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/RegisterAllocation.hpp"
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
@@ -41,20 +41,17 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         mtac::Printer printer;
         printer.print(mtacProgram);
     }
-
-    //Allocate storage for the temporaries that need to be stored
-    mtac::TemporaryAllocator allocator;
-    allocator.allocate(mtacProgram);
     
+    //Optimize MTAC
     mtac::Optimizer optimizer;
+    optimizer.optimize(mtacProgram, get_string_pool());
 
-    if(OLevel >= 2){
-        optimizer.optimize(mtacProgram, get_string_pool());
-    
-        //Allocate storage for the temporaries that need to be stored
-        allocator.allocate(mtacProgram);
-    } else {
-        optimizer.basic_optimize(mtacProgram, get_string_pool());
+    //Allocate parameters into registers
+    mtac::register_param_allocation();
+
+    //Allocate variables into registers
+    if(option_defined("fvariable-allocation")){
+        mtac::register_variable_allocation(mtacProgram);
     }
     
     //If asked by the user, print the Three Address code representation
@@ -71,7 +68,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
         ltac::Compiler ltacCompiler;
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
-        if(OLevel >= 1){
+        if(option_defined("fpeephole-optimization")){
             optimize(ltac_program);
         }
 

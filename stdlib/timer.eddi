@@ -1,0 +1,39 @@
+/* 
+ * Standard Library : Interface to time some code.
+*/
+
+struct Timer {
+    int start1;
+    int start2;
+    int end1;
+    int end2;
+}
+
+void start_timer(Timer* timer){
+    int start[2];
+    time(start);
+    
+    timer.start1 = start[0];
+    timer.start2 = start[1];
+}
+
+void end_timer(Timer* timer){
+    int end[2];
+    time(end);
+    
+    timer.end1 = end[0];
+    timer.end2 = end[1];
+}
+
+void print_timer(Timer* timer){
+    int start[2];
+    int end[2];
+
+    start[0] = timer.start1;
+    start[1] = timer.start2;
+    
+    end[0] = timer.end1;
+    end[1] = timer.end2;
+
+    duration(start, end);
+}

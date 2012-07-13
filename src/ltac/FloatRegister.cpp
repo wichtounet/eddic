@@ -21,6 +21,14 @@ ltac::FloatRegister::operator int(){
     return reg;
 }
 
+bool ltac::FloatRegister::operator<(const FloatRegister& rhs) const {
+    return reg > rhs.reg;
+}
+
+bool ltac::FloatRegister::operator>(const FloatRegister& rhs) const {
+    return reg < rhs.reg;
+}
+
 bool ltac::FloatRegister::operator==(const FloatRegister& rhs) const {
     return reg == rhs.reg;
 }

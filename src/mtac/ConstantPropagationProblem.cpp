@@ -126,11 +126,11 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
         auto& quadruple = *ptr;
 
         //Do not replace a variable by a constant when used in offset
-        if(quadruple->op != mtac::Operator::ARRAY && quadruple->op != mtac::Operator::PARRAY && quadruple->op != mtac::Operator::DOT){
+        if(quadruple->op != mtac::Operator::PDOT && quadruple->op != mtac::Operator::DOT){
             changes |= optimize_optional(quadruple->arg1, results);
         }
         
-        if(quadruple->op != mtac::Operator::ARRAY_PASSIGN && quadruple->op != mtac::Operator::DOT_PASSIGN){
+        if(quadruple->op != mtac::Operator::DOT_PASSIGN){
             changes |= optimize_optional(quadruple->arg2, results);
         }
 

@@ -19,12 +19,14 @@ enum class Operator : unsigned int {
     //Set the memory to 0
     MEMSET,
 
-    //For stack allocation
-    ALLOC_STACK,
-    FREE_STACK,
+    //Enter stack frame
+    ENTER,
 
-    //Leave from a function
+    //Leave stack frame
     LEAVE,
+
+    //Return from function
+    RET,
 
     //Comparisons
     CMP_INT,
