@@ -347,69 +347,73 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
 }
 
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
-    if(option_defined("fno-inline")){
+    if(option_defined("fno-inline-functions")){
         return false;
     }
 
-    bool optimized = false;
+    if(option_defined("finline-functions")){
+        bool optimized = false;
 
-    for(auto source_function : program->functions){
-        if(!will_inline(source_function)){
-            continue;
-        }
-
-        auto source_definition = source_function->definition;
-       
-        for(auto dest_function : program->functions){
-            if(dest_function == source_function){
-                continue;
-            }
-        
-            //If the function has already been inlined
-            if(dest_function->getName() != "main" && symbols.referenceCount(dest_function->getName()) <= 0){
+        for(auto source_function : program->functions){
+            if(!will_inline(source_function)){
                 continue;
             }
 
-            for(auto bit = iterate(dest_function->getBasicBlocks()); bit.has_next(); ++bit){
-                auto basic_block = *bit;
+            auto source_definition = source_function->definition;
 
-                auto it = iterate(basic_block->statements);
+            for(auto dest_function : program->functions){
+                if(dest_function == source_function){
+                    continue;
+                }
 
-                while(it.has_next()){
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
-                        auto call = *ptr;
+                //If the function has already been inlined
+                if(dest_function->getName() != "main" && symbols.referenceCount(dest_function->getName()) <= 0){
+                    continue;
+                }
 
-                        if(call->functionDefinition == source_definition){
-                            //Copy the parameters
-                            auto variable_clones = copy_parameters(source_function, dest_function, bit);
-                            
-                            //Allocate storage for the local variables of the inlined function
-                            for(auto variable_pair : source_definition->context->stored_variables()){
-                                auto variable = variable_pair.second;
-                                variable_clones[variable] = dest_function->definition->context->newVariable(variable);
+                for(auto bit = iterate(dest_function->getBasicBlocks()); bit.has_next(); ++bit){
+                    auto basic_block = *bit;
+
+                    auto it = iterate(basic_block->statements);
+
+                    while(it.has_next()){
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
+                            auto call = *ptr;
+
+                            if(call->functionDefinition == source_definition){
+                                //Copy the parameters
+                                auto variable_clones = copy_parameters(source_function, dest_function, bit);
+
+                                //Allocate storage for the local variables of the inlined function
+                                for(auto variable_pair : source_definition->context->stored_variables()){
+                                    auto variable = variable_pair.second;
+                                    variable_clones[variable] = dest_function->definition->context->newVariable(variable);
+                                }
+
+                                //Clone all the source basic blocks in the dest function
+                                auto bb_clones = clone(source_function, dest_function, bit);
+
+                                //Fix all the instructions (clones and return)
+                                adapt_instructions(variable_clones, bb_clones, call, bit);
+
+                                //Erase the original call
+                                it.erase();
+
+                                symbols.removeReference(source_function->getName());
+                                optimized = true;
+
+                                continue;
                             }
-
-                            //Clone all the source basic blocks in the dest function
-                            auto bb_clones = clone(source_function, dest_function, bit);
-
-                            //Fix all the instructions (clones and return)
-                            adapt_instructions(variable_clones, bb_clones, call, bit);
-
-                            //Erase the original call
-                            it.erase();
-
-                            symbols.removeReference(source_function->getName());
-                            optimized = true;
-
-                            continue;
                         }
-                    }
 
-                    ++it;
+                        ++it;
+                    }
                 }
             }
         }
-    }
 
-    return optimized;
+        return optimized;
+    } else {
+        return false;
+    }
 }

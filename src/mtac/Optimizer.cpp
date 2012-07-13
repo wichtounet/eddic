@@ -18,6 +18,7 @@
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/TemporaryAllocator.hpp"
 
 //The custom optimizations
 #include "mtac/VariableCleaner.hpp"
@@ -267,16 +268,27 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 }
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
-    bool optimized = false;
+    if(option_defined("fglobal-optimization")){
+        //Allocate storage for the temporaries that need to be stored
+        mtac::TemporaryAllocator allocator;
+        allocator.allocate(program);
 
-    do{
-        mtac::remove_unused_functions(program);
+        bool optimized = false;
+        do{
+            mtac::remove_unused_functions(program);
 
-        optimize_all_functions(program, string_pool);
+            optimize_all_functions(program, string_pool);
 
-        optimized = mtac::remove_empty_functions(program);
-        optimized = mtac::inline_functions(program);
-    } while(optimized);
+            optimized = mtac::remove_empty_functions(program);
+            optimized = mtac::inline_functions(program);
+        } while(optimized);
+    
+        //Allocate storage for the temporaries that need to be stored
+        allocator.allocate(program);
+    } else {
+        //Even if global optimizations are disabled, perform basic optimization (only constant folding)
+        basic_optimize(program, string_pool);
+    }
 }
 
 void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/) const {
