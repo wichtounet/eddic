@@ -28,6 +28,8 @@ namespace eddic {
 
 namespace ltac {
 
+class StatementCompiler;
+
 struct RegisterManager {
     //The registers
     as::Registers<ltac::Register> registers;
@@ -43,6 +45,7 @@ struct RegisterManager {
     std::shared_ptr<ltac::Function> function;
 
     std::shared_ptr<FloatPool> float_pool;
+    std::shared_ptr<StatementCompiler> compiler;
 
     RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
             std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);

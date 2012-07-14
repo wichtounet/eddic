@@ -62,7 +62,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         float_registers.push_back({reg});
     }
 
-    StatementCompiler compiler(registers, float_registers, target_function, float_pool);
+    auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, target_function, float_pool);
+    compiler->manager.compiler = compiler;
 
     auto size = src_function->context->size();
 
@@ -73,7 +74,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     //Alloc stack space for locals
     ltac::add_instruction(target_function, ltac::Operator::SUB, ltac::SP, size);
-    compiler.bp_offset += size;
+    compiler->bp_offset += size;
     
     auto iter = src_function->context->begin();
     auto end = src_function->context->end();
@@ -83,19 +84,19 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         if(var->type()->is_array() && var->position().isStack()){
             int position = -var->position().offset();
 
-            ltac::add_instruction(target_function, ltac::Operator::MOV, compiler.stack_address(position), static_cast<int>(var->type()->elements()));
+            ltac::add_instruction(target_function, ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(var->type()->elements()));
 
             if(var->type()->data_type() == INT){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler.stack_address(position - 8), static_cast<int>(var->type()->elements()));
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position - 8), static_cast<int>(var->type()->elements()));
             } else if(var->type()->data_type() == STRING){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler.stack_address(position - 8), static_cast<int>(2 * var->type()->elements()));
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position - 8), static_cast<int>(2 * var->type()->elements()));
             }
         }
     }
     
     //Compute Liveness
     mtac::LiveVariableAnalysisProblem problem;
-    compiler.manager.liveness = mtac::data_flow(src_function, problem);
+    compiler->manager.liveness = mtac::data_flow(src_function, problem);
 
     //Then we compile each of them
     for(auto block : src_function->getBasicBlocks()){
@@ -105,24 +106,24 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         }
     
         //Handle parameters and register-allocated variables
-        compiler.reset();
-        compiler.collect_parameters(src_function->definition);
-        compiler.collect_variables(src_function->definition);
+        compiler->reset();
+        compiler->collect_parameters(src_function->definition);
+        compiler->collect_variables(src_function->definition);
     
         for(unsigned int i = 0; i < block->statements.size(); ++i){
             auto& statement = block->statements[i];
 
-            visit(compiler, statement);
+            visit(*compiler, statement);
         }
 
         //end basic block
-        if(!compiler.ended){
-            compiler.end_basic_block();
+        if(!compiler->ended){
+            compiler->end_basic_block();
         }
     }
     
     ltac::add_instruction(target_function, ltac::Operator::ADD, ltac::SP, size);
-    compiler.bp_offset -= size;
+    compiler->bp_offset -= size;
         
     //Leave stack frame
     if(!option_defined("fomit-frame-pointer")){
