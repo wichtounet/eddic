@@ -122,7 +122,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             
             //TODO Should be a better way to do that
             add_trigger("__1", {"fpeephole-optimization"});
-            add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fparameter-allocation", "finline-functions"});
+            add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
             
             desc_init = true;
         }
