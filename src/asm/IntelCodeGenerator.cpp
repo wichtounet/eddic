@@ -29,6 +29,13 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<ltac::Program> program, st
     addStandardFunctions();
 
     addGlobalVariables(program->context, pool, float_pool);
+
+    auto size = writer.size();
+
+    //Little hack in order for nasm to work with little files
+    for(int i = size; i < 1050; ++i){
+        writer.stream() << " " << std::endl;
+    }
 }
 
 void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){

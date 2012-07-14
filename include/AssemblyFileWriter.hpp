@@ -47,6 +47,8 @@ class AssemblyFileWriter {
          * Output the buffer to the file. 
          */
         void write();
+
+        unsigned int size();
 };
 
 } //end of eddic
