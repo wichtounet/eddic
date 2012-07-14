@@ -479,8 +479,6 @@ bool remove_stack_frames(std::shared_ptr<ltac::Function> function){
         return false;
     }
 
-    bool leaf = true;
-
     auto& statements = function->getStatements();
     
     RegisterUsage usage; 
@@ -494,14 +492,6 @@ bool remove_stack_frames(std::shared_ptr<ltac::Function> function){
             collect_usage(usage, instruction->arg2);
             collect_usage(usage, instruction->arg3);
         } 
-        
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-            auto jump = *ptr;
-
-            if(jump->type == ltac::JumpType::CALL){
-                leaf = false;
-            }
-        }
     }
     
     bool optimized = false;
