@@ -29,6 +29,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
     
     qi::rule<lexer::Iterator, ast::Assignment()> assignment;
+    qi::rule<lexer::Iterator, ast::Ternary()> ternary;
     qi::rule<lexer::Iterator, ast::LValue()> left_value;
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;

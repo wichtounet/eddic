@@ -129,7 +129,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  primaryValue;
     
     primaryValue = 
-            assignment
+            ternary
+        |   assignment
         |   integer_suffix
         |   integer
         |   float_
@@ -241,6 +242,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  lexer.identifier
         >>  qi::adapttokens[suffix_op];
+
+    ternary %=
+            qi::position(position_begin)
+        >>  value
+        >>  lexer.question_mark
+        >>  value
+        >>  lexer.double_dot
+        >>  value;
 
     //Configure debugging
 
