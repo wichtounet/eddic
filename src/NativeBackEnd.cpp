@@ -97,7 +97,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
 
                 //Remove temporary files
                 if(!option_defined("keep")){
-//                    remove("output.asm");
+                    remove("output.asm");
                 }
 
                 remove("output.o");
