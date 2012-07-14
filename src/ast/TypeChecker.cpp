@@ -69,6 +69,23 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         visit_each(*this, foreach.Content->instructions);
     }
+    
+    void operator()(ast::Ternary& ternary){
+        visit(*this, ternary.Content->condition);
+        visit(*this, ternary.Content->false_value);
+        visit(*this, ternary.Content->true_value);
+
+        auto condition_type = visit(ast::GetTypeVisitor(), ternary.Content->condition);
+        if(condition_type != BOOL){
+            throw SemanticalException("Ternary can only be applied to bool", ternary.Content->position);
+        }
+        
+        auto true_type = visit(ast::GetTypeVisitor(), ternary.Content->true_value);
+        auto false_type = visit(ast::GetTypeVisitor(), ternary.Content->false_value);
+        if(true_type != false_type){
+            throw SemanticalException("Incompatible values in ternary operator", ternary.Content->position);
+        }
+    }
 
     void operator()(ast::Assignment& assignment){
         visit(*this, assignment.Content->left_value);

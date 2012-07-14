@@ -23,6 +23,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::Ternary).
  */
 struct ASTTernary {
+    Position position;
     Value condition;
     Value true_value;
     Value false_value;

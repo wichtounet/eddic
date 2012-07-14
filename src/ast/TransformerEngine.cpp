@@ -83,6 +83,14 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return assignment;
     }
 
+    ast::Value operator()(ast::Ternary& ternary){
+        ternary.Content->condition = visit(*this, ternary.Content->condition);
+        ternary.Content->true_value = visit(*this, ternary.Content->true_value);
+        ternary.Content->false_value = visit(*this, ternary.Content->false_value);
+
+        return ternary;
+    }
+
     ast::Value operator()(ast::BuiltinOperator& builtin){
         for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
             *it = visit(*this, *it);
@@ -397,6 +405,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
+    void operator()(ast::Ternary& ternary){
+        ternary.Content->condition = visit(transformer, ternary.Content->condition);
+        ternary.Content->true_value = visit(transformer, ternary.Content->true_value);
+        ternary.Content->false_value = visit(transformer, ternary.Content->false_value);
+    }
+
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
     }
@@ -447,6 +461,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_MINUS()
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
+    AUTO_IGNORE_TERNARY()
 
     template<typename T>
     void transform(T& instructions){

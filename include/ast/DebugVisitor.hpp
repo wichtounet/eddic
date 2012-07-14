@@ -66,6 +66,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(Null& value) const ;
     void operator()(False& value) const ;
     void operator()(True& value) const ;
+    void operator()(Ternary& value) const ;
 };
 
 } //end of ast

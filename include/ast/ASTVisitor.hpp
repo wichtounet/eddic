@@ -22,6 +22,13 @@ void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->rhs);\
 }
 
+#define AUTO_RECURSE_TERNARY()\
+void operator()(ast::Ternary& ternary){\
+    visit(*this, ternary.Content->condition);\
+    visit(*this, ternary.Content->true_value);\
+    visit(*this, ternary.Content->false_value);\
+}
+
 #define AUTO_RECURSE_ELSE()\
 void operator()(ast::Else& else_){\
     visit_each(*this, else_.instructions);\
@@ -156,6 +163,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
 #define AUTO_IGNORE_DEREFERENCE_VALUE() void operator()(ast::DereferenceValue&){}
+#define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
 
 /* auto return macros */ 
 
