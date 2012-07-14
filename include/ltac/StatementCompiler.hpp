@@ -54,7 +54,12 @@ class StatementCompiler : public boost::static_visitor<> {
 
         bool ended = false;     //Is the basic block ended ?
 
+        int bp_offset = 0;
+
         ltac::RegisterManager manager;
+
+        ltac::Address stack_address(int offset);
+        ltac::Address stack_address(ltac::Register offsetReg, int offset);
    
     private:
         //The function being compiled

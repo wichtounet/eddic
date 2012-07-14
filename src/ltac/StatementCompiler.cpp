@@ -59,6 +59,22 @@ ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
     return ltac::to_arg(argument, manager);
 }
 
+ltac::Address ltac::StatementCompiler::stack_address(int offset){
+    if(option_defined("fomit-frame-pointer")){
+        return ltac::Address(ltac::SP, offset + bp_offset);
+    } else {
+        return ltac::Address(ltac::BP, offset);
+    }
+}
+
+ltac::Address ltac::StatementCompiler::stack_address(ltac::Register offsetReg, int offset){
+    if(option_defined("fomit-frame-pointer")){
+        return ltac::Address(ltac::SP, offsetReg, 1, offset + bp_offset);
+    } else {
+        return ltac::Address(ltac::BP, offsetReg, 1, offset);
+    }
+}
+
 ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var, int offset){
     assert(var->type()->is_pointer());
 
@@ -70,14 +86,14 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
     auto position = var->position();
 
     if(position.isStack()){
-        return ltac::Address(ltac::BP, -position.offset() + offset);
+        return stack_address(-position.offset() + offset);
     } else if(position.isParameter()){
         //The case of array is special because only the address is passed, not the complete array
         if(var->type()->is_array())
         {
             auto reg = manager.get_free_reg();
 
-            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, stack_address(position.offset()));
 
             manager.release(reg);
 
@@ -85,7 +101,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         }
         //In the other cases, the value is passed, so we can compute the offset directly
         else {
-            return ltac::Address(ltac::BP, position.offset() + offset);
+            return stack_address(position.offset() + offset);
         }
     } else if(position.isGlobal()){
         return ltac::Address("V" + position.name(), offset);
@@ -110,11 +126,11 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
     auto offsetReg = manager.get_reg(ltac::get_variable(offset));
 
     if(position.isStack()){
-        return ltac::Address(ltac::BP, offsetReg, 1, -1 * position.offset());
+        return stack_address(offsetReg, -1 * position.offset());
     } else if(position.isParameter()){
         auto reg = manager.get_free_reg();
 
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, stack_address(position.offset()));
 
         manager.release(reg);
 
@@ -475,6 +491,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
         auto reg = get_address_in_reg(variable, offset);
         
         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+        bp_offset += INT->size();
 
         manager.release(reg);
     } 
@@ -519,6 +536,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
                 ltac::add_instruction(function, ltac::Operator::MOV, reg1, reg2);
                 ltac::add_instruction(function, ltac::Operator::PUSH, reg1);
+                bp_offset += INT->size();
 
                 manager.release(reg1);
             } else {
@@ -533,29 +551,34 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                         ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
                         ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+                        bp_offset += INT->size();
 
                         manager.release(reg);
                     } else if(position.isStack()){
                         auto reg = manager.get_free_reg();
 
-                        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::BP);
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, -position.offset());
+                        ltac::add_instruction(function, ltac::Operator::LEA, reg, stack_address(-position.offset()));
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+                        bp_offset += INT->size();
 
                         manager.release(reg);
                     } else if(position.isParameter()){
-                        ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(ltac::BP, position.offset()));
+                        ltac::add_instruction(function, ltac::Operator::PUSH, stack_address(position.offset()));
+                        bp_offset += INT->size();
                     }
                 } else {
                     auto reg = manager.get_reg(ltac::get_variable(param->arg));
                     ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+                    bp_offset += INT->size();
                 }
             }
         } else if(auto* ptr = boost::get<double>(&param->arg)){
             auto label = float_pool->label(*ptr);
             ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
+            bp_offset += INT->size();
         } else {
             ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
+            bp_offset += INT->size();
         }
     }
 }
@@ -603,6 +626,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
     }
 
     ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, total);
+    bp_offset -= total;
 
     if(call->return_){
         if(call->return_->type() == FLOAT){
@@ -1210,11 +1234,15 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     }
 
     ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, function->context->size());
+    bp_offset -= function->context->size();
 
     //The basic block must be ended before the jump
     end_basic_block();
 
-    ltac::add_instruction(function, ltac::Operator::LEAVE);
+    if(!option_defined("fomit-frame-pointer")){
+        ltac::add_instruction(function, ltac::Operator::LEAVE);
+    }
+
     ltac::add_instruction(function, ltac::Operator::RET);
 }
 
