@@ -74,6 +74,10 @@ class SpiritLexer : public lex::lexer<L> {
             comma = ',';
             dot = '.';
 
+            /* Ternary operator */
+            double_dot = ':';
+            question_mark = '?';
+
             /* Assignment operators */
             swap = "<=>";
             assign = '=';
@@ -117,6 +121,7 @@ class SpiritLexer : public lex::lexer<L> {
 
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
             this->self += comma | stop | dot;
+            this->self += double_dot | question_mark;
             this->self += assign | swap;
             this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += addition | subtraction | multiplication | division | modulo;
@@ -150,6 +155,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken left_parenth, right_parenth, left_brace, right_brace, left_bracket, right_bracket;
         ConsumedToken stop, comma, dot;
         ConsumedToken assign, swap;
+        ConsumedToken question_mark, double_dot;
         
         //Keywords
         ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
