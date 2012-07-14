@@ -9,8 +9,9 @@
 #include "FunctionContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
-
+#include "Options.hpp"
 #include "Labels.hpp"
+
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
@@ -154,11 +155,12 @@ void ltac::StatementCompiler::compare_binary(mtac::Argument& arg1, mtac::Argumen
         manager.release(reg1);
     } else {
         auto reg1 = manager.get_reg(ltac::get_variable(arg1));
+        auto reg2 = to_arg(arg2);
 
         //The basic block must be ended before the jump
         end_basic_block();
 
-        ltac::add_instruction(function, ltac::Operator::CMP_INT, reg1, to_arg(arg2));
+        ltac::add_instruction(function, ltac::Operator::CMP_INT, reg1, reg2);
     }
 }
 
@@ -478,10 +480,10 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     } 
     //Push by value
     else {
-        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+        if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
+            unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+            unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
-        if(param->std_param.length() > 0 || param->param){
             std::shared_ptr<const Type> type;
             unsigned int position;
 
@@ -567,6 +569,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
 
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+    
+    if(!call->functionDefinition->standard && !option_defined("fparameter-allocation")){
+        maxInt = 0;
+        maxFloat = 0;
+    }
 
     for(auto& param : call->functionDefinition->parameters){
         auto type = param.paramType; 

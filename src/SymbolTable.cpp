@@ -136,6 +136,7 @@ int SymbolTable::referenceCount(const std::string& function){
 
 void SymbolTable::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
     auto printFunction = std::make_shared<Function>(VOID, "print");
+    printFunction->standard = true;
     printFunction->mangledName = function;
     printFunction->parameters.push_back({"a", parameterType});
     addFunction(printFunction);
@@ -143,6 +144,7 @@ void SymbolTable::addPrintFunction(const std::string& function, std::shared_ptr<
 
 void SymbolTable::defineStandardFunctions(){
     auto printLineFunction = std::make_shared<Function>(VOID, "print");
+    printLineFunction->standard = true;
     printLineFunction->mangledName = "_F7println";
     addFunction(printLineFunction);
 
@@ -164,6 +166,7 @@ void SymbolTable::defineStandardFunctions(){
     
     //concat function
     auto concatFunction = std::make_shared<Function>(STRING, "concat");
+    concatFunction->standard = true;
     concatFunction->mangledName = "_F6concatSS";
     concatFunction->parameters.push_back({"a", STRING});
     concatFunction->parameters.push_back({"b", STRING});
@@ -171,12 +174,14 @@ void SymbolTable::defineStandardFunctions(){
     
     //time function
     auto timeFunction = std::make_shared<Function>(VOID, "time");
+    timeFunction->standard = true;
     timeFunction->mangledName = "_F4timeAI";
     timeFunction->parameters.push_back({"a", new_type("int[]")});
     addFunction(timeFunction);
     
     //duration function
     auto durationFunction = std::make_shared<Function>(VOID, "duration");
+    durationFunction->standard = true;
     durationFunction->mangledName = "_F8durationAIAI";
     durationFunction->parameters.push_back({"a", new_type("int[]")});
     durationFunction->parameters.push_back({"b", new_type("int[]")});
