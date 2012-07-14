@@ -103,6 +103,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 ("fvariable-allocation", "Enable variable allocation in register")
                 ("fparameter-allocation", "Enable parameter allocation in register")
                 ("fpeephole-optimization", "Enable peephole optimizer")
+                ("fomit-frame-pointer", "Omit frame pointer from functions")
                 ("finline-functions", "Enable inlining")
                 ("fno-inline-functions", "Disable inlining");
             
