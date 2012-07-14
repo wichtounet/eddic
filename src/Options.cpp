@@ -101,6 +101,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 
                 ("fglobal-optimization", "Enable optimizer engine")
                 ("fvariable-allocation", "Enable variable allocation in register")
+                ("fparameter-allocation", "Enable parameter allocation in register")
                 ("fpeephole-optimization", "Enable peephole optimizer")
                 ("finline-functions", "Enable inlining")
                 ("fno-inline-functions", "Disable inlining");
