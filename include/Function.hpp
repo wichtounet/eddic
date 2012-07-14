@@ -39,6 +39,7 @@ struct Function {
     std::vector<ParameterType> parameters;
     std::shared_ptr<FunctionContext> context;
     int references;
+    bool standard = false;
 
     Function(std::shared_ptr<const Type> ret, const std::string& n);
 
