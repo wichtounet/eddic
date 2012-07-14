@@ -10,13 +10,22 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "Options.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
 using namespace eddic;
 
-FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : 
-    Context(parent), currentPosition(::INT->size()), currentParameter(2 * ::INT->size()) {}
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : Context(parent){
+    //TODO There should be a better place
+    if(option_defined("fomit-frame-pointer")){
+        currentPosition = INT->size(); 
+        currentParameter = INT->size();
+    } else {
+        currentPosition = INT->size(); 
+        currentParameter = 2 * INT->size();
+    }
+}
 
 int FunctionContext::size() const {
     return currentPosition - ::INT->size();
