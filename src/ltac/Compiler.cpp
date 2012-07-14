@@ -11,6 +11,7 @@
 #include "Platform.hpp"
 #include "Type.hpp"
 #include "PerfsTimer.hpp"
+#include "Options.hpp"
 
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -40,8 +41,10 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     auto size = src_function->context->size();
 
     //Enter stack frame
-    ltac::add_instruction(target_function, ltac::Operator::ENTER);
-    
+    if(!option_defined("fomit-frame-pointer")){
+        ltac::add_instruction(target_function, ltac::Operator::ENTER);
+    }
+
     //Alloc stack space for locals
     ltac::add_instruction(target_function, ltac::Operator::SUB, ltac::SP, size);
     
@@ -119,6 +122,10 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     
     ltac::add_instruction(target_function, ltac::Operator::ADD, ltac::SP, size);
         
-    ltac::add_instruction(target_function, ltac::Operator::LEAVE);
+    //Leave stack frame
+    if(!option_defined("fomit-frame-pointer")){
+        ltac::add_instruction(target_function, ltac::Operator::LEAVE);
+    }
+
     ltac::add_instruction(target_function, ltac::Operator::RET);
 }
