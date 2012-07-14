@@ -47,7 +47,9 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
     optimizer.optimize(mtacProgram, get_string_pool());
 
     //Allocate parameters into registers
-    mtac::register_param_allocation();
+    if(option_defined("fparameter-allocation")){
+        mtac::register_param_allocation();
+    }
 
     //Allocate variables into registers
     if(option_defined("fvariable-allocation")){
