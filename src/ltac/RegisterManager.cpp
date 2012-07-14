@@ -11,6 +11,7 @@
 #include "assert.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
+#include "Options.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
@@ -476,22 +477,24 @@ void ltac::RegisterManager::restore_pushed_registers(){
 void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor){
     if(first_param){
         if(param->function){
-            unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-            unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
-            
             std::set<ltac::Register> overriden_registers;
             std::set<ltac::FloatRegister> overriden_float_registers;
-            
-            for(auto& parameter : param->function->parameters){
-                auto type = param->function->getParameterType(parameter.name);
-                unsigned int position = param->function->getParameterPositionByType(parameter.name);
+    
+            if(param->function->standard || option_defined("fparameter-allocation")){
+                unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+                unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
-                if(type == INT && position <= maxInt){
-                    overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
-                }
+                for(auto& parameter : param->function->parameters){
+                    auto type = param->function->getParameterType(parameter.name);
+                    unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
-                if(type == FLOAT && position <= maxFloat){
-                    overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
+                    if(type == INT && position <= maxInt){
+                        overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
+                    }
+
+                    if(type == FLOAT && position <= maxFloat){
+                        overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
+                    }
                 }
             }
 
