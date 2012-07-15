@@ -74,7 +74,14 @@ void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const 
 void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
     std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
     level++;
+    std::cout << indent() << "Members:" << std::endl; 
+    level++;
     visit_each_non_variant(*this, struct_.Content->members);    
+    level--;
+    std::cout << indent() << "Functions:" << std::endl; 
+    level++;
+    visit_each_non_variant(*this, struct_.Content->functions);    
+    level--;
     level--;
 }
 

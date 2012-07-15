@@ -58,6 +58,10 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     /* Imports  */
     qi::rule<lexer::Iterator, ast::StandardImport()> standardImport;
     qi::rule<lexer::Iterator, ast::Import()> import;
+
+    /* Structures */
+    qi::rule<lexer::Iterator, ast::Struct()> struct_;
+    qi::rule<lexer::Iterator, ast::MemberDeclaration()> member_declaration;
    
     ValueGrammar value;
     TypeGrammar type;

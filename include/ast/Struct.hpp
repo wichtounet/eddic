@@ -15,6 +15,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/MemberDeclaration.hpp"
+#include "ast/FunctionDeclaration.hpp"
 
 namespace eddic {
 
@@ -24,9 +25,9 @@ struct ASTStruct {
     Position position;
     std::string name;
     std::vector<MemberDeclaration> members;
+    std::vector<FunctionDeclaration> functions;
 
-    mutable long references;
-    ASTStruct() : references(0) {}
+    mutable long references = 0;
 };
 
 typedef Deferred<ASTStruct> Struct;
@@ -41,6 +42,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::string, Content->name)
     (std::vector<eddic::ast::MemberDeclaration>, Content->members)
+    (std::vector<eddic::ast::FunctionDeclaration>, Content->functions)
 )
 
 #endif

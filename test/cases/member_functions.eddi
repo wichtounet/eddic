@@ -1,0 +1,13 @@
+struct Counter {
+    int value;
+
+    void decrement(){
+        ++value;
+
+        println(value);
+    }
+}
+
+void main(){
+
+}

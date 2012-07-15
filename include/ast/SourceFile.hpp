@@ -56,8 +56,7 @@ struct ASTSourceFile {
     Position position;
     std::vector<FirstLevelBlock> blocks;
 
-    mutable long references;
-    ASTSourceFile() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!
