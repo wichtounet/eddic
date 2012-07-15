@@ -891,7 +891,7 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
     auto falseLabel = newLabel();
     auto endLabel = newLabel();
 
-    if(type == INT || type == BOOL){
+    if(type == INT || type == BOOL || type == FLOAT){
         auto t1 = function->context->new_temporary(type);
 
         visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
@@ -924,6 +924,8 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
         
         return {t1, t2};
     }
+
+    ASSERT_PATH_NOT_TAKEN("Unhandled ternary type");
 
     return {};
 }

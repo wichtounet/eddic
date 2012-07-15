@@ -19,4 +19,11 @@ void main(){
     
     print(5 > 12 ? true : false);
     print("|");
+    
+    float d = 5 > 2 ? 44.4 : 66.6;
+    print(d);
+    print("|");
+    
+    print(5 > 12 ? 44.4 : 66.6);
+    print("|");
 }
