@@ -279,6 +279,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return visit(*this, assignment.Content->left_value);
     }
 
+    result_type operator()(ast::Ternary& ternary) const {
+        //TODO
+        return {};
+    }
+
     result_type get_member(unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var) const {
         if(member_type == STRING){
             auto t1 = function->context->new_temporary(INT);
