@@ -38,6 +38,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
     qi::rule<lexer::Iterator, ast::Minus()> negatedConstantValue;
     qi::rule<lexer::Iterator, ast::Plus()> plusValue;
+    qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
     qi::rule<lexer::Iterator, ast::Expression()> additiveValue;
     qi::rule<lexer::Iterator, ast::Expression()> multiplicativeValue;
     qi::rule<lexer::Iterator, ast::Expression()> relationalValue;

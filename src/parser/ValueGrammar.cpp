@@ -76,7 +76,19 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     /* Define values */ 
 
-    value = logicalOrValue.alias();
+    value = conditional_expression.alias();
+
+    conditional_expression =
+            ternary
+         |  logicalOrValue;
+
+    ternary %=
+            qi::position(position_begin)
+        >>  logicalOrValue 
+        >>  lexer.question_mark
+        >>  conditional_expression 
+        >>  lexer.double_dot
+        >>  conditional_expression;
     
     logicalOrValue %=
             qi::position(position_begin)
@@ -129,8 +141,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  primaryValue;
     
     primaryValue = 
-            ternary
-        |   assignment
+            assignment
         |   integer_suffix
         |   integer
         |   float_
@@ -243,14 +254,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.identifier
         >>  qi::adapttokens[suffix_op];
 
-    ternary %=
-            qi::position(position_begin)
-        >>  value
-        >>  lexer.question_mark
-        >>  value
-        >>  lexer.double_dot
-        >>  value;
-
     //Configure debugging
 
     DEBUG_RULE(assignment);
@@ -259,4 +262,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(variable_value);
     DEBUG_RULE(dereference_value);
     DEBUG_RULE(function_call);
+    DEBUG_RULE(primaryValue);
+    DEBUG_RULE(ternary);
 }
