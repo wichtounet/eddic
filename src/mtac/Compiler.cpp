@@ -904,6 +904,25 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
         function->add(endLabel);
 
         return {t1};
+    } else if(type == STRING){
+        auto t1 = function->context->newTemporary();
+        auto t2 = function->context->newTemporary();
+        
+        visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
+        auto args = visit(ToArgumentsVisitor(function), ternary.Content->true_value);
+        function->add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
+        function->add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
+
+        function->add(std::make_shared<mtac::Goto>(endLabel));
+        
+        function->add(falseLabel);
+        args = visit(ToArgumentsVisitor(function), ternary.Content->false_value);
+        function->add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
+        function->add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
+        
+        function->add(endLabel);
+        
+        return {t1, t2};
     }
 
     return {};
