@@ -134,7 +134,7 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
             changes |= optimize_optional(quadruple->arg2, results);
         }
 
-        if(!mtac::erase_result(quadruple->op) && quadruple->result){
+        if(!mtac::erase_result(quadruple->op) && quadruple->result && quadruple->op != mtac::Operator::DOT_ASSIGN){
             if(results.find(quadruple->result) != results.end()){
                 if(mtac::isVariable(results[quadruple->result])){
                     auto var = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
