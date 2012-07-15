@@ -12,4 +12,11 @@ void main(){
     
     print(5 > 12 ? "44" : "66");
     print("|");
+    
+    bool c = 5 > 2 ? true : false;
+    print(c);
+    print("|");
+    
+    print(5 > 12 ? true : false);
+    print("|");
 }

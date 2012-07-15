@@ -891,8 +891,8 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
     auto falseLabel = newLabel();
     auto endLabel = newLabel();
 
-    if(type == INT){
-        auto t1 = function->context->new_temporary(INT);
+    if(type == INT || type == BOOL){
+        auto t1 = function->context->new_temporary(type);
 
         visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
         visit(AssignValueToVariable(function, t1), ternary.Content->true_value);
