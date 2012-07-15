@@ -215,6 +215,11 @@ BOOST_AUTO_TEST_CASE( member_pointers ){
     assert_output("member_pointers.eddi", "44|44|55|55|66|66|66|44|44|55|55|66|66|66|");
 }
 
+BOOST_AUTO_TEST_CASE( ternary ){
+    assert_output_32("ternary.eddi", "44|66|44|66|1|0|44.4000|66.5999|");
+    assert_output_64("ternary.eddi", "44|66|44|66|1|0|44.3999|66.5999|");
+}
+
 BOOST_AUTO_TEST_CASE( while_ ){
     assert_output("while.eddi", "01234");
 }
