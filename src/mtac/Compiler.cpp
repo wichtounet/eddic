@@ -42,6 +42,7 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
+std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
@@ -280,8 +281,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::Ternary& ternary) const {
-        //TODO
-        return {};
+        return compile_ternary(function, ternary);
     }
 
     result_type get_member(unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var) const {
@@ -883,6 +883,30 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
 
         function->add(std::make_shared<mtac::IfFalse>(var, label));
     }
+}
+
+std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary){
+    auto type = visit_non_variant(ast::GetTypeVisitor(), ternary);
+
+    auto falseLabel = newLabel();
+    auto endLabel = newLabel();
+
+    if(type == INT){
+        auto t1 = function->context->new_temporary(INT);
+
+        visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
+        visit(AssignValueToVariable(function, t1), ternary.Content->true_value);
+        function->add(std::make_shared<mtac::Goto>(endLabel));
+        
+        function->add(falseLabel);
+        visit(AssignValueToVariable(function, t1), ternary.Content->false_value);
+        
+        function->add(endLabel);
+
+        return {t1};
+    }
+
+    return {};
 }
 
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
