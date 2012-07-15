@@ -46,6 +46,7 @@ typedef boost::variant<
             Cast,
             BuiltinOperator,
             Assignment,
+            Ternary,
             SuffixOperation,
             PrefixOperation
         > Value;
@@ -55,6 +56,7 @@ typedef boost::variant<
 } //end of eddic
 
 #include "ast/Assignment.hpp"
+#include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
 #include "ast/FunctionCall.hpp"

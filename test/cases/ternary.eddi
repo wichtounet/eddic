@@ -1,0 +1,29 @@
+void main(){
+    int a = 5 > 2 ? 44 : 66;
+    print(a);
+    print("|");
+    
+    print(5 > 12 ? 44 : 66);
+    print("|");
+    
+    string b = 5 > 2 ? "44" : "66";
+    print(b);
+    print("|");
+    
+    print(5 > 12 ? "44" : "66");
+    print("|");
+    
+    bool c = 5 > 2 ? true : false;
+    print(c);
+    print("|");
+    
+    print(5 > 12 ? true : false);
+    print("|");
+    
+    float d = 5 > 2 ? 44.4 : 66.6;
+    print(d);
+    print("|");
+    
+    print(5 > 12 ? 44.4 : 66.6);
+    print("|");
+}

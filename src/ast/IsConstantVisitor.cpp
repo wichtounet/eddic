@@ -28,6 +28,7 @@ ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::SuffixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::PrefixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::BuiltinOperator, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Assignment, false)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Ternary, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::DereferenceValue, false)
 
 bool ast::IsConstantVisitor::operator()(ast::Minus& value) const {

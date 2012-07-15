@@ -33,6 +33,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_MINUS_PLUS_VALUES()
         AUTO_RECURSE_CAST_VALUES()
+        AUTO_RECURSE_TERNARY()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()

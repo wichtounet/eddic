@@ -172,6 +172,19 @@ void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
     print_sub(*this, assign.Content->value);
 }
 
+void ast::DebugVisitor::operator()(ast::Ternary& ternary) const {
+    std::cout << indent() << "Ternary" << std::endl;
+
+    std::cout << indent() << "Condition Value:" << std::endl;
+    print_sub(*this, ternary.Content->condition);
+
+    std::cout << indent() << "True Value:" << std::endl;
+    print_sub(*this, ternary.Content->true_value);
+
+    std::cout << indent() << "False Value:" << std::endl;
+    print_sub(*this, ternary.Content->false_value);
+}
+
 void ast::DebugVisitor::operator()(ast::Return& return_) const {
     std::cout << indent() << "Function return" << std::endl; 
     print_sub(*this, return_.Content->value);

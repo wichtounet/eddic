@@ -32,6 +32,10 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Null& /*n
     return new_pointer_type(INT); //TODO Check that
 }
 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
+   return visit(*this, ternary.Content->true_value); 
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
    return visit(*this, minus.Content->value); 
 }
