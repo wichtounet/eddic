@@ -14,6 +14,7 @@ namespace eddic {
 
 namespace ast {
     
+void defineMemberFunctions(ast::SourceFile& program);
 void defineFunctions(ast::SourceFile& program);
 
 } //end of ast

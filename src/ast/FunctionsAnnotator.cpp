@@ -20,6 +20,37 @@
 
 using namespace eddic;
 
+class MemberFunctionAnnotator : public boost::static_visitor<> {
+    public:
+        AUTO_RECURSE_PROGRAM()
+        
+        void operator()(ast::Struct& struct_){
+            parent_struct = struct_.Content->name;
+
+            visit_each_non_variant(*this, struct_.Content->functions);
+
+            parent_struct = "";
+        }
+         
+        void operator()(ast::FunctionDeclaration& declaration){
+            if(!parent_struct.empty()){
+                ast::PointerType paramType;
+                paramType.type = parent_struct;
+                
+                ast::FunctionParameter param;
+                param.parameterName = "this";
+                param.parameterType = paramType;
+
+                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+            }
+        }
+
+        AUTO_IGNORE_OTHERS()
+
+    private:
+        std::string parent_struct;
+};
+
 class FunctionInserterVisitor : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
@@ -162,6 +193,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_OTHERS()
 };
+
+void ast::defineMemberFunctions(ast::SourceFile& program){
+    MemberFunctionAnnotator annotator;
+    annotator(program);
+}
 
 void ast::defineFunctions(ast::SourceFile& program){
     //First phase : Collect functions

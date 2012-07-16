@@ -55,6 +55,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(symbols.is_recursively_nested(struct_.Content->name)){
             throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
         }
+
+        visit_each_non_variant(*this, struct_.Content->functions);
     }
    
     void operator()(ast::FunctionDeclaration& declaration){
