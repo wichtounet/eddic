@@ -999,7 +999,6 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
-        AUTO_IGNORE_STRUCT()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
        
@@ -1013,6 +1012,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             program->context = p.Content->context;
 
             visit_each(*this, p.Content->blocks);
+        }
+        
+        void operator()(ast::Struct& p){
+            visit_each_non_variant(*this, p.Content->functions);
         }
 
         void operator()(ast::FunctionDeclaration& f){
