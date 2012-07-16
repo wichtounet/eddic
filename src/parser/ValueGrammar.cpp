@@ -185,7 +185,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     variable_value %= 
             qi::position(position_begin)
-        >>  lexer.identifier
+        >>  
+            (
+                    lexer.this_
+                |   lexer.identifier
+            )
         >>  *(
                     lexer.dot
                 >>  lexer.identifier
@@ -257,6 +261,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     //Configure debugging
 
     DEBUG_RULE(assignment);
+    DEBUG_RULE(suffix_operation);
+    DEBUG_RULE(prefix_operation);
+    DEBUG_RULE(builtin_operator);
     DEBUG_RULE(left_value);
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
@@ -264,4 +271,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(function_call);
     DEBUG_RULE(primaryValue);
     DEBUG_RULE(ternary);
+    DEBUG_RULE(constant);
+    DEBUG_RULE(litteral);
 }

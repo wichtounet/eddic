@@ -1,10 +1,10 @@
 struct Counter {
     int value;
 
-    void decrement(){
-        ++value;
+    void increment(){
+        this.value = this.value + 1;
 
-        println(value);
+        println(this.value);
     }
 }
 
