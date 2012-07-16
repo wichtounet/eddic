@@ -23,6 +23,14 @@ using namespace eddic;
 class FunctionInserterVisitor : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
+        
+        void operator()(ast::Struct& struct_){
+            parent_struct = struct_.Content->name;
+
+            visit_each_non_variant(*this, struct_.Content->functions);
+
+            parent_struct = "";
+        }
          
         void operator()(ast::FunctionDeclaration& declaration){
             auto return_type = visit(ast::TypeTransformer(), declaration.Content->returnType);
@@ -47,11 +55,16 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
             }
 
+            signature->struct_ = parent_struct;
+
             symbols.addFunction(signature);
             symbols.getFunction(signature->mangledName)->context = declaration.Content->context;
         }
 
         AUTO_IGNORE_OTHERS()
+
+    private:
+        std::string parent_struct;
 };
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {

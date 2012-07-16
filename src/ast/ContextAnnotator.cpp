@@ -28,6 +28,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Context> currentContext;
 
     public:
+        AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
@@ -44,7 +45,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_INTEGER_SUFFIX()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
-        AUTO_IGNORE_STRUCT()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();

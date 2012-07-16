@@ -431,6 +431,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     InstructionTransformer instructionTransformer;
 
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_STRUCT()
     
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
@@ -456,7 +457,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
     AUTO_IGNORE_FOREACH_LOOP()
     AUTO_IGNORE_RETURN()
-    AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_PLUS()
     AUTO_IGNORE_MINUS()
     AUTO_IGNORE_PREFIX_OPERATION()
