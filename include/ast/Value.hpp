@@ -41,16 +41,16 @@ typedef boost::mpl::vector<
             True,
             False,
             ArrayValue,
-            MemberFunctionCall,
             FunctionCall,
             Cast,
             BuiltinOperator,
             Assignment,
+            SuffixOperation,
+            PrefixOperation,
             Ternary
         > value_types_first;
 
-typedef boost::mpl::push_back<value_types_first, SuffixOperation>::type value_types_second;
-typedef boost::mpl::push_back<value_types_second, PrefixOperation>::type value_types;
+typedef boost::mpl::push_back<value_types_first, MemberFunctionCall>::type value_types;
 
 typedef boost::make_variant_over<value_types>::type Value;
 
