@@ -185,6 +185,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
         }
 
+        void operator()(ast::MemberFunctionCall& functionCall){
+            //TODO Need to get the type of the struct
+        }
+
         void operator()(ast::Return& return_){
             return_.Content->function = currentFunction;
 

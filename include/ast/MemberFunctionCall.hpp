@@ -20,6 +20,8 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 /*!
@@ -29,6 +31,7 @@ namespace ast {
  */
 struct ASTMemberFunctionCall {
     std::shared_ptr<eddic::Function> function;
+    std::shared_ptr<Context> context;
     std::string mangled_name;
 
     Position position;
