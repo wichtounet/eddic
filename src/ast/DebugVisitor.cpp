@@ -152,7 +152,7 @@ void ast::DebugVisitor::operator()(ast::FunctionCall& call) const {
 }
 
 void ast::DebugVisitor::operator()(ast::MemberFunctionCall& call) const {
-    std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->functionName << std::endl; 
+    std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name << std::endl; 
     print_each_sub(*this, call.Content->values);
 }
 

@@ -38,6 +38,7 @@ namespace {
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
 std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
@@ -263,6 +264,27 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto t2 = function->context->newTemporary();
 
             execute_call(call, function, t1, t2);
+
+            return {t1, t2};
+        }
+        
+        ASSERT_PATH_NOT_TAKEN("Unhandled function return type");
+    }
+    
+    result_type operator()(ast::MemberFunctionCall& call) const {
+        auto type = call.Content->function->returnType;
+
+        if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
+            auto t1 = function->context->new_temporary(type);
+
+            execute_member_call(call, function, t1, {});
+
+            return {t1};
+        } else if(type == STRING){
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
+
+            execute_member_call(call, function, t1, t2);
 
             return {t1, t2};
         }
@@ -1127,6 +1149,10 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::FunctionCall& functionCall){
             execute_call(functionCall, function, {}, {});
         }
+        
+        void operator()(ast::MemberFunctionCall& functionCall){
+            execute_member_call(functionCall, function, {}, {});
+        }
 
         void operator()(ast::Return& return_){
             auto arguments = visit(ToArgumentsVisitor(function), return_.Content->value);
@@ -1279,6 +1305,10 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
     }
 
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
+}
+
+void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+    //TODO
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){

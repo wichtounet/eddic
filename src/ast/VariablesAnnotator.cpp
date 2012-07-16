@@ -31,6 +31,7 @@ using namespace eddic;
 struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
+    AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()

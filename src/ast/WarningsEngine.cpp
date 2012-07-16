@@ -79,6 +79,7 @@ struct Inspector : public boost::static_visitor<> {
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
+        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
