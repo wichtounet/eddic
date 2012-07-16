@@ -19,7 +19,12 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         position_begin(position_begin){
 
     /* Match operators into symbols */
-    //TODO Find a way to avoid duplication of these things
+    
+    unary_op.add
+        ("+", ast::Operator::ADD)
+        ("-", ast::Operator::SUB)
+        ;
+
     additive_op.add
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
@@ -72,8 +77,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("%=", ast::Operator::MOD)
         ;
 
-    //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
-
     /* Define values */ 
 
     value = conditional_expression.alias();
@@ -116,22 +119,19 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
     
     unaryValue %= 
-            negatedValue
-        |   plusValue
-        |   castValue
+            negated_constant_value
+        |   castValue    
+        |   unary_value
         |   primaryValue;
+
+    unary_value %=
+            qi::adapttokens[unary_op] 
+        >   primaryValue
+            ;
     
-    negatedValue = 
-            lexer.subtraction
-         >> primaryValue;
-   
-    negatedConstantValue = 
-            lexer.subtraction
+    negated_constant_value = 
+            qi::adapttokens[unary_op]
          >> integer;
-  
-    plusValue %=
-            lexer.addition
-         >> primaryValue;
 
     castValue %=
             qi::position(position_begin)
@@ -220,7 +220,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >> lexer.litteral;
 
     constant = 
-            negatedConstantValue
+            negated_constant_value
         |   integer 
         |   litteral;
    

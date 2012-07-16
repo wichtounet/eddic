@@ -41,11 +41,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
         return false;
     }
 
-    bool operator()(ast::Minus& value) const {
-        return visit(*this, value.Content->value);
-    }
-
-    bool operator()(ast::Plus& value) const {
+    bool operator()(ast::Unary& value) const {
         return visit(*this, value.Content->value);
     }
 

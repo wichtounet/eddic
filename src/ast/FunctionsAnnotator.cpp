@@ -111,7 +111,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_COMPOSED_VALUES()
-        AUTO_RECURSE_MINUS_PLUS_VALUES()
+        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
 
         void operator()(ast::FunctionDeclaration& declaration){

@@ -48,11 +48,8 @@ typedef Deferred<ASTDereferenceValue> DereferenceValue;
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
 
-struct ASTMinus;
-typedef Deferred<ASTMinus> Minus;
-
-struct ASTPlus;
-typedef Deferred<ASTPlus> Plus;
+struct ASTUnary;
+typedef Deferred<ASTUnary> Unary;
 
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;

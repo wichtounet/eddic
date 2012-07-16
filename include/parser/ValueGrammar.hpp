@@ -35,9 +35,8 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
     qi::rule<lexer::Iterator, ast::Value()> unaryValue;
     qi::rule<lexer::Iterator, ast::Cast()> castValue;
-    qi::rule<lexer::Iterator, ast::Minus()> negatedValue;
-    qi::rule<lexer::Iterator, ast::Minus()> negatedConstantValue;
-    qi::rule<lexer::Iterator, ast::Plus()> plusValue;
+    qi::rule<lexer::Iterator, ast::Unary()> unary_value;
+    qi::rule<lexer::Iterator, ast::Unary()> negated_constant_value;
     qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
     qi::rule<lexer::Iterator, ast::Expression()> additiveValue;
     qi::rule<lexer::Iterator, ast::Expression()> multiplicativeValue;
@@ -69,6 +68,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::symbols<char, ast::Operator> suffix_op;
     qi::symbols<char, ast::Operator> prefix_op;
     qi::symbols<char, ast::Operator> assign_op;
+    qi::symbols<char, ast::Operator> unary_op;
 
     qi::symbols<char, ast::BuiltinType> builtin_op;
     

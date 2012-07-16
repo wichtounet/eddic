@@ -36,12 +36,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& 
    return visit(*this, ternary.Content->true_value); 
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
-   return visit(*this, minus.Content->value); 
-}
-
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
-   return visit(*this, minus.Content->value); 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Unary& unary) const {
+   return visit(*this, unary.Content->value); 
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {

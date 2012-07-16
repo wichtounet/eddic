@@ -34,7 +34,7 @@ struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const IntegerSuffix& litteral) const;
     Val operator()(const Float& litteral) const;
     Val operator()(const VariableValue& variable) const;
-    Val operator()(const Minus& minus) const;
+    Val operator()(const Unary& unary) const;
 
     template<typename T>
     Val operator()(const T&) const {

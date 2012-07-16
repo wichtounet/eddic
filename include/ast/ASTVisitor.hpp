@@ -112,11 +112,8 @@ void operator()(ast::Expression& value){\
         [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });\
 }
 
-#define AUTO_RECURSE_MINUS_PLUS_VALUES()\
-void operator()(ast::Plus& value){\
-    visit(*this, value.Content->value);\
-}\
-void operator()(ast::Minus& value){\
+#define AUTO_RECURSE_UNARY_VALUES()\
+void operator()(ast::Unary& value){\
     visit(*this, value.Content->value);\
 }
 
@@ -161,8 +158,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_INTEGER() void operator()(ast::Integer&){}
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Litteral&){}
-#define AUTO_IGNORE_MINUS() void operator()(ast::Minus&){}
-#define AUTO_IGNORE_PLUS() void operator()(ast::Plus&){}
+#define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}
 #define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::SuffixOperation&){}
@@ -196,8 +192,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_INTEGER(return_type) return_type operator()(ast::Integer& t){return t;}
 #define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return t;}
 #define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Litteral& t){return t;}
-#define AUTO_RETURN_MINUS(return_type) return_type operator()(ast::Minus& t){return t;}
-#define AUTO_RETURN_PLUS(return_type) return_type operator()(ast::Plus& t){return t;}
+#define AUTO_RETURN_UNARY(return_type) return_type operator()(ast::Unary& t){return t;}
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
 #define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::SuffixOperation& t){return t;}

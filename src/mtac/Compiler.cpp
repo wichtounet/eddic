@@ -507,19 +507,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
     }
 
-    result_type operator()(ast::Minus& value) const {
-        mtac::Argument arg = moveToArgument(value.Content->value, function);
-        
-        auto type = visit(ast::GetTypeVisitor(), value.Content->value);
-        auto t1 = function->context->new_temporary(type);
-
-        if(type == FLOAT){
-            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
+    result_type operator()(ast::Unary& value) const {
+        if(value.Content->op == ast::Operator::ADD){
+            return visit(*this, value.Content->value);
         } else {
-            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::MINUS));
+            mtac::Argument arg = moveToArgument(value.Content->value, function);
+
+            auto type = visit(ast::GetTypeVisitor(), value.Content->value);
+            auto t1 = function->context->new_temporary(type);
+
+            if(type == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
+            } else {
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::MINUS));
+            }
+
+            return {t1};
         }
-        
-        return {t1};
     }
     
     result_type operator()(ast::Cast& cast) const {
@@ -542,11 +546,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         //If srcType == destType, there is nothing to do
         return {arg};
-    }
-
-    //No operation to do
-    result_type operator()(ast::Plus& value) const {
-        return visit(*this, value.Content->value);
     }
 };
 

@@ -270,13 +270,8 @@ void ast::DebugVisitor::operator()(ast::Expression& value) const {
     --level;
 }
 
-void ast::DebugVisitor::operator()(ast::Minus& value) const {
-    std::cout << indent() << "Unary +" << std::endl; 
-    print_sub(*this, value.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::Plus& value) const {
-    std::cout << indent() << "Unary -" << std::endl; 
+void ast::DebugVisitor::operator()(ast::Unary& value) const {
+    std::cout << indent() << "Unary " << static_cast<int>(value.Content->op) << std::endl; 
     print_sub(*this, value.Content->value);
 }
 

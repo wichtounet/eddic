@@ -35,8 +35,7 @@ typedef boost::mpl::vector<
             VariableValue,
             DereferenceValue,
             Expression,
-            Minus,
-            Plus,
+            Unary,
             Null,
             True,
             False,
@@ -65,8 +64,7 @@ typedef boost::make_variant_over<value_types>::type Value;
 #include "ast/MemberFunctionCall.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
-#include "ast/Minus.hpp"
-#include "ast/Plus.hpp"
+#include "ast/Unary.hpp"
 #include "ast/Cast.hpp"
 
 #endif
