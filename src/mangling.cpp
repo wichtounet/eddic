@@ -53,24 +53,6 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     }
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types){
-    if(functionName == "main"){
-        return functionName;
-    }
-
-    std::ostringstream ss;
-
-    ss << "_F";
-    ss << functionName.length();
-    ss << functionName;
-
-    for(auto type : types){
-        ss << mangle(type);
-    }
-
-    return ss.str();
-}
-
 std::string eddic::mangle(std::shared_ptr<Function> function){
     if(function->name == "main"){
         return function->name;
@@ -97,7 +79,7 @@ std::string eddic::mangle(std::shared_ptr<Function> function){
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_){
     if(functionName == "main"){
         return functionName;
     }
@@ -105,12 +87,42 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     std::ostringstream ss;
 
     ss << "_F";
+
+    if(!struct_.empty()){
+        ss << struct_.length();
+        ss << struct_;
+    }
+
     ss << functionName.length();
     ss << functionName;
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
         auto type = visit(visitor, value);
+        ss << mangle(type);
+    }
+
+    return ss.str();
+}
+
+std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+
+    if(!struct_.empty()){
+        ss << struct_.length();
+        ss << struct_;
+    }
+
+    ss << functionName.length();
+    ss << functionName;
+
+    for(auto type : types){
         ss << mangle(type);
     }
 

@@ -43,17 +43,19 @@ std::string mangle(const std::shared_ptr<Function> function);
  * \brief Return the mangled representation of the given function. Used for function calls.  
  * \param functionName The name of the function. 
  * \param values The values used for the call. 
+ * \param struct_ The struct of the member function.
  * \return The mangled function name. 
  */
-std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values);
+std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_ = "");
 
 /*!
  * \brief Return the mangled representation of the given function. Generic use with a list of types. 
  * \param functionName The name of the function. 
  * \param types The parameters types. 
+ * \param struct_ The struct of the member function.
  * \return The mangled function name. 
  */
-std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types);
+std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_ = "");
 
 } //end of eddic
 
