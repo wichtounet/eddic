@@ -95,6 +95,11 @@ void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
 }
 
+#define AUTO_RECURSE_MEMBER_FUNCTION_CALLS()\
+void operator()(ast::MemberFunctionCall& functionCall){\
+    visit_each(*this, functionCall.Content->values);\
+}
+
 #define AUTO_RECURSE_BUILTIN_OPERATORS()\
 void operator()(ast::BuiltinOperator& builtin){\
     visit_each(*this, builtin.Content->values);\
@@ -149,6 +154,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_FOREACH_LOOP() void operator()(ast::Foreach&){}
 #define AUTO_IGNORE_FOREACH_IN_LOOP() void operator()(ast::ForeachIn&){}
 #define AUTO_IGNORE_FUNCTION_CALLS() void operator()(ast::FunctionCall&){}
+#define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION() void operator()(ast::GlobalArrayDeclaration&){}
 #define AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION() void operator()(ast::GlobalVariableDeclaration&){}
 #define AUTO_IGNORE_IMPORT() void operator()(ast::Import&){}

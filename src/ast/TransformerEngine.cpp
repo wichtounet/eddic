@@ -76,6 +76,14 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return functionCall;
     }
 
+    ast::Value operator()(ast::MemberFunctionCall& functionCall){
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return functionCall;
+    }
+
     ast::Value operator()(ast::Assignment& assignment){
         assignment.Content->value = visit(*this, assignment.Content->value);
 
@@ -379,6 +387,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
         }
     }
     
+    void operator()(ast::MemberFunctionCall& functionCall){
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
+        }
+    }
+    
     void operator()(ast::BuiltinOperator& builtin){
         for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
             *it = visit(transformer, *it);
@@ -441,6 +455,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_VARIABLE_VALUE()
     AUTO_IGNORE_DEREFERENCE_VALUE()
     AUTO_IGNORE_FUNCTION_CALLS()
+    AUTO_IGNORE_MEMBER_FUNCTION_CALLS()
     AUTO_IGNORE_SWAP()
     AUTO_IGNORE_EXPRESSION()
     AUTO_IGNORE_FALSE()

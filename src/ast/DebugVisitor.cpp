@@ -151,6 +151,11 @@ void ast::DebugVisitor::operator()(ast::FunctionCall& call) const {
     print_each_sub(*this, call.Content->values);
 }
 
+void ast::DebugVisitor::operator()(ast::MemberFunctionCall& call) const {
+    std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->functionName << std::endl; 
+    print_each_sub(*this, call.Content->values);
+}
+
 void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
     std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
     print_each_sub(*this, builtin.Content->values);

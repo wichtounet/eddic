@@ -24,6 +24,7 @@ ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::Null, true)
 
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::ArrayValue, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::FunctionCall, false)
+ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::MemberFunctionCall, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::SuffixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::PrefixOperation, false)
 ASSIGN_INSIDE_CONST(ast::IsConstantVisitor, ast::BuiltinOperator, false)
