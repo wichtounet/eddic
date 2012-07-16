@@ -68,6 +68,13 @@ void print_sub(Visitor& visitor, Container& container){
 
 void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
     std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
+    std::cout << indent() << "Parameters:" << std::endl; 
+    level++;
+    for(auto param : declaration.Content->parameters){
+        std::cout << indent() << param.parameterName << std::endl; 
+    }
+    level--;
+    std::cout << indent() << "Instructions:" << std::endl; 
     print_each_sub(*this, declaration.Content->instructions);
 }
 
