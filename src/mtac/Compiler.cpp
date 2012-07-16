@@ -1239,19 +1239,8 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     }
 }
 
-void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
-    std::shared_ptr<eddic::Function> definition;
-    if(functionCall.Content->mangled_name.empty()){
-        definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
-    } else if(functionCall.Content->function){
-        definition = functionCall.Content->function;
-    } else {
-        definition = symbols.getFunction(functionCall.Content->mangled_name);
-    }
-
-    ASSERT(definition, "All the functions should be in the function table");
-
+template<typename Call>
+void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<eddic::Function> definition, Call& functionCall){
     auto context = definition->context;
     
     auto values = functionCall.Content->values;
@@ -1305,6 +1294,21 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
             }
         }
     }
+}
+
+void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+    std::shared_ptr<eddic::Function> definition;
+    if(functionCall.Content->mangled_name.empty()){
+        definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+    } else if(functionCall.Content->function){
+        definition = functionCall.Content->function;
+    } else {
+        definition = symbols.getFunction(functionCall.Content->mangled_name);
+    }
+
+    ASSERT(definition, "All the functions should be in the function table");
+
+    pass_arguments(function, definition, functionCall);
 
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
