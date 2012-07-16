@@ -150,7 +150,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     instruction %= 
-            (value.function_call > lexer.stop)
+            (value.member_function_call > lexer.stop)
+        |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
