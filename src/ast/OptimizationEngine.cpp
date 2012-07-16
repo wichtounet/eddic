@@ -5,20 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/static_visitor.hpp>
-
-#include "ast/OptimizationEngine.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/IsConstantVisitor.hpp"
-#include "ast/GetTypeVisitor.hpp"
-#include "ast/ASTVisitor.hpp"
-
+#include "variant.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+
+#include "ast/OptimizationEngine.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/IsConstantVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
 
 using namespace eddic;
 

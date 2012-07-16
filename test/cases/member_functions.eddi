@@ -9,5 +9,7 @@ struct Counter {
 }
 
 void main(){
-
+    Counter counter;
+    counter.increment();
+    println(counter.value);
 }

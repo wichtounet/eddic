@@ -7,17 +7,17 @@
 
 #include <algorithm>
 #include <memory>
-#include <boost/variant/variant.hpp>
 
-#include "ast/ContextAnnotator.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/ASTVisitor.hpp"
-
+#include "variant.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "BlockContext.hpp"
 #include "VisitorUtils.hpp"
+
+#include "ast/ContextAnnotator.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 using namespace eddic;
 

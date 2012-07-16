@@ -147,6 +147,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   float_
         |   litteral
         |   builtin_operator
+        |   member_function_call
         |   function_call
         |   prefix_operation
         |   suffix_operation
@@ -232,6 +233,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     function_call %=
             qi::position(position_begin)
+        >>  lexer.identifier
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >   lexer.right_parenth;
+    
+    member_function_call %=
+            qi::position(position_begin)
+        >>  lexer.identifier
+        >>  lexer.dot
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))

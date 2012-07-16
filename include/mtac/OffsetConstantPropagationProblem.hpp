@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/Offset.hpp"      

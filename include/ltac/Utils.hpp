@@ -9,7 +9,7 @@
 #define LTAC_UTILS_H
 
 #include <memory>
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/Program.hpp"
 #include "ltac/Program.hpp"

@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"

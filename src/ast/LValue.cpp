@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant.hpp>
-
 #include "assert.hpp"
 
 #include "ast/Value.hpp"

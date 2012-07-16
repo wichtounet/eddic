@@ -6,17 +6,9 @@
 //=======================================================================
 
 #include <algorithm>
-
 #include <memory>
-#include <boost/variant/variant.hpp>
 
-#include "ast/WarningsEngine.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/ASTVisitor.hpp"
-#include "ast/Position.hpp"
-#include "ast/GetTypeVisitor.hpp"
-#include "ast/TypeTransformer.hpp"
-
+#include "variant.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -26,6 +18,13 @@
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
+
+#include "ast/WarningsEngine.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
+#include "ast/Position.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 

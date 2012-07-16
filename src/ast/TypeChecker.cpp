@@ -6,14 +6,8 @@
 //=======================================================================
 
 #include <memory>
-#include <boost/variant/variant.hpp>
 
-#include "ast/TypeChecker.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/GetTypeVisitor.hpp"
-#include "ast/ASTVisitor.hpp"
-#include "ast/TypeTransformer.hpp"
-
+#include "variant.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -24,6 +18,12 @@
 #include "SymbolTable.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+
+#include "ast/TypeChecker.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 

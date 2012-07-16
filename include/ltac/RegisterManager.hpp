@@ -12,8 +12,7 @@
 #include <vector>
 #include <unordered_set>
 
-#include <boost/variant.hpp>
-
+#include "variant.hpp"
 #include "Platform.hpp"
 #include "FloatPool.hpp"
 

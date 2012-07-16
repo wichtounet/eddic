@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Program.hpp"

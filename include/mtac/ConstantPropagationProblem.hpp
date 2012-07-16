@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/DataFlowProblem.hpp"
 

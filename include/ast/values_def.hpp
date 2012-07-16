@@ -25,6 +25,9 @@ struct Null;
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
+struct ASTMemberFunctionCall;
+typedef Deferred<ASTMemberFunctionCall> MemberFunctionCall;
+
 struct ASTCast;
 typedef Deferred<ASTCast> Cast;
 

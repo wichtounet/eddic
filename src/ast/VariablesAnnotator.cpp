@@ -8,15 +8,7 @@
 #include <algorithm>
 #include <memory>
 
-#include <boost/variant/variant.hpp>
-
-#include "ast/VariablesAnnotator.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/TypeTransformer.hpp"
-#include "ast/IsConstantVisitor.hpp"
-#include "ast/GetConstantValue.hpp"
-#include "ast/ASTVisitor.hpp"
-
+#include "variant.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -26,6 +18,13 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "SymbolTable.hpp"
+
+#include "ast/VariablesAnnotator.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/TypeTransformer.hpp"
+#include "ast/IsConstantVisitor.hpp"
+#include "ast/GetConstantValue.hpp"
+#include "ast/ASTVisitor.hpp"
 
 using namespace eddic;
 

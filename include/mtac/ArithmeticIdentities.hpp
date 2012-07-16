@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "mtac/forward.hpp"
 

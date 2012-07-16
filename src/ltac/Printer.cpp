@@ -8,13 +8,12 @@
 #include <iostream>
 #include <memory>
 
-#include <boost/variant.hpp>
-
-#include "ltac/Printer.hpp"
-
 #include "assert.hpp"
+#include "variant.hpp"
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
+
+#include "ltac/Printer.hpp"
 
 using namespace eddic;
 

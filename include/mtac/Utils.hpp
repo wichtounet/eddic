@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_set>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/Program.hpp"
 #include "mtac/Operator.hpp"

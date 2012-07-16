@@ -5,14 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/variant.hpp>
-#include <boost/variant/apply_visitor.hpp>
+#include "variant.hpp"
+#include "Variable.hpp"
+#include "Type.hpp"
 
 #include "ast/GetConstantValue.hpp"
 #include "ast/Value.hpp"
-
-#include "Variable.hpp"
-#include "Type.hpp"
 
 using namespace eddic;
 

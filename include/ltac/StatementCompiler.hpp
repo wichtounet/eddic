@@ -9,8 +9,8 @@
 #define LTAC_STATEMENT_COMPILER_H
 
 #include <memory>
-#include <boost/variant.hpp>
 
+#include "variant.hpp"
 #include "FloatPool.hpp"
 
 #include "mtac/Program.hpp"

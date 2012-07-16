@@ -8,7 +8,7 @@
 #ifndef AST_DEBUG_VISITOR_H
 #define AST_DEBUG_VISITOR_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/SourceFile.hpp"
 

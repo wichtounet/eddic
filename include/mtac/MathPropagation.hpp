@@ -11,13 +11,12 @@
 #include <memory>
 #include <unordered_map>
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
-
 #include "mtac/Optimizer.hpp"
 #include "mtac/OptimizerUtils.hpp"
 

@@ -8,7 +8,7 @@
 #ifndef MTAC_IS_PARAM_SAFE_VISITOR_H
 #define MTAC_IS_PARAM_SAFE_VISITOR_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/values_def.hpp"
 

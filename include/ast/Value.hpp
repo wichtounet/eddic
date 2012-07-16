@@ -8,10 +8,9 @@
 #ifndef AST_VALUE_H
 #define AST_VALUE_H
 
-#include <boost/variant/variant.hpp>
+#include "variant.hpp"
 
 #include "ast/values_def.hpp"
-
 #include "ast/Integer.hpp"
 #include "ast/IntegerSuffix.hpp"
 #include "ast/Float.hpp"
@@ -28,7 +27,7 @@ namespace eddic {
 
 namespace ast {
 
-typedef boost::variant<
+typedef boost::mpl::vector<
             Integer, 
             IntegerSuffix, 
             Float,
@@ -42,14 +41,18 @@ typedef boost::variant<
             True,
             False,
             ArrayValue,
+            MemberFunctionCall,
             FunctionCall,
             Cast,
             BuiltinOperator,
             Assignment,
-            Ternary,
-            SuffixOperation,
-            PrefixOperation
-        > Value;
+            Ternary
+        > value_types_first;
+
+typedef boost::mpl::push_back<value_types_first, SuffixOperation>::type value_types_second;
+typedef boost::mpl::push_back<value_types_second, PrefixOperation>::type value_types;
+
+typedef boost::make_variant_over<value_types>::type Value;
 
 } //end of ast
 
@@ -59,6 +62,7 @@ typedef boost::variant<
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
+#include "ast/MemberFunctionCall.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Minus.hpp"

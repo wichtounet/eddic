@@ -8,8 +8,7 @@
 #include <iostream>
 #include <memory>
 
-#include <boost/variant.hpp>
-
+#include "variant.hpp"
 #include "assert.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"

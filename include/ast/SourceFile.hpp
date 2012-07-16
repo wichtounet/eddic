@@ -10,10 +10,11 @@
 
 #include <vector>
 
-#include <boost/variant/variant.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/home/support/attributes.hpp>
 #include <boost/spirit/home/classic/iterator.hpp>
+
+#include "variant.hpp"
 
 #include "ast/Position.hpp"
 #include "ast/Deferred.hpp"

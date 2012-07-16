@@ -11,10 +11,8 @@
 #include <string>
 #include <utility>
 
-#include <boost/variant/get.hpp>
-#include <boost/variant/static_visitor.hpp>
-
 #include "assert.hpp"
+#include "variant.hpp"
 
 #include "ast/values_def.hpp"
 

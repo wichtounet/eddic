@@ -8,7 +8,7 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/values_def.hpp"
 
