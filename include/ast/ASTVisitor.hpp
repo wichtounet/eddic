@@ -16,6 +16,11 @@ void operator()(ast::SourceFile& program){\
     visit_each(*this, program.Content->blocks);\
 }
 
+#define AUTO_RECURSE_STRUCT()\
+void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->functions);\
+}
+
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->lhs);\

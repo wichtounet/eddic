@@ -326,6 +326,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FOREACH()
+    AUTO_RECURSE_STRUCT()
         
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -336,7 +337,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
     AUTO_IGNORE_SWAP()
