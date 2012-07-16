@@ -80,13 +80,13 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
-            declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
+            signature->struct_ = parent_struct;
+            
+            declaration.Content->mangledName = signature->mangledName = mangle(signature);
 
             if(symbols.exists(signature->mangledName)){
                 throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
             }
-
-            signature->struct_ = parent_struct;
 
             symbols.addFunction(signature);
             symbols.getFunction(signature->mangledName)->context = declaration.Content->context;

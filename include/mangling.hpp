@@ -34,11 +34,10 @@ std::string unmangle(std::string mangled);
 
 /*!
  * \brief Return the mangled representation of the given function. Used for function declarations.  
- * \param functionName The name of the function
- * \param types The types of parameters. 
+ * \param function the function signature.
  * \return The mangled function name. 
  */
-std::string mangle(const std::string& functionName, const std::vector<ParameterType>& types);
+std::string mangle(const std::shared_ptr<Function> function);
 
 /*!
  * \brief Return the mangled representation of the given function. Used for function calls.  
