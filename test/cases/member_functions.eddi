@@ -6,10 +6,16 @@ struct Counter {
 
         println(this.value);
     }
+
+    void add(int number){
+        this.value = this.value + number;
+    }
 }
 
 void main(){
     Counter counter;
     counter.increment();
+    println(counter.value);
+    counter.add(99);
     println(counter.value);
 }
