@@ -203,12 +203,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             auto types = get_types(functionCall);
 
             std::string mangled = mangle(name, types, struct_type);
-            
-            if(name == "println" || name == "print" || name == "duration"){
-                symbols.addReference(mangled);
-
-                return;
-            }
 
             //If the function does not exists, try implicit conversions to pointers
             if(!symbols.exists(mangled)){
@@ -229,7 +223,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 functionCall.Content->mangled_name = mangled;
                 functionCall.Content->function = symbols.getFunction(mangled);
             } else {
-                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+                throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             }
         }
 
