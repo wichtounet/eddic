@@ -141,18 +141,25 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             return perms;
         }
-
-        void operator()(ast::FunctionCall& functionCall){
-            visit_each(*this, functionCall.Content->values);
-            
-            std::string name = functionCall.Content->functionName;
-
+    
+        template<typename T>
+        std::vector<std::shared_ptr<const Type>> get_types(T& functionCall){
             std::vector<std::shared_ptr<const Type>> types;
 
             ast::GetTypeVisitor visitor;
             for(auto& value : functionCall.Content->values){
                 types.push_back(visit(visitor, value));
             }
+
+            return types;
+        }
+
+        void operator()(ast::FunctionCall& functionCall){
+            visit_each(*this, functionCall.Content->values);
+            
+            std::string name = functionCall.Content->functionName;
+
+            auto types = get_types(functionCall);
 
             std::string mangled = mangle(name, types);
             
@@ -186,7 +193,44 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::MemberFunctionCall& functionCall){
-            //TODO Need to get the type of the struct
+            auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+            auto struct_type = var->type()->type();
+
+            visit_each(*this, functionCall.Content->values);
+            
+            std::string name = functionCall.Content->function_name;
+
+            auto types = get_types(functionCall);
+
+            std::string mangled = mangle(name, types, struct_type);
+            
+            if(name == "println" || name == "print" || name == "duration"){
+                symbols.addReference(mangled);
+
+                return;
+            }
+
+            //If the function does not exists, try implicit conversions to pointers
+            if(!symbols.exists(mangled)){
+                auto perms = permutations(types);
+
+                for(auto& perm : perms){
+                    mangled = mangle(name, perm, struct_type);
+
+                    if(symbols.exists(mangled)){
+                        break;
+                    }
+                }
+            }
+            
+            if(symbols.exists(mangled)){
+                symbols.addReference(mangled);
+
+                functionCall.Content->mangled_name = mangled;
+                functionCall.Content->function = symbols.getFunction(mangled);
+            } else {
+                throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+            }
         }
 
         void operator()(ast::Return& return_){
