@@ -521,7 +521,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                     if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        compiler->bp_offset += FLOAT->size();
+                        compiler->bp_offset += INT->size();
                     } else {
                         spills(reg);
                     }
