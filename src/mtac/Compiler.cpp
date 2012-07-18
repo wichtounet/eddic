@@ -1314,7 +1314,23 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
 }
 
 void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    //TODO
+    auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+    auto struct_type = var->type()->type();
+
+    auto definition = functionCall.Content->function;
+
+    ASSERT(definition, "All the member functions should be in the function table");
+
+    //Pass all normal arguments
+    pass_arguments(function, definition, functionCall);
+                
+    //Pass the address of the object to the member function
+    auto mtac_param = std::make_shared<mtac::Param>(var, definition->context->getVariable(definition->parameters[0].name), definition);
+    mtac_param->address = true;
+    function->add(mtac_param);   
+
+    //Call the function
+    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
