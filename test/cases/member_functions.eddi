@@ -12,6 +12,11 @@ struct Counter {
     }
     
     void add(int n1, int n2){
+        this.value = this.value + n1;
+        this.value = this.value + n2;
+    }
+    
+    void addSub(int n1, int n2){
         this.add(n1);
         this.add(n2);
     }
@@ -24,5 +29,7 @@ void main(){
     counter.add(99);
     println(counter.value);
     counter.add(11, 69);
+    println(counter.value);
+    counter.addSub(11, 69);
     println(counter.value);
 }
