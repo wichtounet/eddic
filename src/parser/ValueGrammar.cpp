@@ -240,7 +240,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     member_function_call %=
             qi::position(position_begin)
-        >>  lexer.identifier
+        >>  (
+                    lexer.identifier
+                |   lexer.this_
+            )
         >>  lexer.dot
         >>  lexer.identifier
         >>  lexer.left_parenth

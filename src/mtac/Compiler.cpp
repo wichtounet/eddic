@@ -1315,7 +1315,6 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
 
 void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-    auto struct_type = var->type()->type();
 
     auto definition = functionCall.Content->function;
 

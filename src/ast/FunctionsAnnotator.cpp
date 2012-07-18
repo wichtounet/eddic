@@ -113,6 +113,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
+        AUTO_RECURSE_STRUCT()
 
         void operator()(ast::FunctionDeclaration& declaration){
             currentFunction = symbols.getFunction(declaration.Content->mangledName);
@@ -194,7 +195,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::MemberFunctionCall& functionCall){
             auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-            auto struct_type = var->type()->type();
+            auto type = var->type();
+            auto struct_type = type->is_pointer() ? type->data_type()->type() : type->type();
 
             visit_each(*this, functionCall.Content->values);
             
