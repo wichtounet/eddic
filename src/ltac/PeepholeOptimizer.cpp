@@ -225,13 +225,19 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                     return transform_to_nop(i1);
                 }
             } else if(is_reg(*i1->arg1) && is_reg(*i2->arg2)){
-                if(boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
+                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg22 = boost::get<ltac::Register>(*i2->arg2);
+                
+                if(reg11 == reg22 && boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
                     if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
                         return transform_to_nop(i2);
                     }
                 }
             } else if(is_reg(*i1->arg2) && is_reg(*i2->arg1)){
-                if(boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
+                auto reg12 = boost::get<ltac::Register>(*i1->arg2);
+                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg12 == reg21 && boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
                     if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
                         return transform_to_nop(i2);
                     }
