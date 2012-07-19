@@ -14,8 +14,6 @@
 
 namespace eddic {
 
-class Type;
-
 /*!
  * \class Member
  * \brief A member of a struct.  

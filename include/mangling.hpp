@@ -16,8 +16,6 @@
 
 namespace eddic {
 
-class Type;
-
 /*!
  * \brief Return the mangled representation of the given type. 
  * \param type The type to mangle. 

@@ -17,7 +17,6 @@
 
 namespace eddic {
 
-class Type;
 class Variable;
 class IntermediateProgram;
 

@@ -14,8 +14,6 @@
 
 namespace eddic {
 
-class Type;
-
 namespace ast {
 
 /*!
