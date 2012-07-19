@@ -144,7 +144,7 @@ inline bool optimize_statement(ltac::Statement& statement){
                     instruction->arg2 = ltac::Address(reg, reg, 8, 0);
 
                     return true;
-                } 
+                }
             }
         }
 
@@ -154,7 +154,25 @@ inline bool optimize_statement(ltac::Statement& statement){
                 instruction->op = ltac::Operator::OR;
                 instruction->arg2 = instruction->arg1;
 
+                return true;
+            }
+        }
+
+        if(instruction->op == ltac::Operator::LEA){
+            auto address = boost::get<ltac::Address>(*instruction->arg2);
+
+            if(address.base_register && !address.scaled_register){
+                if(!address.displacement){
+                    instruction->op = ltac::Operator::MOV;
+                    instruction->arg2 = address.base_register;
+
                     return true;
+                } else if(*address.displacement == 0){
+                    instruction->op = ltac::Operator::MOV;
+                    instruction->arg2 = address.base_register;
+
+                    return true;
+                }
             }
         }
     }
