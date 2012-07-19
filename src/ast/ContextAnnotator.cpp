@@ -7,17 +7,17 @@
 
 #include <algorithm>
 #include <memory>
-#include <boost/variant/variant.hpp>
 
-#include "ast/ContextAnnotator.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/ASTVisitor.hpp"
-
+#include "variant.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "BlockContext.hpp"
 #include "VisitorUtils.hpp"
+
+#include "ast/ContextAnnotator.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
 
 using namespace eddic;
 
@@ -28,10 +28,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Context> currentContext;
 
     public:
+        AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
-        AUTO_RECURSE_MINUS_PLUS_VALUES()
+        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
 
@@ -44,12 +45,17 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_INTEGER_SUFFIX()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
-        AUTO_IGNORE_STRUCT()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
 
             visit_each(*this, program.Content->blocks);
+        }
+        
+        void operator()(ast::MemberFunctionCall& functionCall){
+            functionCall.Content->context = currentContext;
+
+            visit_each(*this, functionCall.Content->values);
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){

@@ -150,7 +150,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     instruction %= 
-            (value.function_call > lexer.stop)
+            (value.member_function_call > lexer.stop)
+        |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
@@ -187,6 +188,21 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  *(instruction)
         >>  lexer.right_brace;
 
+    member_declaration %=
+            qi::position(position_begin)
+        >>  type
+        >>  lexer.identifier
+        >>  lexer.stop;
+
+    struct_ %=
+            qi::position(position_begin)
+        >>  lexer.struct_
+        >>  lexer.identifier
+        >>  lexer.left_brace
+        >>  *(member_declaration)
+        >>  *(function)
+        >>  lexer.right_brace;
+
     standardImport %= 
             lexer.include
         >>  lexer.less
@@ -206,7 +222,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
                 |   globalArrayDeclaration 
                 |   standardImport 
                 |   import 
-                |   type.struct_
+                |   struct_
             );
 
     /* Debugging rules */

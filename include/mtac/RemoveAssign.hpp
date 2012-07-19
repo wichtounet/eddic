@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_set>
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/forward.hpp"

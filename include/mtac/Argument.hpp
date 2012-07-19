@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #define CUSTOM_STRONG_TYPEDEF(T, D)                                         \
 struct D {                                                                  \

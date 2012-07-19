@@ -8,7 +8,7 @@
 #ifndef AST_LVALUE_H
 #define AST_LVALUE_H
 
-#include <boost/variant/variant.hpp>
+#include "variant.hpp"
 
 #include "ast/ArrayValue.hpp"
 #include "ast/VariableValue.hpp"

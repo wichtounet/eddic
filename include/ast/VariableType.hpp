@@ -8,7 +8,7 @@
 #ifndef AST_TYPE_H
 #define AST_TYPE_H
 
-#include <boost/variant/variant.hpp>
+#include "variant.hpp"
 
 #include "ast/SimpleType.hpp"
 #include "ast/ArrayType.hpp"

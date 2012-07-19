@@ -8,13 +8,12 @@
 #include <string>
 #include <unordered_map>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
+#include "FunctionContext.hpp"
 
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
-
-#include "FunctionContext.hpp"
 
 using namespace eddic;
 

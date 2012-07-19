@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/DefaultValues.hpp"
 #include "ast/SourceFile.hpp"

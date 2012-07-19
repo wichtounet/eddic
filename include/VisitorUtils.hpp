@@ -11,10 +11,10 @@
 #include <list>
 #include <vector>
 
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/variant.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/utility/enable_if.hpp>
+
+#include "variant.hpp"
 
 #define ASSIGN(Type, Value)\
 result_type operator()(Type & ){\

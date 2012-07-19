@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"

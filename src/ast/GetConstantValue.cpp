@@ -5,14 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/variant.hpp>
-#include <boost/variant/apply_visitor.hpp>
+#include "variant.hpp"
+#include "Variable.hpp"
+#include "Type.hpp"
 
 #include "ast/GetConstantValue.hpp"
 #include "ast/Value.hpp"
-
-#include "Variable.hpp"
-#include "Type.hpp"
 
 using namespace eddic;
 
@@ -32,8 +30,12 @@ Val ast::GetConstantValue::operator()(const ast::Float& float_) const {
     return float_.value;
 }
 
-Val ast::GetConstantValue::operator()(const ast::Minus& minus) const {
-    return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
+Val ast::GetConstantValue::operator()(const ast::Unary& minus) const {
+    if(minus.Content->op == ast::Operator::SUB){
+        return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Not constant");
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {

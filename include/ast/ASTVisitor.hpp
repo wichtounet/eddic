@@ -16,6 +16,11 @@ void operator()(ast::SourceFile& program){\
     visit_each(*this, program.Content->blocks);\
 }
 
+#define AUTO_RECURSE_STRUCT()\
+void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->functions);\
+}
+
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->lhs);\
@@ -90,6 +95,11 @@ void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
 }
 
+#define AUTO_RECURSE_MEMBER_FUNCTION_CALLS()\
+void operator()(ast::MemberFunctionCall& functionCall){\
+    visit_each(*this, functionCall.Content->values);\
+}
+
 #define AUTO_RECURSE_BUILTIN_OPERATORS()\
 void operator()(ast::BuiltinOperator& builtin){\
     visit_each(*this, builtin.Content->values);\
@@ -102,11 +112,8 @@ void operator()(ast::Expression& value){\
         [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });\
 }
 
-#define AUTO_RECURSE_MINUS_PLUS_VALUES()\
-void operator()(ast::Plus& value){\
-    visit(*this, value.Content->value);\
-}\
-void operator()(ast::Minus& value){\
+#define AUTO_RECURSE_UNARY_VALUES()\
+void operator()(ast::Unary& value){\
     visit(*this, value.Content->value);\
 }
 
@@ -144,14 +151,14 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_FOREACH_LOOP() void operator()(ast::Foreach&){}
 #define AUTO_IGNORE_FOREACH_IN_LOOP() void operator()(ast::ForeachIn&){}
 #define AUTO_IGNORE_FUNCTION_CALLS() void operator()(ast::FunctionCall&){}
+#define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION() void operator()(ast::GlobalArrayDeclaration&){}
 #define AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION() void operator()(ast::GlobalVariableDeclaration&){}
 #define AUTO_IGNORE_IMPORT() void operator()(ast::Import&){}
 #define AUTO_IGNORE_INTEGER() void operator()(ast::Integer&){}
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Litteral&){}
-#define AUTO_IGNORE_MINUS() void operator()(ast::Minus&){}
-#define AUTO_IGNORE_PLUS() void operator()(ast::Plus&){}
+#define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}
 #define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::SuffixOperation&){}
@@ -185,8 +192,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_INTEGER(return_type) return_type operator()(ast::Integer& t){return t;}
 #define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return t;}
 #define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Litteral& t){return t;}
-#define AUTO_RETURN_MINUS(return_type) return_type operator()(ast::Minus& t){return t;}
-#define AUTO_RETURN_PLUS(return_type) return_type operator()(ast::Plus& t){return t;}
+#define AUTO_RETURN_UNARY(return_type) return_type operator()(ast::Unary& t){return t;}
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
 #define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::SuffixOperation& t){return t;}

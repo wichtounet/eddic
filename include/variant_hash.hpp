@@ -8,10 +8,9 @@
 #ifndef BOOST_HASH_VARIANT_FUNCTION_HPP
 #define BOOST_HASH_VARIANT_FUNCTION_HPP
 
-#include <boost/variant/variant_fwd.hpp>
-#include <boost/variant/static_visitor.hpp>
-#include <boost/variant/apply_visitor.hpp>
 #include <boost/functional/hash.hpp>
+
+#include "variant.hpp"
 
 namespace boost {
 

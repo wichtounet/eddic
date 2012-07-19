@@ -6,14 +6,8 @@
 //=======================================================================
 
 #include <memory>
-#include <boost/variant/variant.hpp>
 
-#include "ast/TypeChecker.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/GetTypeVisitor.hpp"
-#include "ast/ASTVisitor.hpp"
-#include "ast/TypeTransformer.hpp"
-
+#include "variant.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -25,16 +19,23 @@
 #include "Utils.hpp"
 #include "Type.hpp"
 
+#include "ast/TypeChecker.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/ASTVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
+
 using namespace eddic;
 
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FUNCTION_CALLS()
+    AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
-    AUTO_RECURSE_MINUS_PLUS_VALUES()
+    AUTO_RECURSE_UNARY_VALUES()
         
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_FALSE()

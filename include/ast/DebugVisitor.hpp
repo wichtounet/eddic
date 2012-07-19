@@ -8,7 +8,7 @@
 #ifndef AST_DEBUG_VISITOR_H
 #define AST_DEBUG_VISITOR_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/SourceFile.hpp"
 
@@ -52,6 +52,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(PrefixOperation& operation_) const ;
     void operator()(Litteral&) const ;
     void operator()(FunctionCall&) const ;
+    void operator()(MemberFunctionCall&) const ;
     void operator()(BuiltinOperator&) const ;
     void operator()(Integer& integer) const ;
     void operator()(IntegerSuffix& integer) const ;
@@ -61,8 +62,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ArrayValue&) const ;
     void operator()(Expression& value) const ;
     void operator()(Cast& cast) const ;
-    void operator()(Plus& value) const ;
-    void operator()(Minus& value) const ;
+    void operator()(Unary& value) const ;
     void operator()(Null& value) const ;
     void operator()(False& value) const ;
     void operator()(True& value) const ;

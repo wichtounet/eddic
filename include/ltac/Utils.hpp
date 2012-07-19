@@ -9,9 +9,11 @@
 #define LTAC_UTILS_H
 
 #include <memory>
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/Program.hpp"
+#include "mtac/Utils.hpp"
+
 #include "ltac/Program.hpp"
 #include "ltac/RegisterManager.hpp"
 
@@ -24,6 +26,16 @@ bool is_float_operator(mtac::BinaryOperator op);
 bool is_float_var(std::shared_ptr<Variable> variable);
 
 bool is_int_var(std::shared_ptr<Variable> variable);
+
+template<typename T>
+inline bool is_reg(T value){
+    return mtac::is<ltac::Register>(value);
+}
+
+template<typename T>
+inline bool is_float_reg(T value){
+    return mtac::is<ltac::FloatRegister>(value);
+}
 
 template<typename Variant>
 bool is_variable(Variant& variant){

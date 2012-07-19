@@ -36,12 +36,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& 
    return visit(*this, ternary.Content->true_value); 
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Minus& minus) const {
-   return visit(*this, minus.Content->value); 
-}
-
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Plus& minus) const {
-   return visit(*this, minus.Content->value); 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Unary& unary) const {
+   return visit(*this, unary.Content->value); 
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
@@ -114,6 +110,10 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
         //No need to recurse into operations because type are enforced in the check variables phase
         return visit(*this, value.Content->first);
     }
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberFunctionCall& call) const {
+    return call.Content->function->returnType;
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {

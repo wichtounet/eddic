@@ -8,8 +8,7 @@
 #ifndef MTAC_STATEMENT_H
 #define MTAC_STATEMENT_H
 
-#include <boost/variant/variant.hpp>
-
+#include "variant.hpp"
 #include "variant_hash.hpp"
 
 #include "mtac/Quadruple.hpp"

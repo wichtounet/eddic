@@ -8,7 +8,7 @@
 #ifndef LTAC_STATEMENT_H
 #define LTAC_STATEMENT_H
 
-#include <boost/variant/variant.hpp>
+#include "variant.hpp"
 
 #include "ltac/Instruction.hpp"
 #include "ltac/Jump.hpp"

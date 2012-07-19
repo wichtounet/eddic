@@ -21,8 +21,6 @@
 
 #include "mtac/Compiler.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/IsSingleArgumentVisitor.hpp"
-#include "mtac/IsParamSafeVisitor.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/Utils.hpp"
 
@@ -40,6 +38,7 @@ namespace {
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
 std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
@@ -271,6 +270,27 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         
         ASSERT_PATH_NOT_TAKEN("Unhandled function return type");
     }
+    
+    result_type operator()(ast::MemberFunctionCall& call) const {
+        auto type = call.Content->function->returnType;
+
+        if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
+            auto t1 = function->context->new_temporary(type);
+
+            execute_member_call(call, function, t1, {});
+
+            return {t1};
+        } else if(type == STRING){
+            auto t1 = function->context->newTemporary();
+            auto t2 = function->context->newTemporary();
+
+            execute_member_call(call, function, t1, t2);
+
+            return {t1, t2};
+        }
+        
+        ASSERT_PATH_NOT_TAKEN("Unhandled function return type");
+    }
 
     result_type operator()(ast::Assignment& assignment) const {
         ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
@@ -487,19 +507,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
     }
 
-    result_type operator()(ast::Minus& value) const {
-        mtac::Argument arg = moveToArgument(value.Content->value, function);
-        
-        auto type = visit(ast::GetTypeVisitor(), value.Content->value);
-        auto t1 = function->context->new_temporary(type);
-
-        if(type == FLOAT){
-            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
+    result_type operator()(ast::Unary& value) const {
+        if(value.Content->op == ast::Operator::ADD){
+            return visit(*this, value.Content->value);
         } else {
-            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::MINUS));
+            mtac::Argument arg = moveToArgument(value.Content->value, function);
+
+            auto type = visit(ast::GetTypeVisitor(), value.Content->value);
+            auto t1 = function->context->new_temporary(type);
+
+            if(type == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
+            } else {
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::MINUS));
+            }
+
+            return {t1};
         }
-        
-        return {t1};
     }
     
     result_type operator()(ast::Cast& cast) const {
@@ -522,11 +546,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         //If srcType == destType, there is nothing to do
         return {arg};
-    }
-
-    //No operation to do
-    result_type operator()(ast::Plus& value) const {
-        return visit(*this, value.Content->value);
     }
 };
 
@@ -980,7 +999,6 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
-        AUTO_IGNORE_STRUCT()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
        
@@ -994,6 +1012,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             program->context = p.Content->context;
 
             visit_each(*this, p.Content->blocks);
+        }
+        
+        void operator()(ast::Struct& p){
+            visit_each_non_variant(*this, p.Content->functions);
         }
 
         void operator()(ast::FunctionDeclaration& f){
@@ -1129,6 +1151,10 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::FunctionCall& functionCall){
             execute_call(functionCall, function, {}, {});
         }
+        
+        void operator()(ast::MemberFunctionCall& functionCall){
+            execute_member_call(functionCall, function, {}, {});
+        }
 
         void operator()(ast::Return& return_){
             auto arguments = visit(ToArgumentsVisitor(function), return_.Content->value);
@@ -1213,19 +1239,8 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     }
 }
 
-void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    auto functionName = mangle(functionCall.Content->functionName, functionCall.Content->values);
-    std::shared_ptr<eddic::Function> definition;
-    if(functionCall.Content->mangled_name.empty()){
-        definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
-    } else if(functionCall.Content->function){
-        definition = functionCall.Content->function;
-    } else {
-        definition = symbols.getFunction(functionCall.Content->mangled_name);
-    }
-
-    ASSERT(definition, "All the functions should be in the function table");
-
+template<typename Call>
+void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<eddic::Function> definition, Call& functionCall){
     auto context = definition->context;
     
     auto values = functionCall.Content->values;
@@ -1279,7 +1294,41 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
             }
         }
     }
+}
 
+void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+    std::shared_ptr<eddic::Function> definition;
+    if(functionCall.Content->mangled_name.empty()){
+        definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+    } else if(functionCall.Content->function){
+        definition = functionCall.Content->function;
+    } else {
+        definition = symbols.getFunction(functionCall.Content->mangled_name);
+    }
+
+    ASSERT(definition, "All the functions should be in the function table");
+
+    pass_arguments(function, definition, functionCall);
+
+    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
+}
+
+void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+    auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+
+    auto definition = functionCall.Content->function;
+
+    ASSERT(definition, "All the member functions should be in the function table");
+
+    //Pass all normal arguments
+    pass_arguments(function, definition, functionCall);
+                
+    //Pass the address of the object to the member function
+    auto mtac_param = std::make_shared<mtac::Param>(var, definition->context->getVariable(definition->parameters[0].name), definition);
+    mtac_param->address = true;
+    function->add(mtac_param);   
+
+    //Call the function
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 

@@ -19,7 +19,12 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         position_begin(position_begin){
 
     /* Match operators into symbols */
-    //TODO Find a way to avoid duplication of these things
+    
+    unary_op.add
+        ("+", ast::Operator::ADD)
+        ("-", ast::Operator::SUB)
+        ;
+
     additive_op.add
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
@@ -72,8 +77,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("%=", ast::Operator::MOD)
         ;
 
-    //TODO Use unary_op symbols and use a UnaryValue to represent plus and minus for a value
-
     /* Define values */ 
 
     value = conditional_expression.alias();
@@ -116,22 +119,19 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
     
     unaryValue %= 
-            negatedValue
-        |   plusValue
-        |   castValue
+            negated_constant_value
+        |   castValue    
+        |   unary_value
         |   primaryValue;
+
+    unary_value %=
+            qi::adapttokens[unary_op] 
+        >   primaryValue
+            ;
     
-    negatedValue = 
-            lexer.subtraction
-         >> primaryValue;
-   
-    negatedConstantValue = 
-            lexer.subtraction
+    negated_constant_value = 
+            qi::adapttokens[unary_op]
          >> integer;
-  
-    plusValue %=
-            lexer.addition
-         >> primaryValue;
 
     castValue %=
             qi::position(position_begin)
@@ -147,6 +147,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   float_
         |   litteral
         |   builtin_operator
+        |   member_function_call
         |   function_call
         |   prefix_operation
         |   suffix_operation
@@ -185,7 +186,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     variable_value %= 
             qi::position(position_begin)
-        >>  lexer.identifier
+        >>  
+            (
+                    lexer.this_
+                |   lexer.identifier
+            )
         >>  *(
                     lexer.dot
                 >>  lexer.identifier
@@ -215,7 +220,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >> lexer.litteral;
 
     constant = 
-            negatedConstantValue
+            negated_constant_value
         |   integer 
         |   litteral;
    
@@ -228,6 +233,18 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     function_call %=
             qi::position(position_begin)
+        >>  lexer.identifier
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >   lexer.right_parenth;
+    
+    member_function_call %=
+            qi::position(position_begin)
+        >>  (
+                    lexer.identifier
+                |   lexer.this_
+            )
+        >>  lexer.dot
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
@@ -257,6 +274,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     //Configure debugging
 
     DEBUG_RULE(assignment);
+    DEBUG_RULE(suffix_operation);
+    DEBUG_RULE(prefix_operation);
+    DEBUG_RULE(builtin_operator);
     DEBUG_RULE(left_value);
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
@@ -264,4 +284,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(function_call);
     DEBUG_RULE(primaryValue);
     DEBUG_RULE(ternary);
+    DEBUG_RULE(constant);
+    DEBUG_RULE(litteral);
 }
