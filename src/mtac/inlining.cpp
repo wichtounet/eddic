@@ -215,16 +215,19 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
             auto statement = *pit;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                auto param = source_definition->parameters[i];
-
                 auto quadruple = std::make_shared<mtac::Quadruple>();
 
-                auto param_var = dest_definition->context->new_temporary(param.paramType);
-                variable_clones[(*ptr)->param] = param_var;
-                quadruple->result = param_var;
+                auto src_var = (*ptr)->param;
+                auto type = src_var->type();
 
-                if(param.paramType == INT || param.paramType == BOOL){
+                auto dest_var = dest_definition->context->new_temporary(type);
+                variable_clones[src_var] = dest_var;
+                quadruple->result = dest_var;
+
+                if(type == INT || type == BOOL){
                     quadruple->op = mtac::Operator::ASSIGN; 
+                } else if(type->is_pointer()){
+                    quadruple->op = mtac::Operator::PASSIGN;
                 } else {
                     quadruple->op = mtac::Operator::FASSIGN; 
                 }
@@ -316,7 +319,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& param : function->definition->parameters){
-        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL){
+        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !param.paramType->is_pointer()){
             return false;
         }
     }
