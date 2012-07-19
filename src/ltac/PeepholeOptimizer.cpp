@@ -262,6 +262,40 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 }
             }
         }
+        
+        if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::MOV){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1) && is_reg(*i2->arg2)){
+                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
+                auto reg22 = boost::get<ltac::Register>(*i2->arg2);
+
+                if(reg22 == reg11){
+                    auto descriptor = getPlatformDescriptor(platform);
+
+                    for(unsigned int i = 0; i < descriptor->numberOfIntParamRegisters(); ++i){
+                        auto reg = ltac::Register(descriptor->int_param_register(i + 1));
+
+                        if(reg21 == reg){
+                            i2->arg2 = i1->arg2;
+
+                            return true;
+                        }
+                    }
+    
+                    if(reg21 == ltac::Register(descriptor->int_return_register1())){
+                        i2->arg2 = i1->arg2;
+
+                        return true;
+                    }
+    
+                    if(reg21 == ltac::Register(descriptor->int_return_register2())){
+                        i2->arg2 = i1->arg2;
+
+                        return true;
+                    }
+                }
+            }
+        }
 
         if(i1->op == ltac::Operator::MOV && i2->op == ltac::Operator::ADD){
             if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
