@@ -280,6 +280,33 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 }
             }
         }
+
+        if(i1->op == ltac::Operator::POP && i2->op == ltac::Operator::PUSH){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
+                auto reg1 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg2 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg1 == reg2){
+                    i1->op = ltac::Operator::MOV;
+                    i1->arg2 = ltac::Address(ltac::SP, 0);
+
+                    return transform_to_nop(i2);
+                }
+            }
+        }
+        
+        if(i1->op == ltac::Operator::PUSH && i2->op == ltac::Operator::POP){
+            if(is_reg(*i1->arg1) && is_reg(*i2->arg1)){
+                auto reg1 = boost::get<ltac::Register>(*i1->arg1);
+                auto reg2 = boost::get<ltac::Register>(*i2->arg1);
+
+                if(reg1 == reg2){
+                    transform_to_nop(i1);
+
+                    return transform_to_nop(i2);
+                }
+            }
+        }
     }
 
     return false;
