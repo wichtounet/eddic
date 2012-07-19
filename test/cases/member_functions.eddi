@@ -3,8 +3,6 @@ struct Counter {
 
     void increment(){
         this.value = this.value + 1;
-
-        println(this.value);
     }
 
     void add(int number){
@@ -24,12 +22,18 @@ struct Counter {
 
 void main(){
     Counter counter;
+    print(counter.value);
+    print("|");
     counter.increment();
-    println(counter.value);
+    print(counter.value);
+    print("|");
     counter.add(99);
-    println(counter.value);
+    print(counter.value);
+    print("|");
     counter.add(11, 69);
-    println(counter.value);
+    print(counter.value);
+    print("|");
     counter.addSub(11, 69);
-    println(counter.value);
+    print(counter.value);
+    print("|");
 }
