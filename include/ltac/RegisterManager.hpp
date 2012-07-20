@@ -29,81 +29,84 @@ namespace ltac {
 
 class StatementCompiler;
 
-struct RegisterManager {
-    //The registers
-    as::Registers<ltac::Register> registers;
-    as::Registers<ltac::FloatRegister> float_registers;
+class RegisterManager {
+    public:
+        //The registers
+        as::Registers<ltac::Register> registers;
+        as::Registers<ltac::FloatRegister> float_registers;
 
-    //Keep track of the written variables to spills them
-    std::unordered_set<std::shared_ptr<Variable>> written;
+        //Keep track of the written variables to spills them
+        std::unordered_set<std::shared_ptr<Variable>> written;
 
-    //Liveness information
-    std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;
+        //Liveness information
+        std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;
 
-    //The function being compiled
-    std::shared_ptr<ltac::Function> function;
+        //The function being compiled
+        std::shared_ptr<ltac::Function> function;
 
-    std::shared_ptr<FloatPool> float_pool;
-    std::shared_ptr<StatementCompiler> compiler;
+        std::shared_ptr<FloatPool> float_pool;
+        std::weak_ptr<StatementCompiler> compiler;
 
-    RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
-            std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
-        
-    /*!
-     * Deleted copy constructor
-     */
-    RegisterManager(const RegisterManager& rhs) = delete;
+        RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+                std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
 
-    /*!
-     * Deleted copy assignment operator. 
-     */
-    RegisterManager& operator=(const RegisterManager& rhs) = delete;
+        /*!
+         * Deleted copy constructor
+         */
+        RegisterManager(const RegisterManager& rhs) = delete;
 
-    void reserve(ltac::Register reg);
-    void reserve(ltac::FloatRegister reg);
-    void release(ltac::Register reg);
-    void release(ltac::FloatRegister reg);
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        RegisterManager& operator=(const RegisterManager& rhs) = delete;
 
-    void reset();
-    
-    void copy(mtac::Argument argument, ltac::FloatRegister reg);
-    void copy(mtac::Argument argument, ltac::Register reg);
-    
-    void move(mtac::Argument argument, ltac::Register reg);
-    void move(mtac::Argument argument, ltac::FloatRegister reg);
+        void reserve(ltac::Register reg);
+        void reserve(ltac::FloatRegister reg);
+        void release(ltac::Register reg);
+        void release(ltac::FloatRegister reg);
 
-    ltac::Register get_reg(std::shared_ptr<Variable> var);
-    ltac::Register get_reg_no_move(std::shared_ptr<Variable> var);
-    ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var);
-    ltac::FloatRegister get_float_reg_no_move(std::shared_ptr<Variable> var);
-    
-    void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg);
-    void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
-    
-    ltac::Register get_free_reg();
-    ltac::FloatRegister get_free_float_reg();
+        void reset();
 
-    void spills_all();
-    
-    void spills(ltac::Register reg);
-    void spills(ltac::FloatRegister reg);
-    
-    void spills_if_necessary(ltac::Register reg, mtac::Argument arg);
+        void copy(mtac::Argument argument, ltac::FloatRegister reg);
+        void copy(mtac::Argument argument, ltac::Register reg);
 
-    bool is_written(std::shared_ptr<Variable> variable);
-    void set_written(std::shared_ptr<Variable> variable);
+        void move(mtac::Argument argument, ltac::Register reg);
+        void move(mtac::Argument argument, ltac::FloatRegister reg);
 
-    void set_current(mtac::Statement statement);
-        
-    bool is_live(std::shared_ptr<Variable> variable, mtac::Statement statement);
-    bool is_live(std::shared_ptr<Variable> variable);
-    bool is_escaped(std::shared_ptr<Variable> variable);
-    
-    void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
-    void collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
+        ltac::Register get_reg(std::shared_ptr<Variable> var);
+        ltac::Register get_reg_no_move(std::shared_ptr<Variable> var);
+        ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var);
+        ltac::FloatRegister get_float_reg_no_move(std::shared_ptr<Variable> var);
 
-    void save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor);
-    void restore_pushed_registers();
+        void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg);
+        void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
+
+        ltac::Register get_free_reg();
+        ltac::FloatRegister get_free_float_reg();
+
+        void spills_all();
+
+        void spills(ltac::Register reg);
+        void spills(ltac::FloatRegister reg);
+
+        void spills_if_necessary(ltac::Register reg, mtac::Argument arg);
+
+        bool is_written(std::shared_ptr<Variable> variable);
+        void set_written(std::shared_ptr<Variable> variable);
+
+        void set_current(mtac::Statement statement);
+
+        bool is_live(std::shared_ptr<Variable> variable, mtac::Statement statement);
+        bool is_live(std::shared_ptr<Variable> variable);
+        bool is_escaped(std::shared_ptr<Variable> variable);
+
+        void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
+        void collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
+
+        void save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor);
+        void restore_pushed_registers();
+
+        std::shared_ptr<StatementCompiler> access_compiler();
     
     private: 
         mtac::Statement current;
