@@ -136,9 +136,9 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
         if(manager.written.find(variable) != manager.written.end()){
             auto position = variable->position();
             if(position.isStack()){
-                ltac::add_instruction(manager.function, mov, manager.compiler->stack_address(-1 * position.offset()), reg);
+                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(-1 * position.offset()), reg);
             } else if(position.isParameter()){
-                ltac::add_instruction(manager.function, mov, manager.compiler->stack_address(position.offset()), reg);
+                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isGlobal()){
                 ltac::add_instruction(manager.function, mov, ltac::Address("V" + position.name()), reg);
             } else if(position.isTemporary()){
@@ -216,9 +216,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, compiler->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, compiler->stack_address(position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -245,9 +245,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, compiler->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, compiler->stack_address(position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -280,9 +280,9 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, compiler->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, compiler->stack_address(position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -320,9 +320,9 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, compiler->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, compiler->stack_address(position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -459,14 +459,14 @@ void ltac::RegisterManager::restore_pushed_registers(){
     //Restore the int parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(int_pushed)){
         ltac::add_instruction(function, ltac::Operator::POP, reg);
-        compiler->bp_offset -= INT->size();
+        access_compiler()->bp_offset -= INT->size();
     }
 
     //Restore the float parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(float_pushed)){
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
         ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
-        compiler->bp_offset -= FLOAT->size();
+        access_compiler()->bp_offset -= FLOAT->size();
     }
 
     //Each register has been restored
@@ -521,7 +521,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                     if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        compiler->bp_offset += INT->size();
+                        access_compiler()->bp_offset += INT->size();
                     } else {
                         spills(reg);
                     }
@@ -536,7 +536,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
 
                         ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
                         ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
-                        compiler->bp_offset += FLOAT->size();
+                        access_compiler()->bp_offset += FLOAT->size();
                     } else {
                         spills(reg);
                     }
@@ -584,4 +584,12 @@ bool ltac::RegisterManager::is_written(std::shared_ptr<Variable> variable){
 
 void ltac::RegisterManager::set_written(std::shared_ptr<Variable> variable){
     written.insert(variable);
+}
+
+std::shared_ptr<ltac::StatementCompiler> ltac::RegisterManager::access_compiler(){
+    if(auto ptr = compiler.lock()){
+        return ptr;
+    }
+
+    ASSERT_PATH_NOT_TAKEN("The shared_ptr on StatementCompiler has expired");
 }
