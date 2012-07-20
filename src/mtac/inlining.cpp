@@ -218,7 +218,7 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
                 auto src_var = (*ptr)->param;
                 auto type = src_var->type();
                 
-                if(type->is_pointer()){
+                if(type->is_pointer() && src_var->name() == "this"){
                     variable_clones[src_var] = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
                     
                     *pit = std::make_shared<mtac::NoOp>();
