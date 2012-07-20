@@ -107,9 +107,9 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
     return out;
 }
 
-bool optimize_arg(mtac::Argument* arg, ProblemDomain& results){
+bool optimize_arg(mtac::Argument* arg, ProblemDomain& results, mtac::PointerEscaped& pointer_escaped){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-        if(results.find(*ptr) != results.end()){
+        if(results.find(*ptr) != results.end() && pointer_escaped->find(*ptr) == pointer_escaped->end()){
             *arg = results[*ptr];
             return true;
         }
@@ -118,9 +118,9 @@ bool optimize_arg(mtac::Argument* arg, ProblemDomain& results){
     return false;
 }
 
-bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& results){
+bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& results, mtac::PointerEscaped& pointer_escaped){
     if(arg){
-        return optimize_arg(&*arg, results);
+        return optimize_arg(&*arg, results, pointer_escaped);
     }
 
     return false;
@@ -136,11 +136,11 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
 
         //Do not replace a variable by a constant when used in offset
         if(quadruple->op != mtac::Operator::PDOT && quadruple->op != mtac::Operator::DOT && quadruple->op != mtac::Operator::PASSIGN){
-            changes |= optimize_optional(quadruple->arg1, results);
+            changes |= optimize_optional(quadruple->arg1, results, pointer_escaped);
         }
         
         if(quadruple->op != mtac::Operator::DOT_PASSIGN){
-            changes |= optimize_optional(quadruple->arg2, results);
+            changes |= optimize_optional(quadruple->arg2, results, pointer_escaped);
         }
 
         if(!mtac::erase_result(quadruple->op) && quadruple->result && quadruple->op != mtac::Operator::DOT_ASSIGN){
@@ -158,18 +158,18 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
         auto& param = *ptr;
 
         if(!param->address){
-            changes |= optimize_arg(&param->arg, results);
+            changes |= optimize_arg(&param->arg, results, pointer_escaped);
         }
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
         auto& ifFalse = *ptr;
         
-        changes |= optimize_arg(&ifFalse->arg1, results);
-        changes |= optimize_optional(ifFalse->arg2, results);
+        changes |= optimize_arg(&ifFalse->arg1, results, pointer_escaped);
+        changes |= optimize_optional(ifFalse->arg2, results, pointer_escaped);
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
         auto& if_ = *ptr;
         
-        changes |= optimize_arg(&if_->arg1, results);
-        changes |= optimize_optional(if_->arg2, results);
+        changes |= optimize_arg(&if_->arg1, results, pointer_escaped);
+        changes |= optimize_optional(if_->arg2, results, pointer_escaped);
     }
 
     return changes;

@@ -10,10 +10,19 @@
 #include "Type.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 
 using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
+
+void mtac::OffsetConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
+    mtac::LiveVariableAnalysisProblem problem;
+    mtac::data_flow(function, problem);
+   
+    pointer_escaped = problem.pointer_escaped;
+}
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     auto result = mtac::intersection_meet(in, out);
@@ -120,7 +129,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                 mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
 
-                if(results.find(offset) != results.end()){
+                if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
                     quadruple->op = mtac::Operator::ASSIGN;
                     *quadruple->arg1 = results[offset];
                     quadruple->arg2.reset();
