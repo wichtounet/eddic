@@ -23,8 +23,7 @@ struct ASTCast {
     Type type;
     Position position;
 
-    mutable long references;
-    ASTCast() : references(0) {}
+    mutable long references = 0;
 };
 
 typedef Deferred<ASTCast> Cast;
