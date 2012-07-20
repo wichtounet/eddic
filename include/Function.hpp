@@ -15,6 +15,7 @@
 namespace eddic {
 
 class FunctionContext;
+class Type;
 
 /*!
  * \class ParameterType

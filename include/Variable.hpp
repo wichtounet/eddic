@@ -20,6 +20,8 @@ namespace eddic {
 
 typedef boost::variant<int, double, std::pair<std::string, int>> Val;
 
+class Type;
+
 /*!
  * \class Variable
  * \brief An entry of the symbol table
