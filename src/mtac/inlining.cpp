@@ -325,7 +325,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& param : function->definition->parameters){
-        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !(param.paramType->is_pointer() && param.name == "this")){
+        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !(param.paramType->is_pointer()/* && param.name == "this")*/)){
             return false;
         }
     }
