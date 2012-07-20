@@ -11,10 +11,19 @@
 
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 
 using namespace eddic;
 
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
+
+void mtac::ConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
+    mtac::LiveVariableAnalysisProblem problem;
+    mtac::data_flow(function, problem);
+   
+    pointer_escaped = problem.pointer_escaped;
+}
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     auto result = mtac::intersection_meet(in, out);
