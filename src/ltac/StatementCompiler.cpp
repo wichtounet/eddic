@@ -663,6 +663,27 @@ void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> qu
     }
 }
 
+void ltac::StatementCompiler::compile_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+        if((*ptr)->type()->is_pointer()){
+            compile_ASSIGN(quadruple);
+        } else {
+            auto result_reg = manager.get_reg_no_move(quadruple->result);
+            auto value_reg = get_address_in_reg(*ptr, 0);
+            ltac::add_instruction(function, ltac::Operator::MOV, result_reg, value_reg);
+
+            manager.set_written(quadruple->result);
+
+            //If the address of the variable is escaped, we have to spill its value directly
+            if(manager.is_escaped(quadruple->result)){
+                manager.spills(result_reg);
+            }
+        }
+    } else {
+        compile_ASSIGN(quadruple);
+    }
+}
+
 void ltac::StatementCompiler::compile_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
     auto reg = manager.get_float_reg_no_move(quadruple->result);
     manager.copy(*quadruple->arg1, reg);
@@ -1259,7 +1280,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
             compile_ASSIGN(quadruple);
             break;
         case mtac::Operator::PASSIGN:
-            compile_ASSIGN(quadruple);
+            compile_PASSIGN(quadruple);
             break;
         case mtac::Operator::FASSIGN:
             compile_FASSIGN(quadruple);
