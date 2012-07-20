@@ -678,6 +678,8 @@ void ltac::StatementCompiler::compile_PASSIGN(std::shared_ptr<mtac::Quadruple> q
             if(manager.is_escaped(quadruple->result)){
                 manager.spills(result_reg);
             }
+
+            manager.release(value_reg);
         }
     } else {
         compile_ASSIGN(quadruple);
