@@ -152,38 +152,6 @@ std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std
     }
 }
 
-std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    auto type = var->type();
-
-    std::string struct_name;
-    if(type->is_pointer() || type->is_array()){
-        struct_name = type->data_type()->type();
-    } else {
-        struct_name = type->type();
-    }
-
-    auto struct_type = symbols.get_struct(struct_name);
-    std::shared_ptr<const Type> member_type;
-
-    unsigned int offset = 0;
-
-    auto& members = memberNames;
-    for(std::size_t i = 0; i < members.size(); ++i){
-        auto& member = members[i];
-
-        member_type = (*struct_type)[member]->type;
-
-        offset += symbols.member_offset(struct_type, member);
-
-        if(i != members.size() - 1){
-            struct_name = member_type->type();
-            struct_type = symbols.get_struct(struct_name);
-        }
-    }
-
-    return std::make_pair(offset, member_type);
-}
-
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
     ToArgumentsVisitor(std::shared_ptr<mtac::Function> f, bool take_address) : function(f), take_address(take_address) {}
@@ -377,7 +345,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else {
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
-            boost::tie(offset, member_type) = compute_member(value.variable(), value.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(value.variable(), value.Content->memberNames);
 
             if(take_address){
                 auto temp = value.Content->context->new_temporary(INT);
@@ -483,7 +451,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto temp = array.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
-            auto member_info = compute_member(array.Content->var, array.Content->memberNames);
+            auto member_info = mtac::compute_member(array.Content->var, array.Content->memberNames);
             return get_member(member_info.first, member_info.second, temp);
         }
     }
@@ -728,7 +696,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         } else {
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
 
             visit(AssignValueToVariable(function, variable, offset, member_type), assignment.Content->value);
         }
@@ -746,7 +714,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
             
             visit(AssignValueToVariable(function, temp, offset, member_type), assignment.Content->value);
         }
@@ -759,9 +727,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             if(left.Content->memberNames.empty()){
                 visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
             } else {
-                unsigned int offset = 0;
-                std::shared_ptr<const Type> member_type;
-                boost::tie(offset, member_type) = compute_member(variable, left.Content->memberNames);
+                unsigned int offset = mtac::compute_member_offset(variable, left.Content->memberNames);
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
             }

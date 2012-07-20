@@ -215,19 +215,15 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
             auto statement = *pit;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                auto src_var = (*ptr)->param;
-                auto type = src_var->type();
+                auto quadruple = std::make_shared<mtac::Quadruple>();
+                std::shared_ptr<Variable> dest_var;
                 
-                if(type->is_pointer() && src_var->name() == "this"){
-                    variable_clones[src_var] = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
-                    
-                    *pit = std::make_shared<mtac::NoOp>();
-                } else {
-                    auto quadruple = std::make_shared<mtac::Quadruple>();
+                auto src_var = (*ptr)->param;
+                
+                if((*ptr)->memberNames.empty()){
+                    auto type = src_var->type();
 
-                    auto dest_var = dest_definition->context->new_temporary(type);
-                    variable_clones[src_var] = dest_var;
-                    quadruple->result = dest_var;
+                    dest_var = dest_definition->context->new_temporary(type);
 
                     if(type == INT || type == BOOL){
                         quadruple->op = mtac::Operator::ASSIGN; 
@@ -238,10 +234,20 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
                     }
 
                     quadruple->arg1 = (*ptr)->arg;
+                } else {
+                    auto object_var = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
+                    dest_var = dest_definition->context->new_temporary(INT);
 
-                    *pit = quadruple;
+                    quadruple->op = mtac::Operator::PDOT;
+                    quadruple->arg1 = object_var;
+                    quadruple->arg2 = mtac::compute_member_offset(object_var, (*ptr)->memberNames);
                 }
+                
+                variable_clones[src_var] = dest_var;
+                quadruple->result = dest_var;
 
+                *pit = quadruple;
+                
                 --i;
             }
 

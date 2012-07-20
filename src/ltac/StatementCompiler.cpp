@@ -437,27 +437,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto>& goto_){
     function->add(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
 }
 
-unsigned int compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-    auto struct_type = symbols.get_struct(struct_name);
-
-    unsigned int offset = 0;
-
-    auto& members = memberNames;
-    for(std::size_t i = 0; i < members.size(); ++i){
-        auto& member = members[i];
-
-        offset += symbols.member_offset(struct_type, member);
-
-        if(i != members.size() - 1){
-            struct_name = (*struct_type)[member]->type->type();
-            struct_type = symbols.get_struct(struct_name);
-        }
-    }
-
-    return offset;
-}
-
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
     auto reg = manager.get_free_reg();
     
@@ -490,7 +469,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
         unsigned int offset = 0;
         if(!param->memberNames.empty()){
-            offset = compute_member(variable, param->memberNames);
+            offset = mtac::compute_member_offset(variable, param->memberNames);
         }
 
         auto reg = get_address_in_reg(variable, offset);
