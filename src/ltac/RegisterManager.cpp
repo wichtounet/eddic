@@ -48,7 +48,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
     //First, try to take a register that doesn't need to be spilled (variable has not modified)
     for(Reg remaining : registers){
-        if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
+        if(!registers.reserved(remaining) && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
             if(!manager.is_written(registers[remaining])){
                 reg = remaining;
                 found = true;
@@ -60,7 +60,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     //If there is no registers that doesn't need to be spilled, take the first one not reserved 
     if(!found){
         for(Reg remaining : registers){
-            if(!registers.reserved(remaining) && !registers[reg]->position().isTemporary() && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
+            if(!registers.reserved(remaining) && !registers[remaining]->position().isTemporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
                 reg = remaining;
                 found = true;
                 break;
@@ -73,7 +73,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
             std::cout << "Register " << r << std::endl;
             if(!registers.reserved(r)){
                 if(registers.used(r)){
-                    std::cout << "  used by " << registers[reg]->name() << std::endl;
+                    std::cout << "  used by " << registers[r]->name() << std::endl;
                 } else {
                     std::cout << "  not used" << std::endl;
                 }
@@ -517,7 +517,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
 
             for(auto& reg : overriden_registers){
                 //If the parameter register is already used by a variable or a parent parameter
-                if(registers.used(reg)){
+                if(!registers.reserved(reg) && registers.used(reg)){
                     if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
