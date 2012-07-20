@@ -1,0 +1,8 @@
+int ga = 4;
+
+void main(){
+    int a = ga > 2 ? 44 : 66;
+    
+    println(a);
+    println(ga > 12 ? 44 : 66);
+}
