@@ -30,9 +30,9 @@ GlobalContext::GlobalContext() : Context(NULL) {
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
-    //A global variable must have a value
-    assert(type->is_array()); //TODO Looks wrong
-    
+    //Only global array have no value, other types have all values
+    assert(type->is_array());
+
     Position position(PositionType::GLOBAL, variable);
     
     return variables[variable] = std::make_shared<Variable>(variable, type, position);

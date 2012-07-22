@@ -277,8 +277,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::DereferenceValue& variable){
         visit(*this, variable.Content->ref);
-        //check_variable_values(variable);
-        //TODO
     }
 
     void operator()(ast::ArrayValue& array){
@@ -291,8 +289,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
-
-        //TODO Check the members 
     }
 
     void operator()(ast::Expression& value){
