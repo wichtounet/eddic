@@ -99,9 +99,9 @@ void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
                 auto variable = variable_pair.second;
 
                 if(problem.pointer_escaped->find(variable) == problem.pointer_escaped->end() && variable->position().isStack() && usage[variable] > 0){
-                    if(variable->type() == INT){
+                    if(mtac::is_single_int_register(variable->type())){
                         search_candidates(usage, int_var, variable, descriptor->number_of_variable_registers());
-                    } else if(variable->type() == FLOAT){
+                    } else if(mtac::is_single_float_register(variable->type())){
                         search_candidates(usage, float_var, variable, descriptor->number_of_float_variable_registers());
                     }
                 }

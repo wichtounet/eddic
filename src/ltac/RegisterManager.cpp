@@ -446,9 +446,9 @@ void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> d
         auto variable = variable_pair.second;
 
         if(variable->position().is_register()){
-            if(variable->type() == INT){
+            if(mtac::is_single_int_register(variable->type())){
                 registers.setLocation(variable, ltac::Register(descriptor->int_variable_register(variable->position().offset())));
-            } else if(variable->type() == FLOAT){
+            } else if(mtac::is_single_float_register(variable->type())){
                 float_registers.setLocation(variable, ltac::FloatRegister(descriptor->float_variable_register(variable->position().offset())));
             }
         }
