@@ -463,6 +463,30 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_pt
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     manager.set_current(param);
     manager.save_registers(param, descriptor);
+    
+    std::shared_ptr<const Type> type;
+    bool register_allocated = false;
+    unsigned int position = 0;
+        
+    if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+
+        //It's a call to a standard function
+        if(param->std_param.length() > 0){
+            type = param->function->getParameterType(param->std_param);
+            position = param->function->getParameterPositionByType(param->std_param);
+        } 
+        //It's a call to a user function
+        else if(param->param){
+            type = param->param->type();
+            position = param->function->getParameterPositionByType(param->param->name());
+        }
+
+        register_allocated = 
+                (mtac::is_single_int_register(type) && position <= maxInt)
+            ||  (mtac::is_single_float_register(type) && position <= maxFloat);
+    }
 
     //Push the address of the var
     if(param->address){
@@ -475,40 +499,23 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
 
         auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
         
-        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-        bp_offset += INT->size();
+        if(register_allocated){
+            ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+        } else {
+            ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+            bp_offset += INT->size();
+        }
     } 
     //Push by value
     else {
-        if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
-            unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-            unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
-
-            std::shared_ptr<const Type> type;
-            unsigned int position;
-
-            //It's a call to a standard function
-            if(param->std_param.length() > 0){
-                type = param->function->getParameterType(param->std_param);
-                position = param->function->getParameterPositionByType(param->std_param);
-            } 
-            //It's a call to a user function
-            else if(param->param){
-                type = param->param->type();
-                position = param->function->getParameterPositionByType(param->param->name());
-            }
-
-            if(type == INT && position <= maxInt){
+        if(register_allocated){
+            if(mtac::is_single_int_register(type)){
                 pass_in_int_register(param->arg, position);
-
-                return;
-            }
-
-            if(type == FLOAT && position <= maxFloat){
+            } else {
                 pass_in_float_register(param->arg, position);
-
-                return;
             }
+
+            return;
         }
 
         //If the param as not been handled as register passing, push it on the stack 
@@ -582,14 +589,14 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
             //Passing an array is just passing an adress
             total += INT->size();
         } else {
-            if(type == INT){
+            if(mtac::is_single_int_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxInt > 0){
                     --maxInt;
                 } else {
                     total += type->size();
                 }
-            } else if(type == FLOAT){
+            } else if(mtac::is_single_float_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxFloat > 0){
                     --maxFloat;

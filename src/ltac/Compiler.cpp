@@ -28,6 +28,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 
     for(auto& src_function : source->functions){
         auto target_function = std::make_shared<ltac::Function>(src_function->context, src_function->getName());
+        target_function->definition = src_function->definition;
 
         target->functions.push_back(target_function);
 

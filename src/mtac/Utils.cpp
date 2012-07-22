@@ -11,6 +11,14 @@
 
 using namespace eddic;
 
+bool mtac::is_single_int_register(std::shared_ptr<const Type> type){
+   return type == INT || type == BOOL || type->is_pointer(); 
+}
+
+bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
+    return type == FLOAT;
+}
+
 bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
     for(auto& basic_block : function->getBasicBlocks()){
         for(auto& statement : basic_block->statements){

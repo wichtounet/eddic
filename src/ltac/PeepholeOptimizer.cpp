@@ -7,12 +7,15 @@
 
 #include <iostream>
 #include <boost/optional.hpp>
+#include <boost/range/adaptors.hpp>
 
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
 #include "likely.hpp"
 #include "Platform.hpp"
+#include "Type.hpp"
+#include "FunctionContext.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
@@ -228,14 +231,6 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 //cross MOV (ir4 = ir5, ir5 = ir4), keep only the first
                 if (reg11 == reg22 && reg12 == reg21){
                     return transform_to_nop(i2);
-                }
-            } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg1)){
-                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
-                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
-
-                //Two MOV to the same register => keep only last MOV
-                if(reg11 == reg21){
-                    return transform_to_nop(i1);
                 }
             } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg2)){
                 auto reg11 = boost::get<ltac::Register>(*i1->arg1);
@@ -489,19 +484,30 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
 
 typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
 
-//TODO This can be optimized by doing it context dependent to avoid saving each register
-void add_escaped_registers(RegisterUsage& usage){
+void add_param_registers(RegisterUsage& usage){
     auto descriptor = getPlatformDescriptor(platform);
-
-    usage.insert(ltac::Register(descriptor->int_return_register1()));
-    usage.insert(ltac::Register(descriptor->int_return_register2()));
-
+    
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
+}
 
-    for(unsigned int i = 1; i <= descriptor->number_of_variable_registers(); ++i){
-        usage.insert(ltac::Register(descriptor->int_variable_register(i)));
+void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function){
+    auto descriptor = getPlatformDescriptor(platform);
+    
+    if(function->definition->returnType == STRING){
+        usage.insert(ltac::Register(descriptor->int_return_register1()));
+        usage.insert(ltac::Register(descriptor->int_return_register2()));
+    } else if(function->definition->returnType != VOID){
+        usage.insert(ltac::Register(descriptor->int_return_register1()));
+    }
+
+    add_param_registers(usage);
+
+    for(auto var : function->context->stored_variables()){
+        if(var.second->position().is_register() && mtac::is_single_int_register(var.second->type())){
+            usage.insert(ltac::Register(descriptor->int_variable_register(var.second->position().offset())));
+        }
     }
 }
 
@@ -532,16 +538,14 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     auto& statements = function->getStatements();
     
     RegisterUsage usage; 
-    add_escaped_registers(usage);
+    add_escaped_registers(usage, function);
 
-    for(long i = statements.size() - 1; i >= 0; --i){
-        auto statement = statements[i];
-
+    for(auto statement : boost::adaptors::reverse(statements)){
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
             auto instruction = *ptr;
 
-            //Optimize MOV and XOR
-            if(instruction->op == ltac::Operator::MOV){
+            //Optimize MOV, LEA, XOR
+            if(instruction->op == ltac::Operator::MOV || instruction->op == ltac::Operator::LEA || instruction->op == ltac::Operator::XOR){
                 if(ltac::is_reg(*instruction->arg1)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
@@ -550,37 +554,32 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     }
                     
                     usage.erase(reg1);
+                    add_param_registers(usage);
+                } else {
+                    collect_usage(usage, instruction->arg1);
                 }
-            } else if(instruction->op == ltac::Operator::XOR){
-                if(ltac::is_reg(*instruction->arg1) && ltac::is_reg(*instruction->arg2)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
-
-                    if(reg1 == reg2 && usage.find(reg1) == usage.end()){
-                        optimized = transform_to_nop(instruction);
-                    
-                        usage.erase(reg1);
-                    }
-                }
+            
+                collect_usage(usage, instruction->arg2);
+            } else {
+                //Collect usage 
+                collect_usage(usage, instruction->arg1);
+                collect_usage(usage, instruction->arg2);
+                collect_usage(usage, instruction->arg3);
             }
 
             //TODO Take in account more instructions that erase results, optimize them and remove them from the usage
-            
-            //Collect usage 
-            collect_usage(usage, instruction->arg1);
-            collect_usage(usage, instruction->arg2);
-            collect_usage(usage, instruction->arg3);
         } else {
             //Takes care of safe functions
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
                 if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
+                    add_param_registers(usage);
                     continue;
                 }
             }
             
             //At this point, the basic block is at its end
             usage.clear();
-            add_escaped_registers(usage);
+            add_escaped_registers(usage, function);
         }
     }
 

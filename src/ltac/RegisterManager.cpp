@@ -432,9 +432,9 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
         auto param = definition->context->getVariable(parameter.name);
 
         if(param->position().isParamRegister()){
-            if(param->type() == INT){
+            if(mtac::is_single_int_register(param->type())){
                 registers.setLocation(param, ltac::Register(descriptor->int_param_register(param->position().offset())));
-            } else if(param->type() == FLOAT){
+            } else if(mtac::is_single_float_register(param->type())){
                 float_registers.setLocation(param, ltac::FloatRegister(descriptor->float_param_register(param->position().offset())));
             }
         }
@@ -446,9 +446,9 @@ void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> d
         auto variable = variable_pair.second;
 
         if(variable->position().is_register()){
-            if(variable->type() == INT){
+            if(mtac::is_single_int_register(variable->type())){
                 registers.setLocation(variable, ltac::Register(descriptor->int_variable_register(variable->position().offset())));
-            } else if(variable->type() == FLOAT){
+            } else if(mtac::is_single_float_register(variable->type())){
                 float_registers.setLocation(variable, ltac::FloatRegister(descriptor->float_variable_register(variable->position().offset())));
             }
         }
@@ -491,11 +491,11 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                     auto type = param->function->getParameterType(parameter.name);
                     unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
-                    if(type == INT && position <= maxInt){
+                    if(mtac::is_single_int_register(type) && position <= maxInt){
                         overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
                     }
 
-                    if(type == FLOAT && position <= maxFloat){
+                    if(mtac::is_single_float_register(type) && position <= maxFloat){
                         overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
                     }
                 }
