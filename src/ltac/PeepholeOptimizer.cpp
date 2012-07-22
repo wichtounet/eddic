@@ -560,8 +560,8 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     if(usage.find(reg1) == usage.end()){
                         optimized = transform_to_nop(instruction);
                     }
-                    
-                    usage.erase(reg1);
+                } else {
+                    collect_usage(usage, instruction->arg1);
                 }
             
                 collect_usage(usage, instruction->arg2);
