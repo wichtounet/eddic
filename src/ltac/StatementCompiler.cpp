@@ -498,13 +498,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                 position = param->function->getParameterPositionByType(param->param->name());
             }
 
-            if(type == INT && position <= maxInt){
+            if(mtac::is_single_int_register(type) && position <= maxInt){
                 pass_in_int_register(param->arg, position);
 
                 return;
             }
 
-            if(type == FLOAT && position <= maxFloat){
+            if(mtac::is_single_float_register(type) && position <= maxFloat){
                 pass_in_float_register(param->arg, position);
 
                 return;
@@ -582,14 +582,14 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
             //Passing an array is just passing an adress
             total += INT->size();
         } else {
-            if(type == INT){
+            if(mtac::is_single_int_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxInt > 0){
                     --maxInt;
                 } else {
                     total += type->size();
                 }
-            } else if(type == FLOAT){
+            } else if(mtac::is_single_float_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxFloat > 0){
                     --maxFloat;

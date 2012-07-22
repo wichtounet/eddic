@@ -491,11 +491,11 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                     auto type = param->function->getParameterType(parameter.name);
                     unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
-                    if(type == INT && position <= maxInt){
+                    if(mtac::is_single_int_register(type) && position <= maxInt){
                         overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
                     }
 
-                    if(type == FLOAT && position <= maxFloat){
+                    if(mtac::is_single_float_register(type) && position <= maxFloat){
                         overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
                     }
                 }

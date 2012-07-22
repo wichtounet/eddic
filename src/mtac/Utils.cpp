@@ -12,7 +12,7 @@
 using namespace eddic;
 
 bool mtac::is_single_int_register(std::shared_ptr<const Type> type){
-   return type == INT; 
+   return type == INT || type == BOOL; 
 }
 
 bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
