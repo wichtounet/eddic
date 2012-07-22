@@ -550,9 +550,6 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
                     if(usage.find(reg1) == usage.end()){
-                        std::cout << "removed" << std::endl;
-                        ltac::Printer printer;
-                        printer.print(statement);
                         optimized = transform_to_nop(instruction);
                     }
                     
