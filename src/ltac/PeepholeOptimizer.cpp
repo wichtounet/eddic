@@ -232,14 +232,6 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 if (reg11 == reg22 && reg12 == reg21){
                     return transform_to_nop(i2);
                 }
-            } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg1)){
-                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
-                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
-
-                //Two MOV to the same register => keep only last MOV
-                if(reg11 == reg21){
-                    return transform_to_nop(i1);
-                }
             } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg2)){
                 auto reg11 = boost::get<ltac::Register>(*i1->arg1);
                 auto reg22 = boost::get<ltac::Register>(*i2->arg2);
@@ -558,8 +550,14 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
                     if(usage.find(reg1) == usage.end()){
+                        std::cout << "removed" << std::endl;
+                        ltac::Printer printer;
+                        printer.print(statement);
                         optimized = transform_to_nop(instruction);
                     }
+                    
+                    usage.erase(reg1);
+                    add_param_registers(usage);
                 } else {
                     collect_usage(usage, instruction->arg1);
                 }
