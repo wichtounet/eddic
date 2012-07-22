@@ -19,10 +19,7 @@ using namespace eddic;
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 void mtac::ConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
-    mtac::LiveVariableAnalysisProblem problem;
-    mtac::data_flow(function, problem);
-   
-    pointer_escaped = problem.pointer_escaped;
+    pointer_escaped = mtac::escape_analysis(function);
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
@@ -107,7 +104,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
     return out;
 }
 
-bool optimize_arg(mtac::Argument* arg, ProblemDomain& results, mtac::PointerEscaped& pointer_escaped){
+bool optimize_arg(mtac::Argument* arg, ProblemDomain& results, mtac::EscapedVariables& pointer_escaped){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
         if(results.find(*ptr) != results.end() && pointer_escaped->find(*ptr) == pointer_escaped->end()){
             *arg = results[*ptr];
@@ -118,7 +115,7 @@ bool optimize_arg(mtac::Argument* arg, ProblemDomain& results, mtac::PointerEsca
     return false;
 }
 
-bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& results, mtac::PointerEscaped& pointer_escaped){
+bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& results, mtac::EscapedVariables& pointer_escaped){
     if(arg){
         return optimize_arg(&*arg, results, pointer_escaped);
     }
