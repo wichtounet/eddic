@@ -1,3 +1,15 @@
+eddic 1.1.0 - 2012.07.22
+
+* Language: Support member functions
+* Language: Support ternary operator
+* Optimizer: Enable parameter allocation only from O1
+* Optimizer: Inline member functions
+* Optimizer: Inline functions with pointers parameters
+* Peephole optimizer: New optimizations for stack instructions
+* Peephole optimizer: Avoid copies to parameter register
+* Assembly: In O2 no generation of stack frames
+* Compiler: Fix a problem with nasm and very small files
+
 eddic 1.0.3 - 2012.07.13
 
 * Language: Allow a const variable as the size of a global array
