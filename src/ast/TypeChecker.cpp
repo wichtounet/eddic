@@ -65,8 +65,12 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::ForeachIn& foreach){
-        //TODO Check types of array
-        //TODO Check type of varaible = base of array
+        auto var_type = foreach.Content->var->type();
+        auto array_type = foreach.Content->arrayVar->type();
+
+        if(var_type != array_type->data_type()){
+            throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+        }
 
         visit_each(*this, foreach.Content->instructions);
     }
