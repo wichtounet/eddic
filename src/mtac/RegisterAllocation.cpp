@@ -22,6 +22,9 @@ using namespace eddic;
 void mtac::register_param_allocation(){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
+    auto maxInt = descriptor->numberOfIntParamRegisters();
+    auto maxFloat = descriptor->numberOfFloatParamRegisters();
+
     for(auto function_info : symbols){
         auto function = function_info.second;
 
@@ -33,7 +36,7 @@ void mtac::register_param_allocation(){
                 unsigned int position = function->getParameterPositionByType(parameter.name);
                 auto param = function->context->getVariable(parameter.name);
 
-                if((type == INT && position <= descriptor->numberOfIntParamRegisters()) || (type == FLOAT && position <= descriptor->numberOfFloatParamRegisters())){
+                if((mtac::is_single_int_register(type) && position <= maxInt) || (mtac::is_single_float_register(type) && position <= maxFloat)){
                     Position oldPosition = param->position();
 
                     function->context->allocate_in_param_register(param, position);
