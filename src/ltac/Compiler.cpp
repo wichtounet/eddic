@@ -98,6 +98,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     //Compute Liveness
     mtac::LiveVariableAnalysisProblem problem;
     compiler->manager.liveness = mtac::data_flow(src_function, problem);
+    compiler->manager.pointer_escaped = problem.pointer_escaped;
 
     //Then we compile each of them
     for(auto block : src_function->getBasicBlocks()){

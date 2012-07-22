@@ -14,6 +14,7 @@
 #include "variant.hpp"
 
 #include "mtac/DataFlowProblem.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 namespace eddic {
 
@@ -23,10 +24,9 @@ namespace mtac {
 
 typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> ConstantValue;
 typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
-typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> PointerEscaped;
 
 struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
-    PointerEscaped pointer_escaped;
+    mtac::EscapedVariables pointer_escaped;
     
     void Gather(std::shared_ptr<mtac::Function> function) override;
 
