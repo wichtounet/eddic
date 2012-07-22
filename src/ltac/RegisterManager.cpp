@@ -432,9 +432,9 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
         auto param = definition->context->getVariable(parameter.name);
 
         if(param->position().isParamRegister()){
-            if(param->type() == INT){
+            if(mtac::is_single_int_register(param->type())){
                 registers.setLocation(param, ltac::Register(descriptor->int_param_register(param->position().offset())));
-            } else if(param->type() == FLOAT){
+            } else if(mtac::is_single_float_register(param->type())){
                 float_registers.setLocation(param, ltac::FloatRegister(descriptor->float_param_register(param->position().offset())));
             }
         }
