@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "mtac/DataFlowProblem.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 namespace eddic {
 
@@ -23,7 +24,6 @@ typedef std::unordered_set<std::shared_ptr<Variable>> Values;
 
 struct LiveVariableValues {
     Values values;
-    std::shared_ptr<Values> pointer_escaped;
 
     void insert(std::shared_ptr<Variable> var){
         values.insert(var);
@@ -53,10 +53,7 @@ struct LiveVariableValues {
 std::ostream& operator<<(std::ostream& stream, LiveVariableValues& expression);
 
 struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backward, LiveVariableValues> {
-    std::shared_ptr<Values> pointer_escaped;
-    Values escaped_variables;
-    
-    LiveVariableAnalysisProblem();
+    mtac::EscapedVariables pointer_escaped;
 
     void Gather(std::shared_ptr<mtac::Function> function) override;
     

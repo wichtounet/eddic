@@ -30,60 +30,17 @@ std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& v
     return stream << "}";
 }
 
-mtac::LiveVariableAnalysisProblem::LiveVariableAnalysisProblem(){
-    pointer_escaped = std::make_shared<Values>();
-}
-
 void mtac::LiveVariableAnalysisProblem::Gather(std::shared_ptr<mtac::Function> function){
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-            //Passing a variable as param by address escape its liveness
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                auto& param = *ptr;
-
-                if(param->address){
-                    if(mtac::isVariable(param->arg)){
-                        auto var = boost::get<std::shared_ptr<Variable>>(param->arg);
-                        escaped_variables.insert(var);
-                        pointer_escaped->insert(var);
-                    }
-                }
-            } 
-            //Taking the address of a variable escape its liveness
-            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto& quadruple = *ptr;
-
-                if(quadruple->op == mtac::Operator::PASSIGN){
-                    if(quadruple->arg1 && mtac::isVariable(*quadruple->arg1)){
-                        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-                        escaped_variables.insert(var);
-                        pointer_escaped->insert(var);
-                    }
-                } else if(quadruple->op == mtac::Operator::DOT_PASSIGN){
-                    if(quadruple->arg2 && mtac::isVariable(*quadruple->arg2)){
-                        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
-                        escaped_variables.insert(var);
-                        pointer_escaped->insert(var);
-                    }
-                }
-            }
-        }
-    }
+    pointer_escaped = mtac::escape_analysis(function);
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(std::shared_ptr<mtac::Function> /*function*/){
     auto value = default_element();
-
-    value.values().pointer_escaped = pointer_escaped;
-
     return value;
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
     auto value = default_element();
-
-    value.values().pointer_escaped = pointer_escaped;
-
     return value;
 }
 
@@ -96,7 +53,6 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, Proble
 
     typename ProblemDomain::Values values;
     ProblemDomain result(values);
-    result.values().pointer_escaped = pointer_escaped;
 
     for(auto& value : in.values()){
         result.values().insert(value);
@@ -147,7 +103,7 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
         update_optional((*ptr)->arg2, in.values());
     }
 
-    for(auto& escaped_var : escaped_variables){
+    for(auto& escaped_var : *pointer_escaped){
         in.values().insert(escaped_var);
     }
 
