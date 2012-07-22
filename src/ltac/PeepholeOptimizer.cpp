@@ -513,15 +513,9 @@ void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function>
     add_param_registers(usage);
 
     for(auto var : function->context->stored_variables()){
-        if(var.second->position().is_register()){
+        if(var.second->position().is_register() && mtac::is_single_int_register(var.second->type())){
             usage.insert(ltac::Register(descriptor->int_variable_register(var.second->position().offset())));
         }
-    }
-
-    std::cout << function->getName() << std::endl;
-
-    for(auto& reg : usage){
-        std::cout << reg.reg << std::endl;
     }
 }
 
@@ -558,10 +552,8 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
             auto instruction = *ptr;
 
-            bool erased = false;
-
-            //Optimize MOV and XOR
-            if(instruction->op == ltac::Operator::MOV){
+            //Optimize MOV, LEA, XOR
+            if(instruction->op == ltac::Operator::MOV || instruction->op == ltac::Operator::LEA || instruction->op == ltac::Operator::XOR){
                 if(ltac::is_reg(*instruction->arg1)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
@@ -570,18 +562,6 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     }
                     
                     usage.erase(reg1);
-                }
-            
-                collect_usage(usage, instruction->arg2);
-            } else if(instruction->op == ltac::Operator::XOR){
-                if(ltac::is_reg(*instruction->arg1)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-
-                    if(usage.find(reg1) == usage.end()){
-                        optimized = transform_to_nop(instruction);
-                    
-                        usage.erase(reg1);
-                    }
                 }
             
                 collect_usage(usage, instruction->arg2);
