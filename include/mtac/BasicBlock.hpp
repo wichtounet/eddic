@@ -8,7 +8,7 @@
 #ifndef MTAC_BASIC_BLOCK_H
 #define MTAC_BASIC_BLOCK_H
 
-#include <boost/variant/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/Statement.hpp"
 

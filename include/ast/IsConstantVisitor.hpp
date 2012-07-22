@@ -8,9 +8,15 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
+#include "VisitorUtils.hpp"
+#include "Type.hpp"
 
-#include "ast/values_def.hpp"
+#include "ast/Value.hpp"
+
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/contains.hpp>
+#include <boost/utility/enable_if.hpp>
 
 namespace eddic {
 
@@ -21,25 +27,45 @@ namespace ast {
  * \brief AST Visitor to test if a node is constant. 
  */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
-    bool operator()(Litteral& litteral) const;
-    bool operator()(Integer& litteral) const;
-    bool operator()(IntegerSuffix& litteral) const;
-    bool operator()(Float& litteral) const;
-    bool operator()(Cast& cast) const;
-    bool operator()(Plus& plus) const;
-    bool operator()(Null& null) const;
-    bool operator()(True& true_) const;
-    bool operator()(False& false_) const;
-    bool operator()(Minus& minus) const;
-    bool operator()(VariableValue& variable) const;
-    bool operator()(DereferenceValue& variable) const;
-    bool operator()(ArrayValue& variable) const;
-    bool operator()(Expression& value) const; 
-    bool operator()(FunctionCall& value) const; 
-    bool operator()(BuiltinOperator& value) const; 
-    bool operator()(SuffixOperation& value) const; 
-    bool operator()(PrefixOperation& value) const; 
-    bool operator()(Assignment& assign) const; 
+    typedef boost::mpl::vector<ast::Integer, ast::Litteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
+    typedef boost::mpl::vector<ast::ArrayValue, ast::FunctionCall, ast::MemberFunctionCall, ast::SuffixOperation, ast::PrefixOperation,
+        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::DereferenceValue> non_constant_types;
+
+    template<typename T>
+    typename boost::enable_if<boost::mpl::contains<constant_types, T>, bool>::type operator()(T&) const {
+        return true;
+    }
+    
+    template<typename T>
+    typename boost::enable_if<boost::mpl::contains<non_constant_types, T>, bool>::type operator()(T&) const {
+        return false;
+    }
+
+    bool operator()(ast::Unary& value) const {
+        return visit(*this, value.Content->value);
+    }
+
+    bool operator()(ast::Cast& cast) const {
+        return visit(*this, cast.Content->value);
+    }
+
+    bool operator()(ast::VariableValue& variable) const {
+        return variable.Content->memberNames.empty() && variable.Content->var->type()->is_const();
+    }
+
+    bool operator()(ast::Expression& value) const {
+        if(visit(*this, value.Content->first)){
+            for(auto& op : value.Content->operations){
+                if(!visit(*this, op.get<1>())){
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 };
 
 } //end of ast

@@ -8,13 +8,11 @@
 #ifndef GET_TYPE_VISITOR_H
 #define GET_TYPE_VISITOR_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/values_def.hpp"
 
 namespace eddic {
-
-class Type;
 
 namespace ast {
 
@@ -24,6 +22,7 @@ namespace ast {
  */
 struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
     std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::Ternary& assign) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::Litteral& litteral) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Integer& litteral) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& litteral) const;
@@ -33,9 +32,9 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::ArrayValue& variable) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Expression& value) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::FunctionCall& value) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::MemberFunctionCall& value) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::BuiltinOperator& value) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::Plus& value) const;
-    std::shared_ptr<const eddic::Type> operator()(const ast::Minus& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Unary& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::True& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::False& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Null& value) const;

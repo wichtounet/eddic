@@ -36,9 +36,12 @@ struct Function {
     std::shared_ptr<const Type> returnType;
     std::string name;
     std::string mangledName;
+    std::string struct_;
     std::vector<ParameterType> parameters;
     std::shared_ptr<FunctionContext> context;
+
     int references;
+    bool standard = false;
 
     Function(std::shared_ptr<const Type> ret, const std::string& n);
 

@@ -11,9 +11,11 @@
 #include "assert.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
+#include "Options.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
+#include "ltac/StatementCompiler.hpp"
 
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
@@ -46,7 +48,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
     //First, try to take a register that doesn't need to be spilled (variable has not modified)
     for(Reg remaining : registers){
-        if(!registers.reserved(remaining) && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
+        if(!registers.reserved(remaining) && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
             if(!manager.is_written(registers[remaining])){
                 reg = remaining;
                 found = true;
@@ -58,7 +60,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     //If there is no registers that doesn't need to be spilled, take the first one not reserved 
     if(!found){
         for(Reg remaining : registers){
-            if(!registers.reserved(remaining) && !registers[reg]->position().isTemporary() && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
+            if(!registers.reserved(remaining) && !registers[remaining]->position().isTemporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
                 reg = remaining;
                 found = true;
                 break;
@@ -71,7 +73,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
             std::cout << "Register " << r << std::endl;
             if(!registers.reserved(r)){
                 if(registers.used(r)){
-                    std::cout << "  used by " << registers[reg]->name() << std::endl;
+                    std::cout << "  used by " << registers[r]->name() << std::endl;
                 } else {
                     std::cout << "  not used" << std::endl;
                 }
@@ -134,9 +136,9 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
         if(manager.written.find(variable) != manager.written.end()){
             auto position = variable->position();
             if(position.isStack()){
-                ltac::add_instruction(manager.function, mov, ltac::Address(ltac::BP, -1 * position.offset()), reg);
+                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(-1 * position.offset()), reg);
             } else if(position.isParameter()){
-                ltac::add_instruction(manager.function, mov, ltac::Address(ltac::BP, position.offset()), reg);
+                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isGlobal()){
                 ltac::add_instruction(manager.function, mov, ltac::Address("V" + position.name()), reg);
             } else if(position.isTemporary()){
@@ -214,9 +216,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, -1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -243,9 +245,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, -1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -278,9 +280,9 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, -1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -318,9 +320,9 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, -1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
             } else if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -457,12 +459,14 @@ void ltac::RegisterManager::restore_pushed_registers(){
     //Restore the int parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(int_pushed)){
         ltac::add_instruction(function, ltac::Operator::POP, reg);
+        access_compiler()->bp_offset -= INT->size();
     }
 
     //Restore the float parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(float_pushed)){
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
         ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
+        access_compiler()->bp_offset -= FLOAT->size();
     }
 
     //Each register has been restored
@@ -476,22 +480,24 @@ void ltac::RegisterManager::restore_pushed_registers(){
 void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor){
     if(first_param){
         if(param->function){
-            unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-            unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
-            
             std::set<ltac::Register> overriden_registers;
             std::set<ltac::FloatRegister> overriden_float_registers;
-            
-            for(auto& parameter : param->function->parameters){
-                auto type = param->function->getParameterType(parameter.name);
-                unsigned int position = param->function->getParameterPositionByType(parameter.name);
+    
+            if(param->function->standard || option_defined("fparameter-allocation")){
+                unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+                unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
-                if(type == INT && position <= maxInt){
-                    overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
-                }
+                for(auto& parameter : param->function->parameters){
+                    auto type = param->function->getParameterType(parameter.name);
+                    unsigned int position = param->function->getParameterPositionByType(parameter.name);
 
-                if(type == FLOAT && position <= maxFloat){
-                    overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
+                    if(type == INT && position <= maxInt){
+                        overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
+                    }
+
+                    if(type == FLOAT && position <= maxFloat){
+                        overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
+                    }
                 }
             }
 
@@ -511,10 +517,11 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
 
             for(auto& reg : overriden_registers){
                 //If the parameter register is already used by a variable or a parent parameter
-                if(registers.used(reg)){
+                if(!registers.reserved(reg) && registers.used(reg)){
                     if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
+                        access_compiler()->bp_offset += INT->size();
                     } else {
                         spills(reg);
                     }
@@ -529,6 +536,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
 
                         ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
                         ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
+                        access_compiler()->bp_offset += FLOAT->size();
                     } else {
                         spills(reg);
                     }
@@ -576,4 +584,12 @@ bool ltac::RegisterManager::is_written(std::shared_ptr<Variable> variable){
 
 void ltac::RegisterManager::set_written(std::shared_ptr<Variable> variable){
     written.insert(variable);
+}
+
+std::shared_ptr<ltac::StatementCompiler> ltac::RegisterManager::access_compiler(){
+    if(auto ptr = compiler.lock()){
+        return ptr;
+    }
+
+    ASSERT_PATH_NOT_TAKEN("The shared_ptr on StatementCompiler has expired");
 }

@@ -5,14 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
+#include "StringPool.hpp"
+#include "VisitorUtils.hpp"
 
 #include "ast/StringChecker.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
-
-#include "StringPool.hpp"
-#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -36,6 +35,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_RETURN_VALUES()
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
+        AUTO_RECURSE_TERNARY()
 
         AUTO_IGNORE_OTHERS()
 

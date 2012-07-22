@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "Type.hpp"
+
 #include "mtac/Utils.hpp"
 
 using namespace eddic;
@@ -105,3 +107,38 @@ bool eddic::mtac::is_expression(mtac::Operator op){
     return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
 }
 
+unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+    return compute_member(var, memberNames).first;
+}
+
+std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+    auto type = var->type();
+
+    std::string struct_name;
+    if(type->is_pointer() || type->is_array()){
+        struct_name = type->data_type()->type();
+    } else {
+        struct_name = type->type();
+    }
+
+    auto struct_type = symbols.get_struct(struct_name);
+    std::shared_ptr<const Type> member_type;
+
+    unsigned int offset = 0;
+
+    auto& members = memberNames;
+    for(std::size_t i = 0; i < members.size(); ++i){
+        auto& member = members[i];
+
+        member_type = (*struct_type)[member]->type;
+
+        offset += symbols.member_offset(struct_type, member);
+
+        if(i != members.size() - 1){
+            struct_name = member_type->type();
+            struct_type = symbols.get_struct(struct_name);
+        }
+    }
+
+    return std::make_pair(offset, member_type);
+}

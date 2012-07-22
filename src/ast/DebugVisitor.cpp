@@ -68,13 +68,27 @@ void print_sub(Visitor& visitor, Container& container){
 
 void ast::DebugVisitor::operator()(ast::FunctionDeclaration& declaration) const {
     std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
+    std::cout << indent() << "Parameters:" << std::endl; 
+    level++;
+    for(auto param : declaration.Content->parameters){
+        std::cout << indent() << param.parameterName << std::endl; 
+    }
+    level--;
+    std::cout << indent() << "Instructions:" << std::endl; 
     print_each_sub(*this, declaration.Content->instructions);
 }
 
 void ast::DebugVisitor::operator()(ast::Struct& struct_) const {
     std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
     level++;
+    std::cout << indent() << "Members:" << std::endl; 
+    level++;
     visit_each_non_variant(*this, struct_.Content->members);    
+    level--;
+    std::cout << indent() << "Functions:" << std::endl; 
+    level++;
+    visit_each_non_variant(*this, struct_.Content->functions);    
+    level--;
     level--;
 }
 
@@ -137,6 +151,11 @@ void ast::DebugVisitor::operator()(ast::FunctionCall& call) const {
     print_each_sub(*this, call.Content->values);
 }
 
+void ast::DebugVisitor::operator()(ast::MemberFunctionCall& call) const {
+    std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name << std::endl; 
+    print_each_sub(*this, call.Content->values);
+}
+
 void ast::DebugVisitor::operator()(ast::BuiltinOperator& builtin) const {
     std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
     print_each_sub(*this, builtin.Content->values);
@@ -170,6 +189,19 @@ void ast::DebugVisitor::operator()(ast::Assignment& assign) const {
 
     std::cout << indent() << "Right Value:" << std::endl;
     print_sub(*this, assign.Content->value);
+}
+
+void ast::DebugVisitor::operator()(ast::Ternary& ternary) const {
+    std::cout << indent() << "Ternary" << std::endl;
+
+    std::cout << indent() << "Condition Value:" << std::endl;
+    print_sub(*this, ternary.Content->condition);
+
+    std::cout << indent() << "True Value:" << std::endl;
+    print_sub(*this, ternary.Content->true_value);
+
+    std::cout << indent() << "False Value:" << std::endl;
+    print_sub(*this, ternary.Content->false_value);
 }
 
 void ast::DebugVisitor::operator()(ast::Return& return_) const {
@@ -238,13 +270,8 @@ void ast::DebugVisitor::operator()(ast::Expression& value) const {
     --level;
 }
 
-void ast::DebugVisitor::operator()(ast::Minus& value) const {
-    std::cout << indent() << "Unary +" << std::endl; 
-    print_sub(*this, value.Content->value);
-}
-
-void ast::DebugVisitor::operator()(ast::Plus& value) const {
-    std::cout << indent() << "Unary -" << std::endl; 
+void ast::DebugVisitor::operator()(ast::Unary& value) const {
+    std::cout << indent() << "Unary " << static_cast<int>(value.Content->op) << std::endl; 
     print_sub(*this, value.Content->value);
 }
 

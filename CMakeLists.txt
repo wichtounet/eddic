@@ -4,14 +4,15 @@ project("EDDI Compiler")
 
 #Set the version number
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 3)
+set(VERSION_MINOR 1)
+set(VERSION_PATCH 0)
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS           "-pipe -pthread -std=c++11 -g -pedantic -Wall -Wextra -Wno-long-long")
-    set(CMAKE_CXX_FLAGS_DEBUG     "-pipe -pthread -std=c++11 -g -pedantic -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=const -Wall -Wextra -Wno-long-long")
-    set(CMAKE_CXX_FLAGS_RELEASE   "-pipe -pthread -std=c++11 -DNDEBUG -O2 -march=native")
+    set(COMMON_CXX_FLAGS          "-pipe -pthread -std=c++11")
+    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=const -Wall -Wextra -Wno-long-long")
+    set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DNDEBUG -O2 -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
 endif()

@@ -6,17 +6,9 @@
 //=======================================================================
 
 #include <algorithm>
-
 #include <memory>
-#include <boost/variant/variant.hpp>
 
-#include "ast/WarningsEngine.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/ASTVisitor.hpp"
-#include "ast/Position.hpp"
-#include "ast/GetTypeVisitor.hpp"
-#include "ast/TypeTransformer.hpp"
-
+#include "variant.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -26,6 +18,13 @@
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
+
+#include "ast/WarningsEngine.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/ASTVisitor.hpp"
+#include "ast/Position.hpp"
+#include "ast/GetTypeVisitor.hpp"
+#include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 
@@ -80,6 +79,7 @@ struct Inspector : public boost::static_visitor<> {
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
+        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
@@ -89,6 +89,7 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_RETURN_VALUES()
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
+        AUTO_RECURSE_TERNARY()
 
         /* The following cannot throw a warning  */
         AUTO_IGNORE_FALSE()
@@ -103,8 +104,7 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_IGNORE_SWAP()
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
-        AUTO_IGNORE_PLUS()
-        AUTO_IGNORE_MINUS()
+        AUTO_IGNORE_UNARY()
         AUTO_IGNORE_PREFIX_OPERATION()
         AUTO_IGNORE_SUFFIX_OPERATION()
         AUTO_IGNORE_VARIABLE_VALUE()

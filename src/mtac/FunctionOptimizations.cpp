@@ -51,6 +51,11 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
     while(it.has_next()){
         auto function = *it;
 
+        if(function->getName() == "main"){
+            ++it;
+            continue;
+        }
+
         unsigned int statements = 0;
 
         for(auto& block : function->getBasicBlocks()){

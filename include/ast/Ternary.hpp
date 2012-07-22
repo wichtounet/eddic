@@ -5,32 +5,37 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_STRUCT_H
-#define AST_STRUCT_H
-
-#include <vector>
+#ifndef AST_TERNARY_H
+#define AST_TERNARY_H
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
-#include "ast/MemberDeclaration.hpp"
-#include "ast/FunctionDeclaration.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-struct ASTStruct {
+/*!
+ * \class ASTTernary
+ * \brief The AST node for a ternary operator.    
+ * Should only be used from the Deferred version (eddic::ast::Ternary).
+ */
+struct ASTTernary {
     Position position;
-    std::string name;
-    std::vector<MemberDeclaration> members;
-    std::vector<FunctionDeclaration> functions;
+    Value condition;
+    Value true_value;
+    Value false_value;
 
     mutable long references = 0;
 };
 
-typedef Deferred<ASTStruct> Struct;
+/*!
+ * \typedef If
+ * \brief The AST node for a if. 
+ */
+typedef Deferred<ASTTernary> Ternary;
 
 } //end of ast
 
@@ -38,11 +43,11 @@ typedef Deferred<ASTStruct> Struct;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Struct,
+    eddic::ast::Ternary, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->name)
-    (std::vector<eddic::ast::MemberDeclaration>, Content->members)
-    (std::vector<eddic::ast::FunctionDeclaration>, Content->functions)
+    (eddic::ast::Value, Content->condition)
+    (eddic::ast::Value, Content->true_value)
+    (eddic::ast::Value, Content->false_value)
 )
 
 #endif

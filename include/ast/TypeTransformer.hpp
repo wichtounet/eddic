@@ -8,13 +8,11 @@
 #ifndef TYPE_TRANSFORMER_H
 #define TYPE_TRANSFORMER_H
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "ast/VariableType.hpp"
 
 namespace eddic {
-
-class Type;
 
 namespace ast {
 

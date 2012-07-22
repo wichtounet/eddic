@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/DataFlowProblem.hpp"
 
@@ -23,8 +23,13 @@ namespace mtac {
 
 typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> ConstantValue;
 typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
+typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> PointerEscaped;
 
 struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
+    PointerEscaped pointer_escaped;
+    
+    void Gather(std::shared_ptr<mtac::Function> function) override;
+
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     

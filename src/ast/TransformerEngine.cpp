@@ -5,8 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/variant/static_visitor.hpp>
-
+#include "variant.hpp"
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
@@ -28,8 +27,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
-    AUTO_RETURN_PLUS(ast::Value)
-    AUTO_RETURN_MINUS(ast::Value)
+    AUTO_RETURN_UNARY(ast::Value)
     AUTO_RETURN_PREFIX_OPERATION(ast::Value)
     AUTO_RETURN_SUFFIX_OPERATION(ast::Value)
     
@@ -77,10 +75,26 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         return functionCall;
     }
 
+    ast::Value operator()(ast::MemberFunctionCall& functionCall){
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return functionCall;
+    }
+
     ast::Value operator()(ast::Assignment& assignment){
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;
+    }
+
+    ast::Value operator()(ast::Ternary& ternary){
+        ternary.Content->condition = visit(*this, ternary.Content->condition);
+        ternary.Content->true_value = visit(*this, ternary.Content->true_value);
+        ternary.Content->false_value = visit(*this, ternary.Content->false_value);
+
+        return ternary;
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
@@ -318,6 +332,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FOREACH()
+    AUTO_RECURSE_STRUCT()
         
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -328,7 +343,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
     AUTO_IGNORE_SWAP()
@@ -372,6 +386,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
         }
     }
     
+    void operator()(ast::MemberFunctionCall& functionCall){
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
+        }
+    }
+    
     void operator()(ast::BuiltinOperator& builtin){
         for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
             *it = visit(transformer, *it);
@@ -397,6 +417,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
+    void operator()(ast::Ternary& ternary){
+        ternary.Content->condition = visit(transformer, ternary.Content->condition);
+        ternary.Content->true_value = visit(transformer, ternary.Content->true_value);
+        ternary.Content->false_value = visit(transformer, ternary.Content->false_value);
+    }
+
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
     }
@@ -417,6 +443,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     InstructionTransformer instructionTransformer;
 
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_STRUCT()
     
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
@@ -427,6 +454,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_VARIABLE_VALUE()
     AUTO_IGNORE_DEREFERENCE_VALUE()
     AUTO_IGNORE_FUNCTION_CALLS()
+    AUTO_IGNORE_MEMBER_FUNCTION_CALLS()
     AUTO_IGNORE_SWAP()
     AUTO_IGNORE_EXPRESSION()
     AUTO_IGNORE_FALSE()
@@ -442,11 +470,10 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
     AUTO_IGNORE_FOREACH_LOOP()
     AUTO_IGNORE_RETURN()
-    AUTO_IGNORE_STRUCT()
-    AUTO_IGNORE_PLUS()
-    AUTO_IGNORE_MINUS()
+    AUTO_IGNORE_UNARY()
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
+    AUTO_IGNORE_TERNARY()
 
     template<typename T>
     void transform(T& instructions){

@@ -8,11 +8,12 @@
 #ifndef AST_INSTRUCTION_H
 #define AST_INSTRUCTION_H
 
-#include <boost/variant/variant.hpp>
+#include "variant.hpp"
 
 #include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
+#include "ast/MemberFunctionCall.hpp"
 #include "ast/Return.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
@@ -42,6 +43,7 @@ struct ASTForeachIn;
 typedef Deferred<ASTForeachIn> ForeachIn;
 
 typedef boost::variant<
+            MemberFunctionCall,
             FunctionCall, 
             Swap, 
             VariableDeclaration,

@@ -9,9 +9,10 @@
 #define MTAC_UTILS_H
 
 #include <memory>
+#include <utility>
 #include <unordered_set>
 
-#include <boost/variant.hpp>
+#include "variant.hpp"
 
 #include "mtac/Program.hpp"
 #include "mtac/Operator.hpp"
@@ -49,6 +50,9 @@ template<typename T>
 inline void assertIntOrVariable(T& variant){
     assert(isInt(variant) || isVariable(variant));
 }
+
+unsigned int compute_member_offset(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
+std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
 
 void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage);
 

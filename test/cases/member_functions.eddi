@@ -1,0 +1,39 @@
+struct Counter {
+    int value;
+
+    void increment(){
+        this.value = this.value + 1;
+    }
+
+    void add(int number){
+        this.value = this.value + number;
+    }
+    
+    void add(int n1, int n2){
+        this.value = this.value + n1;
+        this.value = this.value + n2;
+    }
+    
+    void addSub(int n1, int n2){
+        this.add(n1);
+        this.add(n2);
+    }
+}
+
+void main(){
+    Counter counter;
+    print(counter.value);
+    print("|");
+    counter.increment();
+    print(counter.value);
+    print("|");
+    counter.add(99);
+    print(counter.value);
+    print("|");
+    counter.add(11, 69);
+    print(counter.value);
+    print("|");
+    counter.addSub(11, 69);
+    print(counter.value);
+    print("|");
+}

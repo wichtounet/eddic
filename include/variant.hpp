@@ -5,23 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_CONDITION_H
-#define AST_CONDITION_H
+#ifndef VARIANT_H
+#define VARIANT_H
 
-#include "variant.hpp"
+#include <boost/variant.hpp>
 
-#include "ast/False.hpp"
-#include "ast/True.hpp"
-#include "ast/BinaryCondition.hpp"
-
-namespace eddic {
-
-namespace ast {
-
-typedef boost::variant<True, False, BinaryCondition> Condition;
-
-} //end of ast
-
-} //end of eddic
+//For those who need variant with more than 20 template parameters
+#include <boost/mpl/vector.hpp>
 
 #endif

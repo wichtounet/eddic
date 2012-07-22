@@ -101,7 +101,9 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
                 
                 ("fglobal-optimization", "Enable optimizer engine")
                 ("fvariable-allocation", "Enable variable allocation in register")
+                ("fparameter-allocation", "Enable parameter allocation in register")
                 ("fpeephole-optimization", "Enable peephole optimizer")
+                ("fomit-frame-pointer", "Omit frame pointer from functions")
                 ("finline-functions", "Enable inlining")
                 ("fno-inline-functions", "Disable inlining");
             
@@ -120,7 +122,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             
             //TODO Should be a better way to do that
             add_trigger("__1", {"fpeephole-optimization"});
-            add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "finline-functions"});
+            add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
             
             desc_init = true;
         }
@@ -229,5 +231,5 @@ void eddic::print_help(){
 }
 
 void eddic::print_version(){
-    std::cout << "eddic version 1.0.3" << std::endl;
+    std::cout << "eddic version 1.1.0" << std::endl;
 }

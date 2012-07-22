@@ -215,24 +215,39 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
             auto statement = *pit;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                auto param = source_definition->parameters[i];
-
                 auto quadruple = std::make_shared<mtac::Quadruple>();
+                std::shared_ptr<Variable> dest_var;
+                
+                auto src_var = (*ptr)->param;
+                
+                if((*ptr)->memberNames.empty()){
+                    auto type = src_var->type();
 
-                auto param_var = dest_definition->context->new_temporary(param.paramType);
-                variable_clones[(*ptr)->param] = param_var;
-                quadruple->result = param_var;
+                    dest_var = dest_definition->context->new_temporary(type);
 
-                if(param.paramType == INT || param.paramType == BOOL){
-                    quadruple->op = mtac::Operator::ASSIGN; 
+                    if(type == INT || type == BOOL){
+                        quadruple->op = mtac::Operator::ASSIGN; 
+                    } else if(type->is_pointer()){
+                        quadruple->op = mtac::Operator::PASSIGN;
+                    } else {
+                        quadruple->op = mtac::Operator::FASSIGN; 
+                    }
+
+                    quadruple->arg1 = (*ptr)->arg;
                 } else {
-                    quadruple->op = mtac::Operator::FASSIGN; 
-                }
+                    auto object_var = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
+                    dest_var = dest_definition->context->new_temporary(INT);
 
-                quadruple->arg1 = (*ptr)->arg;
+                    quadruple->op = mtac::Operator::PDOT;
+                    quadruple->arg1 = object_var;
+                    quadruple->arg2 = mtac::compute_member_offset(object_var, (*ptr)->memberNames);
+                }
+                
+                variable_clones[src_var] = dest_var;
+                quadruple->result = dest_var;
 
                 *pit = quadruple;
-
+                
                 --i;
             }
 
@@ -316,7 +331,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& param : function->definition->parameters){
-        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL){
+        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !(param.paramType->is_pointer()/* && param.name == "this")*/)){
             return false;
         }
     }

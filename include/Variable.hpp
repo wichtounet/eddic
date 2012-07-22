@@ -13,8 +13,7 @@
 #include <memory>
 #include <iostream>
 
-#include <boost/variant/variant.hpp>
-
+#include "variant.hpp"
 #include "Position.hpp"
 
 namespace eddic {

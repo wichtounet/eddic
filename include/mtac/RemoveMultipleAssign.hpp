@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include <boost/variant/static_visitor.hpp>
+#include "variant.hpp"
 
 #include "mtac/Pass.hpp"
 #include "mtac/forward.hpp"

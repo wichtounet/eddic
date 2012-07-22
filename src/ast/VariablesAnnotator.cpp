@@ -8,15 +8,7 @@
 #include <algorithm>
 #include <memory>
 
-#include <boost/variant/variant.hpp>
-
-#include "ast/VariablesAnnotator.hpp"
-#include "ast/SourceFile.hpp"
-#include "ast/TypeTransformer.hpp"
-#include "ast/IsConstantVisitor.hpp"
-#include "ast/GetConstantValue.hpp"
-#include "ast/ASTVisitor.hpp"
-
+#include "variant.hpp"
 #include "SemanticalException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
@@ -27,16 +19,25 @@
 #include "VisitorUtils.hpp"
 #include "SymbolTable.hpp"
 
+#include "ast/VariablesAnnotator.hpp"
+#include "ast/SourceFile.hpp"
+#include "ast/TypeTransformer.hpp"
+#include "ast/IsConstantVisitor.hpp"
+#include "ast/GetConstantValue.hpp"
+#include "ast/ASTVisitor.hpp"
+
 using namespace eddic;
 
 struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
+    AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
+    AUTO_RECURSE_TERNARY()
     AUTO_RECURSE_BUILTIN_OPERATORS()
-    AUTO_RECURSE_MINUS_PLUS_VALUES()
+    AUTO_RECURSE_UNARY_VALUES()
     AUTO_RECURSE_CAST_VALUES()
     AUTO_RECURSE_RETURN_VALUES()
 
@@ -54,6 +55,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(symbols.is_recursively_nested(struct_.Content->name)){
             throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
         }
+
+        visit_each_non_variant(*this, struct_.Content->functions);
     }
    
     void operator()(ast::FunctionDeclaration& declaration){

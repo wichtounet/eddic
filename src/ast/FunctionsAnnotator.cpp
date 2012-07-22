@@ -20,9 +20,48 @@
 
 using namespace eddic;
 
+class MemberFunctionAnnotator : public boost::static_visitor<> {
+    public:
+        AUTO_RECURSE_PROGRAM()
+        
+        void operator()(ast::Struct& struct_){
+            parent_struct = struct_.Content->name;
+
+            visit_each_non_variant(*this, struct_.Content->functions);
+
+            parent_struct = "";
+        }
+         
+        void operator()(ast::FunctionDeclaration& declaration){
+            if(!parent_struct.empty()){
+                ast::PointerType paramType;
+                paramType.type = parent_struct;
+                
+                ast::FunctionParameter param;
+                param.parameterName = "this";
+                param.parameterType = paramType;
+
+                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+            }
+        }
+
+        AUTO_IGNORE_OTHERS()
+
+    private:
+        std::string parent_struct;
+};
+
 class FunctionInserterVisitor : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
+        
+        void operator()(ast::Struct& struct_){
+            parent_struct = struct_.Content->name;
+
+            visit_each_non_variant(*this, struct_.Content->functions);
+
+            parent_struct = "";
+        }
          
         void operator()(ast::FunctionDeclaration& declaration){
             auto return_type = visit(ast::TypeTransformer(), declaration.Content->returnType);
@@ -41,7 +80,9 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
-            declaration.Content->mangledName = signature->mangledName = mangle(declaration.Content->functionName, signature->parameters);
+            signature->struct_ = parent_struct;
+            
+            declaration.Content->mangledName = signature->mangledName = mangle(signature);
 
             if(symbols.exists(signature->mangledName)){
                 throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
@@ -52,6 +93,9 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
 
         AUTO_IGNORE_OTHERS()
+
+    private:
+        std::string parent_struct;
 };
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
@@ -67,8 +111,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_COMPOSED_VALUES()
-        AUTO_RECURSE_MINUS_PLUS_VALUES()
+        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
+        AUTO_RECURSE_STRUCT()
 
         void operator()(ast::FunctionDeclaration& declaration){
             currentFunction = symbols.getFunction(declaration.Content->mangledName);
@@ -97,18 +142,25 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             return perms;
         }
-
-        void operator()(ast::FunctionCall& functionCall){
-            visit_each(*this, functionCall.Content->values);
-            
-            std::string name = functionCall.Content->functionName;
-
+    
+        template<typename T>
+        std::vector<std::shared_ptr<const Type>> get_types(T& functionCall){
             std::vector<std::shared_ptr<const Type>> types;
 
             ast::GetTypeVisitor visitor;
             for(auto& value : functionCall.Content->values){
                 types.push_back(visit(visitor, value));
             }
+
+            return types;
+        }
+
+        void operator()(ast::FunctionCall& functionCall){
+            visit_each(*this, functionCall.Content->values);
+            
+            std::string name = functionCall.Content->functionName;
+
+            auto types = get_types(functionCall);
 
             std::string mangled = mangle(name, types);
             
@@ -141,6 +193,42 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
         }
 
+        void operator()(ast::MemberFunctionCall& functionCall){
+            auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+            auto type = var->type();
+            auto struct_type = type->is_pointer() ? type->data_type()->type() : type->type();
+
+            visit_each(*this, functionCall.Content->values);
+            
+            std::string name = functionCall.Content->function_name;
+
+            auto types = get_types(functionCall);
+
+            std::string mangled = mangle(name, types, struct_type);
+
+            //If the function does not exists, try implicit conversions to pointers
+            if(!symbols.exists(mangled)){
+                auto perms = permutations(types);
+
+                for(auto& perm : perms){
+                    mangled = mangle(name, perm, struct_type);
+
+                    if(symbols.exists(mangled)){
+                        break;
+                    }
+                }
+            }
+            
+            if(symbols.exists(mangled)){
+                symbols.addReference(mangled);
+
+                functionCall.Content->mangled_name = mangled;
+                functionCall.Content->function = symbols.getFunction(mangled);
+            } else {
+                throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+            }
+        }
+
         void operator()(ast::Return& return_){
             return_.Content->function = currentFunction;
 
@@ -149,6 +237,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_OTHERS()
 };
+
+void ast::defineMemberFunctions(ast::SourceFile& program){
+    MemberFunctionAnnotator annotator;
+    annotator(program);
+}
 
 void ast::defineFunctions(ast::SourceFile& program){
     //First phase : Collect functions

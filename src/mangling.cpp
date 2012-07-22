@@ -53,25 +53,33 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     }
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types){
-    if(functionName == "main"){
-        return functionName;
+std::string eddic::mangle(std::shared_ptr<Function> function){
+    if(function->name == "main"){
+        return function->name;
     }
 
     std::ostringstream ss;
 
     ss << "_F";
-    ss << functionName.length();
-    ss << functionName;
 
-    for(auto type : types){
-        ss << mangle(type);
+    if(!function->struct_.empty()){
+        ss << function->struct_.length();
+        ss << function->struct_;
+    }
+
+    ss << function->name.length();
+    ss << function->name;
+
+    for(auto type : function->parameters){
+        if(type.name != "this"){
+            ss << mangle(type.paramType);
+        }
     }
 
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ParameterType>& types){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_){
     if(functionName == "main"){
         return functionName;
     }
@@ -79,30 +87,42 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<Par
     std::ostringstream ss;
 
     ss << "_F";
-    ss << functionName.length();
-    ss << functionName;
 
-    for(const ParameterType& t : types){
-        ss << mangle(t.paramType);
+    if(!struct_.empty()){
+        ss << struct_.length();
+        ss << struct_;
     }
 
-    return ss.str();
-}
-
-std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values){
-    if(functionName == "main"){
-        return functionName;
-    }
-
-    std::ostringstream ss;
-
-    ss << "_F";
     ss << functionName.length();
     ss << functionName;
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
         auto type = visit(visitor, value);
+        ss << mangle(type);
+    }
+
+    return ss.str();
+}
+
+std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_){
+    if(functionName == "main"){
+        return functionName;
+    }
+
+    std::ostringstream ss;
+
+    ss << "_F";
+
+    if(!struct_.empty()){
+        ss << struct_.length();
+        ss << struct_;
+    }
+
+    ss << functionName.length();
+    ss << functionName;
+
+    for(auto type : types){
         ss << mangle(type);
     }
 
