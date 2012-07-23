@@ -1,4 +1,6 @@
-int a = 5;
+int a = 7;
+int gb = 77;
+int gc = 99;
 
 void main(){
     int b;
@@ -9,5 +11,35 @@ void main(){
     }
 
     print(b);
+    print("|");
+    
+    int c;
+    if(a > 5){
+        c = 4;
+    } else {
+        c = 8;
+    }
+
+    print(c);
+    print("|");
+    
+    int d;
+    if(a < 5){
+        d = gb;
+    } else {
+        d = gc;
+    }
+
+    print(d);
+    print("|");
+    
+    int e;
+    if(a > 5){
+        e = gb;
+    } else {
+        e = gc;
+    }
+
+    print(e);
     print("|");
 }
