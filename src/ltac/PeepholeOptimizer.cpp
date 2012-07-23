@@ -678,10 +678,10 @@ bool conditional_move(std::shared_ptr<ltac::Function> function){
 
                     ++temp_it;
 
-                    if(auto* jump_2_ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
+                    if(boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
                         ++temp_it;
 
-                        if(auto* label_1_ptr = boost::get<std::string>(&*temp_it)){
+                        if(boost::get<std::string>(&*temp_it)){
                             ++temp_it;
 
                             if(auto* mov_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
@@ -692,7 +692,7 @@ bool conditional_move(std::shared_ptr<ltac::Function> function){
 
                                 ++temp_it;
 
-                                if(auto* label_2_ptr = boost::get<std::string>(&*temp_it)){
+                                if(boost::get<std::string>(&*temp_it)){
                                     if(ltac::is_reg(*(*mov_1_ptr)->arg1) && ltac::is_reg(*(*mov_2_ptr)->arg1)){
                                         auto& reg1 = boost::get<ltac::Register>(*(*mov_1_ptr)->arg1); 
                                         auto& reg2 = boost::get<ltac::Register>(*(*mov_2_ptr)->arg1); 
