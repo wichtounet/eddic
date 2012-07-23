@@ -287,9 +287,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         }
 
         if(for_.Content->condition){
-            ast::If if_;
-            if_.Content->condition = *for_.Content->condition; 
-
             ast::DoWhile do_while;
             do_while.Content->condition = *for_.Content->condition; 
             do_while.Content->instructions = for_.Content->instructions;
@@ -298,13 +295,15 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 do_while.Content->instructions.push_back(*for_.Content->repeat);
             }
 
+            ast::If if_;
+            if_.Content->condition = *for_.Content->condition; 
             if_.Content->instructions.push_back(do_while);
 
             instructions.push_back(if_);
         } else {
-            ast::DoWhile do_while;
-
             ast::True condition;
+            
+            ast::DoWhile do_while;
             do_while.Content->condition = condition;
             do_while.Content->instructions = for_.Content->instructions;
             
