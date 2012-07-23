@@ -172,10 +172,29 @@ void ast::DebugVisitor::operator()(ast::Swap&) const {
 
 void ast::DebugVisitor::operator()(ast::If& if_) const {
     std::cout << indent() << "If" << std::endl; 
+    
     std::cout << indent() << "Condition:" << std::endl;
     print_sub(*this, if_.Content->condition);
-    std::cout << indent() << "Body:" << std::endl;
+    
+    std::cout << indent() << "Instructions" << std::endl;
     print_each_sub(*this, if_.Content->instructions);
+    
+    for(auto& else_if : if_.Content->elseIfs){
+        std::cout << indent() << "ElseIf" << std::endl;
+        
+        std::cout << indent() << "Condition:" << std::endl;
+        print_sub(*this, if_.Content->condition);
+        
+        std::cout << indent() << "Instructions" << std::endl;
+        print_each_sub(*this, else_if.instructions);
+    }
+
+    if(if_.Content->else_){
+        std::cout << indent() << "Else" << std::endl;
+        
+        std::cout << indent() << "Instructions" << std::endl;
+        print_each_sub(*this, (*if_.Content->else_).instructions);
+    }
 }
 
 void ast::DebugVisitor::operator()(ast::FunctionCall& call) const {
