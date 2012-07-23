@@ -21,7 +21,7 @@ ast::DebugVisitor::DebugVisitor() : level(0) {}
 std::string ast::DebugVisitor::indent() const {
     std::string acc = "";
     for(int i = 0; i < level; ++i){
-        acc += "\t";
+        acc += "    ";
     }
     return acc;
 }
@@ -123,7 +123,7 @@ void ast::DebugVisitor::operator()(Switch& switch_) const {
     std::cout << indent() << "Switch " << std::endl; 
 
     ++level;
-    std::cout << "Value" << std::endl;
+    std::cout << indent() << "Value" << std::endl;
     print_sub(*this, switch_.Content->value);
     for(auto& case_ : switch_.Content->cases){
         (*this)(case_);
@@ -135,21 +135,20 @@ void ast::DebugVisitor::operator()(Switch& switch_) const {
 }
 
 void ast::DebugVisitor::operator()(SwitchCase& switch_case) const {
-    std::cout << "Case" << std::endl; 
+    std::cout << indent() << "Case" << std::endl; 
     
     ++level;
-    std::cout << "Value" << std::endl;
+    std::cout << indent() << "Value" << std::endl;
     print_sub(*this, switch_case.value);
+    std::cout << indent() << "Instructions" << std::endl;
     print_each_sub(*this, switch_case.instructions);
     --level;
 }
 
 void ast::DebugVisitor::operator()(DefaultCase& default_case) const {
-    std::cout << "Default Case" << std::endl; 
+    std::cout << indent() << "Default Case" << std::endl; 
     
-    ++level;
     print_each_sub(*this, default_case.instructions);
-    --level;
 }
 
 void ast::DebugVisitor::operator()(ast::While& while_) const {
