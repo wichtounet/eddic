@@ -1,0 +1,13 @@
+int a = 5;
+
+void main(){
+    int b;
+    if(a == 5){
+        b = 4;
+    } else {
+        b = 8;
+    }
+
+    print(b);
+    print("|");
+}
