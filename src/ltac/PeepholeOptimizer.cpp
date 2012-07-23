@@ -650,6 +650,11 @@ bool conditional_move(std::shared_ptr<ltac::Function> function){
 
     RegisterUsage usage = collect_register_usage(function);
 
+    auto free_reg = get_free_reg(usage);
+    if(free_reg == ltac::SP){
+        return optimized;
+    }
+
     auto& statements = function->getStatements();
 
     auto it = statements.begin();
@@ -702,31 +707,17 @@ bool conditional_move(std::shared_ptr<ltac::Function> function){
                                             continue;
                                         }
 
-                                        auto free_reg = get_free_reg(usage);
-                                        if(free_reg == ltac::SP){
-                                            return optimized;
-                                        }
-
-                                        auto jump_type = (*jump_1_ptr)->type;
+                                        auto cmov_op = get_cmov_op((*jump_1_ptr)->type);
 
                                         *(++it) = *mov_1_ptr;
-
-                                        *(++it) = *mov_2_ptr;
-                                        (*mov_2_ptr)->arg1 = free_reg;
-
-                                        auto cmove = std::make_shared<ltac::Instruction>();
-                                        cmove->op = get_cmov_op(jump_type);
-                                        cmove->arg1 = reg1;
-                                        cmove->arg2 = free_reg;
-
-                                        *(++it) = cmove;
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
+                                        *(++it) = std::make_shared<ltac::Instruction>(cmov_op, reg1, free_reg);
                                         
                                         *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
                                         *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
                                         *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
 
                                         optimized = true;
-                                        usage = collect_register_usage(function);
                                     }
                                 }
                             }
