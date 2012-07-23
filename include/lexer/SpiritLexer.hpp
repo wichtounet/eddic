@@ -56,6 +56,9 @@ class SpiritLexer : public lex::lexer<L> {
             struct_ = "struct";
             null = "null";
             this_ = "this";
+            switch_ = "switch";
+            case_ = "case";
+            default_ = "default";
 
             /* Raw values  */
             identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
@@ -130,6 +133,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += and_ | or_;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null | this_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
+            this->self += case_ | switch_ | default_;
             this->self += float_ | integer | identifier | litteral;
 
             //Ignore comments
@@ -157,6 +161,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken stop, comma, dot;
         ConsumedToken assign, swap;
         ConsumedToken question_mark, double_dot;
+        ConsumedToken case_, switch_, default_;
         
         //Keywords
         ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;

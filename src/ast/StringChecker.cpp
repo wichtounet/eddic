@@ -36,6 +36,9 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_TERNARY()
+        AUTO_RECURSE_SWITCH()
+        AUTO_RECURSE_SWITCH_CASE()
+        AUTO_RECURSE_DEFAULT_CASE()
 
         AUTO_IGNORE_OTHERS()
 

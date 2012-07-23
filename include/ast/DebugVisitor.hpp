@@ -44,6 +44,9 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(DoWhile& while_) const ;
     void operator()(Swap&) const ;
     void operator()(If& if_) const ;
+    void operator()(Switch& switch_) const ;
+    void operator()(SwitchCase& switch_case) const ;
+    void operator()(DefaultCase& default_case) const ;
     void operator()(VariableDeclaration& declaration) const ;
     void operator()(ArrayDeclaration&) const ;
     void operator()(Assignment& assign) const ;

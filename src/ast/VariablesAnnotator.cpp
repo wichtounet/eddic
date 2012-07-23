@@ -40,6 +40,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_UNARY_VALUES()
     AUTO_RECURSE_CAST_VALUES()
     AUTO_RECURSE_RETURN_VALUES()
+    AUTO_RECURSE_SWITCH()
+    AUTO_RECURSE_SWITCH_CASE()
+    AUTO_RECURSE_DEFAULT_CASE()
 
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -277,8 +280,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::DereferenceValue& variable){
         visit(*this, variable.Content->ref);
-        //check_variable_values(variable);
-        //TODO
     }
 
     void operator()(ast::ArrayValue& array){
@@ -291,8 +292,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
-
-        //TODO Check the members 
     }
 
     void operator()(ast::Expression& value){

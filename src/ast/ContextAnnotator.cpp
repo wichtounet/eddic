@@ -35,6 +35,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
+        AUTO_RECURSE_SWITCH()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -93,6 +94,24 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::DoWhile& while_){
             annotateWhileLoop(while_);
+        }
+        
+        void operator()(ast::SwitchCase& switch_case){
+            visit(*this, switch_case.value);
+
+            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+           
+            visit_each(*this, switch_case.instructions);
+
+            currentContext = currentContext->parent();
+        }
+        
+        void operator()(ast::DefaultCase& default_case){
+            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+           
+            visit_each(*this, default_case.instructions);
+
+            currentContext = currentContext->parent();
         }
 
         void operator()(ast::For& for_){

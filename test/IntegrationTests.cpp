@@ -316,6 +316,10 @@ BOOST_AUTO_TEST_CASE( struct_array ){
     assert_output("struct_arrays.eddi", "99|111|999|1111|99|111|999|1111|");
 }
 
+BOOST_AUTO_TEST_CASE( switch_ ){
+    assert_output("switch.eddi", "5|5|3|6|default|4|");
+}
+
 BOOST_AUTO_TEST_CASE( nested ){
     assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");

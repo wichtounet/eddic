@@ -114,44 +114,52 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
 }
 
 bool mtac::remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
-
     auto& blocks = function->getBasicBlocks();
-
     unsigned int before = blocks.size();
+
+    if(before <= 2){
+        return false;
+    }
+    
+    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
+    std::list<std::shared_ptr<mtac::BasicBlock>> queue;
+    
+    //ENTRY is always accessed
+    queue.push_back(blocks.front());
+
+    while(!queue.empty()){
+        auto block = queue.back();
+        queue.pop_back();
+
+        if(usage.find(block) == usage.end()){
+            usage.insert(block);
+        
+            if(likely(!block->statements.empty())){
+                auto& last = block->statements.back();
+
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
+                    queue.push_back((*ptr)->block);
+
+                    continue;
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
+                    queue.push_back((*ptr)->block); 
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last)){
+                    queue.push_back((*ptr)->block); 
+                }
+            }
+
+            //EXIT has no next block
+            if(block->index != -2){
+                //Add the next block
+                auto it = std::find(blocks.begin(), blocks.end(), block);
+                ++it;
+                queue.push_back(*it);
+            }
+        }
+    }
 
     auto it = blocks.begin();
     auto end = blocks.end();
-
-    while(it != end){
-        auto& block = *it;
-
-        usage.insert(block);
-
-        if(likely(!block->statements.empty())){
-            auto& last = block->statements[block->statements.size() - 1];
-
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                if(usage.find((*ptr)->block) == usage.end()){
-                    it = std::find(blocks.begin(), blocks.end(), (*ptr)->block);
-                    continue;
-                }
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
-                usage.insert((*ptr)->block); 
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last)){
-                usage.insert((*ptr)->block); 
-            }
-        }
-
-        ++it;
-    }
-
-    //The ENTRY and EXIT blocks should not be removed
-    usage.insert(blocks.front());
-    usage.insert(blocks.back());
-
-    it = blocks.begin();
-    end = blocks.end();
 
     blocks.erase(
             std::remove_if(it, end, 
