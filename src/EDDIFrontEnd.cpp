@@ -34,7 +34,7 @@
 #include "ast/OptimizationEngine.hpp"
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
-#include "ast/DebugVisitor.hpp"
+#include "ast/Printer.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/RegisterAllocation.hpp"

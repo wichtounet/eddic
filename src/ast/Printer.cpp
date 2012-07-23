@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "ast/DebugVisitor.hpp"
+#include "ast/Printer.hpp"
 
 #include "variant.hpp"
 #include "assert.hpp"

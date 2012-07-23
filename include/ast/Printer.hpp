@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_DEBUG_VISITOR_H
-#define AST_DEBUG_VISITOR_H
+#ifndef AST_PRINTER_H
+#define AST_PRINTER_H
 
 #include "ast/SourceFile.hpp"
 
