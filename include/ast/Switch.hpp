@@ -15,6 +15,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 #include "ast/SwitchCase.hpp"
+#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -26,9 +27,10 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::Switch).
  */
 struct ASTSwitch {
+    Position position;
     Value value;
     std::vector<SwitchCase> cases;
-    boost::optional<SwitchCase> default_case;
+    boost::optional<DefaultCase> default_case;
 
     mutable long references = 0;
 };
@@ -46,9 +48,10 @@ typedef Deferred<ASTSwitch> Switch;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Switch, 
+    (eddic::ast::Position, Content->position)
     (eddic::ast::Value, Content->condition)
     (std::vector<eddic::ast::SwitchCase>, Content->cases)
-    (boost::optional<eddic::ast::SwitchCase>, Content->default_case)
+    (boost::optional<eddic::ast::DefaultCase>, Content->default_case)
 )
 
 #endif

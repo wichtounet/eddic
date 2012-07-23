@@ -5,27 +5,22 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_SWITCH_CASE_H
-#define AST_SWITCH_CASE_H
+#ifndef AST_DEFAULT_CASE_H
+#define AST_DEFAULT_CASE_H
 
 #include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
-
-#include "ast/Value.hpp"
-#include "ast/Position.hpp"
 
 namespace eddic {
 
 namespace ast {
 
 /*!
- * \class SwitchCase 
- * \brief The AST node for a switch case.
+ * \class DefaultCase 
+ * \brief The AST node for a default switch case.
  */
-struct SwitchCase {
-    Position position;
-    Value value;
+struct DefaultCase {
     std::vector<Instruction> instructions;
 };
 
@@ -35,9 +30,7 @@ struct SwitchCase {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::SwitchCase, 
-    (eddic::ast::Position, position)
-    (eddic::ast::Value, value)
+    eddic::ast::DefaultCase, 
     (std::vector<eddic::ast::Instruction>, instructions)
 )
 

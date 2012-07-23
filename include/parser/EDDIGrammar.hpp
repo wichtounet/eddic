@@ -42,6 +42,9 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
     qi::rule<lexer::Iterator, ast::Return()> return_;
+    qi::rule<lexer::Iterator, ast::Switch()> switch_;
+    qi::rule<lexer::Iterator, ast::SwitchCase()> switch_case;
+    qi::rule<lexer::Iterator, ast::DefaultCase()> default_case;
 
     /* Loops */
     qi::rule<lexer::Iterator, ast::While()> while_;
