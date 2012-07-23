@@ -20,6 +20,7 @@ void main(){
     test(3);
     test(6);
     test(100);
+    test(4);
 }
 
 void test(int a){
