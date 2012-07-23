@@ -42,6 +42,9 @@ typedef Deferred<ASTForeach> Foreach;
 struct ASTForeachIn;
 typedef Deferred<ASTForeachIn> ForeachIn;
 
+struct ASTSwitch;
+typedef Deferred<ASTSwitch> Switch;
+
 typedef boost::variant<
             MemberFunctionCall,
             FunctionCall, 
@@ -57,6 +60,7 @@ typedef boost::variant<
             ForeachIn, 
             SuffixOperation,
             PrefixOperation,
+            Switch,
             For>
         Instruction;
 
@@ -71,5 +75,6 @@ typedef boost::variant<
 #include "ast/For.hpp"
 #include "ast/Foreach.hpp"
 #include "ast/ForeachIn.hpp"
+#include "ast/Switch.hpp"
 
 #endif
