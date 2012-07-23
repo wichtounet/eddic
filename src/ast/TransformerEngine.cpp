@@ -318,6 +318,41 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         return instructions;
     }
 
+    result_type operator()(ast::Switch& switch_){
+        auto cases = switch_.Content->cases;
+
+        ast::Expression first_condition;
+        first_condition.Content->first = switch_.Content->value; 
+        first_condition.Content->operations.push_back({ast::Operator::EQUALS, cases[0].value});
+        
+        ast::If if_;
+        if_.Content->condition = first_condition;
+        if_.Content->instructions = cases[0].instructions;
+
+        for(std::size_t i = 1; i < cases.size(); ++i){
+            auto case_ = cases[i];
+
+            ast::Expression condition;
+            condition.Content->first = switch_.Content->value; 
+            condition.Content->operations.push_back({ast::Operator::EQUALS, case_.value});
+
+            ast::ElseIf else_if;
+            else_if.condition = condition;
+            else_if.instructions = case_.instructions;
+
+            if_.Content->elseIfs.push_back(else_if);
+        }
+
+        if(switch_.Content->default_case){
+            ast::Else else_;
+            else_.instructions = (*switch_.Content->default_case).instructions;
+
+            if_.Content->else_ = else_;
+        }
+
+        return {if_};
+    }
+
     //No transformation for the other nodes
     template<typename T>
     result_type operator()(T&) const {
