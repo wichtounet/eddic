@@ -632,8 +632,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
 
 void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
     auto reg = manager.get_reg_no_move(quadruple->result);
-    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
+    
+    //Copy it in the register
+    manager.copy(*quadruple->arg1, reg);
 
+    //The variable has been written
     manager.set_written(quadruple->result);
 
     //If the address of the variable is escaped, we have to spill its value directly
