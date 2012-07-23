@@ -92,7 +92,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         //If the user asked for it, print the Abstract Syntax Tree
         if(option_defined("ast") || option_defined("ast-only")){
-            ast::DebugVisitor()(program);
+            ast::Printer printer;
+            printer.print(program);
         }
         
         //If the user wants only the AST prints, it is not necessary to compile the AST
