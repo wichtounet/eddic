@@ -39,22 +39,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         return acc;
     }
 
-    void operator()(ast::SourceFile& program) const {
-        std::cout << indent() << "SourceFile" << std::endl; 
-
-        ++level;
-
-        visit_each(*this, program.Content->blocks);
-    }
-
-    void operator()(ast::Import& import) const {
-        std::cout << indent() << "include \"" << import.file << "\"" << std::endl;
-    }
-
-    void operator()(ast::StandardImport& import) const {
-        std::cout << indent() << "include <" << import.header << ">" << std::endl;
-    }
-
     template<typename Container>
     void print_each_sub(Container& container) const {
         level++;
@@ -67,6 +51,20 @@ struct DebugVisitor : public boost::static_visitor<> {
         level++;
         visit(*this, container);    
         level--;
+    }
+
+    void operator()(ast::SourceFile& program) const {
+        std::cout << indent() << "SourceFile" << std::endl; 
+
+        print_each_sub(program.Content->blocks);
+    }
+
+    void operator()(ast::Import& import) const {
+        std::cout << indent() << "include \"" << import.file << "\"" << std::endl;
+    }
+
+    void operator()(ast::StandardImport& import) const {
+        std::cout << indent() << "include <" << import.header << ">" << std::endl;
     }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
@@ -126,14 +124,18 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Switch " << std::endl; 
 
         ++level;
+        
         std::cout << indent() << "Value" << std::endl;
         print_sub(switch_.Content->value);
+        
         for(auto& case_ : switch_.Content->cases){
-            (*this)(case_);
+            visit_non_variant(*this, case_);
         }
+        
         if(switch_.Content->default_case){
-            (*this)(*switch_.Content->default_case);
+            visit_non_variant(*this, *switch_.Content->default_case);
         }
+        
         --level;
     }
 
@@ -141,10 +143,13 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Case" << std::endl; 
 
         ++level;
+        
         std::cout << indent() << "Value" << std::endl;
         print_sub(switch_case.value);
+        
         std::cout << indent() << "Instructions" << std::endl;
         print_each_sub(switch_case.instructions);
+        
         --level;
     }
 
