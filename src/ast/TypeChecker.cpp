@@ -74,6 +74,10 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
         visit_each(*this, foreach.Content->instructions);
     }
+
+    void operator()(ast::Switch& switch_){
+        //TODO
+    }
     
     void operator()(ast::Ternary& ternary){
         visit(*this, ternary.Content->condition);

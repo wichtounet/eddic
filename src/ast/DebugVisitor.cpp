@@ -118,6 +118,39 @@ void ast::DebugVisitor::operator()(ast::ForeachIn& for_) const {
     std::cout << indent() << "Foreach in " << std::endl; 
     print_each_sub(*this, for_.Content->instructions);
 }
+    
+void ast::DebugVisitor::operator()(Switch& switch_) const {
+    std::cout << indent() << "Switch " << std::endl; 
+
+    ++level;
+    std::cout << "Value" << std::endl;
+    print_sub(*this, switch_.Content->value);
+    for(auto& case_ : switch_.Content->cases){
+        (*this)(case_);
+    }
+    if(switch_.Content->default_case){
+        (*this)(*switch_.Content->default_case);
+    }
+    --level;
+}
+
+void ast::DebugVisitor::operator()(SwitchCase& switch_case) const {
+    std::cout << "Case" << std::endl; 
+    
+    ++level;
+    std::cout << "Value" << std::endl;
+    print_sub(*this, switch_case.value);
+    print_each_sub(*this, switch_case.instructions);
+    --level;
+}
+
+void ast::DebugVisitor::operator()(DefaultCase& default_case) const {
+    std::cout << "Default Case" << std::endl; 
+    
+    ++level;
+    print_each_sub(*this, default_case.instructions);
+    --level;
+}
 
 void ast::DebugVisitor::operator()(ast::While& while_) const {
     std::cout << indent() << "While" << std::endl; 

@@ -379,6 +379,21 @@ struct CleanerVisitor : public boost::static_visitor<> {
         while_.Content->condition = visit(transformer, while_.Content->condition);
         visit_each(*this, while_.Content->instructions);
     }
+    
+    void operator()(ast::Switch& switch_){
+        visit_each_non_variant(*this, switch_.Content->cases);
+        switch_.Content->value = visit(transformer, switch_.Content->value);
+        visit_optional_non_variant(*this, switch_.Content->default_case);
+    }
+    
+    void operator()(ast::SwitchCase& switch_case){
+        switch_case.value = visit(transformer, switch_case.value);
+        visit_each(*this, switch_case.instructions);
+    }
+    
+    void operator()(ast::DefaultCase& default_case){
+        visit_each(*this, default_case.instructions);
+    }
 
     void operator()(ast::FunctionCall& functionCall){
         for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
@@ -474,6 +489,9 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
     AUTO_IGNORE_TERNARY()
+    AUTO_IGNORE_SWITCH()
+    AUTO_IGNORE_SWITCH_CASE()
+    AUTO_IGNORE_DEFAULT_CASE()
 
     template<typename T>
     void transform(T& instructions){

@@ -15,6 +15,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 #include "ast/SwitchCase.hpp"
+#include "ast/DefaultCase.hpp"
 #include "ast/Position.hpp"
 
 namespace eddic {
@@ -49,7 +50,7 @@ typedef Deferred<ASTSwitch> Switch;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Switch, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::Value, Content->condition)
+    (eddic::ast::Value, Content->value)
     (std::vector<eddic::ast::SwitchCase>, Content->cases)
     (boost::optional<eddic::ast::DefaultCase>, Content->default_case)
 )
