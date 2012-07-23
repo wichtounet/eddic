@@ -21,6 +21,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     
     default_case %=
             qi::eps
+        >>  lexer.default_
+        >>  lexer.double_dot
         >>  *(instruction);
 
     switch_case %=
@@ -173,7 +175,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     instruction %= 
-            (value.member_function_call > lexer.stop)
+            switch_
+        |   (value.member_function_call > lexer.stop)
         |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (declaration >> lexer.stop)
@@ -188,7 +191,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   foreachin_
         |   return_
         |   (swap > lexer.stop)
-        |   switch_
         ;
 
     repeatable_instruction = 
