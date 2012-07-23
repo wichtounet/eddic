@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 
+#include "assert.hpp"
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
@@ -532,6 +533,37 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
     }   
 }
 
+RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function){
+    auto& statements = function->getStatements();
+   
+    RegisterUsage usage;
+    add_escaped_registers(usage, function);
+
+    for(auto statement : statements){
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            collect_usage(usage, instruction->arg1);
+            collect_usage(usage, instruction->arg2);
+            collect_usage(usage, instruction->arg3);
+        }
+    }
+
+    return usage;
+}
+
+ltac::Register get_free_reg(RegisterUsage& usage){
+    auto descriptor = getPlatformDescriptor(platform);
+   
+    for(auto& reg : descriptor->symbolic_registers()){
+        if(usage.find(ltac::Register(reg)) == usage.end()){
+            return ltac::Register(reg);
+        }
+    }
+
+    return ltac::SP;
+}
+
 bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     bool optimized = false;
 
@@ -586,6 +618,130 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+ltac::Operator get_cmov_op(ltac::JumpType op){
+    switch(op){
+        case ltac::JumpType::NE:
+            return ltac::Operator::CMOVNE;
+        case ltac::JumpType::E:
+            return ltac::Operator::CMOVE;
+        case ltac::JumpType::GE:
+            return ltac::Operator::CMOVGE;
+        case ltac::JumpType::G:
+            return ltac::Operator::CMOVG;
+        case ltac::JumpType::LE:
+            return ltac::Operator::CMOVLE;
+        case ltac::JumpType::L:
+            return ltac::Operator::CMOVL;
+        case ltac::JumpType::B:
+            return ltac::Operator::CMOVB;
+        case ltac::JumpType::BE:
+            return ltac::Operator::CMOVBE;
+        case ltac::JumpType::A:
+            return ltac::Operator::CMOVA;
+        case ltac::JumpType::AE:
+            return ltac::Operator::CMOVAE;
+        default:
+            ASSERT_PATH_NOT_TAKEN("No cmov equivalent");
+    }
+}
+
+bool conditional_move(std::shared_ptr<ltac::Function> function){
+    bool optimized = false;
+
+    RegisterUsage usage = collect_register_usage(function);
+
+    auto& statements = function->getStatements();
+
+    auto it = statements.begin();
+    auto end = statements.end();
+
+    while(it != end){
+        auto statement = *it;
+
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            if((*ptr)->op != ltac::Operator::CMP_INT){
+                ++it;
+                continue;
+            }
+
+            auto temp_it = it;
+            ++temp_it;
+
+            if(auto* jump_1_ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
+                ++temp_it;
+        
+                if(auto* mov_1_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                    if((*mov_1_ptr)->op != ltac::Operator::MOV){
+                        ++it;
+                        continue;
+                    }
+
+                    ++temp_it;
+
+                    if(auto* jump_2_ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
+                        ++temp_it;
+
+                        if(auto* label_1_ptr = boost::get<std::string>(&*temp_it)){
+                            ++temp_it;
+
+                            if(auto* mov_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                                if((*mov_2_ptr)->op != ltac::Operator::MOV){
+                                    ++it;
+                                    continue;
+                                }
+
+                                ++temp_it;
+
+                                if(auto* label_2_ptr = boost::get<std::string>(&*temp_it)){
+                                    if(ltac::is_reg(*(*mov_1_ptr)->arg1) && ltac::is_reg(*(*mov_2_ptr)->arg1)){
+                                        auto& reg1 = boost::get<ltac::Register>(*(*mov_1_ptr)->arg1); 
+                                        auto& reg2 = boost::get<ltac::Register>(*(*mov_2_ptr)->arg1); 
+
+                                        if(reg1 != reg2){
+                                            ++it;
+                                            continue;
+                                        }
+
+                                        auto free_reg = get_free_reg(usage);
+                                        if(free_reg == ltac::SP){
+                                            return optimized;
+                                        }
+
+                                        auto jump_type = (*jump_1_ptr)->type;
+
+                                        *(++it) = *mov_1_ptr;
+
+                                        *(++it) = *mov_2_ptr;
+                                        (*mov_2_ptr)->arg1 = free_reg;
+
+                                        auto cmove = std::make_shared<ltac::Instruction>();
+                                        cmove->op = get_cmov_op(jump_type);
+                                        cmove->arg1 = reg1;
+                                        cmove->arg2 = free_reg;
+
+                                        *(++it) = cmove;
+                                        
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+
+                                        optimized = true;
+                                        usage = collect_register_usage(function);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ++it;
+    }
+
+    return optimized;
+}
+
 bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
     if(option_defined("dev")){
         if(b){
@@ -623,6 +779,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
             optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
+            optimized |= debug("Conditional move", conditional_move(function), function);
         } while(optimized);
     }
 }
