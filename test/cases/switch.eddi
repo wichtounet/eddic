@@ -1,0 +1,14 @@
+void main(){
+    int a = 5;
+
+    switch(a){
+        case 3:
+            println("0");
+        case 4:
+            println("0");
+        case 5:
+            println("1");
+        case 6:
+            println("0");
+    }
+}
