@@ -36,6 +36,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_UNARY_VALUES()
+    AUTO_RECURSE_DEFAULT_CASE()
         
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_FALSE()
@@ -76,7 +77,28 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Switch& switch_){
-        //TODO
+        visit(*this, switch_.Content->value);
+
+        auto value_type = visit(ast::GetTypeVisitor(), switch_.Content->value);
+
+        if(value_type != INT){
+            throw SemanticalException("Switch can only work on int type", switch_.Content->position);
+        }
+        
+        visit_each_non_variant(*this, switch_.Content->cases);
+        visit_optional_non_variant(*this, switch_.Content->default_case);
+    }
+    
+    void operator()(ast::SwitchCase& switch_){
+        visit(*this, switch_.value);
+
+        auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
+
+        if(value_type != INT){
+            throw SemanticalException("Switch can only work on int type", switch_.position);
+        }
+
+        visit_each(*this, switch_.instructions);
     }
     
     void operator()(ast::Ternary& ternary){
