@@ -131,6 +131,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null | this_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += float_ | integer | identifier | litteral;
+            this->self += case_ | switch_ | default_;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
@@ -157,6 +158,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken stop, comma, dot;
         ConsumedToken assign, swap;
         ConsumedToken question_mark, double_dot;
+        ConsumedToken case_, switch_, default_;
         
         //Keywords
         ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
