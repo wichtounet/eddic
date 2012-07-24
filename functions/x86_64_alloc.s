@@ -2,60 +2,64 @@ _F5allocI:
 push rbp
 mov rbp, rsp
 
-push rbx
-push rcx
-push rdi
-push rsi
+;Add the size of the header
+add r14, 16
 
-mov rbx, [Veddi_remaining]
-cmp r14, rbx
-jle .alloc_normal
-;Get the current address
-;syscall 12 = sys_brk
-mov rax, 12
-;get end
-xor rdi, rdi
-syscall
-;%eax is the current address 
-mov rsi, rax
-;Alloc new block of 16384K from the current address
-mov rdi, rax
-;rdi = first parameter
-add rdi, 16384
-;syscall 12 = sys_brk
-mov rax, 12
-syscall
-;zero'd the new block
-;edi = start of block
-mov rdi, rax
-;edi points to the last DWORD available to us
-sub rdi, 4
-;this many DWORDs were allocated
-mov rcx, 4096
-;will write with zeroes
-xor rax, rax
-;walk backwards
-std
-;write all over the reserved area
-rep stosb
-;bring back the DF flag to normal state
-cld
-mov dword [Veddi_remaining], 16384
-mov [Veddi_current], rsi
-.alloc_normal:
-mov rax, [Veddi_current]
-mov rbx, [Veddi_current]
-add rbx, r14
-mov [Veddi_current], rbx
-mov rbx, [Veddi_remaining]
-sub rbx, r14
-mov [Veddi_remaining], rbx
-.alloc_end:
+;r12 = start, r13 = last
+mov r12, [V_mem_start]
+mov r13, [V_mem_last]
 
-pop rsi
-pop rdi
-pop rcx
-pop rbx
+.start:
+
+;Check if we are at the end
+cmp r12, r13
+je .alloc
+
+;r10 = availability of the block
+;r11 = size of the block
+mov r10, [r12]
+mov r11, [r12 + 8]
+cmp r10, 1
+jne .move
+
+;The block is available
+
+cmp r11, r14
+jl .move
+
+;The block is of the good size
+
+;make it unavailable
+mov qword [r12], 0
+
+;The pointer is past the header
+lea rax, [r12 + 16]
+
+.end:
 
 leave
 ret
+
+.move:
+
+;switch to the next block
+add r12, r11
+
+jmp .start
+
+.alloc:
+
+;alloc new block of the good size
+lea rdi, [r12 + r14]
+mov rax, 12
+syscall
+
+mov [V_mem_last], rdi
+
+mov qword [r13], 0
+mov qword [r13 + 8], r14
+
+;the pointer is past the header
+lea rax, [r13 + 16]
+
+jmp .end

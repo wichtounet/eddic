@@ -179,6 +179,13 @@ void SymbolTable::defineStandardFunctions(){
     allocFunction->parameters.push_back({"a", INT});
     addFunction(allocFunction);
     
+    //free function
+    auto freeFunction = std::make_shared<Function>(INT, "free");
+    freeFunction->standard = true;
+    freeFunction->mangledName = "_F4freePI";
+    freeFunction->parameters.push_back({"a", new_pointer_type(INT)});
+    addFunction(freeFunction);
+    
     //time function
     auto timeFunction = std::make_shared<Function>(VOID, "time");
     timeFunction->standard = true;
