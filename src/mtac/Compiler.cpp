@@ -188,8 +188,15 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::New& new_) const {
-        //TODO
-        return {0};
+        auto type = visit(ast::TypeTransformer(), new_.Content->type);
+        function->add(std::make_shared<mtac::Param>(type->size()));
+
+        auto t1 = function->context->new_temporary(INT);
+
+        symbols.addReference("_F5allocI");
+        function->add(std::make_shared<mtac::Call>("_F5allocI", symbols.getFunction("_F5allocI"), t1)); 
+
+        return {t1};
     }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
