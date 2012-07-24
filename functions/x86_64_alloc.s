@@ -40,7 +40,6 @@ std
 rep stosb
 ;bring back the DF flag to normal state
 cld
-mov rax, rsi
 mov dword [Veddi_remaining], 16384
 mov [Veddi_current], rsi
 .alloc_normal:

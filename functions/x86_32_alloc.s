@@ -26,7 +26,6 @@ xor eax, eax
 std
 rep stosb
 cld
-mov eax, esi
 mov dword [Veddi_remaining], 16384
 mov [Veddi_current], esi
 .alloc_normal:
