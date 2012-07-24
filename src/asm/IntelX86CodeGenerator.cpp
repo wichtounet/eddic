@@ -314,9 +314,7 @@ void IntelX86CodeGenerator::writeRuntimeSupport(){
     if(symbols.getFunction("main")->parameters.size() == 1){
         writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
         writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
-        writer.stream() << "push ecx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;                  //eax = start address of the array
-        writer.stream() << "add esp, 4" << std::endl;
+        writer.stream() << "call _F5allocI" << std::endl;                  //eax = start address of the array
 
         writer.stream() << "lea esi, [eax + ecx - 4]" << std::endl;         //esi = last address of the array
         writer.stream() << "mov edx, esi" << std::endl;                     //edx = last address of the array
@@ -435,8 +433,8 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
         output_function("x86_32_concat");
     }
     
-    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        output_function("x86_32_eddi_alloc");
+    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        output_function("x86_32_alloc");
     }
     
     if(symbols.referenceCount("_F4timeAI")){

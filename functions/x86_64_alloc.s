@@ -1,14 +1,14 @@
-eddi_alloc:
+_F5allocI:
 push rbp
 mov rbp, rsp
+
 push rbx
 push rcx
-push rdx
 push rdi
 push rsi
-mov rcx, [rbp + 16]
+
 mov rbx, [Veddi_remaining]
-cmp rcx, rbx
+cmp r14, rbx
 jle .alloc_normal
 ;Get the current address
 ;syscall 12 = sys_brk
@@ -46,16 +46,17 @@ mov [Veddi_current], rsi
 .alloc_normal:
 mov rax, [Veddi_current]
 mov rbx, [Veddi_current]
-add rbx, rcx
+add rbx, r14
 mov [Veddi_current], rbx
 mov rbx, [Veddi_remaining]
-sub rbx, rcx
+sub rbx, r14
 mov [Veddi_remaining], rbx
 .alloc_end:
+
 pop rsi
 pop rdi
-pop rdx
 pop rcx
 pop rbx
+
 leave
 ret

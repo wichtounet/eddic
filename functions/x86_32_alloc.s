@@ -1,10 +1,13 @@
-eddi_alloc:
+_F5allocI:
 push ebp
 mov ebp, esp
+
 push ebx
 push ecx
 push edx
-mov ecx, [ebp + 8]
+push esi
+push edi
+
 mov ebx, [Veddi_remaining]
 cmp ecx, ebx
 jle .alloc_normal
@@ -35,8 +38,12 @@ mov ebx, [Veddi_remaining]
 sub ebx, ecx
 mov [Veddi_remaining], ebx
 .alloc_end:
+
+pop edi
+pop esi
 pop edx
 pop ecx
 pop ebx
+
 leave
 ret
