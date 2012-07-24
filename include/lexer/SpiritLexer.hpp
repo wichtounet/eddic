@@ -13,6 +13,8 @@
 #include <utility>
 #include <stack>
 
+#include "boost_cfg.hpp"
+
 #include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/lex_lexertl.hpp>
 #include <boost/spirit/include/classic_core.hpp>

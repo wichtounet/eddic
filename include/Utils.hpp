@@ -8,6 +8,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "boost_cfg.hpp"
 #include <boost/lexical_cast.hpp>
 
 #include <vector>

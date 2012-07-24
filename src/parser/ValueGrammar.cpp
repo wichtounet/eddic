@@ -150,6 +150,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   member_function_call
         |   function_call
         |   prefix_operation
+        |   new_
         |   suffix_operation
         |   array_value
         |   variable_value
@@ -157,7 +158,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   null
         |   true_
         |   false_
-        |   new_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
 
     new_ %=

@@ -8,8 +8,11 @@
 #ifndef EDDI_GRAMMAR_H
 #define EDDI_GRAMMAR_H
 
+#include "boost_cfg.hpp"
 #include <boost/spirit/include/qi.hpp>
+
 #include "lexer/SpiritLexer.hpp"
+
 #include "ast/SourceFile.hpp"
 
 #include "parser/ValueGrammar.hpp"
