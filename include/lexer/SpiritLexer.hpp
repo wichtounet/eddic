@@ -56,6 +56,8 @@ class SpiritLexer : public lex::lexer<L> {
             struct_ = "struct";
             null = "null";
             this_ = "this";
+            new_ = "new";
+            delete_ = "delete";
             switch_ = "switch";
             case_ = "case";
             default_ = "default";
@@ -124,14 +126,15 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
 
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
+            this->self += assign | swap;
             this->self += comma | stop | dot;
             this->self += double_dot | question_mark;
-            this->self += assign | swap;
-            this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += addition | subtraction | multiplication | division | modulo;
-            this->self += increment | decrement;
-            this->self += and_ | or_;
+            this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null | this_;
+            this->self += increment | decrement;
+            this->self += new_ | delete_;
+            this->self += and_ | or_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += case_ | switch_ | default_;
             this->self += float_ | integer | identifier | litteral;
@@ -161,14 +164,15 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken stop, comma, dot;
         ConsumedToken assign, swap;
         ConsumedToken question_mark, double_dot;
-        ConsumedToken case_, switch_, default_;
         
         //Keywords
         ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
         ConsumedToken const_, include;
         ConsumedToken struct_, null;
-        StringToken this_;
+        ConsumedToken case_, switch_, default_;
+        ConsumedToken new_, delete_;
+        StringToken this_; //As this is handled like a variable, we need its value
 
         //Ignored tokens
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
