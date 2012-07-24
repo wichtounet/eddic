@@ -28,7 +28,7 @@ namespace ast {
  */
 struct ASTDelete {
     std::shared_ptr<Context> context;
-    std::shared_ptr<Variable> var;
+    std::shared_ptr<Variable> variable;
     
     Position position;
     std::string variable_name;

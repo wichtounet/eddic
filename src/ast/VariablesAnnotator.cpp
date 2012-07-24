@@ -53,6 +53,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
+    AUTO_IGNORE_NEW()
     
     void operator()(ast::Struct& struct_){
         if(symbols.is_recursively_nested(struct_.Content->name)){
@@ -169,6 +170,15 @@ struct VariablesVisitor : public boost::static_visitor<> {
     
     void operator()(ast::PrefixOperation& operation){
         annotateSuffixOrPrefixOperation(operation);
+    }
+
+    void operator()(ast::Delete& delete_){
+        if (!delete_.Content->context->exists(delete_.Content->variable_name)) {
+            throw SemanticalException("Variable " + delete_.Content->variable_name + " has not been declared", delete_.Content->position);
+        }
+        
+        delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
+        delete_.Content->variable->addReference();
     }
     
     void operator()(ast::VariableDeclaration& declaration){

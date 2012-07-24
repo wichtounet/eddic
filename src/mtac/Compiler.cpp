@@ -187,6 +187,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {0};
     }
 
+    result_type operator()(ast::New& new_) const {
+        //TODO
+        return {0};
+    }
+
     result_type operator()(ast::BuiltinOperator& builtin) const {
         auto& value = builtin.Content->values[0];
 
@@ -1132,6 +1137,10 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else {
                 ASSERT_PATH_NOT_TAKEN("Unhandled arguments size");
             }   
+        }
+
+        void operator()(ast::Delete& delete_){
+            //TODO
         }
 
         template<typename T>
