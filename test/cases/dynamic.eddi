@@ -1,4 +1,11 @@
 void main(){
     int* a = new int();
+    print(*a);
+    print("|");
+    
+    *a = 5;
+    print(*a);
+    print("|");
+    
     delete a;
 }
