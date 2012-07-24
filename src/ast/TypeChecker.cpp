@@ -300,7 +300,7 @@ struct CheckerVisitor : public boost::static_visitor<> {
     void operator()(ast::New& new_){
         auto type = visit(ast::TypeTransformer(), new_.Content->type);
 
-        if(type->is_standard_type() || type->is_custom_type()){
+        if(!(type->is_standard_type() || type->is_custom_type())){
             throw SemanticalException("Only standard types and struct types can be dynamically allocated", new_.Content->position);
         }
     }
