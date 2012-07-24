@@ -1,0 +1,4 @@
+void main(){
+    int* a = new int();
+    delete a;
+}
