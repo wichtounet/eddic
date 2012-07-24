@@ -6,6 +6,25 @@ void main(){
     *a = 5;
     print(*a);
     print("|");
+
+    a = new int();
+    print(*a);
+    print("|");
+    
+    *a = -9;
+    print(*a);
+    print("|");
+
+    int* b = allocator();
+    print(*b);
+    print("|");
     
     delete a;
+    delete b;
+}
+
+int* allocator(){
+    int* ptr = new int();
+    *ptr = 666;
+    return ptr;
 }
