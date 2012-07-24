@@ -46,6 +46,9 @@ typedef Deferred<ASTForeachIn> ForeachIn;
 struct ASTSwitch;
 typedef Deferred<ASTSwitch> Switch;
 
+struct ASTDelete;
+typedef Deferred<ASTDelete> Delete;
+
 typedef boost::variant<
             MemberFunctionCall,
             FunctionCall, 
@@ -61,6 +64,7 @@ typedef boost::variant<
             ForeachIn, 
             SuffixOperation,
             PrefixOperation,
+            Delete,
             Switch,
             For>
         Instruction;

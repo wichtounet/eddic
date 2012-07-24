@@ -18,6 +18,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         value(lexer, position_begin), 
         type(lexer, position_begin),
         position_begin(position_begin){
+
+    delete_ %=
+            qi::position(position_begin)
+        >>  lexer.delete_
+        >>  lexer.identifier;
     
     default_case %=
             qi::eps
@@ -191,6 +196,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   foreachin_
         |   return_
         |   (swap > lexer.stop)
+        |   (delete_ > lexer.stop)
         ;
 
     repeatable_instruction = 

@@ -157,7 +157,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   null
         |   true_
         |   false_
+        |   new_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+
+    new_ %=
+            qi::position(position_begin)
+        >>  lexer.new_
+        >>  type.type
+        >>  lexer.left_parenth
+        >>  lexer.right_parenth;
     
     null %= 
             qi::eps

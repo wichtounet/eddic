@@ -28,7 +28,7 @@ namespace eddic {
 
 namespace ast {
 
-typedef boost::variant<
+typedef boost::mpl::vector<
             Integer, 
             IntegerSuffix, 
             Float,
@@ -49,7 +49,11 @@ typedef boost::variant<
             SuffixOperation,
             PrefixOperation,
             Ternary
-        > Value;
+        > types_initial;
+
+typedef boost::mpl::push_back<types_initial, New>::type types;
+
+typedef boost::make_variant_over<types>::type Value;
 
 } //end of ast
 
