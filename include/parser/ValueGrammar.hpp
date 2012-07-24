@@ -57,6 +57,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::True()> true_;
     qi::rule<lexer::Iterator, ast::False()> false_;
     qi::rule<lexer::Iterator, ast::Null()> null;
+    qi::rule<lexer::Iterator, ast::New()> new_;
     qi::rule<lexer::Iterator, ast::PrefixOperation()> prefix_operation;
     qi::rule<lexer::Iterator, ast::SuffixOperation()> suffix_operation;
 

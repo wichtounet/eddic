@@ -40,7 +40,7 @@ struct ASTDelete {
  * \typedef Delete
  * \brief The AST node for delete a pointer.
  */
-typedef Deferred<ASTArrayValue> ArrayValue;
+typedef Deferred<ASTDelete> Delete;
 
 } //end of ast
 

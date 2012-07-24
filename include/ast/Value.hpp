@@ -20,6 +20,7 @@
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/Null.hpp"
+#include "ast/New.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
