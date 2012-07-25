@@ -2,6 +2,12 @@ _F5allocI:
 push ebp
 mov ebp, esp
 
+push ebx
+push ecx
+push edx
+push edi
+push esi
+
 ;Add the size of the header
 add ecx, 8
 
@@ -32,7 +38,8 @@ jl .move
 mov dword [eax], 0
 
 ;The pointer is past the header
-add eax, 8
+sub eax, 4
+add eax, ecx
 
 leave
 ret
@@ -59,7 +66,13 @@ mov dword [edi], 0
 mov dword [edi + 4], ecx
 
 ;the pointer is past the header
-lea eax, [edi + 8]
+lea eax, [edi + ecx - 4]
+
+push esi
+push edi
+push edx
+push ecx
+push ebx
 
 leave
 ret

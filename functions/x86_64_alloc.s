@@ -2,6 +2,7 @@ _F5allocI:
 push rbp
 mov rbp, rsp
 
+push rdi
 push r10
 push r11
 push r12
@@ -70,6 +71,7 @@ pop r13
 pop r12
 pop r11
 pop r10
+pop rdi
 
 leave
 ret
