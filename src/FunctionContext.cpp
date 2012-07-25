@@ -32,7 +32,7 @@ int FunctionContext::size() const {
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
-    Position position(PositionType::PARAMETER, currentParameter + (type->size() - ::INT->size()));
+    Position position(PositionType::PARAMETER, currentParameter);
 
     currentParameter += type->size();
 
