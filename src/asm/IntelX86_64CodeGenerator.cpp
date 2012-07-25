@@ -327,17 +327,17 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "add rcx, 8" << std::endl;                       //rcx = size of the array
 
         writer.stream() << "mov r14, rcx" << std::endl;
-        writer.stream() << "call _F5allocI" << std::endl;                  //rax = start address of the array
+        writer.stream() << "call _F5allocI" << std::endl;                   //rax = start address of the array
 
-        writer.stream() << "lea rsi, [rax + rcx - 16]" << std::endl;         //rsi = last address of the array
+        writer.stream() << "mov rsi, rax" << std::endl;                     //rsi = last address of the array
         writer.stream() << "mov rdx, rsi" << std::endl;                     //rdx = last address of the array
         
         writer.stream() << "mov [rsi], rbx" << std::endl;                   //Set the length of the array
-        writer.stream() << "sub rsi, 16" << std::endl;                       //Move to the destination address of the first arg
+        writer.stream() << "sub rsi, 16" << std::endl;                      //Move to the destination address of the first arg
 
         writer.stream() << ".copy_args:" << std::endl;
         writer.stream() << "pop rdi" << std::endl;                          //rdi = address of current args
-        writer.stream() << "mov [rsi+8], rdi" << std::endl;                   //set the address of the string
+        writer.stream() << "mov [rsi+8], rdi" << std::endl;                 //set the address of the string
 
         /* Calculate the length of the string  */
         writer.stream() << "xor rax, rax" << std::endl;
