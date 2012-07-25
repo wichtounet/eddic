@@ -29,20 +29,16 @@ void main(){
     delete a5;
 
     int* a = new int();
-    print(*a);
-    print("|");
-    
-    *a = 5;
+    *a = 0;
+
     print(*a);
     print("|");
 
     delete a;
 
     a = new int();
-    print(*a);
-    print("|");
-    
     *a = -9;
+
     print(*a);
     print("|");
 
