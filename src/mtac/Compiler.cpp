@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include <boost/range/adaptors.hpp>
+
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"

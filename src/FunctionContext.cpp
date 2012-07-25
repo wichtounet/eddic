@@ -40,10 +40,9 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<const Type> type){
-    Position position(PositionType::STACK, currentPosition);
-
     currentPosition += type->size();
 
+    Position position(PositionType::STACK, currentPosition - INT->size());
     auto var = std::make_shared<Variable>(variable, type, position);
 
     storage[variable] = var;

@@ -62,7 +62,7 @@ int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::strin
             return offset;
         }
 
-        offset -= m->type->size();
+        offset += m->type->size();
     }
 
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
