@@ -1156,9 +1156,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             param->function = symbols.getFunction("_F4freePII");
             function->add(param);
             
-            std::cout << "delete " << delete_.Content->variable->name() << std::endl;
-            std::cout << "delete " << delete_.Content->variable->type()->data_type()->size() << std::endl;
-
             param = std::make_shared<mtac::Param>(delete_.Content->variable->type()->data_type()->size());
             param->std_param = "b";
             param->function = symbols.getFunction("_F4freePII");
