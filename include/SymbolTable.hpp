@@ -90,7 +90,6 @@ class SymbolTable {
         bool struct_exists(const std::string& struct_);
         
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
-        int member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member);
         int size_of_struct(const std::string& struct_);
         bool is_recursively_nested(const std::string& struct_);
 
