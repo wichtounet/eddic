@@ -202,6 +202,14 @@ BOOST_AUTO_TEST_CASE( cmove ){
     assert_output("cmov.eddi", "8|4|99|77|");
 }
 
+BOOST_AUTO_TEST_CASE( dynamic ){
+    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|");
+}
+
+BOOST_AUTO_TEST_CASE( dynamic_struct ){
+    assert_output("dynamic_struct.eddi", "0|-9|55|asdf|999|-9|0||0|666|777|666|777|1000|");
+}
+
 BOOST_AUTO_TEST_CASE( string_pointers ){
     assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
 }
