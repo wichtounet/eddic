@@ -180,10 +180,11 @@ void SymbolTable::defineStandardFunctions(){
     addFunction(allocFunction);
     
     //free function
-    auto freeFunction = std::make_shared<Function>(INT, "free");
+    auto freeFunction = std::make_shared<Function>(VOID, "free");
     freeFunction->standard = true;
-    freeFunction->mangledName = "_F4freePI";
-    freeFunction->parameters.push_back({"a", new_pointer_type(INT)});
+    freeFunction->mangledName = "_F4freePII";
+    freeFunction->parameters.push_back({"a", INT});
+    freeFunction->parameters.push_back({"b", INT});
     addFunction(freeFunction);
     
     //time function

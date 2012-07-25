@@ -1153,11 +1153,19 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Delete& delete_){
             auto param = std::make_shared<mtac::Param>(delete_.Content->variable);
             param->std_param = "a";
-            param->function = symbols.getFunction("_F4freePI");
+            param->function = symbols.getFunction("_F4freePII");
+            function->add(param);
+            
+            std::cout << "delete " << delete_.Content->variable->name() << std::endl;
+            std::cout << "delete " << delete_.Content->variable->type()->data_type()->size() << std::endl;
+
+            param = std::make_shared<mtac::Param>(delete_.Content->variable->type()->data_type()->size());
+            param->std_param = "b";
+            param->function = symbols.getFunction("_F4freePII");
             function->add(param);
 
-            symbols.addReference("_F4freePI");
-            function->add(std::make_shared<mtac::Call>("_F4freePI", symbols.getFunction("_F4freePI"))); 
+            symbols.addReference("_F4freePII");
+            function->add(std::make_shared<mtac::Call>("_F4freePII", symbols.getFunction("_F4freePII"))); 
         }
 
         template<typename T>

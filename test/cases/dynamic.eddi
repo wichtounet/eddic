@@ -50,6 +50,7 @@ void main(){
     delete b;
     
     a = new int();
+    *a = 9999;
     print(*a);
     print("|");
     

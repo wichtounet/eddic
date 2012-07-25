@@ -2,6 +2,12 @@ _F5allocI:
 push rbp
 mov rbp, rsp
 
+push r10
+push r11
+push r12
+push r13
+push r14
+
 ;Add the size of the header
 add r14, 16
 
@@ -32,7 +38,7 @@ jl .move
 mov qword [r12], 0
 
 ;The pointer is past the header
-lea rax, [r12 + 16]
+lea rax, [r12 + r14 - 8]
 
 leave
 ret
@@ -57,7 +63,13 @@ mov qword [r12], 0
 mov qword [r12 + 8], r14
 
 ;the pointer is past the header
-lea rax, [r13 + 16]
+lea rax, [r12 + r14 - 8]
+
+pop r14
+pop r13
+pop r12
+pop r11
+pop r10
 
 leave
 ret
