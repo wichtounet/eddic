@@ -1,4 +1,33 @@
 void main(){
+    int* a1 = new int();
+    int* a2 = new int();
+    int* a3 = new int();
+    int* a4 = new int();
+    int* a5 = new int();
+
+    *a1 = 5;
+    *a2 = 55;
+    *a3 = 555;
+    *a4 = 5555;
+    *a5 = 55555;
+    
+    print(*a1);
+    print("|");
+    print(*a2);
+    print("|");
+    print(*a3);
+    print("|");
+    print(*a4);
+    print("|");
+    print(*a5);
+    print("|");
+
+    delete a1;
+    delete a2;
+    delete a3;
+    delete a4;
+    delete a5;
+
     int* a = new int();
     print(*a);
     print("|");
@@ -6,6 +35,8 @@ void main(){
     *a = 5;
     print(*a);
     print("|");
+
+    delete a;
 
     a = new int();
     print(*a);
@@ -21,6 +52,16 @@ void main(){
     
     delete a;
     delete b;
+    
+    a = new int();
+    print(*a);
+    print("|");
+    
+    *a = 1000;
+    print(*a);
+    print("|");
+
+    delete a;
 }
 
 int* allocator(){

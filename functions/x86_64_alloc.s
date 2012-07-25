@@ -22,11 +22,10 @@ mov r11, [r12 + 8]
 cmp r10, 1
 jne .move
 
-;The block is available
-
 cmp r11, r14
 jl .move
 
+;The block is available and of the good size
 ;The block is of the good size
 
 ;make it unavailable
@@ -34,8 +33,6 @@ mov qword [r12], 0
 
 ;The pointer is past the header
 lea rax, [r12 + 16]
-
-.end:
 
 leave
 ret
@@ -56,10 +53,11 @@ syscall
 
 mov [V_mem_last], rdi
 
-mov qword [r13], 0
-mov qword [r13 + 8], r14
+mov qword [r12], 0
+mov qword [r12 + 8], r14
 
 ;the pointer is past the header
 lea rax, [r13 + 16]
 
-jmp .end
+leave
+ret
