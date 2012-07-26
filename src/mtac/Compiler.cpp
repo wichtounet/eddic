@@ -1223,7 +1223,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
             auto param = parameters[i--].name; 
             
             auto args = visit(ToArgumentsVisitor(function), first);
-            for(auto& arg : args){
+            for(auto& arg : boost::adaptors::reverse(args)){
                 function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
@@ -1254,7 +1254,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
             } 
 
             auto args = visit(ToArgumentsVisitor(function, param->type()->is_pointer()), first);
-            for(auto& arg : args){
+            for(auto& arg : boost::adaptors::reverse(args)){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
 
