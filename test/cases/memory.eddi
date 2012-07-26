@@ -1,4 +1,4 @@
-string ga = "444";
+string ga = "4";
 
 struct A {
     int a;
@@ -14,7 +14,7 @@ void main(){
     test_ptr(ga);
     test_value(ga);
 
-    string b = "111";
+    string b = "1";
 
     print(b);
     print("|");
@@ -22,12 +22,12 @@ void main(){
     test_ptr(b);
     test_value(b);
 
-    /*A a;
+    A a;
 
-    a.a = 555;
-    a.b = "666";
-    a.c = 777;
-    a.d = "888";
+    a.a = 5;
+    a.b = "6";
+    a.c = 7;
+    a.d = "8";
 
     print(a.a);
     print("|");
@@ -39,7 +39,7 @@ void main(){
     print("|");
 
     test_ptr(a);
-    test_value(a);*/
+    test_value(a);
 }
 
 void test_ptr(string* a){
