@@ -79,21 +79,9 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
     mtac::Argument index = moveToArgument(indexValue, function);
     
     auto temp = function->context->newTemporary();
-    auto position = array->position();
 
-    if(position.isGlobal()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
-        //function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, array->type()->data_type()->size() * array->type()->elements()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-    } else if(position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-        //function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
-    } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-        //function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
-    }
+    function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
+    function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
    
     return temp;
 }
@@ -279,13 +267,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
 
-            /*if(var->position().isParameter() && !var->type()->is_pointer()){
-                function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset + getStringOffset(var)));
-                function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset));
-            } else {*/
-                function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
-                function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + getStringOffset(var)));
-            //}
+            function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
+            function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + getStringOffset(var)));
 
             return {t1, t2};
         } else {
