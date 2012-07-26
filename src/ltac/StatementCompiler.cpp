@@ -534,10 +534,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                     if(position.isGlobal()){
                         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
-                        auto offset = (*ptr)->type()->data_type()->size() * (*ptr)->type()->elements();
-
                         ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
                         ltac::add_instruction(function, ltac::Operator::PUSH, reg);
                         bp_offset += INT->size();
                     } else if(position.isStack()){

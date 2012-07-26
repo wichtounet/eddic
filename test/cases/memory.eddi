@@ -1,4 +1,5 @@
 string ga = "4";
+int gai[4];
 
 struct A {
     int a;
@@ -39,7 +40,7 @@ void main(){
     print("|");
 
     test_ptr(a);
-    test_value(a);*/
+    test_value(a);
 
     int ai[4];
     ai[0] = 1;
@@ -57,6 +58,39 @@ void main(){
     print("|");
 
     test_array(ai);
+    
+    string as[4];
+    as[0] = "1";
+    as[1] = "2";
+    as[2] = "3";
+    as[3] = "4";
+    
+    print(as[0]);
+    print("|");
+    print(as[1]);
+    print("|");
+    print(as[2]);
+    print("|");
+    print(as[3]);
+    print("|");
+
+    test_array(as);*/
+    
+    gai[0] = 1;
+    gai[1] = 2;
+    gai[2] = 3;
+    gai[3] = 4;
+    
+    print(gai[0]);
+    print("|");
+    print(gai[1]);
+    print("|");
+    print(gai[2]);
+    print("|");
+    print(gai[3]);
+    print("|");
+
+    test_array(gai);
 }
 
 void test_ptr(string* a){
@@ -99,5 +133,16 @@ void test_array(int[] ai){
     print(ai[2]);
     print("|");
     print(ai[3]);
+    print("|");
+}
+
+void test_array(string[] as){
+    print(as[0]);
+    print("|");
+    print(as[1]);
+    print("|");
+    print(as[2]);
+    print("|");
+    print(as[3]);
     print("|");
 }

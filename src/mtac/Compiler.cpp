@@ -82,17 +82,17 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
     auto position = array->position();
 
     if(position.isGlobal()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * array->type()->data_type()->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, array->type()->data_type()->size() * array->type()->elements()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::SUB, INT->size()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
+        //function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, array->type()->data_type()->size() * array->type()->elements()));
+        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
     } else if(position.isStack()){
         function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
+        //function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     } else if(position.isParameter()){
         function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
         function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
+        //function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
     }
    
     return temp;
@@ -442,7 +442,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto t3 = array.Content->context->newTemporary();
 
                 //Assign the second part of the string
-                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
+                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size()));
                 function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::DOT, t3));
 
                 return {t1, t2};
@@ -604,7 +604,7 @@ struct AssignValueToVariable : public AbstractVisitor {
             function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_ASSIGN, arguments[0]));
 
             auto temp1 = function->context->newTemporary();
-            function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -INT->size()));
+            function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, INT->size()));
             function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::DOT_ASSIGN, arguments[1]));
         } else {
             function->add(std::make_shared<mtac::Quadruple>(variable, arguments[0], mtac::Operator::ASSIGN));
