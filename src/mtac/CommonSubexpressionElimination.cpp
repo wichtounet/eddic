@@ -13,6 +13,7 @@
 
 #include "mtac/CommonSubexpressionElimination.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -149,26 +150,26 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
 bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
     auto& results = global_results->IN_S[statement];
 
-    bool changes = false;
-
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        if(mtac::is_expression((*ptr)->op)){
+        auto quadruple = *ptr;
+
+        if(mtac::is_expression(quadruple->op)){
             for(auto& expression : results.values()){
-                if(are_equivalent(expression.expression, *ptr)){
+                if(are_equivalent(expression.expression, quadruple)){
                     auto source_statement = expression.expression;
                     
                     mtac::Operator assign_op;
-                    if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
+                    if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
                         assign_op = mtac::Operator::ASSIGN;
-                    } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
+                    } else if(quadruple->op >= mtac::Operator::FADD && quadruple->op <= mtac::Operator::FDIV){
                         assign_op = mtac::Operator::FASSIGN;
                     }
 
                     if(optimized.find(source_statement->result) == optimized.end()){
                         std::shared_ptr<Variable> temp;
-                        if((*ptr)->op >= mtac::Operator::ADD && (*ptr)->op <= mtac::Operator::MOD){
+                        if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
                             temp = expression.source->context->new_temporary(INT);
-                        } else if((*ptr)->op >= mtac::Operator::FADD && (*ptr)->op <= mtac::Operator::FDIV){
+                        } else if(quadruple->op >= mtac::Operator::FADD && quadruple->op <= mtac::Operator::FDIV){
                             temp = expression.source->context->new_temporary(FLOAT);
                         }
 
@@ -179,34 +180,34 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                             if(boost::get<std::shared_ptr<Quadruple>>(&*it)){
                                 auto target = boost::get<std::shared_ptr<Quadruple>>(*it);
                                 if(target == source_statement){
+                                    source_statement->result = temp;
+                                    
                                     auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
 
-                                    expression.source->statements.insert(it+1, quadruple);
+                                    ++it;
+                                    expression.source->statements.insert(it, quadruple);
 
                                     break;
                                 }
                             }
-
-                            ++it;
                         }
 
-                        source_statement->result = temp;
-
-                        (*ptr)->op = assign_op;
-                        (*ptr)->arg1 = temp;
+                        quadruple->op = assign_op;
+                        quadruple->arg1 = temp;
+                        quadruple->arg2.reset();
                         
                         optimized[source_statement->result] = temp;
-                    } else {
-                        (*ptr)->op = assign_op;
-                        (*ptr)->arg1 = source_statement->result;
-                        
                     }
 
-                    changes = true;
+                    quadruple->op = assign_op;
+                    quadruple->arg1 = source_statement->result;
+                    quadruple->arg2.reset();
+
+                    return true;
                 }
             }
         }
     }
 
-    return changes;
+    return false;
 }
