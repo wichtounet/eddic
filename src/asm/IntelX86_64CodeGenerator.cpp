@@ -367,23 +367,23 @@ void IntelX86_64CodeGenerator::defineDataSection(){
 
 void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "times " << size << " dq 0" << std::endl;
     writer.stream() << "dq " << size << std::endl;
+    writer.stream() << "times " << size << " dq 0" << std::endl;
 }
 
 void IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
     writer.stream() << "dq " << size << std::endl;
+    writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
 }
 
 void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "dq " << size << std::endl;
     writer.stream() << "%rep " << size << std::endl;
     writer.stream() << "dq S3" << std::endl;
     writer.stream() << "dq 0" << std::endl;
     writer.stream() << "%endrep" << std::endl;
-    writer.stream() << "dq " << size << std::endl;
 }
 
 void IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
