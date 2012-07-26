@@ -8,7 +8,7 @@ struct A {
 }
 
 void main(){
-    print(ga);
+    /*print(ga);
     print("|");
 
     test_ptr(ga);
@@ -39,7 +39,24 @@ void main(){
     print("|");
 
     test_ptr(a);
-    test_value(a);
+    test_value(a);*/
+
+    int ai[4];
+    ai[0] = 1;
+    ai[1] = 2;
+    ai[2] = 3;
+    ai[3] = 4;
+    
+    print(ai[0]);
+    print("|");
+    print(ai[1]);
+    print("|");
+    print(ai[2]);
+    print("|");
+    print(ai[3]);
+    print("|");
+
+    test_array(ai);
 }
 
 void test_ptr(string* a){
@@ -71,5 +88,16 @@ void test_value(A a){
     print(a.c);
     print("|");
     print(a.d);
+    print("|");
+}
+
+void test_array(int[] ai){
+    print(ai[0]);
+    print("|");
+    print(ai[1]);
+    print("|");
+    print(ai[2]);
+    print("|");
+    print(ai[3]);
     print("|");
 }
