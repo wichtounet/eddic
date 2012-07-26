@@ -52,6 +52,9 @@ class StatementCompiler : public boost::static_visitor<> {
         void operator()(std::shared_ptr<mtac::NoOp>&);
         void operator()(std::string& str);
 
+        void push(ltac::Argument arg);
+        void pop(ltac::Argument arg);
+
         bool ended = false;     //Is the basic block ended ?
 
         int bp_offset = 0;

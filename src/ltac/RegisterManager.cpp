@@ -458,8 +458,7 @@ void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> d
 void ltac::RegisterManager::restore_pushed_registers(){
     //Restore the int parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(int_pushed)){
-        ltac::add_instruction(function, ltac::Operator::POP, reg);
-        access_compiler()->bp_offset -= INT->size();
+        access_compiler()->pop(reg);
     }
 
     //Restore the float parameters in registers (in the reverse order they were pushed)
@@ -520,8 +519,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                 if(!registers.reserved(reg) && registers.used(reg)){
                     if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
-                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        access_compiler()->bp_offset += INT->size();
+                        access_compiler()->push(reg);
                     } else {
                         spills(reg);
                     }

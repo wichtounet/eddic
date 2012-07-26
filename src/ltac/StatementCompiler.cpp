@@ -285,6 +285,16 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
 
     manager.set_written(quadruple->result);
 }
+        
+void ltac::StatementCompiler::push(ltac::Argument arg){
+    ltac::add_instruction(function, ltac::Operator::PUSH, arg);
+    bp_offset += INT->size();
+}
+
+void ltac::StatementCompiler::pop(ltac::Argument arg){
+    ltac::add_instruction(function, ltac::Operator::POP, arg);
+    bp_offset -= INT->size();
+}
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_false){
     manager.set_current(if_false);
@@ -502,8 +512,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
         if(register_allocated){
             ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
         } else {
-            ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-            bp_offset += INT->size();
+            push(reg);
         }
     } 
     //Push by value
@@ -525,8 +534,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                 auto reg2 = manager.get_float_reg(*ptr);
 
                 ltac::add_instruction(function, ltac::Operator::MOV, reg1, reg2);
-                ltac::add_instruction(function, ltac::Operator::PUSH, reg1);
-                bp_offset += INT->size();
+                push(reg1);
             } else {
                 if((*ptr)->type()->is_array()){
                     auto position = (*ptr)->position();
@@ -535,31 +543,25 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
                         ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
-                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        bp_offset += INT->size();
+                        push(reg);
                     } else if(position.isStack()){
                         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
                         ltac::add_instruction(function, ltac::Operator::LEA, reg, stack_address(-position.offset()));
-                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        bp_offset += INT->size();
+                        push(reg);
                     } else if(position.isParameter()){
-                        ltac::add_instruction(function, ltac::Operator::PUSH, stack_address(position.offset()));
-                        bp_offset += INT->size();
+                        push(stack_address(position.offset()));
                     }
                 } else {
                     auto reg = manager.get_reg(ltac::get_variable(param->arg));
-                    ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                    bp_offset += INT->size();
+                    push(reg);
                 }
             }
         } else if(auto* ptr = boost::get<double>(&param->arg)){
             auto label = float_pool->label(*ptr);
-            ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
-            bp_offset += INT->size();
+            push(ltac::Address(label));
         } else {
-            ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
-            bp_offset += INT->size();
+            push(to_arg(param->arg));
         }
     }
 }
