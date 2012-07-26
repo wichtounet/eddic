@@ -1150,7 +1150,7 @@ void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const T
     auto struct_name = type->type();
     auto struct_type = symbols.get_struct(struct_name);
 
-    for(auto& member : struct_type->members){
+    for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto member_type = member->type;
 
         memberValue.Content->memberNames.push_back(member->name);
@@ -1181,7 +1181,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     auto struct_name = var->type()->type();
     auto struct_type = symbols.get_struct(struct_name);
 
-    for(auto member : struct_type->members){
+    for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto type = member->type;
 
         ast::VariableValue memberValue;
