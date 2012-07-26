@@ -102,7 +102,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
     auto position = var->position();
 
     if(position.isStack()){
-        return stack_address(-position.offset() + offset);
+        return stack_address(position.offset() + offset);
     } else if(position.isParameter()){
         //The case of array is special because only the address is passed, not the complete array
         if(var->type()->is_array())
@@ -140,7 +140,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
     auto offsetReg = manager.get_reg(ltac::get_variable(offset));
 
     if(position.isStack()){
-        return stack_address(offsetReg, -1 * position.offset());
+        return stack_address(offsetReg, position.offset());
     } else if(position.isParameter()){
         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
@@ -547,7 +547,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                     } else if(position.isStack()){
                         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
-                        ltac::add_instruction(function, ltac::Operator::LEA, reg, stack_address(-position.offset()));
+                        ltac::add_instruction(function, ltac::Operator::LEA, reg, stack_address(position.offset()));
                         push(reg);
                     } else if(position.isParameter()){
                         push(stack_address(position.offset()));

@@ -26,7 +26,7 @@ namespace mtac {
 struct Printer {
     void print(std::shared_ptr<mtac::Program> program) const ;
     void printFunction(std::shared_ptr<mtac::Function> function) const ;
-    void printStatement(mtac::Statement& program) const ;
+    void printStatement(mtac::Statement program) const ;
     void printArgument(mtac::Argument& program) const ;
 };
 

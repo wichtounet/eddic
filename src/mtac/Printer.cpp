@@ -284,7 +284,7 @@ void mtac::Printer::printFunction(std::shared_ptr<mtac::Function> function) cons
    visitor(function); 
 }
 
-void mtac::Printer::printStatement(mtac::Statement& statement) const {
+void mtac::Printer::printStatement(mtac::Statement statement) const {
    DebugVisitor visitor;
    visit(visitor, statement);
 }

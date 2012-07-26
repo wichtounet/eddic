@@ -83,15 +83,15 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     for(; iter != end; iter++){
         auto var = iter->second;
         if(var->type()->is_array() && var->position().isStack()){
-            int position = -var->position().offset();
+            int position = var->position().offset();
 
             ltac::add_instruction(target_function, ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(var->type()->elements()));
 
-            if(var->type()->data_type() == INT){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position - 8), static_cast<int>(var->type()->elements()));
+            /*if(var->type()->data_type() == INT){
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size()), static_cast<int>(var->type()->elements()));
             } else if(var->type()->data_type() == STRING){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position - 8), static_cast<int>(2 * var->type()->elements()));
-            }
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size()), static_cast<int>(2 * var->type()->elements()));
+            }*/
         }
     }
     

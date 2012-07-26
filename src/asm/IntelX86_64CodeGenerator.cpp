@@ -325,15 +325,15 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "call eddi_alloc" << std::endl;                  //rax = start address of the array
         writer.stream() << "add rsp, 8" << std::endl;
 
-        writer.stream() << "lea rsi, [rax + rcx - 16]" << std::endl;         //rsi = last address of the array
+        writer.stream() << "mov rsi, rax" << std::endl;         //rsi = last address of the array
         writer.stream() << "mov rdx, rsi" << std::endl;                     //rdx = last address of the array
         
         writer.stream() << "mov [rsi], rbx" << std::endl;                   //Set the length of the array
-        writer.stream() << "sub rsi, 16" << std::endl;                       //Move to the destination address of the first arg
+        writer.stream() << "add rsi, 8" << std::endl;                       //Move to the destination address of the first arg
 
         writer.stream() << ".copy_args:" << std::endl;
         writer.stream() << "pop rdi" << std::endl;                          //rdi = address of current args
-        writer.stream() << "mov [rsi+8], rdi" << std::endl;                   //set the address of the string
+        writer.stream() << "mov [rsi], rdi" << std::endl;                   //set the address of the string
 
         /* Calculate the length of the string  */
         writer.stream() << "xor rax, rax" << std::endl;
@@ -344,8 +344,8 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "dec rcx" << std::endl;
         /* End of the calculation */
 
-        writer.stream() << "mov qword [rsi], rcx" << std::endl;               //set the length of the string
-        writer.stream() << "sub rsi, 16" << std::endl;
+        writer.stream() << "mov [rsi+8], rcx" << std::endl;               //set the length of the string
+        writer.stream() << "add rsi, 16" << std::endl;
         writer.stream() << "dec rbx" << std::endl;
         writer.stream() << "jnz .copy_args" << std::endl;
 

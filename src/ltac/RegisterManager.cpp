@@ -136,7 +136,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
         if(manager.written.find(variable) != manager.written.end()){
             auto position = variable->position();
             if(position.isStack()){
-                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(-1 * position.offset()), reg);
+                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isParameter()){
                 ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isGlobal()){
@@ -216,7 +216,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
@@ -245,7 +245,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
@@ -280,7 +280,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
@@ -320,7 +320,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.isTemporary());
 
             if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){

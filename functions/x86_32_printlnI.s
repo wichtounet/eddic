@@ -12,8 +12,8 @@ cmp eax, 0
 jge .loop
 neg eax
 push eax
-push S2
 push 1
+push S2
 call _F5printS
 add esp, 8
 pop eax
