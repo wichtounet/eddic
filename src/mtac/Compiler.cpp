@@ -99,7 +99,7 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
 }
 
 int getStringOffset(std::shared_ptr<Variable> variable){
-    return variable->position().isGlobal() ? INT->size() : -INT->size();
+    return INT->size();
 }
 
 template<typename Operation>
@@ -279,13 +279,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
 
-            if(var->position().isParameter() && !var->type()->is_pointer()){
+            /*if(var->position().isParameter() && !var->type()->is_pointer()){
                 function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset + getStringOffset(var)));
                 function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset));
-            } else {
+            } else {*/
                 function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
                 function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + getStringOffset(var)));
-            }
+            //}
 
             return {t1, t2};
         } else {

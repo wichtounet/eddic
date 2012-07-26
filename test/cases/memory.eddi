@@ -1,15 +1,25 @@
 struct A {
     int a;
-    int b;
+    string b;
     int c;
+    string d;
 }
 
 void main(){
+    string b = "111";
+
+    print(b);
+    print("|");
+
+    test_ptr(b);
+    test_value(b);
+
     A a;
 
     a.a = 555;
-    a.b = 666;
+    a.b = "666";
     a.c = 777;
+    a.d = "888";
 
     print(a.a);
     print("|");
@@ -17,9 +27,21 @@ void main(){
     print("|");
     print(a.c);
     print("|");
+    print(a.d);
+    print("|");
 
     test_ptr(a);
     test_value(a);
+}
+
+void test_ptr(string* a){
+    print(*a);
+    print("|");
+}
+
+void test_value(string a){
+    print(a);
+    print("|");
 }
 
 void test_ptr(A* a){
@@ -29,6 +51,8 @@ void test_ptr(A* a){
     print("|");
     print(a.c);
     print("|");
+    print(a.d);
+    print("|");
 }
 
 void test_value(A a){
@@ -37,5 +61,7 @@ void test_value(A a){
     print(a.b);
     print("|");
     print(a.c);
+    print("|");
+    print(a.d);
     print("|");
 }
