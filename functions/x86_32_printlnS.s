@@ -9,8 +9,8 @@ push esi
 mov esi, 0
 mov eax, 4
 mov ebx, 1
-mov ecx, [ebp + 12]
-mov edx, [ebp + 8]
+mov ecx, [ebp + 8]
+mov edx, [ebp + 12]
 int 80h
 call _F7println
 pop esi
