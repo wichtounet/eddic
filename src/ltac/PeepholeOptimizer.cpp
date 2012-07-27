@@ -498,9 +498,20 @@ bool copy_propagation(std::shared_ptr<ltac::Function> function){
 
             //Erase constant
             if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
-                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                auto reg = boost::get<ltac::Register>(*instruction->arg1);
 
-                copies.erase(reg1);
+                auto it = copies.begin();
+                auto end = copies.end();
+
+                while(it != end){
+                    if(it->first == reg || it->second == reg){
+                        it = copies.erase(it);
+                        end = copies.end();
+                        continue;
+                    }
+
+                    ++it;
+                }
             }
 
             //Collect copies
