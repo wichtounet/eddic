@@ -19,8 +19,11 @@ using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& stream, Expression& /*expression*/){
-    return stream << "Expression {expression = {}}";
+std::ostream& mtac::operator<<(std::ostream& os, Expression& expression){
+    mtac::Printer printer;
+    os << "Expression {expression = ";
+    printer.print_inline(expression.expression, os);
+    return os << "}";
 }
 
 inline bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_ptr<mtac::Quadruple> second){
@@ -55,6 +58,25 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto op = (*ptr)->op;
+
+        if(mtac::is_expression(op)){
+            bool exists = false;
+            for(auto& expression : out.values()){
+                if(are_equivalent(*ptr, expression.expression)){
+                    exists = true;
+                    break;
+                }
+            }
+
+            if(!exists){
+                Expression expression;
+                expression.expression = *ptr;
+                expression.source = basic_block;
+
+                out.values().push_back(expression);
+            }
+        }
+
         if(mtac::erase_result(op)){
             auto it = iterate(out.values());
 
@@ -80,24 +102,6 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
                 }
 
                 ++it;
-            }
-        }
-
-        if(mtac::is_expression((*ptr)->op)){
-            bool exists = false;
-            for(auto& expression : out.values()){
-                if(are_equivalent(*ptr, expression.expression)){
-                    exists = true;
-                    break;
-                }
-            }
-
-            if(!exists){
-                Expression expression;
-                expression.expression = *ptr;
-                expression.source = basic_block;
-
-                out.values().push_back(expression);
             }
         }
     }
@@ -155,23 +159,24 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
 
         if(mtac::is_expression(quadruple->op)){
             for(auto& expression : results.values()){
-                if(are_equivalent(expression.expression, quadruple)){
-                    auto source_statement = expression.expression;
-                    
+                auto source_statement = expression.expression;
+
+                if(are_equivalent(source_statement, quadruple)){
+
                     mtac::Operator assign_op;
                     if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
                         assign_op = mtac::Operator::ASSIGN;
-                    } else if(quadruple->op >= mtac::Operator::FADD && quadruple->op <= mtac::Operator::FDIV){
+                    } else {
                         assign_op = mtac::Operator::FASSIGN;
-                    }
+                    } 
 
-                    if(optimized.find(source_statement->result) == optimized.end()){
+                    if(optimized.find(source_statement) == optimized.end()){
                         std::shared_ptr<Variable> temp;
                         if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
                             temp = expression.source->context->new_temporary(INT);
-                        } else if(quadruple->op >= mtac::Operator::FADD && quadruple->op <= mtac::Operator::FDIV){
+                        } else {
                             temp = expression.source->context->new_temporary(FLOAT);
-                        }
+                        } 
 
                         auto it = expression.source->statements.begin();
                         auto end = expression.source->statements.end();
@@ -180,8 +185,6 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                             if(boost::get<std::shared_ptr<Quadruple>>(&*it)){
                                 auto target = boost::get<std::shared_ptr<Quadruple>>(*it);
                                 if(target == source_statement){
-                                    source_statement->result = temp;
-                                    
                                     auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
 
                                     ++it;
@@ -190,20 +193,24 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, 
                                     break;
                                 }
                             }
-                        }
 
-                        quadruple->op = assign_op;
-                        quadruple->arg1 = temp;
-                        quadruple->arg2.reset();
+                            ++it;
+                        }
                         
-                        optimized[source_statement->result] = temp;
+                        source_statement->result = temp;
+                        
+                        optimized.insert(source_statement);
                     }
 
-                    quadruple->op = assign_op;
-                    quadruple->arg1 = source_statement->result;
-                    quadruple->arg2.reset();
+                    if(optimized.find(quadruple) == optimized.end()){
+                        quadruple->op = assign_op;
+                        quadruple->arg1 = source_statement->result;
+                        quadruple->arg2.reset();
 
-                    return true;
+                        optimized.insert(quadruple);
+
+                        return true;
+                    } 
                 }
             }
         }
