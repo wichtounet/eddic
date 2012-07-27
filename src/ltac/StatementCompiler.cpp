@@ -365,6 +365,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_fals
 
         function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::Z));
     }
+
+    offset_labels[if_false->block->label] = bp_offset;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
@@ -437,6 +439,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
 
         function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NZ));
     }
+    
+    offset_labels[if_->block->label] = bp_offset;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto>& goto_){
@@ -1353,4 +1357,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>&){
 
 void ltac::StatementCompiler::operator()(std::string& str){
     function->add(str);
+
+    if(offset_labels.find(str) != offset_labels.end()){
+        bp_offset = offset_labels[str];
+        offset_labels.erase(str);
+    }
 }

@@ -104,7 +104,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     for(auto block : src_function->getBasicBlocks()){
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            target_function->add(block->label);
+            (*compiler)(block->label);
         }
     
         //Handle parameters and register-allocated variables

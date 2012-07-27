@@ -9,6 +9,8 @@
 #define LTAC_STATEMENT_COMPILER_H
 
 #include <memory>
+#include <vector>
+#include <unordered_map>
 
 #include "variant.hpp"
 #include "FloatPool.hpp"
@@ -71,6 +73,8 @@ class StatementCompiler : public boost::static_visitor<> {
         std::shared_ptr<FloatPool> float_pool;
         
         PlatformDescriptor* descriptor;
+
+        std::unordered_map<std::string, int> offset_labels;
         
         void pass_in_int_register(mtac::Argument& argument, int position);
         void pass_in_float_register(mtac::Argument& argument, int position);
