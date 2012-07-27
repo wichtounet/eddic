@@ -94,25 +94,6 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_SWITCH_CASE()
         AUTO_RECURSE_DEFAULT_CASE()
 
-        /* The following cannot throw a warning  */
-        AUTO_IGNORE_FALSE()
-        AUTO_IGNORE_TRUE()
-        AUTO_IGNORE_NULL()
-        AUTO_IGNORE_LITERAL()
-        AUTO_IGNORE_FLOAT()
-        AUTO_IGNORE_INTEGER()
-        AUTO_IGNORE_INTEGER_SUFFIX()
-        AUTO_IGNORE_IMPORT()
-        AUTO_IGNORE_STANDARD_IMPORT()
-        AUTO_IGNORE_SWAP()
-        AUTO_IGNORE_ARRAY_DECLARATION()
-        AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
-        AUTO_IGNORE_UNARY()
-        AUTO_IGNORE_PREFIX_OPERATION()
-        AUTO_IGNORE_SUFFIX_OPERATION()
-        AUTO_IGNORE_VARIABLE_VALUE()
-        AUTO_IGNORE_DEREFERENCE_VALUE()
-
         void check(std::shared_ptr<Context> context){
             if(option_defined("warning-unused")){
                 auto iter = context->begin();
@@ -180,6 +161,9 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
         }
+        
+        //No warnings for other types
+        AUTO_IGNORE_OTHERS()
     
     private:
         Collector& collector;

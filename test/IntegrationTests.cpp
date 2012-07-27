@@ -202,6 +202,14 @@ BOOST_AUTO_TEST_CASE( cmove ){
     assert_output("cmov.eddi", "8|4|99|77|");
 }
 
+BOOST_AUTO_TEST_CASE( dynamic ){
+    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|");
+}
+
+BOOST_AUTO_TEST_CASE( dynamic_struct ){
+    assert_output("dynamic_struct.eddi", "0|-9|55|asdf|999|-9|0||0|666|777|666|777|1000|");
+}
+
 BOOST_AUTO_TEST_CASE( string_pointers ){
     assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
 }
@@ -221,6 +229,10 @@ BOOST_AUTO_TEST_CASE( member_pointers ){
 
 BOOST_AUTO_TEST_CASE( member_functions ){
     assert_output("member_functions.eddi", "0|1|100|180|260|");
+}
+
+BOOST_AUTO_TEST_CASE( memory ){
+    assert_output("memory.eddi", "4|4|4|1|1|1|5|6|7|8|5|6|7|8|5|6|7|8|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|");
 }
 
 BOOST_AUTO_TEST_CASE( ternary ){
@@ -262,19 +274,19 @@ BOOST_AUTO_TEST_CASE( inc ){
     assert_output("inc.eddi", "0|1|2|1|0|1|1|");
 }
 
-BOOST_AUTO_TEST_CASE( void_functions ){
+BOOST_AUTO_TEST_CASE( void_ ){
     assert_output("void.eddi", "4445");
 }
 
-BOOST_AUTO_TEST_CASE( string_functions ){
+BOOST_AUTO_TEST_CASE( return_string ){
     assert_output("return_string.eddi", "abcdef");
 }
 
-BOOST_AUTO_TEST_CASE( int_functions ){
+BOOST_AUTO_TEST_CASE( return_int ){
     assert_output("return_int.eddi", "484|");
 }
 
-BOOST_AUTO_TEST_CASE( pointer_functions ){
+BOOST_AUTO_TEST_CASE( return_pointers ){
     assert_output("return_pointers.eddi", "66");
 }
 

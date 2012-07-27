@@ -20,6 +20,7 @@
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/Null.hpp"
+#include "ast/New.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
@@ -27,7 +28,7 @@ namespace eddic {
 
 namespace ast {
 
-typedef boost::variant<
+typedef boost::mpl::vector<
             Integer, 
             IntegerSuffix, 
             Float,
@@ -48,7 +49,11 @@ typedef boost::variant<
             SuffixOperation,
             PrefixOperation,
             Ternary
-        > Value;
+        > types_initial;
+
+typedef boost::mpl::push_back<types_initial, New>::type types;
+
+typedef boost::make_variant_over<types>::type Value;
 
 } //end of ast
 

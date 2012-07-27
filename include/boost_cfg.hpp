@@ -5,14 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef EDDIC_BOOST_VARIANT_H
-#define EDDIC_BOOST_VARIANT_H
+#ifndef EDDIC_BOOST_CFG_H
+#define EDDIC_BOOST_CFG_H
 
-#include "boost_cfg.hpp"
-
-#include <boost/variant.hpp>
-
-//For those who need variant with more than 20 template parameters
-#include <boost/mpl/vector.hpp>
+#define EDDIC_BOOST_LIMIT_SIZE 30
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS 
+#define BOOST_MPL_LIMIT_VECTOR_SIZE EDDIC_BOOST_LIMIT_SIZE
+#define BOOST_MPL_LIMIT_LIST_SIZE EDDIC_BOOST_LIMIT_SIZE
 
 #endif

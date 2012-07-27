@@ -158,6 +158,20 @@ void SymbolTable::defineStandardFunctions(){
     concatFunction->parameters.push_back({"b", STRING});
     addFunction(concatFunction);
     
+    //alloc function
+    auto allocFunction = std::make_shared<Function>(INT, "alloc");
+    allocFunction->standard = true;
+    allocFunction->mangledName = "_F5allocI";
+    allocFunction->parameters.push_back({"a", INT});
+    addFunction(allocFunction);
+    
+    //free function
+    auto freeFunction = std::make_shared<Function>(VOID, "free");
+    freeFunction->standard = true;
+    freeFunction->mangledName = "_F4freePI";
+    freeFunction->parameters.push_back({"a", INT});
+    addFunction(freeFunction);
+    
     //time function
     auto timeFunction = std::make_shared<Function>(VOID, "time");
     timeFunction->standard = true;

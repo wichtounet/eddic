@@ -22,11 +22,11 @@ std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVar
 GlobalContext::GlobalContext() : Context(NULL) {
     Val zero = 0;
     
-    variables["eddi_remaining"] = std::make_shared<Variable>("eddi_remaining", new_type("int"), Position(PositionType::GLOBAL, "eddi_remaining"), zero);
-    variables["eddi_remaining"]->addReference(); //In order to not display a warning
+    variables["_mem_start"] = std::make_shared<Variable>("_mem_start", new_type("int"), Position(PositionType::GLOBAL, "_mem_start"), zero);
+    variables["_mem_start"]->addReference(); //In order to not display a warning
 
-    variables["eddi_current"] = std::make_shared<Variable>("eddi_current", new_type("int"), Position(PositionType::GLOBAL, "eddi_current"), zero);
-    variables["eddi_current"]->addReference(); //In order to not display a warning
+    variables["_mem_last"] = std::make_shared<Variable>("_mem_last", new_type("int"), Position(PositionType::GLOBAL, "_mem_last"), zero);
+    variables["_mem_last"]->addReference(); //In order to not display a warning
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){

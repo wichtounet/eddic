@@ -307,14 +307,18 @@ void IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "global _start" << std::endl << std::endl;
 
     writer.stream() << "_start:" << std::endl;
+    
+    //If necessary init memory manager 
+    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        writer.stream() << "call _F4init" << std::endl; 
+    }
 
     //If the user wants the args, we add support for them
     if(symbols.getFunction("main")->parameters.size() == 1){
         writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
+        
         writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
-        writer.stream() << "push ecx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;                  //eax = start address of the array
-        writer.stream() << "add esp, 4" << std::endl;
+        writer.stream() << "call _F5allocI" << std::endl;                  //eax = start address of the array
 
         writer.stream() << "mov esi, eax" << std::endl;         //esi = last address of the array
         writer.stream() << "mov edx, esi" << std::endl;                     //edx = last address of the array
@@ -343,7 +347,10 @@ void IntelX86CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "push edx" << std::endl;
     }
 
+    /* Give control to the  */
     writer.stream() << "call main" << std::endl;
+    
+    /* Exit the program */
     writer.stream() << "mov eax, 1" << std::endl;
     writer.stream() << "xor ebx, ebx" << std::endl;
     writer.stream() << "int 80h" << std::endl;
@@ -433,8 +440,11 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
         output_function("x86_32_concat");
     }
     
-    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        output_function("x86_32_eddi_alloc");
+    //Memory management functions are included the three together
+    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        output_function("x86_32_alloc");
+        output_function("x86_32_init");
+        output_function("x86_32_free");
     }
     
     if(symbols.referenceCount("_F4timeAI")){

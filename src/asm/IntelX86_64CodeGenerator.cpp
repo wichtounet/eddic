@@ -309,6 +309,11 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "global _start" << std::endl << std::endl;
 
     writer.stream() << "_start:" << std::endl;
+    
+    //If necessary init memory manager 
+    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        writer.stream() << "call _F4init" << std::endl; 
+    }
 
     //If the user wants the args, we add support for them
     if(symbols.getFunction("main")->parameters.size() == 1){
@@ -319,9 +324,8 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "imul rcx, rcx, 16" << std::endl;
         writer.stream() << "add rcx, 8" << std::endl;                       //rcx = size of the array
 
-        writer.stream() << "push rcx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;                  //rax = start address of the array
-        writer.stream() << "add rsp, 8" << std::endl;
+        writer.stream() << "mov r14, rcx" << std::endl;
+        writer.stream() << "call _F5allocI" << std::endl;                   //rax = start address of the array
 
         writer.stream() << "mov rsi, rax" << std::endl;         //rsi = last address of the array
         writer.stream() << "mov rdx, rsi" << std::endl;                     //rdx = last address of the array
@@ -443,8 +447,11 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_concat");
     }
     
-    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        output_function("x86_64_eddi_alloc");
+    //Memory management functions are included the three together
+    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        output_function("x86_64_alloc");
+        output_function("x86_64_init");
+        output_function("x86_64_free");
     }
     
     if(symbols.referenceCount("_F4timeAI")){

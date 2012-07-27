@@ -46,6 +46,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_INTEGER_SUFFIX()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
+        AUTO_IGNORE_NEW()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
@@ -189,6 +190,10 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::Assignment& assignment){
             visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
+        }
+        
+        void operator()(ast::Delete& delete_){
+            delete_.Content->context = currentContext;
         }
         
         void operator()(ast::Swap& swap){

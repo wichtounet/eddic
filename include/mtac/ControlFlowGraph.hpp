@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "boost_cfg.hpp"
 #include <boost/graph/adjacency_list.hpp>
 
 #include "mtac/Function.hpp"

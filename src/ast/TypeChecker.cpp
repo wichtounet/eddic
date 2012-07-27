@@ -296,6 +296,22 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
         }
     }
+    
+    void operator()(ast::New& new_){
+        auto type = visit(ast::TypeTransformer(), new_.Content->type);
+
+        if(!(type->is_standard_type() || type->is_custom_type())){
+            throw SemanticalException("Only standard types and struct types can be dynamically allocated", new_.Content->position);
+        }
+    }
+    
+    void operator()(ast::Delete& delete_){
+        auto type = delete_.Content->variable->type();
+
+        if(!type->is_pointer()){
+            throw SemanticalException("Only pointers can be deleted", delete_.Content->position);
+        }
+    }
 };
 
 void ast::checkTypes(ast::SourceFile& program){

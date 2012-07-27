@@ -15,6 +15,7 @@
 #include "ast/FunctionCall.hpp"
 #include "ast/MemberFunctionCall.hpp"
 #include "ast/Return.hpp"
+#include "ast/Delete.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
 #include "ast/SuffixOperation.hpp"
@@ -45,6 +46,9 @@ typedef Deferred<ASTForeachIn> ForeachIn;
 struct ASTSwitch;
 typedef Deferred<ASTSwitch> Switch;
 
+struct ASTDelete;
+typedef Deferred<ASTDelete> Delete;
+
 typedef boost::variant<
             MemberFunctionCall,
             FunctionCall, 
@@ -60,6 +64,7 @@ typedef boost::variant<
             ForeachIn, 
             SuffixOperation,
             PrefixOperation,
+            Delete,
             Switch,
             For>
         Instruction;

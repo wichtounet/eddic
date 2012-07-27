@@ -30,6 +30,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_UNARY(ast::Value)
     AUTO_RETURN_PREFIX_OPERATION(ast::Value)
     AUTO_RETURN_SUFFIX_OPERATION(ast::Value)
+    AUTO_RETURN_NEW(ast::Value)
     
     ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
@@ -380,6 +381,8 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_PREFIX_OPERATION()
     AUTO_IGNORE_SUFFIX_OPERATION()
     AUTO_IGNORE_SWAP()
+    AUTO_IGNORE_NEW()
+    AUTO_IGNORE_DELETE()
 
     void operator()(ast::If& if_){
         if_.Content->condition = visit(transformer, if_.Content->condition);
@@ -509,6 +512,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
+    AUTO_IGNORE_NEW()
+    AUTO_IGNORE_DELETE()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()

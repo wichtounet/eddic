@@ -1,0 +1,80 @@
+struct A {
+    int a;
+    string b;
+    int c;
+}
+
+struct B {
+    int a;
+    int b;
+}
+
+void main(){
+    int* ai = new int();
+    *ai = 0;
+
+    print(*ai);
+    print("|");
+
+    *ai = -9;
+
+    print(*ai);
+    print("|");
+
+    A* a = new A();
+    a.a = 55;
+    a.b = "asdf";
+    a.c = 999;
+
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+    print(a.c);
+    print("|");
+    
+    delete a;
+    
+    print(*ai);
+    print("|");
+
+    delete ai;
+
+    A* b = new A();
+    b.a = 0;
+    b.b = "";
+    b.c = 0;
+
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+    print(b.c);
+    print("|");
+
+    B* c = new B();
+    c.a = 666;
+    c.b = 777;
+    
+    print(c.a);
+    print("|");
+    print(c.b);
+    print("|");
+
+    delete b;
+    
+    print(c.a);
+    print("|");
+    print(c.b);
+    print("|");
+
+    delete c;
+
+    ai = new int();
+    *ai = 1000;
+    
+    print(*ai);
+    print("|");
+
+    delete ai;
+}

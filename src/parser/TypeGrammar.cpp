@@ -19,19 +19,16 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   boost::spirit::attr(false);
 
     array_type %=
-            qi::eps
-        >>  lexer.identifier
+            lexer.identifier
         >>  lexer.left_bracket
         >>  lexer.right_bracket;
     
     pointer_type %=
-            qi::eps
-        >>  lexer.identifier
+            lexer.identifier
         >>  lexer.multiplication;
 
     simple_type %=
-            qi::eps
-        >>  const_
+            const_
         >>  lexer.identifier;
 
     type %=
