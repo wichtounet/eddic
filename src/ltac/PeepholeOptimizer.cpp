@@ -483,12 +483,29 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash>& copies, ltac::Register reg){
+    auto it = copies.begin();
+    auto end = copies.end();
+
+    while(it != end){
+        if(it->first == reg || it->second == reg){
+            it = copies.erase(it);
+            end = copies.end();
+            continue;
+        }
+
+        ++it;
+    }
+}
+
 bool copy_propagation(std::shared_ptr<ltac::Function> function){
+    auto descriptor = getPlatformDescriptor(platform);
+
     bool optimized = false;
 
     auto& statements = function->getStatements();
     
-    std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies; 
+    std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
 
     for(std::size_t i = 0; i < statements.size(); ++i){
         auto statement = statements[i];
@@ -499,19 +516,18 @@ bool copy_propagation(std::shared_ptr<ltac::Function> function){
             //Erase constant
             if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
                 auto reg = boost::get<ltac::Register>(*instruction->arg1);
-
-                auto it = copies.begin();
-                auto end = copies.end();
-
-                while(it != end){
-                    if(it->first == reg || it->second == reg){
-                        it = copies.erase(it);
-                        end = copies.end();
-                        continue;
-                    }
-
-                    ++it;
-                }
+                
+                remove_reg(copies, reg);
+            }
+            
+            if(instruction->op == ltac::Operator::DIV){
+                std::cout << "Found DIV" << std::endl;
+                std::cout << "Remove a = " << descriptor->a_register() << std::endl;
+                std::cout << "Remove d = " << descriptor->d_register() << std::endl;
+                std::cout << "Before " << copies.size() << std::endl;
+                remove_reg(copies, ltac::Register(descriptor->a_register()));
+                remove_reg(copies, ltac::Register(descriptor->d_register()));
+                std::cout << "After " << copies.size() << std::endl;
             }
 
             //Collect copies
