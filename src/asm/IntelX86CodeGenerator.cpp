@@ -108,9 +108,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "mov ecx, " << *instruction->arg2 << std::endl;
                 writer.stream() << "xor eax, eax" << std::endl;
                 writer.stream() << "lea edi, " << *instruction->arg1 << std::endl;
-                writer.stream() << "std" << std::endl;
                 writer.stream() << "rep stosw" << std::endl;
-                writer.stream() << "cld" << std::endl;
 
                 break;
             case ltac::Operator::ENTER:
