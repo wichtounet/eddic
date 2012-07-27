@@ -8,8 +8,8 @@ push rsi
 push rdx
 mov rax, 1
 mov rdi, 1
-mov rsi, [rbp + 24]
-mov rdx, [rbp + 16]
+mov rsi, [rbp + 16]
+mov rdx, [rbp + 24]
 syscall
 pop rdx
 pop rsi

@@ -135,9 +135,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
         //If the variable has not been written, there is no need to spill it
         if(manager.written.find(variable) != manager.written.end()){
             auto position = variable->position();
-            if(position.isStack()){
-                ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(-1 * position.offset()), reg);
-            } else if(position.isParameter()){
+            if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isGlobal()){
                 ltac::add_instruction(manager.function, mov, ltac::Address("V" + position.name()), reg);
@@ -215,9 +213,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             //The temporary should have been handled by the preceding condition (hold in a register)
             assert(!position.isTemporary());
 
-            if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
-            } else if(position.isParameter()){
+            if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
@@ -244,9 +240,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
             //The temporary should have been handled by the preceding condition (hold in a register)
             assert(!position.isTemporary());
 
-            if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
-            } else if(position.isParameter()){
+            if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
@@ -279,9 +273,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
             //The temporary should have been handled by the preceding condition (hold in a register)
             assert(!position.isTemporary());
 
-            if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(-1 * position.offset()));
-            } else if(position.isParameter()){
+            if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
@@ -319,9 +311,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
             //The temporary should have been handled by the preceding condition (hold in a register)
             assert(!position.isTemporary());
 
-            if(position.isStack()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(-1 * position.offset()));
-            } else if(position.isParameter()){
+            if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
@@ -458,8 +448,7 @@ void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> d
 void ltac::RegisterManager::restore_pushed_registers(){
     //Restore the int parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(int_pushed)){
-        ltac::add_instruction(function, ltac::Operator::POP, reg);
-        access_compiler()->bp_offset -= INT->size();
+        access_compiler()->pop(reg);
     }
 
     //Restore the float parameters in registers (in the reverse order they were pushed)
@@ -520,8 +509,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, 
                 if(!registers.reserved(reg) && registers.used(reg)){
                     if(registers[reg]->position().isParamRegister() || registers[reg]->position().is_register()){
                         int_pushed.push_back(reg);
-                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        access_compiler()->bp_offset += INT->size();
+                        access_compiler()->push(reg);
                     } else {
                         spills(reg);
                     }
