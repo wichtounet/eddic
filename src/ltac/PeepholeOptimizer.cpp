@@ -521,13 +521,8 @@ bool copy_propagation(std::shared_ptr<ltac::Function> function){
             }
             
             if(instruction->op == ltac::Operator::DIV){
-                std::cout << "Found DIV" << std::endl;
-                std::cout << "Remove a = " << descriptor->a_register() << std::endl;
-                std::cout << "Remove d = " << descriptor->d_register() << std::endl;
-                std::cout << "Before " << copies.size() << std::endl;
                 remove_reg(copies, ltac::Register(descriptor->a_register()));
                 remove_reg(copies, ltac::Register(descriptor->d_register()));
-                std::cout << "After " << copies.size() << std::endl;
             }
 
             //Collect copies
