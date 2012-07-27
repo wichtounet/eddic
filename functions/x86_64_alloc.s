@@ -39,7 +39,7 @@ jl .move
 mov qword [r12], 0
 
 ;The pointer is past the header
-lea rax, [r12 + r14 - 8]
+lea rax, [r12 + 16]
 
 leave
 ret
@@ -64,7 +64,7 @@ mov qword [r12], 0
 mov qword [r12 + 8], r14
 
 ;the pointer is past the header
-lea rax, [r12 + r14 - 8]
+lea rax, [r12 + 16]
 
 pop r14
 pop r13

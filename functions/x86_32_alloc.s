@@ -38,8 +38,7 @@ jl .move
 mov dword [eax], 0
 
 ;The pointer is past the header
-sub eax, 4
-add eax, ecx
+add eax, 8
 
 leave
 ret
@@ -66,7 +65,7 @@ mov dword [edi], 0
 mov dword [edi + 4], ecx
 
 ;the pointer is past the header
-lea eax, [edi + ecx - 4]
+lea eax, [edi + 8]
 
 push esi
 push edi

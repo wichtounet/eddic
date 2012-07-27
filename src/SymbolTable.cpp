@@ -168,9 +168,8 @@ void SymbolTable::defineStandardFunctions(){
     //free function
     auto freeFunction = std::make_shared<Function>(VOID, "free");
     freeFunction->standard = true;
-    freeFunction->mangledName = "_F4freePII";
+    freeFunction->mangledName = "_F4freePI";
     freeFunction->parameters.push_back({"a", INT});
-    freeFunction->parameters.push_back({"b", INT});
     addFunction(freeFunction);
     
     //time function
