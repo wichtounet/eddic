@@ -39,6 +39,12 @@ add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Gathering stats" VERBATIM
 )
+
+# Add a custom target to gather git stats
+add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Gathering git stats" VERBATIM
+)
  
 # The compiler and the tests should go to the bin directory
 set(EXECUTABLE_OUTPUT_PATH bin)

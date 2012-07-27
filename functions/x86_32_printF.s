@@ -14,8 +14,8 @@ cvttss2si ebx, xmm7
 cvtsi2ss xmm1, ebx
 mov ecx, ebx
 call _F5printI
-push S4
 push 1
+push S4
 call _F5printS
 add esp, 8
 or ebx, ebx

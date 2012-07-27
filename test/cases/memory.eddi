@@ -1,0 +1,166 @@
+string ga = "4";
+
+int gai[4];
+string gas[4];
+
+struct A {
+    int a;
+    string b;
+    int c;
+    string d;
+}
+
+void main(){
+    print(ga);
+    print("|");
+
+    test_ptr(ga);
+    test_value(ga);
+
+    string b = "1";
+
+    print(b);
+    print("|");
+
+    test_ptr(b);
+    test_value(b);
+
+    A a;
+
+    a.a = 5;
+    a.b = "6";
+    a.c = 7;
+    a.d = "8";
+
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+    print(a.c);
+    print("|");
+    print(a.d);
+    print("|");
+
+    test_ptr(a);
+    test_value(a);
+
+    int ai[4];
+    ai[0] = 1;
+    ai[1] = 2;
+    ai[2] = 3;
+    ai[3] = 4;
+    
+    print(ai[0]);
+    print("|");
+    print(ai[1]);
+    print("|");
+    print(ai[2]);
+    print("|");
+    print(ai[3]);
+    print("|");
+
+    test_array(ai);
+    
+    string as[4];
+    as[0] = "1";
+    as[1] = "2";
+    as[2] = "3";
+    as[3] = "4";
+    
+    print(as[0]);
+    print("|");
+    print(as[1]);
+    print("|");
+    print(as[2]);
+    print("|");
+    print(as[3]);
+    print("|");
+
+    test_array(as);
+    
+    gai[0] = 1;
+    gai[1] = 2;
+    gai[2] = 3;
+    gai[3] = 4;
+    
+    print(gai[0]);
+    print("|");
+    print(gai[1]);
+    print("|");
+    print(gai[2]);
+    print("|");
+    print(gai[3]);
+    print("|");
+
+    test_array(gai);
+    
+    gas[0] = "1";
+    gas[1] = "2";
+    gas[2] = "3";
+    gas[3] = "4";
+    
+    print(gas[0]);
+    print("|");
+    print(gas[1]);
+    print("|");
+    print(gas[2]);
+    print("|");
+    print(gas[3]);
+    print("|");
+
+    test_array(gas);
+}
+
+void test_ptr(string* a){
+    print(*a);
+    print("|");
+}
+
+void test_value(string a){
+    print(a);
+    print("|");
+}
+
+void test_ptr(A* a){
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+    print(a.c);
+    print("|");
+    print(a.d);
+    print("|");
+}
+
+void test_value(A a){
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+    print(a.c);
+    print("|");
+    print(a.d);
+    print("|");
+}
+
+void test_array(int[] ai){
+    print(ai[0]);
+    print("|");
+    print(ai[1]);
+    print("|");
+    print(ai[2]);
+    print("|");
+    print(ai[3]);
+    print("|");
+}
+
+void test_array(string[] as){
+    print(as[0]);
+    print("|");
+    print(as[1]);
+    print("|");
+    print(as[2]);
+    print("|");
+    print(as[3]);
+    print("|");
+}

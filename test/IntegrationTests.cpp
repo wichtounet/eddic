@@ -337,22 +337,24 @@ BOOST_AUTO_TEST_CASE( nested ){
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
 }
 
-BOOST_AUTO_TEST_CASE( args ){
-    assert_compiles("test/cases/args.eddi", "--32", "--O2");
+static void test_args(const std::string& arg1, const std::string& arg2){
+    assert_compiles("test/cases/args.eddi", arg1, arg2);
 
     std::string out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
     
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
-    
-    assert_compiles("test/cases/args.eddi", "--64", "--O2");
+}
 
-    out = eddic::execCommand("./a.out"); 
-    BOOST_CHECK_EQUAL ("./a.out|", out);
-    
-    out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
-    BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
+BOOST_AUTO_TEST_CASE( args ){
+    test_args("--32", "--O0");
+    test_args("--32", "--O1");
+    test_args("--32", "--O2");
+
+    test_args("--64", "--O0");
+    test_args("--64", "--O1");
+    test_args("--64", "--O2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

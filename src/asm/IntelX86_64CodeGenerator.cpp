@@ -111,9 +111,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "mov rcx, " << *instruction->arg2 << std::endl;
                 writer.stream() << "xor rax, rax" << std::endl;
                 writer.stream() << "lea rdi, " << *instruction->arg1 << std::endl;
-                writer.stream() << "std" << std::endl;
                 writer.stream() << "rep stosq" << std::endl;
-                writer.stream() << "cld" << std::endl;
 
                 break;
             case ltac::Operator::ENTER:
@@ -329,15 +327,15 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "mov r14, rcx" << std::endl;
         writer.stream() << "call _F5allocI" << std::endl;                   //rax = start address of the array
 
-        writer.stream() << "mov rsi, rax" << std::endl;                     //rsi = last address of the array
+        writer.stream() << "mov rsi, rax" << std::endl;         //rsi = last address of the array
         writer.stream() << "mov rdx, rsi" << std::endl;                     //rdx = last address of the array
         
         writer.stream() << "mov [rsi], rbx" << std::endl;                   //Set the length of the array
-        writer.stream() << "sub rsi, 16" << std::endl;                      //Move to the destination address of the first arg
+        writer.stream() << "add rsi, 8" << std::endl;                       //Move to the destination address of the first arg
 
         writer.stream() << ".copy_args:" << std::endl;
         writer.stream() << "pop rdi" << std::endl;                          //rdi = address of current args
-        writer.stream() << "mov [rsi+8], rdi" << std::endl;                 //set the address of the string
+        writer.stream() << "mov [rsi], rdi" << std::endl;                   //set the address of the string
 
         /* Calculate the length of the string  */
         writer.stream() << "xor rax, rax" << std::endl;
@@ -348,8 +346,8 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "dec rcx" << std::endl;
         /* End of the calculation */
 
-        writer.stream() << "mov qword [rsi], rcx" << std::endl;               //set the length of the string
-        writer.stream() << "sub rsi, 16" << std::endl;
+        writer.stream() << "mov [rsi+8], rcx" << std::endl;               //set the length of the string
+        writer.stream() << "add rsi, 16" << std::endl;
         writer.stream() << "dec rbx" << std::endl;
         writer.stream() << "jnz .copy_args" << std::endl;
 
@@ -371,23 +369,23 @@ void IntelX86_64CodeGenerator::defineDataSection(){
 
 void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "times " << size << " dq 0" << std::endl;
     writer.stream() << "dq " << size << std::endl;
+    writer.stream() << "times " << size << " dq 0" << std::endl;
 }
 
 void IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
-    writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
     writer.stream() << "dq " << size << std::endl;
+    writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
 }
 
 void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "dq " << size << std::endl;
     writer.stream() << "%rep " << size << std::endl;
     writer.stream() << "dq S3" << std::endl;
     writer.stream() << "dq 0" << std::endl;
     writer.stream() << "%endrep" << std::endl;
-    writer.stream() << "dq " << size << std::endl;
 }
 
 void IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){

@@ -15,8 +15,8 @@ or rax, rax
 jge .loop
 neg rax
 ;Print "-" 
-push S2
 push 1
+push S2
 call _F5printS
 add rsp, 16
 ;Divide rax until there is nothing to divide

@@ -14,8 +14,8 @@ cvtsi2sd xmm1, rbx
 mov r14, rbx
 call _F5printI
 ;Print the dot char
-push S4
 push 1
+push S4
 call _F5printS
 add rsp, 16
 ;Handle negative numbers

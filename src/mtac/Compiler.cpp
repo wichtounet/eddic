@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include <boost/range/adaptors.hpp>
+
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
@@ -77,27 +79,15 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
     mtac::Argument index = moveToArgument(indexValue, function);
     
     auto temp = function->context->newTemporary();
-    auto position = array->position();
 
-    if(position.isGlobal()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, -1 * array->type()->data_type()->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, array->type()->data_type()->size() * array->type()->elements()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::SUB, INT->size()));
-    } else if(position.isStack()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
-    } else if(position.isParameter()){
-        function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
-        function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::MUL, -1));
-    }
+    function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
+    function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
    
     return temp;
 }
 
 int getStringOffset(std::shared_ptr<Variable> variable){
-    return variable->position().isGlobal() ? INT->size() : -INT->size();
+    return INT->size();
 }
 
 template<typename Operation>
@@ -293,13 +283,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
 
-            if(var->position().isParameter() && !var->type()->is_pointer()){
-                function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset + getStringOffset(var)));
-                function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset));
-            } else {
-                function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
-                function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + getStringOffset(var)));
-            }
+            function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
+            function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + getStringOffset(var)));
 
             return {t1, t2};
         } else {
@@ -456,7 +441,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto t3 = array.Content->context->newTemporary();
 
                 //Assign the second part of the string
-                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, -INT->size()));
+                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size()));
                 function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::DOT, t3));
 
                 return {t1, t2};
@@ -618,7 +603,7 @@ struct AssignValueToVariable : public AbstractVisitor {
             function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_ASSIGN, arguments[0]));
 
             auto temp1 = function->context->newTemporary();
-            function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, -INT->size()));
+            function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, INT->size()));
             function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::DOT_ASSIGN, arguments[1]));
         } else {
             function->add(std::make_shared<mtac::Quadruple>(variable, arguments[0], mtac::Operator::ASSIGN));
@@ -1179,7 +1164,7 @@ void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const T
     auto struct_name = type->type();
     auto struct_type = symbols.get_struct(struct_name);
 
-    for(auto& member : struct_type->members){
+    for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto member_type = member->type;
 
         memberValue.Content->memberNames.push_back(member->name);
@@ -1210,7 +1195,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     auto struct_name = var->type()->type();
     auto struct_type = symbols.get_struct(struct_name);
 
-    for(auto member : struct_type->members){
+    for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto type = member->type;
 
         ast::VariableValue memberValue;
@@ -1252,7 +1237,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
             auto param = parameters[i--].name; 
             
             auto args = visit(ToArgumentsVisitor(function), first);
-            for(auto& arg : args){
+            for(auto& arg : boost::adaptors::reverse(args)){
                 function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
         }
@@ -1283,7 +1268,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
             } 
 
             auto args = visit(ToArgumentsVisitor(function, param->type()->is_pointer()), first);
-            for(auto& arg : args){
+            for(auto& arg : boost::adaptors::reverse(args)){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
 
