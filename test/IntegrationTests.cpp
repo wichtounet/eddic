@@ -231,6 +231,10 @@ BOOST_AUTO_TEST_CASE( member_functions ){
     assert_output("member_functions.eddi", "0|1|100|180|260|");
 }
 
+BOOST_AUTO_TEST_CASE( memory ){
+    assert_output("memory.eddi", "4|4|4|1|1|1|5|6|7|8|5|6|7|8|5|6|7|8|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|");
+}
+
 BOOST_AUTO_TEST_CASE( ternary ){
     assert_output_32("ternary.eddi", "44|66|44|66|1|0|44.4000|66.5999|");
     assert_output_64("ternary.eddi", "44|66|44|66|1|0|44.3999|66.5999|");
