@@ -67,11 +67,11 @@ mov dword [edi + 4], ecx
 ;the pointer is past the header
 lea eax, [edi + 8]
 
-push esi
-push edi
-push edx
-push ecx
-push ebx
+pop esi
+pop edi
+pop edx
+pop ecx
+pop ebx
 
 leave
 ret

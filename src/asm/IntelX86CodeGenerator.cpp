@@ -316,6 +316,7 @@ void IntelX86CodeGenerator::writeRuntimeSupport(){
     //If the user wants the args, we add support for them
     if(symbols.getFunction("main")->parameters.size() == 1){
         writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
+        
         writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
         writer.stream() << "call _F5allocI" << std::endl;                  //eax = start address of the array
 
@@ -346,7 +347,10 @@ void IntelX86CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "push edx" << std::endl;
     }
 
+    /* Give control to the  */
     writer.stream() << "call main" << std::endl;
+    
+    /* Exit the program */
     writer.stream() << "mov eax, 1" << std::endl;
     writer.stream() << "xor ebx, ebx" << std::endl;
     writer.stream() << "int 80h" << std::endl;

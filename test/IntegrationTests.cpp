@@ -270,19 +270,19 @@ BOOST_AUTO_TEST_CASE( inc ){
     assert_output("inc.eddi", "0|1|2|1|0|1|1|");
 }
 
-BOOST_AUTO_TEST_CASE( void_functions ){
+BOOST_AUTO_TEST_CASE( void_ ){
     assert_output("void.eddi", "4445");
 }
 
-BOOST_AUTO_TEST_CASE( string_functions ){
+BOOST_AUTO_TEST_CASE( return_string ){
     assert_output("return_string.eddi", "abcdef");
 }
 
-BOOST_AUTO_TEST_CASE( int_functions ){
+BOOST_AUTO_TEST_CASE( return_int ){
     assert_output("return_int.eddi", "484|");
 }
 
-BOOST_AUTO_TEST_CASE( pointer_functions ){
+BOOST_AUTO_TEST_CASE( return_pointers ){
     assert_output("return_pointers.eddi", "66");
 }
 
