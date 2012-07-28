@@ -23,6 +23,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         StringCheckerVisitor(StringPool& p) : pool(p) {}
 
         AUTO_RECURSE_PROGRAM()
+        AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_FUNCTION_DECLARATION() 
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
@@ -40,11 +41,11 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_SWITCH_CASE()
         AUTO_RECURSE_DEFAULT_CASE()
 
-        AUTO_IGNORE_OTHERS()
-
         void operator()(ast::Litteral& litteral){
             litteral.label = pool.label(litteral.value);
         }
+
+        AUTO_IGNORE_OTHERS()
 };
 
 void ast::checkStrings(ast::SourceFile& program, StringPool& pool){
