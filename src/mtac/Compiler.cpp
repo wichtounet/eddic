@@ -1148,19 +1148,23 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
-            auto struct_ = delete_.Content->variable->type()->data_type()->type();
-            auto dtor_name = mangle_dtor(struct_);
-            auto dtor_function = symbols.getFunction(dtor_name);
+            auto type = delete_.Content->variable->type()->data_type();
+            if(type->is_custom_type()){
+                auto struct_ = type->type();
+                auto dtor_name = mangle_dtor(struct_);
 
-            std::cout << dtor_function << std::endl;
-            std::cout << dtor_function->context << std::endl;
-            
-            auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-            dtor_param->address = true;
-            function->add(dtor_param);
-            
-            symbols.addReference(dtor_name);
-            function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                //If there is a destructor, call it
+                if(symbols.exists(dtor_name)){
+                    auto dtor_function = symbols.getFunction(dtor_name);
+
+                    auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+                    dtor_param->address = true;
+                    function->add(dtor_param);
+
+                    symbols.addReference(dtor_name);
+                    function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                }
+            }
 
             auto free_name = "_F4freePI";
             auto free_function = symbols.getFunction(free_name);
