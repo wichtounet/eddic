@@ -483,6 +483,85 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
+void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash>& copies, ltac::Register reg){
+    auto it = copies.begin();
+    auto end = copies.end();
+
+    while(it != end){
+        if(it->first == reg || it->second == reg){
+            it = copies.erase(it);
+            end = copies.end();
+            continue;
+        }
+
+        ++it;
+    }
+}
+
+bool copy_propagation(std::shared_ptr<ltac::Function> function){
+    auto descriptor = getPlatformDescriptor(platform);
+
+    bool optimized = false;
+
+    auto& statements = function->getStatements();
+    
+    std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
+
+    for(std::size_t i = 0; i < statements.size(); ++i){
+        auto statement = statements[i];
+
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            //Erase constant
+            if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
+                auto reg = boost::get<ltac::Register>(*instruction->arg1);
+                
+                remove_reg(copies, reg);
+            }
+            
+            if(instruction->op == ltac::Operator::DIV){
+                remove_reg(copies, ltac::Register(descriptor->a_register()));
+                remove_reg(copies, ltac::Register(descriptor->d_register()));
+            }
+
+            //Collect copies
+            if(instruction->op == ltac::Operator::MOV){
+                if(ltac::is_reg(*instruction->arg1)){
+                    if (auto* reg_ptr = boost::get<ltac::Register>(&*instruction->arg2)){
+                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                        copies[reg1] = *reg_ptr;
+                    }
+                }
+            }
+
+            //Optimize MOV
+            if(instruction->op == ltac::Operator::MOV){
+                if(ltac::is_reg(*instruction->arg2)){
+                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                    if(copies.find(reg2) != copies.end()){
+                        instruction->arg2 = copies[reg2];
+                        optimized = true;
+                    }
+                }
+            }
+        } else {
+            //Takes care of safe functions
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
+                    continue;
+                }
+            }
+
+            //At this point, the basic block is at its end
+            copies.clear();
+        }
+    }
+
+    return optimized;
+}
+
 typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
 
 void add_param_registers(RegisterUsage& usage){
@@ -491,6 +570,10 @@ void add_param_registers(RegisterUsage& usage){
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
+   
+    //TODO Find a way to use that only if DIV is used afterward
+    usage.insert(ltac::Register(descriptor->a_register()));
+    usage.insert(ltac::Register(descriptor->d_register()));
 }
 
 void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function){
@@ -769,6 +852,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
+            optimized |= debug("Copy propagation", copy_propagation(function), function);
             optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
             optimized |= debug("Conditional move", conditional_move(function), function);
         } while(optimized);
