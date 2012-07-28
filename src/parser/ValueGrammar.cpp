@@ -165,6 +165,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.new_
         >>  type.type
         >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
     
     null %= 
