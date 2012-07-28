@@ -190,11 +190,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto struct_ = type->type();
             auto ctor_name = mangle_ctor(new_.Content->values, struct_);
 
-            auto ctor_function = symbols.getFunction(ctor_name);
-
-            if(!ctor_function){
+            if(!symbols.exists(ctor_name)){
                 assert(new_.Content->values.empty());
             } else {
+                auto ctor_function = symbols.getFunction(ctor_name);
+
                 auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
                 ctor_param->address = true;
                 function->add(ctor_param);
