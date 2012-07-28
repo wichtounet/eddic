@@ -159,7 +159,7 @@ void SymbolTable::defineStandardFunctions(){
     addFunction(concatFunction);
     
     //alloc function
-    auto allocFunction = std::make_shared<Function>(INT, "alloc");
+    auto allocFunction = std::make_shared<Function>(new_pointer_type(INT), "alloc");
     allocFunction->standard = true;
     allocFunction->mangledName = "_F5allocI";
     allocFunction->parameters.push_back({"a", INT});

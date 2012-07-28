@@ -84,6 +84,7 @@ class Context {
          * \return The created temporary variable. 
          */
         virtual std::shared_ptr<Variable> newFloatTemporary();
+        virtual std::shared_ptr<Variable> newPointerTemporary();
         
         /*!
          * \brief Create a new temporary of the given type in this context. 
