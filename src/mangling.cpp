@@ -79,6 +79,34 @@ std::string eddic::mangle(std::shared_ptr<Function> function){
     return ss.str();
 }
 
+std::string eddic::mangle_ctor(const std::shared_ptr<Function> function){
+    std::ostringstream ss;
+
+    ss << "_C";
+
+    ss << function->struct_.length();
+    ss << function->struct_;
+
+    for(auto type : function->parameters){
+        if(type.name != "this"){
+            ss << mangle(type.paramType);
+        }
+    }
+
+    return ss.str();
+}
+
+std::string eddic::mangle_dtor(const std::shared_ptr<Function> function){
+    std::ostringstream ss;
+
+    ss << "_D";
+
+    ss << function->struct_.length();
+    ss << function->struct_;
+
+    return ss.str();
+}
+
 std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_){
     if(functionName == "main"){
         return functionName;
