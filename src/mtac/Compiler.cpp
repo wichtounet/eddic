@@ -192,12 +192,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             auto ctor_function = symbols.getFunction(ctor_name);
 
-            auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-            ctor_param->address = true;
-            function->add(ctor_param);
+            if(!ctor_function){
+                assert(new_.Content->values.empty());
+            } else {
+                auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                ctor_param->address = true;
+                function->add(ctor_param);
 
-            symbols.addReference(ctor_name);
-            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                symbols.addReference(ctor_name);
+                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+            }
         }
 
         return {t1};
