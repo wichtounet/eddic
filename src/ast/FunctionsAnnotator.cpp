@@ -163,6 +163,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_CONSTRUCTOR()
+        AUTO_RECURSE_DESTRUCTOR()
         AUTO_RECURSE_SWITCH()
         AUTO_RECURSE_SWITCH_CASE()
         AUTO_RECURSE_DEFAULT_CASE()
