@@ -570,7 +570,8 @@ void add_param_registers(RegisterUsage& usage){
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
-        
+   
+    //TODO Find a way to use that only if DIV is used afterward
     usage.insert(ltac::Register(descriptor->a_register()));
     usage.insert(ltac::Register(descriptor->d_register()));
 }
