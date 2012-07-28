@@ -70,6 +70,22 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, declaration.Content->size);
         }
 
+        void operator()(ast::Constructor& constructor){
+            currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
+
+            visit_each(*this, constructor.Content->instructions);
+    
+            currentContext = currentContext->parent();
+        }
+
+        void operator()(ast::Destructor& destructor){
+            currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
+
+            visit_each(*this, destructor.Content->instructions);
+    
+            currentContext = currentContext->parent();
+        }
+
         void operator()(ast::FunctionDeclaration& function){
             currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
 

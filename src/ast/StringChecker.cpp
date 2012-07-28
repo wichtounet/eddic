@@ -24,6 +24,8 @@ class StringCheckerVisitor : public boost::static_visitor<> {
 
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_CONSTRUCTOR()
+        AUTO_RECURSE_DESTRUCTOR()
         AUTO_RECURSE_FUNCTION_DECLARATION() 
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()

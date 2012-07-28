@@ -366,6 +366,8 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
+    AUTO_RECURSE_CONSTRUCTOR()
+    AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_STRUCT()
         
@@ -560,6 +562,14 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::FunctionDeclaration& declaration){
+        transform(declaration.Content->instructions);
+    }
+    
+    void operator()(ast::Constructor& declaration){
+        transform(declaration.Content->instructions);
+    }
+    
+    void operator()(ast::Destructor& declaration){
         transform(declaration.Content->instructions);
     }
 

@@ -28,11 +28,13 @@ namespace ast {
  */
 struct ASTFunctionDeclaration { 
     std::shared_ptr<FunctionContext> context;
+    
+    std::string mangledName;
+    std::string struct_name;
 
     Position position;
     Type returnType;
     std::string functionName;
-    std::string mangledName;
     std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
 

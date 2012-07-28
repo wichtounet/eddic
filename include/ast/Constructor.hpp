@@ -25,9 +25,11 @@ namespace ast {
  */
 struct ASTConstructor { 
     std::shared_ptr<FunctionContext> context;
+    
+    std::string struct_name;
+    std::string mangledName;
 
     Position position;
-    std::string mangledName;
     std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
 

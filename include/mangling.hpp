@@ -36,6 +36,8 @@ std::string unmangle(std::string mangled);
  * \return The mangled function name. 
  */
 std::string mangle(const std::shared_ptr<Function> function);
+std::string mangle_ctor(const std::shared_ptr<Function> function);
+std::string mangle_dtor(const std::shared_ptr<Function> function);
 
 /*!
  * \brief Return the mangled representation of the given function. Used for function calls.  

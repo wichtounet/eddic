@@ -18,6 +18,8 @@ void operator()(ast::SourceFile& program){\
 
 #define AUTO_RECURSE_STRUCT()\
 void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->constructors);\
+    visit_each_non_variant(*this, struct_.Content->destructors);\
     visit_each_non_variant(*this, struct_.Content->functions);\
 }
 
@@ -147,6 +149,16 @@ void operator()(ast::ArrayValue& array){\
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
 void operator()(ast::FunctionDeclaration& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
+#define AUTO_RECURSE_CONSTRUCTOR()\
+void operator()(ast::Constructor& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
+#define AUTO_RECURSE_DESTRUCTOR()\
+void operator()(ast::Destructor& function){\
     visit_each(*this, function.Content->instructions);\
 }
 

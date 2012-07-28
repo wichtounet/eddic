@@ -35,8 +35,18 @@ typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;
 struct Collector : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
+        AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_DESTRUCTOR()
 
         void operator()(ast::FunctionDeclaration& function){
+            for(auto& param : function.Content->parameters){
+                positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
+            }
+            
+            visit_each(*this, function.Content->instructions);
+        }
+        
+        void operator()(ast::Constructor& function){
             for(auto& param : function.Content->parameters){
                 positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
             }
