@@ -61,6 +61,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
         }
 
+        visit_each_non_variant(*this, struct_.Content->constructors);
+        visit_each_non_variant(*this, struct_.Content->destructors);
         visit_each_non_variant(*this, struct_.Content->functions);
     }
    

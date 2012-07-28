@@ -27,6 +27,8 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         void operator()(ast::Struct& struct_){
             parent_struct = struct_.Content->name;
 
+            visit_each_non_variant(*this, struct_.Content->constructors);
+            visit_each_non_variant(*this, struct_.Content->destructors);
             visit_each_non_variant(*this, struct_.Content->functions);
 
             parent_struct = "";
