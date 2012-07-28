@@ -30,4 +30,8 @@ void main(){
     A* a = new A();
     a.debug();
     delete a;
+
+    A* b = new A(55);
+    b.debug();
+    delete b;
 }
