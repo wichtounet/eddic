@@ -22,6 +22,8 @@ using namespace eddic;
 
 as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
+namespace {
+
 struct X86_64StringConverter : public as::StringConverter {
     std::string to_string(eddic::ltac::Register reg) const {
         static std::string registers[14] = {
@@ -65,6 +67,8 @@ struct X86_64StringConverter : public as::StringConverter {
     }
 };
 
+} //end of anonymous namespace
+
 namespace x86_64 {
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
@@ -76,7 +80,7 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
 
 using namespace x86_64;
 
-namespace eddic { namespace as {
+namespace {
 
 struct X86_64StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
@@ -296,14 +300,16 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
     }
 };
 
-void IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
+} //end of anonymous namespace
+
+void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86_64StatementCompiler compiler(writer);
     visit_each(compiler, function->getStatements());
 }
 
-void IntelX86_64CodeGenerator::writeRuntimeSupport(){
+void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -363,23 +369,23 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "syscall" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::defineDataSection(){
+void as::IntelX86_64CodeGenerator::defineDataSection(){
     writer.stream() << std::endl << "section .data" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
+void as::IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "dq " << size << std::endl;
     writer.stream() << "times " << size << " dq 0" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
+void as::IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "dq " << size << std::endl;
     writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
+void as::IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "dq " << size << std::endl;
     writer.stream() << "%rep " << size << std::endl;
@@ -388,23 +394,21 @@ void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsig
     writer.stream() << "%endrep" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
+void as::IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
     writer.stream() << "V" << name << " dq " << value << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
+void as::IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
     writer.stream() << "V" << name << " dq " << label << ", " << size << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareString(const std::string& label, const std::string& value){
+void as::IntelX86_64CodeGenerator::declareString(const std::string& label, const std::string& value){
     writer.stream() << label << " dq " << value << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareFloat(const std::string& label, double value){
+void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double value){
     writer.stream() << label << std::fixed << " dq __float64__(" << value << ")" << std::endl;
 }
-
-}} //end of eddic::as
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
     if(as::is_enabled_printI()){

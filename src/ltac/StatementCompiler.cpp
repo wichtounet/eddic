@@ -21,6 +21,8 @@ using namespace eddic;
 
 //TODO Avoid as much as possible direct acess to the the registers fields of the manager
 
+namespace {
+
 template<typename Reg>
 struct register_guard {
     Reg reg;
@@ -36,6 +38,8 @@ struct register_guard {
         return reg;
     }
 };
+
+} //end of anonymous namespace
 
 ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
