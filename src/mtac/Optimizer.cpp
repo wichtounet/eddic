@@ -157,8 +157,6 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
     }
 }
 
-}
-
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
     if(option_defined("dev")){
         std::cout << "Start optimizations on " << function->getName() << std::endl;
@@ -266,6 +264,8 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
     //Wait for all the threads to finish
     std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
+
+} //end of anonymous namespace
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
     //Allocate storage for the temporaries that need to be stored

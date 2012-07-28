@@ -27,6 +27,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_DECLARATION()
@@ -313,6 +315,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
         }
     }
 };
+
+} //end of anonymous namespace
 
 void ast::checkTypes(ast::SourceFile& program){
     CheckerVisitor visitor;

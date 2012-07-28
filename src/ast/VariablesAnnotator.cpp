@@ -28,6 +28,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
@@ -311,6 +313,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
             [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
     }
 };
+
+} //end of anonymous namespace
 
 void ast::defineVariables(ast::SourceFile& program){
     VariablesVisitor visitor;

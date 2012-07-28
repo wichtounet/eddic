@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct StructuresCollector : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
 
@@ -74,6 +76,8 @@ struct StructuresVerifier : public boost::static_visitor<> {
 
     AUTO_IGNORE_OTHERS()
 };
+
+} //end of anonymous namespace
 
 void ast::defineStructures(ast::SourceFile& program){
     StructuresCollector collector;

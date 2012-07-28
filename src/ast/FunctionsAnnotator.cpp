@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+namespace {
+
 class MemberFunctionAnnotator : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
@@ -240,6 +242,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_OTHERS()
 };
+
+} //end of anonymous namespace
 
 void ast::defineMemberFunctions(ast::SourceFile& program){
     MemberFunctionAnnotator annotator;

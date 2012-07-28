@@ -22,6 +22,8 @@ using namespace eddic;
 
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
+namespace {
+
 struct X86_32StringConverter : public as::StringConverter {
     std::string to_string(eddic::ltac::Register reg) const {
         static std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
@@ -62,6 +64,8 @@ struct X86_32StringConverter : public as::StringConverter {
     }
 };
 
+} //end of anonymous namespace
+
 namespace x86 {
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
@@ -73,7 +77,7 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
 
 using namespace x86;
 
-namespace eddic { namespace as {
+namespace {
 
 struct X86StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
@@ -292,6 +296,10 @@ struct X86StatementCompiler : public boost::static_visitor<> {
         writer.stream() << "." << label << ":" << std::endl;
     }
 };
+
+} //end of anonymous namespace
+
+namespace eddic { namespace as {
 
 void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
