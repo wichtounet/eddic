@@ -43,7 +43,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH()
     AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
-    AUTO_RECURSE_DESTRUCTOR()
 
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -65,8 +64,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, struct_.Content->destructors);
         visit_each_non_variant(*this, struct_.Content->functions);
     }
-   
-    void operator()(ast::FunctionDeclaration& declaration){
+
+    template<typename Function>
+    void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
             auto type = visit(ast::TypeTransformer(), parameter.parameterType);
@@ -76,16 +76,17 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         visit_each(*this, declaration.Content->instructions);
     }
+   
+    void operator()(ast::FunctionDeclaration& declaration){
+        visit_function(declaration);
+    }
 
     void operator()(ast::Constructor& constructor){
-        //Add all the parameters to the function context
-        for(auto& parameter : constructor.Content->parameters){
-            auto type = visit(ast::TypeTransformer(), parameter.parameterType);
-            
-            constructor.Content->context->addParameter(parameter.parameterName, type);    
-        }
+        visit_function(constructor);
+    }
 
-        visit_each(*this, constructor.Content->instructions);
+    void operator()(ast::Destructor& destructor){
+        visit_function(destructor);
     }
     
     void operator()(ast::GlobalVariableDeclaration& declaration){

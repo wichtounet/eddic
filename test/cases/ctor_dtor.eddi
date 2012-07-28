@@ -4,17 +4,20 @@ struct A {
     this(){
         this.a = 0;
         
-        println("CA");
+        print("CA");
+        print("|");
     }
 
     this(int a){
         this.a = a;
 
-        println("CAI");
+        print("CAI");
+        print("|");
     }
 
     ~this(){
-        println("DA");
+        print("DA");
+        print("|");
     }
 
     void debug(){
