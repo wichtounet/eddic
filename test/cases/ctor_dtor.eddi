@@ -11,7 +11,7 @@ struct A {
     }
 
     this(string a){
-        print("CA");
+        print("CAS");
         print("|");
         
         print(a);
