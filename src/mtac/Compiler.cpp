@@ -175,7 +175,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(), new_.Content->type);
-
+    
         auto param = std::make_shared<mtac::Param>(type->size());
         param->std_param = "a";
         param->function = symbols.getFunction("_F5allocI");
@@ -1148,13 +1148,27 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
+            auto struct_ = delete_.Content->variable->type()->data_type()->type();
+            auto dtor_name = mangle_dtor(struct_);
+            auto dtor_function = symbols.getFunction(dtor_name);
+            
+            auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+            dtor_param->address = true;
+            function->add(dtor_param);
+            
+            symbols.addReference(dtor_name);
+            function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+
+            auto free_name = "_F4freePI";
+            auto free_function = symbols.getFunction(free_name);
+
             auto param = std::make_shared<mtac::Param>(delete_.Content->variable);
             param->std_param = "a";
-            param->function = symbols.getFunction("_F4freePI");
+            param->function = free_function;
             function->add(param);
 
-            symbols.addReference("_F4freePI");
-            function->add(std::make_shared<mtac::Call>("_F4freePI", symbols.getFunction("_F4freePI"))); 
+            symbols.addReference(free_name);
+            function->add(std::make_shared<mtac::Call>(free_name, free_function)); 
         }
 
         template<typename T>

@@ -133,6 +133,34 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     return ss.str();
 }
 
+std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, const std::string& struct_){
+    std::ostringstream ss;
+
+    ss << "_C";
+
+    ss << struct_.length();
+    ss << struct_;
+
+    ast::GetTypeVisitor visitor;
+    for(auto& value : values){
+        auto type = visit(visitor, value);
+        ss << mangle(type);
+    }
+
+    return ss.str();
+}
+
+std::string eddic::mangle_dtor(const std::string& struct_){
+    std::ostringstream ss;
+
+    ss << "_D";
+
+    ss << struct_.length();
+    ss << struct_;
+
+    return ss.str();
+}
+
 std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_){
     if(functionName == "main"){
         return functionName;

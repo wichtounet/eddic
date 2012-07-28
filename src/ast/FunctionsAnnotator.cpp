@@ -129,6 +129,11 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         void operator()(ast::Destructor& destructor){
             auto signature = std::make_shared<Function>(VOID, "dtor");
             
+            for(auto& param : destructor.Content->parameters){
+                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
+                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+            }
+            
             signature->struct_ = destructor.Content->struct_name;
             
             destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
