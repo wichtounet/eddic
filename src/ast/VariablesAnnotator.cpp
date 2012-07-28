@@ -43,6 +43,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH()
     AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
+    AUTO_RECURSE_NEW()
 
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -53,7 +54,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_NEW()
     
     void operator()(ast::Struct& struct_){
         if(symbols.is_recursively_nested(struct_.Content->name)){
