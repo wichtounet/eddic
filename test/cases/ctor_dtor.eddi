@@ -1,3 +1,5 @@
+int ga = 100;
+
 struct A {
     int a;
 
@@ -8,10 +10,25 @@ struct A {
         print("|");
     }
 
+    this(string a){
+        print("CA");
+        print("|");
+        
+        print(a);
+        print("|");
+    }
+
     this(int a){
         this.a = a;
 
         print("CAI");
+        print("|");
+    }
+
+    this(int a, int b){
+        this.a = a * b;
+        
+        print("CAII");
         print("|");
     }
 
@@ -34,4 +51,11 @@ void main(){
     A* b = new A(55);
     b.debug();
     delete b;
+
+    A* c = new A(33, ga);
+    c.debug();
+    delete c;
+
+    A* d = new A("666");
+    delete d;
 }
