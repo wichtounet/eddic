@@ -181,7 +181,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         param->function = symbols.getFunction("_F5allocI");
         function->add(param);
 
-        auto t1 = function->context->new_temporary(INT);
+        auto t1 = function->context->new_temporary(new_pointer_type(INT));
 
         symbols.addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", symbols.getFunction("_F5allocI"), t1)); 
