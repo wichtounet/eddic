@@ -185,6 +185,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         symbols.addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", symbols.getFunction("_F5allocI"), t1)); 
+            
+        if(type->is_custom_type()){
+            auto struct_ = type->type();
+            auto ctor_name = mangle_ctor(new_.Content->values, struct_);
+
+            auto ctor_function = symbols.getFunction(ctor_name);
+
+            auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+            ctor_param->address = true;
+            function->add(ctor_param);
+
+            symbols.addReference(ctor_name);
+            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+        }
 
         return {t1};
     }
