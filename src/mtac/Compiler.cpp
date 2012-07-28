@@ -958,6 +958,8 @@ class CompilerVisitor : public boost::static_visitor<> {
     public:
         CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram){}
 
+        AUTO_RECURSE_STRUCT()
+
         //No code is generated for these nodes
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
@@ -976,12 +978,26 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, p.Content->blocks);
         }
-        
-        void operator()(ast::Struct& p){
-            visit_each_non_variant(*this, p.Content->functions);
-        }
 
         void operator()(ast::FunctionDeclaration& f){
+            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
+            function->definition = symbols.getFunction(f.Content->mangledName);
+
+            visit_each(*this, f.Content->instructions);
+
+            program->functions.push_back(function);
+        }
+
+        void operator()(ast::Constructor& f){
+            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
+            function->definition = symbols.getFunction(f.Content->mangledName);
+
+            visit_each(*this, f.Content->instructions);
+
+            program->functions.push_back(function);
+        }
+
+        void operator()(ast::Destructor& f){
             function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
             function->definition = symbols.getFunction(f.Content->mangledName);
 
