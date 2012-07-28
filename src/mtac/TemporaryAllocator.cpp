@@ -98,7 +98,7 @@ struct CollectTemporary : public boost::static_visitor<> {
 
 }
 
-void mtac::TemporaryAllocator::allocate(std::shared_ptr<mtac::Program> program) const {
+void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
         CollectTemporary visitor(function);
 

@@ -269,8 +269,7 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
     //Allocate storage for the temporaries that need to be stored
-    mtac::TemporaryAllocator allocator;
-    allocator.allocate(program);
+    allocate_temporary(program);
 
     if(option_defined("fglobal-optimization")){
         bool optimized = false;
@@ -284,13 +283,13 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         } while(optimized);
     
         //Allocate storage for the temporaries that need to be stored
-        allocator.allocate(program);
+        allocate_temporary(program);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
         basic_optimize(program, string_pool);
     
         //Allocate storage for the temporaries that need to be stored
-        allocator.allocate(program);
+        allocate_temporary(program);
     }
 }
 
