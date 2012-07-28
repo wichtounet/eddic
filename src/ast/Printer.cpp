@@ -78,18 +78,52 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Instructions:" << std::endl; 
         print_each_sub(declaration.Content->instructions);
     }
+    
+    void operator()(ast::Constructor& declaration) const {
+        std::cout << indent() << "Constructor" << std::endl; 
+        
+        std::cout << indent() << "Parameters:" << std::endl; 
+        level++;
+        for(auto param : declaration.Content->parameters){
+            std::cout << indent() << param.parameterName << std::endl; 
+        }
+        level--;
+        
+        std::cout << indent() << "Instructions:" << std::endl; 
+        print_each_sub(declaration.Content->instructions);
+    }
+    
+    void operator()(ast::Destructor& declaration) const {
+        std::cout << indent() << "Destructor" << std::endl; 
+        
+        std::cout << indent() << "Instructions:" << std::endl; 
+        print_each_sub(declaration.Content->instructions);
+    }
 
     void operator()(ast::Struct& struct_) const {
         std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
         level++;
+        
         std::cout << indent() << "Members:" << std::endl; 
         level++;
         visit_each_non_variant(*this, struct_.Content->members);    
         level--;
+
+        std::cout << indent() << "Constructors:" << std::endl; 
+        level++;
+        visit_each_non_variant(*this, struct_.Content->constructors);    
+        level--;
+
+        std::cout << indent() << "Destructors:" << std::endl; 
+        level++;
+        visit_each_non_variant(*this, struct_.Content->destructors);    
+        level--;
+
         std::cout << indent() << "Functions:" << std::endl; 
         level++;
         visit_each_non_variant(*this, struct_.Content->functions);    
         level--;
+        
         level--;
     }
 
