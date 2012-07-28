@@ -299,9 +299,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-namespace eddic { namespace as {
-
-void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
+void as::IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86StatementCompiler compiler(writer);
@@ -309,7 +307,7 @@ void IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     visit_each(compiler, function->getStatements());
 }
 
-void IntelX86CodeGenerator::writeRuntimeSupport(){
+void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
@@ -364,23 +362,23 @@ void IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "int 80h" << std::endl;
 }
 
-void IntelX86CodeGenerator::defineDataSection(){
+void as::IntelX86CodeGenerator::defineDataSection(){
     writer.stream() << std::endl << "section .data" << std::endl;
 }
 
-void IntelX86CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
+void as::IntelX86CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "dd " << size << std::endl;
     writer.stream() << "times " << size << " dd 0" << std::endl;
 }
 
-void IntelX86CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
+void as::IntelX86CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "dd " << size << std::endl;
     writer.stream() << "times " << size << " dd __float32__(0.0)" << std::endl;
 }
 
-void IntelX86CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
+void as::IntelX86CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
     writer.stream() << "dd " << size << std::endl;
     writer.stream() << "%rep " << size << std::endl;
@@ -389,23 +387,21 @@ void IntelX86CodeGenerator::declareStringArray(const std::string& name, unsigned
     writer.stream() << "%endrep" << std::endl;
 }
 
-void IntelX86CodeGenerator::declareIntVariable(const std::string& name, int value){
+void as::IntelX86CodeGenerator::declareIntVariable(const std::string& name, int value){
     writer.stream() << "V" << name << " dd " << value << std::endl;
 }
 
-void IntelX86CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
+void as::IntelX86CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
     writer.stream() << "V" << name << " dd " << label << ", " << size << std::endl;
 }
 
-void IntelX86CodeGenerator::declareString(const std::string& label, const std::string& value){
+void as::IntelX86CodeGenerator::declareString(const std::string& label, const std::string& value){
     writer.stream() << label << " dd " << value << std::endl;
 }
 
-void IntelX86CodeGenerator::declareFloat(const std::string& label, double value){
+void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double value){
     writer.stream() << std::fixed << label << " dd __float32__(" << value << ")" << std::endl;
 }
-
-}} //end of eddic::as
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
     if(as::is_enabled_printI()){
