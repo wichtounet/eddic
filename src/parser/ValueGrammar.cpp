@@ -206,7 +206,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     dereference_value %= 
             qi::position(position_begin)
-        >>  lexer.multiplication
+        >>  qi::omit[lexer.multiplication]
         >>  (
                     array_value
                 |   variable_value
