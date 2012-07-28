@@ -226,6 +226,26 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type
         >>  lexer.identifier
         >>  lexer.stop;
+    
+    constructor %= 
+            qi::position(position_begin)
+        >>  qi::omit[lexer.this_]
+        >>  lexer.left_parenth
+        >>  -( arg >> *( lexer.comma > arg))
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
+    
+    destructor %= 
+            qi::position(position_begin)
+        >>  lexer.tilde     
+        >>  qi::omit[lexer.this_]
+        >>  lexer.left_parenth
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
 
     struct_ %=
             qi::position(position_begin)
@@ -233,6 +253,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier
         >>  lexer.left_brace
         >>  *(member_declaration)
+        >>  *(constructor)
+        >>  *(destructor)
         >>  *(function)
         >>  lexer.right_brace;
 

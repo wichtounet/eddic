@@ -20,9 +20,9 @@ class FunctionContext;
 namespace ast {
 
 /*!
- * \class ASTFunctionDeclaration
- * \brief The AST node for a function declaration.  
- * Should only be used from the Deferred version (eddic::ast::FunctionDeclaration).
+ * \class ASTDestructor
+ * \brief The AST node for a destructor declaration.  
+ * Should only be used from the Deferred version (eddic::ast::Destructor).
  */
 struct ASTDestructor { 
     std::shared_ptr<FunctionContext> context;
