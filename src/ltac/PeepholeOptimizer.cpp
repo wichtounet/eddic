@@ -581,6 +581,9 @@ void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function>
     } else if(function->definition->returnType != VOID){
         usage.insert(ltac::Register(descriptor->int_return_register1()));
     }
+        
+    usage.insert(ltac::Register(descriptor->a_register()));
+    usage.insert(ltac::Register(descriptor->d_register()));
 
     add_param_registers(usage);
 
