@@ -32,26 +32,35 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
             parent_struct = "";
         }
 
+        template<typename T>
+        void add_this(T& declaration){
+            ast::PointerType paramType;
+            paramType.type = parent_struct;
+
+            ast::FunctionParameter param;
+            param.parameterName = "this";
+            param.parameterType = paramType;
+
+            declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+        }
+
         void operator()(ast::Constructor& constructor){
             constructor.Content->struct_name = parent_struct;
+            
+            add_this(constructor);
         }
 
         void operator()(ast::Destructor& destructor){
             destructor.Content->struct_name = parent_struct;
+            
+            add_this(destructor);
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
             declaration.Content->struct_name = parent_struct;
 
             if(!parent_struct.empty()){
-                ast::PointerType paramType;
-                paramType.type = parent_struct;
-                
-                ast::FunctionParameter param;
-                param.parameterName = "this";
-                param.parameterType = paramType;
-
-                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+                add_this(declaration);
             }
         }
 

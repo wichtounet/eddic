@@ -29,6 +29,7 @@ struct ASTDestructor {
     
     std::string struct_name;
     std::string mangledName;
+    std::vector<FunctionParameter> parameters;
 
     Position position;
     std::vector<Instruction> instructions;
