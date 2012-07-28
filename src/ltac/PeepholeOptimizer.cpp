@@ -570,6 +570,9 @@ void add_param_registers(RegisterUsage& usage){
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
+        
+    usage.insert(ltac::Register(descriptor->a_register()));
+    usage.insert(ltac::Register(descriptor->d_register()));
 }
 
 void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function){
@@ -581,9 +584,6 @@ void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function>
     } else if(function->definition->returnType != VOID){
         usage.insert(ltac::Register(descriptor->int_return_register1()));
     }
-        
-    usage.insert(ltac::Register(descriptor->a_register()));
-    usage.insert(ltac::Register(descriptor->d_register()));
 
     add_param_registers(usage);
 
