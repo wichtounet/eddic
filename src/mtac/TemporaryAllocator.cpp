@@ -31,7 +31,7 @@ struct CollectTemporary : public boost::static_visitor<> {
     CollectTemporary(std::shared_ptr<mtac::Function> function) : function(function) {}
 
     void updateTemporary(std::shared_ptr<Variable> variable){
-        if(variable->position().isTemporary()){
+        if(variable && variable->position().isTemporary()){
             if(usage.find(variable) == usage.end()){
                 usage[variable] = block;
             } else if(usage[variable] != block){
@@ -70,15 +70,26 @@ struct CollectTemporary : public boost::static_visitor<> {
             }
         }
     }
-    
+
     void operator()(std::shared_ptr<mtac::If>& if_){
         updateIf(if_);
     }
-    
+
     void operator()(std::shared_ptr<mtac::IfFalse>& if_false){
         updateIf(if_false);
     }
-    
+
+    void operator()(std::shared_ptr<mtac::Call>& call_){
+        updateTemporary(call_->return_);
+        updateTemporary(call_->return2_);
+    }
+
+    void operator()(std::shared_ptr<mtac::Param>& param){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+            updateTemporary(*ptr);
+        }
+    }
+
     template<typename T>
     void operator()(T&){
         //Ignore
