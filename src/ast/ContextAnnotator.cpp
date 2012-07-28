@@ -21,6 +21,8 @@
 
 using namespace eddic;
 
+namespace {
+
 class AnnotateVisitor : public boost::static_visitor<> {
     private:
         std::shared_ptr<GlobalContext> globalContext;
@@ -234,6 +236,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, return_.Content->value);
         }
 };
+
+} //end of anonymous namespace
 
 void ast::defineContexts(ast::SourceFile& program){
     AnnotateVisitor visitor;

@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+namespace {
+
 std::size_t size_of(std::shared_ptr<mtac::Function> function){
     std::size_t size = 0;
 
@@ -360,6 +362,8 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
 
     return false;
 }
+
+} //end of anonymous namespace
 
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
     if(option_defined("fno-inline-functions")){

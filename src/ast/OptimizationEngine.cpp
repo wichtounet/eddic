@@ -21,6 +21,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct GetStringValue : public boost::static_visitor<std::string> {
     std::string operator()(ast::Expression& value) const {
         std::string acc = visit(*this, value.Content->first);
@@ -266,6 +268,8 @@ struct OptimizationVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_OTHERS()
 };
+
+} //end of anonymous namespace
 
 void ast::optimizeAST(ast::SourceFile& program, StringPool& pool){
     OptimizationVisitor visitor(pool);
