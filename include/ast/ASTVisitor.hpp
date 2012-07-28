@@ -167,6 +167,11 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
 }
 
+#define AUTO_RECURSE_NEW()\
+void operator()(ast::New& new_){\
+    visit_each(*this, new_.Content->values);\
+}
+
 /* Ignore macros  */
 
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}

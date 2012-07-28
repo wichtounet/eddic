@@ -30,7 +30,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_UNARY(ast::Value)
     AUTO_RETURN_PREFIX_OPERATION(ast::Value)
     AUTO_RETURN_SUFFIX_OPERATION(ast::Value)
-    AUTO_RETURN_NEW(ast::Value)
     
     ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
@@ -74,6 +73,14 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         }
 
         return functionCall;
+    }
+
+    ast::Value operator()(ast::New& new_){
+        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return new_;
     }
 
     ast::Value operator()(ast::MemberFunctionCall& functionCall){

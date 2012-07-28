@@ -36,6 +36,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_SWITCH()
+        AUTO_RECURSE_NEW()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -46,7 +47,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_INTEGER_SUFFIX()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
-        AUTO_IGNORE_NEW()
         
         void operator()(ast::SourceFile& program){
             currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
