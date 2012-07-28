@@ -45,6 +45,9 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
 std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
 
+template<typename Call>
+void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
+
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
@@ -194,6 +197,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 assert(new_.Content->values.empty());
             } else {
                 auto ctor_function = symbols.getFunction(ctor_name);
+
+                //Pass all normal arguments
+                pass_arguments(function, ctor_function, new_);
 
                 auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
                 ctor_param->address = true;
