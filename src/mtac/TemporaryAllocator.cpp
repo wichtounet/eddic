@@ -15,68 +15,87 @@
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
 
+#include "VisitorUtils.hpp"
+
 using namespace eddic;
 
 namespace {
 
 typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::BasicBlock>> Usage;
 
-void updateTemporary(Usage& usage, std::shared_ptr<Variable> variable, std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<mtac::Function> function){
-    if(variable->position().isTemporary()){
-        if(usage.find(variable) == usage.end()){
-            usage[variable] = block;
-        } else if(usage[variable] != block){
-            function->context->storeTemporary(variable); 
-        }
-    }
-}
+struct CollectTemporary : public boost::static_visitor<> {
+    std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::BasicBlock>> usage;
+    std::shared_ptr<mtac::BasicBlock> block;
+    std::shared_ptr<mtac::Function> function;
 
-template<typename T>
-void updateIf(Usage& usage, std::shared_ptr<T> if_, std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<mtac::Function> function){
-    if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
-        updateTemporary(usage, *variablePtr, block, function);
-    }
+    CollectTemporary(std::shared_ptr<mtac::Function> function) : function(function) {}
 
-    if(if_->arg2){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
-            updateTemporary(usage, *variablePtr, block, function);
-        }
-    }
-}
-
-void updateQuadruple(Usage& usage, std::shared_ptr<mtac::Quadruple> quadruple, std::shared_ptr<mtac::BasicBlock> block, std::shared_ptr<mtac::Function> function){
-    if(quadruple->result){
-        updateTemporary(usage, quadruple->result, block, function);
-    }
-
-    if(quadruple->arg1){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-            updateTemporary(usage, *variablePtr, block, function);
+    void updateTemporary(std::shared_ptr<Variable> variable){
+        if(variable->position().isTemporary()){
+            if(usage.find(variable) == usage.end()){
+                usage[variable] = block;
+            } else if(usage[variable] != block){
+                function->context->storeTemporary(variable); 
+            }
         }
     }
 
-    if(quadruple->arg2){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-            updateTemporary(usage, *variablePtr, block, function);
+    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+        if(quadruple->result){
+            updateTemporary(quadruple->result);
+        }
+
+        if(quadruple->arg1){
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                updateTemporary(*variablePtr);
+            }
+        }
+
+        if(quadruple->arg2){
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+                updateTemporary(*variablePtr);
+            }
         }
     }
-}
+
+    template<typename T>
+    void updateIf(std::shared_ptr<T> if_){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&if_->arg1)){
+            updateTemporary(*variablePtr);
+        }
+
+        if(if_->arg2){
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                updateTemporary(*variablePtr);
+            }
+        }
+    }
+    
+    void operator()(std::shared_ptr<mtac::If>& if_){
+        updateIf(if_);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse>& if_false){
+        updateIf(if_false);
+    }
+    
+    template<typename T>
+    void operator()(T&){
+        //Ignore
+    }
+};
 
 }
 
 void mtac::TemporaryAllocator::allocate(std::shared_ptr<mtac::Program> program) const {
     for(auto& function : program->functions){
-        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<BasicBlock>> usage;
+        CollectTemporary visitor(function);
 
         for(auto& block : function->getBasicBlocks()){
+            visitor.block = block;
+
             for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                    updateQuadruple(usage, *ptr, block, function);
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                    updateIf(usage, *ptr, block, function);
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                    updateIf(usage, *ptr, block, function);
-                } 
+                visit(visitor, statement);
             }
         }
     }
