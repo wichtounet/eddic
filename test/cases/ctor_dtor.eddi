@@ -1,0 +1,30 @@
+struct A {
+    int a;
+
+    this(){
+        this.a = 0;
+        
+        println("CA");
+    }
+
+    this(int a){
+        this.a = a;
+
+        println("CAI");
+    }
+
+    ~this(){
+        println("DA");
+    }
+
+    void debug(){
+        print(this.a);
+        print("|");
+    }
+}
+
+void main(){
+    A* a = new A();
+    a.debug();
+    delete a;
+}
