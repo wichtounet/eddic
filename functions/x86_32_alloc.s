@@ -40,6 +40,12 @@ mov dword [eax], 0
 ;The pointer is past the header
 add eax, 8
 
+pop esi
+pop edi
+pop edx
+pop ecx
+pop ebx
+
 leave
 ret
 
