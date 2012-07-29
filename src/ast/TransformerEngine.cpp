@@ -487,6 +487,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
     }
+    
+    void operator()(ast::StructDeclaration& declaration){
+        for(auto it = iterate(declaration.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
+        }
+    }
 
     void operator()(ast::VariableDeclaration& declaration){
         if(declaration.Content->value){
@@ -511,6 +517,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()
+    AUTO_IGNORE_STRUCT_DECLARATION()
     AUTO_IGNORE_VARIABLE_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
     AUTO_IGNORE_DEREFERENCE_VALUE()

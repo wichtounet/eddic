@@ -249,6 +249,12 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
         print_each_sub(builtin.Content->values);
     }
+    
+    void operator()(ast::StructDeclaration& declaration) const {
+        std::cout << indent() << "Struct declaration [" << declaration.Content->variableName << "]" << std::endl; 
+
+        print_each_sub(declaration.Content->values, "Values");
+    }
 
     void operator()(ast::VariableDeclaration& declaration) const {
         std::cout << indent() << "Variable declaration [" << declaration.Content->variableName << "]" << std::endl; 

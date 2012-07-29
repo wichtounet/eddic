@@ -143,7 +143,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier 
         >>  lexer.left_parenth
         >>  (value >> *(lexer.comma > value))
-        >>  lexer.right_parenth
+        >>  lexer.right_parenth;
 
     declaration %= 
             qi::position(position_begin)

@@ -110,6 +110,11 @@ void operator()(ast::Return& return_){\
     visit(*this, return_.Content->value);\
 }
 
+#define AUTO_RECURSE_STRUCT_DECLARATION()\
+void operator()(ast::StructDeclaration& declaration){\
+    visit_each(*this, declaration.Content->values);\
+}
+
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
@@ -209,6 +214,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
 #define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
 #define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
+#define AUTO_IGNORE_STRUCT_DECLARATION() void operator()(ast::StructDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
 

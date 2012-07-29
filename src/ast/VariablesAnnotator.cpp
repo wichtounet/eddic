@@ -206,6 +206,28 @@ struct VariablesVisitor : public boost::static_visitor<> {
         delete_.Content->variable->addReference();
     }
     
+    void operator()(ast::StructDeclaration& declaration){
+        if (declaration.Content->context->exists(declaration.Content->variableName)) {
+            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
+        }
+        
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+
+        if(!type->is_custom_type()){
+            throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
+        }
+            
+        if(symbols.struct_exists(type->type())){
+            if(type->is_const()){
+                throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+            }
+
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
+        } else {
+            throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
+        }
+    }
+    
     void operator()(ast::VariableDeclaration& declaration){
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
