@@ -1,0 +1,62 @@
+int ga = 100;
+
+struct A {
+    int a;
+
+    this(){
+        this.a = 0;
+        
+        print("CA");
+        print("|");
+    }
+
+    this(string a){
+        print("CAS");
+        print("|");
+        
+        print(a);
+        print("|");
+    }
+
+    this(int a){
+        this.a = a;
+
+        print("CAI");
+        print("|");
+    }
+
+    this(int a, int b){
+        this.a = a * b;
+        
+        print("CAII");
+        print("|");
+    }
+
+    ~this(){
+        print("DA");
+        print("|");
+    }
+
+    void debug(){
+        print(this.a);
+        print("|");
+    }
+}
+
+void main(){
+    A a;
+    a.debug();
+
+    if(ga == 100){
+        A b(55);
+        b.debug();
+    }
+
+    A c(33, ga);
+    c.debug();
+
+    if(ga > 90){
+        A d("666");
+        d.debug();
+    }
+}
