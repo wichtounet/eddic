@@ -1095,11 +1095,29 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            if(declaration.Content->value){
-                auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
-                
-                if(!var->type()->is_const()){
-                    visit(AssignValueToVariable(function, var), *declaration.Content->value);
+            auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+
+            std::cout << "Declare variable " << std::endl;
+
+            if(var->type()->is_custom_type()){
+                auto struct_ = var->type()->type();
+                auto ctor_name = mangle_ctor({}, struct_);
+
+                if(symbols.exists(ctor_name)){
+                    auto ctor_function = symbols.getFunction(ctor_name);
+
+                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                    ctor_param->address = true;
+                    function->add(ctor_param);
+
+                    symbols.addReference(ctor_name);
+                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                }
+            } else {
+                if(declaration.Content->value){
+                    if(!var->type()->is_const()){
+                        visit(AssignValueToVariable(function, var), *declaration.Content->value);
+                    }
                 }
             }
         }
