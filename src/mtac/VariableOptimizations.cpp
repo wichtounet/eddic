@@ -14,6 +14,8 @@
 
 #include "mtac/VariableOptimizations.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/EscapeAnalysis.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -47,6 +49,26 @@ bool is_written_once(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::F
     return true;
 }
 
+bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target, std::shared_ptr<mtac::Function> function){
+    for(auto& block : function->getBasicBlocks()){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                auto quadruple = *ptr;
+
+                if(quadruple->op == mtac::Operator::PASSIGN && quadruple->result == source){
+                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                        if(*var_ptr == target){
+                            return false;
+                        }
+                    }
+                }
+            } 
+        }
+    }
+
+    return true;
+}
+
 std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::Function> function){
     std::vector<std::shared_ptr<Variable>> targets;
     
@@ -55,7 +77,7 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
 
-                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::FASSIGN){
+                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
                     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                         if(*var_ptr == variable){
                            targets.push_back(quadruple->result); 
@@ -77,7 +99,7 @@ std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> var
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
 
-                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::FASSIGN){
+                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
                     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                         if(quadruple->result == variable){
                            sources.push_back(*var_ptr); 
@@ -171,6 +193,8 @@ struct VariableReplace : public boost::static_visitor<bool> {
 bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
+    auto pointer_escaped = mtac::escape_analysis(function);
+
     for(auto& pair : function->context->stored_variables()){
         auto var = pair.second;
         auto position = var->position();
@@ -181,22 +205,34 @@ bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
                 auto targets = get_targets(var, function);
 
                 if(targets.size() == 1){
-                    VariableReplace replacer(function, var, targets[0]);
+                    if(pointer_escaped->find(var) == pointer_escaped->end()){
+                        if(is_not_direct_alias(var, targets[0], function)){
+                            VariableReplace replacer(function, var, targets[0]);
 
-                    for(auto& block : function->getBasicBlocks()){
-                        for(auto& statement : block->statements){
-                            optimized |= visit(replacer, statement);
+                            for(auto& block : function->getBasicBlocks()){
+                                for(auto& statement : block->statements){
+                                    optimized |= visit(replacer, statement);
+                                }
+                            }
+
+                            continue;
                         }
                     }
-                } else if(position.isTemporary()){
+                } 
+
+                if(position.isTemporary()){
                     auto sources = get_sources(var, function);
 
-                    if(sources.size() == 1){
-                        VariableReplace replacer(function, var, sources[0]);
+                    if(pointer_escaped->find(var) == pointer_escaped->end()){
+                        if(sources.size() == 1){
+                            if(is_not_direct_alias(var, sources[0], function)){
+                                VariableReplace replacer(function, var, sources[0]);
 
-                        for(auto& block : function->getBasicBlocks()){
-                            for(auto& statement : block->statements){
-                                optimized |= visit(replacer, statement);
+                                for(auto& block : function->getBasicBlocks()){
+                                    for(auto& statement : block->statements){
+                                        optimized |= visit(replacer, statement);
+                                    }
+                                }
                             }
                         }
                     }
