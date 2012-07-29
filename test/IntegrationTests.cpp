@@ -165,6 +165,14 @@ BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
     assert_output("array_foreach_param_param.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( ctor_dtor_heap ){
+    assert_output("ctor_dtor_heap.eddi", "CA|0|DA|CAI|55|DA|CAII|3300|DA|CAS|666|DA|");
+}
+
+BOOST_AUTO_TEST_CASE( ctor_dtor_stack ){
+    assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAI|33|CAS|666|0|DA|DA|DA|");
+}
+
 BOOST_AUTO_TEST_CASE( casts ){
     assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|");
     assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|");

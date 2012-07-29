@@ -45,6 +45,9 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
 std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
 
+template<typename Call>
+void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
+
 std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
@@ -175,16 +178,37 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(), new_.Content->type);
-
+    
         auto param = std::make_shared<mtac::Param>(type->size());
         param->std_param = "a";
         param->function = symbols.getFunction("_F5allocI");
         function->add(param);
 
-        auto t1 = function->context->new_temporary(INT);
+        auto t1 = function->context->new_temporary(new_pointer_type(INT));
 
         symbols.addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", symbols.getFunction("_F5allocI"), t1)); 
+            
+        if(type->is_custom_type()){
+            auto struct_ = type->type();
+            auto ctor_name = mangle_ctor(new_.Content->values, struct_);
+
+            if(!symbols.exists(ctor_name)){
+                assert(new_.Content->values.empty());
+            } else {
+                auto ctor_function = symbols.getFunction(ctor_name);
+
+                //Pass all normal arguments
+                pass_arguments(function, ctor_function, new_);
+
+                auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                ctor_param->address = true;
+                function->add(ctor_param);
+
+                symbols.addReference(ctor_name);
+                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+            }
+        }
 
         return {t1};
     }
@@ -958,6 +982,8 @@ class CompilerVisitor : public boost::static_visitor<> {
     public:
         CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram){}
 
+        AUTO_RECURSE_STRUCT()
+
         //No code is generated for these nodes
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
@@ -976,18 +1002,56 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, p.Content->blocks);
         }
-        
-        void operator()(ast::Struct& p){
-            visit_each_non_variant(*this, p.Content->functions);
+
+        void issue_destructors(std::shared_ptr<Context> context){
+            for(auto& pair : *context){
+                auto var = pair.second;
+
+                if(var->position().isStack()){
+                    auto type = var->type();
+
+                    if(type->is_custom_type()){
+                        auto struct_ = type->type();
+                        auto dtor_name = mangle_dtor(struct_);
+
+                        //If there is a destructor, call it
+                        if(symbols.exists(dtor_name)){
+                            auto dtor_function = symbols.getFunction(dtor_name);
+
+                            auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+                            dtor_param->address = true;
+                            function->add(dtor_param);
+
+                            symbols.addReference(dtor_name);
+                            function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                        }
+                    }
+                }
+            }
         }
 
-        void operator()(ast::FunctionDeclaration& f){
+        template<typename Function>
+        inline void issue_function(Function& f){
             function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
             function->definition = symbols.getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
+            issue_destructors(f.Content->context);
+
             program->functions.push_back(function);
+        }
+
+        void operator()(ast::FunctionDeclaration& f){
+            issue_function(f);
+        }
+
+        void operator()(ast::Constructor& f){
+            issue_function(f);
+        }
+
+        void operator()(ast::Destructor& f){
+            issue_function(f);
         }
 
         void operator()(ast::If& if_){
@@ -998,6 +1062,8 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                 visit_each(*this, if_.Content->instructions);
 
+                issue_destructors(if_.Content->context);
+
                 if (if_.Content->else_) {
                     std::string elseLabel = newLabel();
 
@@ -1006,6 +1072,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                     function->add(endLabel);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
+                    
+                    issue_destructors((*if_.Content->else_).context);
 
                     function->add(elseLabel);
                 } else {
@@ -1018,6 +1086,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                 visit(JumpIfFalseVisitor(function, next), if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
+                
+                issue_destructors(if_.Content->context);
 
                 function->add(std::make_shared<mtac::Goto>(end));
 
@@ -1040,6 +1110,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                     visit(JumpIfFalseVisitor(function, next), elseIf.condition);
 
                     visit_each(*this, elseIf.instructions);
+                    
+                    issue_destructors(elseIf.context);
 
                     function->add(std::make_shared<mtac::Goto>(end));
                 }
@@ -1048,18 +1120,56 @@ class CompilerVisitor : public boost::static_visitor<> {
                     function->add(next);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
+                    
+                    issue_destructors((*if_.Content->else_).context);
                 }
 
                 function->add(end);
             }
         }
+        
+        void operator()(ast::StructDeclaration& declaration){
+            auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+            auto struct_ = var->type()->type();
+            auto ctor_name = mangle_ctor(declaration.Content->values, struct_);
+
+            if(symbols.exists(ctor_name)){
+                auto ctor_function = symbols.getFunction(ctor_name);
+                
+                //Pass all normal arguments
+                pass_arguments(function, ctor_function, declaration);
+
+                auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                ctor_param->address = true;
+                function->add(ctor_param);
+
+                symbols.addReference(ctor_name);
+                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+            }
+        }
 
         void operator()(ast::VariableDeclaration& declaration){
-            if(declaration.Content->value){
-                auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
-                
-                if(!var->type()->is_const()){
-                    visit(AssignValueToVariable(function, var), *declaration.Content->value);
+            auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+
+            if(var->type()->is_custom_type()){
+                auto struct_ = var->type()->type();
+                auto ctor_name = mangle_ctor({}, struct_);
+
+                if(symbols.exists(ctor_name)){
+                    auto ctor_function = symbols.getFunction(ctor_name);
+
+                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                    ctor_param->address = true;
+                    function->add(ctor_param);
+
+                    symbols.addReference(ctor_name);
+                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                }
+            } else {
+                if(declaration.Content->value){
+                    if(!var->type()->is_const()){
+                        visit(AssignValueToVariable(function, var), *declaration.Content->value);
+                    }
                 }
             }
         }
@@ -1108,6 +1218,8 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, while_.Content->instructions);
 
+            issue_destructors(while_.Content->context);
+
             visit(JumpIfTrueVisitor(function, startLabel), while_.Content->condition);
         }
 
@@ -1132,13 +1244,34 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
+            auto type = delete_.Content->variable->type()->data_type();
+            if(type->is_custom_type()){
+                auto struct_ = type->type();
+                auto dtor_name = mangle_dtor(struct_);
+
+                //If there is a destructor, call it
+                if(symbols.exists(dtor_name)){
+                    auto dtor_function = symbols.getFunction(dtor_name);
+
+                    auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+                    dtor_param->address = true;
+                    function->add(dtor_param);
+
+                    symbols.addReference(dtor_name);
+                    function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                }
+            }
+
+            auto free_name = "_F4freePI";
+            auto free_function = symbols.getFunction(free_name);
+
             auto param = std::make_shared<mtac::Param>(delete_.Content->variable);
             param->std_param = "a";
-            param->function = symbols.getFunction("_F4freePI");
+            param->function = free_function;
             function->add(param);
 
-            symbols.addReference("_F4freePI");
-            function->add(std::make_shared<mtac::Call>("_F4freePI", symbols.getFunction("_F4freePI"))); 
+            symbols.addReference(free_name);
+            function->add(std::make_shared<mtac::Call>(free_name, free_function)); 
         }
 
         template<typename T>

@@ -33,7 +33,6 @@ namespace {
 struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
-    AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
@@ -45,6 +44,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH()
     AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
+    AUTO_RECURSE_NEW()
 
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -55,17 +55,19 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_NEW()
     
     void operator()(ast::Struct& struct_){
         if(symbols.is_recursively_nested(struct_.Content->name)){
             throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
         }
 
+        visit_each_non_variant(*this, struct_.Content->constructors);
+        visit_each_non_variant(*this, struct_.Content->destructors);
         visit_each_non_variant(*this, struct_.Content->functions);
     }
-   
-    void operator()(ast::FunctionDeclaration& declaration){
+
+    template<typename Function>
+    void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
             auto type = visit(ast::TypeTransformer(), parameter.parameterType);
@@ -74,6 +76,29 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         visit_each(*this, declaration.Content->instructions);
+    }
+   
+    void operator()(ast::FunctionDeclaration& declaration){
+        visit_function(declaration);
+    }
+
+    void operator()(ast::Constructor& constructor){
+        visit_function(constructor);
+    }
+
+    void operator()(ast::Destructor& destructor){
+        visit_function(destructor);
+    }
+
+    void operator()(ast::MemberFunctionCall& functionCall){
+        if (!functionCall.Content->context->exists(functionCall.Content->object_name)){
+            throw SemanticalException("The variable " + functionCall.Content->object_name + " does not exists", functionCall.Content->position);
+        }
+        
+        auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+        variable->addReference();
+
+        visit_each(*this, functionCall.Content->values);
     }
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
@@ -181,6 +206,28 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
         delete_.Content->variable->addReference();
+    }
+    
+    void operator()(ast::StructDeclaration& declaration){
+        if (declaration.Content->context->exists(declaration.Content->variableName)) {
+            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
+        }
+        
+        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+
+        if(!type->is_custom_type()){
+            throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
+        }
+            
+        if(symbols.struct_exists(type->type())){
+            if(type->is_const()){
+                throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+            }
+
+            declaration.Content->context->addVariable(declaration.Content->variableName, type);
+        } else {
+            throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
+        }
     }
     
     void operator()(ast::VariableDeclaration& declaration){

@@ -110,6 +110,15 @@ std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
     return variables[name] = var;
 }
 
+std::shared_ptr<Variable> FunctionContext::newPointerTemporary(){
+    Position position(PositionType::TEMPORARY);
+
+    std::string name = "tp_" + toString(temporary++);
+    auto var = std::make_shared<Variable>(name, new_pointer_type(INT), position); 
+    storage[name] = var;
+    return variables[name] = var;
+}
+
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
     currentPosition -= temp->type()->size();
 

@@ -30,7 +30,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_UNARY(ast::Value)
     AUTO_RETURN_PREFIX_OPERATION(ast::Value)
     AUTO_RETURN_SUFFIX_OPERATION(ast::Value)
-    AUTO_RETURN_NEW(ast::Value)
     
     ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
@@ -74,6 +73,14 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         }
 
         return functionCall;
+    }
+
+    ast::Value operator()(ast::New& new_){
+        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return new_;
     }
 
     ast::Value operator()(ast::MemberFunctionCall& functionCall){
@@ -127,9 +134,11 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
     //Transform while in do while loop as an optimization (less jumps)
     result_type operator()(ast::While& while_) const {
         ast::If if_;
+        if_.Content->context = while_.Content->context;
         if_.Content->condition = while_.Content->condition;
 
         ast::DoWhile do_while;
+        do_while.Content->context = while_.Content->context;
         do_while.Content->condition = while_.Content->condition;
         do_while.Content->instructions = while_.Content->instructions;
 
@@ -140,8 +149,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
     //Transform foreach loop in do while loop
     result_type operator()(ast::Foreach& foreach) const {
-        ast::If if_;
-
         ast::Integer from_value;
         from_value.value = foreach.Content->from;
 
@@ -152,6 +159,8 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         condition.Content->first = from_value;
         condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
+        ast::If if_;
+        if_.Content->context = foreach.Content->context;
         if_.Content->condition = condition;
 
         ast::VariableValue left_value;
@@ -164,8 +173,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         start_assign.Content->value = from_value;
 
         if_.Content->instructions.push_back(start_assign);
-
-        ast::DoWhile do_while;
         
         ast::VariableValue v;
         v.Content->variableName = foreach.Content->variableName;
@@ -176,6 +183,8 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         while_condition.Content->first = v;
         while_condition.Content->operations.push_back({ast::Operator::LESS_EQUALS, to_value});
 
+        ast::DoWhile do_while;
+        do_while.Content->context = foreach.Content->context;
         do_while.Content->condition = while_condition;
         do_while.Content->instructions = foreach.Content->instructions;
 
@@ -238,9 +247,11 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         while_condition.Content->operations.push_back({ast::Operator::LESS, size_builtin});
 
         ast::If if_;
+        if_.Content->context = foreach.Content->context;
         if_.Content->condition = while_condition;
 
         ast::DoWhile do_while;
+        do_while.Content->context = foreach.Content->context;
         do_while.Content->condition = while_condition;
 
         ast::ArrayValue array_value;
@@ -289,6 +300,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         if(for_.Content->condition){
             ast::DoWhile do_while;
+            do_while.Content->context = for_.Content->context;
             do_while.Content->condition = *for_.Content->condition; 
             do_while.Content->instructions = for_.Content->instructions;
             
@@ -297,6 +309,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             }
 
             ast::If if_;
+            if_.Content->context = for_.Content->context;
             if_.Content->condition = *for_.Content->condition; 
             if_.Content->instructions.push_back(do_while);
 
@@ -305,6 +318,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             ast::True condition;
             
             ast::DoWhile do_while;
+            do_while.Content->context = for_.Content->context;
             do_while.Content->condition = condition;
             do_while.Content->instructions = for_.Content->instructions;
             
@@ -326,6 +340,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         first_condition.Content->operations.push_back({ast::Operator::EQUALS, cases[0].value});
         
         ast::If if_;
+        if_.Content->context = switch_.Content->context;
         if_.Content->condition = first_condition;
         if_.Content->instructions = cases[0].instructions;
 
@@ -337,6 +352,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             condition.Content->operations.push_back({ast::Operator::EQUALS, case_.value});
 
             ast::ElseIf else_if;
+            else_if.context = case_.context;
             else_if.condition = condition;
             else_if.instructions = case_.instructions;
 
@@ -345,6 +361,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         if(switch_.Content->default_case){
             ast::Else else_;
+            else_.context = (*switch_.Content->default_case).context;
             else_.instructions = (*switch_.Content->default_case).instructions;
 
             if_.Content->else_ = else_;
@@ -366,6 +383,8 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
+    AUTO_RECURSE_CONSTRUCTOR()
+    AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_STRUCT()
         
@@ -478,6 +497,12 @@ struct CleanerVisitor : public boost::static_visitor<> {
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
     }
+    
+    void operator()(ast::StructDeclaration& declaration){
+        for(auto it = iterate(declaration.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
+        }
+    }
 
     void operator()(ast::VariableDeclaration& declaration){
         if(declaration.Content->value){
@@ -502,6 +527,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()
+    AUTO_IGNORE_STRUCT_DECLARATION()
     AUTO_IGNORE_VARIABLE_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
     AUTO_IGNORE_DEREFERENCE_VALUE()
@@ -560,6 +586,14 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::FunctionDeclaration& declaration){
+        transform(declaration.Content->instructions);
+    }
+    
+    void operator()(ast::Constructor& declaration){
+        transform(declaration.Content->instructions);
+    }
+    
+    void operator()(ast::Destructor& declaration){
         transform(declaration.Content->instructions);
     }
 

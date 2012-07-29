@@ -9,6 +9,7 @@
 #define AST_FOREACH_IN_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 

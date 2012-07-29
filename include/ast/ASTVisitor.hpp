@@ -18,6 +18,8 @@ void operator()(ast::SourceFile& program){\
 
 #define AUTO_RECURSE_STRUCT()\
 void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->constructors);\
+    visit_each_non_variant(*this, struct_.Content->destructors);\
     visit_each_non_variant(*this, struct_.Content->functions);\
 }
 
@@ -108,6 +110,11 @@ void operator()(ast::Return& return_){\
     visit(*this, return_.Content->value);\
 }
 
+#define AUTO_RECURSE_STRUCT_DECLARATION()\
+void operator()(ast::StructDeclaration& declaration){\
+    visit_each(*this, declaration.Content->values);\
+}
+
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
@@ -150,9 +157,24 @@ void operator()(ast::FunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\
 }
 
+#define AUTO_RECURSE_CONSTRUCTOR()\
+void operator()(ast::Constructor& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
+#define AUTO_RECURSE_DESTRUCTOR()\
+void operator()(ast::Destructor& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(ast::GlobalVariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
+}
+
+#define AUTO_RECURSE_NEW()\
+void operator()(ast::New& new_){\
+    visit_each(*this, new_.Content->values);\
 }
 
 /* Ignore macros  */
@@ -192,6 +214,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
 #define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
 #define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
+#define AUTO_IGNORE_STRUCT_DECLARATION() void operator()(ast::StructDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
 

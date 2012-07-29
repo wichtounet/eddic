@@ -5,19 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_SWITCH_H
-#define AST_SWITCH_H
+#ifndef AST_STRUCT_DECLARATION_H
+#define AST_STRUCT_DECLARATION_H
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
-#include "ast/SwitchCase.hpp"
-#include "ast/DefaultCase.hpp"
 #include "ast/Position.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -26,26 +25,26 @@ class Context;
 namespace ast {
 
 /*!
- * \class ASTSwitch
- * \brief The AST node for a switch case.
- * Should only be used from the Deferred version (eddic::ast::Switch).
+ * \class ASTStructDeclaration
+ * \brief The AST node for a declaration of a local struct. 
+ * Should only be used from the Deferred version (eddic::ast::StructDeclaration).
  */
-struct ASTSwitch {
+struct ASTStructDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
-    Value value;
-    std::vector<SwitchCase> cases;
-    boost::optional<DefaultCase> default_case;
+    Type variableType;
+    std::string variableName;
+    std::vector<Value> values;
 
     mutable long references = 0;
 };
 
 /*!
- * \typedef Switch
- * \brief The AST node for a switch. 
+ * \typedef StructDeclaration
+ * \brief The AST node for a declaration of a local struct. 
  */
-typedef Deferred<ASTSwitch> Switch;
+typedef Deferred<ASTStructDeclaration> StructDeclaration;
 
 } //end of ast
 
@@ -53,11 +52,11 @@ typedef Deferred<ASTSwitch> Switch;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Switch, 
+    eddic::ast::StructDeclaration,
     (eddic::ast::Position, Content->position)
-    (eddic::ast::Value, Content->value)
-    (std::vector<eddic::ast::SwitchCase>, Content->cases)
-    (boost::optional<eddic::ast::DefaultCase>, Content->default_case)
+    (eddic::ast::Type, Content->variableType)
+    (std::string, Content->variableName)
+    (std::vector<eddic::ast::Value>, Content->values)
 )
 
 #endif

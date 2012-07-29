@@ -9,6 +9,7 @@
 #define AST_FOR_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -16,6 +17,8 @@
 #include "ast/Value.hpp"
 
 namespace eddic {
+
+class Context;
 
 namespace ast {
 
@@ -25,6 +28,8 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::For).
  */
 struct ASTFor {
+    std::shared_ptr<Context> context; 
+
     boost::optional<Instruction> start;
     boost::optional<Value> condition;
     boost::optional<Instruction> repeat;

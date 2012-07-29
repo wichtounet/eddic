@@ -39,6 +39,8 @@ void SymbolTable::addFunction(std::shared_ptr<Function> function){
 }
 
 std::shared_ptr<Function> SymbolTable::getFunction(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+
     return functions[function];
 }
 
@@ -109,14 +111,20 @@ bool SymbolTable::struct_exists(const std::string& struct_){
 }
 
 void SymbolTable::addReference(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+    
     ++(functions[function]->references);
 }
 
 void SymbolTable::removeReference(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+    
     --(functions[function]->references);
 }
 
 int SymbolTable::referenceCount(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+    
     return functions[function]->references;
 }
 
@@ -159,7 +167,7 @@ void SymbolTable::defineStandardFunctions(){
     addFunction(concatFunction);
     
     //alloc function
-    auto allocFunction = std::make_shared<Function>(INT, "alloc");
+    auto allocFunction = std::make_shared<Function>(new_pointer_type(INT), "alloc");
     allocFunction->standard = true;
     allocFunction->mangledName = "_F5allocI";
     allocFunction->parameters.push_back({"a", INT});

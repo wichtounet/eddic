@@ -11,6 +11,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -22,8 +23,11 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::New).
  */
 struct ASTNew {
+    std::string mangled_name;
+
     Position position;
     Type type;
+    std::vector<Value> values;
 
     mutable long references = 0;
 };
@@ -43,6 +47,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::New, 
     (eddic::ast::Position, Content->position)
     (eddic::ast::Type, Content->type)
+    (std::vector<eddic::ast::Value>, Content->values)
 )
 
 #endif

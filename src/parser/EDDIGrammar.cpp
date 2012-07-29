@@ -136,6 +136,14 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   value 
         >   lexer.right_parenth
         >   lexer.stop;
+    
+    struct_declaration %= 
+            qi::position(position_begin)
+        >>  type 
+        >>  lexer.identifier 
+        >>  lexer.left_parenth
+        >>  (value >> *(lexer.comma > value))
+        >>  lexer.right_parenth;
 
     declaration %= 
             qi::position(position_begin)
@@ -184,6 +192,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   (value.member_function_call > lexer.stop)
         |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
+        |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
@@ -226,6 +235,26 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type
         >>  lexer.identifier
         >>  lexer.stop;
+    
+    constructor %= 
+            qi::position(position_begin)
+        >>  qi::omit[lexer.this_]
+        >>  lexer.left_parenth
+        >>  -( arg >> *( lexer.comma > arg))
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
+    
+    destructor %= 
+            qi::position(position_begin)
+        >>  lexer.tilde     
+        >>  qi::omit[lexer.this_]
+        >>  lexer.left_parenth
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
 
     struct_ %=
             qi::position(position_begin)
@@ -233,6 +262,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier
         >>  lexer.left_brace
         >>  *(member_declaration)
+        >>  *(constructor)
+        >>  *(destructor)
         >>  *(function)
         >>  lexer.right_brace;
 

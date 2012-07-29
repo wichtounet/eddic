@@ -47,16 +47,39 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     template<typename Container>
+    void print_each_sub(Container& container, const std::string& title) const {
+        std::cout << indent() << title << std::endl; 
+        print_each_sub(container);
+    }
+
+    template<typename Container>
+    void print_each_sub_non_variant(Container& container) const {
+        level++;
+        visit_each_non_variant(*this, container);    
+        level--;
+    }
+
+    template<typename Container>
+    void print_each_sub_non_variant(Container& container, const std::string& title) const {
+        std::cout << indent() << title << std::endl; 
+        print_each_sub_non_variant(container);
+    }
+
+    template<typename Container>
     void print_sub(Container& container) const {
         level++;
         visit(*this, container);    
         level--;
     }
 
-    void operator()(ast::SourceFile& program) const {
-        std::cout << indent() << "SourceFile" << std::endl; 
+    template<typename Container>
+    void print_sub(Container& container, const std::string& title) const {
+        std::cout << indent() << title << std::endl; 
+        print_sub(container);
+    }
 
-        print_each_sub(program.Content->blocks);
+    void operator()(ast::SourceFile& program) const {
+        print_each_sub(program.Content->blocks, "SourceFile");
     }
 
     void operator()(ast::Import& import) const {
@@ -69,27 +92,44 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::FunctionDeclaration& declaration) const {
         std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
+        
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
         for(auto param : declaration.Content->parameters){
             std::cout << indent() << param.parameterName << std::endl; 
         }
         level--;
-        std::cout << indent() << "Instructions:" << std::endl; 
-        print_each_sub(declaration.Content->instructions);
+        
+        print_each_sub(declaration.Content->instructions, "Instructions:");
+    }
+    
+    void operator()(ast::Constructor& declaration) const {
+        std::cout << indent() << "Constructor" << std::endl; 
+        
+        std::cout << indent() << "Parameters:" << std::endl; 
+        level++;
+        for(auto param : declaration.Content->parameters){
+            std::cout << indent() << param.parameterName << std::endl; 
+        }
+        level--;
+        
+        print_each_sub(declaration.Content->instructions, "Instructions:");
+    }
+    
+    void operator()(ast::Destructor& declaration) const {
+        std::cout << indent() << "Destructor" << std::endl; 
+        print_each_sub(declaration.Content->instructions, "Instructions:");
     }
 
     void operator()(ast::Struct& struct_) const {
         std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
         level++;
-        std::cout << indent() << "Members:" << std::endl; 
-        level++;
-        visit_each_non_variant(*this, struct_.Content->members);    
-        level--;
-        std::cout << indent() << "Functions:" << std::endl; 
-        level++;
-        visit_each_non_variant(*this, struct_.Content->functions);    
-        level--;
+        
+        print_each_sub_non_variant(struct_.Content->members, "Members");
+        print_each_sub_non_variant(struct_.Content->constructors, "Constructors");
+        print_each_sub_non_variant(struct_.Content->destructors, "Destructors");
+        print_each_sub_non_variant(struct_.Content->functions, "Functions");
+        
         level--;
     }
 
@@ -107,6 +147,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     
     void operator()(ast::New& new_) const {
         std::cout << indent() << "New " << toStringType(new_.Content->type) << std::endl; 
+        print_each_sub(new_.Content->values, "Value");
     }
     
     void operator()(ast::Delete& delete_) const {
@@ -114,18 +155,15 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::For& for_) const {
-        std::cout << indent() << "For" << std::endl; 
-        print_each_sub(for_.Content->instructions);
+        print_each_sub(for_.Content->instructions, "For");
     }
 
     void operator()(ast::Foreach& for_) const {
-        std::cout << indent() << "Foreach" << std::endl; 
-        print_each_sub(for_.Content->instructions);
+        print_each_sub(for_.Content->instructions, "Foreach");
     }
 
     void operator()(ast::ForeachIn& for_) const {
-        std::cout << indent() << "Foreach in " << std::endl; 
-        print_each_sub(for_.Content->instructions);
+        print_each_sub(for_.Content->instructions, "Foreach In");
     }
 
     void operator()(ast::Switch& switch_) const {
@@ -133,8 +171,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         ++level;
         
-        std::cout << indent() << "Value" << std::endl;
-        print_sub(switch_.Content->value);
+        print_sub(switch_.Content->value, "Value");
         
         for(auto& case_ : switch_.Content->cases){
             visit_non_variant(*this, case_);
@@ -152,34 +189,26 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         ++level;
         
-        std::cout << indent() << "Value" << std::endl;
-        print_sub(switch_case.value);
-        
-        std::cout << indent() << "Instructions" << std::endl;
-        print_each_sub(switch_case.instructions);
+        print_sub(switch_case.value, "Value");
+        print_each_sub(switch_case.instructions, "Instructions");
         
         --level;
     }
 
     void operator()(ast::DefaultCase& default_case) const {
-        std::cout << indent() << "Default Case" << std::endl; 
-
-        print_each_sub(default_case.instructions);
+        print_each_sub(default_case.instructions, "Default Case");
     }
 
     void operator()(ast::While& while_) const {
         std::cout << indent() << "While" << std::endl; 
-        std::cout << indent() << "Condition:" << std::endl;
-        print_sub(while_.Content->condition);
-        print_each_sub(while_.Content->instructions);
+        print_sub(while_.Content->condition, "Condition:");
+        print_each_sub(while_.Content->instructions, "Instructions:");
     }
 
     void operator()(ast::DoWhile& while_) const {
         std::cout << indent() << "Do while" << std::endl; 
-        std::cout << indent() << "Condition:" << std::endl;
-        print_sub(while_.Content->condition);
-        std::cout << indent() << "Body:" << std::endl;
-        print_each_sub(while_.Content->instructions);
+        print_sub(while_.Content->condition, "Condition:");
+        print_each_sub(while_.Content->instructions, "Instructions:");
     }
 
     void operator()(ast::Swap&) const {
@@ -189,27 +218,20 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::If& if_) const {
         std::cout << indent() << "If" << std::endl; 
 
-        std::cout << indent() << "Condition:" << std::endl;
-        print_sub(if_.Content->condition);
-
-        std::cout << indent() << "Instructions" << std::endl;
-        print_each_sub(if_.Content->instructions);
+        print_sub(if_.Content->condition, "Condition");
+        print_each_sub(if_.Content->instructions, "Instructions");
 
         for(auto& else_if : if_.Content->elseIfs){
             std::cout << indent() << "ElseIf" << std::endl;
 
-            std::cout << indent() << "Condition:" << std::endl;
-            print_sub(else_if.condition);
-
-            std::cout << indent() << "Instructions" << std::endl;
-            print_each_sub(else_if.instructions);
+            print_sub(else_if.condition, "Condition");
+            print_each_sub(else_if.instructions, "Instructions");
         }
 
         if(if_.Content->else_){
             std::cout << indent() << "Else" << std::endl;
 
-            std::cout << indent() << "Instructions" << std::endl;
-            print_each_sub((*if_.Content->else_).instructions);
+            print_each_sub((*if_.Content->else_).instructions, "Instructions");
         }
     }
 
@@ -226,6 +248,12 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::BuiltinOperator& builtin) const {
         std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
         print_each_sub(builtin.Content->values);
+    }
+    
+    void operator()(ast::StructDeclaration& declaration) const {
+        std::cout << indent() << "Struct declaration [" << declaration.Content->variableName << "]" << std::endl; 
+
+        print_each_sub(declaration.Content->values, "Values");
     }
 
     void operator()(ast::VariableDeclaration& declaration) const {
@@ -251,29 +279,20 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::Assignment& assign) const {
         std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] " << std::endl;
 
-        std::cout << indent() << "Left Value:" << std::endl;
-        print_sub(assign.Content->left_value);
-
-        std::cout << indent() << "Right Value:" << std::endl;
-        print_sub(assign.Content->value);
+        print_sub(assign.Content->left_value, "Left Value");
+        print_sub(assign.Content->value, "Right Value");
     }
 
     void operator()(ast::Ternary& ternary) const {
         std::cout << indent() << "Ternary" << std::endl;
 
-        std::cout << indent() << "Condition Value:" << std::endl;
-        print_sub(ternary.Content->condition);
-
-        std::cout << indent() << "True Value:" << std::endl;
-        print_sub(ternary.Content->true_value);
-
-        std::cout << indent() << "False Value:" << std::endl;
-        print_sub(ternary.Content->false_value);
+        print_sub(ternary.Content->condition, "Condition");
+        print_sub(ternary.Content->true_value, "True Value");
+        print_sub(ternary.Content->false_value, "False Value");
     }
 
     void operator()(ast::Return& return_) const {
-        std::cout << indent() << "Function return" << std::endl; 
-        print_sub(return_.Content->value);
+        print_sub(return_.Content->value, "Function Return");
     }
 
     void operator()(ast::Litteral& litteral) const {
@@ -317,8 +336,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::DereferenceValue& value) const {
         std::cout << indent() << "Dereference Variable Value" << std::endl;;
 
-        std::cout << indent() << "Left Value:" << std::endl;
-        print_sub(value.Content->ref);
+        print_sub(value.Content->ref, "Left Value");
     }
 
     void operator()(ast::ArrayValue& value) const {

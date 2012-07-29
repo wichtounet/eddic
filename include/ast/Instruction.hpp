@@ -17,6 +17,7 @@
 #include "ast/Return.hpp"
 #include "ast/Delete.hpp"
 #include "ast/VariableDeclaration.hpp"
+#include "ast/StructDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
@@ -54,6 +55,7 @@ typedef boost::variant<
             FunctionCall, 
             Swap, 
             VariableDeclaration,
+            StructDeclaration,
             ArrayDeclaration,
             Assignment, 
             Return,

@@ -510,17 +510,27 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     if(param->address){
         auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
 
-        unsigned int offset = 0;
-        if(!param->memberNames.empty()){
-            offset = mtac::compute_member_offset(variable, param->memberNames);
-        }
+        if(variable->type()->is_pointer()){
+            auto reg = manager.get_reg(variable);
 
-        auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
-        
-        if(register_allocated){
-            ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+            if(register_allocated){
+                ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+            } else {
+                push(reg);
+            }
         } else {
-            push(reg);
+            unsigned int offset = 0;
+            if(!param->memberNames.empty()){
+                offset = mtac::compute_member_offset(variable, param->memberNames);
+            }
+
+            auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
+
+            if(register_allocated){
+                ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+            } else {
+                push(reg);
+            }
         }
     } 
     //Push by value

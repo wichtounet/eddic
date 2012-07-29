@@ -5,15 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_FUNCTION_DECLARATION_H
-#define AST_FUNCTION_DECLARATION_H
+#ifndef AST_DESTRUCTOR_H
+#define AST_DESTRUCTOR_H
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
 #include "ast/Position.hpp"
-#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -22,20 +20,18 @@ class FunctionContext;
 namespace ast {
 
 /*!
- * \class ASTFunctionDeclaration
- * \brief The AST node for a function declaration.  
- * Should only be used from the Deferred version (eddic::ast::FunctionDeclaration).
+ * \class ASTDestructor
+ * \brief The AST node for a destructor declaration.  
+ * Should only be used from the Deferred version (eddic::ast::Destructor).
  */
-struct ASTFunctionDeclaration { 
+struct ASTDestructor { 
     std::shared_ptr<FunctionContext> context;
     
-    std::string mangledName;
     std::string struct_name;
+    std::string mangledName;
+    std::vector<FunctionParameter> parameters;
 
     Position position;
-    Type returnType;
-    std::string functionName;
-    std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
 
     mutable long references = 0;
@@ -45,7 +41,7 @@ struct ASTFunctionDeclaration {
  * \typedef FunctionDeclaration
  * \brief The AST node for a function declaration.
  */
-typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration; 
+typedef Deferred<ASTDestructor> Destructor; 
 
 } //end of ast
 
@@ -53,11 +49,8 @@ typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::FunctionDeclaration, 
+    eddic::ast::Destructor, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->returnType)
-    (std::string, Content->functionName)
-    (std::vector<eddic::ast::FunctionParameter>, Content->parameters)
     (std::vector<eddic::ast::Instruction>, Content->instructions)
 )
 

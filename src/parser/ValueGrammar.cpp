@@ -165,6 +165,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.new_
         >>  type.type
         >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
     
     null %= 
@@ -206,7 +207,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     dereference_value %= 
             qi::position(position_begin)
-        >>  lexer.multiplication
+        >>  qi::omit[lexer.multiplication]
         >>  (
                     array_value
                 |   variable_value
