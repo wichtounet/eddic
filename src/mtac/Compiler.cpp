@@ -1062,6 +1062,8 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                 visit_each(*this, if_.Content->instructions);
 
+                issue_destructors(if_.Content->context);
+
                 if (if_.Content->else_) {
                     std::string elseLabel = newLabel();
 
@@ -1070,6 +1072,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                     function->add(endLabel);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
+                    
+                    issue_destructors((*if_.Content->else_).context);
 
                     function->add(elseLabel);
                 } else {
@@ -1082,6 +1086,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                 visit(JumpIfFalseVisitor(function, next), if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
+                
+                issue_destructors(if_.Content->context);
 
                 function->add(std::make_shared<mtac::Goto>(end));
 
@@ -1104,6 +1110,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                     visit(JumpIfFalseVisitor(function, next), elseIf.condition);
 
                     visit_each(*this, elseIf.instructions);
+                    
+                    issue_destructors(elseIf.context);
 
                     function->add(std::make_shared<mtac::Goto>(end));
                 }
@@ -1112,6 +1120,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                     function->add(next);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
+                    
+                    issue_destructors((*if_.Content->else_).context);
                 }
 
                 function->add(end);
@@ -1207,6 +1217,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             function->add(startLabel);
 
             visit_each(*this, while_.Content->instructions);
+
+            issue_destructors(while_.Content->context);
 
             visit(JumpIfTrueVisitor(function, startLabel), while_.Content->condition);
         }
