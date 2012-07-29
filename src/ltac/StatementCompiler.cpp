@@ -631,9 +631,17 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
 
     if(call->return_){
         if(call->return_->type() == FLOAT){
-            manager.float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
+            if(call->return_->position().is_register()){
+                ltac::add_instruction(function, ltac::Operator::MOV, manager.get_float_reg_no_move(call->return_), ltac::FloatRegister(descriptor->float_return_register()));
+            } else {
+                manager.float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
+            }
         } else {
-            manager.registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
+            if(call->return_->position().is_register()){
+                ltac::add_instruction(function, ltac::Operator::MOV, manager.get_reg_no_move(call->return_), ltac::Register(descriptor->int_return_register1()));
+            } else {
+                manager.registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
+            }
         }
 
         manager.set_written(call->return_);
