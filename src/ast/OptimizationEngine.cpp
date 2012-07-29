@@ -152,7 +152,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         }
 
         bool operator()(ast::FunctionDeclaration& declaration){
-            if(declaration.Content->functionName != "main" && symbols.referenceCount(declaration.Content->mangledName) <= 0){
+            if(symbols.referenceCount(declaration.Content->mangledName) <= 0){
                 return true;
             }
 
