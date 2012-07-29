@@ -171,8 +171,6 @@ struct VariableReplace : public boost::static_visitor<bool> {
 bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
-    std::cout << function->getName() << std::endl;
-
     for(auto& pair : function->context->stored_variables()){
         auto var = pair.second;
         auto position = var->position();
