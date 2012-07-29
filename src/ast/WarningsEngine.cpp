@@ -153,7 +153,7 @@ struct Inspector : public boost::static_visitor<> {
             if(option_defined("warning-unused")){
                 int references = symbols.referenceCount(declaration.Content->mangledName);
 
-                if(declaration.Content->functionName != "main" && references == 0){
+                if(references == 0){
                     warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
                 }
             }

@@ -22,18 +22,14 @@ bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
 
     while(it.has_next()){
         auto function = *it;
-        
-        if(function->getName() != "main"){
-            if(mtac::is_recursive(function) && symbols.referenceCount(function->getName()) == 1){
-                it.erase();
-                continue;
-            } 
-            
-            if(symbols.referenceCount(function->getName()) == 0){
-                it.erase();
-                continue;
-            }
-        }
+
+        if(symbols.referenceCount(function->getName()) == 0){
+            it.erase();
+            continue;
+        } else if(symbols.referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
+            it.erase();
+            continue;
+        } 
 
         ++it;
     }
@@ -51,7 +47,7 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
     while(it.has_next()){
         auto function = *it;
 
-        if(function->getName() == "main"){
+        if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
             ++it;
             continue;
         }
