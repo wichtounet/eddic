@@ -54,10 +54,6 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
 }
 
 std::string eddic::mangle(std::shared_ptr<Function> function){
-    if(function->name == "main"){
-        return function->name;
-    }
-
     std::ostringstream ss;
 
     ss << "_F";
@@ -108,10 +104,6 @@ std::string eddic::mangle_dtor(const std::shared_ptr<Function> function){
 }
 
 std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_){
-    if(functionName == "main"){
-        return functionName;
-    }
-
     std::ostringstream ss;
 
     ss << "_F";
@@ -162,10 +154,6 @@ std::string eddic::mangle_dtor(const std::string& struct_){
 }
 
 std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_){
-    if(functionName == "main"){
-        return functionName;
-    }
-
     std::ostringstream ss;
 
     ss << "_F";
@@ -186,10 +174,6 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<std
 }
 
 std::string eddic::unmangle(std::string mangled){
-    if(mangled == "main"){
-        return "main";
-    }
-
     std::ostringstream length;
     int digits = 0;
 
