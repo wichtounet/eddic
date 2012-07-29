@@ -35,7 +35,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
-        AUTO_RECURSE_SWITCH()
         AUTO_RECURSE_NEW()
 
         AUTO_IGNORE_FALSE()
@@ -111,6 +110,14 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::DoWhile& while_){
             annotateWhileLoop(while_);
+        }
+
+        void operator()(ast::Switch& switch_){
+            switch_.Content->context = currentContext;
+
+            visit(*this, switch_.Content->value);
+            visit_each_non_variant(*this, switch_.Content->cases);
+            visit_optional_non_variant(*this, switch_.Content->default_case);
         }
         
         void operator()(ast::SwitchCase& switch_case){
