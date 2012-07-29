@@ -21,7 +21,7 @@
 #include "mtac/TemporaryAllocator.hpp"
 
 //The custom optimizations
-#include "mtac/VariableCleaner.hpp"
+#include "mtac/VariableOptimizations.hpp"
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/BasicBlockOptimizations.hpp"
@@ -190,8 +190,9 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
 
         remove_nop(function);
-        
         optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
+        
+        optimized |= debug("Remove aliases", &mtac::remove_aliases, function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations

@@ -41,6 +41,13 @@ mov qword [r12], 0
 ;The pointer is past the header
 lea rax, [r12 + 16]
 
+pop r14
+pop r13
+pop r12
+pop r11
+pop r10
+pop rdi
+
 leave
 ret
 

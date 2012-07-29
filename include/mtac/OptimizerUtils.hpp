@@ -19,6 +19,15 @@ namespace eddic {
 namespace mtac {
 
 template<typename T>
+inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Operator op){
+    visitor.optimized = true;
+
+    quadruple->op = op;
+    quadruple->arg1.reset();
+    quadruple->arg2.reset();
+}
+
+template<typename T>
 inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Argument arg, mtac::Operator op){
     visitor.optimized = true;
 

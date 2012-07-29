@@ -13,6 +13,16 @@ using namespace eddic;
     
 void mtac::ArithmeticIdentities::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
         switch(quadruple->op){
+            case mtac::Operator::ASSIGN:
+            case mtac::Operator::PASSIGN:
+            case mtac::Operator::FASSIGN:
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(*ptr == quadruple->result){
+                       replaceRight(*this, quadruple, mtac::Operator::NOP); 
+                    }
+                }
+
+                break;
             case mtac::Operator::ADD:
                 if(*quadruple->arg1 == 0){
                     replaceRight(*this, quadruple, *quadruple->arg2, mtac::Operator::ASSIGN);
