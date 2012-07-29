@@ -1030,7 +1030,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::FunctionDeclaration& f){
+        template<typename Function>
+        inline void issue_function(Function& f){
             function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
             function->definition = symbols.getFunction(f.Content->mangledName);
 
@@ -1041,22 +1042,16 @@ class CompilerVisitor : public boost::static_visitor<> {
             program->functions.push_back(function);
         }
 
+        void operator()(ast::FunctionDeclaration& f){
+            issue_function(f);
+        }
+
         void operator()(ast::Constructor& f){
-            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
-            function->definition = symbols.getFunction(f.Content->mangledName);
-
-            visit_each(*this, f.Content->instructions);
-
-            program->functions.push_back(function);
+            issue_function(f);
         }
 
         void operator()(ast::Destructor& f){
-            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
-            function->definition = symbols.getFunction(f.Content->mangledName);
-
-            visit_each(*this, f.Content->instructions);
-
-            program->functions.push_back(function);
+            issue_function(f);
         }
 
         void operator()(ast::If& if_){
