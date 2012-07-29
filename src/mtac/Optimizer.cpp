@@ -21,7 +21,7 @@
 #include "mtac/TemporaryAllocator.hpp"
 
 //The custom optimizations
-#include "mtac/VariableCleaner.hpp"
+#include "mtac/VariableOptimizations.hpp"
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/BasicBlockOptimizations.hpp"

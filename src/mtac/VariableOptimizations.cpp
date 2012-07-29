@@ -5,12 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <unordered_set>
+#include <vector>
 
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 
-#include "mtac/VariableCleaner.hpp"
+#include "mtac/VariableOptimizations.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;
