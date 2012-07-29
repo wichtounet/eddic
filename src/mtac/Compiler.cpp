@@ -1117,6 +1117,26 @@ class CompilerVisitor : public boost::static_visitor<> {
                 function->add(end);
             }
         }
+        
+        void operator()(ast::StructDeclaration& declaration){
+            auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+            auto struct_ = var->type()->type();
+            auto ctor_name = mangle_ctor(declaration.Content->values, struct_);
+
+            if(symbols.exists(ctor_name)){
+                auto ctor_function = symbols.getFunction(ctor_name);
+                
+                //Pass all normal arguments
+                pass_arguments(function, ctor_function, declaration);
+
+                auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                ctor_param->address = true;
+                function->add(ctor_param);
+
+                symbols.addReference(ctor_name);
+                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+            }
+        }
 
         void operator()(ast::VariableDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
