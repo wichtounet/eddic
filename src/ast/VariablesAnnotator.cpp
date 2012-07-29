@@ -31,7 +31,6 @@ using namespace eddic;
 struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
-    AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
@@ -87,6 +86,17 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Destructor& destructor){
         visit_function(destructor);
+    }
+
+    void operator()(ast::MemberFunctionCall& functionCall){
+        if (!functionCall.Content->context->exists(functionCall.Content->object_name)){
+            throw SemanticalException("The variable " + functionCall.Content->object_name + " does not exists", functionCall.Content->position);
+        }
+        
+        auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+        variable->addReference();
+
+        visit_each(*this, functionCall.Content->values);
     }
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
