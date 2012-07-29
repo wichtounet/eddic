@@ -43,6 +43,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::Instruction()> repeatable_instruction;
     qi::rule<lexer::Iterator, ast::Swap()> swap;
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
+    qi::rule<lexer::Iterator, ast::StructDeclaration()> struct_declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
     qi::rule<lexer::Iterator, ast::Return()> return_;
     qi::rule<lexer::Iterator, ast::Switch()> switch_;
