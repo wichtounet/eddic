@@ -47,7 +47,7 @@ void main(){
     A a;
     a.debug();
 
-    if(ga == 100){
+    /*if(ga == 100){
         A b(55);
         b.debug();
     }
@@ -58,5 +58,5 @@ void main(){
     if(ga > 90){
         A d("666");
         d.debug();
-    }
+    }*/
 }
