@@ -69,6 +69,28 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
     return targets;
 }
 
+std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::Function> function){
+    std::vector<std::shared_ptr<Variable>> sources;
+    
+    for(auto& block : function->getBasicBlocks()){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                auto quadruple = *ptr;
+
+                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::FASSIGN){
+                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                        if(quadruple->result == variable){
+                           sources.push_back(*var_ptr); 
+                        }
+                    }
+                }
+            } 
+        }
+    }
+
+    return sources;
+}
+
 struct VariableReplace : public boost::static_visitor<bool> {
     std::shared_ptr<mtac::Function> function;
     std::shared_ptr<Variable> source;
@@ -149,6 +171,8 @@ struct VariableReplace : public boost::static_visitor<bool> {
 bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
+    std::cout << function->getName() << std::endl;
+
     for(auto& pair : function->context->stored_variables()){
         auto var = pair.second;
         auto position = var->position();
@@ -164,6 +188,18 @@ bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
                     for(auto& block : function->getBasicBlocks()){
                         for(auto& statement : block->statements){
                             optimized |= visit(replacer, statement);
+                        }
+                    }
+                } else if(position.isTemporary()){
+                    auto sources = get_sources(var, function);
+
+                    if(sources.size() == 1){
+                        VariableReplace replacer(function, var, sources[0]);
+
+                        for(auto& block : function->getBasicBlocks()){
+                            for(auto& statement : block->statements){
+                                optimized |= visit(replacer, statement);
+                            }
                         }
                     }
                 }
