@@ -16,6 +16,8 @@ namespace eddic {
 
 namespace mtac {
 
+bool remove_aliases(std::shared_ptr<mtac::Function> function);
+
 void clean_variables(std::shared_ptr<mtac::Function> function);
 
 } //end of mtac

@@ -15,7 +15,14 @@
 
 using namespace eddic;
 
-void eddic::mtac::clean_variables(std::shared_ptr<mtac::Function> function){
+bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
+    bool optimized = false;
+
+
+    return false;
+}
+
+void mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     auto variable_usage = mtac::compute_variable_usage(function);
     
     std::vector<std::shared_ptr<Variable>> unused;
