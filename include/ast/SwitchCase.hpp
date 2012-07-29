@@ -9,6 +9,7 @@
 #define AST_SWITCH_CASE_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -17,6 +18,8 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 /*!
@@ -24,6 +27,8 @@ namespace ast {
  * \brief The AST node for a switch case.
  */
 struct SwitchCase {
+    std::shared_ptr<Context> context; 
+
     Position position;
     Value value;
     std::vector<Instruction> instructions;

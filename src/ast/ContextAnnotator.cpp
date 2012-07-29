@@ -96,7 +96,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
             
         template<typename Loop>            
         void annotateWhileLoop(Loop& loop){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = loop.Content->context = std::make_shared<BlockContext>(currentContext, functionContext);
             
             visit(*this, loop.Content->condition);
 
@@ -116,7 +116,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::SwitchCase& switch_case){
             visit(*this, switch_case.value);
 
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = switch_case.context = std::make_shared<BlockContext>(currentContext, functionContext);
            
             visit_each(*this, switch_case.instructions);
 
@@ -124,7 +124,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::DefaultCase& default_case){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = default_case.context = std::make_shared<BlockContext>(currentContext, functionContext);
            
             visit_each(*this, default_case.instructions);
 
@@ -132,7 +132,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::For& for_){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = for_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext);
           
             visit_optional(*this, for_.Content->start);
             visit_optional(*this, for_.Content->condition);
@@ -161,7 +161,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = if_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext);
 
             visit(*this, if_.Content->condition);
             
@@ -174,7 +174,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::ElseIf& elseIf){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = elseIf.context = std::make_shared<BlockContext>(currentContext, functionContext);
 
             visit(*this, elseIf.condition);
             
@@ -184,7 +184,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Else& else_){
-            currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = else_.context = std::make_shared<BlockContext>(currentContext, functionContext);
             
             visit_each(*this, else_.instructions);
             

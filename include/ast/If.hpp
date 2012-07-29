@@ -9,6 +9,7 @@
 #define AST_IF_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -19,6 +20,8 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 /*!
@@ -27,6 +30,8 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::If).
  */
 struct ASTIf {
+    std::shared_ptr<Context> context; 
+
     Value condition;
     std::vector<Instruction> instructions;
     std::vector<ElseIf> elseIfs;

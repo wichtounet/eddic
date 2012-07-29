@@ -9,10 +9,13 @@
 #define AST_DEFAULT_CASE_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
+
+class Context;
 
 namespace ast {
 
@@ -21,6 +24,8 @@ namespace ast {
  * \brief The AST node for a default switch case.
  */
 struct DefaultCase {
+    std::shared_ptr<Context> context; 
+
     std::vector<Instruction> instructions;
 };
 
