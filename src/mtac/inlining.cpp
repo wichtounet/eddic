@@ -328,7 +328,7 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
 
 bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     //The main function cannot be inlined
-    if(function->getName() == "_F4main" || function->getName() == "_F4mainAI"){
+    if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
         return false;
     }
 

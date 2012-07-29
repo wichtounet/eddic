@@ -47,7 +47,7 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
     while(it.has_next()){
         auto function = *it;
 
-        if(function->getName() == "_F4main" || function->getName() == "_F4mainAI"){
+        if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
             ++it;
             continue;
         }

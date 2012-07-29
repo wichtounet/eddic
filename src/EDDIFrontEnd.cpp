@@ -119,9 +119,9 @@ void checkForMain(){
     if(symbols.exists("_F4main")){
         function = symbols.getFunction("_F4main");
         symbols.addReference("_F4main");
-    } else if (symbols.exists("_F4mainAI")){
-        function = symbols.getFunction("_F4mainAI");
-        symbols.addReference("_F4mainAI");
+    } else if (symbols.exists("_F4mainAS")){
+        function = symbols.getFunction("_F4mainAS");
+        symbols.addReference("_F4mainAS");
     } else {
         throw SemanticalException("The program does not contain a valid main function"); 
     }

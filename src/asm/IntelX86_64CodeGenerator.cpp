@@ -317,12 +317,12 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << std::endl;
     
     //If necessary init memory manager 
-    if(symbols.exists("_F4mainAI") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
         writer.stream() << "call _F4init" << std::endl; 
     }
 
     //If the user wants the args, we add support for them
-    if(symbols.exists("_F4mainAI")){
+    if(symbols.exists("_F4mainAS")){
         writer.stream() << "pop rbx" << std::endl;                          //rbx = number of args
         
         //Calculate the size of the array
@@ -361,8 +361,8 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     }
 
     //Give control to the user function
-    if(symbols.exists("_F4mainAI")){
-        writer.stream() << "call _FmainAI" << std::endl;
+    if(symbols.exists("_F4mainAS")){
+        writer.stream() << "call _F4mainAS" << std::endl;
     } else {
         writer.stream() << "call _F4main" << std::endl;
     }
@@ -456,7 +456,7 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
     }
     
     //Memory management functions are included the three together
-    if(symbols.exists("_F4mainAI") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
         output_function("x86_64_alloc");
         output_function("x86_64_init");
         output_function("x86_64_free");
