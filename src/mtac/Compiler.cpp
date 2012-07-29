@@ -1003,11 +1003,40 @@ class CompilerVisitor : public boost::static_visitor<> {
             visit_each(*this, p.Content->blocks);
         }
 
+        void issue_destructors(std::shared_ptr<Context> context){
+            for(auto& pair : *context){
+                auto var = pair.second;
+
+                if(var->position().isStack()){
+                    auto type = var->type();
+
+                    if(type->is_custom_type()){
+                        auto struct_ = type->type();
+                        auto dtor_name = mangle_dtor(struct_);
+
+                        //If there is a destructor, call it
+                        if(symbols.exists(dtor_name)){
+                            auto dtor_function = symbols.getFunction(dtor_name);
+
+                            auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+                            dtor_param->address = true;
+                            function->add(dtor_param);
+
+                            symbols.addReference(dtor_name);
+                            function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                        }
+                    }
+                }
+            }
+        }
+
         void operator()(ast::FunctionDeclaration& f){
             function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
             function->definition = symbols.getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
+
+            issue_destructors(f.Content->context);
 
             program->functions.push_back(function);
         }
@@ -1096,8 +1125,6 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::VariableDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
-
-            std::cout << "Declare variable " << std::endl;
 
             if(var->type()->is_custom_type()){
                 auto struct_ = var->type()->type();
