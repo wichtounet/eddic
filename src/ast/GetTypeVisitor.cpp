@@ -123,3 +123,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberFun
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     return call.Content->function->returnType;
 }
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const std::shared_ptr<Variable>& value) const {
+    return value->type();
+}
