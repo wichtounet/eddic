@@ -32,6 +32,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Assignment()> assignment;
     qi::rule<lexer::Iterator, ast::Ternary()> ternary;
     qi::rule<lexer::Iterator, ast::LValue()> left_value;
+    qi::rule<lexer::Iterator, ast::LValue()> limited_left_value;
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primaryValue;
     qi::rule<lexer::Iterator, ast::Value()> unaryValue;

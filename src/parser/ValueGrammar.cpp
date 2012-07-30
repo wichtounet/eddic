@@ -269,15 +269,19 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  left_value
         >>  qi::adapttokens[assign_op]
         >>  value;
+
+    limited_left_value =
+            array_value
+        |   variable_value;
     
     prefix_operation %=
             qi::position(position_begin)
         >>  qi::adapttokens[prefix_op]
-        >>  left_value;
+        >>  limited_left_value;
 
     suffix_operation %=
             qi::position(position_begin)
-        >>  left_value    
+        >>  limited_left_value    
         >>  qi::adapttokens[suffix_op];
 
     //Configure debugging
