@@ -1542,7 +1542,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 
             return t1;
         }
-    }
+    } 
 
     ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
 }
@@ -1594,32 +1594,6 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
             return temp;
         }
     }
-    /*} else if(auto* ptr = boost::get<ast::DereferenceValue>(&operation.Content->left_value)){
-        if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
-            auto left = *var_ptr;
-        
-            auto variable = left.Content->var;
-
-            if(left.Content->memberNames.empty()){
-                visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
-            } else {
-                unsigned int offset = mtac::compute_member_offset(variable, left.Content->memberNames);
-
-                visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
-            }
-        } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&(*ptr).Content->ref)){
-            auto left = *array_ptr;
-
-            //As the array hold pointers, the visitor will return a temporary
-            auto values = ToArgumentsVisitor(function)(left);
-
-            ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
-
-            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
-
-            visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
-        }
-    }*/
             
     ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
 }
