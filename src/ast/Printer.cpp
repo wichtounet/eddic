@@ -269,11 +269,15 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::SuffixOperation& op) const {
-        std::cout << indent() << op.Content->variableName << "(suffix)" << (int)op.Content->op << std::endl; 
+        std::cout << indent() << "(suffix)" << (int)op.Content->op << std::endl; 
+        
+        print_sub(op.Content->left_value, "Left Value");
     }
 
     void operator()(ast::PrefixOperation& op) const {
-        std::cout << indent() << (int)op.Content->op << "(prefix)" << op.Content->variableName << std::endl; 
+        std::cout << indent() << (int)op.Content->op << "(prefix)" << std::endl; 
+        
+        print_sub(op.Content->left_value, "Left Value");
     }
 
     void operator()(ast::Assignment& assign) const {

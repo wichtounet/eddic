@@ -146,6 +146,16 @@ void operator()(ast::Unary& value){\
 void operator()(ast::Cast& cast){\
     visit(*this, cast.Content->value);\
 }
+
+#define AUTO_RECURSE_PREFIX()\
+void operator()(ast::PrefixOperation& operation){\
+    visit(*this, operation.Content->left_value);\
+}
+
+#define AUTO_RECURSE_SUFFIX()\
+void operator()(ast::SuffixOperation& operation){\
+    visit(*this, operation.Content->left_value);\
+}
         
 #define AUTO_RECURSE_ARRAY_VALUES()\
 void operator()(ast::ArrayValue& array){\

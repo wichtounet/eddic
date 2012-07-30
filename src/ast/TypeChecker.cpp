@@ -157,14 +157,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
     template<typename Operation>
     void checkSuffixOrPrefixOperation(Operation& operation){
-        auto var = operation.Content->variable;
+        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
         
-        if(var->type() != INT && var->type() != FLOAT){
-            throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
+        if(type != INT && type != FLOAT){
+            throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
         }
 
-        if(var->type()->is_const()){
-            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", operation.Content->position);
+        if(type->is_const()){
+            throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
         }
     }
 

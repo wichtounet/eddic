@@ -45,6 +45,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_NEW()
+    AUTO_RECURSE_PREFIX()
+    AUTO_RECURSE_SUFFIX()
 
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
@@ -179,24 +181,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::Assignment& assignment){
         visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
-    }
-
-    template<typename Operation>
-    void annotateSuffixOrPrefixOperation(Operation& operation){
-        if (!operation.Content->context->exists(operation.Content->variableName)) {
-            throw SemanticalException("Variable " + operation.Content->variableName + " has not  been declared", operation.Content->position);
-        }
-
-        operation.Content->variable = operation.Content->context->getVariable(operation.Content->variableName);
-        operation.Content->variable->addReference();
-    }
-    
-    void operator()(ast::SuffixOperation& operation){
-        annotateSuffixOrPrefixOperation(operation);
-    }
-    
-    void operator()(ast::PrefixOperation& operation){
-        annotateSuffixOrPrefixOperation(operation);
     }
 
     void operator()(ast::Delete& delete_){
