@@ -40,8 +40,17 @@ void test_arrays(){
     print(array[2]);
     print("|");
     
-    int b = array[2]++;
-    print(b);
+    print(array[2]++);
+    print("|");
+    
+    print(array[2]);
+    print("|");
+    
+    --array[2];
+    print(array[2]);
+    print("|");
+    
+    print(array[2]--);
     print("|");
     
     print(array[2]);
