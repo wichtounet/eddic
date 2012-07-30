@@ -273,11 +273,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     prefix_operation %=
             qi::position(position_begin)
         >>  qi::adapttokens[prefix_op]
-        >>  lexer.identifier;
+        >>  left_value;
 
     suffix_operation %=
             qi::position(position_begin)
-        >>  lexer.identifier
+        >>  left_value    
         >>  qi::adapttokens[suffix_op];
 
     //Configure debugging
