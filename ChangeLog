@@ -1,3 +1,15 @@
+eddic 1.1.1 - 2012.07.30
+
+* Language: Support dynamic memory allocation (operators new and delete)
+* Language: Support constructors and destructors
+* Language: Support switch construct
+* Optimization: Pass pointers in registers when possible
+* Optimization: Separate escape-analysis and live-variable analysis
+* Optimization: Remove some variables used only as temporary copies when possible
+* Peephole optimizer: Use conditional move when possible
+* Peephole optimizer: Local copy propagation of registers
+* Assembly: Unify memory model
+
 eddic 1.1.0 - 2012.07.22
 
 * Language: Support member functions

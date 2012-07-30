@@ -5,7 +5,7 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 1)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
