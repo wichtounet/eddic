@@ -20,8 +20,6 @@
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/Null.hpp"
-#include "ast/SuffixOperation.hpp"
-#include "ast/PrefixOperation.hpp"
 
 namespace eddic {
 
@@ -68,5 +66,7 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/Unary.hpp"
 #include "ast/Cast.hpp"
 #include "ast/New.hpp"
+#include "ast/SuffixOperation.hpp"
+#include "ast/PrefixOperation.hpp"
 
 #endif

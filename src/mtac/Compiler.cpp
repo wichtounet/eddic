@@ -90,56 +90,10 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
 }
 
 template<typename Operation>
-void performPrefixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
-    auto var = operation.Content->variable;
-
-    if(operation.Content->op == ast::Operator::INC){
-        if(var->type() == FLOAT){
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FADD, 1.0));
-        } else {
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::ADD, 1));
-        }
-    } else if(operation.Content->op == ast::Operator::DEC){
-        if(var->type() == FLOAT){
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FSUB, 1.0));
-        } else {
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::SUB, 1));
-        }
-    }
-}
+std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function);
 
 template<typename Operation>
-std::shared_ptr<Variable> performSuffixOperation(const Operation& operation, std::shared_ptr<mtac::Function> function){
-    auto var = operation.Content->variable;
-
-    if(var->type() == FLOAT){
-        auto temp = operation.Content->context->newFloatTemporary();
-
-        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FASSIGN));
-
-        if(operation.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FADD, 1.0));
-        } else if(operation.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FSUB, 1.0));
-        }
-
-        return temp;
-    } else if(var->type() == INT){
-        auto temp = operation.Content->context->newTemporary();
-
-        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::ASSIGN));
-
-        if(operation.Content->op == ast::Operator::INC){
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::ADD, 1));
-        } else if(operation.Content->op == ast::Operator::DEC){
-            function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::SUB, 1));
-        }
-
-        return temp;
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Unhandled type");
-    }
-}
+std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shared_ptr<mtac::Function> function);
 
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
@@ -321,6 +275,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {temp};
         }
     }
+   
+    result_type operator()(std::shared_ptr<Variable> var) const {
+        return {var};
+    }
 
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){
@@ -434,9 +392,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::PrefixOperation& operation) const {
-        performPrefixOperation(operation, function);
-
-        return {operation.Content->variable};
+        return {performPrefixOperation(operation, function)};
     }
 
     result_type operator()(ast::SuffixOperation& operation) const {
@@ -1499,6 +1455,149 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     
     return t1;
 }
+
+template<typename Operation>
+std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
+    if(auto* ptr = boost::get<ast::VariableValue>(&operation.Content->left_value)){
+        auto var = (*ptr).Content->var;
+
+        if(operation.Content->op == ast::Operator::INC){
+            if(var->type() == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FADD, 1.0));
+            } else {
+                function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::ADD, 1));
+            }
+        } else if(operation.Content->op == ast::Operator::DEC){
+            if(var->type() == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::FSUB, 1.0));
+            } else {
+                function->add(std::make_shared<mtac::Quadruple>(var, var, mtac::Operator::SUB, 1));
+            }
+        }
+
+        return var;
+    } else if(auto* ptr = boost::get<ast::ArrayValue>(&operation.Content->left_value)){
+        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+
+        if(type == FLOAT){
+            auto t1 = function->context->newFloatTemporary();
+
+            //Load left value in t1
+            visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+            
+            if(operation.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
+            } else if(operation.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+            }
+
+            auto left = *ptr;
+            auto variable = left.Content->var;
+
+            if(left.Content->memberNames.empty()){
+                visit_non_variant(AssignValueToVariable(function, variable, left.Content->indexValue), t1);
+            } else {
+                auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
+
+                auto temp = left.Content->context->new_temporary(INT);
+                function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
+
+                unsigned int offset = 0;
+                std::shared_ptr<const Type> member_type;
+                boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
+
+                visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
+            }
+
+            return t1;
+        } else if (type == INT){
+            auto t1 = function->context->new_temporary(INT);
+
+            //Load left value in t1
+            visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+            
+            if(operation.Content->op == ast::Operator::INC){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
+            } else if(operation.Content->op == ast::Operator::DEC){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+            }
+
+            auto left = *ptr;
+            auto variable = left.Content->var;
+
+            if(left.Content->memberNames.empty()){
+                visit_non_variant(AssignValueToVariable(function, variable, left.Content->indexValue), t1);
+            } else {
+                auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
+
+                auto temp = left.Content->context->new_temporary(INT);
+                function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
+
+                unsigned int offset = 0;
+                std::shared_ptr<const Type> member_type;
+                boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
+
+                visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
+            }
+
+            return t1;
+        }
+    } 
+
+    ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
+}
+
+template<typename Operation>
+std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
+    if(auto* ptr = boost::get<ast::VariableValue>(&operation.Content->left_value)){
+        auto var = (*ptr).Content->var;
+
+        if(var->type() == FLOAT){
+            auto temp = function->context->newFloatTemporary();
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FASSIGN));
+
+            performPrefixOperation(operation, function);
+
+            return temp;
+        } else if(var->type() == INT){
+            auto temp = function->context->newTemporary();
+
+            function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::ASSIGN));
+
+            performPrefixOperation(operation, function);
+
+            return temp;
+        } 
+    } else if(auto* ptr = boost::get<ast::ArrayValue>(&operation.Content->left_value)){
+        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+
+        if(type == FLOAT){
+            auto temp = function->context->newFloatTemporary();
+
+            //Load left value in temp
+            visit(AssignValueToVariable(function, temp), operation.Content->left_value);
+            
+            //TODO Check if there are not one temporary too much
+            performPrefixOperation(operation, function);
+
+            return temp;
+        } else if (type == INT){
+            auto temp = function->context->new_temporary(INT);
+
+            //Load left value in temp
+            visit(AssignValueToVariable(function, temp), operation.Content->left_value);
+            
+            //TODO Check if there are not one temporary too much
+            performPrefixOperation(operation, function);
+
+            return temp;
+        }
+    }
+            
+    ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
+}
+
 
 } //end of anonymous namespace
 

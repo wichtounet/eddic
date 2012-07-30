@@ -49,11 +49,11 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cas
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
-   return operation.Content->variable->type(); 
+    return visit(*this, operation.Content->left_value);
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
-   return operation.Content->variable->type(); 
+    return visit(*this, operation.Content->left_value);
 }
 
 std::shared_ptr<const Type> get_member_type(std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
@@ -122,4 +122,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberFun
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     return call.Content->function->returnType;
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const std::shared_ptr<Variable>& value) const {
+    return value->type();
 }

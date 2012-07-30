@@ -28,8 +28,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
     AUTO_RETURN_UNARY(ast::Value)
-    AUTO_RETURN_PREFIX_OPERATION(ast::Value)
-    AUTO_RETURN_SUFFIX_OPERATION(ast::Value)
     
     ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
@@ -103,6 +101,18 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         ternary.Content->false_value = visit(*this, ternary.Content->false_value);
 
         return ternary;
+    }
+    
+    ast::Value operator()(ast::PrefixOperation& operation){
+        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+
+        return operation;
+    }
+
+    ast::Value operator()(ast::SuffixOperation& operation){
+        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+
+        return operation;
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
@@ -397,8 +407,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_PREFIX_OPERATION()
-    AUTO_IGNORE_SUFFIX_OPERATION()
     AUTO_IGNORE_SWAP()
     AUTO_IGNORE_NEW()
     AUTO_IGNORE_DELETE()
@@ -496,6 +504,14 @@ struct CleanerVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
+    }
+
+    void operator()(ast::PrefixOperation& operation){
+        operation.Content->left_value = ast::to_left_value(visit(transformer, operation.Content->left_value));
+    }
+
+    void operator()(ast::SuffixOperation& operation){
+        operation.Content->left_value = ast::to_left_value(visit(transformer, operation.Content->left_value));
     }
     
     void operator()(ast::StructDeclaration& declaration){

@@ -38,6 +38,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_NEW()
+        AUTO_RECURSE_PREFIX()
+        AUTO_RECURSE_SUFFIX()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -229,14 +231,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
-        }
-        
-        void operator()(ast::SuffixOperation& operation){
-            operation.Content->context = currentContext;
-        }
-        
-        void operator()(ast::PrefixOperation& operation){
-            operation.Content->context = currentContext;
         }
 
         void operator()(ast::Expression& value){
