@@ -150,6 +150,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   member_function_call
         |   function_call
         |   prefix_operation
+        |   new_
         |   suffix_operation
         |   array_value
         |   variable_value
@@ -158,6 +159,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   true_
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+
+    new_ %=
+            qi::position(position_begin)
+        >>  lexer.new_
+        >>  type.type
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >>  lexer.right_parenth;
     
     null %= 
             qi::eps
@@ -198,7 +207,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     dereference_value %= 
             qi::position(position_begin)
-        >>  lexer.multiplication
+        >>  qi::omit[lexer.multiplication]
         >>  (
                     array_value
                 |   variable_value
@@ -260,15 +269,19 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  left_value
         >>  qi::adapttokens[assign_op]
         >>  value;
+
+    limited_left_value =
+            array_value
+        |   variable_value;
     
     prefix_operation %=
             qi::position(position_begin)
         >>  qi::adapttokens[prefix_op]
-        >>  lexer.identifier;
+        >>  limited_left_value;
 
     suffix_operation %=
             qi::position(position_begin)
-        >>  lexer.identifier
+        >>  limited_left_value    
         >>  qi::adapttokens[suffix_op];
 
     //Configure debugging

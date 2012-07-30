@@ -33,7 +33,6 @@ typedef boost::variant<ast::VariableValue, ast::ArrayValue> Ref;
  */
 struct ASTDereferenceValue {
     Position position;
-    char op;
     Ref ref;
 
     mutable long references = 0;
@@ -53,7 +52,6 @@ typedef Deferred<ASTDereferenceValue> DereferenceValue;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::DereferenceValue, 
     (eddic::ast::Position, Content->position)
-    (char, Content->op)
     (eddic::ast::Ref, Content->ref)
 )
 

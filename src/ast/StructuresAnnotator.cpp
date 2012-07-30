@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct StructuresCollector : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
 
@@ -53,7 +55,34 @@ struct StructuresCollector : public boost::static_visitor<> {
     AUTO_IGNORE_OTHERS()
 };
 
+struct StructuresVerifier : public boost::static_visitor<> {
+    AUTO_RECURSE_PROGRAM()
+
+    void operator()(ast::Struct& struct_){
+        auto struct_type = symbols.get_struct(struct_.Content->name);
+
+        for(auto& member : struct_.Content->members){
+            auto type = (*struct_type)[member.Content->name]->type;
+
+            if(type->is_custom_type()){
+                auto struct_name = type->type();
+
+                if(!symbols.struct_exists(struct_name)){
+                    throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+                }
+            }
+        }
+    }
+
+    AUTO_IGNORE_OTHERS()
+};
+
+} //end of anonymous namespace
+
 void ast::defineStructures(ast::SourceFile& program){
     StructuresCollector collector;
     collector(program);
+    
+    StructuresVerifier verify;
+    verify(program);
 }

@@ -18,6 +18,8 @@ void operator()(ast::SourceFile& program){\
 
 #define AUTO_RECURSE_STRUCT()\
 void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->constructors);\
+    visit_each_non_variant(*this, struct_.Content->destructors);\
     visit_each_non_variant(*this, struct_.Content->functions);\
 }
 
@@ -76,6 +78,24 @@ void operator()(ast::ForeachIn& foreach_){\
     visit_each(*this, foreach_.Content->instructions);\
 }
 
+#define AUTO_RECURSE_SWITCH()\
+void operator()(ast::Switch& switch_){\
+    visit(*this, switch_.Content->value);\
+    visit_each_non_variant(*this, switch_.Content->cases);\
+    visit_optional_non_variant(*this, switch_.Content->default_case);\
+}
+
+#define AUTO_RECURSE_SWITCH_CASE()\
+void operator()(ast::SwitchCase& switch_case){\
+    visit(*this, switch_case.value);\
+    visit_each(*this, switch_case.instructions);\
+}
+
+#define AUTO_RECURSE_DEFAULT_CASE()\
+void operator()(ast::DefaultCase& default_case){\
+    visit_each(*this, default_case.instructions);\
+}
+
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.Content->left_value);\
@@ -88,6 +108,11 @@ void operator()(ast::VariableDeclaration& declaration){\
 #define AUTO_RECURSE_RETURN_VALUES()\
 void operator()(ast::Return& return_){\
     visit(*this, return_.Content->value);\
+}
+
+#define AUTO_RECURSE_STRUCT_DECLARATION()\
+void operator()(ast::StructDeclaration& declaration){\
+    visit_each(*this, declaration.Content->values);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
@@ -121,6 +146,16 @@ void operator()(ast::Unary& value){\
 void operator()(ast::Cast& cast){\
     visit(*this, cast.Content->value);\
 }
+
+#define AUTO_RECURSE_PREFIX()\
+void operator()(ast::PrefixOperation& operation){\
+    visit(*this, operation.Content->left_value);\
+}
+
+#define AUTO_RECURSE_SUFFIX()\
+void operator()(ast::SuffixOperation& operation){\
+    visit(*this, operation.Content->left_value);\
+}
         
 #define AUTO_RECURSE_ARRAY_VALUES()\
 void operator()(ast::ArrayValue& array){\
@@ -132,9 +167,24 @@ void operator()(ast::FunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\
 }
 
+#define AUTO_RECURSE_CONSTRUCTOR()\
+void operator()(ast::Constructor& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
+#define AUTO_RECURSE_DESTRUCTOR()\
+void operator()(ast::Destructor& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(ast::GlobalVariableDeclaration& declaration){\
     visit(*this, *declaration.Content->value);\
+}
+
+#define AUTO_RECURSE_NEW()\
+void operator()(ast::New& new_){\
+    visit_each(*this, new_.Content->values);\
 }
 
 /* Ignore macros  */
@@ -144,6 +194,8 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_ASSIGNMENT() void operator()(ast::Assignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
+#define AUTO_IGNORE_DELETE() void operator()(ast::Delete&){}
+#define AUTO_IGNORE_DEREFERENCE_VALUE() void operator()(ast::DereferenceValue&){}
 #define AUTO_IGNORE_EXPRESSION() void operator()(ast::Expression&){}
 #define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
 #define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
@@ -151,26 +203,30 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_IGNORE_FOREACH_LOOP() void operator()(ast::Foreach&){}
 #define AUTO_IGNORE_FOREACH_IN_LOOP() void operator()(ast::ForeachIn&){}
 #define AUTO_IGNORE_FUNCTION_CALLS() void operator()(ast::FunctionCall&){}
-#define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION() void operator()(ast::GlobalArrayDeclaration&){}
 #define AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION() void operator()(ast::GlobalVariableDeclaration&){}
 #define AUTO_IGNORE_IMPORT() void operator()(ast::Import&){}
 #define AUTO_IGNORE_INTEGER() void operator()(ast::Integer&){}
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Litteral&){}
-#define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
+#define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
+#define AUTO_IGNORE_NEW() void operator()(ast::New&){}
+#define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}
 #define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::SuffixOperation&){}
 #define AUTO_IGNORE_STANDARD_IMPORT() void operator()(ast::StandardImport&){}
 #define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
 #define AUTO_IGNORE_SWAP() void operator()(ast::Swap&){}
+#define AUTO_IGNORE_SWITCH() void operator()(ast::Switch&){}
+#define AUTO_IGNORE_SWITCH_CASE() void operator()(ast::SwitchCase&){}
+#define AUTO_IGNORE_DEFAULT_CASE() void operator()(ast::DefaultCase&){}
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
-#define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
+#define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
+#define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
+#define AUTO_IGNORE_STRUCT_DECLARATION() void operator()(ast::StructDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
-#define AUTO_IGNORE_DEREFERENCE_VALUE() void operator()(ast::DereferenceValue&){}
-#define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
 
 /* auto return macros */ 
 
@@ -193,6 +249,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 #define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return t;}
 #define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Litteral& t){return t;}
 #define AUTO_RETURN_UNARY(return_type) return_type operator()(ast::Unary& t){return t;}
+#define AUTO_RETURN_NEW(return_type) return_type operator()(ast::New& t){return t;}
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
 #define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::SuffixOperation& t){return t;}

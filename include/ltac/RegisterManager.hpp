@@ -18,6 +18,7 @@
 
 #include "mtac/Program.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 #include "ltac/Program.hpp"
 
@@ -40,6 +41,7 @@ class RegisterManager {
 
         //Liveness information
         std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;
+        mtac::EscapedVariables pointer_escaped;
 
         //The function being compiled
         std::shared_ptr<ltac::Function> function;

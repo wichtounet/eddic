@@ -1,4 +1,9 @@
 void main(){
+    test_int();
+    test_arrays();
+}
+
+void test_int(){
     int a = 0;
     print(a);
     print("|");
@@ -28,3 +33,26 @@ void main(){
     print("|");
 }
 
+void test_arrays(){
+    int array[3];
+    
+    ++array[2];
+    print(array[2]);
+    print("|");
+    
+    print(array[2]++);
+    print("|");
+    
+    print(array[2]);
+    print("|");
+    
+    --array[2];
+    print(array[2]);
+    print("|");
+    
+    print(array[2]--);
+    print("|");
+    
+    print(array[2]);
+    print("|");
+}

@@ -17,22 +17,27 @@
 using namespace eddic;
 
 FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : Context(parent){
-    //TODO There should be a better place
+    currentPosition = -INT->size(); 
+    
     if(option_defined("fomit-frame-pointer")){
-        currentPosition = INT->size(); 
         currentParameter = INT->size();
     } else {
-        currentPosition = INT->size(); 
         currentParameter = 2 * INT->size();
     }
 }
 
 int FunctionContext::size() const {
-    return currentPosition - ::INT->size();
+    auto size = -currentPosition;
+
+    if(size == -INT->size()){
+        return 0;
+    }
+
+    return size;
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
-    Position position(PositionType::PARAMETER, currentParameter + (type->size() - ::INT->size()));
+    Position position(PositionType::PARAMETER, currentParameter);
 
     currentParameter += type->size();
 
@@ -40,10 +45,9 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<const Type> type){
-    Position position(PositionType::STACK, currentPosition);
+    currentPosition -= type->size();
 
-    currentPosition += type->size();
-
+    Position position(PositionType::STACK, currentPosition + INT->size());
     auto var = std::make_shared<Variable>(variable, type, position);
 
     storage[variable] = var;
@@ -106,16 +110,25 @@ std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
     return variables[name] = var;
 }
 
-void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
-    Position position(PositionType::STACK, currentPosition);
+std::shared_ptr<Variable> FunctionContext::newPointerTemporary(){
+    Position position(PositionType::TEMPORARY);
 
-    currentPosition += temp->type()->size();
-   
+    std::string name = "tp_" + toString(temporary++);
+    auto var = std::make_shared<Variable>(name, new_pointer_type(INT), position); 
+    storage[name] = var;
+    return variables[name] = var;
+}
+
+void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
+    currentPosition -= temp->type()->size();
+
+    Position position(PositionType::STACK, currentPosition + INT->size());
+    
     temp->setPosition(position); 
 }
 
 void FunctionContext::reallocate_storage(){
-    currentPosition = INT->size();
+    currentPosition = -INT->size();
 
     auto it = storage.begin();
     auto end = storage.end();
@@ -124,8 +137,8 @@ void FunctionContext::reallocate_storage(){
         auto v = it->second;
 
         if(v->position().isStack()){
-            Position position(PositionType::STACK, currentPosition);
-            currentPosition += v->type()->size();
+            currentPosition -= v->type()->size();
+            Position position(PositionType::STACK, currentPosition + INT->size());
             v->setPosition(position);
         }
 

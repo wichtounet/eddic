@@ -39,6 +39,8 @@ void SymbolTable::addFunction(std::shared_ptr<Function> function){
 }
 
 std::shared_ptr<Function> SymbolTable::getFunction(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+
     return functions[function];
 }
 
@@ -62,21 +64,7 @@ int SymbolTable::member_offset(std::shared_ptr<Struct> struct_, const std::strin
             return offset;
         }
 
-        offset -= m->type->size();
-    }
-
-    ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
-}
-
-int SymbolTable::member_offset_reverse(std::shared_ptr<Struct> struct_, const std::string& member){
-    int offset = -size_of_struct(struct_->name) + INT->size(); 
-
-    for(auto m : struct_->members){
-        if(m->name == member){
-            return offset;
-        }
-
-        offset -= m->type->size();
+        offset += m->type->size();
     }
 
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
@@ -123,14 +111,20 @@ bool SymbolTable::struct_exists(const std::string& struct_){
 }
 
 void SymbolTable::addReference(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+    
     ++(functions[function]->references);
 }
 
 void SymbolTable::removeReference(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+    
     --(functions[function]->references);
 }
 
 int SymbolTable::referenceCount(const std::string& function){
+    ASSERT(exists(function), "The function must exists");
+    
     return functions[function]->references;
 }
 
@@ -171,6 +165,20 @@ void SymbolTable::defineStandardFunctions(){
     concatFunction->parameters.push_back({"a", STRING});
     concatFunction->parameters.push_back({"b", STRING});
     addFunction(concatFunction);
+    
+    //alloc function
+    auto allocFunction = std::make_shared<Function>(new_pointer_type(INT), "alloc");
+    allocFunction->standard = true;
+    allocFunction->mangledName = "_F5allocI";
+    allocFunction->parameters.push_back({"a", INT});
+    addFunction(allocFunction);
+    
+    //free function
+    auto freeFunction = std::make_shared<Function>(VOID, "free");
+    freeFunction->standard = true;
+    freeFunction->mangledName = "_F4freePI";
+    freeFunction->parameters.push_back({"a", INT});
+    addFunction(freeFunction);
     
     //time function
     auto timeFunction = std::make_shared<Function>(VOID, "time");

@@ -18,7 +18,37 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         value(lexer, position_begin), 
         type(lexer, position_begin),
         position_begin(position_begin){
+
+    delete_ %=
+            qi::position(position_begin)
+        >>  lexer.delete_
+        >>  lexer.identifier;
     
+    default_case %=
+            qi::eps
+        >>  lexer.default_
+        >>  lexer.double_dot
+        >>  *(instruction);
+
+    switch_case %=
+            qi::position(position_begin)
+        >>  lexer.case_
+        >>  value
+        >>  lexer.double_dot
+        >>  (*instruction);
+
+    switch_ %=
+            qi::position(position_begin)
+        >>  lexer.switch_
+        >>  lexer.left_parenth
+        >>  value
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(switch_case)
+        >>  -(default_case)
+        >>  lexer.right_brace
+            ;
+
     else_if_ %= 
             lexer.else_ 
         >>  lexer.if_ 
@@ -106,6 +136,14 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   value 
         >   lexer.right_parenth
         >   lexer.stop;
+    
+    struct_declaration %= 
+            qi::position(position_begin)
+        >>  type 
+        >>  lexer.identifier 
+        >>  lexer.left_parenth
+        >>  (value >> *(lexer.comma > value))
+        >>  lexer.right_parenth;
 
     declaration %= 
             qi::position(position_begin)
@@ -150,9 +188,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier;
     
     instruction %= 
-            (value.member_function_call > lexer.stop)
+            switch_
+        |   (value.member_function_call > lexer.stop)
         |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
+        |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
@@ -164,7 +204,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   foreach_
         |   foreachin_
         |   return_
-        |   (swap > lexer.stop);
+        |   (swap > lexer.stop)
+        |   (delete_ > lexer.stop)
+        ;
 
     repeatable_instruction = 
             value.assignment 
@@ -193,6 +235,26 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type
         >>  lexer.identifier
         >>  lexer.stop;
+    
+    constructor %= 
+            qi::position(position_begin)
+        >>  qi::omit[lexer.this_]
+        >>  lexer.left_parenth
+        >>  -( arg >> *( lexer.comma > arg))
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
+    
+    destructor %= 
+            qi::position(position_begin)
+        >>  lexer.tilde     
+        >>  qi::omit[lexer.this_]
+        >>  lexer.left_parenth
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
 
     struct_ %=
             qi::position(position_begin)
@@ -200,6 +262,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier
         >>  lexer.left_brace
         >>  *(member_declaration)
+        >>  *(constructor)
+        >>  *(destructor)
         >>  *(function)
         >>  lexer.right_brace;
 

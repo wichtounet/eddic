@@ -16,11 +16,15 @@
 #include "mtac/Utils.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 using namespace eddic;
 
 void mtac::register_param_allocation(){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+
+    auto maxInt = descriptor->numberOfIntParamRegisters();
+    auto maxFloat = descriptor->numberOfFloatParamRegisters();
 
     for(auto function_info : symbols){
         auto function = function_info.second;
@@ -33,7 +37,7 @@ void mtac::register_param_allocation(){
                 unsigned int position = function->getParameterPositionByType(parameter.name);
                 auto param = function->context->getVariable(parameter.name);
 
-                if((type == INT && position <= descriptor->numberOfIntParamRegisters()) || (type == FLOAT && position <= descriptor->numberOfFloatParamRegisters())){
+                if((mtac::is_single_int_register(type) && position <= maxInt) || (mtac::is_single_float_register(type) && position <= maxFloat)){
                     Position oldPosition = param->position();
 
                     function->context->allocate_in_param_register(param, position);
@@ -84,8 +88,7 @@ void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
     if(descriptor->number_of_variable_registers() > 0 || descriptor->number_of_float_variable_registers() > 0){
         for(auto function : program->functions){
             //Compute Liveness
-            mtac::LiveVariableAnalysisProblem problem;
-            auto liveness = mtac::data_flow(function, problem);
+            auto pointer_escaped = mtac::escape_analysis(function);
 
             auto usage = mtac::compute_variable_usage(function);
 
@@ -95,10 +98,10 @@ void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
             for(auto variable_pair : function->context->stored_variables()){
                 auto variable = variable_pair.second;
 
-                if(problem.pointer_escaped->find(variable) == problem.pointer_escaped->end() && variable->position().isStack() && usage[variable] > 0){
-                    if(variable->type() == INT){
+                if(pointer_escaped->find(variable) == pointer_escaped->end() && variable->position().isStack() && usage[variable] > 0){
+                    if(mtac::is_single_int_register(variable->type())){
                         search_candidates(usage, int_var, variable, descriptor->number_of_variable_registers());
-                    } else if(variable->type() == FLOAT){
+                    } else if(mtac::is_single_float_register(variable->type())){
                         search_candidates(usage, float_var, variable, descriptor->number_of_float_variable_registers());
                     }
                 }

@@ -27,8 +27,13 @@
 
 using namespace eddic;
 
+namespace {
+
 struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_STRUCT()
+    AUTO_RECURSE_CONSTRUCTOR()
+    AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_FUNCTION_CALLS()
     AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
@@ -36,6 +41,8 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_UNARY_VALUES()
+    AUTO_RECURSE_DEFAULT_CASE()
+    AUTO_RECURSE_STRUCT_DECLARATION()
         
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_FALSE()
@@ -46,7 +53,6 @@ struct CheckerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_STRUCT()
     AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
     AUTO_IGNORE_VARIABLE_VALUE()
     AUTO_IGNORE_DEREFERENCE_VALUE()
@@ -65,10 +71,39 @@ struct CheckerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::ForeachIn& foreach){
-        //TODO Check types of array
-        //TODO Check type of varaible = base of array
+        auto var_type = foreach.Content->var->type();
+        auto array_type = foreach.Content->arrayVar->type();
+
+        if(var_type != array_type->data_type()){
+            throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+        }
 
         visit_each(*this, foreach.Content->instructions);
+    }
+
+    void operator()(ast::Switch& switch_){
+        visit(*this, switch_.Content->value);
+
+        auto value_type = visit(ast::GetTypeVisitor(), switch_.Content->value);
+
+        if(value_type != INT){
+            throw SemanticalException("Switch can only work on int type", switch_.Content->position);
+        }
+        
+        visit_each_non_variant(*this, switch_.Content->cases);
+        visit_optional_non_variant(*this, switch_.Content->default_case);
+    }
+    
+    void operator()(ast::SwitchCase& switch_){
+        visit(*this, switch_.value);
+
+        auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
+
+        if(value_type != INT){
+            throw SemanticalException("Switch can only work on int type", switch_.position);
+        }
+
+        visit_each(*this, switch_.instructions);
     }
     
     void operator()(ast::Ternary& ternary){
@@ -122,14 +157,14 @@ struct CheckerVisitor : public boost::static_visitor<> {
 
     template<typename Operation>
     void checkSuffixOrPrefixOperation(Operation& operation){
-        auto var = operation.Content->variable;
+        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
         
-        if(var->type() != INT && var->type() != FLOAT){
-            throw SemanticalException("The variable " + var->name() + " is not of type int or float, cannot increment or decrement it", operation.Content->position);
+        if(type != INT && type != FLOAT){
+            throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
         }
 
-        if(var->type()->is_const()){
-            throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", operation.Content->position);
+        if(type->is_const()){
+            throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
         }
     }
 
@@ -266,7 +301,25 @@ struct CheckerVisitor : public boost::static_visitor<> {
             throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
         }
     }
+    
+    void operator()(ast::New& new_){
+        auto type = visit(ast::TypeTransformer(), new_.Content->type);
+
+        if(!(type->is_standard_type() || type->is_custom_type())){
+            throw SemanticalException("Only standard types and struct types can be dynamically allocated", new_.Content->position);
+        }
+    }
+    
+    void operator()(ast::Delete& delete_){
+        auto type = delete_.Content->variable->type();
+
+        if(!type->is_pointer()){
+            throw SemanticalException("Only pointers can be deleted", delete_.Content->position);
+        }
+    }
 };
+
+} //end of anonymous namespace
 
 void ast::checkTypes(ast::SourceFile& program){
     CheckerVisitor visitor;

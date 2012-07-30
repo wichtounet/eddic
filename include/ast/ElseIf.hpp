@@ -9,12 +9,15 @@
 #define AST_ELSE_IF_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Value.hpp"
 
 namespace eddic {
+
+class Context;
 
 namespace ast {
 
@@ -23,6 +26,8 @@ namespace ast {
  * \brief The AST node for an else if construction.
  */
 struct ElseIf {
+    std::shared_ptr<Context> context; 
+
     Value condition;
     std::vector<Instruction> instructions;
 };

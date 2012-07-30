@@ -8,8 +8,11 @@
 #ifndef EDDI_GRAMMAR_H
 #define EDDI_GRAMMAR_H
 
+#include "boost_cfg.hpp"
 #include <boost/spirit/include/qi.hpp>
+
 #include "lexer/SpiritLexer.hpp"
+
 #include "ast/SourceFile.hpp"
 
 #include "parser/ValueGrammar.hpp"
@@ -40,8 +43,13 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::Instruction()> repeatable_instruction;
     qi::rule<lexer::Iterator, ast::Swap()> swap;
     qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
+    qi::rule<lexer::Iterator, ast::StructDeclaration()> struct_declaration;
     qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
     qi::rule<lexer::Iterator, ast::Return()> return_;
+    qi::rule<lexer::Iterator, ast::Switch()> switch_;
+    qi::rule<lexer::Iterator, ast::SwitchCase()> switch_case;
+    qi::rule<lexer::Iterator, ast::DefaultCase()> default_case;
+    qi::rule<lexer::Iterator, ast::Delete()> delete_;
 
     /* Loops */
     qi::rule<lexer::Iterator, ast::While()> while_;
@@ -62,6 +70,8 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     /* Structures */
     qi::rule<lexer::Iterator, ast::Struct()> struct_;
     qi::rule<lexer::Iterator, ast::MemberDeclaration()> member_declaration;
+    qi::rule<lexer::Iterator, ast::Constructor()> constructor;
+    qi::rule<lexer::Iterator, ast::Destructor()> destructor;
    
     ValueGrammar value;
     TypeGrammar type;

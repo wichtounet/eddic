@@ -5,14 +5,15 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 1)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(COMMON_CXX_FLAGS          "-pipe -pthread -std=c++11")
-    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wsuggest-attribute=const -Wall -Wextra -Wno-long-long")
+    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long")
     set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DNDEBUG -O2 -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DNDEBUG -flto -fuse-linker-plugin -Ofast -funroll-loops -fomit-frame-pointer -march=native")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-flto -Ofast -funroll-loops -fomit-frame-pointer -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
 endif()
@@ -37,6 +38,12 @@ add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -
 add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Gathering stats" VERBATIM
+)
+
+# Add a custom target to gather git stats
+add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Gathering git stats" VERBATIM
 )
  
 # The compiler and the tests should go to the bin directory

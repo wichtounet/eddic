@@ -18,10 +18,7 @@ using namespace eddic;
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 void mtac::OffsetConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
-    mtac::LiveVariableAnalysisProblem problem;
-    mtac::data_flow(function, problem);
-   
-    pointer_escaped = problem.pointer_escaped;
+    pointer_escaped = mtac::escape_analysis(function);
 }
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){

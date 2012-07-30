@@ -35,8 +35,18 @@ typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;
 struct Collector : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
+        AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_DESTRUCTOR()
 
         void operator()(ast::FunctionDeclaration& function){
+            for(auto& param : function.Content->parameters){
+                positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
+            }
+            
+            visit_each(*this, function.Content->instructions);
+        }
+        
+        void operator()(ast::Constructor& function){
             for(auto& param : function.Content->parameters){
                 positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
             }
@@ -90,25 +100,9 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_TERNARY()
-
-        /* The following cannot throw a warning  */
-        AUTO_IGNORE_FALSE()
-        AUTO_IGNORE_TRUE()
-        AUTO_IGNORE_NULL()
-        AUTO_IGNORE_LITERAL()
-        AUTO_IGNORE_FLOAT()
-        AUTO_IGNORE_INTEGER()
-        AUTO_IGNORE_INTEGER_SUFFIX()
-        AUTO_IGNORE_IMPORT()
-        AUTO_IGNORE_STANDARD_IMPORT()
-        AUTO_IGNORE_SWAP()
-        AUTO_IGNORE_ARRAY_DECLARATION()
-        AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
-        AUTO_IGNORE_UNARY()
-        AUTO_IGNORE_PREFIX_OPERATION()
-        AUTO_IGNORE_SUFFIX_OPERATION()
-        AUTO_IGNORE_VARIABLE_VALUE()
-        AUTO_IGNORE_DEREFERENCE_VALUE()
+        AUTO_RECURSE_SWITCH()
+        AUTO_RECURSE_SWITCH_CASE()
+        AUTO_RECURSE_DEFAULT_CASE()
 
         void check(std::shared_ptr<Context> context){
             if(option_defined("warning-unused")){
@@ -159,7 +153,7 @@ struct Inspector : public boost::static_visitor<> {
             if(option_defined("warning-unused")){
                 int references = symbols.referenceCount(declaration.Content->mangledName);
 
-                if(declaration.Content->functionName != "main" && references == 0){
+                if(references == 0){
                     warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
                 }
             }
@@ -177,6 +171,9 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
         }
+        
+        //No warnings for other types
+        AUTO_IGNORE_OTHERS()
     
     private:
         Collector& collector;

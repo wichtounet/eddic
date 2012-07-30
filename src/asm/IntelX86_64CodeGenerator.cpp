@@ -22,6 +22,8 @@ using namespace eddic;
 
 as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
 
+namespace {
+
 struct X86_64StringConverter : public as::StringConverter {
     std::string to_string(eddic::ltac::Register reg) const {
         static std::string registers[14] = {
@@ -65,6 +67,8 @@ struct X86_64StringConverter : public as::StringConverter {
     }
 };
 
+} //end of anonymous namespace
+
 namespace x86_64 {
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
@@ -76,7 +80,7 @@ std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
 
 using namespace x86_64;
 
-namespace eddic { namespace as {
+namespace {
 
 struct X86_64StatementCompiler : public boost::static_visitor<> {
     AssemblyFileWriter& writer;
@@ -111,9 +115,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "mov rcx, " << *instruction->arg2 << std::endl;
                 writer.stream() << "xor rax, rax" << std::endl;
                 writer.stream() << "lea rdi, " << *instruction->arg1 << std::endl;
-                writer.stream() << "std" << std::endl;
                 writer.stream() << "rep stosq" << std::endl;
-                writer.stream() << "cld" << std::endl;
 
                 break;
             case ltac::Operator::ENTER:
@@ -298,22 +300,29 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
     }
 };
 
-void IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
+} //end of anonymous namespace
+
+void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86_64StatementCompiler compiler(writer);
     visit_each(compiler, function->getStatements());
 }
 
-void IntelX86_64CodeGenerator::writeRuntimeSupport(){
+void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "section .text" << std::endl << std::endl;
 
     writer.stream() << "global _start" << std::endl << std::endl;
 
     writer.stream() << "_start:" << std::endl;
+    
+    //If necessary init memory manager 
+    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        writer.stream() << "call _F4init" << std::endl; 
+    }
 
     //If the user wants the args, we add support for them
-    if(symbols.getFunction("main")->parameters.size() == 1){
+    if(symbols.exists("_F4mainAS")){
         writer.stream() << "pop rbx" << std::endl;                          //rbx = number of args
         
         //Calculate the size of the array
@@ -321,19 +330,18 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "imul rcx, rcx, 16" << std::endl;
         writer.stream() << "add rcx, 8" << std::endl;                       //rcx = size of the array
 
-        writer.stream() << "push rcx" << std::endl;
-        writer.stream() << "call eddi_alloc" << std::endl;                  //rax = start address of the array
-        writer.stream() << "add rsp, 8" << std::endl;
+        writer.stream() << "mov r14, rcx" << std::endl;
+        writer.stream() << "call _F5allocI" << std::endl;                   //rax = start address of the array
 
-        writer.stream() << "lea rsi, [rax + rcx - 16]" << std::endl;         //rsi = last address of the array
+        writer.stream() << "mov rsi, rax" << std::endl;         //rsi = last address of the array
         writer.stream() << "mov rdx, rsi" << std::endl;                     //rdx = last address of the array
         
         writer.stream() << "mov [rsi], rbx" << std::endl;                   //Set the length of the array
-        writer.stream() << "sub rsi, 16" << std::endl;                       //Move to the destination address of the first arg
+        writer.stream() << "add rsi, 8" << std::endl;                       //Move to the destination address of the first arg
 
         writer.stream() << ".copy_args:" << std::endl;
         writer.stream() << "pop rdi" << std::endl;                          //rdi = address of current args
-        writer.stream() << "mov [rsi+8], rdi" << std::endl;                   //set the address of the string
+        writer.stream() << "mov [rsi], rdi" << std::endl;                   //set the address of the string
 
         /* Calculate the length of the string  */
         writer.stream() << "xor rax, rax" << std::endl;
@@ -344,8 +352,8 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
         writer.stream() << "dec rcx" << std::endl;
         /* End of the calculation */
 
-        writer.stream() << "mov qword [rsi], rcx" << std::endl;               //set the length of the string
-        writer.stream() << "sub rsi, 16" << std::endl;
+        writer.stream() << "mov [rsi+8], rcx" << std::endl;               //set the length of the string
+        writer.stream() << "add rsi, 16" << std::endl;
         writer.stream() << "dec rbx" << std::endl;
         writer.stream() << "jnz .copy_args" << std::endl;
 
@@ -353,7 +361,11 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
     }
 
     //Give control to the user function
-    writer.stream() << "call main" << std::endl;
+    if(symbols.exists("_F4mainAS")){
+        writer.stream() << "call _F4mainAS" << std::endl;
+    } else {
+        writer.stream() << "call _F4main" << std::endl;
+    }
 
     //Exit from the program
     writer.stream() << "mov rax, 60" << std::endl;  //syscall 60 is exit
@@ -361,48 +373,46 @@ void IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "syscall" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::defineDataSection(){
+void as::IntelX86_64CodeGenerator::defineDataSection(){
     writer.stream() << std::endl << "section .data" << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
+void as::IntelX86_64CodeGenerator::declareIntArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "dq " << size << std::endl;
     writer.stream() << "times " << size << " dq 0" << std::endl;
-    writer.stream() << "dq " << size << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
+void as::IntelX86_64CodeGenerator::declareFloatArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "dq " << size << std::endl;
     writer.stream() << "times " << size << " dq __float64__(0.0)" << std::endl;
-    writer.stream() << "dq " << size << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
+void as::IntelX86_64CodeGenerator::declareStringArray(const std::string& name, unsigned int size){
     writer.stream() << "V" << name << ":" <<std::endl;
+    writer.stream() << "dq " << size << std::endl;
     writer.stream() << "%rep " << size << std::endl;
     writer.stream() << "dq S3" << std::endl;
     writer.stream() << "dq 0" << std::endl;
     writer.stream() << "%endrep" << std::endl;
-    writer.stream() << "dq " << size << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
+void as::IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
     writer.stream() << "V" << name << " dq " << value << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
+void as::IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
     writer.stream() << "V" << name << " dq " << label << ", " << size << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareString(const std::string& label, const std::string& value){
+void as::IntelX86_64CodeGenerator::declareString(const std::string& label, const std::string& value){
     writer.stream() << label << " dq " << value << std::endl;
 }
 
-void IntelX86_64CodeGenerator::declareFloat(const std::string& label, double value){
+void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double value){
     writer.stream() << label << std::fixed << " dq __float64__(" << value << ")" << std::endl;
 }
-
-}} //end of eddic::as
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
     if(as::is_enabled_printI()){
@@ -445,8 +455,11 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_concat");
     }
     
-    if(symbols.getFunction("main")->parameters.size() == 1 || symbols.referenceCount("_F6concatSS")){
-        output_function("x86_64_eddi_alloc");
+    //Memory management functions are included the three together
+    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+        output_function("x86_64_alloc");
+        output_function("x86_64_init");
+        output_function("x86_64_free");
     }
     
     if(symbols.referenceCount("_F4timeAI")){

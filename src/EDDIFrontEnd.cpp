@@ -34,7 +34,7 @@
 #include "ast/OptimizationEngine.hpp"
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
-#include "ast/DebugVisitor.hpp"
+#include "ast/Printer.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/RegisterAllocation.hpp"
@@ -92,7 +92,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         //If the user asked for it, print the Abstract Syntax Tree
         if(option_defined("ast") || option_defined("ast-only")){
-            ast::DebugVisitor()(program);
+            ast::Printer printer;
+            printer.print(program);
         }
         
         //If the user wants only the AST prints, it is not necessary to compile the AST
@@ -114,21 +115,14 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 }
 
 void checkForMain(){
-    if(!symbols.exists("main")){
-        throw SemanticalException("Your program must contain a main function"); 
-    }
-
-    auto function = symbols.getFunction("main");
-
-    if(function->parameters.size() > 1){
-        throw SemanticalException("The signature of your main function is not valid");
-    }
-
-    if(function->parameters.size() == 1){
-        auto type = function->parameters[0].paramType;
-       
-        if(type->data_type() != STRING || !type->is_array()){
-            throw SemanticalException("The signature of your main function is not valid");
-        }
+    std::shared_ptr<Function> function;
+    if(symbols.exists("_F4main")){
+        function = symbols.getFunction("_F4main");
+        symbols.addReference("_F4main");
+    } else if (symbols.exists("_F4mainAS")){
+        function = symbols.getFunction("_F4mainAS");
+        symbols.addReference("_F4mainAS");
+    } else {
+        throw SemanticalException("The program does not contain a valid main function"); 
     }
 }

@@ -8,28 +8,20 @@
 #ifndef AST_SUFFIX_OPERATION_H
 #define AST_SUFFIX_OPERATION_H
 
-#include <memory>
-#include <vector>
-
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
 #include "ast/Position.hpp"
+#include "ast/LValue.hpp"
 
 namespace eddic {
-
-class Context;
-class Variable;
 
 namespace ast {
 
 struct ASTSuffixOperation {
-    std::shared_ptr<Context> context;
-
     Position position;
-    std::string variableName;
-    std::shared_ptr<Variable> variable;
+    LValue left_value;
     ast::Operator op;
 
     mutable long references = 0;
@@ -45,7 +37,7 @@ typedef Deferred<ASTSuffixOperation> SuffixOperation;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SuffixOperation, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->variableName)
+    (eddic::ast::LValue, Content->left_value)
     (eddic::ast::Operator, Content->op)
 )
 

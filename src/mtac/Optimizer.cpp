@@ -21,7 +21,7 @@
 #include "mtac/TemporaryAllocator.hpp"
 
 //The custom optimizations
-#include "mtac/VariableCleaner.hpp"
+#include "mtac/VariableOptimizations.hpp"
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/BasicBlockOptimizations.hpp"
@@ -157,8 +157,6 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
     }
 }
 
-}
-
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
     if(option_defined("dev")){
         std::cout << "Start optimizations on " << function->getName() << std::endl;
@@ -192,8 +190,9 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
 
         remove_nop(function);
-        
         optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
+        
+        optimized |= debug("Remove aliases", &mtac::remove_aliases, function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations
@@ -267,10 +266,11 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
     std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
 
+} //end of anonymous namespace
+
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
     //Allocate storage for the temporaries that need to be stored
-    mtac::TemporaryAllocator allocator;
-    allocator.allocate(program);
+    allocate_temporary(program);
 
     if(option_defined("fglobal-optimization")){
         bool optimized = false;
@@ -284,13 +284,13 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         } while(optimized);
     
         //Allocate storage for the temporaries that need to be stored
-        allocator.allocate(program);
+        allocate_temporary(program);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
         basic_optimize(program, string_pool);
     
         //Allocate storage for the temporaries that need to be stored
-        allocator.allocate(program);
+        allocate_temporary(program);
     }
 }
 

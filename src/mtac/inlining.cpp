@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+namespace {
+
 std::size_t size_of(std::shared_ptr<mtac::Function> function){
     std::size_t size = 0;
 
@@ -326,7 +328,7 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
 
 bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     //The main function cannot be inlined
-    if(function->getName() == "main"){
+    if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
         return false;
     }
 
@@ -361,6 +363,8 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
     return false;
 }
 
+} //end of anonymous namespace
+
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
     if(option_defined("fno-inline-functions")){
         return false;
@@ -382,7 +386,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                 }
 
                 //If the function has already been inlined
-                if(dest_function->getName() != "main" && symbols.referenceCount(dest_function->getName()) <= 0){
+                if(symbols.referenceCount(dest_function->getName()) <= 0){
                     continue;
                 }
 

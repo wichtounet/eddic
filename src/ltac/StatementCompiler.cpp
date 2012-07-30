@@ -21,6 +21,8 @@ using namespace eddic;
 
 //TODO Avoid as much as possible direct acess to the the registers fields of the manager
 
+namespace {
+
 template<typename Reg>
 struct register_guard {
     Reg reg;
@@ -36,6 +38,8 @@ struct register_guard {
         return reg;
     }
 };
+
+} //end of anonymous namespace
 
 ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
@@ -102,7 +106,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
     auto position = var->position();
 
     if(position.isStack()){
-        return stack_address(-position.offset() + offset);
+        return stack_address(position.offset() + offset);
     } else if(position.isParameter()){
         //The case of array is special because only the address is passed, not the complete array
         if(var->type()->is_array())
@@ -140,7 +144,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
     auto offsetReg = manager.get_reg(ltac::get_variable(offset));
 
     if(position.isStack()){
-        return stack_address(offsetReg, -1 * position.offset());
+        return stack_address(offsetReg, position.offset());
     } else if(position.isParameter()){
         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
@@ -285,6 +289,16 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
 
     manager.set_written(quadruple->result);
 }
+        
+void ltac::StatementCompiler::push(ltac::Argument arg){
+    ltac::add_instruction(function, ltac::Operator::PUSH, arg);
+    bp_offset += INT->size();
+}
+
+void ltac::StatementCompiler::pop(ltac::Argument arg){
+    ltac::add_instruction(function, ltac::Operator::POP, arg);
+    bp_offset -= INT->size();
+}
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_false){
     manager.set_current(if_false);
@@ -355,6 +369,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_fals
 
         function->add(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::Z));
     }
+
+    offset_labels[if_false->block->label] = bp_offset;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
@@ -427,6 +443,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
 
         function->add(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NZ));
     }
+    
+    offset_labels[if_->block->label] = bp_offset;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto>& goto_){
@@ -463,52 +481,68 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_pt
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     manager.set_current(param);
     manager.save_registers(param, descriptor);
+    
+    std::shared_ptr<const Type> type;
+    bool register_allocated = false;
+    unsigned int position = 0;
+        
+    if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
+        unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+        unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+
+        //It's a call to a standard function
+        if(param->std_param.length() > 0){
+            type = param->function->getParameterType(param->std_param);
+            position = param->function->getParameterPositionByType(param->std_param);
+        } 
+        //It's a call to a user function
+        else if(param->param){
+            type = param->param->type();
+            position = param->function->getParameterPositionByType(param->param->name());
+        }
+
+        register_allocated = 
+                (mtac::is_single_int_register(type) && position <= maxInt)
+            ||  (mtac::is_single_float_register(type) && position <= maxFloat);
+    }
 
     //Push the address of the var
     if(param->address){
         auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
 
-        unsigned int offset = 0;
-        if(!param->memberNames.empty()){
-            offset = mtac::compute_member_offset(variable, param->memberNames);
-        }
+        if(variable->type()->is_pointer()){
+            auto reg = manager.get_reg(variable);
 
-        auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
-        
-        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-        bp_offset += INT->size();
+            if(register_allocated){
+                ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+            } else {
+                push(reg);
+            }
+        } else {
+            unsigned int offset = 0;
+            if(!param->memberNames.empty()){
+                offset = mtac::compute_member_offset(variable, param->memberNames);
+            }
+
+            auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
+
+            if(register_allocated){
+                ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+            } else {
+                push(reg);
+            }
+        }
     } 
     //Push by value
     else {
-        if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
-            unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-            unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
-
-            std::shared_ptr<const Type> type;
-            unsigned int position;
-
-            //It's a call to a standard function
-            if(param->std_param.length() > 0){
-                type = param->function->getParameterType(param->std_param);
-                position = param->function->getParameterPositionByType(param->std_param);
-            } 
-            //It's a call to a user function
-            else if(param->param){
-                type = param->param->type();
-                position = param->function->getParameterPositionByType(param->param->name());
-            }
-
-            if(type == INT && position <= maxInt){
+        if(register_allocated){
+            if(mtac::is_single_int_register(type)){
                 pass_in_int_register(param->arg, position);
-
-                return;
-            }
-
-            if(type == FLOAT && position <= maxFloat){
+            } else {
                 pass_in_float_register(param->arg, position);
-
-                return;
             }
+
+            return;
         }
 
         //If the param as not been handled as register passing, push it on the stack 
@@ -518,8 +552,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                 auto reg2 = manager.get_float_reg(*ptr);
 
                 ltac::add_instruction(function, ltac::Operator::MOV, reg1, reg2);
-                ltac::add_instruction(function, ltac::Operator::PUSH, reg1);
-                bp_offset += INT->size();
+                push(reg1);
             } else {
                 if((*ptr)->type()->is_array()){
                     auto position = (*ptr)->position();
@@ -527,35 +560,26 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
                     if(position.isGlobal()){
                         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
-                        auto offset = (*ptr)->type()->data_type()->size() * (*ptr)->type()->elements();
-
                         ltac::add_instruction(function, ltac::Operator::MOV, reg, "V" + position.name());
-                        ltac::add_instruction(function, ltac::Operator::ADD, reg, static_cast<int>(offset));
-                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        bp_offset += INT->size();
+                        push(reg);
                     } else if(position.isStack()){
                         auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
-                        ltac::add_instruction(function, ltac::Operator::LEA, reg, stack_address(-position.offset()));
-                        ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                        bp_offset += INT->size();
+                        ltac::add_instruction(function, ltac::Operator::LEA, reg, stack_address(position.offset()));
+                        push(reg);
                     } else if(position.isParameter()){
-                        ltac::add_instruction(function, ltac::Operator::PUSH, stack_address(position.offset()));
-                        bp_offset += INT->size();
+                        push(stack_address(position.offset()));
                     }
                 } else {
                     auto reg = manager.get_reg(ltac::get_variable(param->arg));
-                    ltac::add_instruction(function, ltac::Operator::PUSH, reg);
-                    bp_offset += INT->size();
+                    push(reg);
                 }
             }
         } else if(auto* ptr = boost::get<double>(&param->arg)){
             auto label = float_pool->label(*ptr);
-            ltac::add_instruction(function, ltac::Operator::PUSH, ltac::Address(label));
-            bp_offset += INT->size();
+            push(ltac::Address(label));
         } else {
-            ltac::add_instruction(function, ltac::Operator::PUSH, to_arg(param->arg));
-            bp_offset += INT->size();
+            push(to_arg(param->arg));
         }
     }
 }
@@ -582,14 +606,14 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
             //Passing an array is just passing an adress
             total += INT->size();
         } else {
-            if(type == INT){
+            if(mtac::is_single_int_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxInt > 0){
                     --maxInt;
                 } else {
                     total += type->size();
                 }
-            } else if(type == FLOAT){
+            } else if(mtac::is_single_float_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxFloat > 0){
                     --maxFloat;
@@ -607,9 +631,17 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
 
     if(call->return_){
         if(call->return_->type() == FLOAT){
-            manager.float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
+            if(call->return_->position().is_register()){
+                ltac::add_instruction(function, ltac::Operator::MOV, manager.get_float_reg_no_move(call->return_), ltac::FloatRegister(descriptor->float_return_register()));
+            } else {
+                manager.float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
+            }
         } else {
-            manager.registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
+            if(call->return_->position().is_register()){
+                ltac::add_instruction(function, ltac::Operator::MOV, manager.get_reg_no_move(call->return_), ltac::Register(descriptor->int_return_register1()));
+            } else {
+                manager.registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
+            }
         }
 
         manager.set_written(call->return_);
@@ -625,8 +657,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
 
 void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
     auto reg = manager.get_reg_no_move(quadruple->result);
-    ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(*quadruple->arg1));
+    
+    //Copy it in the register
+    manager.copy(*quadruple->arg1, reg);
 
+    //The variable has been written
     manager.set_written(quadruple->result);
 
     //If the address of the variable is escaped, we have to spill its value directly
@@ -1344,4 +1379,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>&){
 
 void ltac::StatementCompiler::operator()(std::string& str){
     function->add(str);
+
+    if(offset_labels.find(str) != offset_labels.end()){
+        bp_offset = offset_labels[str];
+        offset_labels.erase(str);
+    }
 }

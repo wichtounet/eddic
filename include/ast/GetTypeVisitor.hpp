@@ -8,11 +8,15 @@
 #ifndef GET_TYPE_VISITOR_H
 #define GET_TYPE_VISITOR_H
 
+#include <memory>
+
 #include "variant.hpp"
 
 #include "ast/values_def.hpp"
 
 namespace eddic {
+
+class Variable;
 
 namespace ast {
 
@@ -41,6 +45,8 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::Cast& cast) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::SuffixOperation& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::PrefixOperation& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::New& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const std::shared_ptr<Variable>& value) const;
 };
 
 } //end of ast

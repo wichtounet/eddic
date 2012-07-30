@@ -8,7 +8,9 @@
 #ifndef TYPE_GRAMMAR_H
 #define TYPE_GRAMMAR_H
 
+#include "boost_cfg.hpp"
 #include <boost/spirit/include/qi.hpp>
+
 #include "lexer/SpiritLexer.hpp"
 
 #include "ast/VariableType.hpp"

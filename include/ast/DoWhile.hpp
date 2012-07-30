@@ -9,14 +9,16 @@
 #define AST_DO_WHILE_H
 
 #include <vector>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
-#include "ast/While.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
+
+class Context;
 
 namespace ast {
 
@@ -26,6 +28,8 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::DoWhile).
  */
 struct ASTDoWhile {
+    std::shared_ptr<Context> context; 
+
     Value condition;
     std::vector<Instruction> instructions;
 

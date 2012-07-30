@@ -7,12 +7,16 @@
 
 #include <iostream>
 #include <boost/optional.hpp>
+#include <boost/range/adaptors.hpp>
 
+#include "assert.hpp"
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
 #include "likely.hpp"
 #include "Platform.hpp"
+#include "Type.hpp"
+#include "FunctionContext.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
@@ -228,14 +232,6 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 //cross MOV (ir4 = ir5, ir5 = ir4), keep only the first
                 if (reg11 == reg22 && reg12 == reg21){
                     return transform_to_nop(i2);
-                }
-            } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg1)){
-                auto reg11 = boost::get<ltac::Register>(*i1->arg1);
-                auto reg21 = boost::get<ltac::Register>(*i2->arg1);
-
-                //Two MOV to the same register => keep only last MOV
-                if(reg11 == reg21){
-                    return transform_to_nop(i1);
                 }
             } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg2)){
                 auto reg11 = boost::get<ltac::Register>(*i1->arg1);
@@ -487,21 +483,115 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
-typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
+void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash>& copies, ltac::Register reg){
+    auto it = copies.begin();
+    auto end = copies.end();
 
-//TODO This can be optimized by doing it context dependent to avoid saving each register
-void add_escaped_registers(RegisterUsage& usage){
+    while(it != end){
+        if(it->first == reg || it->second == reg){
+            it = copies.erase(it);
+            end = copies.end();
+            continue;
+        }
+
+        ++it;
+    }
+}
+
+bool copy_propagation(std::shared_ptr<ltac::Function> function){
     auto descriptor = getPlatformDescriptor(platform);
 
-    usage.insert(ltac::Register(descriptor->int_return_register1()));
-    usage.insert(ltac::Register(descriptor->int_return_register2()));
+    bool optimized = false;
 
+    auto& statements = function->getStatements();
+    
+    std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
+
+    for(std::size_t i = 0; i < statements.size(); ++i){
+        auto statement = statements[i];
+
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            //Erase constant
+            if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
+                auto reg = boost::get<ltac::Register>(*instruction->arg1);
+                
+                remove_reg(copies, reg);
+            }
+            
+            if(instruction->op == ltac::Operator::DIV){
+                remove_reg(copies, ltac::Register(descriptor->a_register()));
+                remove_reg(copies, ltac::Register(descriptor->d_register()));
+            }
+
+            //Collect copies
+            if(instruction->op == ltac::Operator::MOV){
+                if(ltac::is_reg(*instruction->arg1)){
+                    if (auto* reg_ptr = boost::get<ltac::Register>(&*instruction->arg2)){
+                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                        copies[reg1] = *reg_ptr;
+                    }
+                }
+            }
+
+            //Optimize MOV
+            if(instruction->op == ltac::Operator::MOV){
+                if(ltac::is_reg(*instruction->arg2)){
+                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                    if(copies.find(reg2) != copies.end()){
+                        instruction->arg2 = copies[reg2];
+                        optimized = true;
+                    }
+                }
+            }
+        } else {
+            //Takes care of safe functions
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
+                    continue;
+                }
+            }
+
+            //At this point, the basic block is at its end
+            copies.clear();
+        }
+    }
+
+    return optimized;
+}
+
+typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
+
+void add_param_registers(RegisterUsage& usage){
+    auto descriptor = getPlatformDescriptor(platform);
+    
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
+   
+    //TODO Find a way to use that only if DIV is used afterward
+    usage.insert(ltac::Register(descriptor->a_register()));
+    usage.insert(ltac::Register(descriptor->d_register()));
+}
 
-    for(unsigned int i = 1; i <= descriptor->number_of_variable_registers(); ++i){
-        usage.insert(ltac::Register(descriptor->int_variable_register(i)));
+void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function){
+    auto descriptor = getPlatformDescriptor(platform);
+    
+    if(function->definition->returnType == STRING){
+        usage.insert(ltac::Register(descriptor->int_return_register1()));
+        usage.insert(ltac::Register(descriptor->int_return_register2()));
+    } else if(function->definition->returnType != VOID){
+        usage.insert(ltac::Register(descriptor->int_return_register1()));
+    }
+
+    add_param_registers(usage);
+
+    for(auto var : function->context->stored_variables()){
+        if(var.second->position().is_register() && mtac::is_single_int_register(var.second->type())){
+            usage.insert(ltac::Register(descriptor->int_variable_register(var.second->position().offset())));
+        }
     }
 }
 
@@ -526,22 +616,51 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
     }   
 }
 
+RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function){
+    auto& statements = function->getStatements();
+   
+    RegisterUsage usage;
+    add_escaped_registers(usage, function);
+
+    for(auto statement : statements){
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            auto instruction = *ptr;
+
+            collect_usage(usage, instruction->arg1);
+            collect_usage(usage, instruction->arg2);
+            collect_usage(usage, instruction->arg3);
+        }
+    }
+
+    return usage;
+}
+
+ltac::Register get_free_reg(RegisterUsage& usage){
+    auto descriptor = getPlatformDescriptor(platform);
+   
+    for(auto& reg : descriptor->symbolic_registers()){
+        if(usage.find(ltac::Register(reg)) == usage.end()){
+            return ltac::Register(reg);
+        }
+    }
+
+    return ltac::SP;
+}
+
 bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     bool optimized = false;
 
     auto& statements = function->getStatements();
     
     RegisterUsage usage; 
-    add_escaped_registers(usage);
+    add_escaped_registers(usage, function);
 
-    for(long i = statements.size() - 1; i >= 0; --i){
-        auto statement = statements[i];
-
+    for(auto statement : boost::adaptors::reverse(statements)){
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
             auto instruction = *ptr;
 
-            //Optimize MOV and XOR
-            if(instruction->op == ltac::Operator::MOV){
+            //Optimize MOV, LEA, XOR
+            if(instruction->op == ltac::Operator::MOV || instruction->op == ltac::Operator::LEA || instruction->op == ltac::Operator::XOR){
                 if(ltac::is_reg(*instruction->arg1)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
@@ -550,38 +669,148 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     }
                     
                     usage.erase(reg1);
+                    add_param_registers(usage);
+                } else {
+                    collect_usage(usage, instruction->arg1);
                 }
-            } else if(instruction->op == ltac::Operator::XOR){
-                if(ltac::is_reg(*instruction->arg1) && ltac::is_reg(*instruction->arg2)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
-
-                    if(reg1 == reg2 && usage.find(reg1) == usage.end()){
-                        optimized = transform_to_nop(instruction);
-                    
-                        usage.erase(reg1);
-                    }
-                }
+            
+                collect_usage(usage, instruction->arg2);
+            } else {
+                //Collect usage 
+                collect_usage(usage, instruction->arg1);
+                collect_usage(usage, instruction->arg2);
+                collect_usage(usage, instruction->arg3);
             }
 
             //TODO Take in account more instructions that erase results, optimize them and remove them from the usage
-            
-            //Collect usage 
-            collect_usage(usage, instruction->arg1);
-            collect_usage(usage, instruction->arg2);
-            collect_usage(usage, instruction->arg3);
         } else {
             //Takes care of safe functions
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
                 if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
+                    add_param_registers(usage);
                     continue;
                 }
             }
             
             //At this point, the basic block is at its end
             usage.clear();
-            add_escaped_registers(usage);
+            add_escaped_registers(usage, function);
         }
+    }
+
+    return optimized;
+}
+
+ltac::Operator get_cmov_op(ltac::JumpType op){
+    switch(op){
+        case ltac::JumpType::NE:
+            return ltac::Operator::CMOVNE;
+        case ltac::JumpType::E:
+            return ltac::Operator::CMOVE;
+        case ltac::JumpType::GE:
+            return ltac::Operator::CMOVGE;
+        case ltac::JumpType::G:
+            return ltac::Operator::CMOVG;
+        case ltac::JumpType::LE:
+            return ltac::Operator::CMOVLE;
+        case ltac::JumpType::L:
+            return ltac::Operator::CMOVL;
+        case ltac::JumpType::B:
+            return ltac::Operator::CMOVB;
+        case ltac::JumpType::BE:
+            return ltac::Operator::CMOVBE;
+        case ltac::JumpType::A:
+            return ltac::Operator::CMOVA;
+        case ltac::JumpType::AE:
+            return ltac::Operator::CMOVAE;
+        default:
+            ASSERT_PATH_NOT_TAKEN("No cmov equivalent");
+    }
+}
+
+bool conditional_move(std::shared_ptr<ltac::Function> function){
+    bool optimized = false;
+
+    RegisterUsage usage = collect_register_usage(function);
+
+    auto free_reg = get_free_reg(usage);
+    if(free_reg == ltac::SP){
+        return optimized;
+    }
+
+    auto& statements = function->getStatements();
+
+    auto it = statements.begin();
+    auto end = statements.end();
+
+    while(it != end){
+        auto statement = *it;
+
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+            if((*ptr)->op != ltac::Operator::CMP_INT){
+                ++it;
+                continue;
+            }
+
+            auto temp_it = it;
+            ++temp_it;
+
+            if(auto* jump_1_ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
+                ++temp_it;
+        
+                if(auto* mov_1_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                    if((*mov_1_ptr)->op != ltac::Operator::MOV){
+                        ++it;
+                        continue;
+                    }
+
+                    ++temp_it;
+
+                    if(boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
+                        ++temp_it;
+
+                        if(boost::get<std::string>(&*temp_it)){
+                            ++temp_it;
+
+                            if(auto* mov_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                                if((*mov_2_ptr)->op != ltac::Operator::MOV){
+                                    ++it;
+                                    continue;
+                                }
+
+                                ++temp_it;
+
+                                if(boost::get<std::string>(&*temp_it)){
+                                    if(ltac::is_reg(*(*mov_1_ptr)->arg1) && ltac::is_reg(*(*mov_2_ptr)->arg1)){
+                                        auto& reg1 = boost::get<ltac::Register>(*(*mov_1_ptr)->arg1); 
+                                        auto& reg2 = boost::get<ltac::Register>(*(*mov_2_ptr)->arg1); 
+
+                                        if(reg1 != reg2){
+                                            ++it;
+                                            continue;
+                                        }
+
+                                        auto cmov_op = get_cmov_op((*jump_1_ptr)->type);
+
+                                        *(++it) = *mov_1_ptr;
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
+                                        *(++it) = std::make_shared<ltac::Instruction>(cmov_op, reg1, free_reg);
+                                        
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+
+                                        optimized = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ++it;
     }
 
     return optimized;
@@ -623,7 +852,9 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
             
             optimized |= debug("Basic optimizations", basic_optimizations(function), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
+            optimized |= debug("Copy propagation", copy_propagation(function), function);
             optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
+            optimized |= debug("Conditional move", conditional_move(function), function);
         } while(optimized);
     }
 }

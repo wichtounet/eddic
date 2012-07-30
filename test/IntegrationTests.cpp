@@ -165,6 +165,14 @@ BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
     assert_output("array_foreach_param_param.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( ctor_dtor_heap ){
+    assert_output("ctor_dtor_heap.eddi", "CA|0|DA|CAI|55|DA|CAII|3300|DA|CAS|666|DA|");
+}
+
+BOOST_AUTO_TEST_CASE( ctor_dtor_stack ){
+    assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAI|33|CAS|666|0|DA|DA|DA|");
+}
+
 BOOST_AUTO_TEST_CASE( casts ){
     assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|");
     assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|");
@@ -198,6 +206,18 @@ BOOST_AUTO_TEST_CASE( bool_pointers ){
     assert_output("bool_pointers.eddi", "0|0|1|1|0|0|1|");
 }
 
+BOOST_AUTO_TEST_CASE( cmove ){
+    assert_output("cmov.eddi", "8|4|99|77|");
+}
+
+BOOST_AUTO_TEST_CASE( dynamic ){
+    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|");
+}
+
+BOOST_AUTO_TEST_CASE( dynamic_struct ){
+    assert_output("dynamic_struct.eddi", "0|-9|55|asdf|999|-9|0||0|666|777|666|777|1000|");
+}
+
 BOOST_AUTO_TEST_CASE( string_pointers ){
     assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
 }
@@ -217,6 +237,10 @@ BOOST_AUTO_TEST_CASE( member_pointers ){
 
 BOOST_AUTO_TEST_CASE( member_functions ){
     assert_output("member_functions.eddi", "0|1|100|180|260|");
+}
+
+BOOST_AUTO_TEST_CASE( memory ){
+    assert_output("memory.eddi", "4|4|4|1|1|1|5|6|7|8|5|6|7|8|5|6|7|8|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|");
 }
 
 BOOST_AUTO_TEST_CASE( ternary ){
@@ -255,22 +279,22 @@ BOOST_AUTO_TEST_CASE( globals_ ){
 }
 
 BOOST_AUTO_TEST_CASE( inc ){
-    assert_output("inc.eddi", "0|1|2|1|0|1|1|");
+    assert_output("inc.eddi", "0|1|2|1|0|1|1|1|1|2|1|1|0|");
 }
 
-BOOST_AUTO_TEST_CASE( void_functions ){
+BOOST_AUTO_TEST_CASE( void_ ){
     assert_output("void.eddi", "4445");
 }
 
-BOOST_AUTO_TEST_CASE( string_functions ){
+BOOST_AUTO_TEST_CASE( return_string ){
     assert_output("return_string.eddi", "abcdef");
 }
 
-BOOST_AUTO_TEST_CASE( int_functions ){
+BOOST_AUTO_TEST_CASE( return_int ){
     assert_output("return_int.eddi", "484|");
 }
 
-BOOST_AUTO_TEST_CASE( pointer_functions ){
+BOOST_AUTO_TEST_CASE( return_pointers ){
     assert_output("return_pointers.eddi", "66");
 }
 
@@ -316,27 +340,33 @@ BOOST_AUTO_TEST_CASE( struct_array ){
     assert_output("struct_arrays.eddi", "99|111|999|1111|99|111|999|1111|");
 }
 
+BOOST_AUTO_TEST_CASE( switch_ ){
+    assert_output("switch.eddi", "5|5|3|6|default|4|");
+}
+
 BOOST_AUTO_TEST_CASE( nested ){
     assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
 }
 
-BOOST_AUTO_TEST_CASE( args ){
-    assert_compiles("test/cases/args.eddi", "--32", "--O2");
+static void test_args(const std::string& arg1, const std::string& arg2){
+    assert_compiles("test/cases/args.eddi", arg1, arg2);
 
     std::string out = eddic::execCommand("./a.out"); 
     BOOST_CHECK_EQUAL ("./a.out|", out);
     
     out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
-    
-    assert_compiles("test/cases/args.eddi", "--64", "--O2");
+}
 
-    out = eddic::execCommand("./a.out"); 
-    BOOST_CHECK_EQUAL ("./a.out|", out);
-    
-    out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
-    BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
+BOOST_AUTO_TEST_CASE( args ){
+    test_args("--32", "--O0");
+    test_args("--32", "--O1");
+    test_args("--32", "--O2");
+
+    test_args("--64", "--O0");
+    test_args("--64", "--O1");
+    test_args("--64", "--O2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

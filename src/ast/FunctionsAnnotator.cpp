@@ -20,6 +20,8 @@
 
 using namespace eddic;
 
+namespace {
+
 class MemberFunctionAnnotator : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
@@ -27,21 +29,42 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         void operator()(ast::Struct& struct_){
             parent_struct = struct_.Content->name;
 
+            visit_each_non_variant(*this, struct_.Content->constructors);
+            visit_each_non_variant(*this, struct_.Content->destructors);
             visit_each_non_variant(*this, struct_.Content->functions);
 
             parent_struct = "";
         }
+
+        template<typename T>
+        void add_this(T& declaration){
+            ast::PointerType paramType;
+            paramType.type = parent_struct;
+
+            ast::FunctionParameter param;
+            param.parameterName = "this";
+            param.parameterType = paramType;
+
+            declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+        }
+
+        void operator()(ast::Constructor& constructor){
+            constructor.Content->struct_name = parent_struct;
+            
+            add_this(constructor);
+        }
+
+        void operator()(ast::Destructor& destructor){
+            destructor.Content->struct_name = parent_struct;
+            
+            add_this(destructor);
+        }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!parent_struct.empty()){
-                ast::PointerType paramType;
-                paramType.type = parent_struct;
-                
-                ast::FunctionParameter param;
-                param.parameterName = "this";
-                param.parameterType = paramType;
+            declaration.Content->struct_name = parent_struct;
 
-                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+            if(!parent_struct.empty()){
+                add_this(declaration);
             }
         }
 
@@ -54,14 +77,7 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
 class FunctionInserterVisitor : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
-        
-        void operator()(ast::Struct& struct_){
-            parent_struct = struct_.Content->name;
-
-            visit_each_non_variant(*this, struct_.Content->functions);
-
-            parent_struct = "";
-        }
+        AUTO_RECURSE_STRUCT()
          
         void operator()(ast::FunctionDeclaration& declaration){
             auto return_type = visit(ast::TypeTransformer(), declaration.Content->returnType);
@@ -80,7 +96,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
-            signature->struct_ = parent_struct;
+            signature->struct_ = declaration.Content->struct_name;
             
             declaration.Content->mangledName = signature->mangledName = mangle(signature);
 
@@ -90,6 +106,46 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
 
             symbols.addFunction(signature);
             symbols.getFunction(signature->mangledName)->context = declaration.Content->context;
+        }
+
+        void operator()(ast::Constructor& constructor){
+            auto signature = std::make_shared<Function>(VOID, "ctor");
+            
+            for(auto& param : constructor.Content->parameters){
+                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
+                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+            }
+            
+            signature->struct_ = constructor.Content->struct_name;
+            
+            constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
+
+            if(symbols.exists(signature->mangledName)){
+                throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
+            }
+
+            symbols.addFunction(signature);
+            symbols.getFunction(signature->mangledName)->context = constructor.Content->context;
+        }
+
+        void operator()(ast::Destructor& destructor){
+            auto signature = std::make_shared<Function>(VOID, "dtor");
+            
+            for(auto& param : destructor.Content->parameters){
+                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
+                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+            }
+            
+            signature->struct_ = destructor.Content->struct_name;
+            
+            destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
+
+            if(symbols.exists(signature->mangledName)){
+                throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
+            }
+
+            symbols.addFunction(signature);
+            symbols.getFunction(signature->mangledName)->context = destructor.Content->context;
         }
 
         AUTO_IGNORE_OTHERS()
@@ -114,6 +170,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_CONSTRUCTOR()
+        AUTO_RECURSE_DESTRUCTOR()
+        AUTO_RECURSE_SWITCH()
+        AUTO_RECURSE_SWITCH_CASE()
+        AUTO_RECURSE_DEFAULT_CASE()
 
         void operator()(ast::FunctionDeclaration& declaration){
             currentFunction = symbols.getFunction(declaration.Content->mangledName);
@@ -237,6 +298,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         AUTO_IGNORE_OTHERS()
 };
+
+} //end of anonymous namespace
 
 void ast::defineMemberFunctions(ast::SourceFile& program){
     MemberFunctionAnnotator annotator;

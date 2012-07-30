@@ -51,6 +51,9 @@ typedef Deferred<ASTExpression> Expression;
 struct ASTUnary;
 typedef Deferred<ASTUnary> Unary;
 
+struct ASTNew;
+typedef Deferred<ASTNew> New;
+
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
 

@@ -5,21 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_CLEAN_VARIABLES_H
-#define MTAC_CLEAN_VARIABLES_H
+#ifndef MTAC_ESCAPE_ANALYSIS_H
+#define MTAC_ESCAPE_ANALYSIS_H
 
+#include <unordered_set>
 #include <memory>
 
 #include "mtac/Function.hpp"
 
 namespace eddic {
 
+class Variable;
+
 namespace mtac {
 
-void clean_variables(std::shared_ptr<mtac::Function> function);
+typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> EscapedVariables;
 
-} //end of mtac
+EscapedVariables escape_analysis(std::shared_ptr<mtac::Function> function);
 
 } //end of eddic
+
+} //end of mtac
 
 #endif

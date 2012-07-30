@@ -5,8 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef VARIANT_H
-#define VARIANT_H
+#ifndef EDDIC_BOOST_VARIANT_H
+#define EDDIC_BOOST_VARIANT_H
+
+#include "boost_cfg.hpp"
 
 #include <boost/variant.hpp>
 
