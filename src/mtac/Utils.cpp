@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/Utils.hpp"
 
@@ -33,38 +34,86 @@ bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
     return false;
 }
 
-template<typename T>
-void collect(mtac::VariableUsage& usage, T arg){
-    if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-        ++usage[*variablePtr];
-    }
-}
+namespace {
 
-template<typename T>
-void collect_optional(mtac::VariableUsage& usage, T opt){
-    if(opt){
-        collect(usage, *opt);
+struct VariableUsageCollector : public boost::static_visitor<> {
+    mtac::VariableUsage& usage;
+
+    VariableUsageCollector(mtac::VariableUsage& usage) : usage(usage) {}
+
+    template<typename T>
+    void collect(T& arg){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            ++usage[*variablePtr];
+        }
     }
-}
+
+    template<typename T>
+    void collect_optional(T& opt){
+        if(opt){
+            collect(*opt);
+        }
+    }
+
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+        ++usage[quadruple->result];
+        collect_optional(quadruple->arg1);
+        collect_optional(quadruple->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::Param> param){
+        collect(param->arg);
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
+        collect(if_->arg1);
+        collect_optional(if_->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        collect(if_false->arg1);
+        collect_optional(if_false->arg2);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
+
+struct BasicBlockUsageCollector : public boost::static_visitor<> {
+    std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage;
+
+    BasicBlockUsageCollector(std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage) : usage(usage) {}
+
+    void operator()(std::shared_ptr<mtac::Goto> goto_){
+        usage.insert(goto_->block);
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
+        usage.insert(if_->block);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        usage.insert(if_false->block);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
+
+} //end of anonymous namespace
 
 mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function> function){
     mtac::VariableUsage usage;
 
+    VariableUsageCollector collector(usage);
+
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                ++usage[(*ptr)->result];
-                collect_optional(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                collect(usage, (*ptr)->arg);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                collect(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                collect(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            }
+           visit(collector, statement); 
         }
     }
 
@@ -72,15 +121,11 @@ mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function>
 }
 
 void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
+    BasicBlockUsageCollector collector(usage);
+
     for(auto& block : function->getBasicBlocks()){
         for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
-                usage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                usage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                usage.insert((*ptr)->block);
-            }
+           visit(collector, statement); 
         }
     }
 }
