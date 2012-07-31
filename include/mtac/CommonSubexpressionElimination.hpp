@@ -37,7 +37,7 @@ struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::For
     ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
     ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
     
-    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
+    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 
     boost::optional<Expressions> init;
 };

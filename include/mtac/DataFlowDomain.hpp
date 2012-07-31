@@ -25,7 +25,7 @@ struct Domain {
         //Nothing to init
     }
 
-    Domain(DomainValues values) : int_values(std::move(values)){
+    Domain(DomainValues values) : int_values(values){
         //Nothing to init
     }
 

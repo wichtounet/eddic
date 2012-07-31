@@ -113,7 +113,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
     return out;
 }
 
-bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
+bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
 
     bool changes = false;
