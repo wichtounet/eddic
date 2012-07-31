@@ -183,25 +183,20 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
     }
 };
 
-void clone(std::vector<mtac::Statement>& sources, std::vector<mtac::Statement>& destination){
-    StatementClone cloner;
-    
-    for(auto& statement : sources){
-        destination.push_back(visit(cloner, statement));
-    }
-}
-
 template<typename Iterator>
 BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit){
     BBClones bb_clones;
+    StatementClone cloner;
 
     for(auto block : source_function->getBasicBlocks()){
         //Copy all basic blocks except ENTRY and EXIT
         if(block->index >= 0){
             auto new_bb = std::make_shared<mtac::BasicBlock>(dest_function->getBasicBlocks().size() + 1);
             new_bb->context = block->context;
-
-            clone(block->statements, new_bb->statements);
+    
+            for(auto& statement : block->statements){
+                new_bb->statements.push_back(visit(cloner, statement));
+            }
 
             bb_clones[block] = new_bb;
 
