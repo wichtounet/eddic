@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "Variable.hpp"
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/Utils.hpp"
@@ -107,14 +108,14 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
 namespace {
 
 struct ConstantOptimizer : public boost::static_visitor<> {
-    mtac::ConstantPropagationValues& results;
+    mtac::Domain<mtac::ConstantPropagationValues>& results;
     mtac::EscapedVariables& pointer_escaped;
     bool changes = false;
 
-    ConstantOptimizer(mtac::ConstantPropagationValues& results, mtac::EscapedVariables& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
+    ConstantOptimizer(mtac::Domain<mtac::ConstantPropagationValues>& results, mtac::EscapedVariables& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
 
     bool optimize_arg(mtac::Argument& arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
             if(results.find(*ptr) != results.end() && pointer_escaped->find(*ptr) == pointer_escaped->end()){
                 arg = results[*ptr];
                 return true;
@@ -180,7 +181,7 @@ struct ConstantOptimizer : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
-    ConstantOptimizer optimizer(global_results->IN_S[statement]);
+    ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
 
     visit(optimizer, statement);
 
