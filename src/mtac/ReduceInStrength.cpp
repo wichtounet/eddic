@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-void mtac::ReduceInStrength::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void mtac::ReduceInStrength::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     switch(quadruple->op){
         case mtac::Operator::MUL:
             if(*quadruple->arg1 == 2){

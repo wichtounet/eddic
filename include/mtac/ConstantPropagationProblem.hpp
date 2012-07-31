@@ -33,7 +33,7 @@ struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
-    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>>& results);
+    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 };
 
 } //end of mtac

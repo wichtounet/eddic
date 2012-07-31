@@ -269,7 +269,7 @@ void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple
     }
 }
 
-void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple){
+void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple){
     auto reg = manager.get_reg_no_move(quadruple->result);
 
     //The first argument is not important, it can be immediate, but the second must be a register
@@ -300,7 +300,7 @@ void ltac::StatementCompiler::pop(ltac::Argument arg){
     bp_offset -= INT->size();
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_false){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
     manager.set_current(if_false);
 
     if(if_false->op){
@@ -373,7 +373,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse>& if_fals
     offset_labels[if_false->block->label] = bp_offset;
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
     manager.set_current(if_);
 
     if(if_->op){
@@ -447,7 +447,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If>& if_){
     offset_labels[if_->block->label] = bp_offset;
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto>& goto_){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
     manager.set_current(goto_);
 
     //The basic block must be ended before the jump
@@ -478,7 +478,7 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_pt
     return reg;
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     manager.set_current(param);
     manager.save_registers(param, descriptor);
     
@@ -584,7 +584,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param>& param){
     }
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call>& call){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     manager.set_current(call);
 
     function->add(std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL));
@@ -1258,7 +1258,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     ltac::add_instruction(function, ltac::Operator::RET);
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     set_current(quadruple);
 
     switch(quadruple->op){
@@ -1373,7 +1373,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple>& quadr
     }
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>&){
+void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>){
     //Nothing to do
 }
 

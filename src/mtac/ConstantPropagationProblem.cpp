@@ -123,7 +123,7 @@ bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& resu
     return false;
 }
 
-bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
+bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
 
     bool changes = false;

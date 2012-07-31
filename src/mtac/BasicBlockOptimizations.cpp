@@ -163,7 +163,7 @@ bool mtac::remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
 
     blocks.erase(
             std::remove_if(it, end, 
-                [&](std::shared_ptr<mtac::BasicBlock>& b){ return usage.find(b) == usage.end(); }), 
+                [&](std::shared_ptr<mtac::BasicBlock> b){ return usage.find(b) == usage.end(); }), 
             end);
 
     return blocks.size() < before;

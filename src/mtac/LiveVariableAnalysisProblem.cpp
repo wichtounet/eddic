@@ -110,7 +110,7 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
     return in;
 }
 
-bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& /*global_results*/){
+bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
     //This analysis is only made to gather information, not to optimize anything
     throw "Unimplemented";
 }

@@ -30,7 +30,7 @@ static void collect(boost::optional<mtac::Argument>& arg, std::unordered_set<std
     }
 }
 
-void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(pass == mtac::Pass::DATA_MINING){
         collect(quadruple->arg1, used);
         collect(quadruple->arg2, used);
@@ -60,20 +60,20 @@ void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple>& qu
     }
 }
 
-void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Param>& param){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Param> param){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&param->arg, used);
     }
 }
 
-void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&ifFalse->arg1, used);
         collect(ifFalse->arg2, used);
     }
 }
 
-void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::If>& if_){
+void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::If> if_){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&if_->arg1, used);
         collect(if_->arg2, used);

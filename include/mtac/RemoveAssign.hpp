@@ -27,10 +27,10 @@ class RemoveAssign : public boost::static_visitor<void> {
         bool optimized = false;
         Pass pass;
 
-        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
-        void operator()(std::shared_ptr<mtac::Param>& param);
-        void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse);
-        void operator()(std::shared_ptr<mtac::If>& if_);
+        void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
+        void operator()(std::shared_ptr<mtac::Param> param);
+        void operator()(std::shared_ptr<mtac::IfFalse> ifFalse);
+        void operator()(std::shared_ptr<mtac::If> if_);
 
         template<typename T>
         void operator()(T&) const { 

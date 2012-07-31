@@ -151,7 +151,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
     return result;
 }
 
-bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
+bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
