@@ -111,11 +111,7 @@ mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function>
 
     VariableUsageCollector collector(usage);
 
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-           visit(collector, statement); 
-        }
-    }
+    visit_all_statements(collector, function);
 
     return usage;
 }
@@ -123,11 +119,7 @@ mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function>
 void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
     BasicBlockUsageCollector collector(usage);
 
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-           visit(collector, statement); 
-        }
-    }
+    visit_all_statements(collector, function);
 }
 
 bool eddic::mtac::safe(const std::string& function){
