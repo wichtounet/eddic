@@ -104,40 +104,42 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
     return out;
 }
 
-bool optimize_arg(mtac::Argument* arg, ProblemDomain& results, mtac::EscapedVariables& pointer_escaped){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-        if(results.find(*ptr) != results.end() && pointer_escaped->find(*ptr) == pointer_escaped->end()){
-            *arg = results[*ptr];
-            return true;
-        }
-    }
+namespace {
 
-    return false;
-}
-
-bool optimize_optional(boost::optional<mtac::Argument>& arg, ProblemDomain& results, mtac::EscapedVariables& pointer_escaped){
-    if(arg){
-        return optimize_arg(&*arg, results, pointer_escaped);
-    }
-
-    return false;
-}
-
-bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
-    auto& results = global_results->IN_S[statement];
-
+struct ConstantOptimizer : public boost::static_visitor<> {
+    mtac::ConstantPropagationValues& results;
+    mtac::EscapedVariables& pointer_escaped;
     bool changes = false;
 
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        auto& quadruple = *ptr;
+    ConstantOptimizer(mtac::ConstantPropagationValues& results, mtac::EscapedVariables& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
 
+    bool optimize_arg(mtac::Argument& arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
+            if(results.find(*ptr) != results.end() && pointer_escaped->find(*ptr) == pointer_escaped->end()){
+                arg = results[*ptr];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool optimize_optional(boost::optional<mtac::Argument>& arg){
+        if(arg){
+            return optimize_arg(*arg);
+        }
+
+        return false;
+    }
+
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         //Do not replace a variable by a constant when used in offset
         if(quadruple->op != mtac::Operator::PDOT && quadruple->op != mtac::Operator::DOT && quadruple->op != mtac::Operator::PASSIGN){
-            changes |= optimize_optional(quadruple->arg1, results, pointer_escaped);
+            changes |= optimize_optional(quadruple->arg1);
         }
         
         if(quadruple->op != mtac::Operator::DOT_PASSIGN){
-            changes |= optimize_optional(quadruple->arg2, results, pointer_escaped);
+            changes |= optimize_optional(quadruple->arg2);
         }
 
         if(!mtac::erase_result(quadruple->op) && quadruple->result && quadruple->op != mtac::Operator::DOT_ASSIGN){
@@ -151,23 +153,36 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std:
                 }
             }
         }
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        auto& param = *ptr;
-
-        if(!param->address){
-            changes |= optimize_arg(&param->arg, results, pointer_escaped);
-        }
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-        auto& ifFalse = *ptr;
-        
-        changes |= optimize_arg(&ifFalse->arg1, results, pointer_escaped);
-        changes |= optimize_optional(ifFalse->arg2, results, pointer_escaped);
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-        auto& if_ = *ptr;
-        
-        changes |= optimize_arg(&if_->arg1, results, pointer_escaped);
-        changes |= optimize_optional(if_->arg2, results, pointer_escaped);
     }
 
-    return changes;
+    void operator()(std::shared_ptr<mtac::Param> param){
+        if(!param->address){
+            changes |= optimize_arg(param->arg);
+        }
+    }
+
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        changes |= optimize_arg(if_false->arg1);
+        changes |= optimize_optional(if_false->arg2);
+    }
+
+    void operator()(std::shared_ptr<mtac::If> if_){
+        changes |= optimize_arg(if_->arg1);
+        changes |= optimize_optional(if_->arg2);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
+
+} //end of anonymous namespace
+
+bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+    ConstantOptimizer optimizer(global_results->IN_S[statement]);
+
+    visit(optimizer, statement);
+
+    return optimizer.changes;
 }
