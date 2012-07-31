@@ -24,8 +24,8 @@ as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w) : 
 
 namespace {
 
-struct X86_64StringConverter : public as::StringConverter {
-    std::string to_string(eddic::ltac::Register reg) const {
+struct X86_64StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
+    std::string operator()(ltac::Register& reg) const {
         static std::string registers[14] = {
             "rax", "rbx", "rcx", "rdx", "rsi", "rdi", 
             "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"};
@@ -38,32 +38,30 @@ struct X86_64StringConverter : public as::StringConverter {
 
         return registers[static_cast<int>(reg)];
     }
-
-    std::string to_string(eddic::ltac::FloatRegister reg) const {
+    
+    std::string operator()(ltac::FloatRegister& reg) const {
         static std::string registers[8] = {
             "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
         return registers[static_cast<int>(reg)];
     }
     
-    std::string to_string(eddic::ltac::Argument& arg) const {
-        if(auto* ptr = boost::get<int>(&arg)){
-            return ::toString(*ptr);
-        } else if(auto* ptr = boost::get<double>(&arg)){
-            std::stringstream ss;
-            ss << "__float64__(" << std::fixed << *ptr << ")";
-            return ss.str();
-        } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
-            return to_string(*ptr); 
-        } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
-            return to_string(*ptr); 
-        } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
-            return address_to_string(*ptr);
-        } else if(auto* ptr = boost::get<std::string>(&arg)){
-            return *ptr;
-        }
+    std::string operator()(ltac::Address& address) const {
+        return address_to_string(address);
+    }
 
-        ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
+    std::string operator()(int value) const {
+       return ::toString(value);
+    }
+
+    std::string operator()(const std::string& value) const {
+        return value;
+    }
+
+    std::string operator()(double value) const {
+        std::stringstream ss;
+        ss << "__float64__(" << std::fixed << value << ")";
+        return ss.str();
     }
 };
 
@@ -73,7 +71,7 @@ namespace x86_64 {
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     X86_64StringConverter converter;
-    return os << converter.to_string(arg);
+    return os << visit(converter, arg);
 }
 
 } //end of x86_64 namespace

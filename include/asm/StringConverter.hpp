@@ -24,9 +24,8 @@ namespace as {
 struct StringConverter {
     std::string address_to_string(eddic::ltac::Address& address) const;
 
-    virtual std::string to_string(eddic::ltac::Register reg) const = 0;
-    virtual std::string to_string(eddic::ltac::FloatRegister reg) const = 0;
-    virtual std::string to_string(eddic::ltac::Argument& arg) const = 0;
+    virtual std::string operator()(ltac::Register& reg) const = 0;
+    virtual std::string operator()(ltac::FloatRegister& reg) const = 0;
 };
 
 } //end of namespace as
