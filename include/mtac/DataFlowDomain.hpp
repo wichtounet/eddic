@@ -48,7 +48,7 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
         //Nothing to init
     }
 
-    Domain(Values values) : int_values(std::move(values)){
+    Domain(Values values) : int_values(values){
         //Nothing to init
     }
 
