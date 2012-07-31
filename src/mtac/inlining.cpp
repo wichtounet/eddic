@@ -23,16 +23,6 @@ using namespace eddic;
 
 namespace {
 
-std::size_t size_of(std::shared_ptr<mtac::Function> function){
-    std::size_t size = 0;
-
-    for(auto block : function->getBasicBlocks()){
-        size += block->statements.size();
-    }
-
-    return size;
-}
-
 typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> VariableClones;
 typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>> BBClones;
 
@@ -361,7 +351,7 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
         if(symbols.referenceCount(function->getName()) == 1){
             return true;
         } else {
-            auto size = size_of(function);
+            auto size = function->size();
 
             //Inline little functions
             if(size < 10){
