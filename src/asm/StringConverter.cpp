@@ -18,7 +18,7 @@ std::string as::StringConverter::address_to_string(eddic::ltac::Address& address
         }
 
         if(address.base_register){
-            return "[" + *address.absolute + " + " + to_string(*address.base_register) + "]";
+            return "[" + *address.absolute + " + " + (*this)(*address.base_register) + "]";
         }
 
         return "[" + *address.absolute + "]";
@@ -28,24 +28,24 @@ std::string as::StringConverter::address_to_string(eddic::ltac::Address& address
         if(address.scaled_register){
             if(address.scale){
                 if(address.displacement){
-                    return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
+                    return "[" + (*this)(*address.base_register) + " + " + (*this)(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
                 }
                 
-                return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
+                return "[" + (*this)(*address.base_register) + " + " + (*this)(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
             }
                 
             if(address.displacement){
-                return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
+                return "[" + (*this)(*address.base_register) + " + " + (*this)(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
             }
             
-            return "[" + to_string(*address.base_register) + " + " + to_string(*address.scaled_register) + "]";
+            return "[" + (*this)(*address.base_register) + " + " + (*this)(*address.scaled_register) + "]";
         }
                 
         if(address.displacement){
-            return "[" + to_string(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
+            return "[" + (*this)(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
         }
 
-        return "[" + to_string(*address.base_register) + "]";
+        return "[" + (*this)(*address.base_register) + "]";
     }
 
     if(address.displacement){

@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "ltac/Utils.hpp"
 
@@ -50,17 +51,26 @@ ltac::Register eddic::ltac::to_register(std::shared_ptr<Variable> var, ltac::Reg
     }
 }
 
-ltac::Argument eddic::ltac::to_arg(mtac::Argument argument, ltac::RegisterManager& manager){
-    if(auto* ptr = boost::get<int>(&argument)){
-        return *ptr;
-    } else if(auto* ptr = boost::get<double>(&argument)){
-        return manager.float_pool->label(*ptr);
-    } else if(auto* ptr = boost::get<std::string>(&argument)){
-        return *ptr;
-    } else {
-        assert(mtac::isVariable(argument));
-        auto variable = boost::get<std::shared_ptr<Variable>>(argument);
+namespace {
 
+struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
+    ltac::RegisterManager& manager;
+
+    ToArgVisitor(ltac::RegisterManager& manager) : manager(manager) {}
+
+    ltac::Argument operator()(int& arg) const {
+        return arg;
+    }
+
+    ltac::Argument operator()(double& arg) const {
+        return arg;
+    }
+
+    ltac::Argument operator()(std::string& arg) const {
+        return arg;
+    }
+
+    ltac::Argument operator()(std::shared_ptr<Variable> variable) const {
         if(ltac::is_float_var(variable)){
             if(variable->position().isTemporary()){
                 return manager.get_float_reg_no_move(variable);
@@ -71,4 +81,15 @@ ltac::Argument eddic::ltac::to_arg(mtac::Argument argument, ltac::RegisterManage
             return to_register(variable, manager);
         }
     }
+
+    template<typename T>
+    ltac::Argument operator()(T&) const {
+        ASSERT_PATH_NOT_TAKEN("Unhandled arg type");
+    }
+};
+
+} //end of anonymous
+
+ltac::Argument eddic::ltac::to_arg(mtac::Argument argument, ltac::RegisterManager& manager){
+    return visit(ToArgVisitor(manager), argument);
 }

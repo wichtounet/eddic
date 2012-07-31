@@ -51,6 +51,13 @@ inline void assertIntOrVariable(T& variant){
     assert(isInt(variant) || isVariable(variant));
 }
 
+template<typename Visitor>
+void visit_all_statements(Visitor& visitor, std::shared_ptr<mtac::Function> function){
+    for(auto& block : function->getBasicBlocks()){
+        visit_each(visitor, block->statements);
+    }
+}
+
 bool is_single_int_register(std::shared_ptr<const Type> type);
 bool is_single_float_register(std::shared_ptr<const Type> type);
 

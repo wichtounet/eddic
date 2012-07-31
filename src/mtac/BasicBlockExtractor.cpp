@@ -16,6 +16,8 @@
 
 using namespace eddic;
 
+namespace {
+
 template<typename T>
 bool isReturn(T statement){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
@@ -24,6 +26,8 @@ bool isReturn(T statement){
 
     return false;
 }
+
+} //end of anonymous namespace
 
 void mtac::BasicBlockExtractor::extract(std::shared_ptr<mtac::Program> program) const {
     for(auto& function : program->functions){
