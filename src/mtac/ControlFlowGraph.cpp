@@ -25,10 +25,10 @@ mtac::ControlFlowGraph::InternalControlFlowGraph& mtac::ControlFlowGraph::get_gr
     return graph;
 }
         
-std::shared_ptr<mtac::BasicBlock> mtac::ControlFlowGraph::entry(){
+std::shared_ptr<mtac::BasicBlock>& mtac::ControlFlowGraph::entry(){
     return entry_block;
 }
 
-std::shared_ptr<mtac::BasicBlock> mtac::ControlFlowGraph::exit(){
+std::shared_ptr<mtac::BasicBlock>& mtac::ControlFlowGraph::exit(){
     return exit_block;
 }

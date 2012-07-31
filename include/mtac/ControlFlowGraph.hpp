@@ -55,8 +55,9 @@ class ControlFlowGraph {
         std::pair<BasicBlockIterator, BasicBlockIterator> blocks();
         std::pair<EdgeIterator, EdgeIterator> edges();
 
-        std::shared_ptr<BasicBlock> entry();
-        std::shared_ptr<BasicBlock> exit();
+        //NOTE: Keep reference
+        std::shared_ptr<BasicBlock>& entry();
+        std::shared_ptr<BasicBlock>& exit();
 
         InternalControlFlowGraph& get_graph();
         
