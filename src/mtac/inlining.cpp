@@ -86,27 +86,34 @@ struct VariableReplace : public boost::static_visitor<> {
     }
 };
 
-void update_usages(BBClones& clones, mtac::Statement& statement){
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-        auto if_ = *ptr; 
+struct BBReplace : public boost::static_visitor<> {
+    BBClones& clones;
 
+    BBReplace(BBClones& clones) : clones(clones) {}
+
+    void operator()(std::shared_ptr<mtac::IfFalse> if_){
         if(clones.find(if_->block) != clones.end()){
             if_->block = clones[if_->block];
         }
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-        auto if_ = *ptr; 
-
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
         if(clones.find(if_->block) != clones.end()){
             if_->block = clones[if_->block];
         }
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
-        auto goto_ = *ptr; 
-
+    }
+    
+    void operator()(std::shared_ptr<mtac::Goto> goto_){
         if(clones.find(goto_->block) != clones.end()){
             goto_->block = clones[goto_->block];
         }
     }
-}
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
 
 void clone(std::vector<mtac::Statement>& sources, std::vector<mtac::Statement>& destination){
     for(auto& statement : sources){
@@ -261,6 +268,7 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
 template<typename Iterator>
 void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, Iterator bit){
     VariableReplace variable_replacer(variable_clones);
+    BBReplace bb_replacer(bb_clones);
 
     auto basic_block = *bit;
     --bit;
@@ -273,10 +281,12 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
         auto ssit = iterate(new_bb->statements);
 
         while(ssit.has_next()){
-            visit(variable_replacer, *ssit);
-            update_usages(bb_clones, *ssit);
+            auto statement = *ssit;
 
-            if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*ssit)){
+            visit(variable_replacer, statement);
+            visit(bb_replacer, statement);
+
+            if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ret_ptr;
 
                 if(quadruple->op == mtac::Operator::RETURN){
