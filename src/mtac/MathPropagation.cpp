@@ -24,7 +24,7 @@ void mtac::MathPropagation::collect(boost::optional<mtac::Argument>& arg){
     }
 }
 
-void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(pass == mtac::Pass::DATA_MINING){
         collect(quadruple->arg1);
         collect(quadruple->arg2);
@@ -49,14 +49,14 @@ void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple>& quadrup
     }
 }
 
-void mtac::MathPropagation::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+void mtac::MathPropagation::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&ifFalse->arg1);
         collect(ifFalse->arg2);
     }
 }
 
-void mtac::MathPropagation::operator()(std::shared_ptr<mtac::If>& if_){
+void mtac::MathPropagation::operator()(std::shared_ptr<mtac::If> if_){
     if(pass == mtac::Pass::DATA_MINING){
         collect(&if_->arg1);
         collect(if_->arg2);

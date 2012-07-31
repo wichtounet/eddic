@@ -105,7 +105,7 @@ class RegisterManager {
         void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
         void collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
 
-        void save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor);
+        void save_registers(std::shared_ptr<mtac::Param> param, PlatformDescriptor* descriptor);
         void restore_pushed_registers();
 
         std::shared_ptr<StatementCompiler> access_compiler();

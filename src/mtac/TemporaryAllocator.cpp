@@ -40,7 +40,7 @@ struct CollectTemporary : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         if(quadruple->result){
             updateTemporary(quadruple->result);
         }
@@ -71,20 +71,20 @@ struct CollectTemporary : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::If>& if_){
+    void operator()(std::shared_ptr<mtac::If> if_){
         updateIf(if_);
     }
 
-    void operator()(std::shared_ptr<mtac::IfFalse>& if_false){
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
         updateIf(if_false);
     }
 
-    void operator()(std::shared_ptr<mtac::Call>& call_){
+    void operator()(std::shared_ptr<mtac::Call> call_){
         updateTemporary(call_->return_);
         updateTemporary(call_->return2_);
     }
 
-    void operator()(std::shared_ptr<mtac::Param>& param){
+    void operator()(std::shared_ptr<mtac::Param> param){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
             updateTemporary(*ptr);
         }

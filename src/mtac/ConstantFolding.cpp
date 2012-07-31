@@ -16,7 +16,7 @@
 
 using namespace eddic;
     
-void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(quadruple->arg1){
         if(mtac::isInt(*quadruple->arg1)){
             if(quadruple->op == mtac::Operator::MINUS){
@@ -127,7 +127,7 @@ bool computeValueFloat(T& if_){
 
 } //End of anonymous namespace
 
-void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
     if(ifFalse->op){
         if(mtac::isInt(ifFalse->arg1) && mtac::isInt(*ifFalse->arg2)){
             bool value = computeValueInt(ifFalse);
@@ -149,7 +149,7 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
     }
 }
 
-void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If>& if_){
+void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If> if_){
     if(if_->op){
         if(mtac::isInt(if_->arg1) && mtac::isInt(*if_->arg2)){
             bool value = computeValueInt(if_);

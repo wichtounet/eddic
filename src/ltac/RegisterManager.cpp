@@ -466,7 +466,7 @@ void ltac::RegisterManager::restore_pushed_registers(){
     first_param = true;
 }
 
-void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, PlatformDescriptor* descriptor){
     if(first_param){
         if(param->function){
             std::set<ltac::Register> overriden_registers;
