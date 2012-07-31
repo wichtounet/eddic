@@ -44,6 +44,40 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
     return result;
 }
 
+namespace {
+
+struct ConstantCollector : public boost::static_visitor<> {
+    ProblemDomain& out;
+    std::shared_ptr<Variable> var;
+
+    ConstantCollector(ProblemDomain& out, std::shared_ptr<Variable> var) : out(out), var(var) {}
+
+    void operator()(int value){
+        out[var] = value;
+    }
+    
+    void operator()(const std::string& value){
+        out[var] = value;
+    }
+    
+    void operator()(double value){
+        out[var] = value;
+    }
+    
+    void operator()(std::shared_ptr<Variable> variable){
+        if(variable != var){
+            out[var] = *ptr;
+        }
+    }
+
+    template<typename T>
+    void operator()(T&){
+        out.erase(var);
+    }
+};
+
+} //end of anonymous namespace
+
 ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
@@ -52,20 +86,8 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
         auto quadruple = *ptr;
 
         if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
-            if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-                out[quadruple->result] = *ptr;
-            } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(*ptr != quadruple->result){
-                    out[quadruple->result] = *ptr;
-                }
-            } else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
-                out[quadruple->result] = *ptr;
-            } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg1)){
-                out[quadruple->result] = *ptr;
-            } else {
-                //The result is not constant at this point
-                out.erase(quadruple->result);
-            }
+            ConstantCollector collector(out, quadruple->result);
+            visit(collector, *statement->arg1);
         } else {
             auto op = quadruple->op;
 

@@ -45,7 +45,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, Pr
 
 namespace {
 
-struct OffsetCollector : public boost::static_visitor<> {
+struct ConstantCollector : public boost::static_visitor<> {
     ProblemDomain& out;
     const mtac::Offset& offset;
 
@@ -86,7 +86,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 if(!quadruple->result->type()->is_pointer()){
                     mtac::Offset offset(quadruple->result, *ptr);
-                    OffsetCollector collector(out, offset);
+                    ConstantCollector collector(out, offset);
 
                     visit(collector, *quadruple->arg2);
                 }
