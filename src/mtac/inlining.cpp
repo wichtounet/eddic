@@ -13,6 +13,7 @@
 #include "Type.hpp"
 #include "FunctionContext.hpp"
 #include "iterators.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/inlining.hpp"
 #include "mtac/Printer.hpp"
@@ -35,49 +36,51 @@ std::size_t size_of(std::shared_ptr<mtac::Function> function){
 typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> VariableClones;
 typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>> BBClones;
 
-template<typename Value>
-void update_usage(VariableClones& clones, Value& value){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&value)){
-        if(clones.find(*ptr) != clones.end()){
-            value = clones[*ptr];
+struct VariableReplace : public boost::static_visitor<> {
+    VariableClones& clones;
+
+    VariableReplace(VariableClones& clones) : clones(clones) {}
+
+    template<typename Value>
+    void update_usage(Value& value){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&value)){
+            if(clones.find(*ptr) != clones.end()){
+                value = clones[*ptr];
+            }
         }
     }
-}
 
-template<typename Opt>
-void update_usage_optional(VariableClones& clones, Opt& opt){
-    if(opt){
-        update_usage(clones, *opt);
+    template<typename Opt>
+    void update_usage_optional(Opt& opt){
+        if(opt){
+            update_usage(*opt);
+        }
     }
-}
-
-void update_usages(VariableClones& clones, mtac::Statement& statement){
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        auto quadruple = *ptr; 
-
+    
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         if(clones.find(quadruple->result) != clones.end()){
             quadruple->result = clones[quadruple->result];
         }
 
-        update_usage_optional(clones, quadruple->arg1);
-        update_usage_optional(clones, quadruple->arg2);
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        auto param = *ptr; 
-        
-        update_usage(clones, param->arg);
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-        auto if_ = *ptr; 
-        
-        update_usage(clones, if_->arg1);
-        update_usage_optional(clones, if_->arg2);
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-        auto if_ = *ptr; 
-        
-        update_usage(clones, if_->arg1);
-        update_usage_optional(clones, if_->arg2);
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-        auto call_ = *ptr; 
-
+        update_usage_optional(quadruple->arg1);
+        update_usage_optional(quadruple->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::Param> param){
+        update_usage(param->arg);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        update_usage(if_false->arg1);
+        update_usage_optional(if_false->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
+        update_usage(if_->arg1);
+        update_usage_optional(if_->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::Call> call_){
         if(call_->return_ && clones.find(call_->return_) != clones.end()){
             call_->return_ = clones[call_->return_];
         }
@@ -86,7 +89,12 @@ void update_usages(VariableClones& clones, mtac::Statement& statement){
             call_->return2_ = clones[call_->return2_];
         }
     }
-}
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
 
 void update_usages(BBClones& clones, mtac::Statement& statement){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
@@ -262,6 +270,8 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
 
 template<typename Iterator>
 void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, Iterator bit){
+    VariableReplace variable_replacer(variable_clones);
+
     auto basic_block = *bit;
     --bit;
 
@@ -273,7 +283,7 @@ void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, st
         auto ssit = iterate(new_bb->statements);
 
         while(ssit.has_next()){
-            update_usages(variable_clones, *ssit);
+            visit(variable_replacer, *ssit);
             update_usages(bb_clones, *ssit);
 
             if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*ssit)){
