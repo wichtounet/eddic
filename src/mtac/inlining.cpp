@@ -115,71 +115,79 @@ struct BBReplace : public boost::static_visitor<> {
     }
 };
 
-void clone(std::vector<mtac::Statement>& sources, std::vector<mtac::Statement>& destination){
-    for(auto& statement : sources){
-        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-            auto quadruple = *ptr; 
+struct StatementClone : public boost::static_visitor<mtac::Statement> {
+    mtac::Statement operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+        auto copy = std::make_shared<mtac::Quadruple>();
 
-            auto copy = std::make_shared<mtac::Quadruple>();
-
-            copy->result = quadruple->result;
-            copy->arg1 = quadruple->arg1;
-            copy->arg2 = quadruple->arg2;
-            copy->op = quadruple->op;
-
-            destination.push_back(copy);
-        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-            auto param = *ptr; 
-
-            auto copy = std::make_shared<mtac::Param>();
-            
-            copy->arg = param->arg;
-            copy->param = param->param;
-            copy->std_param = param->std_param;
-            copy->function = param->function;
-            copy->address = param->address;
-            copy->memberNames = param->memberNames;
+        copy->result = quadruple->result;
+        copy->arg1 = quadruple->arg1;
+        copy->arg2 = quadruple->arg2;
+        copy->op = quadruple->op;
+        
+        return copy;
+    }
     
-            destination.push_back(copy);
-        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-            auto if_ = *ptr; 
-            
-            auto copy = std::make_shared<mtac::IfFalse>();
-            
-            copy->op = if_->op;
-            copy->arg1 = if_->arg1;
-            copy->arg2 = if_->arg2;
-            copy->label = if_->label;
-            copy->block = if_->block;
-            
-            destination.push_back(copy);
-        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-            auto if_ = *ptr; 
+    mtac::Statement operator()(std::shared_ptr<mtac::Param> param){
+        auto copy = std::make_shared<mtac::Param>();
 
-            auto copy = std::make_shared<mtac::If>();
-            
-            copy->op = if_->op;
-            copy->arg1 = if_->arg1;
-            copy->arg2 = if_->arg2;
-            copy->label = if_->label;
-            copy->block = if_->block;
-            
-            destination.push_back(copy);
-        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
-            auto goto_ = *ptr; 
+        copy->arg = param->arg;
+        copy->param = param->param;
+        copy->std_param = param->std_param;
+        copy->function = param->function;
+        copy->address = param->address;
+        copy->memberNames = param->memberNames;
 
-            auto copy = std::make_shared<mtac::Goto>(goto_->label, goto_->type);
-            copy->block = goto_->block;
-            destination.push_back(copy);
-        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-            auto call = *ptr; 
+        return copy;
+    }
 
-            destination.push_back(std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_));
-        } else if(auto* ptr = boost::get<std::string>(&statement)){
-            destination.push_back(*ptr);
-        } 
+    mtac::Statement operator()(std::shared_ptr<mtac::IfFalse> if_){
+        auto copy = std::make_shared<mtac::IfFalse>();
 
-        //No need to copy NOP
+        copy->op = if_->op;
+        copy->arg1 = if_->arg1;
+        copy->arg2 = if_->arg2;
+        copy->label = if_->label;
+        copy->block = if_->block;
+
+        return copy;
+    }
+
+    mtac::Statement operator()(std::shared_ptr<mtac::If> if_){
+        auto copy = std::make_shared<mtac::If>();
+
+        copy->op = if_->op;
+        copy->arg1 = if_->arg1;
+        copy->arg2 = if_->arg2;
+        copy->label = if_->label;
+        copy->block = if_->block;
+
+        return copy;
+    }
+    
+    mtac::Statement operator()(std::shared_ptr<mtac::Call> call){
+        return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
+    }
+
+    mtac::Statement operator()(std::shared_ptr<mtac::Goto> goto_){
+        auto copy = std::make_shared<mtac::Goto>(goto_->label, goto_->type);
+        copy->block = goto_->block;
+        return copy;
+    }
+
+    mtac::Statement operator()(std::shared_ptr<mtac::NoOp>){
+        return std::make_shared<mtac::NoOp>();
+    }
+
+    mtac::Statement operator()(std::string& str){
+        return str;
+    }
+};
+
+void clone(std::vector<mtac::Statement>& sources, std::vector<mtac::Statement>& destination){
+    StatementClone cloner;
+    
+    for(auto& statement : sources){
+        destination.push_back(visit(cloner, statement));
     }
 }
 
@@ -192,6 +200,7 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
         if(block->index >= 0){
             auto new_bb = std::make_shared<mtac::BasicBlock>(dest_function->getBasicBlocks().size() + 1);
             new_bb->context = block->context;
+
             clone(block->statements, new_bb->statements);
 
             bb_clones[block] = new_bb;
