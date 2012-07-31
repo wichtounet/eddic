@@ -66,7 +66,7 @@ struct ConstantCollector : public boost::static_visitor<> {
     
     void operator()(std::shared_ptr<Variable> variable){
         if(variable != var){
-            out[var] = *ptr;
+            out[var] = variable;
         }
     }
 
@@ -87,7 +87,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
 
         if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
             ConstantCollector collector(out, quadruple->result);
-            visit(collector, *statement->arg1);
+            visit(collector, *quadruple->arg1);
         } else {
             auto op = quadruple->op;
 

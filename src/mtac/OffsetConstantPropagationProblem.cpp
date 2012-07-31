@@ -49,7 +49,7 @@ struct ConstantCollector : public boost::static_visitor<> {
     ProblemDomain& out;
     const mtac::Offset& offset;
 
-    OffsetCollector(ProblemDomain& out, const mtac::Offset& offset) : out(out), offset(offset) {}
+    ConstantCollector(ProblemDomain& out, const mtac::Offset& offset) : out(out), offset(offset) {}
 
     void operator()(int value){
         out[offset] = value;
