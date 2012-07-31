@@ -41,7 +41,7 @@ struct register_guard {
 
 } //end of anonymous namespace
 
-ltac::StatementCompiler::StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+ltac::StatementCompiler::StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
         manager(registers, float_registers, function, float_pool), function(function), float_pool(float_pool) {
     descriptor = getPlatformDescriptor(platform);

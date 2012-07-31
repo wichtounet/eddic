@@ -26,7 +26,7 @@ namespace ltac {
 
 class StatementCompiler : public boost::static_visitor<> {
     public:
-        StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
                 std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
     
         /*!

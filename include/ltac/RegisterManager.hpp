@@ -49,7 +49,7 @@ class RegisterManager {
         std::shared_ptr<FloatPool> float_pool;
         std::weak_ptr<StatementCompiler> compiler;
 
-        RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
                 std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
 
         /*!

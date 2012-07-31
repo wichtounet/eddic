@@ -499,10 +499,10 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     mutable std::shared_ptr<mtac::Function> function;
     
-    virtual void intAssign(std::vector<mtac::Argument> arguments) const = 0;
-    virtual void pointerAssign(std::vector<mtac::Argument> arguments) const = 0;
-    virtual void floatAssign(std::vector<mtac::Argument> arguments) const = 0;
-    virtual void stringAssign(std::vector<mtac::Argument> arguments) const = 0;
+    virtual void intAssign(const std::vector<mtac::Argument>& arguments) const = 0;
+    virtual void pointerAssign(const std::vector<mtac::Argument>& arguments) const = 0;
+    virtual void floatAssign(const std::vector<mtac::Argument>& arguments) const = 0;
+    virtual void stringAssign(const std::vector<mtac::Argument>& arguments) const = 0;
     
     template<typename T>
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
@@ -536,7 +536,7 @@ struct AssignValueToVariable : public AbstractVisitor {
     boost::optional<unsigned int> offset;
     boost::optional<ast::Value> indexValue;
 
-    void intAssign(std::vector<mtac::Argument> arguments) const {
+    void intAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
         } else if(indexValue){
@@ -547,7 +547,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
 
-    void pointerAssign(std::vector<mtac::Argument> arguments) const {
+    void pointerAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_PASSIGN, arguments[0]));
         } else if(indexValue){
@@ -558,7 +558,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
 
-    void floatAssign(std::vector<mtac::Argument> arguments) const {
+    void floatAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_FASSIGN, arguments[0]));
         } else if(indexValue){
@@ -569,7 +569,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
 
-    void stringAssign(std::vector<mtac::Argument> arguments) const {
+    void stringAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset + INT->size(), mtac::Operator::DOT_ASSIGN, arguments[1]));
@@ -615,7 +615,7 @@ struct DereferenceAssign : public AbstractVisitor {
     std::shared_ptr<Variable> variable;
     unsigned int offset;
 
-    void intAssign(std::vector<mtac::Argument> arguments) const {
+    void intAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
         } else {
@@ -626,7 +626,7 @@ struct DereferenceAssign : public AbstractVisitor {
         }
     }
     
-    void pointerAssign(std::vector<mtac::Argument> arguments) const {
+    void pointerAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
         } else {
@@ -637,7 +637,7 @@ struct DereferenceAssign : public AbstractVisitor {
         }
     }
     
-    void floatAssign(std::vector<mtac::Argument> arguments) const {
+    void floatAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
         } else {
@@ -648,7 +648,7 @@ struct DereferenceAssign : public AbstractVisitor {
         }
     }
 
-    void stringAssign(std::vector<mtac::Argument> arguments) const {
+    void stringAssign(const std::vector<mtac::Argument>& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(), mtac::Operator::DOT_ASSIGN, arguments[1]));

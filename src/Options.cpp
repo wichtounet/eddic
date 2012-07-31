@@ -48,7 +48,7 @@ std::pair<std::string, std::string> numeric_parser(const std::string& s){
     }
 }
 
-void add_trigger(const std::string& option, std::vector<std::string> childs){
+void add_trigger(const std::string& option, const std::vector<std::string>& childs){
    triggers[option] = childs; 
 }
 
