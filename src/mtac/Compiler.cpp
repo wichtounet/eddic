@@ -35,8 +35,6 @@ using namespace eddic;
 
 namespace {
 
-//TODO Visitors should be moved out of this class in a future clenaup phase
-
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
@@ -1253,9 +1251,8 @@ void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const T
             push_struct_member(memberValue, member_type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor(function)(memberValue);
-            std::reverse(member_values.begin(), member_values.end());
 
-            for(auto& v : member_values){
+            for(auto& v : boost::adaptors::reverse(member_values)){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
                     function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
                 } else if(auto* ptr = boost::get<std::string>(&param)){
@@ -1288,9 +1285,8 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
             push_struct_member(memberValue, type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor(function)(memberValue);
-            std::reverse(member_values.begin(), member_values.end());
 
-            for(auto& v : member_values){
+            for(auto& v : boost::adaptors::reverse(member_values)){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
                     function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
                 } else if(auto* ptr = boost::get<std::string>(&param)){
@@ -1306,14 +1302,13 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
     auto context = definition->context;
     
     auto values = functionCall.Content->values;
-    std::reverse(values.begin(), values.end());
 
     //If it's a standard function, there are no context
     if(!context){
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
-        for(auto& first : values){
+        for(auto& first : boost::adaptors::reverse(values)){
             auto param = parameters[i--].name; 
             
             auto args = visit(ToArgumentsVisitor(function), first);
@@ -1325,7 +1320,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
-        for(auto& first : values){
+        for(auto& first : boost::adaptors::reverse(values)){
             std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
@@ -1597,7 +1592,6 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
             
     ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
 }
-
 
 } //end of anonymous namespace
 
