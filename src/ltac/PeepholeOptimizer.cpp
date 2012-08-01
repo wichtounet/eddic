@@ -571,7 +571,6 @@ void add_param_registers(RegisterUsage& usage){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
    
-    //TODO Find a way to use that only if DIV is used afterward
     usage.insert(ltac::Register(descriptor->a_register()));
     usage.insert(ltac::Register(descriptor->d_register()));
 
@@ -713,8 +712,6 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                 collect_usage(usage, instruction->arg2);
                 collect_usage(usage, instruction->arg3);
             }
-
-            //TODO Take in account more instructions that erase results, optimize them and remove them from the usage
         } else {
             //Takes care of safe functions
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
