@@ -1569,7 +1569,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
 
             return temp;
         } 
-    } else if(auto* ptr = boost::get<ast::ArrayValue>(&operation.Content->left_value)){
+    } else if(boost::get<ast::ArrayValue>(&operation.Content->left_value)){
         auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
 
         if(type == FLOAT){
