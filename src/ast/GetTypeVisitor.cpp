@@ -29,7 +29,7 @@ ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, BOOL)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, BOOL)
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Null& /*null*/) const {
-    return new_pointer_type(INT); //TODO Check that
+    return new_pointer_type(INT);
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::New& value) const {
