@@ -125,11 +125,6 @@ class SymbolTable {
         int referenceCount(const std::string& function);
 };
 
-/*!
- * The global symbol table. 
- */
-extern SymbolTable symbols;
-
 } //end of eddic
 
 #endif

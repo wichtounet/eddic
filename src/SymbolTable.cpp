@@ -11,9 +11,6 @@
 
 using namespace eddic;
 
-//Global symbol table
-SymbolTable eddic::symbols;
-
 SymbolTable::SymbolTable(){
     reset();
 }
