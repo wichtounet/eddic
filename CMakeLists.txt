@@ -34,6 +34,18 @@ add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -
     COMMENT "Analysing the code with cppcheck" VERBATIM
 )
 
+# Add a target to profile the whole code with oprofile
+add_custom_target(oprofile 
+    sudo opcontrol --vmlinux=/usr/src/linux/arch/x86/boot/compressed/vmlinux
+    && sudo opcontrol --start
+    && ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}/eddi_samples/big.eddi
+    && sudo opreport -l ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic > ${CMAKE_CURRENT_BINARY_DIR}/profile
+    && sudo opcontrol --shutdown
+    
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Analysing the code with cppcheck" VERBATIM
+)
+
 # Add a custom target to gather stats
 add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
