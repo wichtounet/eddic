@@ -15,7 +15,7 @@
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
-#include "mtac/Utils.hpp" //TODO Perhaps part of this should be moved to ltac ? 
+#include "mtac/Utils.hpp" 
 
 using namespace eddic;
 
