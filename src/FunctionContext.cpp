@@ -92,29 +92,13 @@ std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& param
     return variables[parameter] = newParameter(parameter, type);
 }
 
-std::shared_ptr<Variable> FunctionContext::newTemporary(){
+std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
+    ASSERT((ype->is_standard() && type != STRING) || type->is_pointer, "Invalid temprary");
+
     Position position(PositionType::TEMPORARY);
 
-    std::string name = "ti_" + toString(temporary++);
-    auto var = std::make_shared<Variable>(name, INT, position); 
-    storage[name] = var;
-    return variables[name] = var;
-}
-
-std::shared_ptr<Variable> FunctionContext::newFloatTemporary(){
-    Position position(PositionType::TEMPORARY);
-
-    std::string name = "tf_" + toString(temporary++);
-    auto var = std::make_shared<Variable>(name, FLOAT, position); 
-    storage[name] = var;
-    return variables[name] = var;
-}
-
-std::shared_ptr<Variable> FunctionContext::newPointerTemporary(){
-    Position position(PositionType::TEMPORARY);
-
-    std::string name = "tp_" + toString(temporary++);
-    auto var = std::make_shared<Variable>(name, new_pointer_type(INT), position); 
+    std::string name = "t_" + toString(temporary++);
+    auto var = std::make_shared<Variable>(name, type, position); 
     storage[name] = var;
     return variables[name] = var;
 }

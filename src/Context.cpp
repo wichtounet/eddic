@@ -38,28 +38,8 @@ bool Context::exists(const std::string& variable) const {
     return true;
 }
 
-std::shared_ptr<Variable> Context::newTemporary(){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
-}
-
-std::shared_ptr<Variable> Context::newFloatTemporary(){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
-}
-
-std::shared_ptr<Variable> Context::newPointerTemporary(){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
-}
-
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
-    if(type == INT || type == BOOL){ 
-        return newTemporary();
-    } else if(type == FLOAT){
-        return newFloatTemporary();
-    } else if(type->is_pointer()){
-        return newPointerTemporary(); 
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Temporary can only represent int, bool and float");
-    }
+    ASSERT_PATH_NOT_TAKEN("Not implemented");
 }
 
 std::shared_ptr<Variable> Context::operator[](const std::string& variable) const {
