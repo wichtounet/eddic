@@ -27,6 +27,8 @@
 #include "parser/SpiritParser.hpp"
 #include "parser/EDDIGrammar.hpp"
 
+#include <cxxabi.h>
+
 namespace qi = boost::spirit::qi;
 namespace spirit = boost::spirit;
 
@@ -59,24 +61,25 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
             return true;
         } else {
             std::cout << "Parsing failed" << std::endl;
-            const spirit::classic::file_position_base<std::string>& pos = position_begin.get_position();
+            
+            const auto& pos = position_begin.get_position();
             std::cout <<
                 "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl <<
                 "'" << position_begin.get_currentline() << "'" << std::endl <<
-                std::setw(pos.column - 1) << " " << "^- here" << std::endl;
+                std::setw(pos.column) << " ^- here" << std::endl;
             
             return false;
         }
     } catch (const qi::expectation_failure<lexer::lexer_type::iterator_type>& exception) {
         std::cout << "Parsing failed" << std::endl;
+
+        auto pos_begin = (*exception.first).value().begin();
       
-        //TODO Improve to get information from exception 
-        const auto& pos = position_begin.get_position();
-       
+        const auto& pos = pos_begin.get_position();
         std::cout <<
             "Error at file " << pos.file << " line " << pos.line << " column " << pos.column << " Expecting " << exception.what_ << std::endl <<
-            "'" << position_begin.get_currentline() << "'" << std::endl <<
-            std::setw(pos.column - 1) << " " << "^- here" << std::endl;
+            "'" << pos_begin.get_currentline() << "'" << std::endl <<
+            std::setw(pos.column) << " ^- here" << std::endl;
         
         return false;
     }
