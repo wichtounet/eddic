@@ -42,28 +42,14 @@ bool Type::is_const() const {
     return false;
 }
 
-static int size(BaseType type){
-    //TODO Those sizes should be stored directly inside the current platform
-    static int typeSizes32[BASETYPE_COUNT] = {  8, 4, 4, 4, 0 };
-    static int typeSizes64[BASETYPE_COUNT] = { 16, 8, 8, 8, 0 };
-
-    switch(platform){
-        case Platform::INTEL_X86:
-            return typeSizes32[(unsigned int) type];
-        case Platform::INTEL_X86_64:
-            return typeSizes64[(unsigned int) type];
-    }
-
-    return -1;
-}
-
 unsigned int Type::size() const {
     if(is_array()){
         return data_type()->size() * elements() + INT->size(); 
     }
 
     if(is_standard_type()){
-        return ::size(base());
+        auto descriptor = getPlatformDescriptor(platform);
+        return descriptor->size_of(base());
     }
 
     if(is_custom_type()){
