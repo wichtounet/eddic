@@ -71,17 +71,17 @@ std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_p
 }
 
 std::shared_ptr<Variable> performIntOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
-    return performOperation(value, function, function->context->newTemporary(), &mtac::toOperator);
+    return performOperation(value, function, function->context->new_temporary(INT), &mtac::toOperator);
 }
 
 std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
-    return performOperation(value, function, function->context->newFloatTemporary(), &mtac::toFloatOperator);
+    return performOperation(value, function, function->context->new_temporary(FLOAT), &mtac::toFloatOperator);
 }
 
 mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, std::shared_ptr<mtac::Function> function){
     mtac::Argument index = moveToArgument(indexValue, function);
     
-    auto temp = function->context->newTemporary();
+    auto temp = function->context->new_temporary(INT);
 
     function->add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size()));
     function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size()));
@@ -181,7 +181,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 } else if(variable->position().isStack()){
                     return {variable->type()->elements()};
                 } else if(variable->position().isParameter()){
-                    auto t1 = function->context->newTemporary();
+                    auto t1 = function->context->new_temporary(INT);
 
                     //The size of the array is at the address pointed by the variable
                     function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
@@ -208,8 +208,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             return {t1};
         } else if(type == STRING){
-            auto t1 = function->context->newTemporary();
-            auto t2 = function->context->newTemporary();
+            auto t1 = function->context->new_temporary(INT);
+            auto t2 = function->context->new_temporary(INT);
 
             execute_call(call, function, t1, t2);
 
@@ -229,8 +229,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             return {t1};
         } else if(type == STRING){
-            auto t1 = function->context->newTemporary();
-            auto t2 = function->context->newTemporary();
+            auto t1 = function->context->new_temporary(INT);
+            auto t2 = function->context->new_temporary(INT);
 
             execute_member_call(call, function, t1, t2);
 
@@ -310,7 +310,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 if(type == INT || type == BOOL || type == FLOAT){
                     return {value.Content->var};
                 } else if(type == STRING){
-                    auto temp = value.Content->context->newTemporary();
+                    auto temp = value.Content->context->new_temporary(INT);
                     function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size()));
 
                     return {value.Content->var, temp};
@@ -410,11 +410,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
                 return {temp};
             } else if (type == STRING){
-                auto t1 = array.Content->context->newTemporary();
+                auto t1 = array.Content->context->new_temporary(INT);
                 function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::DOT, index));
 
-                auto t2 = array.Content->context->newTemporary();
-                auto t3 = array.Content->context->newTemporary();
+                auto t2 = array.Content->context->new_temporary(INT);
+                auto t3 = array.Content->context->new_temporary(INT);
 
                 //Assign the second part of the string
                 function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size()));
@@ -443,8 +443,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else if(type == BOOL){
             return {performBoolOperation(value, function)};
         } else {
-            auto t1 = function->context->newTemporary();
-            auto t2 = function->context->newTemporary();
+            auto t1 = function->context->new_temporary(INT);
+            auto t2 = function->context->new_temporary(INT);
 
             performStringOperation(value, function, t1, t2);
             
@@ -578,7 +578,7 @@ struct AssignValueToVariable : public AbstractVisitor {
 
             function->add(std::make_shared<mtac::Quadruple>(variable, index, mtac::Operator::DOT_ASSIGN, arguments[0]));
 
-            auto temp1 = function->context->newTemporary();
+            auto temp1 = function->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, INT->size()));
             function->add(std::make_shared<mtac::Quadruple>(variable, temp1, mtac::Operator::DOT_ASSIGN, arguments[1]));
         } else {
@@ -867,8 +867,8 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
 
         return {t1};
     } else if(type == STRING){
-        auto t1 = function->context->newTemporary();
-        auto t2 = function->context->newTemporary();
+        auto t1 = function->context->new_temporary(INT);
+        auto t2 = function->context->new_temporary(INT);
         
         visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
         auto args = visit(ToArgumentsVisitor(function), ternary.Content->true_value);
@@ -918,8 +918,8 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
         if(i == value.Content->operations.size() - 1){
             function->add(std::make_shared<mtac::Call>("_F6concatSS", symbols.getFunction("_F6concatSS"), v1, v2)); 
         } else {
-            auto t1 = function->context->newTemporary();
-            auto t2 = function->context->newTemporary();
+            auto t1 = function->context->new_temporary(INT);
+            auto t2 = function->context->new_temporary(INT);
             
             function->add(std::make_shared<mtac::Call>("_F6concatSS", symbols.getFunction("_F6concatSS"), t1, t2)); 
           
@@ -1134,7 +1134,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto lhs_var = swap.Content->lhs_var;
             auto rhs_var = swap.Content->rhs_var;
             
-            auto t1 = swap.Content->context->newTemporary();
+            auto t1 = swap.Content->context->new_temporary(INT);
 
             if(lhs_var->type() == INT || lhs_var->type() == BOOL || lhs_var->type() == STRING){
                 function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::ASSIGN));  
@@ -1142,7 +1142,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 function->add(std::make_shared<mtac::Quadruple>(lhs_var, t1, mtac::Operator::ASSIGN));  
                 
                 if(lhs_var->type() == STRING){
-                    auto t2 = swap.Content->context->newTemporary();
+                    auto t2 = swap.Content->context->new_temporary(INT);
 
                     //t1 = 4(b)
                     function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::DOT, INT->size()));  
@@ -1395,7 +1395,7 @@ void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
-    auto t1 = function->context->newTemporary(); 
+    auto t1 = function->context->new_temporary(INT); 
    
     //The first operator defines the kind of operation 
     auto op = value.Content->operations[0].get<0>();
@@ -1480,7 +1480,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
         auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
 
         if(type == FLOAT){
-            auto t1 = function->context->newFloatTemporary();
+            auto t1 = function->context->new_temporary(FLOAT);
 
             //Load left value in t1
             visit(AssignValueToVariable(function, t1), operation.Content->left_value);
@@ -1553,7 +1553,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
         auto var = (*ptr).Content->var;
 
         if(var->type() == FLOAT){
-            auto temp = function->context->newFloatTemporary();
+            auto temp = function->context->new_temporary(FLOAT);
 
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FASSIGN));
 
@@ -1561,7 +1561,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
 
             return temp;
         } else if(var->type() == INT){
-            auto temp = function->context->newTemporary();
+            auto temp = function->context->new_temporary(INT);
 
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::ASSIGN));
 
@@ -1573,7 +1573,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
         auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
 
         if(type == FLOAT){
-            auto temp = function->context->newFloatTemporary();
+            auto temp = function->context->new_temporary(FLOAT);
 
             //Load left value in temp
             visit(AssignValueToVariable(function, temp), operation.Content->left_value);

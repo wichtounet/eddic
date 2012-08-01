@@ -92,8 +92,8 @@ std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& param
     return variables[parameter] = newParameter(parameter, type);
 }
 
-std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
-    ASSERT((ype->is_standard() && type != STRING) || type->is_pointer, "Invalid temprary");
+std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const Type> type){
+    ASSERT((type->is_standard_type() && type != STRING) || type->is_pointer(), "Invalid temprary");
 
     Position position(PositionType::TEMPORARY);
 
