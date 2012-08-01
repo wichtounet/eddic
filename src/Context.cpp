@@ -51,7 +51,7 @@ std::shared_ptr<Variable> Context::newPointerTemporary(){
 }
 
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
-    if(type == INT || type == BOOL){ //TODO Perhaps the temporary should be of a special pointer type ?
+    if(type == INT || type == BOOL){ 
         return newTemporary();
     } else if(type == FLOAT){
         return newFloatTemporary();
