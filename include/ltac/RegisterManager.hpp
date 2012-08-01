@@ -32,9 +32,6 @@ class StatementCompiler;
 
 class RegisterManager {
     public:
-        //The registers
-        as::Registers<ltac::Register> registers;
-        as::Registers<ltac::FloatRegister> float_registers;
 
         //Keep track of the written variables to spills them
         std::unordered_set<std::shared_ptr<Variable>> written;
@@ -120,6 +117,10 @@ class RegisterManager {
     
     private: 
         mtac::Statement current;
+        
+        //The registers
+        as::Registers<ltac::Register> registers;
+        as::Registers<ltac::FloatRegister> float_registers;
         
         //Store the Register that are saved before call
         std::vector<ltac::Register> int_pushed;

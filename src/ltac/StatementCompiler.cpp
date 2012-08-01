@@ -19,8 +19,6 @@
 
 using namespace eddic;
 
-//TODO Avoid as much as possible direct acess to the the registers fields of the manager
-
 namespace {
 
 template<typename Reg>
