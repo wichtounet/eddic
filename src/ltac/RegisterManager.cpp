@@ -545,6 +545,30 @@ void ltac::RegisterManager::set_current(mtac::Statement statement){
         printer.printStatement(statement);
     }
 }
+        
+bool ltac::RegisterManager::in_register(std::shared_ptr<Variable> variable, ltac::Register reg){
+    return registers.inRegister(variable, reg);
+}
+
+bool ltac::RegisterManager::in_register(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
+    return float_registers.inRegister(variable, reg);
+}
+        
+void ltac::RegisterManager::setLocation(std::shared_ptr<Variable> variable, ltac::Register reg){
+   registers.setLocation(variable, reg); 
+}
+
+void ltac::RegisterManager::setLocation(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
+   float_registers.setLocation(variable, reg); 
+}
+
+bool ltac::RegisterManager::is_reserved(ltac::Register reg){
+    return registers.reserved(reg);
+}
+
+bool ltac::RegisterManager::is_reserved(ltac::FloatRegister reg){
+    return float_registers.reserved(reg);
+}
 
 void ltac::RegisterManager::reserve(ltac::Register reg){
     registers.reserve(reg);

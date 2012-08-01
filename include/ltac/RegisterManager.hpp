@@ -62,6 +62,8 @@ class RegisterManager {
          */
         RegisterManager& operator=(const RegisterManager& rhs) = delete;
 
+        bool is_reserved(ltac::Register reg);
+        bool is_reserved(ltac::FloatRegister reg);
         void reserve(ltac::Register reg);
         void reserve(ltac::FloatRegister reg);
         void release(ltac::Register reg);
@@ -79,6 +81,12 @@ class RegisterManager {
         ltac::Register get_reg_no_move(std::shared_ptr<Variable> var);
         ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var);
         ltac::FloatRegister get_float_reg_no_move(std::shared_ptr<Variable> var);
+        
+        bool in_register(std::shared_ptr<Variable> variable, ltac::Register reg);
+        bool in_register(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
+        
+        void setLocation(std::shared_ptr<Variable> variable, ltac::Register reg);
+        void setLocation(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
 
         void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg);
         void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
