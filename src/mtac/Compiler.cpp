@@ -1573,7 +1573,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
             //Load left value in temp
             visit(AssignValueToVariable(function, temp), operation.Content->left_value);
             
-            //TODO Check if there are not one temporary too much
+            //Note: The extra temporary will be removed by optimizations
             performPrefixOperation(operation, function);
 
             return temp;
@@ -1583,7 +1583,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shar
             //Load left value in temp
             visit(AssignValueToVariable(function, temp), operation.Content->left_value);
             
-            //TODO Check if there are not one temporary too much
+            //Note: The extra temporary will be removed by optimizations
             performPrefixOperation(operation, function);
 
             return temp;
