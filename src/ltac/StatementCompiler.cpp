@@ -280,10 +280,10 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
         ltac::add_instruction(function, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
     }
 
-    //TODO Find a better way to achieve that
-    auto valueReg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
-    ltac::add_instruction(function, ltac::Operator::MOV, valueReg, 1); 
-    ltac::add_instruction(function, set, reg, valueReg); 
+    //Conditionally move 1 in the register
+    auto value_reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
+    ltac::add_instruction(function, ltac::Operator::MOV, value_reg, 1); 
+    ltac::add_instruction(function, set, reg, value_reg); 
 
     manager.set_written(quadruple->result);
 }
@@ -466,7 +466,6 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_p
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
     auto reg = manager.get_free_reg();
 
-    //TODO There are perhaps other exceptions...
     if(var->position().isParameter() && !var->type()->is_array()){
         ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(var, offset));
     } else {
