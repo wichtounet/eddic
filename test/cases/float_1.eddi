@@ -1,0 +1,64 @@
+float global[5];
+
+void main(){
+    print(5.499);
+    print("|");
+    print(100f);
+    print("|");
+    print(-100.0);
+    print("|");
+    print(+100.0);
+    print("|");
+    print(2.0889);
+    print("|");
+
+    float aaaaa = 4.2;
+    print(aaaaa);
+    print("|");
+    aaaaa = 3.33;
+    print(aaaaa);
+    print("|");
+
+    float a = 1.5;
+    print(a);
+    print("|");
+    
+    float b = 3.0;
+    print(b);
+    print("|");
+    
+    float d = 5f;
+    print(d);
+    print("|");
+
+    float c = a + b;
+	print(c);
+    print("|");
+    c = b + 2.75;
+    print(c);
+    print("|");
+    c = b - a;
+    print(c);
+    print("|");
+    c = b - d;
+    print(c);
+    print("|");
+    c = a * d;
+    print(c);
+    print("|");
+    c = d - 2.73;
+    print(c);
+    print("|");
+    c = c * 3.33;
+    print(c);
+    print("|");
+    c = d / 0.345;
+    print(c);
+    print("|");
+    c = 1f + 2f;
+    print(c);
+    print("|");
+    c = c + 5f;
+    print(c);
+    print("|");
+}
