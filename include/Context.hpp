@@ -72,21 +72,6 @@ class Context {
         virtual void removeVariable(const std::string& variable);
 
         /*!
-         * \brief Create a new temporary in this context. 
-         * The created temporary variable will be of type int. 
-         * \return The created temporary variable. 
-         */
-        virtual std::shared_ptr<Variable> newTemporary();
-        
-        /*!
-         * \brief Create a new temporary in this context. 
-         * The created temporary variable will be of type float. 
-         * \return The created temporary variable. 
-         */
-        virtual std::shared_ptr<Variable> newFloatTemporary();
-        virtual std::shared_ptr<Variable> newPointerTemporary();
-        
-        /*!
          * \brief Create a new temporary of the given type in this context. 
          * This function will fails if the given type is not standard. 
          * \param type The type of variable to create. 

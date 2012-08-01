@@ -1,0 +1,73 @@
+float global[5];
+
+void main(){
+    print(test(2.0888, 1.00222));
+    print("|");
+    
+    float a = 1.5;
+    float b = 3.0;
+
+    if(a < b){
+        print("1");
+    } else {
+        print("0");
+    }
+
+    print("|");
+
+    if(a > b){
+        print("0");
+    } else {
+        print("1");
+    }
+
+    print("|");
+
+    for(float i = 0.0; i < 5.0; ++i){
+        print(1);
+    }
+
+    print("|");
+
+    float array[7];
+    
+    array[1] = 2.5;
+    array[2] = 5.5;
+
+    test(array[1], array[2]);
+    
+    print(array[1]); 
+    print("|");
+    print(array[2]); 
+    print("|");
+    
+    global[1] = 2.5;
+    global[2] = 5.5;
+    
+    print(global[1]); 
+    print("|");
+    print(global[2]); 
+    print("|");
+
+    testArray(global);
+    testArray(array);
+}
+
+float test(float a, float b){
+    float c = a + b;
+    print(c);
+    print("|");
+    
+    float d = a * b;
+    print(d);
+    print("|");
+    
+    return c + d;
+}
+
+void testArray(float[] a){
+    print(a[1]);
+    print("|");
+    print(a[2]);
+    print("|");
+}

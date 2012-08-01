@@ -120,7 +120,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
             add_trigger("warning-all", {"warning-unused", "warning-cast"});
             
-            //TODO Should be a better way to do that
+            //Special triggers for optimization levels
             add_trigger("__1", {"fpeephole-optimization"});
             add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
             
@@ -168,7 +168,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             return false;
         }
 
-        //TODO Perhaps a more clear way to do that
+        //Update optimization level based on special switches
         if(options.count("O0")){
             configuration->values["Opt"].value = 0;
         } else if(options.count("O1")){

@@ -181,9 +181,7 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     
 ltac::RegisterManager::RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
-    registers(registers, std::make_shared<Variable>("__fake_int__", INT, Position(PositionType::TEMPORARY))),
-    float_registers(float_registers, std::make_shared<Variable>("__fake_float__", FLOAT, Position(PositionType::TEMPORARY))), 
-    function(function), float_pool(float_pool) {
+    AbstractRegisterManager(registers, float_registers), function(function), float_pool(float_pool) {
         //Nothing else to init
 }
 
@@ -545,27 +543,7 @@ void ltac::RegisterManager::set_current(mtac::Statement statement){
         printer.printStatement(statement);
     }
 }
-
-void ltac::RegisterManager::reserve(ltac::Register reg){
-    registers.reserve(reg);
-    DEBUG_GLOBAL std::cout << "Int Register " << reg  << " reserved" << std::endl;
-}
-
-void ltac::RegisterManager::release(ltac::Register reg){
-    registers.release(reg);
-    DEBUG_GLOBAL std::cout << "Int Register " << reg  << " released" << std::endl;
-}
-
-void ltac::RegisterManager::reserve(ltac::FloatRegister reg){
-    float_registers.reserve(reg);
-    DEBUG_GLOBAL std::cout << "Float Register " << reg  << " reserved" << std::endl;
-}
-
-void ltac::RegisterManager::release(ltac::FloatRegister reg){
-    float_registers.release(reg);
-    DEBUG_GLOBAL std::cout << "Float Register " << reg  << " released" << std::endl;
-}
-    
+        
 bool ltac::RegisterManager::is_written(std::shared_ptr<Variable> variable){
     return written.find(variable) != written.end();
 }

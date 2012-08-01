@@ -21,8 +21,7 @@
 #include "mtac/EscapeAnalysis.hpp"
 
 #include "ltac/Program.hpp"
-
-#include "asm/Registers.hpp"
+#include "ltac/AbstractRegisterManager.hpp"
 
 namespace eddic {
 
@@ -30,12 +29,8 @@ namespace ltac {
 
 class StatementCompiler;
 
-class RegisterManager {
+class RegisterManager : public AbstractRegisterManager {
     public:
-        //The registers
-        as::Registers<ltac::Register> registers;
-        as::Registers<ltac::FloatRegister> float_registers;
-
         //Keep track of the written variables to spills them
         std::unordered_set<std::shared_ptr<Variable>> written;
 
@@ -62,23 +57,18 @@ class RegisterManager {
          */
         RegisterManager& operator=(const RegisterManager& rhs) = delete;
 
-        void reserve(ltac::Register reg);
-        void reserve(ltac::FloatRegister reg);
-        void release(ltac::Register reg);
-        void release(ltac::FloatRegister reg);
-
         void reset();
+
+        ltac::Register get_reg(std::shared_ptr<Variable> var);
+        ltac::Register get_reg_no_move(std::shared_ptr<Variable> var);
+        ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var);
+        ltac::FloatRegister get_float_reg_no_move(std::shared_ptr<Variable> var);
 
         void copy(mtac::Argument argument, ltac::FloatRegister reg);
         void copy(mtac::Argument argument, ltac::Register reg);
 
         void move(mtac::Argument argument, ltac::Register reg);
         void move(mtac::Argument argument, ltac::FloatRegister reg);
-
-        ltac::Register get_reg(std::shared_ptr<Variable> var);
-        ltac::Register get_reg_no_move(std::shared_ptr<Variable> var);
-        ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var);
-        ltac::FloatRegister get_float_reg_no_move(std::shared_ptr<Variable> var);
 
         void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg);
         void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);

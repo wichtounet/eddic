@@ -15,11 +15,9 @@
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
-#include "mtac/Utils.hpp" //TODO Perhaps part of this should be moved to ltac ? 
+#include "mtac/Utils.hpp" 
 
 using namespace eddic;
-
-//TODO Avoid as much as possible direct acess to the the registers fields of the manager
 
 namespace {
 
@@ -261,7 +259,7 @@ void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple
 
         ltac::add_instruction(function, ltac::Operator::DIV, reg);
 
-        if(manager.registers.reserved(reg)){
+        if(manager.is_reserved(reg)){
             manager.release(reg);
         }
     } else {
@@ -282,10 +280,10 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
         ltac::add_instruction(function, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
     }
 
-    //TODO Find a better way to achieve that
-    auto valueReg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
-    ltac::add_instruction(function, ltac::Operator::MOV, valueReg, 1); 
-    ltac::add_instruction(function, set, reg, valueReg); 
+    //Conditionally move 1 in the register
+    auto value_reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
+    ltac::add_instruction(function, ltac::Operator::MOV, value_reg, 1); 
+    ltac::add_instruction(function, set, reg, value_reg); 
 
     manager.set_written(quadruple->result);
 }
@@ -468,7 +466,6 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_p
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
     auto reg = manager.get_free_reg();
 
-    //TODO There are perhaps other exceptions...
     if(var->position().isParameter() && !var->type()->is_array()){
         ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(var, offset));
     } else {
@@ -634,13 +631,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
             if(call->return_->position().is_register()){
                 ltac::add_instruction(function, ltac::Operator::MOV, manager.get_float_reg_no_move(call->return_), ltac::FloatRegister(descriptor->float_return_register()));
             } else {
-                manager.float_registers.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
+                manager.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
             }
         } else {
             if(call->return_->position().is_register()){
                 ltac::add_instruction(function, ltac::Operator::MOV, manager.get_reg_no_move(call->return_), ltac::Register(descriptor->int_return_register1()));
             } else {
-                manager.registers.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
+                manager.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
             }
         }
 
@@ -648,7 +645,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     }
 
     if(call->return2_){
-        manager.registers.setLocation(call->return2_, ltac::Register(descriptor->int_return_register2()));
+        manager.setLocation(call->return2_, ltac::Register(descriptor->int_return_register2()));
         manager.set_written(call->return2_);
     }
 
@@ -825,7 +822,7 @@ void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadr
         div_eax(quadruple);
 
         manager.release(A);
-        manager.registers.setLocation(quadruple->result, A);
+        manager.setLocation(quadruple->result, A);
     } else {
         manager.spills(ltac::Register(descriptor->a_register()));
         manager.reserve(ltac::Register(descriptor->a_register()));
@@ -835,7 +832,7 @@ void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadr
         div_eax(quadruple);
 
         manager.release(ltac::Register(descriptor->a_register()));
-        manager.registers.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
+        manager.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
     }
 
     manager.release(ltac::Register(descriptor->d_register()));
@@ -855,7 +852,7 @@ void ltac::StatementCompiler::compile_MOD(std::shared_ptr<mtac::Quadruple> quadr
     div_eax(quadruple);
 
     //result is in edx (no need to move it now)
-    manager.registers.setLocation(quadruple->result, ltac::Register(descriptor->d_register()));
+    manager.setLocation(quadruple->result, ltac::Register(descriptor->d_register()));
 
     manager.release(ltac::Register(descriptor->a_register()));
 
@@ -1219,7 +1216,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
 
             bool necessary = true;
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(manager.registers.inRegister(*ptr, reg1)){
+                if(manager.in_register(*ptr, reg1)){
                     necessary = false;
                 }
             }    
@@ -1233,7 +1230,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
 
                 necessary = true;
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    if(manager.registers.inRegister(*ptr, reg2)){
+                    if(manager.in_register(*ptr, reg2)){
                         necessary = false;
                     }
                 }    
