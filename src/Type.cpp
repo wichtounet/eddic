@@ -43,22 +43,7 @@ bool Type::is_const() const {
 }
 
 unsigned int Type::size() const {
-    if(is_array()){
-        return data_type()->size() * elements() + INT->size(); 
-    }
-
-    if(is_standard_type()){
-        auto descriptor = getPlatformDescriptor(platform);
-        return descriptor->size_of(base());
-    }
-
-    if(is_custom_type()){
-        return symbols.size_of_struct(type());
-    }
-
-    assert(is_pointer());
-
-    return INT->size();
+    ASSERT_PATH_NOT_TAKEN("Not specialized type");
 }
 
 unsigned int Type::elements() const {
@@ -139,6 +124,11 @@ bool StandardType::is_const() const {
     return const_;
 }
 
+unsigned int StandardType::size() const {
+    auto descriptor = getPlatformDescriptor(platform);
+    return descriptor->size_of(base());
+}
+
 /* Implementation of CustomType */
 
 CustomType::CustomType(const std::string& type) : m_type(type) {}
@@ -149,6 +139,10 @@ std::string CustomType::type() const {
 
 bool CustomType::is_custom_type() const {
     return true;
+}
+
+unsigned int CustomType::size() const {
+    return symbols.size_of_struct(type());
 }
         
 /* Implementation of ArrayType  */
@@ -166,6 +160,10 @@ std::shared_ptr<const Type> ArrayType::data_type() const {
 bool ArrayType::is_array() const {
     return true;
 }
+
+unsigned int ArrayType::size() const {
+    return data_type()->size() * elements() + INT->size(); 
+}
         
 /* Implementation of PointerType  */
 
@@ -177,6 +175,10 @@ std::shared_ptr<const Type> PointerType::data_type() const {
 
 bool PointerType::is_pointer() const {
     return true;
+}
+
+unsigned int PointerType::size() const {
+    return INT->size();
 }
 
 /* Implementation of factories  */

@@ -87,7 +87,7 @@ class Type : public std::enable_shared_from_this<Type> {
          * Return the size of the type in memory in octets. 
          * \return the size of the type, in octets.
          */
-        unsigned int size() const;
+        virtual unsigned int size() const;
 
         /*!
          * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
@@ -137,6 +137,8 @@ class StandardType : public Type {
 
         bool is_standard_type() const override;
         bool is_const() const override;
+        
+        unsigned int size() const override;
 };
 
 /*!
@@ -163,6 +165,8 @@ class CustomType : public Type {
         std::string type() const override;
 
         bool is_custom_type() const override;
+        
+        unsigned int size() const override;
 };
 
 /*!
@@ -192,6 +196,8 @@ class ArrayType : public Type {
         std::shared_ptr<const Type> data_type() const override;
 
         bool is_array() const override;
+        
+        unsigned int size() const override;
 };
 
 /*!
@@ -218,6 +224,8 @@ class PointerType : public Type {
         std::shared_ptr<const Type> data_type() const override;
 
         bool is_pointer() const override;
+        
+        unsigned int size() const override;
 };
 
 /* Relational operators  */
