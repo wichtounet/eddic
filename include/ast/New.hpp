@@ -8,12 +8,16 @@
 #ifndef AST_NEW_H
 #define AST_NEW_H
 
+#include <memory>
+
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
+
+class Context;
 
 namespace ast {
 
@@ -23,6 +27,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::New).
  */
 struct ASTNew {
+    std::shared_ptr<Context> context;
     std::string mangled_name;
 
     Position position;

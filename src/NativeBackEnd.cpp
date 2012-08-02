@@ -48,7 +48,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
 
     //Allocate parameters into registers
     if(option_defined("fparameter-allocation")){
-        mtac::register_param_allocation();
+        mtac::register_param_allocation(mtacProgram);
     }
 
     //Allocate variables into registers
@@ -85,7 +85,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
             AssemblyFileWriter writer("output.asm");
 
             as::CodeGeneratorFactory factory;
-            auto generator = factory.get(platform, writer);
+            auto generator = factory.get(platform, writer, mtacProgram->context);
 
             //Generate the code from the LTAC Program
             generator->generate(ltac_program, get_string_pool(), float_pool); 

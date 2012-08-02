@@ -8,9 +8,9 @@
 #include <unordered_map>
 
 #include "Platform.hpp"
-#include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/RegisterAllocation.hpp"
 #include "mtac/Utils.hpp"
@@ -20,13 +20,13 @@
 
 using namespace eddic;
 
-void mtac::register_param_allocation(){
+void mtac::register_param_allocation(std::shared_ptr<mtac::Program> program){
     PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
 
     auto maxInt = descriptor->numberOfIntParamRegisters();
     auto maxFloat = descriptor->numberOfFloatParamRegisters();
 
-    for(auto function_info : symbols){
+    for(auto function_info : program->context->functions()){
         auto function = function_info.second;
 
         //Only custom functions have a context

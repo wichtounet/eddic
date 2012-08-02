@@ -84,7 +84,7 @@ struct Collector : public boost::static_visitor<> {
 
 struct Inspector : public boost::static_visitor<> {
     public:
-        Inspector(Collector& collector) : collector(collector) {}
+        Inspector(Collector& collector, std::shared_ptr<GlobalContext> context) : collector(collector), context(context) {}
     
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -133,7 +133,7 @@ struct Inspector : public boost::static_visitor<> {
         
         void operator()(ast::Struct& declaration){
             if(option_defined("warning-unused")){
-                auto struct_ = symbols.get_struct(declaration.Content->name);
+                auto struct_ = context->get_struct(declaration.Content->name);
 
                 if(struct_->get_references() == 0){
                     warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
@@ -151,7 +151,7 @@ struct Inspector : public boost::static_visitor<> {
             check(declaration.Content->context);
             
             if(option_defined("warning-unused")){
-                int references = symbols.referenceCount(declaration.Content->mangledName);
+                int references = context->referenceCount(declaration.Content->mangledName);
 
                 if(references == 0){
                     warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
@@ -164,7 +164,7 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::Cast& cast){
             if(option_defined("warning-cast")){
                 auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
-                auto dest_type = visit(ast::TypeTransformer(), cast.Content->type);
+                auto dest_type = visit(ast::TypeTransformer(context), cast.Content->type);
 
                 if(src_type == dest_type){
                     warn(cast.Content->position, "useless cast");
@@ -177,6 +177,8 @@ struct Inspector : public boost::static_visitor<> {
     
     private:
         Collector& collector;
+        
+        std::shared_ptr<GlobalContext> context;
 };
 
 } //end of anonymous namespace
@@ -185,6 +187,6 @@ void ast::checkForWarnings(ast::SourceFile& program){
     Collector collector;
     visit_non_variant(collector, program);
 
-    Inspector inspector(collector);
+    Inspector inspector(collector, program.Content->context);
     visit_non_variant(inspector, program);
 }

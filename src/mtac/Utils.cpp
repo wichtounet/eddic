@@ -7,6 +7,7 @@
 
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/Utils.hpp"
 
@@ -152,11 +153,11 @@ bool eddic::mtac::is_expression(mtac::Operator op){
     return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
 }
 
-unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    return compute_member(var, memberNames).first;
+unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+    return compute_member(context, var, memberNames).first;
 }
 
-std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
     auto type = var->type();
 
     std::string struct_name;
@@ -166,7 +167,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
         struct_name = type->type();
     }
 
-    auto struct_type = symbols.get_struct(struct_name);
+    auto struct_type = context->get_struct(struct_name);
     std::shared_ptr<const Type> member_type;
 
     unsigned int offset = 0;
@@ -177,11 +178,11 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 
         member_type = (*struct_type)[member]->type;
 
-        offset += symbols.member_offset(struct_type, member);
+        offset += context->member_offset(struct_type, member);
 
         if(i != members.size() - 1){
             struct_name = member_type->type();
-            struct_type = symbols.get_struct(struct_name);
+            struct_type = context->get_struct(struct_name);
         }
     }
 

@@ -9,9 +9,9 @@
 #include "Type.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/OptimizationEngine.hpp"
 #include "ast/SourceFile.hpp"
@@ -124,66 +124,70 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
 };
 
 struct CanBeRemoved : public boost::static_visitor<bool> {
-        bool operator()(ast::FirstLevelBlock block){
-            return visit(*this, block);
+    std::shared_ptr<GlobalContext> context;
+
+    CanBeRemoved(std::shared_ptr<GlobalContext> context) : context(context) {}
+
+    bool operator()(ast::FirstLevelBlock block){
+        return visit(*this, block);
+    }
+
+    bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
+        if(context->getVariable(variable)->referenceCount() <= 0){
+            //Removing from the AST is not enough, because it is stored in the context now
+            context->removeVariable(variable);
+
+            return true;   
         }
 
-        bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
-            if(context->getVariable(variable)->referenceCount() <= 0){
-                //Removing from the AST is not enough, because it is stored in the context now
-                context->removeVariable(variable);
+        return false;
+    }
 
-                return true;   
-            }
+    bool operator()(ast::GlobalVariableDeclaration& declaration){
+        return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
+    }
 
-            return false;
+    bool operator()(ast::VariableDeclaration& declaration){
+        return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
+    }
+
+    bool operator()(ast::ArrayDeclaration& declaration){
+        return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
+    }
+
+    bool operator()(ast::FunctionDeclaration& declaration){
+        if(context->referenceCount(declaration.Content->mangledName) <= 0){
+            return true;
         }
 
-        bool operator()(ast::GlobalVariableDeclaration& declaration){
-            return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
-        }
+        return false;
+    }
 
-        bool operator()(ast::VariableDeclaration& declaration){
-            return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
-        }
-        
-        bool operator()(ast::ArrayDeclaration& declaration){
-            return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
-        }
+    bool operator()(ast::Instruction& instruction){
+        return visit(*this, instruction); 
+    }
 
-        bool operator()(ast::FunctionDeclaration& declaration){
-            if(symbols.referenceCount(declaration.Content->mangledName) <= 0){
-                return true;
-            }
-
-            return false;
-        }
-
-        bool operator()(ast::Instruction& instruction){
-           return visit(*this, instruction); 
-        }
-
-        //Nothing to optimize for the other types
-        template<typename T>
-        bool operator()(T&) {
-            return false;
-        }
+    //Nothing to optimize for the other types
+    template<typename T>
+    bool operator()(T&) {
+        return false;
+    }
 };
 
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
         ValueOptimizer optimizer;
+        CanBeRemoved visitor;
 
     public:
-        OptimizationVisitor(StringPool& p) : pool(p), optimizer(ValueOptimizer(pool)) {}
+        OptimizationVisitor(StringPool& p, std::shared_ptr<GlobalContext> context) : pool(p), optimizer(ValueOptimizer(pool)), visitor(context) {}
 
         template<typename T>
         void removeUnused(std::vector<T>& vector){
             auto iter = vector.begin();
             auto end = vector.end();
 
-            CanBeRemoved visitor;
             auto newEnd = remove_if(iter, end, visitor);
 
             vector.erase(newEnd, end);
@@ -272,6 +276,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void ast::optimizeAST(ast::SourceFile& program, StringPool& pool){
-    OptimizationVisitor visitor(pool);
+    OptimizationVisitor visitor(pool, program.Content->context);
     visitor(program);
 }

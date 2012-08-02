@@ -10,9 +10,9 @@
 #include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
-#include "SymbolTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
+#include "GlobalContext.hpp"
 
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
@@ -20,7 +20,7 @@
 
 using namespace eddic;
 
-as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
+as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
 
 namespace {
 
@@ -313,12 +313,12 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << std::endl;
     
     //If necessary init memory manager 
-    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
         writer.stream() << "call _F4init" << std::endl; 
     }
 
     //If the user wants the args, we add support for them
-    if(symbols.exists("_F4mainAS")){
+    if(context->exists("_F4mainAS")){
         writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
         
         writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
@@ -352,7 +352,7 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     }
 
     /* Give control to the user main function */
-    if(symbols.exists("_F4mainAS")){
+    if(context->exists("_F4mainAS")){
         writer.stream() << "call _F4mainAS" << std::endl;
     } else {
         writer.stream() << "call _F4main" << std::endl;
@@ -406,58 +406,58 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(as::is_enabled_printI()){
+    if(is_enabled_printI()){
         output_function("x86_32_printI");
     }
     
-    if(symbols.referenceCount("_F7printlnI")){
+    if(context->referenceCount("_F7printlnI")){
         output_function("x86_32_printlnI");
     }
 
-    if(symbols.referenceCount("_F5printF")){
+    if(context->referenceCount("_F5printF")){
         output_function("x86_32_printF");
     }
     
-    if(symbols.referenceCount("_F7printlnF")){
+    if(context->referenceCount("_F7printlnF")){
         output_function("x86_32_printlnF");
     }
     
-    if(symbols.referenceCount("_F5printB")){
+    if(context->referenceCount("_F5printB")){
         output_function("x86_32_printB");
     }
     
-    if(symbols.referenceCount("_F7printlnB")){
+    if(context->referenceCount("_F7printlnB")){
         output_function("x86_32_printlnB");
     }
     
-    if(as::is_enabled_println()){
+    if(is_enabled_println()){
         output_function("x86_32_println");
     }
     
-    if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
+    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
         output_function("x86_32_printS");
     }
     
-    if(symbols.referenceCount("_F7printlnS")){ 
+    if(context->referenceCount("_F7printlnS")){ 
         output_function("x86_32_printlnS");
     }
     
-    if(symbols.referenceCount("_F6concatSS")){
+    if(context->referenceCount("_F6concatSS")){
         output_function("x86_32_concat");
     }
     
     //Memory management functions are included the three together
-    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
         output_function("x86_32_alloc");
         output_function("x86_32_init");
         output_function("x86_32_free");
     }
     
-    if(symbols.referenceCount("_F4timeAI")){
+    if(context->referenceCount("_F4timeAI")){
         output_function("x86_32_time");
     }
     
-    if(symbols.referenceCount("_F8durationAIAI")){
+    if(context->referenceCount("_F8durationAIAI")){
         output_function("x86_32_duration");
     }
 }

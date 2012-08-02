@@ -12,6 +12,8 @@
 
 namespace eddic {
 
+class GlobalContext;
+
 /*!
  * \class FunctionContext
  * \brief A symbol table for a function.
@@ -29,7 +31,7 @@ class FunctionContext : public Context {
         void reallocate_storage();
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent);
+        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context);
         
         int size() const;
 

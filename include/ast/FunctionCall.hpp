@@ -12,11 +12,11 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "Function.hpp"
+
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/Value.hpp"
-
-#include "SymbolTable.hpp"
 
 namespace eddic {
 

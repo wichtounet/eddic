@@ -14,10 +14,9 @@
 #include <list>
 #include <utility>
 
-#include "SymbolTable.hpp"
-
 namespace eddic {
 
+class Function;
 class FunctionContext;
 
 namespace tac {

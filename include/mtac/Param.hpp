@@ -12,12 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "SymbolTable.hpp"
-
 #include "mtac/Argument.hpp"
 
 namespace eddic {
 
+class Function;
 class Variable;
 
 namespace mtac {

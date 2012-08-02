@@ -29,7 +29,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+            auto type = visit(ast::TypeTransformer(declaration.Content->context->global()), declaration.Content->variableType);
 
             if(type->is_standard_type()){
                 if(type == INT){

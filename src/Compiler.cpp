@@ -13,7 +13,6 @@
 #include "Target.hpp"
 #include "Utils.hpp"
 #include "Options.hpp"
-#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 
 #include "FrontEnd.hpp"
@@ -56,9 +55,6 @@ int Compiler::compile(const std::string& file) {
 }
 
 int Compiler::compileOnly(const std::string& file) {
-    //Reset the symbol table
-    symbols.reset();
-
     //Make sure that the file exists 
     if(!file_exists(file)){
         std::cout << "The file \"" + file + "\" does not exists" << std::endl;

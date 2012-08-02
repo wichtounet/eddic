@@ -20,7 +20,7 @@ namespace as {
  */
 class IntelX86CodeGenerator : public IntelCodeGenerator {
     public:
-        IntelX86CodeGenerator(AssemblyFileWriter& writer);
+        IntelX86CodeGenerator(AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
 
     protected:        
         void writeRuntimeSupport();
