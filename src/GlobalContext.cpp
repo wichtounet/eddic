@@ -27,6 +27,8 @@ GlobalContext::GlobalContext() : Context(NULL) {
 
     variables["_mem_last"] = std::make_shared<Variable>("_mem_last", INT, Position(PositionType::GLOBAL, "_mem_last"), zero);
     variables["_mem_last"]->addReference(); //In order to not display a warning
+    
+    defineStandardFunctions();
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
