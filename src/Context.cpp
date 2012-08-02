@@ -10,12 +10,14 @@
 
 #include "assert.hpp"
 #include "Context.hpp"
+#include "GlobalContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
 
 using namespace eddic;
 
 Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
+Context::Context(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context) : m_parent(parent), global_context(global_context) {}
 
 std::shared_ptr<Context> Context::parent() const  {
     return m_parent;
@@ -82,4 +84,8 @@ Context::Variables::const_iterator Context::begin() const {
 
 Context::Variables::const_iterator Context::end() const {
     return variables.cend();
+}
+
+std::shared_ptr<GlobalContext> Context::global() const {
+    return global_context;
 }

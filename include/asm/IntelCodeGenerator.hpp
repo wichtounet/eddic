@@ -25,21 +25,20 @@ class GlobalContext;
 
 namespace as {
 
-bool is_enabled_printI();
-bool is_enabled_println();
-
 /*!
  * \class IntelCodeGenerator
  * \brief Base class for code generator on Intel platform. 
  */
 class IntelCodeGenerator : public CodeGenerator {
     public:
-        IntelCodeGenerator(AssemblyFileWriter& writer);
+        IntelCodeGenerator(AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
         
         void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
-        void addGlobalVariables(std::shared_ptr<GlobalContext> context, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
+        std::shared_ptr<GlobalContext> context;
+
+        void addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
@@ -57,6 +56,9 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareFloat(const std::string& label, double value) = 0;
 
         void output_function(const std::string& function);
+
+        bool is_enabled_printI();
+        bool is_enabled_println();
 };
 
 } //end of as

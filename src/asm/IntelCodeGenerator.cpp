@@ -15,7 +15,7 @@
 
 using namespace eddic;
 
-as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w) : CodeGenerator(w){}
+as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : CodeGenerator(w), context(context) {}
 
 void as::IntelCodeGenerator::generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
@@ -28,7 +28,7 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<ltac::Program> program, st
 
     addStandardFunctions();
 
-    addGlobalVariables(program->context, pool, float_pool);
+    addGlobalVariables(pool, float_pool);
 
     auto size = writer.size();
 
@@ -38,7 +38,7 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<ltac::Program> program, st
     }
 }
 
-void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<GlobalContext> context, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     defineDataSection();
      
     for(auto it : context->getVariables()){
@@ -102,20 +102,20 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
 }
 
 
-bool as::is_enabled_printI(){
-    return symbols.referenceCount("_F5printI") || 
-            symbols.referenceCount("_F5printB") || 
-            symbols.referenceCount("_F7printlnB") || 
-            symbols.referenceCount("_F5printF") || 
-            symbols.referenceCount("_F7printlnF") ||
-            symbols.referenceCount("_F8durationAIAI");
+bool as::IntelCodeGenerator::is_enabled_printI(){
+    return context->referenceCount("_F5printI") || 
+            context->referenceCount("_F5printB") || 
+            context->referenceCount("_F7printlnB") || 
+            context->referenceCount("_F5printF") || 
+            context->referenceCount("_F7printlnF") ||
+            context->referenceCount("_F8durationAIAI");
 }
 
-bool as::is_enabled_println(){
-    return symbols.referenceCount("_F7println") || 
-            symbols.referenceCount("_F7printlnS") || 
-            symbols.referenceCount("_F7printlnI") || 
-            symbols.referenceCount("_F7printlnB") || 
-            symbols.referenceCount("_F7printlnF");
+bool as::IntelCodeGenerator::is_enabled_println(){
+    return context->referenceCount("_F7println") || 
+            context->referenceCount("_F7printlnS") || 
+            context->referenceCount("_F7printlnI") || 
+            context->referenceCount("_F7printlnB") || 
+            context->referenceCount("_F7printlnF");
 }
 

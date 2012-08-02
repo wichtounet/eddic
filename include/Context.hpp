@@ -20,6 +20,7 @@ namespace eddic {
 class Type;
 class Variable;
 class IntermediateProgram;
+class GlobalContext;
 
 /*!
  * \class Context
@@ -32,6 +33,7 @@ class IntermediateProgram;
 class Context {
     private:
         std::shared_ptr<Context> m_parent;
+        std::shared_ptr<GlobalContext> global_context;
 
     protected:
         typedef std::unordered_map<std::string, std::shared_ptr<Variable>> Variables;
@@ -44,6 +46,7 @@ class Context {
          * \param parent The parent Context of this new Context. 
          */
         explicit Context(std::shared_ptr<Context> parent);
+        explicit Context(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context);
         
         Context(const Context& rhs) = delete;
         Context& operator=(const Context& rhs) = delete;
@@ -117,6 +120,8 @@ class Context {
          * \return A pointer to the parent context. If the context is global, this methods returns nullptr. 
          */
         std::shared_ptr<Context> parent() const;
+        
+        std::shared_ptr<GlobalContext> global() const;
 };
 
 } //end of eddic

@@ -10,6 +10,7 @@
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
@@ -56,9 +57,11 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
     return visit(*this, operation.Content->left_value);
 }
 
-std::shared_ptr<const Type> get_member_type(std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
+namespace {
+
+std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> global_context, std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
     auto struct_name = type->type();
-    auto struct_type = symbols.get_struct(struct_name);
+    auto struct_type = global_context->get_struct(struct_name);
 
     for(std::size_t i = 0; i < memberNames.size(); ++i){
         auto member_type = (*struct_type)[memberNames[i]]->type;
@@ -67,12 +70,14 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<const Type> type, co
             return member_type;
         } else {
             struct_name = member_type->type();
-            struct_type = symbols.get_struct(struct_name);
+            struct_type = global_context->get_struct(struct_name);
         }
     }
 
     ASSERT_PATH_NOT_TAKEN("Problem with the type of members in nested struct values")
 }
+
+} //end of anonymous namespace
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     auto type = variable.variable()->type();
@@ -80,7 +85,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
     if(variable.Content->memberNames.empty()){
         return type;
     } else {
-        return get_member_type(type->is_pointer() ? type->data_type() : type, variable.Content->memberNames);
+        return get_member_type(variable.Content->context->global(), type->is_pointer() ? type->data_type() : type, variable.Content->memberNames);
     }
 }
 
@@ -90,7 +95,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValu
     if(array.Content->memberNames.empty()){
         return type;
     } else {
-        return get_member_type(type, array.Content->memberNames);
+        return get_member_type(array.Content->context->global(), type, array.Content->memberNames);
     }
 }
 

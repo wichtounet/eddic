@@ -31,6 +31,10 @@ using namespace eddic;
 namespace {
 
 struct VariablesVisitor : public boost::static_visitor<> {
+    std::shared_ptr<GlobalContext> context;
+
+    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
+
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
     AUTO_RECURSE_SIMPLE_LOOPS()
@@ -59,7 +63,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_STANDARD_IMPORT()
     
     void operator()(ast::Struct& struct_){
-        if(symbols.is_recursively_nested(struct_.Content->name)){
+        if(context->is_recursively_nested(struct_.Content->name)){
             throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
         }
 
@@ -203,7 +207,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
         }
             
-        if(symbols.struct_exists(type->type())){
+        if(context->struct_exists(type->type())){
             if(type->is_const()){
                 throw SemanticalException("Custom types cannot be const", declaration.Content->position);
             }
@@ -248,7 +252,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             declaration.Content->context->addVariable(declaration.Content->variableName, type);
         //If it's a custom type
         } else {
-            if(symbols.struct_exists(type->type())){
+            if(context->struct_exists(type->type())){
                 if(type->is_const()){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
@@ -291,7 +295,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(!variable.Content->memberNames.empty()){
             auto var = variable.Content->var;
             auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-            auto struct_type = symbols.get_struct(struct_name);
+            auto struct_type = context->get_struct(struct_name);
 
             //Reference the structure
             struct_type->add_reference();
@@ -310,7 +314,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 //If it is not the last member
                 if(i != members.size() - 1){
                     //The next member will be a member of the current member type
-                    struct_type = symbols.get_struct((*struct_type)[member]->type->type());
+                    struct_type = context->get_struct((*struct_type)[member]->type->type());
                     struct_name = struct_type->name;
                 }
             }
@@ -348,6 +352,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void ast::defineVariables(ast::SourceFile& program){
-    VariablesVisitor visitor;
+    VariablesVisitor visitor(program.Content->context);
     visit_non_variant(visitor, program);
 }
