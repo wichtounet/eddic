@@ -5,7 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "VisitorUtils.hpp"
 #include "mangling.hpp"

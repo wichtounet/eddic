@@ -10,7 +10,6 @@
 #include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
-#include "SymbolTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"

@@ -17,7 +17,6 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
-#include "SymbolTable.hpp"
 
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/SourceFile.hpp"

@@ -15,7 +15,6 @@
 #include "Variable.hpp"
 #include "Options.hpp"
 #include "VisitorUtils.hpp"
-#include "SymbolTable.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
 

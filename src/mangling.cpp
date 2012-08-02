@@ -11,7 +11,6 @@
 #include "mangling.hpp"
 #include "assert.hpp"
 #include "Utils.hpp"
-#include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 

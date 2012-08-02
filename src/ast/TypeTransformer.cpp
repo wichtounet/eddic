@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "assert.hpp"
-#include "SymbolTable.hpp"
 #include "Type.hpp"
 
 #include "ast/TypeTransformer.hpp"

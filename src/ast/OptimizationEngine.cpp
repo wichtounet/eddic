@@ -9,7 +9,6 @@
 #include "Type.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
-#include "SymbolTable.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "GlobalContext.hpp"

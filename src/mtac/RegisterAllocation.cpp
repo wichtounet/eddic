@@ -8,7 +8,6 @@
 #include <unordered_map>
 
 #include "Platform.hpp"
-#include "SymbolTable.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"

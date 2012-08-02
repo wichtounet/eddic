@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "SymbolTable.hpp"
-
 #include "mtac/Argument.hpp"
 
 namespace eddic {

@@ -13,7 +13,6 @@
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
-#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "FunctionContext.hpp"
 #include "mangling.hpp"

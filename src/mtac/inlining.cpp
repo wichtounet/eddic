@@ -8,7 +8,6 @@
 #include <vector>
 #include <unordered_map>
 
-#include "SymbolTable.hpp"
 #include "Options.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"

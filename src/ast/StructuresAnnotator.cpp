@@ -10,7 +10,6 @@
 #include <string>
 #include <algorithm>
 
-#include "SymbolTable.hpp"
 #include "SemanticalException.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"

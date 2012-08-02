@@ -16,8 +16,6 @@
 #include "ast/Value.hpp"
 #include "ast/Position.hpp"
 
-#include "SymbolTable.hpp"
-
 namespace eddic {
 
 class FunctionContext;
