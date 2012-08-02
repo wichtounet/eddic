@@ -12,6 +12,7 @@
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
+#include "Variable.hpp"
 
 using namespace eddic;
 

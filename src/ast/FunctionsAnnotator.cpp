@@ -11,6 +11,7 @@
 #include "Options.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
 
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/SourceFile.hpp"

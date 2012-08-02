@@ -9,6 +9,8 @@
 #define GLOBAL_CONTEXT_H
 
 #include "Context.hpp"
+#include "Function.hpp"
+#include "Struct.hpp"
 
 namespace eddic {
 

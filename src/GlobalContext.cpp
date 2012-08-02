@@ -212,6 +212,6 @@ void GlobalContext::defineStandardFunctions(){
     addFunction(durationFunction);
 }
 
-FunctionMap GlobalContext::functions(){
+GlobalContext::FunctionMap GlobalContext::functions(){
     return m_functions;
 }

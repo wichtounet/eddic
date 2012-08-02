@@ -14,6 +14,7 @@
 
 namespace eddic {
 
+class FunctionContext;
 class Context;
 
 namespace mtac {

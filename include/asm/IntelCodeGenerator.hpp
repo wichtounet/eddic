@@ -22,6 +22,7 @@ namespace eddic {
 
 class AssemblyFileWriter;
 class GlobalContext;
+class Function;
 
 namespace as {
 
