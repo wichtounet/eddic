@@ -51,25 +51,25 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 }
 
 void GlobalContext::addFunction(std::shared_ptr<Function> function){
-    functions[function->mangledName] = function;
+    m_functions[function->mangledName] = function;
 }
 
 std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function){
     ASSERT(exists(function), "The function must exists");
 
-    return functions[function];
+    return m_functions[function];
 }
 
 bool GlobalContext::exists(const std::string& function){
-    return functions.find(function) != functions.end();
+    return m_functions.find(function) != m_functions.end();
 }
 
 void GlobalContext::add_struct(std::shared_ptr<Struct> struct_){
-    structs[struct_->name] = struct_;
+    m_structs[struct_->name] = struct_;
 }
 
 std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_){
-    return structs[struct_];
+    return m_structs[struct_];
 }
 
 int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
@@ -123,25 +123,25 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_){
 }
 
 bool GlobalContext::struct_exists(const std::string& struct_){
-    return structs.find(struct_) != structs.end();
+    return m_structs.find(struct_) != m_structs.end();
 }
 
 void GlobalContext::addReference(const std::string& function){
     ASSERT(exists(function), "The function must exists");
     
-    ++(functions[function]->references);
+    ++(m_functions[function]->references);
 }
 
 void GlobalContext::removeReference(const std::string& function){
     ASSERT(exists(function), "The function must exists");
     
-    --(functions[function]->references);
+    --(m_functions[function]->references);
 }
 
 int GlobalContext::referenceCount(const std::string& function){
     ASSERT(exists(function), "The function must exists");
     
-    return functions[function]->references;
+    return m_functions[function]->references;
 }
 
 void GlobalContext::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
@@ -210,4 +210,8 @@ void GlobalContext::defineStandardFunctions(){
     durationFunction->parameters.push_back({"a", new_type("int[]")});
     durationFunction->parameters.push_back({"b", new_type("int[]")});
     addFunction(durationFunction);
+}
+
+FunctionMap GlobalContext::functions(){
+    return m_functions;
 }

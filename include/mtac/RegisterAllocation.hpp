@@ -16,7 +16,7 @@ namespace eddic {
 
 namespace mtac {
 
-void register_param_allocation();
+void register_param_allocation(std::shared_ptr<mtac::Program> program);
 
 void register_variable_allocation(std::shared_ptr<mtac::Program> program);
 

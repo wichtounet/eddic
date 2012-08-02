@@ -20,6 +20,7 @@
 #include "Labels.hpp"
 #include "Type.hpp"
 #include "PerfsTimer.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/Program.hpp"
@@ -133,22 +134,22 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     
         auto param = std::make_shared<mtac::Param>(type->size());
         param->std_param = "a";
-        param->function = symbols.getFunction("_F5allocI");
+        param->function = function->context->global()->getFunction("_F5allocI");
         function->add(param);
 
         auto t1 = function->context->new_temporary(new_pointer_type(INT));
 
-        symbols.addReference("_F5allocI");
-        function->add(std::make_shared<mtac::Call>("_F5allocI", symbols.getFunction("_F5allocI"), t1)); 
+        function->context->global()->addReference("_F5allocI");
+        function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
             
         if(type->is_custom_type()){
             auto struct_ = type->type();
             auto ctor_name = mangle_ctor(new_.Content->values, struct_);
 
-            if(!symbols.exists(ctor_name)){
+            if(!function->context->global()->exists(ctor_name)){
                 assert(new_.Content->values.empty());
             } else {
-                auto ctor_function = symbols.getFunction(ctor_name);
+                auto ctor_function = function->context->global()->getFunction(ctor_name);
 
                 //Pass all normal arguments
                 pass_arguments(function, ctor_function, new_);
@@ -157,7 +158,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 ctor_param->address = true;
                 function->add(ctor_param);
 
-                symbols.addReference(ctor_name);
+                function->context->global()->addReference(ctor_name);
                 function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
             }
         }
@@ -322,7 +323,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else {
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
-            boost::tie(offset, member_type) = mtac::compute_member(value.variable(), value.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), value.Content->memberNames);
 
             if(take_address){
                 auto temp = value.Content->context->new_temporary(INT);
@@ -426,7 +427,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto temp = array.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
-            auto member_info = mtac::compute_member(array.Content->var, array.Content->memberNames);
+            auto member_info = mtac::compute_member(function->context->global(), array.Content->var, array.Content->memberNames);
             return get_member(member_info.first, member_info.second, temp);
         }
     }
@@ -671,7 +672,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
         } else {
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, left.Content->memberNames);
 
             visit(AssignValueToVariable(function, variable, offset, member_type), assignment.Content->value);
         }
@@ -689,7 +690,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, left.Content->memberNames);
             
             visit(AssignValueToVariable(function, temp, offset, member_type), assignment.Content->value);
         }
@@ -702,7 +703,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             if(left.Content->memberNames.empty()){
                 visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
             } else {
-                unsigned int offset = mtac::compute_member_offset(variable, left.Content->memberNames);
+                unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, left.Content->memberNames);
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
             }
@@ -911,15 +912,15 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
 
         arguments.clear();
         
-        symbols.addReference("_F6concatSS");
+        function->context->global()->addReference("_F6concatSS");
 
         if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<mtac::Call>("_F6concatSS", symbols.getFunction("_F6concatSS"), v1, v2)); 
+            function->add(std::make_shared<mtac::Call>("_F6concatSS", function->context->global()->getFunction("_F6concatSS"), v1, v2)); 
         } else {
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
             
-            function->add(std::make_shared<mtac::Call>("_F6concatSS", symbols.getFunction("_F6concatSS"), t1, t2)); 
+            function->add(std::make_shared<mtac::Call>("_F6concatSS", function->context->global()->getFunction("_F6concatSS"), t1, t2)); 
           
             arguments.push_back(t1);
             arguments.push_back(t2);
@@ -969,14 +970,14 @@ class CompilerVisitor : public boost::static_visitor<> {
                         auto dtor_name = mangle_dtor(struct_);
 
                         //If there is a destructor, call it
-                        if(symbols.exists(dtor_name)){
-                            auto dtor_function = symbols.getFunction(dtor_name);
+                        if(program->context->exists(dtor_name)){
+                            auto dtor_function = program->context->getFunction(dtor_name);
 
                             auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
                             dtor_param->address = true;
                             function->add(dtor_param);
 
-                            symbols.addReference(dtor_name);
+                            program->context->addReference(dtor_name);
                             function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
                         }
                     }
@@ -987,7 +988,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         template<typename Function>
         inline void issue_function(Function& f){
             function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
-            function->definition = symbols.getFunction(f.Content->mangledName);
+            function->definition = program->context->getFunction(f.Content->mangledName);
 
             visit_each(*this, f.Content->instructions);
 
@@ -1087,8 +1088,8 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto struct_ = var->type()->type();
             auto ctor_name = mangle_ctor(declaration.Content->values, struct_);
 
-            if(symbols.exists(ctor_name)){
-                auto ctor_function = symbols.getFunction(ctor_name);
+            if(program->context->exists(ctor_name)){
+                auto ctor_function = program->context->getFunction(ctor_name);
                 
                 //Pass all normal arguments
                 pass_arguments(function, ctor_function, declaration);
@@ -1097,7 +1098,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 ctor_param->address = true;
                 function->add(ctor_param);
 
-                symbols.addReference(ctor_name);
+                program->context->addReference(ctor_name);
                 function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
             }
         }
@@ -1109,14 +1110,14 @@ class CompilerVisitor : public boost::static_visitor<> {
                 auto struct_ = var->type()->type();
                 auto ctor_name = mangle_ctor({}, struct_);
 
-                if(symbols.exists(ctor_name)){
-                    auto ctor_function = symbols.getFunction(ctor_name);
+                if(program->context->exists(ctor_name)){
+                    auto ctor_function = program->context->getFunction(ctor_name);
 
                     auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
                     ctor_param->address = true;
                     function->add(ctor_param);
 
-                    symbols.addReference(ctor_name);
+                    program->context->addReference(ctor_name);
                     function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
                 }
             } else {
@@ -1204,27 +1205,27 @@ class CompilerVisitor : public boost::static_visitor<> {
                 auto dtor_name = mangle_dtor(struct_);
 
                 //If there is a destructor, call it
-                if(symbols.exists(dtor_name)){
-                    auto dtor_function = symbols.getFunction(dtor_name);
+                if(program->context->exists(dtor_name)){
+                    auto dtor_function = program->context->getFunction(dtor_name);
 
                     auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
                     dtor_param->address = true;
                     function->add(dtor_param);
 
-                    symbols.addReference(dtor_name);
+                    program->context->addReference(dtor_name);
                     function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
                 }
             }
 
             auto free_name = "_F4freePI";
-            auto free_function = symbols.getFunction(free_name);
+            auto free_function = program->context->getFunction(free_name);
 
             auto param = std::make_shared<mtac::Param>(delete_.Content->variable);
             param->std_param = "a";
             param->function = free_function;
             function->add(param);
 
-            symbols.addReference(free_name);
+            program->context->addReference(free_name);
             function->add(std::make_shared<mtac::Call>(free_name, free_function)); 
         }
 
@@ -1240,7 +1241,7 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
     
 void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
     auto struct_name = type->type();
-    auto struct_type = symbols.get_struct(struct_name);
+    auto struct_type = function->context->global()->get_struct(struct_name);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto member_type = member->type;
@@ -1270,7 +1271,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     auto context = value.Content->context;
 
     auto struct_name = var->type()->type();
-    auto struct_type = symbols.get_struct(struct_name);
+    auto struct_type = function->context->global()->get_struct(struct_name);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto type = member->type;
@@ -1356,11 +1357,11 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     std::shared_ptr<eddic::Function> definition;
     if(functionCall.Content->mangled_name.empty()){
-        definition = symbols.getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+        definition = function->context->global()->getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
     } else if(functionCall.Content->function){
         definition = functionCall.Content->function;
     } else {
-        definition = symbols.getFunction(functionCall.Content->mangled_name);
+        definition = function->context->global()->getFunction(functionCall.Content->mangled_name);
     }
 
     ASSERT(definition, "All the functions should be in the function table");
@@ -1499,7 +1500,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 
                 unsigned int offset = 0;
                 std::shared_ptr<const Type> member_type;
-                boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
+                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, left.Content->memberNames);
 
                 visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
             }
@@ -1530,7 +1531,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 
                 unsigned int offset = 0;
                 std::shared_ptr<const Type> member_type;
-                boost::tie(offset, member_type) = mtac::compute_member(variable, left.Content->memberNames);
+                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, left.Content->memberNames);
 
                 visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
             }

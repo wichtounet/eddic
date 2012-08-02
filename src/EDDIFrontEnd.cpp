@@ -13,6 +13,7 @@
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
+#include "GlobalContext.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -41,7 +42,7 @@
 
 using namespace eddic;
 
-void checkForMain();
+void check_for_main(std::shared_ptr<GlobalContext> context);
 
 std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
     parser::SpiritParser parser;
@@ -82,7 +83,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::checkForWarnings(program);
 
         //Check that there is a main in the program
-        checkForMain();
+        check_for_main(program.Content->context);
 
         //Transform the AST
         ast::transformAST(program);
@@ -114,14 +115,14 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
     return nullptr;
 }
 
-void checkForMain(){
+void check_for_main(std::shared_ptr<GlobalContext> context){
     std::shared_ptr<Function> function;
-    if(symbols.exists("_F4main")){
-        function = symbols.getFunction("_F4main");
-        symbols.addReference("_F4main");
-    } else if (symbols.exists("_F4mainAS")){
-        function = symbols.getFunction("_F4mainAS");
-        symbols.addReference("_F4mainAS");
+    if(context->exists("_F4main")){
+        function = context->getFunction("_F4main");
+        context->addReference("_F4main");
+    } else if (context->exists("_F4mainAS")){
+        function = context->getFunction("_F4mainAS");
+        context->addReference("_F4mainAS");
     } else {
         throw SemanticalException("The program does not contain a valid main function"); 
     }

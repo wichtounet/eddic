@@ -76,7 +76,7 @@ class GlobalContext : public Context {
         int size_of_struct(const std::string& struct_);
         bool is_recursively_nested(const std::string& struct_);
 
-        //TODO Add way to access functions
+        FunctionMap functions();
 
         /*!
          * Add a reference to the function with the given name. 
@@ -98,8 +98,8 @@ class GlobalContext : public Context {
         int referenceCount(const std::string& function);
     
     private:
-        FunctionMap functions;
-        StructMap structs;
+        FunctionMap m_functions;
+        StructMap m_structs;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();

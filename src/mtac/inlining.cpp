@@ -14,6 +14,7 @@
 #include "FunctionContext.hpp"
 #include "iterators.hpp"
 #include "VisitorUtils.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/inlining.hpp"
 #include "mtac/Printer.hpp"
@@ -251,7 +252,7 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
 
                     quadruple->op = mtac::Operator::PDOT;
                     quadruple->arg1 = object_var;
-                    quadruple->arg2 = mtac::compute_member_offset(object_var, (*ptr)->memberNames);
+                    quadruple->arg2 = mtac::compute_member_offset(source_function->context->global(), object_var, (*ptr)->memberNames);
                 }
                 
                 variable_clones[src_var] = dest_var;
@@ -362,7 +363,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
 bool will_inline(std::shared_ptr<mtac::Function> function){
     if(can_be_inlined(function)){
         //function called once
-        if(symbols.referenceCount(function->getName()) == 1){
+        if(function->context->global()->referenceCount(function->getName()) == 1){
             return true;
         } else {
             auto size = function->size();
@@ -400,7 +401,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                 }
 
                 //If the function has already been inlined
-                if(symbols.referenceCount(dest_function->getName()) <= 0){
+                if(program->context->referenceCount(dest_function->getName()) <= 0){
                     continue;
                 }
 
@@ -432,7 +433,7 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
                                 //Erase the original call
                                 it.erase();
 
-                                symbols.removeReference(source_function->getName());
+                                program->context->removeReference(source_function->getName());
                                 optimized = true;
 
                                 continue;
