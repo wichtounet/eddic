@@ -35,9 +35,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_UNARY_VALUES()
-        AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
-        AUTO_RECURSE_NEW()
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
 
@@ -257,6 +255,18 @@ class AnnotateVisitor : public boost::static_visitor<> {
             return_.Content->context = functionContext;
 
             visit(*this, return_.Content->value);
+        }
+        
+        void operator()(ast::Cast& cast){
+            cast.Content->context = currentContext;
+
+            visit(*this, cast.Content->value);
+        }
+        
+        void operator()(ast::New& new_){
+            new_.Content->context = currentContext;
+            
+            visit_each(*this, new_.Content->values);
         }
 };
 

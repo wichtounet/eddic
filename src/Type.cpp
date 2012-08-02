@@ -199,7 +199,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         std::string baseType = type;
         baseType.resize(baseType.size() - 2);
 
-        return new_array_type(new_type(baseType));
+        return new_array_type(new_type(context, baseType));
     }
     
     //Parse pointer types
@@ -207,7 +207,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         std::string baseType = type;
         baseType.resize(baseType.size() - 1);
 
-        return new_pointer_type(new_type(baseType));
+        return new_pointer_type(new_type(context, baseType));
     }
 
     //Parse standard and custom types

@@ -130,7 +130,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::New& new_) const {
-        auto type = visit(ast::TypeTransformer(), new_.Content->type);
+        auto type = visit(ast::TypeTransformer(function->context->global()), new_.Content->type);
     
         auto param = std::make_shared<mtac::Param>(type->size());
         param->std_param = "a";
@@ -474,7 +474,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         mtac::Argument arg = moveToArgument(cast.Content->value, function);
         
         auto srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-        auto destType = visit(ast::TypeTransformer(), cast.Content->type);
+        auto destType = visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type);
 
         if(srcType != destType){
             auto t1 = function->context->new_temporary(destType);

@@ -22,10 +22,10 @@ std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVar
 GlobalContext::GlobalContext() : Context(NULL) {
     Val zero = 0;
     
-    variables["_mem_start"] = std::make_shared<Variable>("_mem_start", new_type("int"), Position(PositionType::GLOBAL, "_mem_start"), zero);
+    variables["_mem_start"] = std::make_shared<Variable>("_mem_start", INT, Position(PositionType::GLOBAL, "_mem_start"), zero);
     variables["_mem_start"]->addReference(); //In order to not display a warning
 
-    variables["_mem_last"] = std::make_shared<Variable>("_mem_last", new_type("int"), Position(PositionType::GLOBAL, "_mem_last"), zero);
+    variables["_mem_last"] = std::make_shared<Variable>("_mem_last", INT, Position(PositionType::GLOBAL, "_mem_last"), zero);
     variables["_mem_last"]->addReference(); //In order to not display a warning
 }
 
@@ -200,15 +200,15 @@ void GlobalContext::defineStandardFunctions(){
     auto timeFunction = std::make_shared<Function>(VOID, "time");
     timeFunction->standard = true;
     timeFunction->mangledName = "_F4timeAI";
-    timeFunction->parameters.push_back({"a", new_type("int[]")});
+    timeFunction->parameters.push_back({"a", new_array_type(INT)});
     addFunction(timeFunction);
     
     //duration function
     auto durationFunction = std::make_shared<Function>(VOID, "duration");
     durationFunction->standard = true;
     durationFunction->mangledName = "_F8durationAIAI";
-    durationFunction->parameters.push_back({"a", new_type("int[]")});
-    durationFunction->parameters.push_back({"b", new_type("int[]")});
+    timeFunction->parameters.push_back({"a", new_array_type(INT)});
+    timeFunction->parameters.push_back({"b", new_array_type(INT)});
     addFunction(durationFunction);
 }
 

@@ -164,7 +164,7 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::Cast& cast){
             if(option_defined("warning-cast")){
                 auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
-                auto dest_type = visit(ast::TypeTransformer(), cast.Content->type);
+                auto dest_type = visit(ast::TypeTransformer(context), cast.Content->type);
 
                 if(src_type == dest_type){
                     warn(cast.Content->position, "useless cast");

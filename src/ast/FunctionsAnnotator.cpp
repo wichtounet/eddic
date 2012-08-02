@@ -96,7 +96,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            auto return_type = visit(ast::TypeTransformer(), declaration.Content->returnType);
+            auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
             auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
 
             if(return_type->is_array()){
@@ -108,7 +108,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             }
 
             for(auto& param : declaration.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
+                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
@@ -128,7 +128,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             auto signature = std::make_shared<Function>(VOID, "ctor");
             
             for(auto& param : constructor.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
+                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             
@@ -148,7 +148,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
             auto signature = std::make_shared<Function>(VOID, "dtor");
             
             for(auto& param : destructor.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(), param.parameterType);
+                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
                 signature->parameters.push_back(ParameterType(param.parameterName, paramType));
             }
             

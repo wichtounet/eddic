@@ -76,7 +76,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            auto type = visit(ast::TypeTransformer(), parameter.parameterType);
+            auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
             
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
@@ -116,7 +116,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The value must be constant", declaration.Content->position);
         }
 
-        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+        auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
         declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
     }
 
@@ -126,7 +126,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
 
-        auto element_type = visit(ast::TypeTransformer(), declaration.Content->arrayType);
+        auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
         
         if(element_type->is_array()){
             throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
@@ -159,7 +159,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
         }
 
-        foreach.Content->context->addVariable(foreach.Content->variableName, new_type(foreach.Content->variableType));
+        foreach.Content->context->addVariable(foreach.Content->variableName, new_type(context, foreach.Content->variableType));
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -175,9 +175,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         static int generated = 0;
 
-        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(foreach.Content->variableType));
+        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(context, foreach.Content->variableType));
         foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), new_type("int"));
+        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), INT);
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -201,7 +201,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
         
-        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+        auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
         if(!type->is_custom_type()){
             throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
@@ -225,7 +225,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         
         visit_optional(*this, declaration.Content->value);
 
-        auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+        auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
         //If it's a standard type
         if(type->is_standard_type()){

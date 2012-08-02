@@ -8,22 +8,33 @@
 #ifndef TYPE_TRANSFORMER_H
 #define TYPE_TRANSFORMER_H
 
+#include <memory>
+
 #include "variant.hpp"
 
 #include "ast/VariableType.hpp"
 
 namespace eddic {
 
+class GlobalContext;
+class Type;
+
 namespace ast {
 
 /*!
- * \struct TypeTransformer
+ * \class TypeTransformer
  * \brief AST visitor to transform an AST type into a type descriptor.   
  */
-struct TypeTransformer : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
-    std::shared_ptr<const eddic::Type> operator()(ast::SimpleType& type) const;
-    std::shared_ptr<const eddic::Type> operator()(ast::ArrayType& type) const;
-    std::shared_ptr<const eddic::Type> operator()(ast::PointerType& type) const;
+class TypeTransformer : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
+    public:
+        TypeTransformer(std::shared_ptr<GlobalContext> context) : context(context) {}
+
+        std::shared_ptr<const eddic::Type> operator()(ast::SimpleType& type) const;
+        std::shared_ptr<const eddic::Type> operator()(ast::ArrayType& type) const;
+        std::shared_ptr<const eddic::Type> operator()(ast::PointerType& type) const;
+
+    private:
+        std::shared_ptr<GlobalContext> context;
 };
 
 } //end of ast

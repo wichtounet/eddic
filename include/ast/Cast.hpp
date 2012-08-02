@@ -8,6 +8,8 @@
 #ifndef AST_CAST_H
 #define AST_CAST_H
 
+#include <memory>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Deferred.hpp"
@@ -16,12 +18,16 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 struct ASTCast {
-    Value value;
-    Type type;
+    std::shared_ptr<Context> context;
+
     Position position;
+    Type type;
+    Value value;
 
     mutable long references = 0;
 };

@@ -34,7 +34,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Null& /*n
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::New& value) const {
-    return new_pointer_type(visit(ast::TypeTransformer(), value.Content->type));
+    return new_pointer_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
@@ -46,7 +46,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Unary& un
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
-   return visit(ast::TypeTransformer(), cast.Content->type); 
+   return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
