@@ -7,16 +7,26 @@
 
 #include "assert.hpp"
 #include "Type.hpp"
-#include "SymbolTable.hpp"
 #include "Platform.hpp"
+#include "GlobalContext.hpp"
 
 using namespace eddic;
+
+/* Standard Types */
 
 std::shared_ptr<const Type> eddic::BOOL = std::make_shared<StandardType>(BaseType::BOOL, false);
 std::shared_ptr<const Type> eddic::INT = std::make_shared<StandardType>(BaseType::INT, false);
 std::shared_ptr<const Type> eddic::FLOAT = std::make_shared<StandardType>(BaseType::FLOAT, false);
 std::shared_ptr<const Type> eddic::STRING = std::make_shared<StandardType>(BaseType::STRING, false);
 std::shared_ptr<const Type> eddic::VOID = std::make_shared<StandardType>(BaseType::VOID, false);
+
+/* Const versions */
+
+const std::shared_ptr<const Type> CBOOL = std::make_shared<StandardType>(BaseType::BOOL, true);
+const std::shared_ptr<const Type> CINT = std::make_shared<StandardType>(BaseType::INT, true);
+const std::shared_ptr<const Type> CFLOAT = std::make_shared<StandardType>(BaseType::FLOAT, true);
+const std::shared_ptr<const Type> CSTRING = std::make_shared<StandardType>(BaseType::STRING, true);
+const std::shared_ptr<const Type> CVOID = std::make_shared<StandardType>(BaseType::VOID, true);
 
 /* Implementation of Type */ 
 
@@ -183,23 +193,6 @@ unsigned int PointerType::size() const {
 
 /* Implementation of factories  */
 
-//TODO Avoid instantiate a type for these values
-BaseType stringToBaseType(const std::string& type){
-    ASSERT(is_standard_type(type), "The given type is not standard");
-
-    if (type == "int") {
-        return BaseType::INT;
-    } else if (type == "bool") {
-        return BaseType::BOOL;
-    } else if (type == "float"){
-        return BaseType::FLOAT;
-    } else if (type == "string"){
-        return BaseType::STRING;
-    }
-    
-    return BaseType::VOID;
-}
-
 std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_){
     //Parse array types
     if(type.find("[]") != std::string::npos){
@@ -217,8 +210,33 @@ std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_
         return new_pointer_type(new_type(baseType));
     }
 
+    //Parse standard and custom types
     if(is_standard_type(type)){
-        return std::make_shared<StandardType>(stringToBaseType(type), const_);
+        if(const_){
+            if (type == "int") {
+                return CINT;
+            } else if (type == "bool") {
+                return CBOOL;
+            } else if (type == "float"){
+                return CFLOAT;
+            } else if (type == "string"){
+                return CSTRING;
+            } else {
+                return CVOID;
+            }
+        } else {
+            if (type == "int") {
+                return INT;
+            } else if (type == "bool") {
+                return BOOL;
+            } else if (type == "float"){
+                return FLOAT;
+            } else if (type == "string"){
+                return STRING;
+            } else {
+                return VOID;
+            }
+        }
     } else {
         assert(!const_);
         return std::make_shared<CustomType>(type);

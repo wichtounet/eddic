@@ -17,6 +17,8 @@
 
 namespace eddic {
 
+class GlobalContext;
+
 /*!
  * \class Type
  * \brief A type descriptor.
