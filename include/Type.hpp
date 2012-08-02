@@ -150,9 +150,10 @@ class StandardType : public Type {
 class CustomType : public Type {
     private:
         std::string m_type;
+        unsigned int m_size;
     
     public:
-        CustomType(const std::string& type); 
+        CustomType(const std::string& type, unsigned int size); 
     
         /*!
          * Deleted copy constructor
@@ -246,7 +247,7 @@ extern std::shared_ptr<const Type> VOID;
  *
  * \param type The type to parse. 
  */
-std::shared_ptr<const Type> new_type(const std::string& type, bool const_ = false);
+std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_ = false);
 
 /*!
  * Create a new array type of the given type.

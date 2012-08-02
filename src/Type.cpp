@@ -141,7 +141,7 @@ unsigned int StandardType::size() const {
 
 /* Implementation of CustomType */
 
-CustomType::CustomType(const std::string& type) : m_type(type) {}
+CustomType::CustomType(const std::string& type, unsigned int size) : m_type(type), m_size(size) {}
 
 std::string CustomType::type() const {
     return m_type;
@@ -152,7 +152,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size() const {
-    return symbols.size_of_struct(type());
+    return m_size;
 }
         
 /* Implementation of ArrayType  */
@@ -193,7 +193,7 @@ unsigned int PointerType::size() const {
 
 /* Implementation of factories  */
 
-std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_){
+std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_){
     //Parse array types
     if(type.find("[]") != std::string::npos){
         std::string baseType = type;
@@ -239,7 +239,8 @@ std::shared_ptr<const Type> eddic::new_type(const std::string& type, bool const_
         }
     } else {
         assert(!const_);
-        return std::make_shared<CustomType>(type);
+        unsigned int size = context->size_of_struct(type);
+        return std::make_shared<CustomType>(type, size);
     }
 }
 
