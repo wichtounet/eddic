@@ -181,6 +181,7 @@ bool PointerType::is_pointer() const {
 
 /* Implementation of factories  */
 
+//TODO Avoid instantiate a type for these values
 BaseType stringToBaseType(const std::string& type){
     ASSERT(is_standard_type(type), "The given type is not standard");
 

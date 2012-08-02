@@ -16,7 +16,7 @@
 
 using namespace eddic;
 
-FunctionContext::FunctionContext(std::shared_ptr<Context> parent) : Context(parent){
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context) : Context(parent, global_context){
     currentPosition = -INT->size(); 
     
     if(option_defined("fomit-frame-pointer")){

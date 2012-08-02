@@ -70,9 +70,9 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::checkStrings(program, *pool);
 
         //Add some more informations to the AST
+        ast::defineContexts(program);
         ast::defineStructures(program);
         ast::defineMemberFunctions(program);
-        ast::defineContexts(program);
         ast::defineVariables(program);
         ast::defineFunctions(program);
 
