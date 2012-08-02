@@ -14,10 +14,6 @@
 #include "ast/GetConstantValue.hpp"
 
 using namespace eddic;
-
-std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVariables(){
-    return variables;
-}
         
 GlobalContext::GlobalContext() : Context(NULL) {
     Val zero = 0;
@@ -29,6 +25,10 @@ GlobalContext::GlobalContext() : Context(NULL) {
     variables["_mem_last"]->addReference(); //In order to not display a warning
     
     defineStandardFunctions();
+}
+
+std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVariables(){
+    return variables;
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
@@ -209,8 +209,8 @@ void GlobalContext::defineStandardFunctions(){
     auto durationFunction = std::make_shared<Function>(VOID, "duration");
     durationFunction->standard = true;
     durationFunction->mangledName = "_F8durationAIAI";
-    timeFunction->parameters.push_back({"a", new_array_type(INT)});
-    timeFunction->parameters.push_back({"b", new_array_type(INT)});
+    durationFunction->parameters.push_back({"a", new_array_type(INT)});
+    durationFunction->parameters.push_back({"b", new_array_type(INT)});
     addFunction(durationFunction);
 }
 

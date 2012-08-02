@@ -62,16 +62,18 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         //Apply some cleaning transformations
         ast::cleanAST(program);
+        
+        //Define contexts and structures
+        ast::defineContexts(program);
+        ast::defineStructures(program);
 
-        //Annotate the AST with more informations
+        //Add default values
         ast::defineDefaultValues(program);
 
         //Fill the string pool
         ast::checkStrings(program, *pool);
 
         //Add some more informations to the AST
-        ast::defineContexts(program);
-        ast::defineStructures(program);
         ast::defineMemberFunctions(program);
         ast::defineVariables(program);
         ast::defineFunctions(program);

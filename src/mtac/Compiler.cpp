@@ -1303,6 +1303,8 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
     
     auto values = functionCall.Content->values;
 
+    std::cout << definition->name << std::endl;
+
     //If it's a standard function, there are no context
     if(!context){
         auto parameters = definition->parameters;
