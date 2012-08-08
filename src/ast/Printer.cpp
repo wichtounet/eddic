@@ -303,6 +303,10 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Literal [" << literal.value << "]" << std::endl; 
     }
 
+    void operator()(ast::CharLiteral& literal) const {
+        std::cout << indent() << "Char Literal [" << literal.value << "]" << std::endl; 
+    }
+
     void operator()(ast::Integer& integer) const {
         std::cout << indent() << "Integer [" << integer.value << "]" << std::endl; 
     }

@@ -209,6 +209,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_INTEGER() void operator()(ast::Integer&){}
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Literal&){}
+#define AUTO_IGNORE_CHAR_LITERAL() void operator()(ast::CharLiteral&){}
 #define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_NEW() void operator()(ast::New&){}
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
@@ -248,6 +249,7 @@ void operator()(ast::New& new_){\
 #define AUTO_RETURN_INTEGER(return_type) return_type operator()(ast::Integer& t){return t;}
 #define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return t;}
 #define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Literal& t){return t;}
+#define AUTO_RETURN_CHAR_LITERAL(return_type) return_type operator()(ast::CharLiteral& t){return t;}
 #define AUTO_RETURN_UNARY(return_type) return_type operator()(ast::Unary& t){return t;}
 #define AUTO_RETURN_NEW(return_type) return_type operator()(ast::New& t){return t;}
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}

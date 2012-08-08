@@ -55,6 +55,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_CHAR_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
     AUTO_IGNORE_INTEGER_SUFFIX()

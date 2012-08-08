@@ -28,6 +28,7 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::Ternary& assign) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::Literal& literal) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::CharLiteral& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Integer& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Float& literal) const;
