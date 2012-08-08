@@ -117,6 +117,7 @@ bool as::IntelCodeGenerator::is_enabled_println(){
             context->referenceCount("_F7printlnS") || 
             context->referenceCount("_F7printlnI") || 
             context->referenceCount("_F7printlnB") || 
+            context->referenceCount("_F7printlnC") || 
             context->referenceCount("_F7printlnF");
 }
 

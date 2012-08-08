@@ -413,6 +413,14 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
     if(context->referenceCount("_F7printlnI")){
         output_function("x86_32_printlnI");
     }
+    
+    if(context->referenceCount("_F5printC")){
+        output_function("x86_32_printC");
+    }
+    
+    if(context->referenceCount("_F7printlnC")){
+        output_function("x86_32_printlnC");
+    }
 
     if(context->referenceCount("_F5printF")){
         output_function("x86_32_printF");

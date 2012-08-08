@@ -421,6 +421,14 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_printlnI");
     }
     
+    if(context->referenceCount("_F5printC")){
+        output_function("x86_64_printC");
+    }
+    
+    if(context->referenceCount("_F7printlnC")){
+        output_function("x86_64_printlnC");
+    }
+    
     if(context->referenceCount("_F5printB")){
         output_function("x86_64_printB");
     }
