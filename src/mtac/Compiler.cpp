@@ -104,6 +104,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {literal.label, (int) literal.value.size() - 2};
     }
 
+    result_type operator()(ast::CharLiteral& literal) const {
+        char v = literal.value[1];
+
+        return {static_cast<int>(v)};
+    }
+
     result_type operator()(ast::Integer& integer) const {
         return {integer.value};
     }
