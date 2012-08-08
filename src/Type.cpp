@@ -16,6 +16,7 @@ using namespace eddic;
 
 std::shared_ptr<const Type> eddic::BOOL = std::make_shared<StandardType>(BaseType::BOOL, false);
 std::shared_ptr<const Type> eddic::INT = std::make_shared<StandardType>(BaseType::INT, false);
+std::shared_ptr<const Type> eddic::CHAR = std::make_shared<StandardType>(BaseType::CHAR, false);
 std::shared_ptr<const Type> eddic::FLOAT = std::make_shared<StandardType>(BaseType::FLOAT, false);
 std::shared_ptr<const Type> eddic::STRING = std::make_shared<StandardType>(BaseType::STRING, false);
 std::shared_ptr<const Type> eddic::VOID = std::make_shared<StandardType>(BaseType::VOID, false);
@@ -24,6 +25,7 @@ std::shared_ptr<const Type> eddic::VOID = std::make_shared<StandardType>(BaseTyp
 
 const std::shared_ptr<const Type> CBOOL = std::make_shared<StandardType>(BaseType::BOOL, true);
 const std::shared_ptr<const Type> CINT = std::make_shared<StandardType>(BaseType::INT, true);
+const std::shared_ptr<const Type> CCHAR = std::make_shared<StandardType>(BaseType::CHAR, true);
 const std::shared_ptr<const Type> CFLOAT = std::make_shared<StandardType>(BaseType::FLOAT, true);
 const std::shared_ptr<const Type> CSTRING = std::make_shared<StandardType>(BaseType::STRING, true);
 const std::shared_ptr<const Type> CVOID = std::make_shared<StandardType>(BaseType::VOID, true);

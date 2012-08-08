@@ -238,6 +238,7 @@ bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs
 
 extern std::shared_ptr<const Type> BOOL;
 extern std::shared_ptr<const Type> INT;
+extern std::shared_ptr<const Type> CHAR;
 extern std::shared_ptr<const Type> FLOAT;
 extern std::shared_ptr<const Type> STRING;
 extern std::shared_ptr<const Type> VOID;

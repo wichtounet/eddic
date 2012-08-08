@@ -13,12 +13,13 @@ namespace eddic {
 enum class BaseType : unsigned int {
     STRING,
     INT,
+    CHAR,
     BOOL,
     FLOAT,
     VOID 
 };
 
-#define BASETYPE_COUNT 5
+#define BASETYPE_COUNT 6
 
 } //end of eddic
 
