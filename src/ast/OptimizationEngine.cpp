@@ -35,8 +35,8 @@ struct GetStringValue : public boost::static_visitor<std::string> {
         return acc;
     }
     
-    std::string operator()(ast::Litteral& litteral) const {
-        return litteral.value;
+    std::string operator()(ast::Literal& literal) const {
+        return literal.value;
     }
 
     std::string operator()(ast::VariableValue& variable) const {
@@ -66,10 +66,10 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
                 auto type = ast::GetTypeVisitor()(value);
 
                 if(type == STRING){
-                    ast::Litteral litteral;
-                    litteral.value = GetStringValue()(value);
-                    litteral.label = pool.label(litteral.value);
-                    return litteral;
+                    ast::Literal literal;
+                    literal.value = GetStringValue()(value);
+                    literal.label = pool.label(literal.value);
+                    return literal;
                 }
             }
 
@@ -108,11 +108,11 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
                 } else if(type->non_const() == STRING){
                     auto value = boost::get<std::pair<std::string, int>>(variable.Content->var->val());
 
-                    ast::Litteral litteral;
-                    litteral.value = value.first;
-                    litteral.label = pool.label(litteral.value);
+                    ast::Literal literal;
+                    literal.value = value.first;
+                    literal.label = pool.label(literal.value);
 
-                    return litteral;
+                    return literal;
                 }
             }
 

@@ -275,7 +275,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
 
     import %=
             lexer.include
-        >>  lexer.string_litteral;
+        >>  lexer.string_literal;
 
     program %=
             qi::eps 

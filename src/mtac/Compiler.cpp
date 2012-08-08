@@ -100,8 +100,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     mutable std::shared_ptr<mtac::Function> function;
     bool take_address = false;
 
-    result_type operator()(ast::Litteral& litteral) const {
-        return {litteral.label, (int) litteral.value.size() - 2};
+    result_type operator()(ast::Literal& literal) const {
+        return {literal.label, (int) literal.value.size() - 2};
     }
 
     result_type operator()(ast::Integer& integer) const {

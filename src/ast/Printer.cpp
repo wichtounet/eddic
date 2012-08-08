@@ -299,8 +299,8 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_sub(return_.Content->value, "Function Return");
     }
 
-    void operator()(ast::Litteral& litteral) const {
-        std::cout << indent() << "Litteral [" << litteral.value << "]" << std::endl; 
+    void operator()(ast::Literal& literal) const {
+        std::cout << indent() << "Literal [" << literal.value << "]" << std::endl; 
     }
 
     void operator()(ast::Integer& integer) const {

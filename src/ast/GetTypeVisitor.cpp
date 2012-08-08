@@ -18,7 +18,7 @@
 
 using namespace eddic;
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, STRING)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Literal, STRING)
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, INT)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, INT) //At this time, all the builtin operators return an int

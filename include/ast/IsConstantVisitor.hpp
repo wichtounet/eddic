@@ -27,7 +27,7 @@ namespace ast {
  * \brief AST Visitor to test if a node is constant. 
  */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
-    typedef boost::mpl::vector<ast::Integer, ast::Litteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
+    typedef boost::mpl::vector<ast::Integer, ast::Literal, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
     typedef boost::mpl::vector<ast::ArrayValue, ast::FunctionCall, ast::MemberFunctionCall, ast::SuffixOperation, ast::PrefixOperation,
         ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::DereferenceValue, ast::New> non_constant_types;
 

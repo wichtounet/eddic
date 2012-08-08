@@ -14,8 +14,8 @@
 #include "ast/Integer.hpp"
 #include "ast/IntegerSuffix.hpp"
 #include "ast/Float.hpp"
-#include "ast/CharLitteral.hpp"
-#include "ast/Litteral.hpp"
+#include "ast/CharLiteral.hpp"
+#include "ast/Literal.hpp"
 #include "ast/VariableValue.hpp"
 #include "ast/DereferenceValue.hpp"
 #include "ast/True.hpp"
@@ -30,7 +30,7 @@ typedef boost::mpl::vector<
             Integer, 
             IntegerSuffix, 
             Float,
-            Litteral, 
+            Literal, 
             VariableValue,
             DereferenceValue,
             Expression,
