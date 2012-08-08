@@ -31,6 +31,7 @@ typedef boost::mpl::vector<
             IntegerSuffix, 
             Float,
             Literal, 
+            CharLiteral, 
             VariableValue,
             DereferenceValue,
             Expression,
@@ -45,11 +46,11 @@ typedef boost::mpl::vector<
             BuiltinOperator,
             Assignment,
             SuffixOperation,
-            PrefixOperation,
-            Ternary
+            PrefixOperation
         > types_initial;
 
-typedef boost::mpl::push_back<types_initial, New>::type types;
+typedef boost::mpl::push_back<types_initial, Ternary>::type first_types;
+typedef boost::mpl::push_back<first_types, New>::type types;
 
 typedef boost::make_variant_over<types>::type Value;
 
