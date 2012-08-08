@@ -217,6 +217,8 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         if(const_){
             if (type == "int") {
                 return CINT;
+            } else if (type == "char") {
+                return CCHAR;
             } else if (type == "bool") {
                 return CBOOL;
             } else if (type == "float"){
@@ -229,6 +231,8 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         } else {
             if (type == "int") {
                 return INT;
+            } else if (type == "char") {
+                return CHAR;
             } else if (type == "bool") {
                 return BOOL;
             } else if (type == "float"){
@@ -255,5 +259,5 @@ std::shared_ptr<const Type> eddic::new_pointer_type(std::shared_ptr<const Type> 
 }
 
 bool eddic::is_standard_type(const std::string& type){
-    return type == "int" || type == "void" || type == "string" || type == "bool" || type == "float";
+    return type == "int" || type == "char" || type == "void" || type == "string" || type == "bool" || type == "float";
 }
