@@ -227,6 +227,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     string_litteral %= 
             qi::eps 
         >> lexer.string_litteral;
+    
+    char_litteral %= 
+            qi::eps 
+        >> lexer.char_litteral;
 
     constant = 
             negated_constant_value

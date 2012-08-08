@@ -14,6 +14,7 @@
 #include "ast/Integer.hpp"
 #include "ast/IntegerSuffix.hpp"
 #include "ast/Float.hpp"
+#include "ast/CharLitteral.hpp"
 #include "ast/Litteral.hpp"
 #include "ast/VariableValue.hpp"
 #include "ast/DereferenceValue.hpp"
