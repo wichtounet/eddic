@@ -68,7 +68,8 @@ class SpiritLexer : public lex::lexer<L> {
             identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
             float_ = "[0-9]+\".\"[0-9]+";
             integer = "[0-9]+";
-            litteral = "\\\"[^\\\"]*\\\"";
+            string_litteral = "\\\"[^\\\"]*\\\"";
+            char_litteral = "'[a-zA-Z0-9]'";
 
             /* Constructs  */
             left_parenth = '('; 
@@ -141,7 +142,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += and_ | or_;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
             this->self += case_ | switch_ | default_;
-            this->self += float_ | integer | identifier | litteral;
+            this->self += float_ | integer | identifier | string_litteral | char_litteral;
 
             //Ignore comments
             this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
@@ -154,7 +155,7 @@ class SpiritLexer : public lex::lexer<L> {
         typedef lex::token_def<char> CharToken;
         typedef lex::token_def<double> FloatToken;
 
-        StringToken identifier, litteral;
+        StringToken identifier, string_litteral, char_litteral;
         IntegerToken integer;
         FloatToken float_;
         
