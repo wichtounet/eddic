@@ -17,7 +17,7 @@ namespace ast {
 struct Integer;
 struct IntegerSuffix;
 struct Float;
-struct Litteral;
+struct Literal;
 struct True;
 struct False;
 struct Null;

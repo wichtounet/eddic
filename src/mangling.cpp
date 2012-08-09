@@ -30,6 +30,8 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     if(type->is_standard_type()){
         if(type == INT){
             return "I";
+        } else if(type == CHAR){
+            return "C";
         } else if(type == STRING){
             return "S";
         } else if(type == BOOL){
@@ -212,6 +214,8 @@ std::string eddic::unmangle(std::string mangled){
 
         if(current == 'I'){
             function << "int";
+        } else if(current == 'C'){
+            function << "char";
         } else if(current == 'S'){
             function << "string";
         } else if(current == 'B'){

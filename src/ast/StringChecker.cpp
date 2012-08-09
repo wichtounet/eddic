@@ -45,8 +45,8 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_NEW()
 
-        void operator()(ast::Litteral& litteral){
-            litteral.label = pool.label(litteral.value);
+        void operator()(ast::Literal& literal){
+            literal.label = pool.label(literal.value);
         }
 
         AUTO_IGNORE_OTHERS()

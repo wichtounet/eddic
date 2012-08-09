@@ -16,7 +16,7 @@ namespace ast {
 
 /*!
  * \class True
- * \brief Reprensent a true boolean litteral. 
+ * \brief Reprensent a true boolean literal. 
  */
 struct True {
     

@@ -38,11 +38,11 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                     declaration.Content->value = integer;
                 } else if(type == STRING){
-                    ast::Litteral litteral;
-                    litteral.value = "\"\"";
-                    litteral.label = "S3";
+                    ast::Literal literal;
+                    literal.value = "\"\"";
+                    literal.label = "S3";
 
-                    declaration.Content->value = litteral;
+                    declaration.Content->value = literal;
                 } else if(type == FLOAT){
                     ast::Float float_;
                     float_.value = 0.0;

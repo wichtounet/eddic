@@ -100,8 +100,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     mutable std::shared_ptr<mtac::Function> function;
     bool take_address = false;
 
-    result_type operator()(ast::Litteral& litteral) const {
-        return {litteral.label, (int) litteral.value.size() - 2};
+    result_type operator()(ast::Literal& literal) const {
+        return {literal.label, (int) literal.value.size() - 2};
+    }
+
+    result_type operator()(ast::CharLiteral& literal) const {
+        char v = literal.value[1];
+
+        return {static_cast<int>(v)};
     }
 
     result_type operator()(ast::Integer& integer) const {
@@ -199,7 +205,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::FunctionCall& call) const {
         auto type = call.Content->function->returnType;
 
-        if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
+        if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
             auto t1 = function->context->new_temporary(type);
 
             execute_call(call, function, t1, {});
@@ -220,7 +226,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::MemberFunctionCall& call) const {
         auto type = call.Content->function->returnType;
 
-        if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
+        if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
             auto t1 = function->context->new_temporary(type);
 
             execute_member_call(call, function, t1, {});
@@ -264,7 +270,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             if(member_type == FLOAT){
                 function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
-            } else if(member_type == INT || member_type == BOOL || member_type->is_pointer()){
+            } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer()){
                 function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
             } else {
                 ASSERT_PATH_NOT_TAKEN("Unhandled type");
@@ -293,6 +299,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 if(nc_type == INT || nc_type == BOOL){
                     return {boost::get<int>(val)};
+                } else if(nc_type == CHAR){
+                    return {boost::get<char>(val)};        
                 } else if(nc_type == FLOAT){
                     return {boost::get<double>(val)};        
                 } else if(nc_type == STRING){
@@ -305,7 +313,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else if(type->is_array() || type->is_pointer()){
                 return {value.Content->var};
             } else {
-                if(type == INT || type == BOOL || type == FLOAT){
+                if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
                     return {value.Content->var};
                 } else if(type == STRING){
                     auto temp = value.Content->context->new_temporary(INT);
@@ -337,7 +345,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
-        if(type == INT || type == BOOL){
+        if(type == INT || type == CHAR || type == BOOL){
             auto temp = function->context->new_temporary(type);
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, 0));
@@ -403,7 +411,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(array.Content->memberNames.empty()){
             auto type = array.Content->var->type()->data_type();
             
-            if(type == BOOL || type == INT || type == FLOAT || type->is_pointer()){
+            if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
                 auto temp = array.Content->context->new_temporary(type);
                 function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
                 return {temp};
@@ -506,7 +514,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
         if(type->is_pointer()){
             pointerAssign(ToArgumentsVisitor(function)(value));
-        } else if(type == INT || type == BOOL){
+        } else if(type == INT || type == CHAR || type == BOOL){
             intAssign(ToArgumentsVisitor(function)(value));
         } else if(type == STRING){
             stringAssign(ToArgumentsVisitor(function)(value));
@@ -746,7 +754,7 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Fun
 
     auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
 
-    if(typeLeft == INT){
+    if(typeLeft == INT || typeLeft == CHAR){
         function->add(std::make_shared<Control>(mtac::toBinaryOperator(op), left, right, label));
     } else if(typeLeft == FLOAT){
         function->add(std::make_shared<Control>(mtac::toFloatBinaryOperator(op), left, right, label));
@@ -851,7 +859,7 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
     auto falseLabel = newLabel();
     auto endLabel = newLabel();
 
-    if(type == INT || type == BOOL || type == FLOAT){
+    if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
         auto t1 = function->context->new_temporary(type);
 
         visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
@@ -1134,7 +1142,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             
             auto t1 = swap.Content->context->new_temporary(INT);
 
-            if(lhs_var->type() == INT || lhs_var->type() == BOOL || lhs_var->type() == STRING){
+            if(lhs_var->type() == INT || lhs_var->type() == CHAR || lhs_var->type() == BOOL || lhs_var->type() == STRING){
                 function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::ASSIGN));  
                 function->add(std::make_shared<mtac::Quadruple>(rhs_var, lhs_var, mtac::Operator::ASSIGN));  
                 function->add(std::make_shared<mtac::Quadruple>(lhs_var, t1, mtac::Operator::ASSIGN));  
@@ -1441,7 +1449,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
         
         auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        if(typeLeft == INT){
+        if(typeLeft == INT || typeLeft == CHAR){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
         } else if(typeLeft == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));

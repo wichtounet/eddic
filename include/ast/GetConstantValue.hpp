@@ -29,10 +29,10 @@ namespace ast {
  * \see eddic::ast::IsConstantVisitor 
  */
 struct GetConstantValue : public boost::static_visitor<Val> {
-    Val operator()(const Litteral& litteral) const;
-    Val operator()(const Integer& litteral) const;
-    Val operator()(const IntegerSuffix& litteral) const;
-    Val operator()(const Float& litteral) const;
+    Val operator()(const Literal& literal) const;
+    Val operator()(const Integer& literal) const;
+    Val operator()(const IntegerSuffix& literal) const;
+    Val operator()(const Float& literal) const;
     Val operator()(const VariableValue& variable) const;
     Val operator()(const Unary& unary) const;
 

@@ -165,6 +165,10 @@ BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
     assert_output("array_foreach_param_param.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( char_type ){
+    assert_output("char_type.eddi", "a|0|z|e|e|u|u|");
+}
+
 BOOST_AUTO_TEST_CASE( ctor_dtor_heap ){
     assert_output("ctor_dtor_heap.eddi", "CA|0|DA|CAI|55|DA|CAII|3300|DA|CAS|666|DA|");
 }
