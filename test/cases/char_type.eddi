@@ -1,4 +1,23 @@
 void main(){
     char a = 'a';
     println(a);
+
+    if(a == 'a'){
+        println('z');
+    } else {
+        println('y');
+    }
+
+    println(test('a', 'a'));
+    println(test('z', 'z'));
+    println(test('a', 'z'));
+    println(test('z', 'a'));
+}
+
+char test(char a, char b){
+    if(a == b){
+        return 'e';
+    } else {
+        return 'u';
+    }
 }
