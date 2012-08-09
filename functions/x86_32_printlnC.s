@@ -18,6 +18,8 @@ lea ecx, [ebp - 4]
 mov edx, 1
 int 80h
 
+call _F7println
+
 pop esi
 pop edx
 pop ecx
