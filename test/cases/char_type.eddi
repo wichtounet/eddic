@@ -1,17 +1,27 @@
 void main(){
     char a = 'a';
-    println(a);
+    print(a);
+    print("|");
+
+    print('0');
+    print("|");
 
     if(a == 'a'){
-        println('z');
+        print('z');
+        print("|");
     } else {
-        println('y');
+        print('y');
+        print("|");
     }
 
-    println(test('a', 'a'));
-    println(test('z', 'z'));
-    println(test('a', 'z'));
-    println(test('z', 'a'));
+    print(test('a', 'a'));
+    print("|");
+    print(test('z', 'z'));
+    print("|");
+    print(test('a', 'z'));
+    print("|");
+    print(test('z', 'a'));
+    print("|");
 }
 
 char test(char a, char b){
