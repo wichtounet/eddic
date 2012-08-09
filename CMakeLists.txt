@@ -43,7 +43,7 @@ add_custom_target(oprofile
     && ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}/eddi_samples/big.eddi
     && sudo opcontrol --stop
     && sudo opcontrol --shutdown
-    && sudo opreport -e _fini -l ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic > ${CMAKE_CURRENT_BINARY_DIR}/profile
+    && sudo opreport -a -e _fini -l ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic > ${CMAKE_CURRENT_BINARY_DIR}/profile
     
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Analysing the code with cppcheck" VERBATIM
