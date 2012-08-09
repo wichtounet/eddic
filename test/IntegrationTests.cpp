@@ -330,6 +330,10 @@ BOOST_AUTO_TEST_CASE( concat ){
     assert_output("concat.eddi", "asdf1234|1234asdf|asdfasdf|12341234|");
 }
 
+BOOST_AUTO_TEST_CASE( println ){
+    assert_output("println.eddi", "\n");
+}
+
 BOOST_AUTO_TEST_CASE( prints ){
     assert_output_32("prints.eddi", "111|0|-111|0|1|999.9899|1.0089|0.0|-1.0089|-999.9899||-0|asdf|1234asdf|");
     assert_output_64("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.9900||-0|asdf|1234asdf|");
