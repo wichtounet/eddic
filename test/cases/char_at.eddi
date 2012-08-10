@@ -1,0 +1,10 @@
+void main(){
+    string a = "asdf";
+    print(a);
+    print("|");
+    
+    char b = a[0];
+
+    print(b);
+    print("|");
+}
