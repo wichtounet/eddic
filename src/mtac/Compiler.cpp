@@ -406,9 +406,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::ArrayValue& array) const {
-        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+        if(array.Content->var->type() == STRING){
+            auto index = moveToArgument(array.Content->indexValue, function);
+            auto pointer_temp = function->context->new_temporary(new_pointer_type(INT));
+            auto t1 = function->context->new_temporary(INT);
 
-        if(array.Content->memberNames.empty()){
+            //Get the label
+            function->add(std::make_shared<mtac::Quadruple>(pointer_temp, array.Content->var, mtac::Operator::DOT, INT->size()));
+
+            //Get the specified char
+            function->add(std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::PDOT, index));
+
+            return {t1};
+        } else if(array.Content->memberNames.empty()){
+        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
             auto type = array.Content->var->type()->data_type();
             
             if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
@@ -431,6 +442,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 ASSERT_PATH_NOT_TAKEN("void is not a variable");
             }
         } else {
+        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
             auto temp = array.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
