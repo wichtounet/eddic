@@ -9,6 +9,7 @@
 #include "mtac/OptimizerUtils.hpp"
 
 #include "Variable.hpp"
+#include "Type.hpp"
 
 using namespace eddic;
 
@@ -36,7 +37,7 @@ void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
         if(quadruple->op == mtac::Operator::ASSIGN){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                 //We only duplicate the math operation if the variable is used once to not add overhead
-                if(usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
+                if((*ptr)->type() != STRING && usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
                     auto assign = assigns[*ptr];
                     quadruple->op = assign->op;
                     quadruple->arg1 = assign->arg1;
