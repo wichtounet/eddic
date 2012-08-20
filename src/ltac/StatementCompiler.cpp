@@ -134,11 +134,9 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         return to_address(var, *ptr);
     }
 
-    assert(ltac::is_variable(offset));
-
     auto position = var->position();
-    assert(!position.isTemporary());
-
+    
+    assert(ltac::is_variable(offset));
     auto offsetReg = manager.get_reg(ltac::get_variable(offset));
 
     if(position.isStack()){
@@ -149,10 +147,14 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         ltac::add_instruction(function, ltac::Operator::MOV, reg, stack_address(position.offset()));
 
         return ltac::Address(reg, offsetReg);
+    } else if(position.isGlobal()){
+        return ltac::Address("V" + position.name(), offsetReg);
     } 
     
-    assert(position.isGlobal());
-    return ltac::Address("V" + position.name(), offsetReg);
+    assert(position.isTemporary());
+    
+    auto reg = manager.get_reg(var);
+    return ltac::Address(reg, offsetReg);
 }
 
 void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int position){
