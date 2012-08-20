@@ -1,0 +1,13 @@
+bool str_equals(string a, string b){
+    if(length(a) == length(b)){
+        return false;
+    }
+        
+    for(int i = 0; i < length(a); ++i){
+        if(a[i] != b[i]){
+            return false;
+        }
+    }
+
+    return true;
+}
