@@ -408,7 +408,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::ArrayValue& array) const {
         if(array.Content->var->type() == STRING){
             auto index = moveToArgument(array.Content->indexValue, function);
-            auto pointer_temp = function->context->new_temporary(new_pointer_type(INT));
+            auto pointer_temp = function->context->new_temporary(INT);
             auto t1 = function->context->new_temporary(INT);
 
             //Get the label
