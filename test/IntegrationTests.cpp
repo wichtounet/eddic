@@ -422,6 +422,10 @@ BOOST_AUTO_TEST_CASE( std_lib_math_pow ){
     assert_output("stdlib_math_pow.eddi", "0|1|10|100|1024|1");
 }
 
+BOOST_AUTO_TEST_CASE( std_lib_str_equals ){
+    assert_output("stdlib_str_equals.eddi", "1|0|0|0|1|1|");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */
