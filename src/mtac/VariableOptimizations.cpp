@@ -200,13 +200,13 @@ bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
         auto position = var->position();
         auto type = var->type();
 
-        if((position.isTemporary() || position.isStack()) && (type->is_standard_type() || type->is_pointer())){
+        if((position.isTemporary() || position.isStack()) && (type->is_standard_type() || type->is_pointer()) && type != STRING){
             if(is_written_once(var, function)){
                 auto targets = get_targets(var, function);
 
                 if(targets.size() == 1){
                     if(pointer_escaped->find(var) == pointer_escaped->end()){
-                        if(is_not_direct_alias(var, targets[0], function)){
+                        if(is_not_direct_alias(var, targets[0], function) && targets[0]->type() != STRING){
                             VariableReplace replacer(function, var, targets[0]);
 
                             for(auto& block : function->getBasicBlocks()){
@@ -225,7 +225,7 @@ bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
 
                     if(pointer_escaped->find(var) == pointer_escaped->end()){
                         if(sources.size() == 1){
-                            if(is_not_direct_alias(var, sources[0], function)){
+                            if(is_not_direct_alias(var, sources[0], function) && sources[0]->type() != STRING){
                                 VariableReplace replacer(function, var, sources[0]);
 
                                 for(auto& block : function->getBasicBlocks()){
