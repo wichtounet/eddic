@@ -27,20 +27,28 @@ bool eddic::ltac::is_int_var(std::shared_ptr<Variable> variable){
     return variable->type() == INT;
 }
 
-void eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op){
-    function->add(std::make_shared<ltac::Instruction>(op));
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op){
+    auto instruction = std::make_shared<ltac::Instruction>(op);
+    function->add(instruction);
+    return instruction;
 }
 
-void eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1){
-    function->add(std::make_shared<ltac::Instruction>(op, arg1));
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1){
+    auto instruction = std::make_shared<ltac::Instruction>(op, arg1);
+    function->add(instruction);
+    return instruction;
 }
 
-void eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2){
-    function->add(std::make_shared<ltac::Instruction>(op, arg1, arg2));
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2){
+    auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2);
+    function->add(instruction);
+    return instruction;
 }
 
-void eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
-    function->add(std::make_shared<ltac::Instruction>(op, arg1, arg2, arg3));
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
+    auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2, arg3);
+    function->add(instruction);
+    return instruction;
 }
 
 ltac::Register eddic::ltac::to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){

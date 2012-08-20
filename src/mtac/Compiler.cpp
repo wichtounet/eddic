@@ -412,10 +412,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto t1 = function->context->new_temporary(INT);
 
             //Get the label
-            function->add(std::make_shared<mtac::Quadruple>(pointer_temp, array.Content->var, mtac::Operator::DOT, 0));
+            function->add(std::make_shared<mtac::Quadruple>(pointer_temp, array.Content->var, mtac::Operator::ASSIGN));
 
             //Get the specified char //TODO ADD special information to take only a char (1byte)
-            function->add(std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::PDOT, index));
+            auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
+            quadruple->size = mtac::Size::BYTE;
+            function->add(quadruple);
 
             return {t1};
         } else if(array.Content->memberNames.empty()){

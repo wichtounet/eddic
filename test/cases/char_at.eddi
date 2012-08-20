@@ -7,6 +7,14 @@ void main(){
 
     print(b);
     print("|");
+    
+    b = a[1];
+
+    print(b);
+    print("|");
+    
+    print(a[2]);
+    print("|");
 
     if(a[1] == 's'){
         print("1");
