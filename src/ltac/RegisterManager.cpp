@@ -20,7 +20,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
 
-#define DEBUG_GLOBAL_ENABLED false 
+#define DEBUG_GLOBAL_ENABLED false
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 using namespace eddic;
@@ -190,6 +190,10 @@ void ltac::RegisterManager::reset(){
     float_registers.reset();
 
     written.clear();
+}
+
+bool ltac::RegisterManager::in_reg(std::shared_ptr<Variable> var){
+    return registers.inRegister(var);
 }
 
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister reg){

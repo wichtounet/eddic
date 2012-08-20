@@ -91,12 +91,18 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    auto type = array.Content->var->type()->data_type();
+    auto array_type = array.Content->var->type();
+
+    if(array_type == STRING){
+        return CHAR;
+    } 
+
+    auto data_type = array_type->data_type();
     
     if(array.Content->memberNames.empty()){
-        return type;
+        return data_type;
     } else {
-        return get_member_type(array.Content->context->global(), type, array.Content->memberNames);
+        return get_member_type(array.Content->context->global(), data_type, array.Content->memberNames);
     }
 }
 

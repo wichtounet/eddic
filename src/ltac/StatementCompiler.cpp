@@ -1102,20 +1102,45 @@ void ltac::StatementCompiler::compile_DOT(std::shared_ptr<mtac::Quadruple> quadr
     assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
     auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
+    std::shared_ptr<ltac::Instruction> instruction;
+
     if(variable->type()->is_pointer()){
         assert(boost::get<int>(&*quadruple->arg2));
         int offset = boost::get<int>(*quadruple->arg2);
 
         auto reg = manager.get_reg_no_move(quadruple->result);
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
+        instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
     } else {
+        /* To be very conservative
+            if(variable->type() == STRING && manager.is_written(variable)){
+            manager.spills(manager.get_reg(variable));
+        }*/
+
         if(ltac::is_float_var(quadruple->result)){
             auto reg = manager.get_float_reg_no_move(quadruple->result);
-            ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
+            instruction = ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
         } else {
             auto reg = manager.get_reg_no_move(quadruple->result);
-            ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
         }
+    }
+
+    switch(quadruple->size){
+        case mtac::Size::BYTE:
+            instruction->size = ltac::Size::BYTE;
+            break;
+        case mtac::Size::WORD:
+            instruction->size = ltac::Size::WORD;
+            break;
+        case mtac::Size::DOUBLE_WORD:
+            instruction->size = ltac::Size::DOUBLE_WORD;
+            break;
+        case mtac::Size::QUAD_WORD:
+            instruction->size = ltac::Size::QUAD_WORD;
+            break;
+        default:
+            instruction->size = ltac::Size::DEFAULT;
+            break;
     }
 
     manager.set_written(quadruple->result);

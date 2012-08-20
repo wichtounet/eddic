@@ -210,6 +210,12 @@ class CheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::ArrayValue& array){
             visit(*this, array.Content->indexValue);
 
+            auto var_type = array.Content->var->type();
+
+            if(!var_type->is_array() && var_type != STRING){
+                throw SemanticalException(array.Content->arrayName + " is not an array, neither a string", array.Content->position);
+            }
+
             auto index_type = visit(ast::GetTypeVisitor(), array.Content->indexValue);
             if (index_type != INT || index_type->is_array()) {
                 throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
