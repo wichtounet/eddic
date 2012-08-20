@@ -89,7 +89,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
         switch(instruction->op){
-            case ltac::Operator::MOV:{
+            case ltac::Operator::MOV:
                 if(instruction->size != ltac::Size::DEFAULT){
                     switch(instruction->size){
                         case ltac::Size::BYTE:
@@ -120,7 +120,6 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 }
 
                 break;
-            }
             case ltac::Operator::FMOV:
                 if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
                     writer.stream() << "movq " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
