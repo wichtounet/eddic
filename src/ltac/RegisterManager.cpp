@@ -20,7 +20,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
 
-#define DEBUG_GLOBAL_ENABLED true
+#define DEBUG_GLOBAL_ENABLED false
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 using namespace eddic;
