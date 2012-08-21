@@ -1353,10 +1353,12 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
                 }
 
                 if(!(*ptr).Content->memberNames.empty() && type->is_custom_type() && param->type()->is_pointer()){
-                    auto mtac_param = std::make_shared<mtac::Param>((*ptr).Content->var, param, definition);
+                    auto v = visit(ToArgumentsVisitor(function, true), first)[0];
 
-                    mtac_param->address = true;
-                    mtac_param->memberNames = (*ptr).Content->memberNames;
+                    auto mtac_param = std::make_shared<mtac::Param>(v, param, definition);
+
+                    //mtac_param->address = true;
+                    //mtac_param->memberNames = (*ptr).Content->memberNames;
 
                     function->add(mtac_param);
 
