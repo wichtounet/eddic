@@ -3,3 +3,7 @@ void main(){
 
     print(array);
 }
+
+void test(int* p){
+    print(p);
+}
