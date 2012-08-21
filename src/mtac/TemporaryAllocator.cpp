@@ -11,14 +11,16 @@
 #include "variant.hpp"
 #include "FunctionContext.hpp"
 #include "Platform.hpp"
+#include "Options.hpp"
+#include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
-
-#include "VisitorUtils.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -116,6 +118,8 @@ unsigned int count_temporaries(Container& container){
 
 void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
+        auto count = 0;
+
         CollectTemporary visitor(function);
 
         for(auto& block : function->getBasicBlocks()){
@@ -125,7 +129,6 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
                 visit(visitor, statement);
             }
         }
-
         
         mtac::LiveVariableAnalysisProblem problem;
         auto results = mtac::data_flow(function, problem);
@@ -145,18 +148,22 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
                     auto end = values.end();
 
                     for(unsigned int i = 0; i <= (registers - temporaries + 1) && it != end;){
-                        if((*it) && (*it)->position().isTemporary()){
-                            std::cout << "Store " << (*it)->name() << std::endl;
+                        if((*it) && (*it)->type()->is_pointer() && (*it)->position().isTemporary()){
+                            ++count;
                             function->context->storeTemporary(*it);
                             ++i;
                         }
 
                         ++it;
                     }
-                    //std::cout << "We have a situation " << temporaries << std::endl;
-                    //std::cout << values << std::endl;
                 }
             }
+        }
+
+        if(count > 0 && option_defined("dev")){
+            std::cout << "Temporaries have been stored for registers" << std::endl;
+
+            mtac::print(function);
         }
     }
 }
