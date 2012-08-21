@@ -396,6 +396,11 @@ BOOST_AUTO_TEST_CASE( params_assign ){
     assert_compilation_error("params_assign.eddi", "--64", "--O2");
 }
 
+BOOST_AUTO_TEST_CASE( wrong_print ){
+    assert_compilation_error("wrong_print.eddi", "--32", "--O2");
+    assert_compilation_error("wrong_print.eddi", "--64", "--O2");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 /* Standard library test suite  */
