@@ -20,7 +20,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
 
-#define DEBUG_GLOBAL_ENABLED false
+#define DEBUG_GLOBAL_ENABLED true
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 using namespace eddic;
@@ -99,6 +99,8 @@ Reg get_reg(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, b
 
     Reg reg = get_free_reg(registers, manager);
 
+    DEBUG_GLOBAL std::cout << "Found reg " << reg << std::endl;
+
     if(doMove){
         manager.move(variable, reg);
     }
@@ -165,6 +167,8 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
 
 template<typename Reg>
 void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
+    DEBUG_GLOBAL std::cout << "Spills all" << std::endl;
+
     for(auto reg : registers){
         //The register can be reserved if the ending occurs in a special break case
         if(!registers.reserved(reg) && registers.used(reg)){
@@ -329,26 +333,30 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 }
 
 ltac::Register ltac::RegisterManager::get_reg(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << std::endl;
     auto reg = ::get_reg(registers, var, true, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
 ltac::Register ltac::RegisterManager::get_reg_no_move(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg no move for " << var->name() << std::endl;
     auto reg = ::get_reg(registers, var, false, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_float_reg(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << std::endl;
     auto reg = ::get_reg(float_registers, var, true, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_float_reg_no_move(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg no move for " << var->name() << std::endl;
     auto reg = ::get_reg(float_registers, var, false, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
