@@ -226,38 +226,48 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
             auto statement = *pit;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                auto quadruple = std::make_shared<mtac::Quadruple>();
-                std::shared_ptr<Variable> dest_var;
-                
                 auto src_var = (*ptr)->param;
-                
-                if((*ptr)->memberNames.empty()){
-                    auto type = src_var->type();
 
-                    dest_var = dest_definition->context->new_temporary(type);
+                if(src_var->type()->is_array()){
+                    auto dest_var = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
 
-                    if(type == INT || type == BOOL){
-                        quadruple->op = mtac::Operator::ASSIGN; 
-                    } else if(type->is_pointer()){
-                        quadruple->op = mtac::Operator::PASSIGN;
-                    } else {
-                        quadruple->op = mtac::Operator::FASSIGN; 
-                    }
+                    variable_clones[src_var] = dest_var;
 
-                    quadruple->arg1 = (*ptr)->arg;
+                    auto quadruple = std::make_shared<mtac::Quadruple>();
+                    quadruple->op = mtac::Operator::NOP;
+                    *pit = quadruple;
                 } else {
-                    auto object_var = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
-                    dest_var = dest_definition->context->new_temporary(INT);
+                    auto quadruple = std::make_shared<mtac::Quadruple>();
+                    std::shared_ptr<Variable> dest_var;
+                    
+                    if((*ptr)->memberNames.empty()){
+                        auto type = src_var->type();
 
-                    quadruple->op = mtac::Operator::PDOT;
-                    quadruple->arg1 = object_var;
-                    quadruple->arg2 = mtac::compute_member_offset(source_function->context->global(), object_var, (*ptr)->memberNames);
-                }
+                        dest_var = dest_definition->context->new_temporary(type);
+
+                        if(type == INT || type == BOOL){
+                            quadruple->op = mtac::Operator::ASSIGN; 
+                        } else if(type->is_pointer()){
+                            quadruple->op = mtac::Operator::PASSIGN;
+                        } else {
+                            quadruple->op = mtac::Operator::FASSIGN; 
+                        }
+
+                        quadruple->arg1 = (*ptr)->arg;
+                    } else {
+                        auto object_var = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
+                        dest_var = dest_definition->context->new_temporary(INT);
+
+                        quadruple->op = mtac::Operator::PDOT;
+                        quadruple->arg1 = object_var;
+                        quadruple->arg2 = mtac::compute_member_offset(source_function->context->global(), object_var, (*ptr)->memberNames);
+                    }
                 
-                variable_clones[src_var] = dest_var;
-                quadruple->result = dest_var;
+                    variable_clones[src_var] = dest_var;
+                    quadruple->result = dest_var;
 
-                *pit = quadruple;
+                    *pit = quadruple;
+                }
                 
                 --i;
             }
@@ -347,7 +357,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& param : function->definition->parameters){
-        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !(param.paramType->is_pointer()/* && param.name == "this")*/)){
+        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !param.paramType->is_pointer() && !param.paramType->is_array()){
             return false;
         }
     }
