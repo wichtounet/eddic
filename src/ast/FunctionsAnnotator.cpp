@@ -246,12 +246,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             auto types = get_types(functionCall);
 
             std::string mangled = mangle(name, types);
-            
-            if(name == "println" || name == "print" || name == "duration"){
-                context->addReference(mangled);
-
-                return;
-            }
 
             //If the function does not exists, try implicit conversions to pointers
             if(!context->exists(mangled)){
