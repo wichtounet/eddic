@@ -10,9 +10,12 @@
 
 #include "variant.hpp"
 #include "FunctionContext.hpp"
+#include "Platform.hpp"
 
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Program.hpp"
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
 
 #include "VisitorUtils.hpp"
@@ -96,6 +99,19 @@ struct CollectTemporary : public boost::static_visitor<> {
     }
 };
 
+template<typename Container>
+unsigned int count_temporaries(Container& container){
+    unsigned int count = 0;
+    
+    for(auto v : container){
+        if(v && v->position().isTemporary()){
+            ++count;
+        }
+    }
+
+    return count;
+}
+
 }
 
 void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
@@ -107,6 +123,39 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
 
             for(auto& statement : block->statements){
                 visit(visitor, statement);
+            }
+        }
+
+        
+        mtac::LiveVariableAnalysisProblem problem;
+        auto results = mtac::data_flow(function, problem);
+
+        auto descriptor = getPlatformDescriptor(platform);
+        auto registers = descriptor->number_of_registers();
+        
+        for(auto& block : function->getBasicBlocks()){
+            visitor.block = block;
+
+            for(auto& statement : block->statements){
+                auto values = results->OUT_S[statement].values();
+                auto temporaries = count_temporaries(values);
+                
+                if(temporaries >= registers){
+                    auto it = values.begin();
+                    auto end = values.end();
+
+                    for(unsigned int i = 0; i <= (registers - temporaries + 1) && it != end;){
+                        if((*it) && (*it)->position().isTemporary()){
+                            std::cout << "Store " << (*it)->name() << std::endl;
+                            function->context->storeTemporary(*it);
+                            ++i;
+                        }
+
+                        ++it;
+                    }
+                    //std::cout << "We have a situation " << temporaries << std::endl;
+                    //std::cout << values << std::endl;
+                }
             }
         }
     }
