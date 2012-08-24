@@ -1282,7 +1282,7 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
     return visit(ToArgumentsVisitor(function), value)[0];
 }
     
-void push_struct_member(ast::VariableValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
+void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
     auto struct_name = type->type();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
@@ -1319,16 +1319,20 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto type = member->type;
 
-        ast::VariableValue memberValue;
-        memberValue.Content->context = context;
-        memberValue.Content->variableName = var->name();
-        memberValue.Content->var = var;
-        memberValue.Content->memberNames = {member->name};
+        ast::VariableValue variable_value;
+        variable_value.Content->context = context;
+        variable_value.Content->variableName = var->name();
+        variable_value.Content->var = var;
+        
+        ast::MemberValue member_value;
+        member_value.Content->context = context;
+        member_value.Content->location = variable_value;
+        member_value.Content->memberNames = {member->name};
 
         if(type->is_custom_type()){
-            push_struct_member(memberValue, type, function, param, definition);
+            push_struct_member(member_value, type, function, param, definition);
         } else {
-            auto member_values = ToArgumentsVisitor(function)(memberValue);
+            auto member_values = ToArgumentsVisitor(function)(member_value);
 
             for(auto& v : boost::adaptors::reverse(member_values)){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
@@ -1369,12 +1373,12 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if((*ptr).Content->memberNames.empty() && type->is_custom_type() && !param->type()->is_pointer()){
+                if(/*(*ptr).Content->memberNames.empty() && */type->is_custom_type() && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
 
-                if(!(*ptr).Content->memberNames.empty() && type->is_custom_type() && param->type()->is_pointer()){
+                /*if(!(*ptr).Content->memberNames.empty() && type->is_custom_type() && param->type()->is_pointer()){
                     auto v = visit(ToArgumentsVisitor(function, true), first)[0];
 
                     auto mtac_param = std::make_shared<mtac::Param>(v, param, definition);
@@ -1385,7 +1389,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
                     function->add(mtac_param);
 
                     continue;
-                }
+                }*/
             } 
 
             auto args = visit(ToArgumentsVisitor(function, param->type()->is_pointer()), first);
