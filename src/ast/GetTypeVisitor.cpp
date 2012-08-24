@@ -87,13 +87,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberVal
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    auto type = variable.variable()->type();
-
-    if(variable.Content->memberNames.empty()){
-        return type;
-    } else {
-        return get_member_type(variable.Content->context->global(), type->is_pointer() ? type->data_type() : type, variable.Content->memberNames);
-    }
+    return variable.variable()->type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
@@ -103,13 +97,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValu
         return CHAR;
     } 
 
-    auto data_type = array_type->data_type();
-    
-    if(array.Content->memberNames.empty()){
-        return data_type;
-    } else {
-        return get_member_type(array.Content->context->global(), data_type, array.Content->memberNames);
-    }
+    return array_type->data_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceValue& value) const {
