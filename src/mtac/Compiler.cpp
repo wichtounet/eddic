@@ -503,7 +503,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             if(destType == FLOAT){
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::I2F));
             } else if(destType == INT){
-                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
+                if(srcType == FLOAT){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
+                } else if(srcType == CHAR){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
+                }
+            } else if(destType == CHAR){
+                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
             }
             
             return {t1};

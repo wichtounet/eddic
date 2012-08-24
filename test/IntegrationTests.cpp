@@ -182,8 +182,8 @@ BOOST_AUTO_TEST_CASE( ctor_dtor_stack ){
 }
 
 BOOST_AUTO_TEST_CASE( casts ){
-    assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|");
-    assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|");
+    assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|B|B|90|");
+    assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|B|B|90|");
 }
 
 BOOST_AUTO_TEST_CASE( compound ){

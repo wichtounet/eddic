@@ -223,12 +223,23 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Cast& cast){
-            auto destType = visit(ast::TypeTransformer(context), cast.Content->type);
+            auto dst_type = visit(ast::TypeTransformer(context), cast.Content->type);
+            auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
-            if(destType == STRING){
-                throw SemanticalException("Cannot cast to string", cast.Content->position);
-            } else if(destType == VOID){
-                throw SemanticalException("Cannot cast to void", cast.Content->position);
+            if(dst_type == INT){
+                if(src_type != FLOAT && src_type != INT && src_type != CHAR){
+                    throw SemanticalException("Invalid cast", cast.Content->position);
+                }
+            } else if(dst_type == FLOAT){
+                if(src_type != INT && src_type != FLOAT){
+                    throw SemanticalException("Invalid cast", cast.Content->position);
+                }
+            } else if(dst_type == CHAR){
+                if(src_type != INT && src_type != CHAR){
+                    throw SemanticalException("Invalid cast", cast.Content->position);
+                }
+            } else {
+                throw SemanticalException("Invalid cast", cast.Content->position);
             }
         }
 
