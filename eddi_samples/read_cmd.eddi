@@ -1,0 +1,10 @@
+void main(){
+    char c = read_char();
+
+    if(c == 'e'){
+        println("Entered e");
+    } else {
+        print("Entered ");
+        println(c);
+    }
+}
