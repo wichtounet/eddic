@@ -284,55 +284,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {var};
     }
     
-    result_type operator()(ast::MemberValue& value) const {
-        //TODO
-        return {}; 
-    }
-
-    result_type operator()(ast::VariableValue& value) const {
-        if(value.Content->memberNames.empty()){
-            if(take_address){
-                return {value.Content->var};
-            }
-
-            auto type = value.Content->var->type();
-
-            //If it's a const, we just have to replace it by its constant value
-            if(type->is_const()){
-                auto val = value.Content->var->val();
-                auto nc_type = type->non_const();
-
-                if(nc_type == INT || nc_type == BOOL){
-                    return {boost::get<int>(val)};
-                } else if(nc_type == CHAR){
-                    return {boost::get<char>(val)};        
-                } else if(nc_type == FLOAT){
-                    return {boost::get<double>(val)};        
-                } else if(nc_type == STRING){
-                    auto value = boost::get<std::pair<std::string, int>>(val);
-
-                    return {value.first, value.second};
-                } 
-
-                ASSERT_PATH_NOT_TAKEN("void is not a type");
-            } else if(type->is_array() || type->is_pointer()){
-                return {value.Content->var};
-            } else {
-                if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
-                    return {value.Content->var};
-                } else if(type == STRING){
-                    auto temp = value.Content->context->new_temporary(INT);
-                    function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size()));
-
-                    return {value.Content->var, temp};
-                } else if(type->is_custom_type()) {
-                    //If we are here, it means that we want to pass it by reference
-                    return {value.Content->var};
-                } else {
-                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
-                }
-            }
-        } else {
+    result_type operator()(ast::MemberValue& member_value) const {
+        if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+            auto value = *ptr;
+            
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), value.Content->memberNames);
@@ -346,6 +301,61 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
 
             return get_member(offset, member_type, value.Content->var);
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&value.Content->location)){
+            auto value = *ptr;
+
+            auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+            auto temp = array.Content->context->new_temporary(INT);
+            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
+            
+            auto member_info = mtac::compute_member(function->context->global(), array.Content->var, array.Content->memberNames);
+            return get_member(member_info.first, member_info.second, temp);
+        }
+        
+        ASSERT_PATH_NOT_TAKEN("Invalid location type");
+    }
+
+    result_type operator()(ast::VariableValue& value) const {
+        if(take_address){
+            return {value.Content->var};
+        }
+
+        auto type = value.Content->var->type();
+
+        //If it's a const, we just have to replace it by its constant value
+        if(type->is_const()){
+            auto val = value.Content->var->val();
+            auto nc_type = type->non_const();
+
+            if(nc_type == INT || nc_type == BOOL){
+                return {boost::get<int>(val)};
+            } else if(nc_type == CHAR){
+                return {boost::get<char>(val)};        
+            } else if(nc_type == FLOAT){
+                return {boost::get<double>(val)};        
+            } else if(nc_type == STRING){
+                auto value = boost::get<std::pair<std::string, int>>(val);
+
+                return {value.first, value.second};
+            } 
+
+            ASSERT_PATH_NOT_TAKEN("void is not a type");
+        } else if(type->is_array() || type->is_pointer()){
+            return {value.Content->var};
+        } else {
+            if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
+                return {value.Content->var};
+            } else if(type == STRING){
+                auto temp = value.Content->context->new_temporary(INT);
+                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size()));
+
+                return {value.Content->var, temp};
+            } else if(type->is_custom_type()) {
+                //If we are here, it means that we want to pass it by reference
+                return {value.Content->var};
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+            }
         }
     }
 
@@ -370,9 +380,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             function->add(std::make_shared<mtac::Quadruple>(t2, variable, mtac::Operator::DOT, INT->size()));
 
             return {t1, t2};
-        } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled type");
-        }
+        } 
+        
+        ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }
 
     template<typename Value>
@@ -397,9 +407,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
             return dereference_sub(*ptr);
-        } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled dereference left value type");
-        }
+        } 
+        
+        ASSERT_PATH_NOT_TAKEN("Unhandled dereference left value type");
     }
 
     result_type operator()(ast::PrefixOperation& operation) const {
@@ -419,14 +429,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             //Get the label
             function->add(std::make_shared<mtac::Quadruple>(pointer_temp, array.Content->var, mtac::Operator::ASSIGN));
 
-            //Get the specified char //TODO ADD special information to take only a char (1byte)
+            //Get the specified char 
             auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
             quadruple->size = mtac::Size::BYTE;
             function->add(quadruple);
 
             return {t1};
         } else if(array.Content->memberNames.empty()){
-        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
+            auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
             auto type = array.Content->var->type()->data_type();
             
             if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
@@ -448,14 +458,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else {
                 ASSERT_PATH_NOT_TAKEN("void is not a variable");
             }
-        } else {
-        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-            auto temp = array.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
-            
-            auto member_info = mtac::compute_member(function->context->global(), array.Content->var, array.Content->memberNames);
-            return get_member(member_info.first, member_info.second, temp);
-        }
+        } 
     }
 
     result_type operator()(ast::Expression& value) const {
