@@ -8,6 +8,7 @@ push rcx
 push rdi
 push rsi
 push rdx
+push r11
 
 mov [rbp - 8], r14
 
@@ -17,6 +18,7 @@ lea rsi, [rbp - 8]
 mov rdx, 1
 syscall
 
+pop r11
 pop rdx
 pop rsi
 pop rdi

@@ -1,12 +1,15 @@
 _F5printI:
 push rbp
 mov rbp, rsp
+
 push rax
 push rbx
 push rcx
 push rdx
 push rsi
 push rdi
+push r11
+
 ;The parameter is in r14
 mov rax, r14
 xor r14, r14
@@ -43,11 +46,14 @@ syscall
 add rsp, 8
 jmp .next
 .exit:
+
+pop r11
 pop rdi
 pop rsi
 pop rdx
 pop rcx
 pop rbx
 pop rax
+
 leave
 ret

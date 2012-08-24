@@ -1,9 +1,11 @@
 _F5printF:
 push rbp
 mov rbp, rsp
+
 push rax
 push rbx
 push r14
+
 sub rsp, 8
 movq [rsp], xmm1
 sub rsp, 8
@@ -52,8 +54,10 @@ movq xmm2, [rsp]
 add rsp, 8
 movq xmm1, [rsp]
 add rsp, 8
+
 pop r14
 pop rbx
 pop rax
+
 leave
 ret
