@@ -227,11 +227,15 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
             if(dst_type == INT){
-                if(src_type != FLOAT && src_type != INT){
+                if(src_type != FLOAT && src_type != INT && src_type != CHAR){
                     throw SemanticalException("Invalid cast", cast.Content->position);
                 }
             } else if(dst_type == FLOAT){
                 if(src_type != INT && src_type != FLOAT){
+                    throw SemanticalException("Invalid cast", cast.Content->position);
+                }
+            } else if(dst_type == CHAR){
+                if(src_type != INT && src_type != CHAR){
                     throw SemanticalException("Invalid cast", cast.Content->position);
                 }
             } else {
