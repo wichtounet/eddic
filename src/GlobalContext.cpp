@@ -179,6 +179,11 @@ void GlobalContext::defineStandardFunctions(){
     //print float
     addPrintFunction("_F5printF", FLOAT);
     addPrintFunction("_F7printlnF", FLOAT);
+
+    auto read_char_function = std::make_shared<Function>(CHAR, "read_char");
+    read_char_function->standard = true;
+    read_char_function->mangledName = "_F9read_char";
+    addFunction(read_char_function);
     
     //concat function
     auto concatFunction = std::make_shared<Function>(STRING, "concat");

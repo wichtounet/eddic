@@ -484,4 +484,8 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
     if(context->referenceCount("_F8durationAIAI")){
         output_function("x86_32_duration");
     }
+    
+    if(context->referenceCount("_F9read_char")){
+        output_function("x86_32_read_char");
+    }
 }
