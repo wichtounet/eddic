@@ -24,7 +24,7 @@ class Variable;
 
 namespace ast {
 
-typedef boost::variant<ast::VariableValue, ast::ArrayValue> Ref;
+typedef boost::variant<ast::VariableValue, ast::MemberValue, ast::ArrayValue> Ref;
 
 /*!
  * \class ASTDereferenceValue
@@ -54,5 +54,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (eddic::ast::Ref, Content->ref)
 )
+
+#include "ast/MemberValue.hpp"
 
 #endif

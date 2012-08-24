@@ -396,15 +396,17 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
     
     result_type operator()(ast::DereferenceValue& dereference_value) const {
-        if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
+        if(auto* ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
+            auto member_value = *ptr;
+
+            if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
+                return dereference_sub(member_value);
+            } 
+        } else if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
             auto& value = *ptr;
 
-            if(value.Content->memberNames.empty()){
-                auto type = value.variable()->type()->data_type();
-                return dereference_variable(value.variable(), type);
-            } else {
-                return dereference_sub(value);
-            }
+            auto type = value.variable()->type()->data_type();
+            return dereference_variable(value.variable(), type);
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
             return dereference_sub(*ptr);
         } 
@@ -738,18 +740,23 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
 
         visit(AssignValueToVariable(function, variable, left.Content->indexValue), assignment.Content->value);
     } else if(auto* ptr = boost::get<ast::DereferenceValue>(&assignment.Content->left_value)){
-        if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
-            auto left = *var_ptr;
-        
-            auto variable = left.Content->var;
+        if(auto* var_ptr = boost::get<ast::MemberValue>(&(*ptr).Content->ref)){
+            auto member_value = *var_ptr;
 
-            if(left.Content->memberNames.empty()){
-                visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
-            } else {
-                unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, left.Content->memberNames);
+            if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+                auto left = *ptr;
+
+                auto variable = left.Content->var;
+                unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
+            } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+                //TODO
             }
+        } else if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
+            auto left = *var_ptr;
+
+            visit(DereferenceAssign(function, left.Content->var, 0), assignment.Content->value);
         } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&(*ptr).Content->ref)){
             auto left = *array_ptr;
 

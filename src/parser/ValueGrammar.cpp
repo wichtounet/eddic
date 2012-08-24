@@ -226,7 +226,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  qi::omit[lexer.multiplication]
         >>  (
-                    array_value
+                    member_value
+                |   array_value
                 |   variable_value
             );
     
