@@ -80,6 +80,12 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> globa
 
 } //end of anonymous namespace
 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberValue& value) const {
+    auto type = visit(*this, value.Content->location);
+
+    return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     auto type = variable.variable()->type();
 

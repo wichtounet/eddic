@@ -340,6 +340,18 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         std::cout << std::endl;
     }
+    
+    void operator()(ast::MemberValue& value) const {
+        std::cout << indent() << "Member Value ";
+
+        for(auto& member : value.Content->memberNames){
+            std::cout << "." << member; 
+        }
+
+        std::cout << std::endl;
+
+        print_sub(value.Content->location, "Left Value");
+    }
 
     void operator()(ast::DereferenceValue& value) const {
         std::cout << indent() << "Dereference Variable Value" << std::endl;;

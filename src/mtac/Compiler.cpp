@@ -283,6 +283,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(std::shared_ptr<Variable> var) const {
         return {var};
     }
+    
+    result_type operator()(ast::MemberValue& value) const {
+        //TODO
+        return {}; 
+    }
 
     result_type operator()(ast::VariableValue& value) const {
         if(value.Content->memberNames.empty()){

@@ -17,6 +17,8 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 typedef boost::variant<VariableValue, ArrayValue> MemberLocation;
@@ -27,6 +29,8 @@ typedef boost::variant<VariableValue, ArrayValue> MemberLocation;
  * Should only be used from the Deferred version (eddic::ast::MemberValue).
  */
 struct ASTMemberValue {
+    std::shared_ptr<Context> context;
+
     Position position;
 
     MemberLocation location;

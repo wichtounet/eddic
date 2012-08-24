@@ -110,6 +110,11 @@ void operator()(ast::Return& return_){\
     visit(*this, return_.Content->value);\
 }
 
+#define AUTO_RECURSE_MEMBER_VALUE()\
+void operator()(ast::MemberValue& member){\
+    visit(*this, member.Content->location);\
+}
+
 #define AUTO_RECURSE_STRUCT_DECLARATION()\
 void operator()(ast::StructDeclaration& declaration){\
     visit_each(*this, declaration.Content->values);\
@@ -228,6 +233,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_STRUCT_DECLARATION() void operator()(ast::StructDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
+#define AUTO_IGNORE_MEMBER_VALUE() void operator()(ast::MemberValue&){}
 
 /* auto return macros */ 
 
@@ -262,6 +268,7 @@ void operator()(ast::New& new_){\
 #define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
+#define AUTO_RETURN_MEMBER_VALUE(return_type) return_type operator()(ast::MemberValue& t){return t;}
 #define AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(return_type) return_type operator()(ast::DereferenceValue& t){return t;}
 
 //The following macros should be used very sparsely as they are increasing the

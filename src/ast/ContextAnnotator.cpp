@@ -246,6 +246,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, variable.Content->ref);
         }
         
+        void operator()(ast::MemberValue& value){
+            value.Content->context = currentContext;
+
+            visit(*this, value.Content->location);
+        }
+        
         void operator()(ast::ArrayValue& array){
             array.Content->context = currentContext;
 
