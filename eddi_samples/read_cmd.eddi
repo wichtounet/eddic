@@ -2,7 +2,7 @@ void main(){
     char c = read_char();
 
     if(c == 'e'){
-        println("Entered e");
+        println("Enter");
     } else {
         print("Entered ");
         println(c);
