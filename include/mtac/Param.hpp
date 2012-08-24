@@ -29,7 +29,7 @@ struct Param {
     std::shared_ptr<Function> function;
     
     bool address = false;
-    std::vector<std::string> memberNames; //Only valid when address == true
+    //std::vector<std::string> memberNames; //Only valid when address == true
 
     Param(const Param& rhs) = delete;
     Param& operator=(const Param& rhs) = delete;

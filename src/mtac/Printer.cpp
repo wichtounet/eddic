@@ -234,17 +234,14 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
 
         std::string members;
-        for(std::size_t i = 0; i < param->memberNames.size(); ++i){
-            members += "." + param->memberNames[i];
-        }
 
         if(param->param){
-            stream << "\tparam " << address << "(" << printVar(param->param) << ") " << printArg(param->arg) << members << endl;
+            stream << "\tparam " << address << "(" << printVar(param->param) << ") " << printArg(param->arg) << endl;
         } else {
             if(param->std_param.length() > 0){
-                stream << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << members << endl;
+                stream << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << endl;
             } else {
-                stream << "\tparam " << address << printArg(param->arg) << members << endl;
+                stream << "\tparam " << address << printArg(param->arg) << endl;
             }
         }
     }
