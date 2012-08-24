@@ -290,7 +290,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             
             std::shared_ptr<const Type> member_type;
             unsigned int offset = 0;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), value.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), member_value.Content->memberNames);
 
             if(take_address){
                 auto temp = value.Content->context->new_temporary(INT);
@@ -308,7 +308,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto temp = array.Content->context->new_temporary(INT);
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
-            auto member_info = mtac::compute_member(function->context->global(), array.Content->var, array.Content->memberNames);
+            auto member_info = mtac::compute_member(function->context->global(), array.Content->var, member_value.Content->memberNames);
             return get_member(member_info.first, member_info.second, temp);
         }
         
