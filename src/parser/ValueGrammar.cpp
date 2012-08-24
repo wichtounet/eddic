@@ -202,7 +202,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                     variable_value
                 |   array_value
             )
-        >>  *(
+        >>  +(
                     lexer.dot
                 >>  lexer.identifier
              );
@@ -213,18 +213,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             (
                     lexer.this_
                 |   lexer.identifier
-            )
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
-             );
-   
-    dereference_value %= 
-            qi::position(position_begin)
-        >>  qi::omit[lexer.multiplication]
-        >>  (
-                    array_value
-                |   variable_value
             );
    
     array_value %=
@@ -232,10 +220,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
-        >>  lexer.right_bracket
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
+        >>  lexer.right_bracket;
+   
+    dereference_value %= 
+            qi::position(position_begin)
+        >>  qi::omit[lexer.multiplication]
+        >>  (
+                    array_value
+                |   variable_value
             );
     
     string_literal %= 
@@ -279,7 +271,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >   lexer.right_parenth;
 
     left_value =
-            array_value
+            member_value
+        |   array_value
         |   variable_value
         |   dereference_value;
     

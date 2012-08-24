@@ -23,7 +23,8 @@ typedef Deferred<ASTDereferenceValue> DereferenceValue;
 typedef boost::variant<
             VariableValue, 
             ArrayValue,
-            DereferenceValue
+            DereferenceValue,
+            MemberValue
         > LValue;
 
 ast::LValue to_left_value(ast::Value left_value);
@@ -33,5 +34,6 @@ ast::LValue to_left_value(ast::Value left_value);
 } //end of eddic
 
 #include "ast/DereferenceValue.hpp"
+#include "ast/MemberValue.hpp"
 
 #endif
