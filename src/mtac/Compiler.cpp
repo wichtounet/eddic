@@ -698,26 +698,24 @@ struct DereferenceAssign : public AbstractVisitor {
 };
 
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
-    if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
-        auto left = *ptr;
-        auto variable = left.Content->var;
+    if(auto* ptr = boost::get<ast::MemberValue>(&assignment.Content->left_value)){
+        auto member_value = *ptr;
+        auto location = member_value.Content->location;
 
-        if(left.Content->memberNames.empty()){
-            visit(AssignValueToVariable(function, variable), assignment.Content->value);
-        } else {
+        if(auto* ptr = boost::get<ast::VariableValue>(&location)){
+            auto left = *ptr;
+        
+            auto variable = left.Content->var;
+
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, left.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
 
             visit(AssignValueToVariable(function, variable, offset, member_type), assignment.Content->value);
-        }
-    } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
-        auto left = *ptr;
-        auto variable = left.Content->var;
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
+            auto left = *ptr;
+            auto variable = left.Content->var;
 
-        if(left.Content->memberNames.empty()){
-            visit(AssignValueToVariable(function, variable, left.Content->indexValue), assignment.Content->value);
-        } else {
             auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
             
             auto temp = left.Content->context->new_temporary(INT);
@@ -725,10 +723,20 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, left.Content->memberNames);
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
             
             visit(AssignValueToVariable(function, temp, offset, member_type), assignment.Content->value);
         }
+    } else if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+        auto left = *ptr;
+        auto variable = left.Content->var;
+
+        visit(AssignValueToVariable(function, variable), assignment.Content->value);
+    } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
+        auto left = *ptr;
+        auto variable = left.Content->var;
+
+        visit(AssignValueToVariable(function, variable, left.Content->indexValue), assignment.Content->value);
     } else if(auto* ptr = boost::get<ast::DereferenceValue>(&assignment.Content->left_value)){
         if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
             auto left = *var_ptr;
