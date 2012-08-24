@@ -1,0 +1,67 @@
+void main(){
+    string word = "asymptotically";
+    char guessed[20];
+    int state = 0;
+    int count = -1;
+
+    println("Try to guess the word");
+    
+    print_word(word, guessed);
+
+    while(state == 0){
+        print("Guess a char: ");
+        char c = read_char();
+
+        if(c == 10){
+            println("new line");
+        } else {
+            guessed[++count] = c;
+
+            print_word(word, guessed);
+
+            if(complete(word, guessed)){
+                println("Congratulations");
+                state = 1;
+            } else if(count == 19){
+                println("Too many guesses. Game over !");
+                state = 2;
+            }
+        }
+
+    }
+}
+
+bool complete(string word, char[] guessed){
+    for(int i = 0; i < length(word); ++i){
+        if(contains(guessed, word[i])){
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool contains(char[] guessed, char c){
+    for(int i = 0; i < size(guessed); ++i){
+        if(guessed[i] == c){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void print_word(string word, char[] guessed){
+    for(int i = 0; i < length(word); ++i){
+        if(contains(guessed, word[i])){
+            print(word[i]);
+        } else {
+            print("_");
+        }
+
+        print(" ");
+    }
+
+    println();
+}
