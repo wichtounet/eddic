@@ -59,6 +59,7 @@ typedef boost::make_variant_over<types>::type Value;
 } //end of eddic
 
 #include "ast/Assignment.hpp"
+#include "ast/MemberValue.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"
