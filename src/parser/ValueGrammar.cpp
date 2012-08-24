@@ -153,6 +153,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   prefix_operation
         |   new_
         |   suffix_operation
+        |   member_value
         |   array_value
         |   variable_value
         |   dereference_value
@@ -193,6 +194,18 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     float_ %= 
             qi::eps 
         >>  lexer.float_;
+    
+    member_value %= 
+            qi::position(position_begin)
+        >>  
+            (
+                    variable_value
+                |   array_value
+            )
+        >>  *(
+                    lexer.dot
+                >>  lexer.identifier
+             );
    
     variable_value %= 
             qi::position(position_begin)
