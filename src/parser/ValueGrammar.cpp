@@ -199,8 +199,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  
             (
-                    variable_value
-                |   array_value
+                    array_value
+                |   variable_value
             )
         >>  +(
                     lexer.dot
