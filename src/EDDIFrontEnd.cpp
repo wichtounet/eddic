@@ -36,6 +36,7 @@
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
 #include "ast/Printer.hpp"
+#include "ast/TemplateEngine.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/RegisterAllocation.hpp"
@@ -64,6 +65,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::cleanAST(program);
 
         //Instantiate templates
+        ast::template_instantiation(program);
         
         //Define contexts and structures
         ast::defineContexts(program);

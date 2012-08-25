@@ -17,6 +17,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
@@ -672,6 +674,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
         transform(while_.Content->instructions);
     }
 };
+
+} //end of anonymous namespace
 
 void ast::cleanAST(ast::SourceFile& program){
     CleanerVisitor visitor;
