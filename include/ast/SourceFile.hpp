@@ -20,6 +20,7 @@
 #include "ast/Position.hpp"
 #include "ast/Deferred.hpp"
 #include "ast/FunctionDeclaration.hpp"
+#include "ast/TemplateFunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/GlobalArrayDeclaration.hpp"
 #include "ast/StandardImport.hpp"
@@ -40,6 +41,7 @@ namespace ast {
  */
 typedef boost::variant<
             FunctionDeclaration, 
+            TemplateFunctionDeclaration, 
             GlobalVariableDeclaration,
             GlobalArrayDeclaration,
             StandardImport,
