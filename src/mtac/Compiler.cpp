@@ -399,7 +399,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(auto* ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
             auto member_value = *ptr;
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
+            if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
                 return dereference_sub(member_value);
             } 
         } else if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
