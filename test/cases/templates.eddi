@@ -1,5 +1,10 @@
 void main(){
-    
+    test<int>(9);
+    test<double>(5.5);
+
+    test<int, int>(9,99);
+    test<double, int>(9.9,100);
+    test<string, string>("a","b");
 }
 
 template<type T>
