@@ -9,6 +9,7 @@
 #define AST_FUNCTION_CALL_H
 
 #include <memory>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -33,6 +34,7 @@ struct ASTFunctionCall {
 
     Position position;
     std::string functionName;
+    std::vector<std::string> template_types;
     std::vector<Value> values;
 
     mutable long references = 0;
@@ -53,6 +55,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionCall, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->functionName)
+    (std::vector<std::string>, Content->template_types)
     (std::vector<eddic::ast::Value>, Content->values)
 )
 
