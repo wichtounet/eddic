@@ -73,6 +73,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
             value.Content->ref = *ptr;
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
             value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
+            value.Content->ref = *ptr;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
         }
