@@ -93,23 +93,14 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::TemplateFunctionDeclaration& declaration) const {
-        std::cout << indent() << "Template Function " << declaration.Content->functionName << std::endl; 
-        std::cout << indent() << "<";
+        std::cout << indent() << "Template Function <";
 
         for(auto type : declaration.Content->template_types){
             std::cout << type << ", ";
         }
 
-        std::cout << ">" << std::endl;
-        
-        std::cout << indent() << "Parameters:" << std::endl; 
-        level++;
-        for(auto param : declaration.Content->parameters){
-            std::cout << indent() << param.parameterName << std::endl; 
-        }
-        level--;
-        
-        print_each_sub(declaration.Content->instructions, "Instructions:");
+        std::cout << ">" << declaration.Content->functionName << std::endl; 
+
     }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
