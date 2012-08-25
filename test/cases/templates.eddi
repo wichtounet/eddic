@@ -1,0 +1,17 @@
+void main(){
+    
+}
+
+template<type T>
+void test(T i){
+    print(i);
+    print("|");
+}
+
+template<type T, type S>
+void test(T a, S b){
+    print(a);
+    print("|");
+    print(b);
+    print("|");
+}
