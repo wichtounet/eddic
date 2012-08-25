@@ -350,7 +350,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         std::cout << std::endl;
 
-        print_sub(value.Content->location, "Left Value");
+        print_sub(value.Content->location, "Location");
     }
 
     void operator()(ast::DereferenceValue& value) const {
