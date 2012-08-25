@@ -279,10 +279,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {temp};
         }
     }
-   
-    result_type operator()(std::shared_ptr<Variable> var) const {
-        return {var};
-    }
     
     result_type operator()(ast::MemberValue& member_value) const {
         if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
@@ -298,9 +294,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
 
                 return {temp};
+            } else {
+                return get_member(offset, member_type, value.Content->var);
             }
-
-            return get_member(offset, member_type, value.Content->var);
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto array = *ptr;
 
@@ -313,6 +309,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
         
         ASSERT_PATH_NOT_TAKEN("Invalid location type");
+    }
+   
+    result_type operator()(std::shared_ptr<Variable> var) const {
+        return {var};
     }
 
     result_type operator()(ast::VariableValue& value) const {
@@ -623,6 +623,18 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
     
+    void operator()(ast::MemberValue& value) const {
+        if(type){
+            if(type->is_pointer()){
+                pointerAssign(ToArgumentsVisitor(function, true)(value));
+            } else {
+                complexAssign(type, value);
+            }
+        } else {
+            complexAssign(visit_non_variant(ast::GetTypeVisitor(), value), value);
+        }
+    }
+    
     void operator()(ast::VariableValue& value) const {
         if(type){
             if(type->is_pointer()){
@@ -702,11 +714,9 @@ struct DereferenceAssign : public AbstractVisitor {
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
     if(auto* ptr = boost::get<ast::MemberValue>(&assignment.Content->left_value)){
         auto member_value = *ptr;
-        auto location = member_value.Content->location;
 
-        if(auto* ptr = boost::get<ast::VariableValue>(&location)){
+        if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             auto left = *ptr;
-        
             auto variable = left.Content->var;
 
             unsigned int offset = 0;
@@ -714,7 +724,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
 
             visit(AssignValueToVariable(function, variable, offset, member_type), assignment.Content->value);
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *ptr;
             auto variable = left.Content->var;
 
