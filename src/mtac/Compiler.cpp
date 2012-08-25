@@ -399,7 +399,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(auto* ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
             auto member_value = *ptr;
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+            if(boost::get<ast::VariableValue>(&member_value.Content->location)){
                 return dereference_sub(member_value);
             } 
         } else if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
@@ -755,7 +755,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
                 unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
-            } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+            } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
                 ASSERT_PATH_NOT_TAKEN("Unhandled location");
             }
         } else if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
@@ -1505,7 +1505,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
     if(auto* ptr = boost::get<ast::MemberValue>(&operation.Content->left_value)){
         auto member_value = *ptr;
 
-        if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+        if(boost::get<ast::VariableValue>(&member_value.Content->location)){
             ASSERT_PATH_NOT_TAKEN("Unhandled location type");
         } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *left_ptr;
