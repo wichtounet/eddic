@@ -51,6 +51,20 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
         return value;
     }
+    
+    ast::Value operator()(ast::MemberValue& value){
+        auto left = visit(*this, value.Content->location); 
+        
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->location = *ptr;
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->location = *ptr;
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+        }
+
+        return value;
+    }
 
     ast::Value operator()(ast::DereferenceValue& value){
         auto left = visit(*this, value.Content->ref); 
@@ -58,6 +72,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         if(auto* ptr = boost::get<ast::VariableValue>(&left)){
             value.Content->ref = *ptr;
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
             value.Content->ref = *ptr;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
@@ -542,6 +558,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
+    AUTO_IGNORE_MEMBER_VALUE()
     AUTO_IGNORE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()

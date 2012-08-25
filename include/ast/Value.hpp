@@ -49,8 +49,9 @@ typedef boost::mpl::vector<
             PrefixOperation
         > types_initial;
 
-typedef boost::mpl::push_back<types_initial, Ternary>::type first_types;
-typedef boost::mpl::push_back<first_types, New>::type types;
+typedef boost::mpl::push_back<types_initial,    Ternary>::type first_types;
+typedef boost::mpl::push_back<first_types,      MemberValue>::type second_types;
+typedef boost::mpl::push_back<second_types,     New>::type types;
 
 typedef boost::make_variant_over<types>::type Value;
 
@@ -59,6 +60,7 @@ typedef boost::make_variant_over<types>::type Value;
 } //end of eddic
 
 #include "ast/Assignment.hpp"
+#include "ast/MemberValue.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
 #include "ast/ArrayValue.hpp"

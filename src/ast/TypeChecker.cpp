@@ -45,6 +45,7 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_STRUCT_DECLARATION()
+        AUTO_RECURSE_MEMBER_VALUE()
             
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_FALSE()
@@ -152,7 +153,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                     throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", assignment.Content->position);
                 }
 
-                if((*ptr).Content->memberNames.empty() && (var->position().isParameter() || var->position().isParamRegister())){
+                if(var->position().isParameter() || var->position().isParamRegister()){
                     throw SemanticalException("Cannot change the value of the parameter " + var->name(), assignment.Content->position);
                 }
             }

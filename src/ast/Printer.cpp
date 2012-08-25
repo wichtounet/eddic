@@ -23,6 +23,8 @@ std::string toStringType(ast::Type type){
         return ptr->type;
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return ptr->type + "[]";
+    } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
+        return ptr->type + "*";
     } else {
         ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }
@@ -332,13 +334,19 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        std::cout << indent() << "Variable " << value.Content->var->name();
+        std::cout << indent() << "Variable " << value.Content->var->name() << std::endl;
+    }
+    
+    void operator()(ast::MemberValue& value) const {
+        std::cout << indent() << "Member Value ";
 
         for(auto& member : value.Content->memberNames){
             std::cout << "." << member; 
         }
 
         std::cout << std::endl;
+
+        print_sub(value.Content->location, "Location");
     }
 
     void operator()(ast::DereferenceValue& value) const {

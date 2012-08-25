@@ -135,7 +135,6 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->std_param = param->std_param;
         copy->function = param->function;
         copy->address = param->address;
-        copy->memberNames = param->memberNames;
 
         return copy;
     }
@@ -240,28 +239,19 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
                     auto quadruple = std::make_shared<mtac::Quadruple>();
                     std::shared_ptr<Variable> dest_var;
                     
-                    if((*ptr)->memberNames.empty()){
-                        auto type = src_var->type();
+                    auto type = src_var->type();
 
-                        dest_var = dest_definition->context->new_temporary(type);
+                    dest_var = dest_definition->context->new_temporary(type);
 
-                        if(type == INT || type == BOOL){
-                            quadruple->op = mtac::Operator::ASSIGN; 
-                        } else if(type->is_pointer()){
-                            quadruple->op = mtac::Operator::PASSIGN;
-                        } else {
-                            quadruple->op = mtac::Operator::FASSIGN; 
-                        }
-
-                        quadruple->arg1 = (*ptr)->arg;
+                    if(type == INT || type == BOOL){
+                        quadruple->op = mtac::Operator::ASSIGN; 
+                    } else if(type->is_pointer()){
+                        quadruple->op = mtac::Operator::PASSIGN;
                     } else {
-                        auto object_var = boost::get<std::shared_ptr<Variable>>((*ptr)->arg);
-                        dest_var = dest_definition->context->new_temporary(INT);
-
-                        quadruple->op = mtac::Operator::PDOT;
-                        quadruple->arg1 = object_var;
-                        quadruple->arg2 = mtac::compute_member_offset(source_function->context->global(), object_var, (*ptr)->memberNames);
+                        quadruple->op = mtac::Operator::FASSIGN; 
                     }
+
+                    quadruple->arg1 = (*ptr)->arg;
                 
                     variable_clones[src_var] = dest_var;
                     quadruple->result = dest_var;

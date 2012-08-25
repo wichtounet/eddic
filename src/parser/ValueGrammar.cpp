@@ -153,6 +153,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   prefix_operation
         |   new_
         |   suffix_operation
+        |   member_value
         |   array_value
         |   variable_value
         |   dereference_value
@@ -193,6 +194,18 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     float_ %= 
             qi::eps 
         >>  lexer.float_;
+    
+    member_value %= 
+            qi::position(position_begin)
+        >>  
+            (
+                    array_value
+                |   variable_value
+            )
+        >>  +(
+                    lexer.dot
+                >>  lexer.identifier
+             );
    
     variable_value %= 
             qi::position(position_begin)
@@ -200,18 +213,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             (
                     lexer.this_
                 |   lexer.identifier
-            )
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
-             );
-   
-    dereference_value %= 
-            qi::position(position_begin)
-        >>  qi::omit[lexer.multiplication]
-        >>  (
-                    array_value
-                |   variable_value
             );
    
     array_value %=
@@ -219,10 +220,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
-        >>  lexer.right_bracket
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
+        >>  lexer.right_bracket;
+   
+    dereference_value %= 
+            qi::position(position_begin)
+        >>  qi::omit[lexer.multiplication]
+        >>  (
+                    member_value
+                |   array_value
+                |   variable_value
             );
     
     string_literal %= 
@@ -266,7 +272,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >   lexer.right_parenth;
 
     left_value =
-            array_value
+            member_value
+        |   array_value
         |   variable_value
         |   dereference_value;
     

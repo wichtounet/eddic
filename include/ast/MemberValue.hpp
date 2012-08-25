@@ -5,14 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_DEREFERENCE_VARIABLE_VALUE_H
-#define AST_DEREFERENCE_VARIABLE_VALUE_H
+#ifndef AST_MEMBER_VALUE_H
+#define AST_MEMBER_VALUE_H
 
 #include <memory>
 #include <vector>
 #include <string>
-
-#include "variant.hpp"
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
@@ -20,29 +18,32 @@
 namespace eddic {
 
 class Context;
-class Variable;
 
 namespace ast {
 
-typedef boost::variant<ast::VariableValue, ast::MemberValue, ast::ArrayValue> Ref;
+typedef boost::variant<VariableValue, ArrayValue> MemberLocation;
 
 /*!
- * \class ASTDereferenceValue
- * \brief The AST node for a variable value.  
- * Should only be used from the Deferred version (eddic::ast::VariableValue).
+ * \class ASTMemberValue
+ * \brief The AST node for a member value.  
+ * Should only be used from the Deferred version (eddic::ast::MemberValue).
  */
-struct ASTDereferenceValue {
+struct ASTMemberValue {
+    std::shared_ptr<Context> context;
+
     Position position;
-    Ref ref;
+
+    MemberLocation location;
+    std::vector<std::string> memberNames;
 
     mutable long references = 0;
 };
 
 /*!
- * \typedef DereferenceValue
- * \brief The AST node for a variable value.
+ * \struct MemberValue
+ * \brief The AST node for a member value.
 */
-typedef Deferred<ASTDereferenceValue> DereferenceValue;
+typedef Deferred<ASTMemberValue> MemberValue;
 
 } //end of ast
 
@@ -50,11 +51,10 @@ typedef Deferred<ASTDereferenceValue> DereferenceValue;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::DereferenceValue, 
+    eddic::ast::MemberValue, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::Ref, Content->ref)
+    (eddic::ast::MemberLocation, Content->location)
+    (std::vector<std::string>, Content->memberNames)
 )
-
-#include "ast/MemberValue.hpp"
 
 #endif
