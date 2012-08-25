@@ -23,6 +23,8 @@ std::string toStringType(ast::Type type){
         return ptr->type;
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return ptr->type + "[]";
+    } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
+        return ptr->type + "*";
     } else {
         ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }
