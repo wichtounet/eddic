@@ -47,6 +47,7 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_STRUCT_DECLARATION()
         AUTO_RECURSE_MEMBER_VALUE()
             
+        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()

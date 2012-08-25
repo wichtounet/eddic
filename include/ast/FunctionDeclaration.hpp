@@ -31,6 +31,7 @@ struct ASTFunctionDeclaration {
     
     std::string mangledName;
     std::string struct_name;
+    bool instantiated = false; //true indicates that this function has been instantiated from a template
 
     Position position;
     Type returnType;

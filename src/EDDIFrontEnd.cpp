@@ -62,6 +62,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         //Apply some cleaning transformations
         ast::cleanAST(program);
+
+        //Instantiate templates
         
         //Define contexts and structures
         ast::defineContexts(program);
