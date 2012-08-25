@@ -715,30 +715,25 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
     if(auto* ptr = boost::get<ast::MemberValue>(&assignment.Content->left_value)){
         auto member_value = *ptr;
 
+        std::shared_ptr<Variable> source, dest;
+
         if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
-            auto left = *ptr;
-            auto variable = left.Content->var;
-
-            unsigned int offset = 0;
-            std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
-
-            visit(AssignValueToVariable(function, variable, offset, member_type), assignment.Content->value);
+            source = dest = (*ptr).Content->var;
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *ptr;
-            auto variable = left.Content->var;
+            source = left.Content->var;
 
-            auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
+            auto index = computeIndexOfArray(source, left.Content->indexValue, function); 
             
-            auto temp = left.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
-            
-            unsigned int offset = 0;
-            std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
-            
-            visit(AssignValueToVariable(function, temp, offset, member_type), assignment.Content->value);
+            dest = left.Content->context->new_temporary(INT);
+            function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
         }
+            
+        unsigned int offset = 0;
+        std::shared_ptr<const Type> member_type;
+        boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), source, member_value.Content->memberNames);
+
+        visit(AssignValueToVariable(function, dest, offset, member_type), assignment.Content->value);
     } else if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
         auto left = *ptr;
         auto variable = left.Content->var;
@@ -1390,23 +1385,10 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if(/*(*ptr).Content->memberNames.empty() && */type->is_custom_type() && !param->type()->is_pointer()){
+                if(type->is_custom_type() && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
-
-                /*if(!(*ptr).Content->memberNames.empty() && type->is_custom_type() && param->type()->is_pointer()){
-                    auto v = visit(ToArgumentsVisitor(function, true), first)[0];
-
-                    auto mtac_param = std::make_shared<mtac::Param>(v, param, definition);
-
-                    //mtac_param->address = true;
-                    //mtac_param->memberNames = (*ptr).Content->memberNames;
-
-                    function->add(mtac_param);
-
-                    continue;
-                }*/
             } 
 
             auto args = visit(ToArgumentsVisitor(function, param->type()->is_pointer()), first);
