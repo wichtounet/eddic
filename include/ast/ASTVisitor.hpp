@@ -172,6 +172,11 @@ void operator()(ast::FunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\
 }
 
+#define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
+void operator()(ast::TemplateFunctionDeclaration& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
 #define AUTO_RECURSE_CONSTRUCTOR()\
 void operator()(ast::Constructor& function){\
     visit_each(*this, function.Content->instructions);\
@@ -208,6 +213,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_FOREACH_LOOP() void operator()(ast::Foreach&){}
 #define AUTO_IGNORE_FOREACH_IN_LOOP() void operator()(ast::ForeachIn&){}
 #define AUTO_IGNORE_FUNCTION_CALLS() void operator()(ast::FunctionCall&){}
+#define AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION() void operator()(ast::TemplateFunctionDeclaration&){}
 #define AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION() void operator()(ast::GlobalArrayDeclaration&){}
 #define AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION() void operator()(ast::GlobalVariableDeclaration&){}
 #define AUTO_IGNORE_IMPORT() void operator()(ast::Import&){}
