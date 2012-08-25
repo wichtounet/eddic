@@ -1,3 +1,15 @@
+eddic 1.1.2 - 2012.08.25
+
+* Language: Support char type
+* Language: Support for cast between char and int
+* Language: Support the [] operator for string
+* Language: Add support to read the command line
+* Standard Library: Add function to compare two strings
+* inlining: Inline functions that takes arrays as parameters
+* Compiler: The symbol table is now stored in the global context
+* Compiler: Several improvements of the code
+* Parser: Remove redundancy in the AST
+
 eddic 1.1.1 - 2012.07.30
 
 * Language: Support dynamic memory allocation (operators new and delete)
