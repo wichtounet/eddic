@@ -9,7 +9,6 @@
 #define AST_VARIABLE_VALUE_H
 
 #include <memory>
-#include <vector>
 #include <string>
 
 #include "ast/Deferred.hpp"
@@ -33,7 +32,6 @@ struct ASTVariableValue {
 
     Position position;
     std::string variableName;
-    std::vector<std::string> memberNames;
 
     mutable long references = 0;
 };
@@ -61,7 +59,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableValue, 
     (eddic::ast::Position, Content->position)
     (std::string, Content->variableName)
-    (std::vector<std::string>, Content->memberNames)
 )
 
 #endif

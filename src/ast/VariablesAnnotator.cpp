@@ -24,6 +24,7 @@
 #include "ast/IsConstantVisitor.hpp"
 #include "ast/GetConstantValue.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
@@ -44,7 +45,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_UNARY_VALUES()
     AUTO_RECURSE_CAST_VALUES()
     AUTO_RECURSE_RETURN_VALUES()
-    AUTO_RECURSE_MEMBER_VALUE()
     AUTO_RECURSE_SWITCH()
     AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
@@ -282,8 +282,37 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->rhs_var->addReference();
     }
 
-    template<typename T>
-    void check_variable_values(T& variable){
+    void operator()(ast::MemberValue& variable){
+        visit(*this, variable.Content->location);
+
+        auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
+        auto struct_name = type->is_pointer() ? type->data_type()->type() : type->type();
+        auto struct_type = context->get_struct(struct_name);
+
+        //Reference the structure
+        struct_type->add_reference();
+
+        auto& members = variable.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = members[i];
+
+            if(!struct_type->member_exists(member)){ 
+                throw SemanticalException("The struct " + struct_name + " has no member named " + member, variable.Content->position);
+            }
+
+            //Add a reference to the member
+            (*struct_type)[member]->add_reference();
+
+            //If it is not the last member
+            if(i != members.size() - 1){
+                //The next member will be a member of the current member type
+                struct_type = context->get_struct((*struct_type)[member]->type->type());
+                struct_name = struct_type->name;
+            }
+        }
+    }
+
+    void operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
         }
@@ -291,43 +320,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Reference the variable
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
         variable.Content->var->addReference();
-
-        //If there are dereferencing
-        if(!variable.Content->memberNames.empty()){
-            auto var = variable.Content->var;
-            auto struct_name = var->type()->is_pointer() ? var->type()->data_type()->type() : var->type()->type();
-            auto struct_type = context->get_struct(struct_name);
-
-            //Reference the structure
-            struct_type->add_reference();
-
-            auto& members = variable.Content->memberNames;
-            for(std::size_t i = 0; i < members.size(); ++i){
-                auto& member = members[i];
-
-                if(!struct_type->member_exists(member)){ 
-                    throw SemanticalException("The struct " + struct_name + " has no member named " + member, variable.Content->position);
-                }
-
-                //Add a reference to the member
-                (*struct_type)[member]->add_reference();
-
-                //If it is not the last member
-                if(i != members.size() - 1){
-                    //The next member will be a member of the current member type
-                    struct_type = context->get_struct((*struct_type)[member]->type->type());
-                    struct_name = struct_type->name;
-                }
-            }
-        }
-    }
-
-    void operator()(ast::VariableValue& variable){
-        check_variable_values(variable);
-    }
-
-    void operator()(ast::DereferenceValue& variable){
-        visit(*this, variable.Content->ref);
     }
 
     void operator()(ast::ArrayValue& array){
@@ -340,6 +332,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
+    }
+
+    void operator()(ast::DereferenceValue& variable){
+        visit(*this, variable.Content->ref);
     }
 
     void operator()(ast::Expression& value){

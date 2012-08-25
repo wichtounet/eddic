@@ -334,13 +334,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        std::cout << indent() << "Variable " << value.Content->var->name();
-
-        for(auto& member : value.Content->memberNames){
-            std::cout << "." << member; 
-        }
-
-        std::cout << std::endl;
+        std::cout << indent() << "Variable " << value.Content->var->name() << std::endl;
     }
     
     void operator()(ast::MemberValue& value) const {
