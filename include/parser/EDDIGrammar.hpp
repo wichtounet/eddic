@@ -35,6 +35,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
     qi::rule<lexer::Iterator, ast::SourceFile()> program;
     qi::rule<lexer::Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
     qi::rule<lexer::Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
+    qi::rule<lexer::Iterator, ast::TemplateFunctionDeclaration()> template_function;
     qi::rule<lexer::Iterator, ast::FunctionDeclaration()> function;
     qi::rule<lexer::Iterator, ast::FunctionParameter()> arg;
 
