@@ -63,6 +63,8 @@ class SpiritLexer : public lex::lexer<L> {
             switch_ = "switch";
             case_ = "case";
             default_ = "default";
+            type = "type";
+            template_ = "template";
 
             /* Raw values  */
             identifier = "[a-zA-Z_][a-zA-Z0-9_]*";
@@ -137,6 +139,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
             this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null | this_;
+            this->self += template_ | type;
             this->self += increment | decrement;
             this->self += new_ | delete_;
             this->self += and_ | or_;
@@ -177,6 +180,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken struct_, null;
         ConsumedToken case_, switch_, default_;
         ConsumedToken new_, delete_;
+        ConsumedToken template_, type;
         StringToken this_; //As this is handled like a variable, we need its value
 
         //Ignored tokens
