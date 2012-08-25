@@ -145,13 +145,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   integer_suffix
         |   integer
         |   float_
-        |   litteral
+        |   string_literal
+        |   char_literal
         |   builtin_operator
         |   member_function_call
         |   function_call
         |   prefix_operation
         |   new_
         |   suffix_operation
+        |   member_value
         |   array_value
         |   variable_value
         |   dereference_value
@@ -192,6 +194,18 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     float_ %= 
             qi::eps 
         >>  lexer.float_;
+    
+    member_value %= 
+            qi::position(position_begin)
+        >>  
+            (
+                    array_value
+                |   variable_value
+            )
+        >>  +(
+                    lexer.dot
+                >>  lexer.identifier
+             );
    
     variable_value %= 
             qi::position(position_begin)
@@ -199,18 +213,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             (
                     lexer.this_
                 |   lexer.identifier
-            )
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
-             );
-   
-    dereference_value %= 
-            qi::position(position_begin)
-        >>  qi::omit[lexer.multiplication]
-        >>  (
-                    array_value
-                |   variable_value
             );
    
     array_value %=
@@ -218,20 +220,30 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
-        >>  lexer.right_bracket
-        >>  *(
-                    lexer.dot
-                >>  lexer.identifier
+        >>  lexer.right_bracket;
+   
+    dereference_value %= 
+            qi::position(position_begin)
+        >>  qi::omit[lexer.multiplication]
+        >>  (
+                    member_value
+                |   array_value
+                |   variable_value
             );
     
-    litteral %= 
+    string_literal %= 
             qi::eps 
-        >> lexer.litteral;
+        >> lexer.string_literal;
+    
+    char_literal %= 
+            qi::eps 
+        >> lexer.char_literal;
 
     constant = 
             negated_constant_value
         |   integer 
-        |   litteral;
+        |   string_literal
+        |   char_literal;
    
     builtin_operator %=
             qi::position(position_begin)
@@ -260,7 +272,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >   lexer.right_parenth;
 
     left_value =
-            array_value
+            member_value
+        |   array_value
         |   variable_value
         |   dereference_value;
     
@@ -298,5 +311,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(primaryValue);
     DEBUG_RULE(ternary);
     DEBUG_RULE(constant);
-    DEBUG_RULE(litteral);
+    DEBUG_RULE(string_literal);
+    DEBUG_RULE(char_literal);
 }

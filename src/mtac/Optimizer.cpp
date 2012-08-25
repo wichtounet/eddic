@@ -14,6 +14,7 @@
 #include "iterators.hpp"
 #include "likely.hpp"
 
+#include "mtac/Utils.hpp"
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
@@ -53,9 +54,7 @@ template<typename Visitor>
 bool apply_to_all(std::shared_ptr<mtac::Function> function){
     Visitor visitor;
 
-    for(auto& block : function->getBasicBlocks()){
-        visit_each(visitor, block->statements);
-    }
+    mtac::visit_all_statements(visitor, function);
 
     return visitor.optimized;
 }

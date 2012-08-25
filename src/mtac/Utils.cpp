@@ -6,13 +6,15 @@
 //=======================================================================
 
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/Utils.hpp"
 
 using namespace eddic;
 
 bool mtac::is_single_int_register(std::shared_ptr<const Type> type){
-   return type == INT || type == BOOL || type->is_pointer(); 
+   return type == INT || type == BOOL || type == CHAR || type->is_pointer(); 
 }
 
 bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
@@ -33,63 +35,99 @@ bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
     return false;
 }
 
-template<typename T>
-void collect(mtac::VariableUsage& usage, T arg){
-    if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-        ++usage[*variablePtr];
-    }
-}
+namespace {
 
-template<typename T>
-void collect_optional(mtac::VariableUsage& usage, T opt){
-    if(opt){
-        collect(usage, *opt);
+struct VariableUsageCollector : public boost::static_visitor<> {
+    mtac::VariableUsage& usage;
+
+    VariableUsageCollector(mtac::VariableUsage& usage) : usage(usage) {}
+
+    template<typename T>
+    void collect(T& arg){
+        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            ++usage[*variablePtr];
+        }
     }
-}
+
+    template<typename T>
+    void collect_optional(T& opt){
+        if(opt){
+            collect(*opt);
+        }
+    }
+
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+        ++usage[quadruple->result];
+        collect_optional(quadruple->arg1);
+        collect_optional(quadruple->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::Param> param){
+        collect(param->arg);
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
+        collect(if_->arg1);
+        collect_optional(if_->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        collect(if_false->arg1);
+        collect_optional(if_false->arg2);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
+
+struct BasicBlockUsageCollector : public boost::static_visitor<> {
+    std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage;
+
+    BasicBlockUsageCollector(std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage) : usage(usage) {}
+
+    void operator()(std::shared_ptr<mtac::Goto> goto_){
+        usage.insert(goto_->block);
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
+        usage.insert(if_->block);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        usage.insert(if_false->block);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //NOP
+    }
+};
+
+} //end of anonymous namespace
 
 mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function> function){
     mtac::VariableUsage usage;
 
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                ++usage[(*ptr)->result];
-                collect_optional(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                collect(usage, (*ptr)->arg);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                collect(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                collect(usage, (*ptr)->arg1);
-                collect_optional(usage, (*ptr)->arg2);
-            }
-        }
-    }
+    VariableUsageCollector collector(usage);
+
+    visit_all_statements(collector, function);
 
     return usage;
 }
 
 void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
-                usage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                usage.insert((*ptr)->block);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                usage.insert((*ptr)->block);
-            }
-        }
-    }
+    BasicBlockUsageCollector collector(usage);
+
+    visit_all_statements(collector, function);
 }
 
 bool eddic::mtac::safe(const std::string& function){
     //These functions are considered as safe because they save/restore all the registers and does not return anything 
     return 
-        function == "_F5printB" || function == "_F5printI" || function == "_F5printF" || function == "_F5printS" ||
-        function == "_F7printlnB" || function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || 
+        function == "_F5printB" || function == "_F5printI" || function == "_F5printF" || function == "_F5printS" || function == "_F5printC" ||
+        function == "_F7printlnB" || function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || function == "_F7printlnC" || 
         function == "_F7println"; 
 }
 
@@ -101,10 +139,10 @@ bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
 
 bool eddic::mtac::erase_result(mtac::Operator op){
    return 
-            op != mtac::Operator::DOT_ASSIGN 
-        &&  op != mtac::Operator::DOT_FASSIGN 
-        &&  op != mtac::Operator::DOT_PASSIGN 
-        &&  op != mtac::Operator::RETURN; 
+           op != mtac::Operator::DOT_ASSIGN 
+        && op != mtac::Operator::DOT_FASSIGN 
+        && op != mtac::Operator::DOT_PASSIGN 
+        && op != mtac::Operator::RETURN; 
 }
 
 bool eddic::mtac::is_distributive(mtac::Operator op){
@@ -115,11 +153,11 @@ bool eddic::mtac::is_expression(mtac::Operator op){
     return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
 }
 
-unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    return compute_member(var, memberNames).first;
+unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+    return compute_member(context, var, memberNames).first;
 }
 
-std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
+std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
     auto type = var->type();
 
     std::string struct_name;
@@ -129,7 +167,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
         struct_name = type->type();
     }
 
-    auto struct_type = symbols.get_struct(struct_name);
+    auto struct_type = context->get_struct(struct_name);
     std::shared_ptr<const Type> member_type;
 
     unsigned int offset = 0;
@@ -140,11 +178,11 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 
         member_type = (*struct_type)[member]->type;
 
-        offset += symbols.member_offset(struct_type, member);
+        offset += context->member_offset(struct_type, member);
 
         if(i != members.size() - 1){
             struct_name = member_type->type();
-            struct_type = symbols.get_struct(struct_name);
+            struct_type = context->get_struct(struct_name);
         }
     }
 

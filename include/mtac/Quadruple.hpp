@@ -20,11 +20,20 @@ class Variable;
 
 namespace mtac {
 
+enum class Size : char {
+    DEFAULT,
+    BYTE,
+    WORD,
+    DOUBLE_WORD,
+    QUAD_WORD
+};
+
 struct Quadruple {
     std::shared_ptr<Variable> result;
     boost::optional<mtac::Argument> arg1;
     boost::optional<mtac::Argument> arg2;
     mtac::Operator op;
+    mtac::Size size = mtac::Size::DEFAULT;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;

@@ -32,7 +32,7 @@ class Registers {
     typedef typename std::vector<Reg>::const_reverse_iterator ReverseIterator;
 
     public:
-        Registers(std::vector<Reg> registers, std::shared_ptr<Variable> var);
+        Registers(const std::vector<Reg>& registers, std::shared_ptr<Variable> var);
 
         /*!
          * Deleted copy constructor
@@ -156,7 +156,7 @@ class Registers {
 };
 
 template<typename Reg>
-Registers<Reg>::Registers(std::vector<Reg> reg, std::shared_ptr<Variable> var) : registers(reg), retainVariable(var) {
+Registers<Reg>::Registers(const std::vector<Reg>& reg, std::shared_ptr<Variable> var) : registers(reg), retainVariable(var) {
     //Resize the descriptors the same way as the registers
     descriptors.resize(reg.size());
 }

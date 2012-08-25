@@ -21,7 +21,7 @@ namespace mtac {
 struct ReduceInStrength : public boost::static_visitor<void> {
     bool optimized = false;
 
-    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
 
     template<typename T>
     void operator()(T&) const { 

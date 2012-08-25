@@ -16,7 +16,7 @@ namespace ast {
 
 /*!
  * \class False
- * \brief Reprensent a false boolean litteral. 
+ * \brief Reprensent a false boolean literal. 
  */
 struct False {
 

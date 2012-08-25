@@ -14,6 +14,12 @@ eddic::Platform eddic::platform = Platform::INTEL_X86;
 using namespace eddic;
 
 struct X86Descriptor : public PlatformDescriptor {
+    int sizes[BASETYPE_COUNT] = {  8, 4, 4, 4, 4, 0 };
+
+    unsigned int size_of(BaseType type){
+        return sizes[static_cast<unsigned int>(type)];
+    }
+
     unsigned int numberOfIntParamRegisters(){
         return 1;
     }
@@ -92,6 +98,12 @@ struct X86Descriptor : public PlatformDescriptor {
 };
 
 struct X86_64Descriptor : public PlatformDescriptor {
+    int sizes[BASETYPE_COUNT] = { 16, 8, 8, 8, 8, 0 };
+
+    unsigned int size_of(BaseType type){
+        return sizes[static_cast<unsigned int>(type)];
+    }
+
     unsigned int numberOfIntParamRegisters(){
         return 2;
     }

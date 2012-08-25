@@ -9,7 +9,6 @@
 #define AST_ARRAY_VALUE_H
 
 #include <memory>
-#include <vector>
 #include <string>
 
 #include "ast/Deferred.hpp"
@@ -34,7 +33,6 @@ struct ASTArrayValue {
     Position position;
     std::string arrayName;
     Value indexValue;
-    std::vector<std::string> memberNames;
 
     mutable long references = 0;
 };
@@ -55,7 +53,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::string, Content->arrayName)
     (eddic::ast::Value, Content->indexValue)
-    (std::vector<std::string>, Content->memberNames)
 )
 
 #endif

@@ -26,7 +26,7 @@ namespace ltac {
 
 class StatementCompiler : public boost::static_visitor<> {
     public:
-        StatementCompiler(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+        StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
                 std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
     
         /*!
@@ -45,13 +45,13 @@ class StatementCompiler : public boost::static_visitor<> {
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
         void collect_variables(std::shared_ptr<eddic::Function> definition);
 
-        void operator()(std::shared_ptr<mtac::IfFalse>& if_false);
-        void operator()(std::shared_ptr<mtac::If>& if_);
-        void operator()(std::shared_ptr<mtac::Goto>& goto_);
-        void operator()(std::shared_ptr<mtac::Param>& param);
-        void operator()(std::shared_ptr<mtac::Call>& call);
-        void operator()(std::shared_ptr<mtac::Quadruple>& quadruple);
-        void operator()(std::shared_ptr<mtac::NoOp>&);
+        void operator()(std::shared_ptr<mtac::IfFalse> if_false);
+        void operator()(std::shared_ptr<mtac::If> if_);
+        void operator()(std::shared_ptr<mtac::Goto> goto_);
+        void operator()(std::shared_ptr<mtac::Param> param);
+        void operator()(std::shared_ptr<mtac::Call> call);
+        void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
+        void operator()(std::shared_ptr<mtac::NoOp>);
         void operator()(std::string& str);
 
         void push(ltac::Argument arg);
@@ -84,7 +84,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void compare_unary(mtac::Argument arg1);
 
         void div_eax(std::shared_ptr<mtac::Quadruple> quadruple);
-        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple>& quadruple);
+        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple);
         
         ltac::Register to_register(std::shared_ptr<Variable> var);
         

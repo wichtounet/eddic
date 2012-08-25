@@ -27,12 +27,14 @@ namespace ast {
 struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
     std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::Ternary& assign) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::Litteral& litteral) const;
-    std::shared_ptr<const eddic::Type> operator()(const ast::Integer& litteral) const;
-    std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& litteral) const;
-    std::shared_ptr<const eddic::Type> operator()(const ast::Float& litteral) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Literal& literal) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::CharLiteral& literal) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Integer& literal) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& literal) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Float& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::VariableValue& variable) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::DereferenceValue& variable) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::MemberValue& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::ArrayValue& variable) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Expression& value) const; 
     std::shared_ptr<const eddic::Type> operator()(const ast::FunctionCall& value) const; 
@@ -46,7 +48,7 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::SuffixOperation& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::PrefixOperation& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::New& value) const;
-    std::shared_ptr<const eddic::Type> operator()(const std::shared_ptr<Variable>& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const std::shared_ptr<Variable> value) const;
 };
 
 } //end of ast

@@ -17,7 +17,7 @@ namespace ast {
 struct Integer;
 struct IntegerSuffix;
 struct Float;
-struct Litteral;
+struct Literal;
 struct True;
 struct False;
 struct Null;
@@ -27,6 +27,9 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 
 struct ASTMemberFunctionCall;
 typedef Deferred<ASTMemberFunctionCall> MemberFunctionCall;
+
+struct ASTMemberValue;
+typedef Deferred<ASTMemberValue> MemberValue;
 
 struct ASTCast;
 typedef Deferred<ASTCast> Cast;

@@ -29,7 +29,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     template<typename T>
     void setDefaultValue(T& declaration){
         if(!declaration.Content->value){
-            auto type = visit(ast::TypeTransformer(), declaration.Content->variableType);
+            auto type = visit(ast::TypeTransformer(declaration.Content->context->global()), declaration.Content->variableType);
 
             if(type->is_standard_type()){
                 if(type == INT){
@@ -38,11 +38,11 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                     declaration.Content->value = integer;
                 } else if(type == STRING){
-                    ast::Litteral litteral;
-                    litteral.value = "\"\"";
-                    litteral.label = "S3";
+                    ast::Literal literal;
+                    literal.value = "\"\"";
+                    literal.label = "S3";
 
-                    declaration.Content->value = litteral;
+                    declaration.Content->value = literal;
                 } else if(type == FLOAT){
                     ast::Float float_;
                     float_.value = 0.0;

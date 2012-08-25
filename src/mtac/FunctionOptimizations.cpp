@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "iterators.hpp"
-#include "SymbolTable.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/Utils.hpp"
@@ -23,10 +23,10 @@ bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
     while(it.has_next()){
         auto function = *it;
 
-        if(symbols.referenceCount(function->getName()) == 0){
+        if(program->context->referenceCount(function->getName()) == 0){
             it.erase();
             continue;
-        } else if(symbols.referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
+        } else if(program->context->referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
             it.erase();
             continue;
         } 

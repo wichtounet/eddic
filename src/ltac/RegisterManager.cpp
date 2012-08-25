@@ -20,7 +20,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
 
-#define DEBUG_GLOBAL_ENABLED false 
+#define DEBUG_GLOBAL_ENABLED false
 #define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 using namespace eddic;
@@ -99,6 +99,8 @@ Reg get_reg(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, b
 
     Reg reg = get_free_reg(registers, manager);
 
+    DEBUG_GLOBAL std::cout << "Found reg " << reg << std::endl;
+
     if(doMove){
         manager.move(variable, reg);
     }
@@ -165,6 +167,8 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
 
 template<typename Reg>
 void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
+    DEBUG_GLOBAL std::cout << "Spills all" << std::endl;
+
     for(auto reg : registers){
         //The register can be reserved if the ending occurs in a special break case
         if(!registers.reserved(reg) && registers.used(reg)){
@@ -179,11 +183,9 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(std::vector<ltac::Register> registers, std::vector<ltac::FloatRegister> float_registers, 
+ltac::RegisterManager::RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
-    registers(registers, std::make_shared<Variable>("__fake_int__", INT, Position(PositionType::TEMPORARY))),
-    float_registers(float_registers, std::make_shared<Variable>("__fake_float__", FLOAT, Position(PositionType::TEMPORARY))), 
-    function(function), float_pool(float_pool) {
+    AbstractRegisterManager(registers, float_registers), function(function), float_pool(float_pool) {
         //Nothing else to init
 }
 
@@ -192,6 +194,10 @@ void ltac::RegisterManager::reset(){
     float_registers.reset();
 
     written.clear();
+}
+
+bool ltac::RegisterManager::in_reg(std::shared_ptr<Variable> var){
+    return registers.inRegister(var);
 }
 
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister reg){
@@ -327,26 +333,30 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 }
 
 ltac::Register ltac::RegisterManager::get_reg(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << std::endl;
     auto reg = ::get_reg(registers, var, true, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
 ltac::Register ltac::RegisterManager::get_reg_no_move(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg no move for " << var->name() << std::endl;
     auto reg = ::get_reg(registers, var, false, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_float_reg(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << std::endl;
     auto reg = ::get_reg(float_registers, var, true, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_float_reg_no_move(std::shared_ptr<Variable> var){
+    DEBUG_GLOBAL std::cout << "Get reg no move for " << var->name() << std::endl;
     auto reg = ::get_reg(float_registers, var, false, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " : " << reg << std::endl;
+    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
     return reg;
 }
 
@@ -466,7 +476,7 @@ void ltac::RegisterManager::restore_pushed_registers(){
     first_param = true;
 }
 
-void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param>& param, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, PlatformDescriptor* descriptor){
     if(first_param){
         if(param->function){
             std::set<ltac::Register> overriden_registers;
@@ -545,27 +555,7 @@ void ltac::RegisterManager::set_current(mtac::Statement statement){
         printer.printStatement(statement);
     }
 }
-
-void ltac::RegisterManager::reserve(ltac::Register reg){
-    registers.reserve(reg);
-    DEBUG_GLOBAL std::cout << "Int Register " << reg  << " reserved" << std::endl;
-}
-
-void ltac::RegisterManager::release(ltac::Register reg){
-    registers.release(reg);
-    DEBUG_GLOBAL std::cout << "Int Register " << reg  << " released" << std::endl;
-}
-
-void ltac::RegisterManager::reserve(ltac::FloatRegister reg){
-    float_registers.reserve(reg);
-    DEBUG_GLOBAL std::cout << "Float Register " << reg  << " reserved" << std::endl;
-}
-
-void ltac::RegisterManager::release(ltac::FloatRegister reg){
-    float_registers.release(reg);
-    DEBUG_GLOBAL std::cout << "Float Register " << reg  << " released" << std::endl;
-}
-    
+        
 bool ltac::RegisterManager::is_written(std::shared_ptr<Variable> variable){
     return written.find(variable) != written.end();
 }

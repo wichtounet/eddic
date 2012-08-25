@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_LITTERAL_H
-#define AST_LITTERAL_H
+#ifndef AST_CHAR_LITERAL_H
+#define AST_CHAR_LITERAL_H
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -15,12 +15,11 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class Litteral
- * \brief The AST node for a string litteral.    
+ * \class CharLiteral
+ * \brief The AST node for a char literal.    
  */
-struct Litteral {
+struct CharLiteral {
     std::string value;
-    std::string label;
 };
 
 } //end of ast
@@ -29,7 +28,7 @@ struct Litteral {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Litteral, 
+    eddic::ast::CharLiteral, 
     (std::string, value)
 )
 

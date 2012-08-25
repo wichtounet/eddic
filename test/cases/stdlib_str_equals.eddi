@@ -1,0 +1,27 @@
+include <strings>
+
+void main(){
+    string a = "asdf";
+    string b = "qwer";
+    string c = "asd";
+    string d = "00";
+    string e = "00";
+
+    print(str_equals(a, a));
+    print("|");
+
+    print(str_equals(a, b));
+    print("|");
+    
+    print(str_equals(a, c));
+    print("|");
+    
+    print(str_equals(b, c));
+    print("|");
+    
+    print(str_equals(a, "asdf"));
+    print("|");
+    
+    print(str_equals(d, e));
+    print("|");
+}

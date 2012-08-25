@@ -1,0 +1,33 @@
+void main(){
+    char a = 'a';
+    print(a);
+    print("|");
+
+    print('0');
+    print("|");
+
+    if(a == 'a'){
+        print('z');
+        print("|");
+    } else {
+        print('y');
+        print("|");
+    }
+
+    print(test('a', 'a'));
+    print("|");
+    print(test('z', 'z'));
+    print("|");
+    print(test('a', 'z'));
+    print("|");
+    print(test('z', 'a'));
+    print("|");
+}
+
+char test(char a, char b){
+    if(a == b){
+        return 'e';
+    } else {
+        return 'u';
+    }
+}

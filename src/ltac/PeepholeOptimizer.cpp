@@ -571,9 +571,12 @@ void add_param_registers(RegisterUsage& usage){
         usage.insert(ltac::Register(descriptor->int_param_register(i)));
     }
    
-    //TODO Find a way to use that only if DIV is used afterward
     usage.insert(ltac::Register(descriptor->a_register()));
     usage.insert(ltac::Register(descriptor->d_register()));
+
+    //Never optimize those registers
+    usage.insert(ltac::SP);
+    usage.insert(ltac::BP);
 }
 
 void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function){
@@ -647,6 +650,11 @@ ltac::Register get_free_reg(RegisterUsage& usage){
     return ltac::SP;
 }
 
+template<typename T>
+inline bool one_of(const T& value, const std::vector<T>& container){
+    return std::find(container.begin(), container.end(), value) != container.end();
+}
+
 bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
     bool optimized = false;
 
@@ -660,7 +668,7 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
             auto instruction = *ptr;
 
             //Optimize MOV, LEA, XOR
-            if(instruction->op == ltac::Operator::MOV || instruction->op == ltac::Operator::LEA || instruction->op == ltac::Operator::XOR){
+            if(one_of(instruction->op, {ltac::Operator::MOV, ltac::Operator::LEA, ltac::Operator::XOR})){
                 if(ltac::is_reg(*instruction->arg1)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
@@ -675,14 +683,35 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                 }
             
                 collect_usage(usage, instruction->arg2);
+            //} else if(one_of(instruction->op, {})){
+            } else if(instruction->op == ltac::Operator::ADD){
+                if(ltac::is_reg(*instruction->arg1)){
+                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                    if(usage.find(reg1) == usage.end()){
+                        optimized = transform_to_nop(instruction);
+                    }
+                } else {
+                    collect_usage(usage, instruction->arg1);
+                }
+            
+                collect_usage(usage, instruction->arg2);
+            } else if(one_of(instruction->op, {ltac::Operator::INC, ltac::Operator::DEC})){
+                if(ltac::is_reg(*instruction->arg1)){
+                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                    if(usage.find(reg1) == usage.end()){
+                        optimized = transform_to_nop(instruction);
+                    }
+                } else {
+                    collect_usage(usage, instruction->arg1);
+                }
             } else {
                 //Collect usage 
                 collect_usage(usage, instruction->arg1);
                 collect_usage(usage, instruction->arg2);
                 collect_usage(usage, instruction->arg3);
             }
-
-            //TODO Take in account more instructions that erase results, optimize them and remove them from the usage
         } else {
             //Takes care of safe functions
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){

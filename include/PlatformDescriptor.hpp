@@ -10,9 +10,13 @@
 
 #include <vector>
 
+#include "BaseType.hpp"
+
 namespace eddic {
 
 struct PlatformDescriptor {
+    virtual unsigned int size_of(BaseType type) = 0;
+
     virtual unsigned int number_of_registers() = 0;
     virtual unsigned int number_of_float_registers() = 0;
     

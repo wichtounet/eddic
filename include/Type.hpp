@@ -17,6 +17,8 @@
 
 namespace eddic {
 
+class GlobalContext;
+
 /*!
  * \class Type
  * \brief A type descriptor.
@@ -87,7 +89,7 @@ class Type : public std::enable_shared_from_this<Type> {
          * Return the size of the type in memory in octets. 
          * \return the size of the type, in octets.
          */
-        unsigned int size() const;
+        virtual unsigned int size() const;
 
         /*!
          * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
@@ -137,6 +139,8 @@ class StandardType : public Type {
 
         bool is_standard_type() const override;
         bool is_const() const override;
+        
+        unsigned int size() const override;
 };
 
 /*!
@@ -146,9 +150,10 @@ class StandardType : public Type {
 class CustomType : public Type {
     private:
         std::string m_type;
+        unsigned int m_size;
     
     public:
-        CustomType(const std::string& type); 
+        CustomType(const std::string& type, unsigned int size); 
     
         /*!
          * Deleted copy constructor
@@ -163,6 +168,8 @@ class CustomType : public Type {
         std::string type() const override;
 
         bool is_custom_type() const override;
+        
+        unsigned int size() const override;
 };
 
 /*!
@@ -192,6 +199,8 @@ class ArrayType : public Type {
         std::shared_ptr<const Type> data_type() const override;
 
         bool is_array() const override;
+        
+        unsigned int size() const override;
 };
 
 /*!
@@ -218,6 +227,8 @@ class PointerType : public Type {
         std::shared_ptr<const Type> data_type() const override;
 
         bool is_pointer() const override;
+        
+        unsigned int size() const override;
 };
 
 /* Relational operators  */
@@ -227,6 +238,7 @@ bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs
 
 extern std::shared_ptr<const Type> BOOL;
 extern std::shared_ptr<const Type> INT;
+extern std::shared_ptr<const Type> CHAR;
 extern std::shared_ptr<const Type> FLOAT;
 extern std::shared_ptr<const Type> STRING;
 extern std::shared_ptr<const Type> VOID;
@@ -236,7 +248,7 @@ extern std::shared_ptr<const Type> VOID;
  *
  * \param type The type to parse. 
  */
-std::shared_ptr<const Type> new_type(const std::string& type, bool const_ = false);
+std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_ = false);
 
 /*!
  * Create a new array type of the given type.

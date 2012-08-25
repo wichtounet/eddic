@@ -14,10 +14,9 @@
 #include <list>
 #include <utility>
 
-#include "SymbolTable.hpp"
-
 namespace eddic {
 
+class Function;
 class FunctionContext;
 
 namespace tac {
@@ -47,6 +46,8 @@ class Function {
         BlockList& getBasicBlocks();
 
         std::pair<BlockIterator, BlockIterator> blocks();
+
+        std::size_t size();
 
     private:
         //Before being partitioned, the function has only statement
@@ -90,6 +91,17 @@ std::string tac::Function<BB, S>::getName() const {
 template<typename BB, typename S>
 std::vector<S>& tac::Function<BB, S>::getStatements(){
     return statements;
+}
+
+template<typename BB, typename S>
+std::size_t tac::Function<BB, S>::size(){
+    std::size_t size = 0;
+
+    for(auto block : getBasicBlocks()){
+        size += block->statements.size();
+    }
+
+    return size;
 }
 
 template<typename BB, typename S>

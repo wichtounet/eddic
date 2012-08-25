@@ -226,7 +226,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, program->functions);
     }
 
-    void operator()(std::shared_ptr<ltac::Function>& function){
+    void operator()(std::shared_ptr<ltac::Function> function){
         std::cout << "Function " << function->getName() << std::endl;
 
         visit_each(*this, function->getStatements());
@@ -238,7 +238,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit(*this, statement);
     }
 
-    void operator()(std::shared_ptr<ltac::Instruction>& quadruple){
+    void operator()(std::shared_ptr<ltac::Instruction> quadruple){
         if(quadruple->arg1 && quadruple->arg2 && quadruple->arg3){
             std::cout << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << ", " << printArg(*quadruple->arg3) << std::endl;
         } else if(quadruple->arg1 && quadruple->arg2){
@@ -250,7 +250,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<ltac::Jump>& jmp){
+    void operator()(std::shared_ptr<ltac::Jump> jmp){
         std::cout << "\tjmp (" << to_string(jmp->type) << ") " << jmp->label << std::endl;
     }
 

@@ -23,6 +23,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_TRUE(ast::Value)
     AUTO_RETURN_NULL(ast::Value)
     AUTO_RETURN_LITERAL(ast::Value)
+    AUTO_RETURN_CHAR_LITERAL(ast::Value)
     AUTO_RETURN_FLOAT(ast::Value)
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
@@ -50,6 +51,20 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
         return value;
     }
+    
+    ast::Value operator()(ast::MemberValue& value){
+        auto left = visit(*this, value.Content->location); 
+        
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->location = *ptr;
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->location = *ptr;
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+        }
+
+        return value;
+    }
 
     ast::Value operator()(ast::DereferenceValue& value){
         auto left = visit(*this, value.Content->ref); 
@@ -57,6 +72,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         if(auto* ptr = boost::get<ast::VariableValue>(&left)){
             value.Content->ref = *ptr;
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
             value.Content->ref = *ptr;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
@@ -402,6 +419,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_CHAR_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
     AUTO_IGNORE_INTEGER_SUFFIX()
@@ -540,6 +558,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
+    AUTO_IGNORE_MEMBER_VALUE()
     AUTO_IGNORE_ASSIGNMENT()
     AUTO_IGNORE_BUILTIN_OPERATOR()
     AUTO_IGNORE_CAST()
@@ -557,6 +576,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_NEW()
     AUTO_IGNORE_DELETE()
     AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_CHAR_LITERAL()
     AUTO_IGNORE_FLOAT()
     AUTO_IGNORE_INTEGER()
     AUTO_IGNORE_INTEGER_SUFFIX()

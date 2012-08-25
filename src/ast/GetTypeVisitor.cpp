@@ -10,6 +10,7 @@
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
@@ -17,7 +18,8 @@
 
 using namespace eddic;
 
-ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Litteral, STRING)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Literal, STRING)
+ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::CharLiteral, CHAR)
 
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::Integer, INT)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::BuiltinOperator, INT) //At this time, all the builtin operators return an int
@@ -29,11 +31,11 @@ ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::False, BOOL)
 ASSIGN_INSIDE_CONST_CONST(ast::GetTypeVisitor, ast::True, BOOL)
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Null& /*null*/) const {
-    return new_pointer_type(INT); //TODO Check that
+    return new_pointer_type(INT);
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::New& value) const {
-    return new_pointer_type(visit(ast::TypeTransformer(), value.Content->type));
+    return new_pointer_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
@@ -45,7 +47,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Unary& un
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
-   return visit(ast::TypeTransformer(), cast.Content->type); 
+   return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
@@ -56,9 +58,11 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
     return visit(*this, operation.Content->left_value);
 }
 
-std::shared_ptr<const Type> get_member_type(std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
+namespace {
+
+std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> global_context, std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
     auto struct_name = type->type();
-    auto struct_type = symbols.get_struct(struct_name);
+    auto struct_type = global_context->get_struct(struct_name);
 
     for(std::size_t i = 0; i < memberNames.size(); ++i){
         auto member_type = (*struct_type)[memberNames[i]]->type;
@@ -67,31 +71,37 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<const Type> type, co
             return member_type;
         } else {
             struct_name = member_type->type();
-            struct_type = symbols.get_struct(struct_name);
+            struct_type = global_context->get_struct(struct_name);
         }
     }
 
     ASSERT_PATH_NOT_TAKEN("Problem with the type of members in nested struct values")
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    auto type = variable.variable()->type();
+} //end of anonymous namespace
 
-    if(variable.Content->memberNames.empty()){
-        return type;
-    } else {
-        return get_member_type(type->is_pointer() ? type->data_type() : type, variable.Content->memberNames);
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberValue& value) const {
+    auto type = visit(*this, value.Content->location);
+
+    if(type->is_pointer()){
+        type = type->data_type();
     }
+
+    return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
+}
+
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
+    return variable.variable()->type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    auto type = array.Content->var->type()->data_type();
-    
-    if(array.Content->memberNames.empty()){
-        return type;
-    } else {
-        return get_member_type(type, array.Content->memberNames);
-    }
+    auto array_type = array.Content->var->type();
+
+    if(array_type == STRING){
+        return CHAR;
+    } 
+
+    return array_type->data_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::DereferenceValue& value) const {
@@ -124,6 +134,6 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionC
     return call.Content->function->returnType;
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const std::shared_ptr<Variable>& value) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const std::shared_ptr<Variable> value) const {
     return value->type();
 }

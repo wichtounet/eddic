@@ -21,7 +21,7 @@ using namespace eddic;
 namespace {
 
 struct ArgumentToString : public boost::static_visitor<std::string> {
-   std::string operator()(std::shared_ptr<Variable>& variable) const {
+   std::string operator()(std::shared_ptr<Variable> variable) const {
         switch(variable->position().type()){
             case PositionType::STACK:
                 return variable->name() + "(s)";
@@ -78,7 +78,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, program->functions);
     }
 
-    void operator()(std::shared_ptr<mtac::Function>& function){
+    void operator()(std::shared_ptr<mtac::Function> function){
         stream << "Function " << function->getName() << endl;
 
         visit_each(*this, function->getStatements());
@@ -87,7 +87,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << endl;
     }
 
-    void operator()(std::shared_ptr<mtac::BasicBlock>& block){
+    void operator()(std::shared_ptr<mtac::BasicBlock> block){
         if(block->index == -1){
             stream << "ENTRY" << endl;
         } else if(block->index == -2){
@@ -102,7 +102,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit(*this, statement);
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         auto op = quadruple->op;
 
         if(op == mtac::Operator::ASSIGN){
@@ -177,7 +177,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     template<typename T>
-    std::string printTarget(std::shared_ptr<T>& ifFalse){
+    std::string printTarget(std::shared_ptr<T> ifFalse){
         if(ifFalse->block){
             return "B" + toString(ifFalse->block->index);   
         } else {
@@ -185,7 +185,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::IfFalse>& ifFalse){
+    void operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
         if(ifFalse->op){
             auto op = *ifFalse->op;
             if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
@@ -206,7 +206,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::If>& ifFalse){
+    void operator()(std::shared_ptr<mtac::If> ifFalse){
         if(ifFalse->op){
             auto op = *ifFalse->op;
             if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
@@ -227,37 +227,34 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(std::shared_ptr<mtac::Param>& param){
+    void operator()(std::shared_ptr<mtac::Param> param){
         std::string address;
         if(param->address){
             address = " address ";
         }
 
         std::string members;
-        for(std::size_t i = 0; i < param->memberNames.size(); ++i){
-            members += "." + param->memberNames[i];
-        }
 
         if(param->param){
-            stream << "\tparam " << address << "(" << printVar(param->param) << ") " << printArg(param->arg) << members << endl;
+            stream << "\tparam " << address << "(" << printVar(param->param) << ") " << printArg(param->arg) << endl;
         } else {
             if(param->std_param.length() > 0){
-                stream << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << members << endl;
+                stream << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << endl;
             } else {
-                stream << "\tparam " << address << printArg(param->arg) << members << endl;
+                stream << "\tparam " << address << printArg(param->arg) << endl;
             }
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Goto>& goto_){
+    void operator()(std::shared_ptr<mtac::Goto> goto_){
         stream << "\tgoto " << printTarget(goto_) << endl;
     }
 
-    void operator()(std::shared_ptr<mtac::NoOp>&){
+    void operator()(std::shared_ptr<mtac::NoOp>){
         stream << "\tno-op" << endl;
     }
 
-    void operator()(std::shared_ptr<mtac::Call>& call){
+    void operator()(std::shared_ptr<mtac::Call> call){
         stream << "\t";
 
         if(call->return_){

@@ -36,7 +36,7 @@ class ControlFlowGraph {
     public:
         typedef boost::property<boost::graph_name_t, std::string> GraphProperties;
 
-        typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, vertex_info, edge_info, GraphProperties> InternalControlFlowGraph;//TODO Check the bidirectionalS
+        typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, vertex_info, edge_info, GraphProperties> InternalControlFlowGraph;
         
         //Iterators
         typedef boost::graph_traits<InternalControlFlowGraph>::edge_iterator EdgeIterator;
@@ -55,6 +55,7 @@ class ControlFlowGraph {
         std::pair<BasicBlockIterator, BasicBlockIterator> blocks();
         std::pair<EdgeIterator, EdgeIterator> edges();
 
+        //NOTE: Keep reference
         std::shared_ptr<BasicBlock>& entry();
         std::shared_ptr<BasicBlock>& exit();
 

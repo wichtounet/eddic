@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "Variable.hpp"
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -42,6 +43,38 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, Pr
     return result;
 }
 
+namespace {
+
+struct ConstantCollector : public boost::static_visitor<> {
+    ProblemDomain& out;
+    const mtac::Offset& offset;
+
+    ConstantCollector(ProblemDomain& out, const mtac::Offset& offset) : out(out), offset(offset) {}
+
+    void operator()(int value){
+        out[offset] = value;
+    }
+    
+    void operator()(const std::string& value){
+        out[offset] = value;
+    }
+    
+    void operator()(double value){
+        out[offset] = value;
+    }
+    
+    void operator()(std::shared_ptr<Variable> variable){
+        out[offset] = variable;
+    }
+
+    template<typename T>
+    void operator()(T&){
+        out.erase(offset);
+    }
+};
+
+} //end of anonymous namespace
+
 ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> /*basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
@@ -53,19 +86,9 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 if(!quadruple->result->type()->is_pointer()){
                     mtac::Offset offset(quadruple->result, *ptr);
+                    ConstantCollector collector(out, offset);
 
-                    if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                        out[offset] = *ptr;
-                    } else if(auto* ptr = boost::get<std::string>(&*quadruple->arg2)){
-                        out[offset] = *ptr;
-                    } else if(auto* ptr = boost::get<double>(&*quadruple->arg2)){
-                        out[offset] = *ptr;
-                    } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                        out[offset] = *ptr;
-                    } else {
-                        //The result is not constant at this point
-                        out.erase(offset);
-                    }
+                    visit(collector, *quadruple->arg2);
                 }
             }
         } 
@@ -113,7 +136,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
     return out;
 }
 
-bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& global_results){
+bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
 
     bool changes = false;

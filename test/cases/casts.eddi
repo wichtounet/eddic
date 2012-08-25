@@ -18,4 +18,29 @@ void main(){
     float e = (float) a + 3.33;
     print(e);
     print("|");
+
+    test_char_casts();
+}
+
+void debug(int c){
+    print(c);
+    print("|");
+}
+
+void debug(char c){
+    print(c);
+    print("|");
+}
+
+void test_char_casts(){
+    int a = 66;
+    
+    char c = (char) a;
+    char d = (char) c;
+
+    debug(c);
+    debug(d);
+
+    int e = (int) 'Z';
+    debug(e);
 }

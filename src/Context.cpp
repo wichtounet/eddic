@@ -10,12 +10,14 @@
 
 #include "assert.hpp"
 #include "Context.hpp"
+#include "GlobalContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
 
 using namespace eddic;
 
 Context::Context(std::shared_ptr<Context> parent) : m_parent(parent) {}
+Context::Context(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context) : m_parent(parent), global_context(global_context) {}
 
 std::shared_ptr<Context> Context::parent() const  {
     return m_parent;
@@ -38,28 +40,8 @@ bool Context::exists(const std::string& variable) const {
     return true;
 }
 
-std::shared_ptr<Variable> Context::newTemporary(){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
-}
-
-std::shared_ptr<Variable> Context::newFloatTemporary(){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
-}
-
-std::shared_ptr<Variable> Context::newPointerTemporary(){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
-}
-
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type> type){
-    if(type == INT || type == BOOL){ //TODO Perhaps the temporary should be of a special pointer type ?
-        return newTemporary();
-    } else if(type == FLOAT){
-        return newFloatTemporary();
-    } else if(type->is_pointer()){
-        return newPointerTemporary(); 
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Temporary can only represent int, bool and float");
-    }
+    ASSERT_PATH_NOT_TAKEN("Not implemented");
 }
 
 std::shared_ptr<Variable> Context::operator[](const std::string& variable) const {
@@ -102,4 +84,8 @@ Context::Variables::const_iterator Context::begin() const {
 
 Context::Variables::const_iterator Context::end() const {
     return variables.cend();
+}
+
+std::shared_ptr<GlobalContext> Context::global() const {
+    return global_context;
 }

@@ -16,7 +16,8 @@
 
 using namespace eddic;
 
-BlockContext::BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext) : Context(parent), m_functionContext(functionContext){} 
+BlockContext::BlockContext(std::shared_ptr<Context> parent, std::shared_ptr<FunctionContext> functionContext, std::shared_ptr<GlobalContext> global_context) : 
+    Context(parent, global_context), m_functionContext(functionContext){} 
 
 std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type){
     return variables[variable] = m_functionContext->newVariable(variable, type);
@@ -32,10 +33,6 @@ std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable,
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }
 
-std::shared_ptr<Variable> BlockContext::newTemporary(){
-    return m_functionContext->newTemporary();
-}
-
-std::shared_ptr<Variable> BlockContext::newFloatTemporary(){
-    return m_functionContext->newFloatTemporary();
+std::shared_ptr<Variable> BlockContext::new_temporary(std::shared_ptr<const Type> type){
+    return m_functionContext->new_temporary(type);
 }

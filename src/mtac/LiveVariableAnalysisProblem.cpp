@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "Variable.hpp"
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
@@ -65,43 +66,65 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, Proble
     return result;
 }
 
-template<typename Arg, typename Values>
-inline void update(Arg& arg, Values& values){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-        values.insert(*ptr);
+namespace {
+
+struct LivenessCollector : public boost::static_visitor<> {
+    ProblemDomain& in;
+
+    LivenessCollector(ProblemDomain& in) : in(in) {}
+
+    template<typename Arg>
+    inline void update(Arg& arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            in.values().insert(*ptr);
+        }
     }
-}
 
-template<typename Arg, typename Values>
-inline void update_optional(Arg& arg, Values& values){
-    if(arg){
-        update(*arg, values);
+    template<typename Arg>
+    inline void update_optional(Arg& arg){
+        if(arg){
+            update(*arg);
+        }
     }
-}
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
-    auto in = out;
-
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        auto quadruple = *ptr;
-        
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         if(mtac::erase_result(quadruple->op)){
             in.values().erase(quadruple->result);
         } else {
             in.values().insert(quadruple->result);
         }
 
-        update_optional((*ptr)->arg1, in.values());
-        update_optional((*ptr)->arg2, in.values());
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        update((*ptr)->arg, in.values());
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-        update((*ptr)->arg1, in.values());
-        update_optional((*ptr)->arg2, in.values());
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-        update((*ptr)->arg1, in.values());
-        update_optional((*ptr)->arg2, in.values());
+        update_optional(quadruple->arg1);
+        update_optional(quadruple->arg2);
     }
+    
+    void operator()(std::shared_ptr<mtac::Param> param){
+        update(param->arg);
+    }
+    
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        update(if_false->arg1);
+        update_optional(if_false->arg2);
+    }
+    
+    void operator()(std::shared_ptr<mtac::If> if_){
+        update(if_->arg1);
+        update_optional(if_->arg2);
+    }
+
+    template<typename T>
+    void operator()(T&){
+        //Nothing to do
+    }
+};
+
+}
+
+ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
+    auto in = out;
+    
+    LivenessCollector collector(in);
+    visit(collector, statement);
 
     for(auto& escaped_var : *pointer_escaped){
         in.values().insert(escaped_var);
@@ -110,7 +133,7 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::
     return in;
 }
 
-bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>>& /*global_results*/){
+bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
     //This analysis is only made to gather information, not to optimize anything
     throw "Unimplemented";
 }

@@ -5,7 +5,7 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 1)
-set(VERSION_PATCH 1)
+set(VERSION_PATCH 2)
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -30,6 +30,21 @@ endif(DOXYGEN_FOUND)
 
 # Add a target to inspect the whole code with cppcheck
 add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Analysing the code with cppcheck" VERBATIM
+)
+
+# Add a target to profile the whole code with oprofile
+add_custom_target(oprofile 
+    sudo opcontrol --reset
+    && sudo opcontrol --event=CPU_CLK_UNHALTED:50000:0:1:1
+    && sudo opcontrol --vmlinux=/usr/src/linux/arch/x86/boot/compressed/vmlinux
+    && sudo opcontrol --start
+    && ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}/eddi_samples/big.eddi
+    && sudo opcontrol --stop
+    && sudo opcontrol --shutdown
+    && sudo opreport -a -e _fini -l ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic > ${CMAKE_CURRENT_BINARY_DIR}/profile
+    
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Analysing the code with cppcheck" VERBATIM
 )

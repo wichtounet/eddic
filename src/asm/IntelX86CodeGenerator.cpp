@@ -10,9 +10,9 @@
 #include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
-#include "SymbolTable.hpp"
 #include "Labels.hpp"
 #include "VisitorUtils.hpp"
+#include "GlobalContext.hpp"
 
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
@@ -20,12 +20,12 @@
 
 using namespace eddic;
 
-as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w) : IntelCodeGenerator(w) {}
+as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
 
 namespace {
 
-struct X86_32StringConverter : public as::StringConverter {
-    std::string to_string(eddic::ltac::Register reg) const {
+struct X86_32StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
+    std::string operator()(ltac::Register& reg) const {
         static std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
 
         if(static_cast<int>(reg) == 1000){
@@ -36,31 +36,29 @@ struct X86_32StringConverter : public as::StringConverter {
 
         return registers[static_cast<int>(reg)];
     }
-
-    std::string to_string(eddic::ltac::FloatRegister reg) const {
+    
+    std::string operator()(ltac::FloatRegister& reg) const {
         static std::string registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
         return registers[static_cast<int>(reg)];
     }
     
-    std::string to_string(eddic::ltac::Argument& arg) const {
-        if(auto* ptr = boost::get<int>(&arg)){
-            return ::toString(*ptr);
-        } else if(auto* ptr = boost::get<double>(&arg)){
-            std::stringstream ss;
-            ss << "__float32__(" << std::fixed << *ptr << ")";
-            return ss.str();
-        } else if(auto* ptr = boost::get<ltac::Register>(&arg)){
-            return to_string(*ptr); 
-        } else if(auto* ptr = boost::get<ltac::FloatRegister>(&arg)){
-            return to_string(*ptr); 
-        } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
-            return address_to_string(*ptr);
-        } else if(auto* ptr = boost::get<std::string>(&arg)){
-            return *ptr;
-        }
+    std::string operator()(ltac::Address& address) const {
+        return address_to_string(address);
+    }
 
-        ASSERT_PATH_NOT_TAKEN("Unhandled variant type");
+    std::string operator()(int value) const {
+       return ::toString(value);
+    }
+
+    std::string operator()(const std::string& value) const {
+        return value;
+    }
+
+    std::string operator()(double value) const {
+        std::stringstream ss;
+        ss << "__float32__(" << std::fixed << value << ")";
+        return ss.str();
     }
 };
 
@@ -70,7 +68,7 @@ namespace x86 {
 
 std::ostream& operator<<(std::ostream& os, eddic::ltac::Argument& arg){
     X86_32StringConverter converter;
-    return os << converter.to_string(arg);
+    return os << visit(converter, arg);
 }
 
 } //end of x86 namespace
@@ -89,6 +87,22 @@ struct X86StatementCompiler : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
         switch(instruction->op){
             case ltac::Operator::MOV:
+                if(instruction->size != ltac::Size::DEFAULT){
+                    switch(instruction->size){
+                        case ltac::Size::BYTE:
+                            writer.stream() << "movzx " << *instruction->arg1 << ", byte " << *instruction->arg2 << std::endl;
+                            break;
+                        case ltac::Size::WORD:
+                            writer.stream() << "movzx " << *instruction->arg1 << ", word " << *instruction->arg2 << std::endl;
+                            break;
+                        default:
+                            writer.stream() << "mov " << *instruction->arg1 << ", dword " << *instruction->arg2 << std::endl;
+                            break;
+                    }
+
+                    break;
+                }
+
                 if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
                     writer.stream() << "movd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 } else if(boost::get<ltac::Register>(&*instruction->arg1) && boost::get<ltac::FloatRegister>(&*instruction->arg2)){
@@ -315,12 +329,12 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << std::endl;
     
     //If necessary init memory manager 
-    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
         writer.stream() << "call _F4init" << std::endl; 
     }
 
     //If the user wants the args, we add support for them
-    if(symbols.exists("_F4mainAS")){
+    if(context->exists("_F4mainAS")){
         writer.stream() << "pop ebx" << std::endl;                          //ebx = number of args
         
         writer.stream() << "lea ecx, [4 + ebx * 8]" << std::endl;           //ecx = size of the array
@@ -354,7 +368,7 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     }
 
     /* Give control to the user main function */
-    if(symbols.exists("_F4mainAS")){
+    if(context->exists("_F4mainAS")){
         writer.stream() << "call _F4mainAS" << std::endl;
     } else {
         writer.stream() << "call _F4main" << std::endl;
@@ -408,58 +422,70 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(as::is_enabled_printI()){
+    if(is_enabled_printI()){
         output_function("x86_32_printI");
     }
     
-    if(symbols.referenceCount("_F7printlnI")){
+    if(context->referenceCount("_F7printlnI")){
         output_function("x86_32_printlnI");
     }
+    
+    if(context->referenceCount("_F5printC")){
+        output_function("x86_32_printC");
+    }
+    
+    if(context->referenceCount("_F7printlnC")){
+        output_function("x86_32_printlnC");
+    }
 
-    if(symbols.referenceCount("_F5printF")){
+    if(context->referenceCount("_F5printF")){
         output_function("x86_32_printF");
     }
     
-    if(symbols.referenceCount("_F7printlnF")){
+    if(context->referenceCount("_F7printlnF")){
         output_function("x86_32_printlnF");
     }
     
-    if(symbols.referenceCount("_F5printB")){
+    if(context->referenceCount("_F5printB")){
         output_function("x86_32_printB");
     }
     
-    if(symbols.referenceCount("_F7printlnB")){
+    if(context->referenceCount("_F7printlnB")){
         output_function("x86_32_printlnB");
     }
     
-    if(as::is_enabled_println()){
+    if(is_enabled_println()){
         output_function("x86_32_println");
     }
     
-    if(symbols.referenceCount("_F5printS") || as::is_enabled_printI() || as::is_enabled_println()){ 
+    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
         output_function("x86_32_printS");
     }
     
-    if(symbols.referenceCount("_F7printlnS")){ 
+    if(context->referenceCount("_F7printlnS")){ 
         output_function("x86_32_printlnS");
     }
     
-    if(symbols.referenceCount("_F6concatSS")){
+    if(context->referenceCount("_F6concatSS")){
         output_function("x86_32_concat");
     }
     
     //Memory management functions are included the three together
-    if(symbols.exists("_F4mainAS") || symbols.referenceCount("_F4freePI") || symbols.referenceCount("_F5allocI") || symbols.referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
         output_function("x86_32_alloc");
         output_function("x86_32_init");
         output_function("x86_32_free");
     }
     
-    if(symbols.referenceCount("_F4timeAI")){
+    if(context->referenceCount("_F4timeAI")){
         output_function("x86_32_time");
     }
     
-    if(symbols.referenceCount("_F8durationAIAI")){
+    if(context->referenceCount("_F8durationAIAI")){
         output_function("x86_32_duration");
+    }
+    
+    if(context->referenceCount("_F9read_char")){
+        output_function("x86_32_read_char");
     }
 }

@@ -10,12 +10,17 @@
 
 #include "variant.hpp"
 #include "FunctionContext.hpp"
+#include "Platform.hpp"
+#include "Options.hpp"
+#include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Program.hpp"
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
-
-#include "VisitorUtils.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -40,7 +45,7 @@ struct CollectTemporary : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple>& quadruple){
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         if(quadruple->result){
             updateTemporary(quadruple->result);
         }
@@ -71,20 +76,20 @@ struct CollectTemporary : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::If>& if_){
+    void operator()(std::shared_ptr<mtac::If> if_){
         updateIf(if_);
     }
 
-    void operator()(std::shared_ptr<mtac::IfFalse>& if_false){
+    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
         updateIf(if_false);
     }
 
-    void operator()(std::shared_ptr<mtac::Call>& call_){
+    void operator()(std::shared_ptr<mtac::Call> call_){
         updateTemporary(call_->return_);
         updateTemporary(call_->return2_);
     }
 
-    void operator()(std::shared_ptr<mtac::Param>& param){
+    void operator()(std::shared_ptr<mtac::Param> param){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
             updateTemporary(*ptr);
         }
@@ -96,10 +101,25 @@ struct CollectTemporary : public boost::static_visitor<> {
     }
 };
 
+template<typename Container>
+unsigned int count_temporaries(Container& container){
+    unsigned int count = 0;
+    
+    for(auto v : container){
+        if(v && v->position().isTemporary()){
+            ++count;
+        }
+    }
+
+    return count;
+}
+
 }
 
 void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
+        auto count = 0;
+
         CollectTemporary visitor(function);
 
         for(auto& block : function->getBasicBlocks()){
@@ -108,6 +128,42 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
             for(auto& statement : block->statements){
                 visit(visitor, statement);
             }
+        }
+        
+        mtac::LiveVariableAnalysisProblem problem;
+        auto results = mtac::data_flow(function, problem);
+
+        auto descriptor = getPlatformDescriptor(platform);
+        auto registers = descriptor->number_of_registers();
+        
+        for(auto& block : function->getBasicBlocks()){
+            visitor.block = block;
+
+            for(auto& statement : block->statements){
+                auto values = results->OUT_S[statement].values();
+                auto temporaries = count_temporaries(values);
+                
+                if(temporaries >= registers){
+                    auto it = values.begin();
+                    auto end = values.end();
+
+                    for(unsigned int i = 0; i <= (registers - temporaries + 1) && it != end;){
+                        if((*it) && (*it)->type()->is_pointer() && (*it)->position().isTemporary()){
+                            ++count;
+                            function->context->storeTemporary(*it);
+                            ++i;
+                        }
+
+                        ++it;
+                    }
+                }
+            }
+        }
+
+        if(count > 0 && option_defined("dev")){
+            std::cout << "Temporaries have been stored for registers" << std::endl;
+
+            mtac::print(function);
         }
     }
 }

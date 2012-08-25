@@ -35,9 +35,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_UNARY_VALUES()
-        AUTO_RECURSE_CAST_VALUES()
         AUTO_RECURSE_TERNARY()
-        AUTO_RECURSE_NEW()
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
 
@@ -45,6 +43,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_TRUE()
         AUTO_IGNORE_NULL()
         AUTO_IGNORE_LITERAL()
+        AUTO_IGNORE_CHAR_LITERAL()
         AUTO_IGNORE_FLOAT()
         AUTO_IGNORE_INTEGER()
         AUTO_IGNORE_INTEGER_SUFFIX()
@@ -74,7 +73,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Constructor& constructor){
-            currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
+            currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
 
             visit_each(*this, constructor.Content->instructions);
     
@@ -82,7 +81,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Destructor& destructor){
-            currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
+            currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
 
             visit_each(*this, destructor.Content->instructions);
     
@@ -90,7 +89,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& function){
-            currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext);
+            currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
 
             visit_each(*this, function.Content->instructions);
     
@@ -99,7 +98,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
             
         template<typename Loop>            
         void annotateWhileLoop(Loop& loop){
-            currentContext = loop.Content->context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = loop.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
             
             visit(*this, loop.Content->condition);
 
@@ -127,7 +126,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::SwitchCase& switch_case){
             visit(*this, switch_case.value);
 
-            currentContext = switch_case.context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = switch_case.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
            
             visit_each(*this, switch_case.instructions);
 
@@ -135,7 +134,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::DefaultCase& default_case){
-            currentContext = default_case.context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = default_case.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
            
             visit_each(*this, default_case.instructions);
 
@@ -143,7 +142,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::For& for_){
-            currentContext = for_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = for_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
           
             visit_optional(*this, for_.Content->start);
             visit_optional(*this, for_.Content->condition);
@@ -156,7 +155,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         template<typename Loop>
         void annotateSimpleLoop(Loop& loop){
-            loop.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext);
+            loop.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
             visit_each(*this, loop.Content->instructions);
              
@@ -172,7 +171,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            currentContext = if_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = if_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
             visit(*this, if_.Content->condition);
             
@@ -185,7 +184,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::ElseIf& elseIf){
-            currentContext = elseIf.context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = elseIf.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
             visit(*this, elseIf.condition);
             
@@ -195,7 +194,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Else& else_){
-            currentContext = else_.context = std::make_shared<BlockContext>(currentContext, functionContext);
+            currentContext = else_.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
             
             visit_each(*this, else_.instructions);
             
@@ -247,6 +246,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, variable.Content->ref);
         }
         
+        void operator()(ast::MemberValue& value){
+            value.Content->context = currentContext;
+
+            visit(*this, value.Content->location);
+        }
+        
         void operator()(ast::ArrayValue& array){
             array.Content->context = currentContext;
 
@@ -257,6 +262,18 @@ class AnnotateVisitor : public boost::static_visitor<> {
             return_.Content->context = functionContext;
 
             visit(*this, return_.Content->value);
+        }
+        
+        void operator()(ast::Cast& cast){
+            cast.Content->context = currentContext;
+
+            visit(*this, cast.Content->value);
+        }
+        
+        void operator()(ast::New& new_){
+            new_.Content->context = currentContext;
+            
+            visit_each(*this, new_.Content->values);
         }
 };
 

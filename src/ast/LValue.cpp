@@ -17,6 +17,8 @@ ast::LValue eddic::ast::to_left_value(ast::Value left_value){
         return *ptr;
     } else if(auto* ptr = boost::get<ast::ArrayValue>(&left_value)){
         return *ptr;
+    } else if(auto* ptr = boost::get<ast::MemberValue>(&left_value)){
+        return *ptr;
     } else if(auto* ptr = boost::get<ast::DereferenceValue>(&left_value)){
         return *ptr;
     } else {

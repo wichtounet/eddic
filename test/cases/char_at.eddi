@@ -1,0 +1,26 @@
+void main(){
+    string a = "asdf";
+    print(a);
+    print("|");
+    
+    char b = a[0];
+
+    print(b);
+    print("|");
+    
+    b = a[1];
+
+    print(b);
+    print("|");
+    
+    print(a[2]);
+    print("|");
+
+    if(a[1] == 's'){
+        print("1");
+        print("|");
+    } else {
+        print("0");
+        print("|");
+    }
+}

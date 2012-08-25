@@ -14,8 +14,8 @@
 
 using namespace eddic;
 
-Val ast::GetConstantValue::operator()(const ast::Litteral& litteral) const {
-    return make_pair(litteral.value, litteral.value.size() - 2);
+Val ast::GetConstantValue::operator()(const ast::Literal& literal) const {
+    return make_pair(literal.value, literal.value.size() - 2);
 }
 
 Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
