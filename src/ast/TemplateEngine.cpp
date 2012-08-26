@@ -626,6 +626,7 @@ struct Collector : public boost::static_visitor<> {
 struct Instantiator : public boost::static_visitor<> {
     TemplateMap& template_functions;
     InstantiationMap instantiations;
+    std::vector<ast::FunctionDeclaration> instantiated_functions;
 
     Instantiator(TemplateMap& template_functions) : template_functions(template_functions) {}
 
@@ -733,9 +734,15 @@ struct Instantiator : public boost::static_visitor<> {
                         
                         InstructionAdaptor adaptor(replacements);
                         visit_each(adaptor, declaration.Content->instructions);
+                        
+                        for(auto& param : declaration.Content->parameters){
+                            param.parameterType = adaptor.replace(param.parameterType);
+                        }
 
                         //Mark it as instantiated
                         instantiations.insert(InstantiationMap::value_type(name, template_types));
+
+                        instantiated_functions.push_back(declaration);
                     }
 
                     return;
@@ -767,4 +774,8 @@ void ast::template_instantiation(ast::SourceFile& program){
 
     Instantiator instantiator(template_functions);
     instantiator(program);
+
+    for(auto& function : instantiator.instantiated_functions){
+        program.Content->blocks.push_back(function);
+    }
 }
