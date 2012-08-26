@@ -72,6 +72,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::VariableValue& source) const {
         ast::VariableValue copy;
         
+        copy.Content->position = source.Content->position;
         copy.Content->variableName = source.Content->variableName;
         
         return copy;
@@ -79,6 +80,8 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     
     ast::Value operator()(const ast::DereferenceValue& source) const {
         ast::DereferenceValue copy;
+        
+        copy.Content->position = source.Content->position;
         
         auto ref = visit(*this, source.Content->ref);
         
@@ -98,6 +101,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Expression& source) const {
         ast::Expression copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->first = visit(*this, source.Content->first);
 
         for(auto& operation : source.Content->operations){
@@ -131,6 +135,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::ArrayValue& source) const {
         ast::ArrayValue copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->arrayName = source.Content->arrayName;
         copy.Content->indexValue = visit(*this, source.Content->indexValue);
 
@@ -140,6 +145,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->functionName = source.Content->functionName;
         copy.Content->template_types = source.Content->template_types;
 
@@ -153,6 +159,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::MemberFunctionCall& source) const {
         ast::MemberFunctionCall copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->object_name = source.Content->object_name;
         copy.Content->function_name = source.Content->function_name;
 
@@ -166,6 +173,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Cast& source) const {
         ast::Cast copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->type = source.Content->type;
         copy.Content->value = visit(*this, source.Content->value);
 
@@ -175,6 +183,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::BuiltinOperator& source) const {
         ast::BuiltinOperator copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->type = source.Content->type;
         
         for(auto& value : source.Content->values){
@@ -187,6 +196,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Assignment& source) const {
         ast::Assignment copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
         copy.Content->value = visit(*this, source.Content->value);
         copy.Content->left_value = ast::to_left_value(visit(*this, source.Content->left_value));
@@ -197,6 +207,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::SuffixOperation& source) const {
         ast::SuffixOperation copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
         copy.Content->left_value = ast::to_left_value(visit(*this, source.Content->left_value));
 
@@ -206,6 +217,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::PrefixOperation& source) const {
         ast::PrefixOperation copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
         copy.Content->left_value = ast::to_left_value(visit(*this, source.Content->left_value));
 
@@ -215,6 +227,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Ternary& source) const {
         ast::Ternary copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->condition = visit(*this, source.Content->condition);
         copy.Content->false_value = visit(*this, source.Content->false_value);
         copy.Content->true_value = visit(*this, source.Content->true_value);
@@ -225,6 +238,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::MemberValue& source) const {
         ast::MemberValue copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->memberNames = source.Content->memberNames;
         
         auto location = visit(*this, source.Content->location);
@@ -243,6 +257,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::New& source) const {
         ast::New copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->type = source.Content->type;
         
         for(auto& value : source.Content->values){
@@ -257,6 +272,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::MemberFunctionCall& source) const {
         ast::MemberFunctionCall copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->object_name = source.Content->object_name;
         copy.Content->function_name = source.Content->function_name;
         
@@ -270,6 +286,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->template_types = source.Content->template_types;
         copy.Content->functionName = source.Content->functionName;
         
@@ -283,6 +300,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Swap& source) const {
         ast::Swap copy;
         
+        copy.Content->position = source.Content->position;
         copy.Content->lhs = source.Content->lhs;
         copy.Content->rhs = source.Content->rhs;
 
@@ -292,6 +310,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::VariableDeclaration& source) const {
         ast::VariableDeclaration copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->variableType = source.Content->variableType;
         copy.Content->variableName = source.Content->variableName;
         
@@ -305,6 +324,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::StructDeclaration& source) const {
         ast::StructDeclaration copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->variableType = source.Content->variableType;
         copy.Content->variableName = source.Content->variableName;
         
@@ -318,6 +338,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::ArrayDeclaration& source) const {
         ast::ArrayDeclaration copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->arrayType = source.Content->arrayType;
         copy.Content->arrayName = source.Content->arrayName;
         copy.Content->size = source.Content->size;
@@ -328,6 +349,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Assignment& source) const {
         ast::Assignment copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->left_value = ast::to_left_value(visit(ValueCopier(), source.Content->left_value));
         copy.Content->value = visit(ValueCopier(), source.Content->value);
         copy.Content->op = source.Content->op;
@@ -338,6 +360,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Return& source) const {
         ast::Return copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->value = visit(ValueCopier(), source.Content->value);
         
         return copy;
@@ -404,6 +427,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Foreach& source) const {
         ast::Foreach copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->variableType = source.Content->variableType;
         copy.Content->variableName = source.Content->variableName;
         copy.Content->from = source.Content->from;
@@ -419,6 +443,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::ForeachIn& source) const {
         ast::ForeachIn copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->variableType = source.Content->variableType;
         copy.Content->variableName = source.Content->variableName;
         copy.Content->arrayName = source.Content->arrayName;
@@ -433,6 +458,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::SuffixOperation& source) const {
         ast::SuffixOperation copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->left_value = ast::to_left_value(visit(ValueCopier(), source.Content->left_value));
         copy.Content->op = source.Content->op;
 
@@ -473,6 +499,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Switch& source) const {
         ast::Switch copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->value = visit(ValueCopier(), source.Content->value);
 
         for(auto& switch_case : source.Content->cases){
@@ -503,6 +530,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Delete& source) const {
         ast::Delete copy;
 
+        copy.Content->position = source.Content->position;
         copy.Content->variable_name = source.Content->variable_name;
 
         return copy;
