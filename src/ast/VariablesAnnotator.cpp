@@ -98,7 +98,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            if(is_valid(parameter.parameterType)){
+            if(!is_valid(parameter.parameterType)){
                 throw SemanticalException("Invalid parameter type", declaration.Content->position);
             }
 
