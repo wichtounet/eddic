@@ -189,7 +189,7 @@ void operator()(ast::Destructor& function){\
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(ast::GlobalVariableDeclaration& declaration){\
-    visit(*this, *declaration.Content->value);\
+    visit_optional(*this, declaration.Content->value);\
 }
 
 #define AUTO_RECURSE_NEW()\
