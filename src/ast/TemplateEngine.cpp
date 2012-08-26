@@ -672,6 +672,8 @@ struct Instantiator : public boost::static_visitor<> {
             if(are_equals(types, template_types)){
                 return true;
             }
+
+            ++it;
         }
 
         return false;
@@ -765,6 +767,4 @@ void ast::template_instantiation(ast::SourceFile& program){
 
     Instantiator instantiator(template_functions);
     instantiator(program);
-
-    std::cout << template_functions.size() << std::endl;
 }
