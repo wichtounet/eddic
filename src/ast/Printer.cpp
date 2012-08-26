@@ -100,6 +100,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
 
         std::cout << ">" << declaration.Content->functionName << std::endl; 
+        std::cout << std::endl;
     }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
@@ -113,6 +114,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         level--;
         
         print_each_sub(declaration.Content->instructions, "Instructions:");
+        std::cout << std::endl;
     }
     
     void operator()(ast::Constructor& declaration) const {
