@@ -69,8 +69,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::TemplateEngine template_engine;
 
         while(still_unmarked_functions(program)){
-            std::cout << "Phase " << std::endl;
-
             //Instantiate templates
             template_engine.template_instantiation(program);
 
@@ -133,12 +131,9 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 }
 
 void check_for_main(std::shared_ptr<GlobalContext> context){
-    std::shared_ptr<Function> function;
     if(context->exists("_F4main")){
-        function = context->getFunction("_F4main");
         context->addReference("_F4main");
     } else if (context->exists("_F4mainAS")){
-        function = context->getFunction("_F4mainAS");
         context->addReference("_F4mainAS");
     } else {
         throw SemanticalException("The program does not contain a valid main function"); 

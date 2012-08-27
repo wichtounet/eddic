@@ -578,7 +578,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     }
 };
 
-struct InstructionAdaptor : public boost::static_visitor<void> {
+struct InstructionAdaptor : public boost::static_visitor<> {
     const std::unordered_map<std::string, std::string>& replacements;
 
     InstructionAdaptor(const std::unordered_map<std::string, std::string>& replacements) : replacements(replacements) {}
@@ -624,7 +624,7 @@ struct InstructionAdaptor : public boost::static_visitor<void> {
         }
     }
 
-    void operator()(ast::Assignment& assignment) const {
+    void operator()(const ast::Assignment& assignment) const {
         visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
     }
@@ -635,6 +635,7 @@ struct InstructionAdaptor : public boost::static_visitor<void> {
     
     void operator()(const ast::FunctionCall& source) const {
         for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
+            auto a = source.Content->template_types[i];
             source.Content->template_types[i] = replace(source.Content->template_types[i]);
         }
 
@@ -674,8 +675,8 @@ struct InstructionAdaptor : public boost::static_visitor<void> {
         
         visit_each(*this, source.Content->values);
     }
-    
-    AUTO_IGNORE_OTHERS_CONST()
+
+    AUTO_IGNORE_OTHERS_CONST_CONST()
 };
 
 struct Collector : public boost::static_visitor<> {
@@ -788,8 +789,6 @@ struct Instantiator : public boost::static_visitor<> {
                 
                 if(source_types.size() == template_types.size()){
                     if(!is_instantiated(name, template_types)){
-                        std::cout << "Instantiate " << function_declaration.Content->functionName << std::endl;
-
                         //Instantiate the function 
                         ast::FunctionDeclaration declaration;
                         declaration.Content->position = function_declaration.Content->position;

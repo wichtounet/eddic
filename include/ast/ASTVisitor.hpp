@@ -289,6 +289,7 @@ void operator()(ast::New& new_){\
 
 #define AUTO_IGNORE_OTHERS() template<typename T> void operator()(T&){}
 #define AUTO_IGNORE_OTHERS_CONST() template<typename T> void operator()(T&) const {}
+#define AUTO_IGNORE_OTHERS_CONST_CONST() template<typename T> void operator()(const T&) const {}
 
 #define AUTO_RETURN_OTHERS(return_type) template<typename T> return_type operator()(T& t){return t;}
 #define AUTO_RETURN_OTHERS_CONST(return_type) template<typename T> return_type operator()(T& t) const {return t;}
