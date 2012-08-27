@@ -288,6 +288,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  *(constructor)
         >>  *(destructor)
         >>  *(function)
+        >>  *(template_function)
         >>  lexer.right_brace;
 
     standardImport %= 

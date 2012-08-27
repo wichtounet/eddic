@@ -18,6 +18,7 @@
 #include "ast/Constructor.hpp"
 #include "ast/Destructor.hpp"
 #include "ast/FunctionDeclaration.hpp"
+#include "ast/TemplateFunctionDeclaration.hpp"
 
 namespace eddic {
 
@@ -30,6 +31,7 @@ struct ASTStruct {
     std::vector<Constructor> constructors;
     std::vector<Destructor> destructors;
     std::vector<FunctionDeclaration> functions;
+    std::vector<TemplateFunctionDeclaration> template_functions;
 
     mutable long references = 0;
 };
@@ -49,6 +51,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<eddic::ast::Constructor>, Content->constructors)
     (std::vector<eddic::ast::Destructor>, Content->destructors)
     (std::vector<eddic::ast::FunctionDeclaration>, Content->functions)
+    (std::vector<eddic::ast::TemplateFunctionDeclaration>, Content->template_functions)
 )
 
 #endif
