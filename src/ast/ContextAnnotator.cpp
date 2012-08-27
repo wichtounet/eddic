@@ -52,7 +52,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_STANDARD_IMPORT()
         
         void operator()(ast::SourceFile& program){
-            currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
+            if(program.Content->context){
+                currentContext = globalContext = program.Content->context;
+            } else {
+                currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
+            }
 
             visit_each(*this, program.Content->blocks);
         }
