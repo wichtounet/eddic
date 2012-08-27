@@ -387,6 +387,17 @@ BOOST_AUTO_TEST_CASE( args ){
 
 BOOST_AUTO_TEST_SUITE_END()
 
+/* Template tests */ 
+
+BOOST_FIXTURE_TEST_SUITE(TemplateSuite, DeleteOutFixture)
+
+BOOST_AUTO_TEST_CASE( function_templates ){
+    assert_output_32("function_templates.eddi", "9|5.5000|9|99|9.8999|100|a|b|9|5.5000|a|9|9|a|a|");
+    assert_output_64("function_templates.eddi", "9|5.5000|9|99|9.9000|100|a|b|9|5.5000|a|9|9|a|a|");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 /* Verify that the compilation fails for invalid statements */
 
 BOOST_FIXTURE_TEST_SUITE(CompilationErrorsSuite, DeleteOutFixture)
