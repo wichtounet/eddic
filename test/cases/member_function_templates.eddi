@@ -1,0 +1,15 @@
+struct A {
+    int a;
+
+    template<type POD>
+    void print(POD a){
+        a = a + 1;
+
+        print(a);
+        print(a);
+    }
+}
+
+void main(){
+    
+}
