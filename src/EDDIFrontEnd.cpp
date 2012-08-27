@@ -143,9 +143,9 @@ void check_for_main(std::shared_ptr<GlobalContext> context){
 void mark_functions(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            if(ptr->Content->instantiated){
-                ptr->Content->instantiated = false;
+            if(ptr->Content->instantiated && ptr->Content->first){
                 ptr->Content->marked = false;
+                ptr->Content->first = false;
             } else {
                 ptr->Content->marked = true;
             }

@@ -98,7 +98,11 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!declaration.Content->marked){
+            auto marked = declaration.Content->marked;
+            auto instantiated = declaration.Content->instantiated;
+            auto first = declaration.Content->first;
+
+            if((!marked && !instantiated) || (marked && instantiated && first)){
                 auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
                 auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
 
@@ -116,15 +120,17 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 }
 
                 signature->struct_ = declaration.Content->struct_name;
+                signature->context = declaration.Content->context;
 
                 declaration.Content->mangledName = signature->mangledName = mangle(signature);
 
                 if(context->exists(signature->mangledName)){
-                    throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
+                    throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
                 }
 
+                std::cout << "Add function " << signature->mangledName << std::endl;
+
                 context->addFunction(signature);
-                context->getFunction(signature->mangledName)->context = declaration.Content->context;
             }
         }
 

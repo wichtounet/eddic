@@ -31,8 +31,10 @@ struct ASTFunctionDeclaration {
     
     std::string mangledName;
     std::string struct_name;
+
     bool instantiated = false;  /*!< True indicates that this function has been instantiated from a template */
     bool marked = false;        /*!< Indicates that the function has been treated by the front end */
+    bool first = true;
 
     Position position;
     Type returnType;
