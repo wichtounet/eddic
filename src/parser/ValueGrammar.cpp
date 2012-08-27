@@ -257,8 +257,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.identifier
         >>  -(
                     qi::omit[lexer.less]
-                >>  -(lexer.identifier >> *(lexer.comma > lexer.identifier))
-                >>  qi::omit[lexer.greater]
+                >>  lexer.identifier >> *(lexer.comma > lexer.identifier)
+                >   qi::omit[lexer.greater]
             )
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
@@ -275,7 +275,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  -(
                     qi::omit[lexer.less]
                 >>  -(lexer.identifier >> *(lexer.comma > lexer.identifier))
-                >>  qi::omit[lexer.greater]
+                >   qi::omit[lexer.greater]
             )
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
