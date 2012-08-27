@@ -13,5 +13,5 @@ struct A {
 void main(){
    A value;
    value.print<int>(5);
-   value.print<string("5");
+   value.print<string>("5");
 }
