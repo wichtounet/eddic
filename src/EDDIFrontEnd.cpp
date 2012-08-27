@@ -66,11 +66,13 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         //Apply some cleaning transformations
         ast::cleanAST(program);
 
+        ast::TemplateEngine template_engine;
+
         while(still_unmarked_functions(program)){
             std::cout << "Phase " << std::endl;
 
             //Instantiate templates
-            ast::template_instantiation(program);
+            template_engine.template_instantiation(program);
 
             //Define contexts and structures
             ast::defineContexts(program);

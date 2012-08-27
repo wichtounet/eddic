@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <unordered_map>
-
 #include "variant.hpp"
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
@@ -20,9 +18,6 @@
 #include "ast/ASTVisitor.hpp"
 
 using namespace eddic;
-
-typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> TemplateMap;
-typedef std::unordered_multimap<std::string, std::vector<std::string>> InstantiationMap;
 
 namespace {
 
@@ -684,25 +679,26 @@ struct InstructionAdaptor : public boost::static_visitor<void> {
 };
 
 struct Collector : public boost::static_visitor<> {
-    TemplateMap& template_functions; 
+    ast::TemplateEngine::TemplateMap& template_functions; 
 
-    Collector(TemplateMap& template_functions) : template_functions(template_functions) {}
+    Collector(ast::TemplateEngine::TemplateMap& template_functions) : template_functions(template_functions) {}
 
     AUTO_RECURSE_PROGRAM()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
-        template_functions.insert(TemplateMap::value_type(declaration.Content->functionName, declaration));
+        template_functions.insert(ast::TemplateEngine::TemplateMap::value_type(declaration.Content->functionName, declaration));
     }
 
     AUTO_IGNORE_OTHERS()
 };
 
 struct Instantiator : public boost::static_visitor<> {
-    TemplateMap& template_functions;
-    InstantiationMap instantiations;
+    ast::TemplateEngine::TemplateMap& template_functions;
+    ast::TemplateEngine::InstantiationMap& instantiations;
     std::vector<ast::FunctionDeclaration> instantiated_functions;
 
-    Instantiator(TemplateMap& template_functions) : template_functions(template_functions) {}
+    Instantiator(ast::TemplateEngine::TemplateMap& template_functions, ast::TemplateEngine::InstantiationMap& instantiations) : 
+        template_functions(template_functions), instantiations(instantiations) {}
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()
@@ -817,7 +813,7 @@ struct Instantiator : public boost::static_visitor<> {
                         }
 
                         //Mark it as instantiated
-                        instantiations.insert(InstantiationMap::value_type(name, template_types));
+                        instantiations.insert(ast::TemplateEngine::InstantiationMap::value_type(name, template_types));
 
                         instantiated_functions.push_back(declaration);
                     }
@@ -843,16 +839,15 @@ struct Instantiator : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::template_instantiation(ast::SourceFile& program){
-    TemplateMap template_functions; 
-
+void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     Collector collector(template_functions);
     collector(program);
 
-    Instantiator instantiator(template_functions);
+    Instantiator instantiator(template_functions, template_instantiations);
     instantiator(program);
 
     for(auto& function : instantiator.instantiated_functions){
         program.Content->blocks.push_back(function);
     }
 }
+
