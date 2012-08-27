@@ -6,7 +6,7 @@ void main(){
     test<float, int>(9.9,100);
     test<string, string>("a","b");
 
-    deep_test<int, float, string>(9, 5.5, "as");
+    deep_test<int, float, string>(9, 5.5, "a");
 }
 
 template<type T>
