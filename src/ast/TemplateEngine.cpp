@@ -794,11 +794,14 @@ struct Instantiator : public boost::static_visitor<> {
                     if(!is_instantiated(name, template_types)){
                         //Instantiate the function 
                         ast::FunctionDeclaration declaration;
-                        declaration.Content->instantiated = true;
                         declaration.Content->returnType = function_declaration.Content->returnType;
                         declaration.Content->functionName = function_declaration.Content->functionName;
                         declaration.Content->parameters = copy(function_declaration.Content->parameters);
                         declaration.Content->instructions = copy(function_declaration.Content->instructions);
+                        
+                        //For handling later
+                        declaration.Content->instantiated = true;
+                        declaration.Content->marked = true;
 
                         std::unordered_map<std::string, std::string> replacements;
 

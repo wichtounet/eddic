@@ -44,6 +44,8 @@
 using namespace eddic;
 
 void check_for_main(std::shared_ptr<GlobalContext> context);
+void mark_functions(ast::SourceFile& program);
+bool still_unmarked_functions(ast::SourceFile& program);
 
 std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
     parser::SpiritParser parser;
@@ -64,35 +66,42 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         //Apply some cleaning transformations
         ast::cleanAST(program);
 
-        //Instantiate templates
-        ast::template_instantiation(program);
-        
-        //Define contexts and structures
-        ast::defineContexts(program);
-        ast::defineStructures(program);
+        while(still_unmarked_functions(program)){
+            std::cout << "Phase " << std::endl;
 
-        //Add default values
-        ast::defineDefaultValues(program);
+            //Instantiate templates
+            ast::template_instantiation(program);
 
-        //Fill the string pool
-        ast::checkStrings(program, *pool);
+            //Define contexts and structures
+            ast::defineContexts(program);
+            ast::defineStructures(program);
 
-        //Add some more informations to the AST
-        ast::defineMemberFunctions(program);
-        ast::defineVariables(program);
-        ast::defineFunctions(program);
+            //Add default values
+            ast::defineDefaultValues(program);
 
-        //Static analysis
-        ast::checkTypes(program);
+            //Fill the string pool
+            ast::checkStrings(program, *pool);
 
-        //Check for warnings
-        ast::checkForWarnings(program);
+            //Add some more informations to the AST
+            ast::defineMemberFunctions(program);
+            ast::defineVariables(program);
+            ast::defineFunctions(program);
 
-        //Check that there is a main in the program
-        check_for_main(program.Content->context);
+            //Static analysis
+            ast::checkTypes(program);
 
-        //Transform the AST
-        ast::transformAST(program);
+            //Check for warnings
+            ast::checkForWarnings(program);
+
+            //Check that there is a main in the program
+            check_for_main(program.Content->context);
+
+            //Transform the AST
+            ast::transformAST(program);
+
+            //Mark all the functions as transformed
+            mark_functions(program);
+        }
 
         //Optimize the AST
         ast::optimizeAST(program, *pool);
@@ -132,4 +141,29 @@ void check_for_main(std::shared_ptr<GlobalContext> context){
     } else {
         throw SemanticalException("The program does not contain a valid main function"); 
     }
+}
+
+void mark_functions(ast::SourceFile& program){
+    for(auto& block : program.Content->blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            if(ptr->Content->instantiated){
+                ptr->Content->instantiated = false;
+                ptr->Content->marked = false;
+            } else {
+                ptr->Content->marked = true;
+            }
+        }
+    }
+}
+
+bool still_unmarked_functions(ast::SourceFile& program){
+    for(auto& block : program.Content->blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            if(!ptr->Content->marked){
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

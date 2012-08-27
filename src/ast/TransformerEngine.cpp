@@ -626,7 +626,9 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::FunctionDeclaration& declaration){
-        transform(declaration.Content->instructions);
+        if(!declaration.Content->marked){
+            transform(declaration.Content->instructions);
+        }
     }
     
     void operator()(ast::Constructor& declaration){

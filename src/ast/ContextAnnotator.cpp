@@ -90,11 +90,13 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& function){
-            currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+            if(!function.Content->marked){
+                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
 
-            visit_each(*this, function.Content->instructions);
-    
-            currentContext = currentContext->parent();
+                visit_each(*this, function.Content->instructions);
+
+                currentContext = currentContext->parent();
+            }
         }
             
         template<typename Loop>            

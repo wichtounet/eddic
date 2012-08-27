@@ -172,6 +172,13 @@ void operator()(ast::FunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\
 }
 
+#define AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()\
+void operator()(ast::FunctionDeclaration& function){\
+    if(!function.Content->marked){\
+        visit_each(*this, function.Content->instructions);\
+    }\
+}
+
 #define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
 void operator()(ast::TemplateFunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\

@@ -69,10 +69,12 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            declaration.Content->struct_name = parent_struct;
+            if(!declaration.Content->marked){
+                declaration.Content->struct_name = parent_struct;
 
-            if(!parent_struct.empty()){
-                add_this(declaration);
+                if(!parent_struct.empty()){
+                    add_this(declaration);
+                }
             }
         }
 
@@ -96,32 +98,34 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
-            auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
+            if(!declaration.Content->marked){
+                auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
+                auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
 
-            if(return_type->is_array()){
-                throw SemanticalException("Cannot return array from function", declaration.Content->position);
+                if(return_type->is_array()){
+                    throw SemanticalException("Cannot return array from function", declaration.Content->position);
+                }
+
+                if(return_type->is_custom_type()){
+                    throw SemanticalException("Cannot return struct from function", declaration.Content->position);
+                }
+
+                for(auto& param : declaration.Content->parameters){
+                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+                }
+
+                signature->struct_ = declaration.Content->struct_name;
+
+                declaration.Content->mangledName = signature->mangledName = mangle(signature);
+
+                if(context->exists(signature->mangledName)){
+                    throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
+                }
+
+                context->addFunction(signature);
+                context->getFunction(signature->mangledName)->context = declaration.Content->context;
             }
-
-            if(return_type->is_custom_type()){
-                throw SemanticalException("Cannot return struct from function", declaration.Content->position);
-            }
-
-            for(auto& param : declaration.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-            }
-            
-            signature->struct_ = declaration.Content->struct_name;
-            
-            declaration.Content->mangledName = signature->mangledName = mangle(signature);
-
-            if(context->exists(signature->mangledName)){
-                throw SemanticalException("The function " + signature->name + " has already been defined", declaration.Content->position);
-            }
-
-            context->addFunction(signature);
-            context->getFunction(signature->mangledName)->context = declaration.Content->context;
         }
 
         void operator()(ast::Constructor& constructor){
