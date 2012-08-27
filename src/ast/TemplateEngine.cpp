@@ -796,10 +796,11 @@ struct Instantiator : public boost::static_visitor<> {
                         declaration.Content->functionName = function_declaration.Content->functionName;
                         declaration.Content->parameters = copy(function_declaration.Content->parameters);
                         declaration.Content->instructions = copy(function_declaration.Content->instructions);
-                        
+
+                        //TODO Will be useful when the template engine will be able to compute template parameters
                         //For handling later
-                        declaration.Content->instantiated = true;
-                        declaration.Content->marked = true;
+                        //declaration.Content->instantiated = true;
+                        //declaration.Content->marked = true;
 
                         std::unordered_map<std::string, std::string> replacements;
 
@@ -819,6 +820,8 @@ struct Instantiator : public boost::static_visitor<> {
 
                         instantiated_functions.push_back(declaration);
                     }
+                    
+                    functionCall.Content->resolved = true;
 
                     return;
                 }
@@ -849,6 +852,7 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     instantiator(program);
 
     for(auto& function : instantiator.instantiated_functions){
+        std::cout << "add function to program" << std::endl;
         program.Content->blocks.push_back(function);
     }
 }
