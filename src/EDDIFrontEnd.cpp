@@ -93,15 +93,15 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Check for warnings
             ast::checkForWarnings(program);
 
-            //Check that there is a main in the program
-            check_for_main(program.Content->context);
-
             //Transform the AST
             ast::transformAST(program);
 
             //Mark all the functions as transformed
             mark_functions(program);
         }
+
+        //Check that there is a main in the program
+        check_for_main(program.Content->context);
 
         //Optimize the AST
         ast::optimizeAST(program, *pool);
