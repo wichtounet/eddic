@@ -24,6 +24,8 @@ namespace ast {
  */
 typedef boost::variant<SimpleType, ArrayType, PointerType> Type;
 
+std::string to_string(const ast::Type& type);
+
 } //end of ast
 
 } //end of eddic

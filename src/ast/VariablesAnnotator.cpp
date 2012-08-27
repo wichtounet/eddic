@@ -25,6 +25,7 @@
 #include "ast/GetConstantValue.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/VariableType.hpp"
 
 using namespace eddic;
 
@@ -99,7 +100,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
             if(!is_valid(parameter.parameterType)){
-                throw SemanticalException("Invalid parameter type", declaration.Content->position);
+                throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
             }
 
             auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
