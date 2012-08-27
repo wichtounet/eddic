@@ -788,8 +788,11 @@ struct Instantiator : public boost::static_visitor<> {
                 
                 if(source_types.size() == template_types.size()){
                     if(!is_instantiated(name, template_types)){
+                        std::cout << "Instantiate " << function_declaration.Content->functionName << std::endl;
+
                         //Instantiate the function 
                         ast::FunctionDeclaration declaration;
+                        declaration.Content->position = function_declaration.Content->position;
                         declaration.Content->returnType = function_declaration.Content->returnType;
                         declaration.Content->functionName = function_declaration.Content->functionName;
                         declaration.Content->parameters = copy(function_declaration.Content->parameters);
