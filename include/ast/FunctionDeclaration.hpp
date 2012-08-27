@@ -34,7 +34,6 @@ struct ASTFunctionDeclaration {
 
     bool instantiated = false;  /*!< True indicates that this function has been instantiated from a template */
     bool marked = false;        /*!< Indicates that the function has been treated by the front end */
-    bool first = true;
 
     Position position;
     Type returnType;
