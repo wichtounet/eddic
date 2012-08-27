@@ -68,10 +68,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         ast::TemplateEngine template_engine;
 
-        while(still_unmarked_functions(program)){
-            //Instantiate templates
-            template_engine.template_instantiation(program);
-
+        do {
             //Define contexts and structures
             ast::defineContexts(program);
             ast::defineStructures(program);
@@ -98,7 +95,10 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
             //Mark all the functions as transformed
             mark_functions(program);
-        }
+            
+            //Instantiate templates
+            template_engine.template_instantiation(program);
+        } while(still_unmarked_functions(program));
 
         //Check that there is a main in the program
         check_for_main(program.Content->context);
@@ -143,12 +143,7 @@ void check_for_main(std::shared_ptr<GlobalContext> context){
 void mark_functions(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            if(ptr->Content->instantiated && ptr->Content->first){
-                ptr->Content->marked = false;
-                ptr->Content->first = false;
-            } else {
-                ptr->Content->marked = true;
-            }
+            ptr->Content->marked = true;
         }
     }
 }

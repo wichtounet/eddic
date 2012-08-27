@@ -98,11 +98,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            auto marked = declaration.Content->marked;
-            auto instantiated = declaration.Content->instantiated;
-            auto first = declaration.Content->first;
-
-            if((!marked && !instantiated) || (marked && instantiated && first)){
+            if(!declaration.Content->marked){
                 auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
                 auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
 
@@ -208,11 +204,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!declaration.Content->marked){
-                currentFunction = context->getFunction(declaration.Content->mangledName);
+            currentFunction = context->getFunction(declaration.Content->mangledName);
 
-                visit_each(*this, declaration.Content->instructions);
-            }
+            visit_each(*this, declaration.Content->instructions);
         }
         
         void permute(std::vector<std::vector<std::shared_ptr<const Type>>>& perms, std::vector<std::shared_ptr<const Type>>& types, int start){

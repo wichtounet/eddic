@@ -157,6 +157,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
 
     bool operator()(ast::FunctionDeclaration& declaration){
         if(context->referenceCount(declaration.Content->mangledName) <= 0){
+            std::cout << "functin " << declaration.Content->mangledName << " is not used" << std::endl;
             return true;
         }
 

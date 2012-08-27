@@ -104,7 +104,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
             }
 
             auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-            
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
 

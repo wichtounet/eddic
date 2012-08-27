@@ -702,7 +702,7 @@ struct Instantiator : public boost::static_visitor<> {
         template_functions(template_functions), instantiations(instantiations) {}
 
     AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()
+    AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_GLOBAL_DECLARATION() 
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_FOREACH()
@@ -799,7 +799,7 @@ struct Instantiator : public boost::static_visitor<> {
 
                         //For handling later
                         declaration.Content->instantiated = true;
-                        declaration.Content->marked = true;
+                        declaration.Content->marked = false;
 
                         std::unordered_map<std::string, std::string> replacements;
 
