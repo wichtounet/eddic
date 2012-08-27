@@ -128,8 +128,6 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                     throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
                 }
 
-                std::cout << "Add function " << signature->mangledName << std::endl;
-
                 context->addFunction(signature);
             }
         }
