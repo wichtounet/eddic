@@ -21,6 +21,7 @@ void operator()(ast::Struct& struct_){\
     visit_each_non_variant(*this, struct_.Content->constructors);\
     visit_each_non_variant(*this, struct_.Content->destructors);\
     visit_each_non_variant(*this, struct_.Content->functions);\
+    visit_each_non_variant(*this, struct_.Content->template_functions);\
 }
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
