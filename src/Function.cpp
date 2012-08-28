@@ -9,6 +9,8 @@
 #include "Function.hpp"
 #include "Type.hpp"
 
+#include "mtac/Utils.hpp"
+
 using namespace eddic;
 
 ParameterType::ParameterType(const std::string& n, std::shared_ptr<const Type> t) : name(n), paramType(t) {}
@@ -26,19 +28,38 @@ std::shared_ptr<const Type> Function::getParameterType(const std::string& name){
 }
 
 unsigned int Function::getParameterPositionByType(const std::string& name){
-    unsigned int position = 0;
-
     auto type = getParameterType(name);
-    
-    for(auto& p : parameters){
-        if(p.paramType == type){
-            ++position; 
-        }
 
-        if(p.name == name){
-            return position;
+    if(mtac::is_single_int_register(type)){
+        unsigned int position = 0;
+        
+        for(auto& p : parameters){
+            if(mtac::is_single_int_register(p.paramType)){
+                ++position; 
+            }
+
+            if(p.name == name){
+                return position;
+            }
         }
+        
+        ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
+    } else if(mtac::is_single_float_register(type)){
+        unsigned int position = 0;
+        
+        for(auto& p : parameters){
+            if(mtac::is_single_float_register(p.paramType)){
+                ++position; 
+            }
+
+            if(p.name == name){
+                return position;
+            }
+        }
+        
+        ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
+    } else {
+        return 0;
     }
 
-    ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
 }
