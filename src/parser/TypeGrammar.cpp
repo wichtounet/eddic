@@ -31,8 +31,16 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             const_
         >>  lexer.identifier;
 
+    template_type %=
+            lexer.identifier
+        >>  qi::omit[lexer.less]
+        >>  type
+        >>  *(lexer.comma >> type)
+        >>  qi::omit[lexer.greater];                
+
     type %=
-            array_type
+            template_type
+        |   array_type
         |   pointer_type
         |   simple_type;
 }
