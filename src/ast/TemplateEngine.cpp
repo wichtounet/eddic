@@ -752,9 +752,9 @@ struct Instantiator : public boost::static_visitor<> {
     }
 
     bool is_instantiated(const std::string& name, const std::vector<std::string>& template_types){
-        auto it = instantiations.find(name);
+        auto it = instantiations[""].find(name);
 
-        while(it != instantiations.end()){
+        while(it != instantiations[""].end()){
             auto types = it->second;
            
             if(are_equals(types, template_types)){
@@ -831,7 +831,7 @@ struct Instantiator : public boost::static_visitor<> {
                         }
 
                         //Mark it as instantiated
-                        instantiations.insert(ast::TemplateEngine::InstantiationMap::value_type(name, template_types));
+                        instantiations[""].insert(ast::TemplateEngine::LocalInstantiationMap::value_type(name, template_types));
 
                         instantiated_functions.push_back(declaration);
                     }
