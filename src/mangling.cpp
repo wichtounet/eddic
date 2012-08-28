@@ -174,11 +174,11 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<std
     return ss.str();
 }
 
-std::string eddic::unmangle(std::string mangled){
+std::string get_name_from_length(const std::string& mangled, unsigned int& i){
     std::ostringstream length;
     int digits = 0;
 
-    for(unsigned int i = 2; i < mangled.length(); ++i){
+    for(; i < mangled.length(); ++i){
         if(isdigit(mangled[i])){
             length << mangled[i];
             ++digits;
@@ -189,27 +189,45 @@ std::string eddic::unmangle(std::string mangled){
 
     int l = toNumber<unsigned int>(length.str());
 
-    std::ostringstream function;
+    std::ostringstream name;
     
-    for(int i = 0; i < l; ++i){
-        function << mangled[i + 2 + digits];
+    auto start = i;
+    for(; i < start + l; ++i){
+        name << mangled[i];
+    }
+
+    return name.str();
+}
+
+std::string eddic::unmangle(std::string mangled){
+    unsigned int o = 2;
+
+    std::ostringstream function;
+
+    function << get_name_from_length(mangled, o);
+
+    //Test if inside a struct
+    if(isdigit(mangled[o])){
+        function << "::";
+        
+        function << get_name_from_length(mangled, o);
     }
 
     function << '(';
 
-    for(unsigned int i = 2 + l + digits; i < mangled.length(); ++i){
-        char current = mangled[i];
+    for(; o < mangled.length(); ++o){
+        char current = mangled[o];
 
         bool array = false;
         if(current == 'A'){
             array = true;
-            current = mangled[++i];
+            current = mangled[++o];
         }
         
         bool pointer = false;
         if(current == 'P'){
             pointer = true;
-            current = mangled[++i];
+            current = mangled[++o];
         }   
 
         if(current == 'I'){
@@ -232,7 +250,7 @@ std::string eddic::unmangle(std::string mangled){
             function << "&";
         }
 
-        if(i < mangled.length() - 1){
+        if(o < mangled.length() - 1){
             function << ", ";
         }
     }
