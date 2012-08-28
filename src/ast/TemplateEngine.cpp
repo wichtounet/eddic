@@ -12,6 +12,7 @@
 #include "iterators.hpp"
 #include "Type.hpp"
 #include "SemanticalException.hpp"
+#include "FunctionContext.hpp"
 
 #include "ast/TemplateEngine.hpp"
 #include "ast/SourceFile.hpp"
@@ -714,11 +715,12 @@ struct Instantiator : public boost::static_visitor<> {
     ast::TemplateEngine::InstantiationMap& instantiations;
     std::vector<ast::FunctionDeclaration> instantiated_functions;
 
+    std::shared_ptr<FunctionContext> current_context;
+
     Instantiator(ast::TemplateEngine::TemplateMap& template_functions, ast::TemplateEngine::InstantiationMap& instantiations) : 
         template_functions(template_functions), instantiations(instantiations) {}
 
     AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_FUNCTION_DECLARATION()
     AUTO_RECURSE_GLOBAL_DECLARATION() 
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_FOREACH()
@@ -736,6 +738,12 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
+
+    void operator()(ast::FunctionDeclaration& function){
+        current_context = function.Content->context;
+
+        visit_each(*this, function.Content->instructions);
+    }
 
     bool are_equals(const std::vector<std::string>& template_types, const std::vector<std::string>& types){
         if(types.size() != template_types.size()){
@@ -785,66 +793,73 @@ struct Instantiator : public boost::static_visitor<> {
         return destination;
     }
 
+    template<typename FunctionCall>
+    void handle_template(FunctionCall& functionCall, const std::string context){
+        auto template_types = functionCall.Content->template_types;
+
+        std::string name = functionCall.Content->functionName;
+
+        auto it = template_functions[context].find(name);
+
+        if(it == template_functions[context].end()){
+            throw SemanticalException("There are no template function named " + name, functionCall.Content->position);
+        }
+
+        while(it != template_functions[context].end()){
+            auto function_declaration = it->second;
+            auto source_types = function_declaration.Content->template_types;
+
+            if(source_types.size() == template_types.size()){
+                if(!is_instantiated(name, template_types)){
+                    //Instantiate the function 
+                    ast::FunctionDeclaration declaration;
+                    declaration.Content->position = function_declaration.Content->position;
+                    declaration.Content->returnType = function_declaration.Content->returnType;
+                    declaration.Content->functionName = function_declaration.Content->functionName;
+                    declaration.Content->parameters = copy(function_declaration.Content->parameters);
+                    declaration.Content->instructions = copy(function_declaration.Content->instructions);
+
+                    //For handling later
+                    declaration.Content->instantiated = true;
+                    declaration.Content->marked = false;
+
+                    std::unordered_map<std::string, std::string> replacements;
+
+                    for(std::size_t i = 0; i < template_types.size(); ++i){
+                        replacements[source_types[i]] = template_types[i];    
+                    }
+
+                    InstructionAdaptor adaptor(replacements);
+                    visit_each(adaptor, declaration.Content->instructions);
+
+                    for(auto& param : declaration.Content->parameters){
+                        param.parameterType = adaptor.replace(param.parameterType);
+                    }
+
+                    //Mark it as instantiated
+                    instantiations[context].insert(ast::TemplateEngine::LocalInstantiationMap::value_type(name, template_types));
+
+                    instantiated_functions.push_back(declaration);
+                }
+
+                functionCall.Content->resolved = true;
+
+                return;
+            }
+
+            ++it;
+        }
+
+        throw SemanticalException("No matching function " + name, functionCall.Content->position);
+    }
+
     void operator()(ast::FunctionCall& functionCall){
         visit_each(*this, functionCall.Content->values);
         
         auto template_types = functionCall.Content->template_types;
 
         if(!template_types.empty()){
-            std::string name = functionCall.Content->functionName;
-            
-            auto it = template_functions[""].find(name);
-
-            if(it == template_functions[""].end()){
-                throw SemanticalException("There are no template function named " + name, functionCall.Content->position);
-            }
-
-            while(it != template_functions[""].end()){
-                auto function_declaration = it->second;
-                auto source_types = function_declaration.Content->template_types;
-                
-                if(source_types.size() == template_types.size()){
-                    if(!is_instantiated(name, template_types)){
-                        //Instantiate the function 
-                        ast::FunctionDeclaration declaration;
-                        declaration.Content->position = function_declaration.Content->position;
-                        declaration.Content->returnType = function_declaration.Content->returnType;
-                        declaration.Content->functionName = function_declaration.Content->functionName;
-                        declaration.Content->parameters = copy(function_declaration.Content->parameters);
-                        declaration.Content->instructions = copy(function_declaration.Content->instructions);
-
-                        //For handling later
-                        declaration.Content->instantiated = true;
-                        declaration.Content->marked = false;
-
-                        std::unordered_map<std::string, std::string> replacements;
-
-                        for(std::size_t i = 0; i < template_types.size(); ++i){
-                            replacements[source_types[i]] = template_types[i];    
-                        }
-                        
-                        InstructionAdaptor adaptor(replacements);
-                        visit_each(adaptor, declaration.Content->instructions);
-                        
-                        for(auto& param : declaration.Content->parameters){
-                            param.parameterType = adaptor.replace(param.parameterType);
-                        }
-
-                        //Mark it as instantiated
-                        instantiations[""].insert(ast::TemplateEngine::LocalInstantiationMap::value_type(name, template_types));
-
-                        instantiated_functions.push_back(declaration);
-                    }
-                    
-                    functionCall.Content->resolved = true;
-
-                    return;
-                }
-
-                ++it;
-            }
-            
-            throw SemanticalException("No matching function " + name, functionCall.Content->position);
+            handle_template(functionCall, "");
         }
     }
 
@@ -854,7 +869,12 @@ struct Instantiator : public boost::static_visitor<> {
         auto template_types = functionCall.Content->template_types;
 
         if(!template_types.empty()){
+            auto object_name = functionCall.Content->object_name;
+            auto object_var = current_context->getVariable(object_name);
+            auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
+            auto context = object_type->type();
 
+            handle_template(functionCall, context);            
         }
     }
 
