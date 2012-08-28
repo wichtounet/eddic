@@ -54,6 +54,10 @@ bool Type::is_const() const {
     return false;
 }
 
+bool Type::is_template() const {
+    return false;
+}
+
 unsigned int Type::size() const {
     ASSERT_PATH_NOT_TAKEN("Not specialized type");
 }
@@ -68,6 +72,10 @@ std::string Type::type() const {
 
 std::shared_ptr<const Type> Type::data_type() const {
     ASSERT_PATH_NOT_TAKEN("No data type");
+}
+        
+std::vector<std::shared_ptr<const Type>> Type::template_types() const {
+    ASSERT_PATH_NOT_TAKEN("No template types");
 }
 
 BaseType Type::base() const {
@@ -85,7 +93,11 @@ std::shared_ptr<const Type> Type::non_const() const {
     
     if(is_custom_type()){
         return shared_from_this();
-    } 
+    }
+    
+    if(is_template()){
+        return shared_from_this();
+    }
     
     if(is_standard_type()){
         return std::make_shared<StandardType>(base(), false);
@@ -111,6 +123,23 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
 
     if(lhs->is_standard_type()){
         return rhs->is_standard_type() && lhs->base() == rhs->base();
+    }
+
+    if(lhs->is_template()){
+        if(rhs->is_template() && lhs->data_type() == rhs->data_type()){
+            auto lhs_template_types = lhs->template_types();
+            auto rhs_template_types = rhs->template_types();
+
+            if(lhs_template_types.size() == rhs_template_types.size()){
+                for(unsigned int i = 0; i < lhs_template_types.size(); ++i){
+                    if(lhs_template_types[i] != rhs_template_types[i]){
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
     }
 
     return false;
