@@ -2,11 +2,13 @@ struct A {
     int a;
 
     template<type POD>
-    void print(POD a){
+    void print(POD value){
         a = a + 1;
 
         print(a);
-        print(a);
+        print("|");
+        print(value);
+        print("|");
     }
 }
 
