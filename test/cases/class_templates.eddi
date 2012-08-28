@@ -4,5 +4,5 @@ struct node {
 }
 
 void main(){
-    
+   node<int> first_node;
 }
