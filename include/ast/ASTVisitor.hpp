@@ -24,6 +24,14 @@ void operator()(ast::Struct& struct_){\
     visit_each_non_variant(*this, struct_.Content->template_functions);\
 }
 
+#define AUTO_RECURSE_TEMPLATE_STRUCT()\
+void operator()(ast::TemplateStruct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->constructors);\
+    visit_each_non_variant(*this, struct_.Content->destructors);\
+    visit_each_non_variant(*this, struct_.Content->functions);\
+    visit_each_non_variant(*this, struct_.Content->template_functions);\
+}
+
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
     visit(*this, binaryCondition.Content->lhs);\
@@ -222,6 +230,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_FOREACH_IN_LOOP() void operator()(ast::ForeachIn&){}
 #define AUTO_IGNORE_FUNCTION_CALLS() void operator()(ast::FunctionCall&){}
 #define AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION() void operator()(ast::TemplateFunctionDeclaration&){}
+#define AUTO_IGNORE_TEMPLATE_STRUCT() void operator()(ast::TemplateStruct&){}
 #define AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION() void operator()(ast::GlobalArrayDeclaration&){}
 #define AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION() void operator()(ast::GlobalVariableDeclaration&){}
 #define AUTO_IGNORE_IMPORT() void operator()(ast::Import&){}

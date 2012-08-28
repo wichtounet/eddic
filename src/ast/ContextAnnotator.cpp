@@ -39,6 +39,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
 
+        AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()

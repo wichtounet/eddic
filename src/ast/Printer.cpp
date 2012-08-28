@@ -80,6 +80,17 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "include <" << import.header << ">" << std::endl;
     }
     
+    void operator()(ast::TemplateStruct& declaration) const {
+        std::cout << indent() << "Template Struct <";
+
+        for(auto type : declaration.Content->template_types){
+            std::cout << type << ", ";
+        }
+
+        std::cout << ">" << declaration.Content->name << std::endl; 
+        std::cout << std::endl;
+    }
+    
     void operator()(ast::TemplateFunctionDeclaration& declaration) const {
         std::cout << indent() << "Template Function <";
 

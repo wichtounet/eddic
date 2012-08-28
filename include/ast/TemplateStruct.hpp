@@ -5,11 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_STRUCT_H
-#define AST_STRUCT_H
+#ifndef AST_TEMPLATE_STRUCT_H
+#define AST_TEMPLATE_STRUCT_H
 
 #include <vector>
-#include <string>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -25,11 +24,11 @@ namespace eddic {
 
 namespace ast {
 
-struct ASTStruct {
+struct ASTTemplateStruct {
     bool marked = false;        /*!< Indicates that the structure has been handled by the front end */
-    bool instantiated = false;  /*!< Indicates that the structure has been instantiated from a template */
-
+    
     Position position;
+    std::vector<std::string> template_types;
     std::string name;
     std::vector<MemberDeclaration> members;
     std::vector<Constructor> constructors;
@@ -40,7 +39,7 @@ struct ASTStruct {
     mutable long references = 0;
 };
 
-typedef Deferred<ASTStruct> Struct;
+typedef Deferred<ASTTemplateStruct> TemplateStruct;
 
 } //end of ast
 
@@ -48,8 +47,9 @@ typedef Deferred<ASTStruct> Struct;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Struct,
+    eddic::ast::TemplateStruct,
     (eddic::ast::Position, Content->position)
+    (std::vector<std::string>, Content->template_types)
     (std::string, Content->name)
     (std::vector<eddic::ast::MemberDeclaration>, Content->members)
     (std::vector<eddic::ast::Constructor>, Content->constructors)
