@@ -1,0 +1,8 @@
+template<type T>
+struct node {
+    T value;
+}
+
+void main(){
+    
+}
