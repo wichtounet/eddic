@@ -760,10 +760,10 @@ struct Instantiator : public boost::static_visitor<> {
         return true;
     }
 
-    bool is_instantiated(const std::string& name, const std::vector<std::string>& template_types){
-        auto it = instantiations[""].find(name);
+    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<std::string>& template_types){
+        auto it = instantiations[context].find(name);
 
-        while(it != instantiations[""].end()){
+        while(it != instantiations[context].end()){
             auto types = it->second;
            
             if(are_equals(types, template_types)){
@@ -811,7 +811,7 @@ struct Instantiator : public boost::static_visitor<> {
             auto source_types = function_declaration.Content->template_types;
 
             if(source_types.size() == template_types.size()){
-                if(!is_instantiated(name, template_types)){
+                if(!is_instantiated(name, context, template_types)){
                     //Instantiate the function 
                     ast::FunctionDeclaration declaration;
                     declaration.Content->position = function_declaration.Content->position;
