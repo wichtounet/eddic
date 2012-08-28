@@ -713,7 +713,8 @@ struct Collector : public boost::static_visitor<> {
 struct Instantiator : public boost::static_visitor<> {
     ast::TemplateEngine::TemplateMap& template_functions;
     ast::TemplateEngine::InstantiationMap& instantiations;
-    std::vector<ast::FunctionDeclaration> instantiated_functions;
+    
+    std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> instantiated_functions;
 
     std::shared_ptr<FunctionContext> current_context;
 
@@ -839,7 +840,7 @@ struct Instantiator : public boost::static_visitor<> {
                     //Mark it as instantiated
                     instantiations[context].insert(ast::TemplateEngine::LocalInstantiationMap::value_type(name, template_types));
 
-                    instantiated_functions.push_back(declaration);
+                    instantiated_functions[context].push_back(declaration);
                 }
 
                 functionCall.Content->resolved = true;
@@ -890,7 +891,7 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     Instantiator instantiator(template_functions, template_instantiations);
     instantiator(program);
 
-    for(auto& function : instantiator.instantiated_functions){
+    for(auto& function : instantiator.instantiated_functions[""]){
         program.Content->blocks.push_back(function);
     }
 }
