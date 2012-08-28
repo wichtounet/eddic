@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <stringstream>
+
 #include "assert.hpp"
 
 #include "ast/VariableType.hpp"
@@ -18,6 +20,18 @@ std::string ast::to_string(const ast::Type& type){
         return ptr->type + "[]";
     } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
         return ptr->type + "*";
+    } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+        std::stringstream printed;
+        
+        printed << ptr->type << "<";
+
+        for(auto& tmp_type : ptr->template_types){
+            printed << tmp_type << ",";
+        }
+
+        printed << ">";
+
+        return printed.str();
     } else {
         ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }

@@ -13,6 +13,7 @@
 #include "ast/SimpleType.hpp"
 #include "ast/ArrayType.hpp"
 #include "ast/PointerType.hpp"
+#include "ast/TemplateType.hpp"
 
 namespace eddic {
 
@@ -22,7 +23,7 @@ namespace ast {
  * \typedef Type
  * \brief A type in the AST.  
  */
-typedef boost::variant<SimpleType, ArrayType, PointerType> Type;
+typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
 
 std::string to_string(const ast::Type& type);
 
