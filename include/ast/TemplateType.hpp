@@ -17,13 +17,20 @@ namespace eddic {
 
 namespace ast {
 
+class SimpleType;
+class TemplateType;
+class PointerType;
+class ArrayType;
+
+typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
+
 /*!
  * \class TemplateType
  * \brief A template type in the AST.  
  */
 struct TemplateType {
     std::string type;
-    std::vector<std::string> template_types;
+    std::vector<Type> template_types;
 };
 
 } //end of ast
@@ -34,7 +41,7 @@ struct TemplateType {
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::TemplateType, 
     (std::string, type)
-    (std::vector<std::string>, template_types)
+    (std::vector<eddic::ast::Type>, template_types)
 )
 
 #endif

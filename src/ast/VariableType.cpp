@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <stringstream>
+#include <sstream>
 
 #include "assert.hpp"
 
@@ -26,7 +26,7 @@ std::string ast::to_string(const ast::Type& type){
         printed << ptr->type << "<";
 
         for(auto& tmp_type : ptr->template_types){
-            printed << tmp_type << ",";
+            printed << to_string(tmp_type) << ",";
         }
 
         printed << ">";

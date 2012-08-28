@@ -221,6 +221,30 @@ bool PointerType::is_pointer() const {
 unsigned int PointerType::size() const {
     return INT->size();
 }
+        
+/* Implementation of TemplateType  */
+
+TemplateType::TemplateType(std::shared_ptr<const Type> main_type, std::vector<std::shared_ptr<const Type>> sub_types) : main_type(main_type), sub_types(sub_types) {}
+
+std::shared_ptr<const Type> TemplateType::data_type() const {
+    return main_type;
+}
+
+std::vector<std::shared_ptr<const Type>> TemplateType::template_types() const {
+    return sub_types;
+}
+
+bool TemplateType::is_template() const {
+    return true;
+}
+
+unsigned int TemplateType::size() const {
+    //TODO
+    
+    //mangle the type with templates
+    
+    return INT->size();
+}
 
 /* Implementation of factories  */
 
@@ -285,6 +309,10 @@ std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> da
 
 std::shared_ptr<const Type> eddic::new_pointer_type(std::shared_ptr<const Type> data_type){
     return std::make_shared<PointerType>(data_type);
+}
+
+std::shared_ptr<const Type> eddic::new_template_type(std::shared_ptr<const Type> data_type, std::vector<std::shared_ptr<const Type>> template_types){
+    return std::make_shared<TemplateType>(data_type, template_types);
 }
 
 bool eddic::is_standard_type(const std::string& type){
