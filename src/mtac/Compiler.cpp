@@ -996,6 +996,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         //No code is generated for these nodes
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
+        AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
