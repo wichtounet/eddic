@@ -12,9 +12,9 @@ struct A {
     }
 
     template<type POD, type PODD>
-    void deep_test(POD value){
-        this.test<POD>(value);
-        this.test<PODD>(value);
+    void deep_test(POD first, PODD second){
+        this.test<POD>(first);
+        this.test<PODD>(second);
     }
 }
 
