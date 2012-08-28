@@ -144,6 +144,10 @@ void mark_functions(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             ptr->Content->marked = true;
+        } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            for(auto& function : ptr->Content->functions){
+               function.Content->marked = true; 
+            }
         }
     }
 }
@@ -153,6 +157,12 @@ bool still_unmarked_functions(ast::SourceFile& program){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             if(!ptr->Content->marked){
                 return true;
+            }
+        } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            for(auto& function : ptr->Content->functions){
+                if(!function.Content->marked){
+                    return true;
+                }
             }
         }
     }

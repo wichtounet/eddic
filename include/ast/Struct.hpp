@@ -25,6 +25,8 @@ namespace eddic {
 namespace ast {
 
 struct ASTStruct {
+    bool marked = false;        /*!< Indicates that the structure has been handled by the front end */
+
     Position position;
     std::string name;
     std::vector<MemberDeclaration> members;
