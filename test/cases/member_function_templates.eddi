@@ -3,9 +3,9 @@ struct A {
 
     template<type POD>
     void print(POD value){
-        a = a + 1;
+        this.a = this.a + 1;
 
-        print(a);
+        print(this.a);
         print("|");
         print(value);
         print("|");
