@@ -891,8 +891,27 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     Instantiator instantiator(template_functions, template_instantiations);
     instantiator(program);
 
-    for(auto& function : instantiator.instantiated_functions[""]){
-        program.Content->blocks.push_back(function);
+    for(auto& context_pair : instantiator.instantiated_functions){
+        auto context = context_pair.first;
+        auto instantiated_functions = context_pair.second;
+
+        if(context.empty()){
+            for(auto& function : instantiated_functions){
+                program.Content->blocks.push_back(function);
+            }
+        } else {
+            for(auto& block : program.Content->blocks){
+                if(auto* struct_type = boost::get<ast::Struct>(&block)){
+                    if(struct_type->Content->name == context){
+                        for(auto& function : instantiated_functions){
+                            struct_type->Content->functions.push_back(function);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 

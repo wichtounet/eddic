@@ -278,38 +278,40 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::MemberFunctionCall& functionCall){
-            auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-            auto type = var->type();
-            auto struct_type = type->is_pointer() ? type->data_type()->type() : type->type();
+            if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
+                auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+                auto type = var->type();
+                auto struct_type = type->is_pointer() ? type->data_type()->type() : type->type();
 
-            visit_each(*this, functionCall.Content->values);
-            
-            std::string name = functionCall.Content->function_name;
+                visit_each(*this, functionCall.Content->values);
 
-            auto types = get_types(functionCall);
+                std::string name = functionCall.Content->function_name;
 
-            std::string mangled = mangle(name, types, struct_type);
+                auto types = get_types(functionCall);
 
-            //If the function does not exists, try implicit conversions to pointers
-            if(!context->exists(mangled)){
-                auto perms = permutations(types);
+                std::string mangled = mangle(name, types, struct_type);
 
-                for(auto& perm : perms){
-                    mangled = mangle(name, perm, struct_type);
+                //If the function does not exists, try implicit conversions to pointers
+                if(!context->exists(mangled)){
+                    auto perms = permutations(types);
 
-                    if(context->exists(mangled)){
-                        break;
+                    for(auto& perm : perms){
+                        mangled = mangle(name, perm, struct_type);
+
+                        if(context->exists(mangled)){
+                            break;
+                        }
                     }
                 }
-            }
-            
-            if(context->exists(mangled)){
-                context->addReference(mangled);
 
-                functionCall.Content->mangled_name = mangled;
-                functionCall.Content->function = context->getFunction(mangled);
-            } else {
-                throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+                if(context->exists(mangled)){
+                    context->addReference(mangled);
+
+                    functionCall.Content->mangled_name = mangled;
+                    functionCall.Content->function = context->getFunction(mangled);
+                } else {
+                    throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+                }
             }
         }
 
