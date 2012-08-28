@@ -1406,7 +1406,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     std::shared_ptr<eddic::Function> definition;
     if(functionCall.Content->mangled_name.empty()){
-        definition = function->context->global()->getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+        definition = function->context->global()->getFunction(mangle(functionCall.Content->function_name, functionCall.Content->values));
     } else if(functionCall.Content->function){
         definition = functionCall.Content->function;
     } else {

@@ -247,7 +247,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
                 visit_each(*this, functionCall.Content->values);
 
-                std::string name = functionCall.Content->functionName;
+                std::string name = functionCall.Content->function_name;
 
                 auto types = get_types(functionCall);
 

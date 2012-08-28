@@ -238,7 +238,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        std::cout << indent() << "FunctionCall " << call.Content->functionName << std::endl; 
+        std::cout << indent() << "FunctionCall " << call.Content->function_name << std::endl; 
         print_each_sub(call.Content->values);
     }
 

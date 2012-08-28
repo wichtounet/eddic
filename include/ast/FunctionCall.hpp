@@ -35,7 +35,7 @@ struct ASTFunctionCall {
     bool resolved = false; /*!< If true, the template has been instantiated, only relevant when the template_types is not empty */
 
     Position position;
-    std::string functionName;
+    std::string function_name;
     std::vector<std::string> template_types;
     std::vector<Value> values;
 
@@ -56,7 +56,7 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionCall, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->functionName)
+    (std::string, Content->function_name)
     (std::vector<std::string>, Content->template_types)
     (std::vector<eddic::ast::Value>, Content->values)
 )

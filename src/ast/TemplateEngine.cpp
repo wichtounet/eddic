@@ -148,7 +148,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->function = source.Content->function;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
-        copy.Content->functionName = source.Content->functionName;
+        copy.Content->function_name = source.Content->function_name;
         copy.Content->template_types = source.Content->template_types;
 
         for(auto& value : source.Content->values){
@@ -304,7 +304,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->template_types = source.Content->template_types;
-        copy.Content->functionName = source.Content->functionName;
+        copy.Content->function_name = source.Content->function_name;
         
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(ValueCopier(), value));
@@ -797,7 +797,7 @@ struct Instantiator : public boost::static_visitor<> {
     void handle_template(FunctionCall& functionCall, const std::string context){
         auto template_types = functionCall.Content->template_types;
 
-        std::string name = functionCall.Content->functionName;
+        std::string name = functionCall.Content->function_name;
 
         auto it = template_functions[context].find(name);
 
