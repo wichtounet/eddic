@@ -166,6 +166,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->position = source.Content->position;
         copy.Content->object_name = source.Content->object_name;
         copy.Content->function_name = source.Content->function_name;
+        copy.Content->template_types = source.Content->template_types;
 
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(*this, value));
@@ -286,6 +287,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->position = source.Content->position;
         copy.Content->object_name = source.Content->object_name;
         copy.Content->function_name = source.Content->function_name;
+        copy.Content->template_types = source.Content->template_types;
         
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(ValueCopier(), value));
@@ -629,17 +631,22 @@ struct InstructionAdaptor : public boost::static_visitor<> {
         visit(*this, assignment.Content->value);
     }
 
-    void operator()(const ast::MemberFunctionCall& source) const {
-        visit_each(*this, source.Content->values);
-    }
-    
-    void operator()(const ast::FunctionCall& source) const {
+    template<typename FunctionCall>
+    void adapt_function_call(const FunctionCall& source) const {
         for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
             auto a = source.Content->template_types[i];
             source.Content->template_types[i] = replace(source.Content->template_types[i]);
         }
 
         visit_each(*this, source.Content->values);
+    }
+
+    void operator()(const ast::MemberFunctionCall& source) const {
+        adapt_function_call(source);
+    }
+    
+    void operator()(const ast::FunctionCall& source) const {
+        adapt_function_call(source);
     }
     
     void operator()(const ast::VariableDeclaration& source) const {
@@ -681,13 +688,22 @@ struct InstructionAdaptor : public boost::static_visitor<> {
 
 struct Collector : public boost::static_visitor<> {
     ast::TemplateEngine::TemplateMap& template_functions; 
+    std::string parent_struct;
 
     Collector(ast::TemplateEngine::TemplateMap& template_functions) : template_functions(template_functions) {}
 
     AUTO_RECURSE_PROGRAM()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
-        template_functions.insert(ast::TemplateEngine::TemplateMap::value_type(declaration.Content->functionName, declaration));
+        template_functions[parent_struct].insert(ast::TemplateEngine::LocalTemplateMap::value_type(declaration.Content->functionName, declaration));
+    }
+        
+    void operator()(ast::Struct& struct_){
+        parent_struct = struct_.Content->name;
+
+        visit_each_non_variant(*this, struct_.Content->template_functions);
+
+        parent_struct = "";
     }
 
     AUTO_IGNORE_OTHERS()
@@ -777,13 +793,13 @@ struct Instantiator : public boost::static_visitor<> {
         if(!template_types.empty()){
             std::string name = functionCall.Content->functionName;
             
-            auto it = template_functions.find(name);
+            auto it = template_functions[""].find(name);
 
-            if(it == template_functions.end()){
+            if(it == template_functions[""].end()){
                 throw SemanticalException("There are no template function named " + name, functionCall.Content->position);
             }
 
-            while(it != template_functions.end()){
+            while(it != template_functions[""].end()){
                 auto function_declaration = it->second;
                 auto source_types = function_declaration.Content->template_types;
                 
@@ -835,7 +851,11 @@ struct Instantiator : public boost::static_visitor<> {
     void operator()(ast::MemberFunctionCall& functionCall){
         visit_each(*this, functionCall.Content->values);
 
-        //TODO
+        auto template_types = functionCall.Content->template_types;
+
+        if(!template_types.empty()){
+
+        }
     }
 
     AUTO_IGNORE_OTHERS()

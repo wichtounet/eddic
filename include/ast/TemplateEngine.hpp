@@ -20,7 +20,8 @@ namespace ast {
 
 class TemplateEngine {
     public:
-        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> TemplateMap;
+        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> LocalTemplateMap;
+        typedef std::unordered_map<std::string, LocalTemplateMap> TemplateMap;
         typedef std::unordered_multimap<std::string, std::vector<std::string>> InstantiationMap;
 
         void template_instantiation(SourceFile& program);
