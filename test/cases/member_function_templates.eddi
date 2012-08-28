@@ -1,0 +1,27 @@
+struct A {
+    int a;
+
+    template<type POD>
+    void test(POD value){
+        this.a = this.a + 1;
+
+        print(this.a);
+        print("|");
+        print(value);
+        print("|");
+    }
+
+    template<type POD, type PODD>
+    void deep_test(POD first, PODD second){
+        this.test<POD>(first);
+        this.test<PODD>(second);
+    }
+}
+
+void main(){
+   A value;
+   value.test<int>(5);
+   value.test<string>("5");
+   value.deep_test<float, string>(5.5, "5");
+   value.deep_test<int, bool>(100, true);
+}

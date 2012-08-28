@@ -19,6 +19,20 @@
 #include <boost/test/detail/unit_test_parameters.hpp>
 
 /*
+ * \def TEST_APPLICATION(file) 
+ * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode. 
+ */
+#define TEST_APPLICATION(file)\
+BOOST_AUTO_TEST_CASE( applications_##file ){\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O0");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O1");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O2");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O0");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O1");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O2");\
+}
+
+/*
  * \def TEST_SAMPLE(file) 
  * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode. 
  */
@@ -115,6 +129,14 @@ void assert_output(const std::string& file, const std::string& output){
 /* Configure a global fixture for the configuration */
 
 BOOST_GLOBAL_FIXTURE ( ConfigFixture  )
+
+/* Compiles all the applications */
+
+BOOST_FIXTURE_TEST_SUITE( ApplicationsSuite, DeleteOutFixture )
+
+TEST_APPLICATION(hangman)
+
+BOOST_AUTO_TEST_SUITE_END()
 
 /* Compiles all the samples */
 
@@ -383,6 +405,21 @@ BOOST_AUTO_TEST_CASE( args ){
     test_args("--64", "--O0");
     test_args("--64", "--O1");
     test_args("--64", "--O2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+/* Template tests */ 
+
+BOOST_FIXTURE_TEST_SUITE(TemplateSuite, DeleteOutFixture)
+
+BOOST_AUTO_TEST_CASE( function_templates ){
+    assert_output_32("function_templates.eddi", "9|5.5000|9|99|9.8999|100|a|b|9|5.5000|a|9|9|a|a|");
+    assert_output_64("function_templates.eddi", "9|5.5000|9|99|9.9000|100|a|b|9|5.5000|a|9|9|a|a|");
+}
+
+BOOST_AUTO_TEST_CASE( member_function_templates ){
+    assert_output("member_function_templates.eddi", "1|5|2|5|3|5.5000|4|5|5|100|6|1|");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

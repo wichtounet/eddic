@@ -13,9 +13,13 @@
 namespace eddic {
 
 namespace ast {
-    struct ASTSourceFile;
 
-    typedef Deferred<ASTSourceFile> SourceFile;
+struct ASTSourceFile;
+typedef Deferred<ASTSourceFile> SourceFile;
+
+struct ASTTemplateFunctionDeclaration;
+typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
+
 } //end of ast
 
 } //end of eddic

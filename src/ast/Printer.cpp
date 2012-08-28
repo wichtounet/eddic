@@ -17,18 +17,6 @@
 using namespace eddic;
 
 namespace {
-    
-std::string toStringType(ast::Type type){
-    if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-        return ptr->type;
-    } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-        return ptr->type + "[]";
-    } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-        return ptr->type + "*";
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Unhandled type");
-    }
-}
 
 struct DebugVisitor : public boost::static_visitor<> {
     mutable int level = 0;
@@ -91,6 +79,17 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::StandardImport& import) const {
         std::cout << indent() << "include <" << import.header << ">" << std::endl;
     }
+    
+    void operator()(ast::TemplateFunctionDeclaration& declaration) const {
+        std::cout << indent() << "Template Function <";
+
+        for(auto type : declaration.Content->template_types){
+            std::cout << type << ", ";
+        }
+
+        std::cout << ">" << declaration.Content->functionName << std::endl; 
+        std::cout << std::endl;
+    }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
         std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
@@ -103,6 +102,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         level--;
         
         print_each_sub(declaration.Content->instructions, "Instructions:");
+        std::cout << std::endl;
     }
     
     void operator()(ast::Constructor& declaration) const {
@@ -136,7 +136,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::MemberDeclaration& declaration) const {
-        std::cout << indent() << toStringType(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
+        std::cout << indent() << ast::to_string(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
     }
 
     void operator()(ast::GlobalVariableDeclaration&) const {
@@ -148,7 +148,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::New& new_) const {
-        std::cout << indent() << "New " << toStringType(new_.Content->type) << std::endl; 
+        std::cout << indent() << "New " << ast::to_string(new_.Content->type) << std::endl; 
         print_each_sub(new_.Content->values, "Value");
     }
     
@@ -238,7 +238,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        std::cout << indent() << "FunctionCall " << call.Content->functionName << std::endl; 
+        std::cout << indent() << "FunctionCall " << call.Content->function_name << std::endl; 
         print_each_sub(call.Content->values);
     }
 
@@ -378,7 +378,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Cast& cast) const {
         std::cout << indent() << "Cast " << std::endl; 
-        std::cout << indent() << "\tType: " << toStringType(cast.Content->type) << std::endl;
+        std::cout << indent() << "\tType: " << ast::to_string(cast.Content->type) << std::endl;
         print_sub(cast.Content->value);
     }
 };

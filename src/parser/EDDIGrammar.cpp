@@ -219,6 +219,29 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             type 
         >>  lexer.identifier;
     
+    template_function %= 
+            qi::position(position_begin)
+        >>  lexer.template_
+        >>  qi::omit[lexer.less]
+        >>  +(
+                    lexer.type
+               >>   lexer.identifier
+               >>  *(
+                            lexer.comma
+                       >>   lexer.type
+                       >>   lexer.identifier
+                   )
+            )
+        >>  qi::omit[lexer.greater]
+        >>  type 
+        >>  lexer.identifier
+        >>  lexer.left_parenth
+        >>  -( arg >> *( lexer.comma > arg))
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
+        >>  lexer.right_brace;
+    
     function %= 
             qi::position(position_begin)
         >>  type 
@@ -265,6 +288,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  *(constructor)
         >>  *(destructor)
         >>  *(function)
+        >>  *(template_function)
         >>  lexer.right_brace;
 
     standardImport %= 
@@ -282,6 +306,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  qi::position(position_begin)
         >>  *(
                     function 
+                |   template_function 
                 |   globalDeclaration 
                 |   globalArrayDeclaration 
                 |   standardImport 
@@ -292,5 +317,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     /* Debugging rules */
     DEBUG_RULE(program);
     DEBUG_RULE(function);
+    DEBUG_RULE(template_function);
     DEBUG_RULE(instruction);
 }

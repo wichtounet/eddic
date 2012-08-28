@@ -399,7 +399,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(auto* ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
             auto member_value = *ptr;
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+            if(boost::get<ast::VariableValue>(&member_value.Content->location)){
                 return dereference_sub(member_value);
             } 
         } else if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
@@ -755,7 +755,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
                 unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
-            } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+            } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
                 ASSERT_PATH_NOT_TAKEN("Unhandled location");
             }
         } else if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
@@ -995,6 +995,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_STRUCT()
 
         //No code is generated for these nodes
+        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
@@ -1405,7 +1406,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     std::shared_ptr<eddic::Function> definition;
     if(functionCall.Content->mangled_name.empty()){
-        definition = function->context->global()->getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+        definition = function->context->global()->getFunction(mangle(functionCall.Content->function_name, functionCall.Content->values));
     } else if(functionCall.Content->function){
         definition = functionCall.Content->function;
     } else {
@@ -1505,7 +1506,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
     if(auto* ptr = boost::get<ast::MemberValue>(&operation.Content->left_value)){
         auto member_value = *ptr;
 
-        if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+        if(boost::get<ast::VariableValue>(&member_value.Content->location)){
             ASSERT_PATH_NOT_TAKEN("Unhandled location type");
         } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *left_ptr;

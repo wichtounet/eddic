@@ -25,6 +25,7 @@
 #include "ast/GetConstantValue.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/VariableType.hpp"
 
 using namespace eddic;
 
@@ -52,6 +53,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PREFIX()
     AUTO_RECURSE_SUFFIX()
 
+    AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
@@ -73,12 +75,35 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, struct_.Content->functions);
     }
 
+    bool is_valid(const std::string& type){
+        if(is_standard_type(type)){
+            return true;
+        }
+
+        return context->struct_exists(type);
+    }
+
+    bool is_valid(const ast::Type& type){
+        if(auto* ptr = boost::get<ast::ArrayType>(&type)){
+            return is_valid(ptr->type);
+        } else if(auto* ptr = boost::get<ast::SimpleType>(&type)){
+            return is_valid(ptr->type);
+        } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
+            return is_valid(ptr->type);
+        }
+
+        ASSERT_PATH_NOT_TAKEN("Invalid type");
+    }
+
     template<typename Function>
     void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
+            if(!is_valid(parameter.parameterType)){
+                throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
+            }
+
             auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-            
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
 
@@ -86,7 +111,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
    
     void operator()(ast::FunctionDeclaration& declaration){
-        visit_function(declaration);
+        if(!declaration.Content->marked){
+            visit_function(declaration);
+        }
     }
 
     void operator()(ast::Constructor& constructor){

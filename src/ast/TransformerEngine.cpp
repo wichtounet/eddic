@@ -17,6 +17,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
@@ -410,6 +412,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
+    AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_FOREACH()
@@ -556,6 +559,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_STRUCT()
     
+    AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
     AUTO_IGNORE_MEMBER_VALUE()
@@ -622,7 +626,9 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::FunctionDeclaration& declaration){
-        transform(declaration.Content->instructions);
+        if(!declaration.Content->marked){
+            transform(declaration.Content->instructions);
+        }
     }
     
     void operator()(ast::Constructor& declaration){
@@ -670,6 +676,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
         transform(while_.Content->instructions);
     }
 };
+
+} //end of anonymous namespace
 
 void ast::cleanAST(ast::SourceFile& program){
     CleanerVisitor visitor;

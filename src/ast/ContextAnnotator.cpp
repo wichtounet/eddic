@@ -39,6 +39,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
 
+        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
         AUTO_IGNORE_NULL()
@@ -51,7 +52,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_STANDARD_IMPORT()
         
         void operator()(ast::SourceFile& program){
-            currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
+            if(program.Content->context){
+                currentContext = globalContext = program.Content->context;
+            } else {
+                currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
+            }
 
             visit_each(*this, program.Content->blocks);
         }
@@ -89,11 +94,13 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& function){
-            currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+            if(!function.Content->marked){
+                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
 
-            visit_each(*this, function.Content->instructions);
-    
-            currentContext = currentContext->parent();
+                visit_each(*this, function.Content->instructions);
+
+                currentContext = currentContext->parent();
+            }
         }
             
         template<typename Loop>            
