@@ -17,6 +17,9 @@ namespace ast {
 struct ASTSourceFile;
 typedef Deferred<ASTSourceFile> SourceFile;
 
+struct ASTTemplateStruct;
+typedef Deferred<ASTTemplateStruct> TemplateStruct;
+
 struct ASTTemplateFunctionDeclaration;
 typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
 
