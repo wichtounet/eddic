@@ -691,12 +691,17 @@ struct Instantiator : public boost::static_visitor<> {
     ast::TemplateEngine::FunctionTemplateMap& function_templates;
     ast::TemplateEngine::FunctionInstantiationMap& function_template_instantiations;
     
+    ast::TemplateEngine::ClassTemplateMap& class_templates;
+    ast::TemplateEngine::ClassInstantiationMap& class_template_instantiations;
+    
     std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
+    std::vector<ast::FunctionDeclaration> class_template_instantiated;
 
     std::shared_ptr<FunctionContext> current_context;
 
-    Instantiator(ast::TemplateEngine::FunctionTemplateMap& function_templates, ast::TemplateEngine::FunctionInstantiationMap& function_template_instantiations) : 
-        function_templates(function_templates), function_template_instantiations(function_template_instantiations) {}
+    Instantiator(ast::TemplateEngine& engine) : 
+        function_templates(engine.function_templates), function_template_instantiations(engine.function_template_instantiations),
+        class_templates(engine.class_templates), class_template_instantiations(engine.class_template_instantiations) {}
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -716,9 +721,18 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
 
-    void check_type(const ast::Type& type){
+    void check_type(ast::Type& type, ast::Position& position){
         if(auto* ptr = boost::get<ast::TemplateType>(&type)){
             std::cout << "Detected template type usage" << std::endl;
+        
+            auto template_types = ptr->template_types;
+            auto name = ptr->type;
+
+            auto it = class_templates.find(name);
+
+            if(it == class_templates.end()){
+                throw SemanticalException("There are no class template named " + name, position);
+            }
 
 
             ptr->resolved = true;
@@ -729,7 +743,7 @@ struct Instantiator : public boost::static_visitor<> {
         current_context = function.Content->context;
 
         for(auto& param_type : function.Content->parameters){
-            check_type(param_type.parameterType);
+            check_type(param_type.parameterType, function.Content->position);
         }
 
         visit_each(*this, function.Content->instructions);
@@ -741,13 +755,13 @@ struct Instantiator : public boost::static_visitor<> {
     }
 
     void operator()(const ast::VariableDeclaration& declaration){
-        check_type(declaration.Content->variableType);
+        check_type(declaration.Content->variableType, declaration.Content->position);
 
         visit_optional(*this, declaration.Content->value);
     }
 
     void operator()(const ast::StructDeclaration& declaration){
-        check_type(declaration.Content->variableType);
+        check_type(declaration.Content->variableType, declaration.Content->position);
 
         visit_each(*this, declaration.Content->values);
     }
@@ -907,7 +921,7 @@ struct Collector : public boost::static_visitor<> {
     }
     
     void operator()(ast::TemplateStruct& template_struct){
-        class_templates[parent_struct].insert(ast::TemplateEngine::LocalClassTemplateMap::value_type(template_struct.Content->name, template_struct)); 
+        class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(template_struct.Content->name, template_struct)); 
     }
         
     void operator()(ast::Struct& struct_){
@@ -927,7 +941,7 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     Collector collector(function_templates, class_templates);
     collector(program);
 
-    Instantiator instantiator(function_templates, function_template_instantiations);
+    Instantiator instantiator(*this);
     instantiator(program);
 
     for(auto& context_pair : instantiator.function_template_instantiated){
