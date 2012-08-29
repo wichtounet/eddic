@@ -33,10 +33,10 @@ class CheckerVisitor : public boost::static_visitor<> {
         CheckerVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
 
         AUTO_RECURSE_PROGRAM()
-        AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()
+        AUTO_RECURSE_UNMARKED_STRUCT()
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
-        AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_SIMPLE_LOOPS()

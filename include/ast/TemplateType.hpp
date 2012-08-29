@@ -31,6 +31,7 @@ typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
 struct TemplateType {
     std::string type;
     std::vector<Type> template_types;
+    bool resolved = false;
 };
 
 } //end of ast

@@ -16,13 +16,7 @@ void operator()(ast::SourceFile& program){\
     visit_each(*this, program.Content->blocks);\
 }
 
-#define AUTO_RECURSE_STRUCT()\
-void operator()(ast::Struct& struct_){\
-    visit_each_non_variant(*this, struct_.Content->constructors);\
-    visit_each_non_variant(*this, struct_.Content->destructors);\
-    visit_each_non_variant(*this, struct_.Content->functions);\
-    visit_each_non_variant(*this, struct_.Content->template_functions);\
-}
+/* Structures */
 
 #define AUTO_RECURSE_TEMPLATE_STRUCT()\
 void operator()(ast::TemplateStruct& struct_){\
@@ -31,6 +25,45 @@ void operator()(ast::TemplateStruct& struct_){\
     visit_each_non_variant(*this, struct_.Content->functions);\
     visit_each_non_variant(*this, struct_.Content->template_functions);\
 }
+
+#define AUTO_RECURSE_UNMARKED_STRUCT()\
+void operator()(ast::Struct& struct_){\
+    if(!struct_.Content->marked){\
+        visit_each_non_variant(*this, struct_.Content->constructors);\
+        visit_each_non_variant(*this, struct_.Content->destructors);\
+        visit_each_non_variant(*this, struct_.Content->functions);\
+        visit_each_non_variant(*this, struct_.Content->template_functions);\
+    }\
+}
+
+#define AUTO_RECURSE_STRUCT()\
+void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->constructors);\
+    visit_each_non_variant(*this, struct_.Content->destructors);\
+    visit_each_non_variant(*this, struct_.Content->functions);\
+    visit_each_non_variant(*this, struct_.Content->template_functions);\
+}
+
+/* Functions */
+
+#define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
+void operator()(ast::TemplateFunctionDeclaration& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
+#define AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()\
+void operator()(ast::FunctionDeclaration& function){\
+    if(!function.Content->marked){\
+        visit_each(*this, function.Content->instructions);\
+    }\
+}
+
+#define AUTO_RECURSE_FUNCTION_DECLARATION()\
+void operator()(ast::FunctionDeclaration& function){\
+    visit_each(*this, function.Content->instructions);\
+}
+
+/* Instructions */
 
 #define AUTO_RECURSE_BINARY_CONDITION()\
 void operator()(ast::BinaryCondition& binaryCondition){\
@@ -174,23 +207,6 @@ void operator()(ast::SuffixOperation& operation){\
 #define AUTO_RECURSE_ARRAY_VALUES()\
 void operator()(ast::ArrayValue& array){\
     visit(*this, array.Content->indexValue);\
-}
-
-#define AUTO_RECURSE_FUNCTION_DECLARATION()\
-void operator()(ast::FunctionDeclaration& function){\
-    visit_each(*this, function.Content->instructions);\
-}
-
-#define AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()\
-void operator()(ast::FunctionDeclaration& function){\
-    if(!function.Content->marked){\
-        visit_each(*this, function.Content->instructions);\
-    }\
-}
-
-#define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
-void operator()(ast::TemplateFunctionDeclaration& function){\
-    visit_each(*this, function.Content->instructions);\
 }
 
 #define AUTO_RECURSE_CONSTRUCTOR()\

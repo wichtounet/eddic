@@ -21,6 +21,7 @@ namespace {
 
 struct SetDefaultValues : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
+    AUTO_RECURSE_UNMARKED_STRUCT()
     AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_FOREACH()

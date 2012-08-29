@@ -35,13 +35,15 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& struct_){
-            parent_struct = struct_.Content->name;
+            if(!struct_.Content->marked){
+                parent_struct = struct_.Content->name;
 
-            visit_each_non_variant(*this, struct_.Content->constructors);
-            visit_each_non_variant(*this, struct_.Content->destructors);
-            visit_each_non_variant(*this, struct_.Content->functions);
+                visit_each_non_variant(*this, struct_.Content->constructors);
+                visit_each_non_variant(*this, struct_.Content->destructors);
+                visit_each_non_variant(*this, struct_.Content->functions);
 
-            parent_struct = "";
+                parent_struct = "";
+            }
         }
 
         template<typename T>
@@ -89,7 +91,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         std::shared_ptr<GlobalContext> context;
 
     public:
-        AUTO_RECURSE_STRUCT()
+        AUTO_RECURSE_UNMARKED_STRUCT()
 
         void operator()(ast::SourceFile& program){
             context = program.Content->context;

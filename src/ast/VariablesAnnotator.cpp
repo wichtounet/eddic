@@ -84,6 +84,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
         return context->struct_exists(type);
     }
 
+    bool is_resolved(const ast::Type& type){
+        if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            return ptr->resolved;
+        }
+        
+        return true;
+    }
+
     bool is_valid(const ast::Type& type){
         if(auto* ptr = boost::get<ast::ArrayType>(&type)){
             return is_valid(ptr->type);
@@ -91,6 +99,18 @@ struct VariablesVisitor : public boost::static_visitor<> {
             return is_valid(ptr->type);
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
             return is_valid(ptr->type);
+        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            if(!is_valid(ptr->type)){
+                return false;
+            }
+
+            for(auto& template_type : ptr->template_types){
+                if(!is_valid(template_type)){
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         ASSERT_PATH_NOT_TAKEN("Invalid type");
@@ -100,6 +120,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
+            //if its not resolved, delay the resolution
+            if(!is_resolved(parameter.parameterType)){
+                return;
+            }
+
             if(!is_valid(parameter.parameterType)){
                 throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
             }
@@ -137,6 +162,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->variableType)){
+            return;
+        }
+
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
@@ -151,6 +181,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     template<typename ArrayDeclaration>
     void declare_array(ArrayDeclaration& declaration){
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->arrayType)){
+            return;
+        }
+
         if (declaration.Content->context->exists(declaration.Content->arrayName)) {
             throw SemanticalException("The Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
         }
@@ -226,6 +261,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::StructDeclaration& declaration){
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->variableType)){
+            return;
+        }
+
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
@@ -248,6 +288,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::VariableDeclaration& declaration){
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->variableType)){
+            return;
+        }
+
         if (declaration.Content->context->exists(declaration.Content->variableName)) {
             throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
         }
