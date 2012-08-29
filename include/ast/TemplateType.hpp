@@ -11,6 +11,10 @@
 #include <vector>
 #include <string>
 
+#include "variant.hpp"
+
+#include "ast/VariableType.hpp"
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
@@ -33,6 +37,8 @@ struct TemplateType {
     std::vector<Type> template_types;
     bool resolved = false;
 };
+
+bool operator==(const TemplateType& a, const TemplateType& b);
 
 } //end of ast
 

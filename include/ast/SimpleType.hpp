@@ -8,6 +8,8 @@
 #ifndef AST_SIMPLE_TYPE_H
 #define AST_SIMPLE_TYPE_H
 
+#include <string>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
@@ -22,6 +24,8 @@ struct SimpleType {
     bool const_;
     std::string type;
 };
+
+bool operator==(const SimpleType& a, const SimpleType& b);
 
 } //end of ast
 

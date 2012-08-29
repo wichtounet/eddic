@@ -8,6 +8,8 @@
 #ifndef AST_ARRAY_TYPE_H
 #define AST_ARRAY_TYPE_H
 
+#include <string>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
@@ -21,6 +23,8 @@ namespace ast {
 struct ArrayType {
     std::string type;
 };
+
+bool operator==(const ArrayType& a, const ArrayType& b);
 
 } //end of ast
 

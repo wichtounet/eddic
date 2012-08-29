@@ -8,6 +8,8 @@
 #ifndef AST_POINTER_TYPE_H
 #define AST_POINTER_TYPE_H
 
+#include <string>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {
@@ -21,6 +23,8 @@ namespace ast {
 struct PointerType {
     std::string type;
 };
+
+bool operator==(const PointerType& a, const PointerType& b);
 
 } //end of ast
 

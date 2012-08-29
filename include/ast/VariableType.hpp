@@ -13,11 +13,12 @@
 #include "ast/SimpleType.hpp"
 #include "ast/ArrayType.hpp"
 #include "ast/PointerType.hpp"
-#include "ast/TemplateType.hpp"
 
 namespace eddic {
 
 namespace ast {
+
+class TemplateType;
 
 /*!
  * \typedef Type
@@ -25,10 +26,14 @@ namespace ast {
  */
 typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
 
+bool operator!=(const Type& a, const Type& b);
+
 std::string to_string(const ast::Type& type);
 
 } //end of ast
 
 } //end of eddic
+
+#include "ast/TemplateType.hpp"
 
 #endif

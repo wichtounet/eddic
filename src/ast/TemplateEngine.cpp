@@ -7,6 +7,7 @@
 
 #include "variant.hpp"
 #include "assert.hpp"
+#include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "iterators.hpp"
@@ -721,23 +722,8 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
 
-    template<typename T>
-    bool are_equals(const std::vector<T>& template_types, const std::vector<T>& types){
-        if(types.size() != template_types.size()){
-            return false;
-        }
-
-        for(std::size_t i = 0; i < template_types.size(); ++i){
-            if(template_types[i] != types[i]){
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     template<typename Container, typename T>
-    bool is_instantiated(Container& container, const std::string& name, const std::vector<T>& template_types){
+    bool is_instantiated(const Container& container, const std::string& name, const std::vector<T>& template_types){
         auto it = container.find(name);
 
         while(it != container.end()){
