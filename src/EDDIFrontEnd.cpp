@@ -87,9 +87,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Static analysis
             ast::checkTypes(program);
 
-            //Check for warnings
-            ast::checkForWarnings(program);
-
             //Transform the AST
             ast::transformAST(program);
 
@@ -99,6 +96,9 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Instantiate templates
             template_engine.template_instantiation(program);
         } while(still_unmarked_functions(program));
+
+        //Check for warnings
+        ast::checkForWarnings(program);
 
         //Check that there is a main in the program
         check_for_main(program.Content->context);

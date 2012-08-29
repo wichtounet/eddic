@@ -39,13 +39,11 @@ struct Collector : public boost::static_visitor<> {
         AUTO_RECURSE_DESTRUCTOR()
 
         void operator()(ast::FunctionDeclaration& function){
-            if(!function.Content->marked){
-                for(auto& param : function.Content->parameters){
-                    positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
-                }
-
-                visit_each(*this, function.Content->instructions);
+            for(auto& param : function.Content->parameters){
+                positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
             }
+
+            visit_each(*this, function.Content->instructions);
         }
         
         void operator()(ast::Constructor& function){
