@@ -688,15 +688,15 @@ struct InstructionAdaptor : public boost::static_visitor<> {
 };
 
 struct Collector : public boost::static_visitor<> {
-    ast::TemplateEngine::TemplateMap& template_functions; 
+    ast::TemplateEngine::FunctionTemplateMap& function_templates;
     std::string parent_struct;
 
-    Collector(ast::TemplateEngine::TemplateMap& template_functions) : template_functions(template_functions) {}
+    Collector(ast::TemplateEngine::FunctionTemplateMap& function_templates) : function_templates(function_templates) {}
 
     AUTO_RECURSE_PROGRAM()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
-        template_functions[parent_struct].insert(ast::TemplateEngine::LocalTemplateMap::value_type(declaration.Content->functionName, declaration));
+        function_templates[parent_struct].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(declaration.Content->functionName, declaration));
     }
         
     void operator()(ast::Struct& struct_){
@@ -711,15 +711,15 @@ struct Collector : public boost::static_visitor<> {
 };
 
 struct Instantiator : public boost::static_visitor<> {
-    ast::TemplateEngine::TemplateMap& template_functions;
-    ast::TemplateEngine::InstantiationMap& instantiations;
+    ast::TemplateEngine::FunctionTemplateMap& function_templates;
+    ast::TemplateEngine::FunctionInstantiationMap& function_template_instantiations;
     
-    std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> instantiated_functions;
+    std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
 
     std::shared_ptr<FunctionContext> current_context;
 
-    Instantiator(ast::TemplateEngine::TemplateMap& template_functions, ast::TemplateEngine::InstantiationMap& instantiations) : 
-        template_functions(template_functions), instantiations(instantiations) {}
+    Instantiator(ast::TemplateEngine::FunctionTemplateMap& function_templates, ast::TemplateEngine::FunctionInstantiationMap& function_template_instantiations) : 
+        function_templates(function_templates), function_template_instantiations(function_template_instantiations) {}
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -761,9 +761,9 @@ struct Instantiator : public boost::static_visitor<> {
     }
 
     bool is_instantiated(const std::string& name, const std::string& context, const std::vector<std::string>& template_types){
-        auto it = instantiations[context].find(name);
+        auto it = function_template_instantiations[context].find(name);
 
-        while(it != instantiations[context].end()){
+        while(it != function_template_instantiations[context].end()){
             auto types = it->second;
            
             if(are_equals(types, template_types)){
@@ -800,13 +800,13 @@ struct Instantiator : public boost::static_visitor<> {
 
         std::string name = functionCall.Content->function_name;
 
-        auto it = template_functions[context].find(name);
+        auto it = function_templates[context].find(name);
 
-        if(it == template_functions[context].end()){
+        if(it == function_templates[context].end()){
             throw SemanticalException("There are no template function named " + name, functionCall.Content->position);
         }
 
-        while(it != template_functions[context].end()){
+        while(it != function_templates[context].end()){
             auto function_declaration = it->second;
             auto source_types = function_declaration.Content->template_types;
 
@@ -838,9 +838,9 @@ struct Instantiator : public boost::static_visitor<> {
                     }
 
                     //Mark it as instantiated
-                    instantiations[context].insert(ast::TemplateEngine::LocalInstantiationMap::value_type(name, template_types));
+                    function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
 
-                    instantiated_functions[context].push_back(declaration);
+                    function_template_instantiated[context].push_back(declaration);
                 }
 
                 functionCall.Content->resolved = true;
@@ -885,13 +885,13 @@ struct Instantiator : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
-    Collector collector(template_functions);
+    Collector collector(function_templates);
     collector(program);
 
-    Instantiator instantiator(template_functions, template_instantiations);
+    Instantiator instantiator(function_templates, function_template_instantiations);
     instantiator(program);
 
-    for(auto& context_pair : instantiator.instantiated_functions){
+    for(auto& context_pair : instantiator.function_template_instantiated){
         auto context = context_pair.first;
         auto instantiated_functions = context_pair.second;
 
@@ -914,4 +914,3 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
         }
     }
 }
-
