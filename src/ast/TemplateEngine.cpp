@@ -708,7 +708,6 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_COMPOSED_VALUES()
     AUTO_RECURSE_MEMBER_VALUE()
     AUTO_RECURSE_UNARY_VALUES()
-    AUTO_RECURSE_VARIABLE_OPERATIONS()
     AUTO_RECURSE_STRUCT()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
@@ -717,10 +716,38 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
 
+    void check_type(const ast::Type& type){
+        if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            //TODO
+            std::cout << "Detected template type usage" << std::endl;
+        }
+    }
+
     void operator()(ast::FunctionDeclaration& function){
         current_context = function.Content->context;
 
+        for(auto& param_type : function.Content->parameters){
+            check_type(param_type.parameterType);
+        }
+
         visit_each(*this, function.Content->instructions);
+    }
+
+    void operator()(ast::Assignment& assignment){
+        visit(*this, assignment.Content->left_value);
+        visit(*this, assignment.Content->value);
+    }
+
+    void operator()(ast::VariableDeclaration& declaration){
+        check_type(declaration.Content->variableType);
+
+        visit_optional(*this, declaration.Content->value);
+    }
+
+    void operator()(ast::StructDeclaration& declaration){
+        check_type(declaration.Content->variableType);
+
+        visit_each(*this, declaration.Content->values);
     }
 
     bool are_equals(const std::vector<std::string>& template_types, const std::vector<std::string>& types){
