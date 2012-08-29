@@ -718,12 +718,14 @@ struct Instantiator : public boost::static_visitor<> {
 
     void check_type(const ast::Type& type){
         if(auto* ptr = boost::get<ast::TemplateType>(&type)){
-            //TODO
             std::cout << "Detected template type usage" << std::endl;
+
+
+            ptr->resolved = true;
         }
     }
 
-    void operator()(ast::FunctionDeclaration& function){
+    void operator()(const ast::FunctionDeclaration& function){
         current_context = function.Content->context;
 
         for(auto& param_type : function.Content->parameters){
@@ -733,18 +735,18 @@ struct Instantiator : public boost::static_visitor<> {
         visit_each(*this, function.Content->instructions);
     }
 
-    void operator()(ast::Assignment& assignment){
+    void operator()(const ast::Assignment& assignment){
         visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
     }
 
-    void operator()(ast::VariableDeclaration& declaration){
+    void operator()(const ast::VariableDeclaration& declaration){
         check_type(declaration.Content->variableType);
 
         visit_optional(*this, declaration.Content->value);
     }
 
-    void operator()(ast::StructDeclaration& declaration){
+    void operator()(const ast::StructDeclaration& declaration){
         check_type(declaration.Content->variableType);
 
         visit_each(*this, declaration.Content->values);
@@ -883,7 +885,10 @@ struct Instantiator : public boost::static_visitor<> {
         }
     }
 
-    AUTO_IGNORE_OTHERS()
+    template<typename T> 
+    void operator()(const T&){
+        //Nothing to check
+    }
 };
 
 struct Collector : public boost::static_visitor<> {
