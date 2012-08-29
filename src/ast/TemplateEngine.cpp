@@ -721,10 +721,48 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
 
+    template<typename T>
+    bool are_equals(const std::vector<T>& template_types, const std::vector<T>& types){
+        if(types.size() != template_types.size()){
+            return false;
+        }
+
+        for(std::size_t i = 0; i < template_types.size(); ++i){
+            if(template_types[i] != types[i]){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    template<typename Container, typename T>
+    bool is_instantiated(Container& container, const std::string& name, const std::vector<T>& template_types){
+        auto it = container.find(name);
+
+        while(it != container.end()){
+            auto types = it->second;
+           
+            if(are_equals(types, template_types)){
+                return true;
+            }
+
+            ++it;
+        }
+
+        return false;
+    }
+
+    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<std::string>& template_types){
+        return is_instantiated(function_template_instantiations[context], name, template_types);
+    }
+
+    bool is_class_instantiated(const std::string& name, const std::vector<ast::Type>& template_types){
+        return is_instantiated(class_template_instantiations, name, template_types);
+    }
+
     void check_type(ast::Type& type, ast::Position& position){
         if(auto* ptr = boost::get<ast::TemplateType>(&type)){
-            std::cout << "Detected template type usage" << std::endl;
-        
             auto template_types = ptr->template_types;
             auto name = ptr->type;
 
@@ -733,9 +771,21 @@ struct Instantiator : public boost::static_visitor<> {
             if(it == class_templates.end()){
                 throw SemanticalException("There are no class template named " + name, position);
             }
+            
+            while(it != class_templates.end()){
+                auto struct_declaration = it->second;
+                auto source_types = struct_declaration.Content->template_types;
 
+                if(source_types.size() == template_types.size()){
+                    if(!is_class_instantiated(name, template_types)){
+                        std::cout << "Instantiate " << name << std::endl;
+                    }
+                    
+                    ptr->resolved = true;
 
-            ptr->resolved = true;
+                    return;
+                }
+            }
         }
     }
 
@@ -764,36 +814,6 @@ struct Instantiator : public boost::static_visitor<> {
         check_type(declaration.Content->variableType, declaration.Content->position);
 
         visit_each(*this, declaration.Content->values);
-    }
-
-    bool are_equals(const std::vector<std::string>& template_types, const std::vector<std::string>& types){
-        if(types.size() != template_types.size()){
-            return false;
-        }
-
-        for(std::size_t i = 0; i < template_types.size(); ++i){
-            if(template_types[i] != types[i]){
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<std::string>& template_types){
-        auto it = function_template_instantiations[context].find(name);
-
-        while(it != function_template_instantiations[context].end()){
-            auto types = it->second;
-           
-            if(are_equals(types, template_types)){
-                return true;
-            }
-
-            ++it;
-        }
-
-        return false;
     }
 
     std::vector<ast::FunctionParameter> copy(const std::vector<ast::FunctionParameter>& source){

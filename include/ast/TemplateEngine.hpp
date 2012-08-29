@@ -27,7 +27,7 @@ class TemplateEngine {
         typedef std::unordered_map<std::string, LocalFunctionInstantiationMap> FunctionInstantiationMap;
 
         typedef std::unordered_multimap<std::string, ast::TemplateStruct> ClassTemplateMap;
-        typedef std::unordered_multimap<std::string, std::vector<std::string>> ClassInstantiationMap;
+        typedef std::unordered_multimap<std::string, std::vector<ast::Type>> ClassInstantiationMap;
 
         void template_instantiation(SourceFile& program);
     
