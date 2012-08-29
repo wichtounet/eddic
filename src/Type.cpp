@@ -224,9 +224,9 @@ unsigned int PointerType::size() const {
         
 /* Implementation of TemplateType  */
 
-TemplateType::TemplateType(std::shared_ptr<const Type> main_type, std::vector<std::shared_ptr<const Type>> sub_types) : main_type(main_type), sub_types(sub_types) {}
+TemplateType::TemplateType(std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types) : main_type(main_type), sub_types(sub_types) {}
 
-std::shared_ptr<const Type> TemplateType::data_type() const {
+std::string TemplateType::type() const {
     return main_type;
 }
 
@@ -311,7 +311,7 @@ std::shared_ptr<const Type> eddic::new_pointer_type(std::shared_ptr<const Type> 
     return std::make_shared<PointerType>(data_type);
 }
 
-std::shared_ptr<const Type> eddic::new_template_type(std::shared_ptr<const Type> data_type, std::vector<std::shared_ptr<const Type>> template_types){
+std::shared_ptr<const Type> eddic::new_template_type(std::string data_type, std::vector<std::shared_ptr<const Type>> template_types){
     return std::make_shared<TemplateType>(data_type, template_types);
 }
 

@@ -51,8 +51,7 @@ class Type : public std::enable_shared_from_this<Type> {
 
         /*!
          * Return the data type. In the case of an array it is the type of the elements and 
-         * in the case of a pointer, it is the type of the pointed element. In the case of a template type, 
-         * it the base type. 
+         * in the case of a pointer, it is the type of the pointed element. 
          * \return the data type
          */
         virtual std::shared_ptr<const Type> data_type() const;
@@ -251,11 +250,11 @@ class PointerType : public Type {
  */
 class TemplateType : public Type {
     private:
-        std::shared_ptr<const Type> main_type;
+        std::string main_type;
         std::vector<std::shared_ptr<const Type>> sub_types;
     
     public:
-        TemplateType(std::shared_ptr<const Type> main_type, std::vector<std::shared_ptr<const Type>> sub_types); 
+        TemplateType(std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types); 
     
         /*!
          * Deleted copy constructor
@@ -267,7 +266,7 @@ class TemplateType : public Type {
          */
         TemplateType& operator=(const PointerType& rhs) = delete;
 
-        std::shared_ptr<const Type> data_type() const override;
+        std::string type() const override;
         std::vector<std::shared_ptr<const Type>> template_types() const override;
 
         bool is_template() const override;
@@ -309,7 +308,7 @@ std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type
  */
 std::shared_ptr<const Type> new_pointer_type(std::shared_ptr<const Type> data_type);
 
-std::shared_ptr<const Type> new_template_type(std::shared_ptr<const Type> data_type, std::vector<std::shared_ptr<const Type>> template_types);
+std::shared_ptr<const Type> new_template_type(std::string data_type, std::vector<std::shared_ptr<const Type>> template_types);
 
 /*!
  * Indicates if the given type is a standard type or not. 
