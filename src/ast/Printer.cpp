@@ -135,7 +135,20 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Struct& struct_) const {
-        std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
+        std::cout << indent() << "Structure declaration: " << struct_.Content->name;
+
+        if(!struct_.Content->template_types.empty()){
+            std::cout << "<";
+
+            for(auto type : struct_.Content->template_types){
+                std::cout << to_string(type) << ", ";
+            }
+
+            std::cout << ">"; 
+        }
+
+        std::cout << std::endl;
+        
         level++;
         
         print_each_sub_non_variant(struct_.Content->members, "Members");
@@ -144,6 +157,8 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_each_sub_non_variant(struct_.Content->functions, "Functions");
         
         level--;
+
+        std::cout << std::endl;
     }
 
     void operator()(ast::MemberDeclaration& declaration) const {
