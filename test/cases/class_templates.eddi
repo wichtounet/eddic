@@ -5,6 +5,5 @@ struct node {
 
 void main(){
    node<int> first_node;
-   int test = 88;
-   int second = first_node.value;
+   node<float> second_node;
 }
