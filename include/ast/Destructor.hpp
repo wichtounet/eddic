@@ -26,6 +26,8 @@ namespace ast {
  */
 struct ASTDestructor { 
     std::shared_ptr<FunctionContext> context;
+
+    bool marked = false;
     
     std::string struct_name;
     std::string mangledName;

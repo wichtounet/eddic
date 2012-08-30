@@ -152,6 +152,14 @@ void mark(ast::SourceFile& program){
             for(auto& function : ptr->Content->functions){
                function.Content->marked = true; 
             }
+            
+            for(auto& function : ptr->Content->destructors){
+               function.Content->marked = true; 
+            }
+            
+            for(auto& function : ptr->Content->constructors){
+               function.Content->marked = true; 
+            }
         }
     }
 }
@@ -168,6 +176,18 @@ bool still_unmarked(ast::SourceFile& program){
             }
 
             for(auto& function : ptr->Content->functions){
+                if(!function.Content->marked){
+                    return true;
+                }
+            }
+
+            for(auto& function : ptr->Content->destructors){
+                if(!function.Content->marked){
+                    return true;
+                }
+            }
+
+            for(auto& function : ptr->Content->constructors){
                 if(!function.Content->marked){
                     return true;
                 }

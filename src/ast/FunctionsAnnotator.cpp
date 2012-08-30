@@ -35,15 +35,13 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& struct_){
-            if(!struct_.Content->marked){
-                parent_struct = struct_.Content->name;
+            parent_struct = struct_.Content->name;
 
-                visit_each_non_variant(*this, struct_.Content->constructors);
-                visit_each_non_variant(*this, struct_.Content->destructors);
-                visit_each_non_variant(*this, struct_.Content->functions);
+            visit_each_non_variant(*this, struct_.Content->constructors);
+            visit_each_non_variant(*this, struct_.Content->destructors);
+            visit_each_non_variant(*this, struct_.Content->functions);
 
-                parent_struct = "";
-            }
+            parent_struct = "";
         }
 
         template<typename T>
@@ -59,15 +57,19 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
 
         void operator()(ast::Constructor& constructor){
-            constructor.Content->struct_name = parent_struct;
-            
-            add_this(constructor);
+            if(!constructor.Content->marked){
+                constructor.Content->struct_name = parent_struct;
+
+                add_this(constructor);
+            }
         }
 
         void operator()(ast::Destructor& destructor){
-            destructor.Content->struct_name = parent_struct;
-            
-            add_this(destructor);
+            if(!destructor.Content->marked){
+                destructor.Content->struct_name = parent_struct;
+
+                add_this(destructor);
+            }
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
@@ -91,7 +93,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         std::shared_ptr<GlobalContext> context;
 
     public:
-        AUTO_RECURSE_UNMARKED_STRUCT()
+        AUTO_RECURSE_STRUCT()
 
         void operator()(ast::SourceFile& program){
             context = program.Content->context;
@@ -131,43 +133,47 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Constructor& constructor){
-            auto signature = std::make_shared<Function>(VOID, "ctor");
-            
-            for(auto& param : constructor.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-            }
-            
-            signature->struct_ = constructor.Content->struct_name;
-            
-            constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
+            if(!constructor.Content->marked){
+                auto signature = std::make_shared<Function>(VOID, "ctor");
 
-            if(context->exists(signature->mangledName)){
-                throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
-            }
+                for(auto& param : constructor.Content->parameters){
+                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+                }
 
-            context->addFunction(signature);
-            context->getFunction(signature->mangledName)->context = constructor.Content->context;
+                signature->struct_ = constructor.Content->struct_name;
+
+                constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
+
+                if(context->exists(signature->mangledName)){
+                    throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
+                }
+
+                context->addFunction(signature);
+                context->getFunction(signature->mangledName)->context = constructor.Content->context;
+            }
         }
 
         void operator()(ast::Destructor& destructor){
-            auto signature = std::make_shared<Function>(VOID, "dtor");
-            
-            for(auto& param : destructor.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-            }
-            
-            signature->struct_ = destructor.Content->struct_name;
-            
-            destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
+            if(!destructor.Content->marked){
+                auto signature = std::make_shared<Function>(VOID, "dtor");
 
-            if(context->exists(signature->mangledName)){
-                throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
-            }
+                for(auto& param : destructor.Content->parameters){
+                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+                }
 
-            context->addFunction(signature);
-            context->getFunction(signature->mangledName)->context = destructor.Content->context;
+                signature->struct_ = destructor.Content->struct_name;
+
+                destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
+
+                if(context->exists(signature->mangledName)){
+                    throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
+                }
+
+                context->addFunction(signature);
+                context->getFunction(signature->mangledName)->context = destructor.Content->context;
+            }
         }
 
         AUTO_IGNORE_OTHERS()
