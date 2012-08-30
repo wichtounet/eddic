@@ -286,12 +286,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        std::cout << indent() << "FunctionCall " << call.Content->function_name << std::endl; 
+        std::cout << indent() << "FunctionCall " << call.Content->function_name; 
+        print_template_list(call.Content->template_types);
+        std::cout << std::endl;
         print_each_sub(call.Content->values);
     }
 
     void operator()(ast::MemberFunctionCall& call) const {
-        std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name << std::endl; 
+        std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name;
+        print_template_list(call.Content->template_types);
+        std::cout << std::endl;
         print_each_sub(call.Content->values);
     }
 
