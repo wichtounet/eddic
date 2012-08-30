@@ -16,6 +16,8 @@
 #include "variant.hpp"
 #include "Position.hpp"
 
+#include "ast/Position.hpp"
+
 namespace eddic {
 
 typedef boost::variant<int, double, std::pair<std::string, int>> Val;
@@ -32,6 +34,7 @@ class Variable {
         std::shared_ptr<const Type> m_type;
 
         Position m_position;
+        ast::Position m_source_position;
         Val v_value;
 
         int references;
@@ -45,6 +48,9 @@ class Variable {
         Position position() const ;
 
         Val val() const ;
+        
+        const ast::Position& source_position() const ;
+        void set_source_position(ast::Position&& position);
 
         void addReference();
         int referenceCount() const ;
