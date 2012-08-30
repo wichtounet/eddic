@@ -679,8 +679,7 @@ struct Adaptor : public boost::static_visitor<> {
     template<typename FunctionCall>
     void adapt_function_call(FunctionCall& source){
         for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
-            auto a = source.Content->template_types[i];
-            //TODO source.Content->template_types[i] = replace(source.Content->template_types[i]);
+            source.Content->template_types[i] = replace(source.Content->template_types[i]);
         }
 
         visit_each(*this, source.Content->values);
@@ -781,7 +780,7 @@ struct Instantiator : public boost::static_visitor<> {
         return false;
     }
 
-    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<std::string>& template_types){
+    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<ast::Type>& template_types){
         return is_instantiated(function_template_instantiations[context], name, template_types);
     }
 
@@ -1023,7 +1022,7 @@ struct Instantiator : public boost::static_visitor<> {
                     std::unordered_map<std::string, ast::Type> replacements;
 
                     for(std::size_t i = 0; i < template_types.size(); ++i){
-                        //TODO replacements[source_types[i]] = template_types[i];    
+                        replacements[source_types[i]] = template_types[i];    
                     }
 
                     Adaptor adaptor(replacements);

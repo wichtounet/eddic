@@ -17,6 +17,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/Value.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -39,7 +40,7 @@ struct ASTMemberFunctionCall {
     Position position;
     std::string object_name;
     std::string function_name;
-    std::vector<std::string> template_types;
+    std::vector<ast::Type> template_types;
     std::vector<Value> values;
 
     mutable long references = 0;
@@ -61,7 +62,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::string, Content->object_name)
     (std::string, Content->function_name)
-    (std::vector<std::string>, Content->template_types)
+    (std::vector<eddic::ast::Type>, Content->template_types)
     (std::vector<eddic::ast::Value>, Content->values)
 )
 
