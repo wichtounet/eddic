@@ -1094,6 +1094,10 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     Instantiator instantiator(*this);
     instantiator(program);
 
+    for(auto& struct_ : instantiator.class_template_instantiated){
+        program.Content->blocks.push_back(struct_);
+    }
+
     for(auto& context_pair : instantiator.function_template_instantiated){
         auto context = context_pair.first;
         auto instantiated_functions = context_pair.second;
