@@ -86,11 +86,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             ast::defineVariables(program);
             ast::defineFunctions(program);
 
-            //Static analysis
-            ast::checkTypes(program);
-
-            //Transform the AST
-            ast::transformAST(program);
 
             //Mark all the functions and struct as transformed
             mark(program);
@@ -101,6 +96,12 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             ast::Printer printer;
             printer.print(program);
         } while(still_unmarked(program));
+        
+        //Static analysis
+        ast::checkTypes(program);
+
+        //Transform the AST
+        ast::transformAST(program);
 
         //Check for warnings
         ast::checkForWarnings(program);
