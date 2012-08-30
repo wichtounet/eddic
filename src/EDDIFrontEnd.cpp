@@ -78,9 +78,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Add default values
             ast::defineDefaultValues(program);
 
-            //Fill the string pool
-            ast::checkStrings(program, *pool);
-
             //Add some more informations to the AST
             ast::defineMemberFunctions(program);
             ast::defineVariables(program);
@@ -92,6 +89,9 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Instantiate templates
             template_engine.template_instantiation(program);
         } while(still_unmarked(program));
+
+        //Fill the string pool
+        ast::checkStrings(program, *pool);
         
         //Static analysis
         ast::checkTypes(program);
