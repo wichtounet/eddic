@@ -50,7 +50,7 @@ class Variable {
         Val val() const ;
         
         const ast::Position& source_position() const ;
-        void set_source_position(ast::Position&& position);
+        void set_source_position(const ast::Position& position);
 
         void addReference();
         int referenceCount() const ;

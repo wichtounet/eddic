@@ -45,6 +45,6 @@ const ast::Position& Variable::source_position() const {
     return m_source_position;
 }
 
-void Variable::set_source_position(ast::Position&& position){
-    m_source_position = std::move(position);
+void Variable::set_source_position(const ast::Position& position){
+    m_source_position = position;
 }
