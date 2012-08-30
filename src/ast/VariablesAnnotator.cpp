@@ -137,9 +137,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
    
     void operator()(ast::FunctionDeclaration& declaration){
-        if(!declaration.Content->marked){
-            visit_function(declaration);
-        }
+        visit_function(declaration);
     }
 
     void operator()(ast::Constructor& constructor){
