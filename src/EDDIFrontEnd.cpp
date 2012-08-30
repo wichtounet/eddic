@@ -70,6 +70,9 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
 
         do {
             std::cout << "Phase " << std::endl;
+            
+            ast::Printer printer;
+            printer.print(program);
 
             //Define contexts and structures
             ast::defineContexts(program);
