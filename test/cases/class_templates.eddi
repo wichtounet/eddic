@@ -4,6 +4,7 @@ struct node {
 }
 
 void main(){
-   int test = 88;
    node<int> first_node;
+   int test = 88;
+   int second = first_node.value;
 }
