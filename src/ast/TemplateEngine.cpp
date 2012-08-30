@@ -1026,7 +1026,7 @@ struct Instantiator : public boost::static_visitor<> {
                     }
 
                     Adaptor adaptor(replacements);
-                    visit_each(adaptor, declaration.Content->instructions);
+                    visit_non_variant(adaptor, declaration);
 
                     //Mark it as instantiated
                     function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
