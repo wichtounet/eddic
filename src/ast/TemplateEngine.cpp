@@ -583,11 +583,12 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 };
 
 struct Adaptor : public boost::static_visitor<> {
-    const std::unordered_map<std::string, std::string>& replacements;
+    const std::unordered_map<std::string, ast::Type>& replacements;
 
-    Adaptor(const std::unordered_map<std::string, std::string>& replacements) : replacements(replacements) {}
+    Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
     AUTO_RECURSE_STRUCT()
+    AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_SIMPLE_LOOPS()
@@ -597,39 +598,51 @@ struct Adaptor : public boost::static_visitor<> {
     
     AUTO_IGNORE_SWAP()
 
-    std::string replace(const std::string& current) const {
-        if(replacements.find(current) != replacements.end()){
-            return replacements.at(current);
-        }
-
-        return current;
+    bool has_to_be_replaced(const std::string& type){
+        return replacements.find(type) != replacements.end();
     }
 
-    ast::Type replace(const ast::Type& type) const {
+    ast::Type replace(const ast::Type& type){
         if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-            ast::SimpleType t = *ptr;
-
-            t.type = replace(t.type);
-
-            return t;
+            if(has_to_be_replaced(ptr->type)){
+                return replacements.at(ptr->type);
+            } else {
+                return *ptr;
+            }
         } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-            ast::ArrayType t = *ptr;
+            if(has_to_be_replaced(ptr->type)){
+                //TODO When ArrayType will support any type as base type, improve that
+                ast::ArrayType t = *ptr;
+                auto replacement = replacements.at(ptr->type);
 
-            t.type = replace(t.type);
-
-            return t;
+                auto simple_type = boost::get<ast::SimpleType>(replacement);
+                t.type = simple_type.type;
+                
+                return t;
+            } else {
+                return *ptr;
+            }
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            ast::PointerType t = *ptr;
+            if(has_to_be_replaced(ptr->type)){
+                //TODO When PointerType will support any type as base type, improve that
+                ast::PointerType t = *ptr;
+                auto replacement = replacements.at(ptr->type);
 
-            t.type = replace(t.type);
-
-            return t;
+                auto simple_type = boost::get<ast::SimpleType>(replacement);
+                t.type = simple_type.type;
+                
+                return t;
+            } else {
+                return *ptr;
+            }
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled type");
         }
-    }
 
-    void operator(const ast::FunctionDeclaration& declaration){
+        //TODO Handle template type
+    }
+    
+    void operator()(ast::Constructor& declaration){
         for(auto& param : declaration.Content->parameters){
             param.parameterType = replace(param.parameterType);
         }
@@ -637,64 +650,74 @@ struct Adaptor : public boost::static_visitor<> {
         visit_each(*this, declaration.Content->instructions);
     }
 
-    void operator()(const ast::Assignment& assignment) const {
+    void operator()(ast::FunctionDeclaration& declaration){
+        declaration.Content->returnType = replace(declaration.Content->returnType);
+
+        for(auto& param : declaration.Content->parameters){
+            param.parameterType = replace(param.parameterType);
+        }
+
+        visit_each(*this, declaration.Content->instructions);
+    }
+
+    void operator()(ast::Assignment& assignment){
         visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
     }
 
     template<typename FunctionCall>
-    void adapt_function_call(const FunctionCall& source) const {
+    void adapt_function_call(FunctionCall& source){
         for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
             auto a = source.Content->template_types[i];
-            source.Content->template_types[i] = replace(source.Content->template_types[i]);
+            //TODO source.Content->template_types[i] = replace(source.Content->template_types[i]);
         }
 
         visit_each(*this, source.Content->values);
     }
 
-    void operator()(const ast::MemberFunctionCall& source) const {
+    void operator()(ast::MemberFunctionCall& source){
         adapt_function_call(source);
     }
     
-    void operator()(const ast::FunctionCall& source) const {
+    void operator()(ast::FunctionCall& source){
         adapt_function_call(source);
     }
     
-    void operator()(const ast::VariableDeclaration& source) const {
+    void operator()(ast::VariableDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
         
         visit_optional(*this, source.Content->value);
     }
     
-    void operator()(const ast::StructDeclaration& source) const {
+    void operator()(ast::StructDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
         
         visit_each(*this, source.Content->values);
     }
     
-    void operator()(const ast::ArrayDeclaration& source) const {
+    void operator()(ast::ArrayDeclaration& source){
         source.Content->arrayType = replace(source.Content->arrayType);
     }
     
-    void operator()(const ast::Foreach& source) const {
-        source.Content->variableType = replace(source.Content->variableType);
+    void operator()(ast::Foreach& source){
+        //TODO source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
     
-    void operator()(const ast::ForeachIn& source) const {
-        source.Content->variableType = replace(source.Content->variableType);
+    void operator()(ast::ForeachIn& source){
+        //TODO source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
     
-    void operator()(const ast::New& source) const {
+    void operator()(ast::New& source){
         source.Content->type = replace(source.Content->type);
         
         visit_each(*this, source.Content->values);
     }
 
-    AUTO_IGNORE_OTHERS_CONST_CONST()
+    AUTO_IGNORE_OTHERS()
 };
 
 struct Instantiator : public boost::static_visitor<> {
@@ -705,7 +728,7 @@ struct Instantiator : public boost::static_visitor<> {
     ast::TemplateEngine::ClassInstantiationMap& class_template_instantiations;
     
     std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
-    std::vector<ast::FunctionDeclaration> class_template_instantiated;
+    std::vector<ast::Struct> class_template_instantiated;
 
     std::shared_ptr<FunctionContext> current_context;
 
@@ -761,7 +784,7 @@ struct Instantiator : public boost::static_visitor<> {
         destination.reserve(source.size());
     
         for(auto& constructor : source){
-            ast::MemberDeclaration c;
+            ast::Constructor c;
             c.Content->context = constructor.Content->context;
             c.Content->struct_name = constructor.Content->struct_name;
             c.Content->position = constructor.Content->position;
@@ -832,8 +855,6 @@ struct Instantiator : public boost::static_visitor<> {
 
         return destination;
     }
-    std::vector<FunctionParameter> parameters;
-    std::vector<Instruction> instructions;
     
     std::vector<ast::MemberDeclaration> copy(const std::vector<ast::MemberDeclaration>& source){
         std::vector<ast::MemberDeclaration> destination;   
@@ -871,7 +892,7 @@ struct Instantiator : public boost::static_visitor<> {
                         //Instantiate the struct
                         ast::Struct declaration;
                         declaration.Content->name = struct_declaration.Content->name;
-                        declaration.Content->position = function_declaration.Content->position;
+                        declaration.Content->position = struct_declaration.Content->position;
                         declaration.Content->template_types = template_types; 
                         
                         declaration.Content->members = copy(struct_declaration.Content->members);
@@ -884,14 +905,14 @@ struct Instantiator : public boost::static_visitor<> {
                         declaration.Content->instantiated = true;
                         declaration.Content->marked = false;
 
-                        std::unordered_map<std::string, std::string> replacements;
+                        std::unordered_map<std::string, ast::Type> replacements;
 
                         for(std::size_t i = 0; i < template_types.size(); ++i){
                             replacements[source_types[i]] = template_types[i];    
                         }
 
                         Adaptor adaptor(replacements);
-                        visit(adaptor, declaration);
+                        visit_non_variant(adaptor, declaration);
 
                         //Mark it as instantiated
                         class_template_instantiations.insert(ast::TemplateEngine::ClassInstantiationMap::value_type(name, template_types));
@@ -977,10 +998,10 @@ struct Instantiator : public boost::static_visitor<> {
                     declaration.Content->instantiated = true;
                     declaration.Content->marked = false;
 
-                    std::unordered_map<std::string, std::string> replacements;
+                    std::unordered_map<std::string, ast::Type> replacements;
 
                     for(std::size_t i = 0; i < template_types.size(); ++i){
-                        replacements[source_types[i]] = template_types[i];    
+                        //TODO replacements[source_types[i]] = template_types[i];    
                     }
 
                     Adaptor adaptor(replacements);
