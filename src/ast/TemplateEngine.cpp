@@ -587,7 +587,6 @@ struct Adaptor : public boost::static_visitor<> {
 
     Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
-    AUTO_RECURSE_STRUCT()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
     AUTO_RECURSE_BRANCHES()
@@ -597,6 +596,14 @@ struct Adaptor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH()
     
     AUTO_IGNORE_SWAP()
+
+    void operator()(ast::Struct& struct_){
+        visit_each_non_variant(*this, struct_.Content->members);
+        visit_each_non_variant(*this, struct_.Content->constructors);
+        visit_each_non_variant(*this, struct_.Content->destructors);
+        visit_each_non_variant(*this, struct_.Content->functions);
+        visit_each_non_variant(*this, struct_.Content->template_functions);
+    }
 
     bool has_to_be_replaced(const std::string& type){
         return replacements.find(type) != replacements.end();
@@ -640,6 +647,10 @@ struct Adaptor : public boost::static_visitor<> {
         }
 
         //TODO Handle template type
+    }
+    
+    void operator()(ast::MemberDeclaration& declaration){
+        declaration.Content->type = replace(declaration.Content->type); 
     }
     
     void operator()(ast::Constructor& declaration){
