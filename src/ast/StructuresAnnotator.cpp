@@ -101,9 +101,6 @@ struct StructuresVerifier : public boost::static_visitor<> {
                     }
                 }
             }
-
-
-            struct_.Content->marked = true;
         }
     }
 
