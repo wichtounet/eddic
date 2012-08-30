@@ -44,8 +44,8 @@
 using namespace eddic;
 
 void check_for_main(std::shared_ptr<GlobalContext> context);
-void mark_functions(ast::SourceFile& program);
-bool still_unmarked_functions(ast::SourceFile& program);
+void mark(ast::SourceFile& program);
+bool still_unmarked(ast::SourceFile& program);
 
 std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
     parser::SpiritParser parser;
@@ -69,6 +69,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::TemplateEngine template_engine;
 
         do {
+            std::cout << "Phase " << std::endl;
+
             //Define contexts and structures
             ast::defineContexts(program);
             ast::defineStructures(program);
@@ -90,12 +92,15 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Transform the AST
             ast::transformAST(program);
 
-            //Mark all the functions as transformed
-            mark_functions(program);
+            //Mark all the functions and struct as transformed
+            mark(program);
             
             //Instantiate templates
             template_engine.template_instantiation(program);
-        } while(still_unmarked_functions(program));
+            
+            ast::Printer printer;
+            printer.print(program);
+        } while(still_unmarked(program));
 
         //Check for warnings
         ast::checkForWarnings(program);
@@ -140,11 +145,13 @@ void check_for_main(std::shared_ptr<GlobalContext> context){
     }
 }
 
-void mark_functions(ast::SourceFile& program){
+void mark(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             ptr->Content->marked = true;
         } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            ptr->Content->marked = true;
+
             for(auto& function : ptr->Content->functions){
                function.Content->marked = true; 
             }
@@ -152,13 +159,17 @@ void mark_functions(ast::SourceFile& program){
     }
 }
 
-bool still_unmarked_functions(ast::SourceFile& program){
+bool still_unmarked(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             if(!ptr->Content->marked){
                 return true;
             }
         } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            if(!ptr->Content->marked){
+                return true;
+            }
+
             for(auto& function : ptr->Content->functions){
                 if(!function.Content->marked){
                     return true;
