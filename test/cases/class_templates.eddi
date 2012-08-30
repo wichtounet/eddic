@@ -4,5 +4,6 @@ struct node {
 }
 
 void main(){
+   int test = 88;
    node<int> first_node;
 }
