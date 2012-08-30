@@ -992,17 +992,16 @@ struct Instantiator : public boost::static_visitor<> {
     template<typename FunctionCall>
     void handle_template(FunctionCall& functionCall, const std::string context){
         auto template_types = functionCall.Content->template_types;
+        auto name = functionCall.Content->function_name;
 
-        std::string name = functionCall.Content->function_name;
+        auto it_pair = function_templates[context].equal_range(name);
 
-        auto it = function_templates[context].find(name);
-
-        if(it == function_templates[context].end()){
+        if(it_pair.first == it_pair.second && it_pair.second == function_templates[context].end()){
             throw SemanticalException("There are no template function named " + name, functionCall.Content->position);
         }
 
-        while(it != function_templates[context].end()){
-            auto function_declaration = it->second;
+        do{
+            auto function_declaration = it_pair.first->second;
             auto source_types = function_declaration.Content->template_types;
 
             if(source_types.size() == template_types.size()){
@@ -1039,8 +1038,8 @@ struct Instantiator : public boost::static_visitor<> {
                 return;
             }
 
-            ++it;
-        }
+            ++it_pair.first;
+        } while(it_pair.first != it_pair.second);
 
         throw SemanticalException("No matching function " + name, functionCall.Content->position);
     }
@@ -1058,9 +1057,7 @@ struct Instantiator : public boost::static_visitor<> {
     void operator()(ast::MemberFunctionCall& functionCall){
         visit_each(*this, functionCall.Content->values);
 
-        auto template_types = functionCall.Content->template_types;
-
-        if(!template_types.empty()){
+        if(!functionCall.Content->template_types.empty()){
             auto object_name = functionCall.Content->object_name;
             auto object_var = current_context->getVariable(object_name);
             auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();

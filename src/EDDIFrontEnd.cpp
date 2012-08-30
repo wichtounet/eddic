@@ -69,8 +69,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::TemplateEngine template_engine;
 
         do {
-            std::cout << "Phase " << std::endl;
-
             //Define contexts and structures
             ast::defineContexts(program);
             ast::defineStructures(program);
@@ -88,9 +86,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             
             //Instantiate templates
             template_engine.template_instantiation(program);
-            
-            ast::Printer printer;
-            printer.print(program);
         } while(still_unmarked(program));
 
         //Fill the string pool
