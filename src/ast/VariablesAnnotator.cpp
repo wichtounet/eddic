@@ -143,12 +143,15 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 return;
             }
 
-            if(!is_valid(parameter.parameterType)){
-                throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
-            }
+            if(check_variable(declaration.Content->context, parameter.parameterName, declaration.Content->position)){
+                if(!is_valid(parameter.parameterType)){
+                    throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
+                }
 
-            auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-            declaration.Content->context->addParameter(parameter.parameterName, type);    
+                auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
+                auto var = declaration.Content->context->addParameter(parameter.parameterName, type);    
+                var->set_source_position(declaration.Content->position);
+            }
         }
 
         visit_each(*proxy, declaration.Content->instructions);
