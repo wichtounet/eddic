@@ -156,6 +156,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
    
     void operator()(ast::FunctionDeclaration& declaration){
         visit_function(declaration);
+
+        proxy->delayed = false;
     }
 
     void operator()(ast::Constructor& constructor){
