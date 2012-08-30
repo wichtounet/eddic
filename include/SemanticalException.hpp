@@ -27,7 +27,7 @@ class SemanticalException: public std::exception {
 
     public:
         SemanticalException(const std::string& message);
-        SemanticalException(const std::string& message, eddic::ast::Position& position);
+        SemanticalException(const std::string& message, const eddic::ast::Position& position);
 
         ~SemanticalException() throw();
 
