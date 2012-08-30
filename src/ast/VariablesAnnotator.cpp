@@ -31,10 +31,13 @@ using namespace eddic;
 
 namespace {
 
-struct VariablesVisitor : public boost::static_visitor<> {
-    std::shared_ptr<GlobalContext> context;
+template<typename Visitor>
+struct VisitorProxy : public boost::static_visitor<> {
+    bool delayed = false;
+    Visitor visitor;
 
-    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
+    template<typename... Args>
+    VisitorProxy(Args... args) : visitor(args...) {}
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
@@ -65,15 +68,29 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
+
+    template<typename T>
+    void operator()(T& t){
+        if(!delayed){
+            visit_non_variant(visitor, t);
+        }
+    }
+};
+
+struct VariablesVisitor : public boost::static_visitor<> {
+    VisitorProxy<VariablesVisitor>* proxy = nullptr;
+    std::shared_ptr<GlobalContext> context;
+
+    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
     
     void operator()(ast::Struct& struct_){
         if(context->is_recursively_nested(struct_.Content->name)){
             throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
         }
 
-        visit_each_non_variant(*this, struct_.Content->constructors);
-        visit_each_non_variant(*this, struct_.Content->destructors);
-        visit_each_non_variant(*this, struct_.Content->functions);
+        visit_each_non_variant(*proxy, struct_.Content->constructors);
+        visit_each_non_variant(*proxy, struct_.Content->destructors);
+        visit_each_non_variant(*proxy, struct_.Content->functions);
     }
 
     bool is_valid(const std::string& type){
@@ -122,6 +139,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         for(auto& parameter : declaration.Content->parameters){
             //if its not resolved, delay the resolution
             if(!is_resolved(parameter.parameterType)){
+                proxy->delayed = true;
                 return;
             }
 
@@ -133,7 +151,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             declaration.Content->context->addParameter(parameter.parameterName, type);    
         }
 
-        visit_each(*this, declaration.Content->instructions);
+        visit_each(*proxy, declaration.Content->instructions);
     }
    
     void operator()(ast::FunctionDeclaration& declaration){
@@ -156,7 +174,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
         variable->addReference();
 
-        visit_each(*this, functionCall.Content->values);
+        visit_each(*proxy, functionCall.Content->values);
     }
 
     bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
@@ -176,6 +194,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::GlobalVariableDeclaration& declaration){
         //Delay if necessary
         if(!is_resolved(declaration.Content->variableType)){
+            proxy->delayed = true;
             return;
         }
 
@@ -195,10 +214,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void declare_array(ArrayDeclaration& declaration){
         //Delay if necessary
         if(!is_resolved(declaration.Content->arrayType)){
+            proxy->delayed = true;
             return;
         }
 
-        visit(*this, declaration.Content->size);
+        visit(*proxy, declaration.Content->size);
 
         if(check_variable(declaration.Content->context, declaration.Content->arrayName, declaration.Content->position)){
             auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
@@ -235,7 +255,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             var->set_source_position(foreach.Content->position);
         }
 
-        visit_each(*this, foreach.Content->instructions);
+        visit_each(*proxy, foreach.Content->instructions);
     }
     
     void operator()(ast::ForeachIn& foreach){
@@ -253,12 +273,12 @@ struct VariablesVisitor : public boost::static_visitor<> {
             foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), INT);
         }
 
-        visit_each(*this, foreach.Content->instructions);
+        visit_each(*proxy, foreach.Content->instructions);
     }
 
     void operator()(ast::Assignment& assignment){
-        visit(*this, assignment.Content->left_value);
-        visit(*this, assignment.Content->value);
+        visit(*proxy, assignment.Content->left_value);
+        visit(*proxy, assignment.Content->value);
     }
 
     void operator()(ast::Delete& delete_){
@@ -273,6 +293,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::StructDeclaration& declaration){
         //Delay if necessary
         if(!is_resolved(declaration.Content->variableType)){
+            proxy->delayed = true;
             return;
         }
 
@@ -299,10 +320,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::VariableDeclaration& declaration){
         //Delay if necessary
         if(!is_resolved(declaration.Content->variableType)){
+            proxy->delayed = true;
             return;
         }
         
-        visit_optional(*this, declaration.Content->value);
+        visit_optional(*proxy, declaration.Content->value);
 
         if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
@@ -367,7 +389,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::MemberValue& variable){
-        visit(*this, variable.Content->location);
+        visit(*proxy, variable.Content->location);
 
         auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
         auto struct_name = type->is_pointer() ? type->data_type()->type() : type->type();
@@ -415,24 +437,26 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
         array.Content->var->addReference();
 
-        visit(*this, array.Content->indexValue);
+        visit(*proxy, array.Content->indexValue);
     }
 
     void operator()(ast::DereferenceValue& variable){
-        visit(*this, variable.Content->ref);
+        visit(*proxy, variable.Content->ref);
     }
 
     void operator()(ast::Expression& value){
-        visit(*this, value.Content->first);
+        visit(*proxy, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+            [&](ast::Operation& operation){ visit(*proxy, operation.get<1>()); });
     }
 };
 
 } //end of anonymous namespace
 
 void ast::defineVariables(ast::SourceFile& program){
-    VariablesVisitor visitor(program.Content->context);
-    visit_non_variant(visitor, program);
+    VisitorProxy<VariablesVisitor> proxy(program.Content->context);
+    proxy.visitor.proxy = &proxy;
+
+    visit_non_variant(proxy, program);
 }
