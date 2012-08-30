@@ -86,15 +86,11 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             ast::defineVariables(program);
             ast::defineFunctions(program);
 
-
             //Mark all the functions and struct as transformed
             mark(program);
             
             //Instantiate templates
             template_engine.template_instantiation(program);
-            
-            ast::Printer printer;
-            printer.print(program);
         } while(still_unmarked(program));
         
         //Static analysis
