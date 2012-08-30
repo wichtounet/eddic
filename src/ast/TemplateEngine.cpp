@@ -711,13 +711,13 @@ struct Adaptor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Foreach& source){
-        //TODO source.Content->variableType = replace(source.Content->variableType);
+        source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
     
     void operator()(ast::ForeachIn& source){
-        //TODO source.Content->variableType = replace(source.Content->variableType);
+        source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
@@ -750,7 +750,6 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_GLOBAL_DECLARATION() 
     AUTO_RECURSE_SIMPLE_LOOPS()
-    AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_BUILTIN_OPERATORS()
@@ -964,6 +963,18 @@ struct Instantiator : public boost::static_visitor<> {
         check_type(declaration.Content->variableType, declaration.Content->position);
 
         visit_each(*this, declaration.Content->values);
+    }
+
+    void operator()(ast::Foreach& foreach_){
+        check_type(foreach_.Content->variableType, foreach_.Content->position);
+
+        visit_each(*this, foreach_.Content->instructions);
+    }
+
+    void operator()(ast::ForeachIn& foreach_){
+        check_type(foreach_.Content->variableType, foreach_.Content->position);
+
+        visit_each(*this, foreach_.Content->instructions);
     }
     
     std::vector<ast::Instruction> copy(const std::vector<ast::Instruction>& source){

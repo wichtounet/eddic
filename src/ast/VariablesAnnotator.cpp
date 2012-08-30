@@ -252,8 +252,16 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Foreach& foreach){
+        //Delay if necessary
+        if(!is_resolved(foreach.Content->variableType)){
+            proxy->delayed = true;
+            return;
+        }
+
         if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
-            auto var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(context, foreach.Content->variableType));
+            auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
+
+            auto var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
             var->set_source_position(foreach.Content->position);
         }
 
@@ -261,14 +269,22 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::ForeachIn& foreach){
+        //Delay if necessary
+        if(!is_resolved(foreach.Content->variableType)){
+            proxy->delayed = true;
+            return;
+        }
+
         if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
             if(!foreach.Content->context->exists(foreach.Content->arrayName)){
                 throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
             }
 
             static int generated = 0;
+            
+            auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
 
-            foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(context, foreach.Content->variableType));
+            foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
             foreach.Content->var->set_source_position(foreach.Content->position);
 
             foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);

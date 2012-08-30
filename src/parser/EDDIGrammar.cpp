@@ -93,7 +93,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  lexer.foreach_ 
         >>  lexer.left_parenth 
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  lexer.from_ 
         >>  lexer.integer 
@@ -108,7 +108,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  lexer.foreach_ 
         >>  lexer.left_parenth 
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  lexer.in_ 
         >>  lexer.identifier 
