@@ -45,8 +45,8 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  qi::omit[lexer.greater];                
 
     type %=
-            template_type
-        |   array_type
+            array_type
         |   pointer_type
+        |   template_type
         |   simple_type;
 }
