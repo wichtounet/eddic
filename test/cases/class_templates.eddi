@@ -28,7 +28,7 @@ void debug(T t){
 }
 
 template<type T>
-void test(node<T> node){
+void test(node<T>* node){
     debug<T>(node.value);
     debug<T>(node.get_value());
 }
