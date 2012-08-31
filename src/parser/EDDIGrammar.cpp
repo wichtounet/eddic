@@ -142,7 +142,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type 
         >>  lexer.identifier 
         >>  lexer.left_parenth
-        >>  (value >> *(lexer.comma > value))
+        >>  -(value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
 
     declaration %= 
