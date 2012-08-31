@@ -51,6 +51,7 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         void annotate(T& declaration){
             if(!declaration.Content->marked){
                 declaration.Content->struct_name = parent_struct;
+                declaration.Content->struct_type = current_struct.Content->struct_type;
                 
                 ast::PointerType paramType;
 
@@ -126,6 +127,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 }
 
                 signature->struct_ = declaration.Content->struct_name;
+                signature->struct_type = declaration.Content->struct_type;
                 signature->context = declaration.Content->context;
 
                 declaration.Content->mangledName = signature->mangledName = mangle(signature);
@@ -148,6 +150,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 }
 
                 signature->struct_ = constructor.Content->struct_name;
+                signature->struct_type = constructor.Content->struct_type;
 
                 constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
 
@@ -170,6 +173,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 }
 
                 signature->struct_ = destructor.Content->struct_name;
+                signature->struct_type = destructor.Content->struct_type;
 
                 destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
 
@@ -295,7 +299,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
                 auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
                 auto type = var->type();
-                auto struct_type = type->is_pointer() ? type->data_type()->type() : type->type();
+                auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                 visit_each(*this, functionCall.Content->values);
 

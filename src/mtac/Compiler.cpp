@@ -148,8 +148,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
             
         if(type->is_custom_type()){
-            auto struct_ = type->type();
-            auto ctor_name = mangle_ctor(new_.Content->values, struct_);
+            auto ctor_name = mangle_ctor(new_.Content->values, type);
 
             if(!function->context->global()->exists(ctor_name)){
                 assert(new_.Content->values.empty());
@@ -1023,8 +1022,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                     auto type = var->type();
 
                     if(type->is_custom_type()){
-                        auto struct_ = type->type();
-                        auto dtor_name = mangle_dtor(struct_);
+                        auto dtor_name = mangle_dtor(type);
 
                         //If there is a destructor, call it
                         if(program->context->exists(dtor_name)){
@@ -1142,8 +1140,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         
         void operator()(ast::StructDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
-            auto struct_ = var->type()->type();
-            auto ctor_name = mangle_ctor(declaration.Content->values, struct_);
+            auto ctor_name = mangle_ctor(declaration.Content->values, var->type());
 
             if(program->context->exists(ctor_name)){
                 auto ctor_function = program->context->getFunction(ctor_name);
@@ -1164,8 +1161,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
 
             if(var->type()->is_custom_type()){
-                auto struct_ = var->type()->type();
-                auto ctor_name = mangle_ctor({}, struct_);
+                auto ctor_name = mangle_ctor({}, var->type());
 
                 if(program->context->exists(ctor_name)){
                     auto ctor_function = program->context->getFunction(ctor_name);
@@ -1258,8 +1254,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type()->data_type();
             if(type->is_custom_type()){
-                auto struct_ = type->type();
-                auto dtor_name = mangle_dtor(struct_);
+                auto dtor_name = mangle_dtor(type);
 
                 //If there is a destructor, call it
                 if(program->context->exists(dtor_name)){

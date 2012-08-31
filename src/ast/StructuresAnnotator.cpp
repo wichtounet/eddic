@@ -34,9 +34,7 @@ struct StructuresCollector : public boost::static_visitor<> {
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
             if(struct_.Content->template_types.empty()){
-                std::shared_ptr<const Type> struct_type = new_type(context, struct_.Content->name, false);
-
-                struct_.Content->mangled_name = mangle(struct_type);
+                struct_.Content->struct_type = new_type(context, struct_.Content->name, false);
             } else {
                 std::vector<std::shared_ptr<const Type>> template_types;
 
@@ -46,10 +44,10 @@ struct StructuresCollector : public boost::static_visitor<> {
                     template_types.push_back(visit(transformer, type));
                 }
                 
-                std::shared_ptr<const Type> struct_type = new_template_type(context, struct_.Content->name, template_types);
-
-                struct_.Content->mangled_name = mangle(struct_type);
+                struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
             }
+            
+            struct_.Content->mangled_name = mangle(struct_.Content->struct_type);
 
             if(context->struct_exists(struct_.Content->mangled_name)){
                 throw SemanticalException("The structure " + struct_.Content->mangled_name + " has already been defined", struct_.Content->position);

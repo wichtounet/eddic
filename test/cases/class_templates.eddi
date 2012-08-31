@@ -3,7 +3,7 @@ struct node {
     T value;
 
     T get_value(){
-        return value;
+        return this.value;
     }
 }
 

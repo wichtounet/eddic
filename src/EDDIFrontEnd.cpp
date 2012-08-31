@@ -86,6 +86,9 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             
             //Instantiate templates
             template_engine.template_instantiation(program);
+            
+            ast::Printer printer;
+            printer.print(program);
         } while(still_unmarked(program));
 
         //Fill the string pool

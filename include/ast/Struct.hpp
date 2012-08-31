@@ -10,8 +10,11 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
+
+#include "Type.hpp"
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
@@ -30,7 +33,9 @@ struct ASTStruct {
     bool instantiated = false;  /*!< Indicates that the structure has been instantiated from a template */
     
     std::vector<ast::Type> template_types;  /*!< Indicates with which types this class template has been instantiated */
-    std::string mangled_name;
+    std::shared_ptr<const eddic::Type> struct_type;
+
+    std::string mangled_name; //TODO Check if not redundant with struct_type
 
     Position position;
     std::string name;
