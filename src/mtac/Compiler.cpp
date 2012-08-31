@@ -349,7 +349,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size()));
 
                 return {value.Content->var, temp};
-            } else if(type->is_custom_type()) {
+            } else if(type->is_custom_type() || type->is_template()) {
                 //If we are here, it means that we want to pass it by reference
                 return {value.Content->var};
             } else {
