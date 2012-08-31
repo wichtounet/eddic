@@ -624,11 +624,22 @@ struct Adaptor : public boost::static_visitor<> {
             ptr->type = replace(ptr->type.get());
 
             return *ptr;
+        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            if(has_to_be_replaced(ptr->type)){
+                auto replacement = replacements.at(ptr->type);
+
+                auto simple = boost::get<ast::SimpleType>(replacement);
+                ptr->type = simple.type;
+            }
+
+            for(std::size_t i = 0; i < ptr->template_types.size(); ++i){
+                ptr->template_types[i] = replace(ptr->template_types[i]);
+            }
+
+            return *ptr;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled type");
         }
-
-        //TODO Handle template type
     }
     
     void operator()(ast::MemberDeclaration& declaration){
@@ -745,19 +756,23 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
 
-    template<typename Container, typename T>
-    bool is_instantiated(const Container& container, const std::string& name, const std::vector<T>& template_types){
-        auto it = container.find(name);
+    template<typename Container>
+    bool is_instantiated(const Container& container, const std::string& name, const std::vector<ast::Type>& template_types){
+        auto it_pair = container.equal_range(name);
 
-        while(it != container.end()){
-            auto types = it->second;
+        if(it_pair.first == it_pair.second && it_pair.second == container.end()){
+            return false;
+        }
+
+        do {
+            auto types = it_pair.first->second;
            
             if(are_equals(types, template_types)){
                 return true;
             }
 
-            ++it;
-        }
+            ++it_pair.first;
+        } while(it_pair.first != it_pair.second);
 
         return false;
     }
@@ -1013,7 +1028,7 @@ struct Instantiator : public boost::static_visitor<> {
                     function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
 
                     function_template_instantiated[context].push_back(declaration);
-                }
+                } 
 
                 functionCall.Content->resolved = true;
 
