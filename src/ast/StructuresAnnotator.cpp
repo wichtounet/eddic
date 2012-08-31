@@ -13,6 +13,7 @@
 #include "SemanticalException.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "mangling.hpp"
 
 #include "ast/StructuresAnnotator.hpp"
 #include "ast/SourceFile.hpp"
@@ -32,11 +33,27 @@ struct StructuresCollector : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
-            if(context->struct_exists(struct_.Content->name)){
-                throw SemanticalException("The structure " + struct_.Content->name + " has already been defined", struct_.Content->position);
+            if(struct_.Content->template_types.empty()){
+                struct_.Content->mangled_name = struct_.Content->name;
+            } else {
+                std::vector<std::shared_ptr<const Type>> template_types;
+
+                ast::TypeTransformer transformer(context);
+
+                for(auto& type : struct_.Content->template_types){
+                    template_types.push_back(visit(transformer, type));
+                }
+                
+                std::shared_ptr<const Type> struct_type = new_template_type(struct_.Content->name, template_types);
+
+                struct_.Content->mangled_name = mangle(struct_type);
             }
 
-            auto signature = std::make_shared<Struct>(struct_.Content->name);
+            if(context->struct_exists(struct_.Content->mangled_name)){
+                throw SemanticalException("The structure " + struct_.Content->mangled_name + " has already been defined", struct_.Content->position);
+            }
+
+            auto signature = std::make_shared<Struct>(struct_.Content->mangled_name);
             context->add_struct(signature);
         }
     }

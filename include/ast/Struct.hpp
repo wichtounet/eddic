@@ -30,6 +30,7 @@ struct ASTStruct {
     bool instantiated = false;  /*!< Indicates that the structure has been instantiated from a template */
     
     std::vector<ast::Type> template_types;  /*!< Indicates with which types this class template has been instantiated */
+    std::string mangled_name;
 
     Position position;
     std::string name;
