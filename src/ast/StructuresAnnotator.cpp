@@ -72,7 +72,7 @@ struct StructureMembersCollector : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
-            auto signature = context->get_struct(struct_.Content->name);
+            auto signature = context->get_struct(struct_.Content->mangled_name);
             std::vector<std::string> names;
 
             signature->members.clear();
@@ -107,7 +107,7 @@ struct StructuresVerifier : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
-            auto struct_type = context->get_struct(struct_.Content->name);
+            auto struct_type = context->get_struct(struct_.Content->mangled_name);
 
             for(auto& member : struct_.Content->members){
                 auto type = (*struct_type)[member.Content->name]->type;
