@@ -2,6 +2,20 @@ template<type T>
 struct node {
     T value;
 
+    this(T init){
+        print("C1|");
+        this.value = init;
+    }
+
+    this(T a, T b){
+        print("C2|");
+        this.value = a + b;
+    }
+
+    ~this(){
+        print("D|");
+    }
+
     T get_value(){
         return this.value;
     }
@@ -13,16 +27,24 @@ void debug(T t){
     print("|");
 }
 
+template<type T>
+void test(node<T> node){
+    debug<T>(node.value);
+    debug<T>(node.get_value());
+}
+
 void main(){
-    node<int> first_node;
-    first_node.value = 88;
+    node<int> first_node(100);
+    node<float> second_node(13.3);
+    node<int> third_node(2, 5);
 
-    debug<int>(first_node.value);
-    debug<int>(first_node.get_value());
-
-    node<float> second_node;
-    second_node.value = 55.25;
+    test<int>(first_node);
+    test<float>(second_node);
+    test<int>(third_node);
     
-    debug<float>(second_node.value);
-    debug<float>(second_node.get_value());
+    first_node.value = 88;
+    second_node.value = 55.25;
+
+    test<int>(first_node);
+    test<float>(second_node);
 }
