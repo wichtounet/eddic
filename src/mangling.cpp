@@ -41,9 +41,9 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         } else if(type == VOID){
             return "V";
         }
-
-        ASSERT_PATH_NOT_TAKEN("Not a standard type");
-    } else {
+    } 
+    
+    if(type->is_custom_type()){
         std::ostringstream ss;
 
         ss << "C";
@@ -52,6 +52,26 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         
         return ss.str();
     }
+    
+    if(type->is_template()){
+        std::ostringstream ss;
+
+        ss << "CT";
+        ss << type->type().length();
+        ss << type->type();
+
+        auto types = type->template_types();
+
+        ss << types.size();
+
+        for(auto& sub_type : types){
+            ss << mangle(sub_type);
+        }
+        
+        return ss.str();
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Invalid type");
 }
 
 std::string eddic::mangle(std::shared_ptr<Function> function){
