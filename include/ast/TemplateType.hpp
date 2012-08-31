@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <ostream>
 
 #include "variant.hpp"
 
@@ -20,13 +21,6 @@
 namespace eddic {
 
 namespace ast {
-
-class SimpleType;
-class TemplateType;
-class PointerType;
-class ArrayType;
-
-typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
 
 /*!
  * \class TemplateType
@@ -39,6 +33,8 @@ struct TemplateType {
 };
 
 bool operator==(const TemplateType& a, const TemplateType& b);
+
+std::ostream& operator<<(std::ostream& out, const ast::TemplateType& type);
 
 } //end of ast
 

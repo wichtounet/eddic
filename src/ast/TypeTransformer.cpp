@@ -18,7 +18,7 @@ std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::SimpleT
 }
 
 std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::ArrayType& type) const {
-    return new_array_type(new_type(context, type.type));
+    return new_array_type(visit(*this, type.type.get()));
 }
 
 std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::PointerType& type) const {

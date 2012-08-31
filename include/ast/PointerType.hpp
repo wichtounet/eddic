@@ -9,6 +9,7 @@
 #define AST_POINTER_TYPE_H
 
 #include <string>
+#include <ostream>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -25,6 +26,8 @@ struct PointerType {
 };
 
 bool operator==(const PointerType& a, const PointerType& b);
+
+std::ostream& operator<<(std::ostream& out, const ast::PointerType& type);
 
 } //end of ast
 

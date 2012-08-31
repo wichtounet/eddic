@@ -11,13 +11,13 @@
 #include "variant.hpp"
 
 #include "ast/SimpleType.hpp"
-#include "ast/ArrayType.hpp"
 #include "ast/PointerType.hpp"
 
 namespace eddic {
 
 namespace ast {
 
+class ArrayType;
 class TemplateType;
 
 /*!
@@ -34,6 +34,7 @@ std::string to_string(const ast::Type& type);
 
 } //end of eddic
 
+#include "ast/ArrayType.hpp"
 #include "ast/TemplateType.hpp"
 
 #endif

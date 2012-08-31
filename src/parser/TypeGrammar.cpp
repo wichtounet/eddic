@@ -19,7 +19,10 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   boost::spirit::attr(false);
 
     array_type %=
-            lexer.identifier
+            (
+                    template_type
+                |   simple_type
+            )
         >>  lexer.left_bracket
         >>  lexer.right_bracket;
     

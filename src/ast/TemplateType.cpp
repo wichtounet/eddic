@@ -14,3 +14,7 @@ using namespace eddic;
 bool ast::operator==(const ast::TemplateType& a, const ast::TemplateType& b){
     return a.type == b.type && are_equals(a.template_types, b.template_types);
 }
+
+std::ostream& ast::operator<<(std::ostream& out, const ast::TemplateType& type){
+    return out << "Template Type " << type.type;
+}

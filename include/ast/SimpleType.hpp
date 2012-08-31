@@ -9,6 +9,7 @@
 #define AST_SIMPLE_TYPE_H
 
 #include <string>
+#include <ostream>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -26,6 +27,8 @@ struct SimpleType {
 };
 
 bool operator==(const SimpleType& a, const SimpleType& b);
+
+std::ostream& operator<<(std::ostream& out, const ast::SimpleType& type);
 
 } //end of ast
 
