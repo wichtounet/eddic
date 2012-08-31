@@ -162,11 +162,11 @@ class StandardType : public Type {
  */
 class CustomType : public Type {
     private:
+        std::shared_ptr<GlobalContext> context;
         std::string m_type;
-        unsigned int m_size;
     
     public:
-        CustomType(const std::string& type, unsigned int size); 
+        CustomType(std::shared_ptr<GlobalContext> context, const std::string& type); 
     
         /*!
          * Deleted copy constructor
@@ -250,11 +250,12 @@ class PointerType : public Type {
  */
 class TemplateType : public Type {
     private:
+        std::shared_ptr<GlobalContext> context;
         std::string main_type;
         std::vector<std::shared_ptr<const Type>> sub_types;
     
     public:
-        TemplateType(std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types); 
+        TemplateType(std::shared_ptr<GlobalContext> context, std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types); 
     
         /*!
          * Deleted copy constructor
@@ -308,7 +309,7 @@ std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type
  */
 std::shared_ptr<const Type> new_pointer_type(std::shared_ptr<const Type> data_type);
 
-std::shared_ptr<const Type> new_template_type(std::string data_type, std::vector<std::shared_ptr<const Type>> template_types);
+std::shared_ptr<const Type> new_template_type(std::shared_ptr<GlobalContext> context, std::string data_type, std::vector<std::shared_ptr<const Type>> template_types);
 
 /*!
  * Indicates if the given type is a standard type or not. 

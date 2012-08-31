@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "assert.hpp"
+#include "mangling.hpp"
 #include "Type.hpp"
 #include "Platform.hpp"
 #include "GlobalContext.hpp"
@@ -172,7 +173,8 @@ unsigned int StandardType::size() const {
 
 /* Implementation of CustomType */
 
-CustomType::CustomType(const std::string& type, unsigned int size) : m_type(type), m_size(size) {}
+CustomType::CustomType(std::shared_ptr<GlobalContext> context, const std::string& type) : 
+    context(context), m_type(type) {}
 
 std::string CustomType::type() const {
     return m_type;
@@ -183,7 +185,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size() const {
-    return m_size;
+    return context->size_of_struct(mangle(shared_from_this()));
 }
         
 /* Implementation of ArrayType  */
@@ -224,7 +226,8 @@ unsigned int PointerType::size() const {
         
 /* Implementation of TemplateType  */
 
-TemplateType::TemplateType(std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types) : main_type(main_type), sub_types(sub_types) {}
+TemplateType::TemplateType(std::shared_ptr<GlobalContext> context, std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types) : 
+    context(context), main_type(main_type), sub_types(sub_types) {}
 
 std::string TemplateType::type() const {
     return main_type;
@@ -239,11 +242,7 @@ bool TemplateType::is_template() const {
 }
 
 unsigned int TemplateType::size() const {
-    //TODO
-    
-    //mangle the type with templates
-    
-    return INT->size();
+    return context->size_of_struct(mangle(shared_from_this()));
 }
 
 /* Implementation of factories  */
@@ -298,8 +297,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         }
     } else {
         assert(!const_);
-        unsigned int size = context->size_of_struct(type);
-        return std::make_shared<CustomType>(type, size);
+        return std::make_shared<CustomType>(context, type);
     }
 }
 
@@ -311,8 +309,8 @@ std::shared_ptr<const Type> eddic::new_pointer_type(std::shared_ptr<const Type> 
     return std::make_shared<PointerType>(data_type);
 }
 
-std::shared_ptr<const Type> eddic::new_template_type(std::string data_type, std::vector<std::shared_ptr<const Type>> template_types){
-    return std::make_shared<TemplateType>(data_type, template_types);
+std::shared_ptr<const Type> eddic::new_template_type(std::shared_ptr<GlobalContext> context, std::string data_type, std::vector<std::shared_ptr<const Type>> template_types){
+    return std::make_shared<TemplateType>(context, data_type, template_types);
 }
 
 bool eddic::is_standard_type(const std::string& type){

@@ -46,7 +46,7 @@ struct StructuresCollector : public boost::static_visitor<> {
                     template_types.push_back(visit(transformer, type));
                 }
                 
-                std::shared_ptr<const Type> struct_type = new_template_type(struct_.Content->name, template_types);
+                std::shared_ptr<const Type> struct_type = new_template_type(context, struct_.Content->name, template_types);
 
                 struct_.Content->mangled_name = mangle(struct_type);
             }

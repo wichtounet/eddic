@@ -32,5 +32,5 @@ std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::Templat
        template_types.push_back(visit(*this, tmp_type));
     }
 
-    return new_template_type(type.type, template_types);
+    return new_template_type(context, type.type, template_types);
 }
