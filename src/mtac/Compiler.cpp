@@ -147,7 +147,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         function->context->global()->addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
             
-        if(type->is_custom_type()){
+        if(type->is_custom_type() || type->is_template()){
             auto ctor_name = mangle_ctor(new_.Content->values, type);
 
             if(!function->context->global()->exists(ctor_name)){
@@ -1021,7 +1021,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 if(var->position().isStack()){
                     auto type = var->type();
 
-                    if(type->is_custom_type()){
+                    if(type->is_custom_type() || type->is_template()){
                         auto dtor_name = mangle_dtor(type);
 
                         //If there is a destructor, call it
@@ -1160,7 +1160,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::VariableDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
 
-            if(var->type()->is_custom_type()){
+            if(var->type()->is_custom_type() || var->type()->is_template()){
                 auto ctor_name = mangle_ctor({}, var->type());
 
                 if(program->context->exists(ctor_name)){
@@ -1253,7 +1253,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type()->data_type();
-            if(type->is_custom_type()){
+            if(type->is_custom_type() || type->is_template()){
                 auto dtor_name = mangle_dtor(type);
 
                 //If there is a destructor, call it
@@ -1300,7 +1300,7 @@ void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Typ
 
         memberValue.Content->memberNames.push_back(member->name);
 
-        if(member_type->is_custom_type()){
+        if(member_type->is_custom_type() || member_type->is_template()){
             push_struct_member(memberValue, member_type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor(function)(memberValue);
@@ -1338,7 +1338,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
         member_value.Content->location = variable_value;
         member_value.Content->memberNames = {member->name};
 
-        if(type->is_custom_type()){
+        if(type->is_custom_type() || type->is_template()){
             push_struct_member(member_value, type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor(function)(member_value);
@@ -1382,7 +1382,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if(type->is_custom_type() && !param->type()->is_pointer()){
+                if((type->is_custom_type() || type->is_template()) && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
