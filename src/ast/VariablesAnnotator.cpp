@@ -17,6 +17,7 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "mangling.hpp"
 
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/SourceFile.hpp"
@@ -84,8 +85,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
     VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
     
     void operator()(ast::Struct& struct_){
-        if(context->is_recursively_nested(struct_.Content->name)){
-            throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
+        if(context->is_recursively_nested(struct_.Content->mangled_name)){
+            throw SemanticalException("The structure " + struct_.Content->mangled_name + " is invalidly nested", struct_.Content->position);
         }
 
         visit_each_non_variant(*proxy, struct_.Content->constructors);
@@ -321,11 +322,13 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
-            if(!type->is_custom_type()){
+            if(!type->is_custom_type() && type->is_template()){
                 throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
             }
+
+            auto mangled = mangle(type);
                 
-            if(context->struct_exists(type->type())){
+            if(context->struct_exists(mangled)){
                 if(type->is_const()){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
@@ -333,7 +336,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                 var->set_source_position(declaration.Content->position);
             } else {
-                throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
+                throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
             }
         }
     }
@@ -376,9 +379,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 
                 auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                 var->set_source_position(declaration.Content->position);
-            //If it's a custom type
+            //If it's a template or custom type
             } else {
-                if(context->struct_exists(type->type())){
+                auto mangled = mangle(type);
+
+                if(context->struct_exists(mangled)){
                     if(type->is_const()){
                         throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                     }
@@ -386,7 +391,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
                     auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                     var->set_source_position(declaration.Content->position);
                 } else {
-                    throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
+                    throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
                 }
             }
         }
