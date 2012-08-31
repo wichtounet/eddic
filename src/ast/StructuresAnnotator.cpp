@@ -113,7 +113,7 @@ struct StructuresVerifier : public boost::static_visitor<> {
                 auto type = (*struct_type)[member.Content->name]->type;
 
                 if(type->is_custom_type()){
-                    auto struct_name = type->type();
+                    auto struct_name = mangle(type);
 
                     if(!context->struct_exists(struct_name)){
                         throw SemanticalException("Invalid member type " + struct_name, member.Content->position);

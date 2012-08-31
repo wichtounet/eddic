@@ -94,14 +94,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*proxy, struct_.Content->functions);
     }
 
-    bool is_valid(const std::string& type){
-        if(is_standard_type(type)){
-            return true;
-        }
-
-        return context->struct_exists(type);
-    }
-
     bool is_resolved(const ast::Type& type){
         if(auto* ptr = boost::get<ast::TemplateType>(&type)){
             return ptr->resolved;
@@ -114,21 +106,17 @@ struct VariablesVisitor : public boost::static_visitor<> {
         if(auto* ptr = boost::get<ast::ArrayType>(&type)){
             return is_valid(ptr->type.get());
         } else if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-            return is_valid(ptr->type);
+            if(is_standard_type(ptr->type)){
+                return true;
+            }
+
+            auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
+            return context->struct_exists(mangle(t));
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
             return is_valid(ptr->type.get());
         } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
-            if(!is_valid(ptr->type)){
-                return false;
-            }
-
-            for(auto& template_type : ptr->template_types){
-                if(!is_valid(template_type)){
-                    return false;
-                }
-            }
-
-            return true;
+            auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
+            return context->struct_exists(mangle(t));
         }
 
         ASSERT_PATH_NOT_TAKEN("Invalid type");
@@ -418,7 +406,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*proxy, variable.Content->location);
 
         auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
-        auto struct_name = type->is_pointer() ? type->data_type()->type() : type->type();
+        auto struct_name = mangle(type->is_pointer() ? type->data_type() : type);
         auto struct_type = context->get_struct(struct_name);
 
         //Reference the structure
@@ -438,7 +426,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             //If it is not the last member
             if(i != members.size() - 1){
                 //The next member will be a member of the current member type
-                struct_type = context->get_struct((*struct_type)[member]->type->type());
+                struct_type = context->get_struct(mangle((*struct_type)[member]->type));
                 struct_name = struct_type->name;
             }
         }
