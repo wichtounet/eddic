@@ -10,9 +10,9 @@
 using namespace eddic;
 
 bool ast::operator==(const ast::PointerType& a, const ast::PointerType& b){
-    return a.type == b.type;
+    return a.type.get() == b.type.get();
 }
 
 std::ostream& ast::operator<<(std::ostream& out, const ast::PointerType& type){
-    return out << "Pointer Type " << type.type;
+    return out << "Pointer Type " << type.type.get();
 }

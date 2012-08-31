@@ -22,7 +22,7 @@ std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::ArrayTy
 }
 
 std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::PointerType& type) const {
-    return new_pointer_type(new_type(context, type.type));
+    return new_pointer_type(visit(*this, type.type.get()));
 }
 
 std::shared_ptr<const eddic::Type> ast::TypeTransformer::operator()(ast::TemplateType& type) const {

@@ -115,7 +115,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         } else if(auto* ptr = boost::get<ast::SimpleType>(&type)){
             return is_valid(ptr->type);
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            return is_valid(ptr->type);
+            return is_valid(ptr->type.get());
         } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
             if(!is_valid(ptr->type)){
                 return false;

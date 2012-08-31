@@ -27,7 +27,10 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_bracket;
     
     pointer_type %=
-            lexer.identifier
+            (
+                    template_type
+                |   simple_type
+            )
         >>  lexer.multiplication;
 
     simple_type %=

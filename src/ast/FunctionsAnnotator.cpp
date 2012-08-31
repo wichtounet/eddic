@@ -46,8 +46,11 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
 
         template<typename T>
         void add_this(T& declaration){
+            ast::SimpleType struct_type;
+            struct_type.type = parent_struct;
+
             ast::PointerType paramType;
-            paramType.type = parent_struct;
+            paramType.type = struct_type;
 
             ast::FunctionParameter param;
             param.parameterName = "this";

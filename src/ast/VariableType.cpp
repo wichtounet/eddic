@@ -23,7 +23,7 @@ std::string ast::to_string(const ast::Type& type){
     } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
         return to_string(ptr->type.get()) + "[]";
     } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-        return ptr->type + "*";
+        return to_string(ptr->type.get()) + "*";
     } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
         std::stringstream printed;
         

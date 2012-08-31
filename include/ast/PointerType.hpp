@@ -13,6 +13,8 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/VariableType.hpp"
+
 namespace eddic {
 
 namespace ast {
@@ -22,7 +24,7 @@ namespace ast {
  * \brief A pointer type in the AST.  
  */
 struct PointerType {
-    std::string type;
+    boost::recursive_wrapper<ast::Type> type;
 };
 
 bool operator==(const PointerType& a, const PointerType& b);
@@ -36,7 +38,7 @@ std::ostream& operator<<(std::ostream& out, const ast::PointerType& type);
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::PointerType, 
-    (std::string, type)
+    (boost::recursive_wrapper<eddic::ast::Type>, type)
 )
 
 #endif

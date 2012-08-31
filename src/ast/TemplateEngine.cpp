@@ -621,18 +621,9 @@ struct Adaptor : public boost::static_visitor<> {
 
             return *ptr;
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            if(has_to_be_replaced(ptr->type)){
-                //TODO When PointerType will support any type as base type, improve that
-                ast::PointerType t = *ptr;
-                auto replacement = replacements.at(ptr->type);
+            ptr->type = replace(ptr->type.get());
 
-                auto simple_type = boost::get<ast::SimpleType>(replacement);
-                t.type = simple_type.type;
-                
-                return t;
-            } else {
-                return *ptr;
-            }
+            return *ptr;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled type");
         }
