@@ -34,7 +34,9 @@ struct StructuresCollector : public boost::static_visitor<> {
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
             if(struct_.Content->template_types.empty()){
-                struct_.Content->mangled_name = struct_.Content->name;
+                std::shared_ptr<const Type> struct_type = new_type(context, struct_.Content->name, false);
+
+                struct_.Content->mangled_name = mangle(struct_type);
             } else {
                 std::vector<std::shared_ptr<const Type>> template_types;
 
