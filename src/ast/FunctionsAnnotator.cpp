@@ -26,6 +26,8 @@ namespace {
 class MemberFunctionAnnotator : public boost::static_visitor<> {
     private:
         std::shared_ptr<GlobalContext> context;
+        std::string parent_struct;
+        ast::Struct current_struct;
 
     public:
         void operator()(ast::SourceFile& program){
@@ -35,6 +37,7 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& struct_){
+            current_struct = struct_;
             parent_struct = struct_.Content->name;
 
             visit_each_non_variant(*this, struct_.Content->constructors);
@@ -45,51 +48,50 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
 
         template<typename T>
-        void add_this(T& declaration){
-            ast::SimpleType struct_type;
-            struct_type.type = parent_struct;
-            struct_type.const_ = false;
+        void annotate(T& declaration){
+            if(!declaration.Content->marked){
+                declaration.Content->struct_name = parent_struct;
+                
+                ast::PointerType paramType;
 
-            ast::PointerType paramType;
-            paramType.type = struct_type;
+                if(current_struct.Content->template_types.empty()){
+                    ast::SimpleType struct_type;
+                    struct_type.type = parent_struct;
+                    struct_type.const_ = false;
 
-            ast::FunctionParameter param;
-            param.parameterName = "this";
-            param.parameterType = paramType;
+                    paramType.type = struct_type;
+                } else {
+                    ast::TemplateType struct_type;
+                    struct_type.type = parent_struct;
+                    struct_type.template_types = current_struct.Content->template_types;
+                    struct_type.resolved = true;
 
-            declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+                    paramType.type = struct_type;
+                }
+                
+                ast::FunctionParameter param;
+                param.parameterName = "this";
+                param.parameterType = paramType;
+
+                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+            }
         }
 
         void operator()(ast::Constructor& constructor){
-            if(!constructor.Content->marked){
-                constructor.Content->struct_name = parent_struct;
-
-                add_this(constructor);
-            }
+            annotate(constructor);
         }
 
         void operator()(ast::Destructor& destructor){
-            if(!destructor.Content->marked){
-                destructor.Content->struct_name = parent_struct;
-
-                add_this(destructor);
-            }
+            annotate(destructor);
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!declaration.Content->marked){
-                declaration.Content->struct_name = parent_struct;
-
-                if(!parent_struct.empty()){
-                    add_this(declaration);
-                }
+            if(!parent_struct.empty()){
+                annotate(declaration);
             }
         }
 
         AUTO_IGNORE_OTHERS()
-
-    private:
-        std::string parent_struct;
 };
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
