@@ -137,7 +137,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
         for(auto param : declaration.Content->parameters){
-            std::cout << indent() << param.parameterName << std::endl; 
+            std::cout << indent() << param.parameterName << " : " << to_string(param.parameterType) << std::endl; 
         }
         level--;
         
