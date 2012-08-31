@@ -1,9 +1,28 @@
 template<type T>
 struct node {
     T value;
+
+    T get_value(){
+        return value;
+    }
+}
+
+template<type T>
+void debug(T t){
+    print(t);
+    print("|");
 }
 
 void main(){
-   node<int> first_node;
-   node<float> second_node;
+    node<int> first_node;
+    first_node.value = 88;
+
+    debug<int>(first_node.value);
+    debug<int>(first_node.get_value());
+
+    node<float> second_node;
+    second_node.value = 55.25;
+    
+    debug<float>(second_node.value);
+    debug<float>(second_node.get_value());
 }
