@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE( ctor_dtor_heap ){
 }
 
 BOOST_AUTO_TEST_CASE( ctor_dtor_stack ){
-    assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAI|33|CAS|666|0|DA|DA|DA|");
+    assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAII|3300|CAS|666|0|DA|DA|DA|");
 }
 
 BOOST_AUTO_TEST_CASE( casts ){
