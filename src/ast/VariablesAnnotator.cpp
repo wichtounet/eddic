@@ -307,6 +307,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
             return;
         }
 
+        visit_each(*proxy, declaration.Content->values);
+
         if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
