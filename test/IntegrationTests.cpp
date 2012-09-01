@@ -269,6 +269,10 @@ BOOST_AUTO_TEST_CASE( member_functions ){
     assert_output("member_functions.eddi", "0|1|100|180|260|");
 }
 
+BOOST_AUTO_TEST_CASE( member_functions_param_stack ){
+    assert_output("member_functions_param_stack.eddi", "0|1|100|180|260|");
+}
+
 BOOST_AUTO_TEST_CASE( memory ){
     assert_output("memory.eddi", "4|4|4|1|1|1|5|6|7|8|5|6|7|8|5|6|7|8|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|");
 }
