@@ -61,12 +61,7 @@ LOGGING_DEFINE_OUTPUT( ::logging::NullOutput )
 
 #else
 
-#ifdef __AVR__
-#include "logging/loggingConfigAVR.h"
-#else
 #include "logging/loggingConfigGeneralPurposeOS.h"
-#endif /* __AVR__ */
-
 
 #ifndef LOGGING_DEFINE_EXTENDED_OUTPUT_TYPE
 LOGGING_DEFINE_OUTPUT( ::logging::LoggingType )
