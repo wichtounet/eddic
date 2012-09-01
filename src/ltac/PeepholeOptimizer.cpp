@@ -314,7 +314,19 @@ inline bool multiple_statement_optimizations_second(ltac::Statement& s1, ltac::S
                 auto reg21 = boost::get<ltac::Register>(*i2->arg1);
                 auto reg22 = boost::get<ltac::Register>(*i2->arg2);
 
-                if(reg22 == reg11){
+                bool possible = true;
+
+                if(auto* ptr = boost::get<ltac::Address>(&*i1->arg2)){
+                    if(ptr->base_register && *ptr->base_register == reg11){
+                        possible = false;
+                    }
+                    
+                    if(ptr->scaled_register && *ptr->scaled_register == reg11){
+                        possible = false;
+                    }
+                }
+
+                if(reg22 == reg11 && possible){
                     auto descriptor = getPlatformDescriptor(platform);
 
                     for(unsigned int i = 0; i < descriptor->numberOfIntParamRegisters(); ++i){
