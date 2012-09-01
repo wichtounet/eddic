@@ -163,9 +163,9 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 
     std::string struct_name;
     if(type->is_pointer() || type->is_array()){
-        struct_name = mangle(type->data_type());
+        struct_name = type->data_type()->mangle();
     } else {
-        struct_name = mangle(type);
+        struct_name = type->mangle();
     }
 
     auto struct_type = context->get_struct(struct_name);
@@ -182,7 +182,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
         offset += context->member_offset(struct_type, member);
 
         if(i != members.size() - 1){
-            struct_name = mangle(member_type);
+            struct_name = member_type->mangle();
             struct_type = context->get_struct(struct_name);
         }
     }

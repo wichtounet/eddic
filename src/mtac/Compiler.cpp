@@ -1292,7 +1292,7 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
 }
     
 void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
-    auto struct_name = mangle(type);
+    auto struct_name = type->mangle();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
@@ -1322,7 +1322,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     auto var = value.Content->var;
     auto context = value.Content->context;
 
-    auto struct_name = mangle(var->type());
+    auto struct_name = var->type()->mangle();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
