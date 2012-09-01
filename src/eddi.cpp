@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "logging.hpp"
 #include "Options.hpp"
 #include "Compiler.hpp"
 
@@ -18,6 +19,8 @@ int main(int argc, const char* argv[]) {
     if(!parseOptions(argc, argv)){
         return -1;
     }
+    
+    configure_logging(option_int_value("log"));
 
     if(option_defined("help")){
         print_help();

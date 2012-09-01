@@ -12,6 +12,7 @@
 #include "FunctionContext.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
@@ -19,9 +20,6 @@
 
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
-
-#define DEBUG_GLOBAL_ENABLED false
-#define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 using namespace eddic;
 
@@ -70,15 +68,15 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     
     if(!found){
         for(Reg r : registers){
-            std::cout << "Register " << r << std::endl;
+            std::cout << "Register " << r << log::endl;
             if(!registers.reserved(r)){
                 if(registers.used(r)){
-                    std::cout << "  used by " << registers[r]->name() << std::endl;
+                    std::cout << "  used by " << registers[r]->name() << log::endl;
                 } else {
-                    std::cout << "  not used" << std::endl;
+                    std::cout << "  not used" << log::endl;
                 }
             } else {
-                std::cout << "  reserved" << std::endl;
+                std::cout << "  reserved" << log::endl;
             }
         }
 
@@ -99,7 +97,7 @@ Reg get_reg(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, b
 
     Reg reg = get_free_reg(registers, manager);
 
-    DEBUG_GLOBAL std::cout << "Found reg " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Found reg " << reg << log::endl;
 
     if(doMove){
         manager.move(variable, reg);
@@ -167,7 +165,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
 
 template<typename Reg>
 void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
-    DEBUG_GLOBAL std::cout << "Spills all" << std::endl;
+    log::emit<Trace>("Registers") << "Spills all" << log::endl;
 
     for(auto reg : registers){
         //The register can be reserved if the ending occurs in a special break case
@@ -206,7 +204,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
 
-        DEBUG_GLOBAL std::cout << "Copy " << variable->name() << std::endl;
+        log::emit<Trace>("Registers") << "Copy " << variable->name() << log::endl;
 
         //If the variable is hold in a register, just move the register value
         if(float_registers.inRegister(variable)){
@@ -333,50 +331,50 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 }
 
 ltac::Register ltac::RegisterManager::get_reg(std::shared_ptr<Variable> var){
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << std::endl;
+    log::emit<Trace>("Registers") << "Get reg for " << var->name() << log::endl;
     auto reg = ::get_reg(registers, var, true, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
 ltac::Register ltac::RegisterManager::get_reg_no_move(std::shared_ptr<Variable> var){
-    DEBUG_GLOBAL std::cout << "Get reg no move for " << var->name() << std::endl;
+    log::emit<Trace>("Registers") << "Get reg no move for " << var->name() << log::endl;
     auto reg = ::get_reg(registers, var, false, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_float_reg(std::shared_ptr<Variable> var){
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << std::endl;
+    log::emit<Trace>("Registers") << "Get reg for " << var->name() << log::endl;
     auto reg = ::get_reg(float_registers, var, true, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_float_reg_no_move(std::shared_ptr<Variable> var){
-    DEBUG_GLOBAL std::cout << "Get reg no move for " << var->name() << std::endl;
+    log::emit<Trace>("Registers") << "Get reg no move for " << var->name() << log::endl;
     auto reg = ::get_reg(float_registers, var, false, *this);
-    DEBUG_GLOBAL std::cout << "Get reg for " << var->name() << " => " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
 void ltac::RegisterManager::safe_move(std::shared_ptr<Variable> variable, ltac::Register reg){
-    DEBUG_GLOBAL std::cout << "Safe move " << variable->name() << " in " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Safe move " << variable->name() << " in " << reg << log::endl;
     return ::safe_move(registers, variable, reg, *this);
 }
 
 void ltac::RegisterManager::safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
-    DEBUG_GLOBAL std::cout << "Safe move " << variable->name() << " in " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Safe move " << variable->name() << " in " << reg << log::endl;
     return ::safe_move(float_registers, variable, reg, *this);
 }
 
 void ltac::RegisterManager::spills(ltac::Register reg){
-    DEBUG_GLOBAL std::cout << "Spills Register " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Spills Register " << reg << log::endl;
     ::spills(registers, reg, ltac::Operator::MOV, *this);
 }
 
 void ltac::RegisterManager::spills(ltac::FloatRegister reg){
-    DEBUG_GLOBAL std::cout << "Spills Float Register " << reg << std::endl;
+    log::emit<Trace>("Registers") << "Spills Float Register " << reg << log::endl;
     ::spills(float_registers, reg, ltac::Operator::FMOV, *this);
 }
 
@@ -423,7 +421,7 @@ bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
 
 bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){
     auto live = is_live(variable, current);
-    DEBUG_GLOBAL std::cout << variable->name() << " is live " << live << std::endl;
+    log::emit<Trace>("Registers") << variable->name() << " is live " << live << log::endl;
     return live;
 }
     
@@ -550,10 +548,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, P
 void ltac::RegisterManager::set_current(mtac::Statement statement){
     current = statement;
 
-    if(DEBUG_GLOBAL_ENABLED){
-        mtac::Printer printer;
-        printer.printStatement(statement);
-    }
+    log::emit<Trace>("Registers") << "Current statement " << statement << log::endl;
 }
         
 bool ltac::RegisterManager::is_written(std::shared_ptr<Variable> variable){

@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "EDDIFrontEnd.hpp"
+#include "logging.hpp"
 #include "SemanticalException.hpp"
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
@@ -69,6 +70,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::TemplateEngine template_engine;
 
         do {
+            log::emit<Info>("Template") << "Start template phase" << log::endl;
+
             //Define contexts and structures
             ast::defineContexts(program);
             ast::defineStructures(program);
@@ -89,8 +92,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             
             //If the dev option is defined, print the whole AST tree
             if(option_defined("dev")){
-                std::cout << "End of phase" << std::endl;
-
                 ast::Printer printer;
                 printer.print(program);
             }
