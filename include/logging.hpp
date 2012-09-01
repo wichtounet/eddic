@@ -12,4 +12,16 @@
 
 using namespace ::logging;
 
+#ifdef LOGGING_DISABLE
+
+void configure_logging(){}
+
+#else
+
+void configure_logging(){
+    ::logging::detail::Logger<Level>::logging()._level.l = Level::trace;
+}
+
+#endif
+
 #endif

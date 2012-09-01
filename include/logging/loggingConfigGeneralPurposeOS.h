@@ -83,9 +83,12 @@ namespace logging {
                 > StdLogRunTimeSwitchType;
     }
 
-    /*!\brief base logging type for the respective platform
-     */
+#ifdef LOGGING_DISABLE
+    typedef ::logging::config::StdLogType LoggingType;
+#else
     typedef ::logging::config::StdLogRunTimeSwitchType LoggingType;
+#endif
+
 }
 
 #endif

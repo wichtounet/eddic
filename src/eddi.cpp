@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "logging.hpp"
 #include "Options.hpp"
 #include "Compiler.hpp"
 
@@ -15,6 +16,8 @@ using namespace eddic;
 void printUsage();
 
 int main(int argc, const char* argv[]) {
+    configure_logging();
+
     if(!parseOptions(argc, argv)){
         return -1;
     }
