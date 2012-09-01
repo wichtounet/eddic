@@ -23,7 +23,19 @@ namespace ast {} //end of ast
  * \namespace eddic::tac
  * \brief Contains all the Three Address Code instructions. 
  */
-namespace tac {} //end of il
+namespace tac {} //end of tac
+
+/*!
+ * \namespace eddic::mtac
+ * \brief Contains the Medium-Level Three Address Code Intermediate representation. 
+ */
+namespace mtac {} //end of mtac
+
+/*!
+ * \namespace eddic::ltac
+ * \brief Contains the Low-Level Three Address Code Intermediate representation. 
+ */
+namespace ltac {} //end of ltac
 
 /*!
  * \namespace eddic::lexer
