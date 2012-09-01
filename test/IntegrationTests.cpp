@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE( compound ){
 }
 
 BOOST_AUTO_TEST_CASE( if_ ){
-    assert_output("if.eddi", "1|1|");
+    assert_output("if.eddi", "1|1|1|");
 }
 
 BOOST_AUTO_TEST_CASE( includes ){
