@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Assembler.hpp"
-#include "DebugStopWatch.hpp"
+#include "PerfsTimer.hpp"
 #include "Utils.hpp"
 
 #ifdef DEBUG
@@ -22,7 +22,7 @@ using namespace eddic;
 namespace {
 
 void exec(const std::string& command, bool verbose) {
-    DebugStopWatch<debug> timer("Exec " + command);
+    PerfsTimer timer("Exec " + command);
     
     if(debug || verbose){
         std::cout << "eddic : exec command : " << command << std::endl;
