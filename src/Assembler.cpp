@@ -11,12 +11,6 @@
 #include "PerfsTimer.hpp"
 #include "Utils.hpp"
 
-#ifdef DEBUG
-static const bool debug = true;
-#else
-static const bool debug = false;
-#endif
-
 using namespace eddic;
 
 namespace {
@@ -24,7 +18,7 @@ namespace {
 void exec(const std::string& command, bool verbose) {
     PerfsTimer timer("Exec " + command);
     
-    if(debug || verbose){
+    if(verbose){
         std::cout << "eddic : exec command : " << command << std::endl;
     }
 
