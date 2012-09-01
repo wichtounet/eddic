@@ -23,6 +23,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     unary_op.add
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
+        ("!", ast::Operator::NOT)
         ;
 
     additive_op.add

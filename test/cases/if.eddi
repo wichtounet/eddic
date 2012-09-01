@@ -8,6 +8,8 @@ void main(){
     print("|");
 
     second();
+
+    test_bools();
 }
 
 void second(){
@@ -17,5 +19,17 @@ void second(){
         print(1);
     }
 
+    print("|");
+}
+
+void test_bools(){
+    bool a = 3 > 5;
+
+    if(!a){
+        print(1);
+    } else {
+        print(0);
+    }
+    
     print("|");
 }

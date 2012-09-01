@@ -24,6 +24,7 @@ enum class Operator : unsigned int {
 
     AND,
     OR,
+    NOT,
 
     DEC,
     INC,
