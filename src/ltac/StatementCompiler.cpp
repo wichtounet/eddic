@@ -468,11 +468,7 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_p
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
     auto reg = manager.get_free_reg();
 
-    if(var->position().isParameter() && !var->type()->is_array()){
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(var, offset));
-    } else {
-        ltac::add_instruction(function, ltac::Operator::LEA, reg, to_address(var, offset));
-    }
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, to_address(var, offset));
     
     return reg;
 }
