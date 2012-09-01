@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "logging.hpp"
 #include "variant.hpp"
 #include "assert.hpp"
 #include "Utils.hpp"
@@ -895,6 +896,8 @@ struct Instantiator : public boost::static_visitor<> {
 
                 if(source_types.size() == template_types.size()){
                     if(!is_class_instantiated(name, template_types)){
+                        log::emit<Trace>("Template") << "Instantiate class template " << name << log::endl;
+
                         //Instantiate the struct
                         ast::Struct declaration;
                         declaration.Content->name = struct_declaration.Content->name;
@@ -1003,6 +1006,8 @@ struct Instantiator : public boost::static_visitor<> {
 
             if(source_types.size() == template_types.size()){
                 if(!is_instantiated(name, context, template_types)){
+                    log::emit<Trace>("Template") << "Instantiate function template " << name << log::endl;
+
                     //Instantiate the function 
                     ast::FunctionDeclaration declaration;
                     declaration.Content->position = function_declaration.Content->position;
