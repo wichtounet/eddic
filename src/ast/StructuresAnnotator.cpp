@@ -47,7 +47,7 @@ struct StructuresCollector : public boost::static_visitor<> {
                 struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
             }
             
-            struct_.Content->mangled_name = mangle(struct_.Content->struct_type);
+            struct_.Content->mangled_name = struct_.Content->struct_type->mangle();
 
             if(context->struct_exists(struct_.Content->mangled_name)){
                 throw SemanticalException("The structure " + struct_.Content->mangled_name + " has already been defined", struct_.Content->position);
@@ -111,7 +111,7 @@ struct StructuresVerifier : public boost::static_visitor<> {
                 auto type = (*struct_type)[member.Content->name]->type;
 
                 if(type->is_custom_type()){
-                    auto struct_name = mangle(type);
+                    auto struct_name = type->mangle();
 
                     if(!context->struct_exists(struct_name)){
                         throw SemanticalException("Invalid member type " + struct_name, member.Content->position);

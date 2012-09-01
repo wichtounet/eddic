@@ -62,7 +62,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
 namespace {
 
 std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> global_context, std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
-    auto struct_name = mangle(type);
+    auto struct_name = type->mangle();
     auto struct_type = global_context->get_struct(struct_name);
 
     for(std::size_t i = 0; i < memberNames.size(); ++i){
@@ -71,7 +71,7 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> globa
         if(i == memberNames.size() - 1){
             return member_type;
         } else {
-            struct_name = mangle(member_type);
+            struct_name = member_type->mangle();
             struct_type = global_context->get_struct(struct_name);
         }
     }

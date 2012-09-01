@@ -20,11 +20,11 @@ using namespace eddic;
 
 std::string eddic::mangle(std::shared_ptr<const Type> type){
     if(type->is_array()){
-        return "A" + mangle(type->data_type());
+        return "A" + type->data_type()->mangle();
     }
 
     if(type->is_pointer()){
-        return "P" + mangle(type->data_type());
+        return "P" + type->data_type()->mangle();
     }
 
     if(type->is_standard_type()){
@@ -65,7 +65,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         ss << types.size();
 
         for(auto& sub_type : types){
-            ss << mangle(sub_type);
+            ss << sub_type->mangle();
         }
         
         return ss.str();
@@ -79,8 +79,7 @@ std::string eddic::mangle(std::shared_ptr<Function> function){
 
     if(function->struct_type){
         ss << "_M";
-
-        ss << mangle(function->struct_type);
+        ss << function->struct_type->mangle();
     } else {
         ss << "_F";
     }
@@ -90,7 +89,7 @@ std::string eddic::mangle(std::shared_ptr<Function> function){
 
     for(auto type : function->parameters){
         if(type.name != "this"){
-            ss << mangle(type.paramType);
+            ss << type.paramType->mangle();
         }
     }
 
@@ -101,11 +100,11 @@ std::string eddic::mangle_ctor(const std::shared_ptr<Function> function){
     std::ostringstream ss;
 
     ss << "_C";
-    ss << mangle(function->struct_type);
+    ss << function->struct_type->mangle();
 
     for(auto type : function->parameters){
         if(type.name != "this"){
-            ss << mangle(type.paramType);
+            ss << type.paramType->mangle();
         }
     }
 
@@ -116,7 +115,7 @@ std::string eddic::mangle_dtor(const std::shared_ptr<Function> function){
     std::ostringstream ss;
 
     ss << "_D";
-    ss << mangle(function->struct_type);
+    ss << function->struct_type->mangle();
 
     return ss.str();
 }
@@ -126,8 +125,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
 
     if(struct_type){
         ss << "_M";
-
-        ss << mangle(struct_type);
+        ss << struct_type->mangle();
     } else {
         ss << "_F";
     }
@@ -138,7 +136,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
         auto type = visit(visitor, value);
-        ss << mangle(type);
+        ss << type->mangle();
     }
 
     return ss.str();
@@ -148,12 +146,12 @@ std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, std::share
     std::ostringstream ss;
 
     ss << "_C";
-    ss << mangle(struct_type);
+    ss << struct_type->mangle();
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
         auto type = visit(visitor, value);
-        ss << mangle(type);
+        ss << type->mangle();
     }
 
     return ss.str();
@@ -163,7 +161,7 @@ std::string eddic::mangle_dtor(std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_D";
-    ss << mangle(struct_type);
+    ss << struct_type->mangle();
 
     return ss.str();
 }
@@ -173,8 +171,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<std
 
     if(struct_type){
         ss << "_M";
-
-        ss << mangle(struct_type);
+        ss << struct_type->mangle();
     } else {
         ss << "_F";
     }
@@ -183,7 +180,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<std
     ss << functionName;
 
     for(auto type : types){
-        ss << mangle(type);
+        ss << type->mangle();
     }
 
     return ss.str();
