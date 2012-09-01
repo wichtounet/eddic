@@ -105,6 +105,12 @@ class Type : public std::enable_shared_from_this<Type> {
         virtual unsigned int size() const;
 
         /*!
+         * Return the mangled name of the type. 
+         * \return The mangled name of the type. 
+         */
+        std::string mangle() const;
+
+        /*!
          * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
          * \return a non-const version of this type;
          */

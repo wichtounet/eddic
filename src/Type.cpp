@@ -83,6 +83,10 @@ BaseType Type::base() const {
     ASSERT_PATH_NOT_TAKEN("Not a standard type");
 }
 
+std::string Type::mangle() const {
+    return ::mangle(shared_from_this());
+}
+
 std::shared_ptr<const Type> Type::non_const() const {
     if(is_const()){
         return shared_from_this();
@@ -185,7 +189,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size() const {
-    return context->size_of_struct(mangle(shared_from_this()));
+    return context->size_of_struct(mangle());
 }
         
 /* Implementation of ArrayType  */
@@ -242,7 +246,7 @@ bool TemplateType::is_template() const {
 }
 
 unsigned int TemplateType::size() const {
-    return context->size_of_struct(mangle(shared_from_this()));
+    return context->size_of_struct(mangle());
 }
 
 /* Implementation of factories  */
