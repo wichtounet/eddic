@@ -102,12 +102,15 @@ class SpiritLexer : public lex::lexer<L> {
             compound_div = "\\/=";
             compound_mod = "%=";
 
-            /* Math operators  */
+            /* Binary operators  */
             addition = '+';
             subtraction = '-';
             multiplication = '*';
             division = '/';
             modulo = '%';
+
+            /* Unary operators */
+            not_ = '!';
 
             /* Suffix and prefix math operators  */
             increment = "\\+\\+";
@@ -143,7 +146,7 @@ class SpiritLexer : public lex::lexer<L> {
             this->self += increment | decrement;
             this->self += new_ | delete_;
             this->self += and_ | or_;
-            this->self += equals | not_equals | greater_equals | less_equals | greater | less ;
+            this->self += equals | not_equals | greater_equals | less_equals | greater | less | not_;
             this->self += case_ | switch_ | default_;
             this->self += float_ | integer | identifier | string_literal | char_literal;
 
@@ -162,7 +165,7 @@ class SpiritLexer : public lex::lexer<L> {
         IntegerToken integer;
         FloatToken float_;
         
-        CharToken addition, subtraction, multiplication, division, modulo;
+        CharToken addition, subtraction, multiplication, division, modulo, not_;
         StringToken increment, decrement;
         StringToken compound_add, compound_sub, compound_mul, compound_div, compound_mod;
         StringToken equals, not_equals, greater, less, greater_equals, less_equals;
