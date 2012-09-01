@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_FIXTURE_TEST_SUITE(TemplateSuite, DeleteOutFixture)
 
 BOOST_AUTO_TEST_CASE( class_templates ){
-    assert_output("class_templates.eddi", "C1|C1|C2|100|100|13.3000|13.3000|7|7|88|88|55.2500|55.2500|D|D|D|");
+    assert_output("class_templates.eddi", "C1|C1|C2|100|100|13.3000|13.3000|7|7|88|88|55.2500|55.2500|1.0|10|D|D|D|");
 }
 
 BOOST_AUTO_TEST_CASE( function_templates ){

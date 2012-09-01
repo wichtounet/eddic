@@ -19,6 +19,12 @@ struct node {
     T get_value(){
         return this.value;
     }
+
+    template<type U>
+    void print_value(U v){
+        print(v);
+        print("|");
+    }
 }
 
 template<type T>
@@ -47,4 +53,7 @@ void main(){
 
     test<int>(first_node);
     test<float>(second_node);
+
+    first_node.print_value<float>(1.0);
+    second_node.print_value<int>(10);
 }
