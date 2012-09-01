@@ -1,0 +1,8 @@
+void main(){
+    string a = "asdf";
+
+    foreach(char c in a){
+        print(c);
+        print("|");
+    }
+}
