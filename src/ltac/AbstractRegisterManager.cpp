@@ -48,20 +48,20 @@ bool ltac::AbstractRegisterManager::is_reserved(ltac::FloatRegister reg){
 
 void ltac::AbstractRegisterManager::reserve(ltac::Register reg){
     registers.reserve(reg);
-    log::emit<Debug>("Registers") << "Int Register " << reg  << " reserved" << log::endl;
+    log::emit<Trace>("Registers") << "Int Register " << reg  << " reserved" << log::endl;
 }
 
 void ltac::AbstractRegisterManager::release(ltac::Register reg){
     registers.release(reg);
-    log::emit<Debug>("Registers") << "Int Register " << reg  << " released" << log::endl;
+    log::emit<Trace>("Registers") << "Int Register " << reg  << " released" << log::endl;
 }
 
 void ltac::AbstractRegisterManager::reserve(ltac::FloatRegister reg){
     float_registers.reserve(reg);
-    log::emit<Debug>("Registers") << "Float Register " << reg  << " reserved" << log::endl;
+    log::emit<Trace>("Registers") << "Float Register " << reg  << " reserved" << log::endl;
 }
 
 void ltac::AbstractRegisterManager::release(ltac::FloatRegister reg){
     float_registers.release(reg);
-    log::emit<Debug>("Registers") << "Float Register " << reg  << " released" << log::endl;
+    log::emit<Trace>("Registers") << "Float Register " << reg  << " released" << log::endl;
 }

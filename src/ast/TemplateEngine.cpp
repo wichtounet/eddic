@@ -896,7 +896,7 @@ struct Instantiator : public boost::static_visitor<> {
 
                 if(source_types.size() == template_types.size()){
                     if(!is_class_instantiated(name, template_types)){
-                        log::emit<Trace>("Template") << "Instantiate class template " << name << log::endl;
+                        log::emit<Info>("Template") << "Instantiate class template " << name << log::endl;
 
                         //Instantiate the struct
                         ast::Struct declaration;
@@ -1006,7 +1006,7 @@ struct Instantiator : public boost::static_visitor<> {
 
             if(source_types.size() == template_types.size()){
                 if(!is_instantiated(name, context, template_types)){
-                    log::emit<Trace>("Template") << "Instantiate function template " << name << log::endl;
+                    log::emit<Info>("Template") << "Instantiate function template " << name << log::endl;
 
                     //Instantiate the function 
                     ast::FunctionDeclaration declaration;
