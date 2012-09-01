@@ -484,7 +484,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::Unary& value) const {
         if(value.Content->op == ast::Operator::ADD){
             return visit(*this, value.Content->value);
-        } else {
+        } else if(value.Content->op == ast::Operator::SUB){
             mtac::Argument arg = moveToArgument(value.Content->value, function);
 
             auto type = visit(ast::GetTypeVisitor(), value.Content->value);
@@ -497,6 +497,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
 
             return {t1};
+        } else if(value.Content->op == ast::Operator::NOT){
+            mtac::Argument arg = moveToArgument(value.Content->value, function);
+            
+            auto t1 = function->context->new_temporary(BOOL);
+
+            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::NOT));
+
+            return {t1};
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled unary operator");
         }
     }
     
