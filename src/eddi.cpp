@@ -16,11 +16,11 @@ using namespace eddic;
 void printUsage();
 
 int main(int argc, const char* argv[]) {
-    configure_logging();
-
     if(!parseOptions(argc, argv)){
         return -1;
     }
+    
+    configure_logging(option_int_value("log"));
 
     if(option_defined("help")){
         print_help();
