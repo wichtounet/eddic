@@ -734,8 +734,6 @@ struct Instantiator : public boost::static_visitor<> {
     std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
     std::vector<ast::Struct> class_template_instantiated;
 
-    std::shared_ptr<FunctionContext> current_context;
-
     Instantiator(ast::TemplateEngine& engine) : 
         function_templates(engine.function_templates), function_template_instantiations(engine.function_template_instantiations),
         class_templates(engine.class_templates), class_template_instantiations(engine.class_template_instantiations) {}
@@ -938,8 +936,6 @@ struct Instantiator : public boost::static_visitor<> {
     }
 
     void operator()(const ast::FunctionDeclaration& function){
-        current_context = function.Content->context;
-
         for(auto& param_type : function.Content->parameters){
             check_type(param_type.parameterType, function.Content->position);
         }
@@ -1061,11 +1057,14 @@ struct Instantiator : public boost::static_visitor<> {
 
         if(!functionCall.Content->template_types.empty()){
             auto object_name = functionCall.Content->object_name;
-            auto object_var = current_context->getVariable(object_name);
-            auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
-            auto context = object_type->type();
 
-            handle_template(functionCall, context);            
+            if(functionCall.Content->context->exists(object_name)){
+                auto object_var = functionCall.Content->context->getVariable(object_name);
+                auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
+                auto context = object_type->type();
+
+                handle_template(functionCall, context);            
+            }
         }
     }
 
