@@ -6,15 +6,13 @@
 //=======================================================================
 
 #include "Type.hpp"
+#include "logging.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
 
 #include "mtac/Utils.hpp"
-
-#define DEBUG_GLOBAL_ENABLED false 
-#define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 using namespace eddic;
 
@@ -50,20 +48,20 @@ bool ltac::AbstractRegisterManager::is_reserved(ltac::FloatRegister reg){
 
 void ltac::AbstractRegisterManager::reserve(ltac::Register reg){
     registers.reserve(reg);
-    DEBUG_GLOBAL std::cout << "Int Register " << reg  << " reserved" << std::endl;
+    log::emit<Debug>("Registers") << "Int Register " << reg  << " reserved" << log::endl;
 }
 
 void ltac::AbstractRegisterManager::release(ltac::Register reg){
     registers.release(reg);
-    DEBUG_GLOBAL std::cout << "Int Register " << reg  << " released" << std::endl;
+    log::emit<Debug>("Registers") << "Int Register " << reg  << " released" << log::endl;
 }
 
 void ltac::AbstractRegisterManager::reserve(ltac::FloatRegister reg){
     float_registers.reserve(reg);
-    DEBUG_GLOBAL std::cout << "Float Register " << reg  << " reserved" << std::endl;
+    log::emit<Debug>("Registers") << "Float Register " << reg  << " reserved" << log::endl;
 }
 
 void ltac::AbstractRegisterManager::release(ltac::FloatRegister reg){
     float_registers.release(reg);
-    DEBUG_GLOBAL std::cout << "Float Register " << reg  << " released" << std::endl;
+    log::emit<Debug>("Registers") << "Float Register " << reg  << " released" << log::endl;
 }
