@@ -22,6 +22,10 @@ int main(int argc, const char* argv[]) {
     
     configure_logging(option_int_value("log"));
 
+    log::emit<Info>("Compiler") << "Info" << log::endl;
+    log::emit<Trace>("Compiler") << "Trace" << log::endl;
+    log::emit<Debug>("Compiler") << "Debug" << log::endl;
+
     if(option_defined("help")){
         print_help();
         return 0;

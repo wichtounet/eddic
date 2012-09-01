@@ -73,7 +73,7 @@ namespace logging {
          *  \tparam R represents the return_type aka the output type, that is responsible
          *          for the %logging.
          */
-        template<typename Level = ::logging::Void, typename R = loggingReturnType>
+        template<typename Level, typename R = loggingReturnType>
         class Logger {
             public:
                 /*! \brief The typedef is made for function from outer scope,
@@ -168,39 +168,14 @@ namespace logging {
             tab  =  '\t',   ///< prints a tabulator to the output
             endl =  '\n'    ///< adds a line feed output
         };
-
-        /*! \brief The emit method gets the to logged information and emits it to the
-         *         output (sink) of the %logging framework
-         *
-         * \tparam  Level describes the %logging %Level. It could be logging::Trace,
-         *          logging::Info, ... or a user defined type, that fulfils the the
-         *          correct interface.
-         *
-         * \returns a type, to that can be logged, but it behaviour depends on the
-         *          configuration
-         *
-         * You can use the log::emit method as follows:
-         * \code
-         * log::emit() << "Hello World!" << log::endl;
-         * // prints "Hello World!" with a line feed.
-         *
-         * log::emit< ::logging::Info>() << "Hello World!" << log::endl;
-         * //prints "[ INFO  ] Hello World!" with a line feed.
-         * \endcode
-         */
+        
         template<typename Level>
-        static inline typename ::logging::detail::Logger<Level>::return_type& emit () {
-            return ::logging::detail::Logger<Level>::logging()
-                   << Level::level() << Level::desc();
-        }
-
-        static inline ::logging::detail::Logger<>::return_type& emit () {
-            return ::logging::detail::Logger<>::logging() << ::logging::Void::level();
+        static inline typename ::logging::detail::Logger<Level>::return_type& emit (const std::string& subject) {
+            return ::logging::detail::Logger<Level>::logging() << Level::level() << Level::desc() << "[" << subject << "] ";
         }
     };
 
 } /* logging */
-
 
 /*! \brief The macro generates the correct return type of the logging framework
  *

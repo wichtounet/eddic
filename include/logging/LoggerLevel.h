@@ -78,26 +78,6 @@ namespace logging {
     /*! \brief This class is intended to be used as a template argument for
      *         the logging::log::emit() function.
      *
-     *         Does not prefix the output, but enables reporting of the
-     *         current logging level, too.
-     */
-    struct Void {
-        /*! \brief delivers the current %level of %logging */
-        static ::logging::Level::levels level () {
-            return ::logging::Level::normal;
-        }
-        /*! \brief delivers the string reporting the current %level of %logging */
-        static const char * desc() {
-            return "";
-        }
-    };
-
-    /*! \brief only for convenience */
-    typedef Void Normal;
-
-    /*! \brief This class is intended to be used as a template argument for
-     *         the logging::log::emit() function.
-     *
      *         Prefixes the output with "[ INFO  ] " and enables reporting
      *         of the current logging level.
      */
@@ -108,7 +88,7 @@ namespace logging {
         }
         /*! \brief delivers the string reporting the current %level of %logging */
         static const char * desc() {
-            return "[ INFO  ] ";
+            return "[INFO ] ";
         }
     };
 
@@ -125,7 +105,7 @@ namespace logging {
         }
         /*! \brief delivers the string reporting the current %level of %logging */
         static const char * desc() {
-            return "[ TRACE ] ";
+            return "[TRACE] ";
         }
     };
 
@@ -142,7 +122,7 @@ namespace logging {
         }
         /*! \brief delivers the string reporting the current %level of %logging */
         static const char * desc() {
-            return "[ DEBUG ] ";
+            return "[DEBUG] ";
         }
     };
 
