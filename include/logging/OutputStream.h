@@ -57,6 +57,16 @@ namespace logging {
     template< typename Base>
     class OutputStream : public Base {
         public:
+            /*!
+             * \brief Operator for catching manipulators
+             * \param m is the manipulator that is feed to the output stream
+             * \return %OutputStream& allows for chaining of operators
+             **/
+            OutputStream& operator << (const ::logging::log::Manipulator m) {
+                Base::operator<<(static_cast<char>(m));
+                return *this;
+            }
+
             /*! \brief enable calling of manipulator functions
              *
              * \param f is a function that is called with the %OutputStream&
@@ -68,7 +78,7 @@ namespace logging {
             }
 
             template<typename T>
-            OutputStream& operator << (T value){
+            OutputStream& operator << (T& value){
                 Base::operator<<(value);
                 return *this;
             }
