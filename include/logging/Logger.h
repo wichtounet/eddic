@@ -163,14 +163,6 @@ namespace logging {
      *  \endcode
      */
     struct log {
-        /*! \brief Numerative manipulator definitions */
-        enum Numerative {
-            bin  =  2,   ///< switch to binary output
-            oct  =  8,   ///< switch to octal output
-            dec  = 10,   ///< switch to decimal output
-            hex  = 16    ///< switch to hexadecimal output
-        };
-
         /*! \brief Manipulator definitions */
         enum Manipulator {
             tab  =  '\t',   ///< prints a tabulator to the output
