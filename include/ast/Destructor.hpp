@@ -30,7 +30,7 @@ struct ASTDestructor {
     bool marked = false;
     
     std::string mangledName;
-    std::string struct_name; //TODO Check if still useful with struct_type
+    std::string struct_name;
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
     std::vector<FunctionParameter> parameters;
