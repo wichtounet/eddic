@@ -71,15 +71,6 @@ namespace logging {
                     >
                 > StdLogType;
 
-        /*!\brief StdErrLogType is a possible %logging type, supporting buffered %logging
-         *        to standard error output on general purpose operating systems
-         */
-        typedef ::logging::OutputLevelSwitchDisabled <
-                    ::logging::OutputStream <
-                        ::logging::StdOutput< ::std::cerr>
-                    >
-                > StdErrLogType;
-
         /*!\brief StdLogRunTimeSwitchType is a possible %logging type,
          *        supporting %logging to standard output on general purpose
          *        operating systems with the additional feature of switching
@@ -94,8 +85,7 @@ namespace logging {
 
     /*!\brief base logging type for the respective platform
      */
-    typedef ::logging::config::StdLogType LoggingType;
+    typedef ::logging::config::StdLogRunTimeSwitchType LoggingType;
 }
-
 
 #endif

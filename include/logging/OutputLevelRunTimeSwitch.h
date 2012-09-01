@@ -47,10 +47,10 @@ namespace logging {
     /*! \brief Treatment of logging levels can be switched at runtime
      */
     template < typename Base >
-    class OutputLevelRunTimeSwitch  : public Base {
+    struct OutputLevelRunTimeSwitch  : public Base {
             ::logging::Level _level;
             ::logging::Level _current;
-        public:
+            
             OutputLevelRunTimeSwitch() {
                 _level.l = ::logging::Level::normal | ::logging::Level::error;
                 _current.l = ::logging::Level::normal;
@@ -60,7 +60,7 @@ namespace logging {
              *         on in the general %level.
              */
             bool allowed() {
-                return !!(_level&_current);
+                return _current.l <= _level.l;
             }
 
             /*! \brief Matches only on correct type and set the
