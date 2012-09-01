@@ -8,32 +8,14 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include "assert.hpp"
-
 #include "logging/logging.h"
 
 using namespace ::logging;
 
-#ifdef LOGGING_DISABLE
+namespace eddic {
 
-void configure_logging(int){}
+void configure_logging(int level);
 
-#else
-
-void configure_logging(int level){
-    if(level == 0){
-        ::logging::detail::Logger<Level>::logging()._level.l = Level::disable;
-    } else if(level == 1){
-        ::logging::detail::Logger<Level>::logging()._level.l = Level::info;
-    } else if(level == 2){
-        ::logging::detail::Logger<Level>::logging()._level.l = Level::trace;
-    } else if(level == 3){
-        ::logging::detail::Logger<Level>::logging()._level.l = Level::debug;
-    } else {
-        ASSERT_PATH_NOT_TAKEN("Invalid log level");
-    }
-}
-
-#endif
+} //end of eddic
 
 #endif

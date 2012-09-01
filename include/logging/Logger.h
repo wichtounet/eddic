@@ -40,6 +40,8 @@
 #ifndef __Logger_h__
 #define __Logger_h__
 
+#include <string>
+
 #include "logging/singleton.h"
 
 #include "logging/NullOutput.h"
