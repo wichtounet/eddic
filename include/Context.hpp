@@ -84,21 +84,21 @@ class Context {
 
         /*!
          * Indicates if the given variable exists in this context. 
-         * \param The name of the searched variable. 
+         * \param name The name of the searched variable. 
          * \return true if the given variable exists, false otherwise. 
          */
         bool exists(const std::string& name) const;
 
         /*!
          * Returns the variable with the given name. 
-         * \param The name of the searched variable. 
+         * \param name The name of the searched variable. 
          * \return The variable with the given name.  
          */
         std::shared_ptr<Variable> getVariable(const std::string& name) const;
         
         /*!
          * Returns the variable with the given name. 
-         * \param The name of the searched variable. 
+         * \param name The name of the searched variable. 
          * \return The variable with the given name.  
          */
         std::shared_ptr<Variable> operator[](const std::string& name) const;

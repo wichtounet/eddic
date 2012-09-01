@@ -28,6 +28,11 @@ namespace eddic {
 
 namespace ast {
 
+/*!
+ * \class ASTStruct
+ * \brief The AST node for a structure declaration.  
+ * Should only be used from the Deferred version (eddic::ast::Struct).
+ */
 struct ASTStruct {
     bool marked = false;        /*!< Indicates that the structure has been handled by the front end */
     bool instantiated = false;  /*!< Indicates that the structure has been instantiated from a template */
@@ -46,6 +51,10 @@ struct ASTStruct {
     mutable long references = 0;
 };
 
+/*!
+ * \typedef Struct
+ * \brief The AST node for a structure declaration.
+ */
 typedef Deferred<ASTStruct> Struct;
 
 } //end of ast
