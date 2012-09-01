@@ -85,8 +85,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
     VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
     
     void operator()(ast::Struct& struct_){
-        if(context->is_recursively_nested(struct_.Content->mangled_name)){
-            throw SemanticalException("The structure " + struct_.Content->mangled_name + " is invalidly nested", struct_.Content->position);
+        if(context->is_recursively_nested(struct_.Content->struct_type->mangle())){
+            throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
         }
 
         visit_each_non_variant(*proxy, struct_.Content->constructors);
