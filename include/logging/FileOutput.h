@@ -72,14 +72,9 @@ namespace logging {
                 fb.close();
             }
 
-            /*! \brief operator that can output a simple character.
-             *
-             * \param c the character that needs to be outputed
-             * \return a reference to itself allowing chaning of
-             *         opertor<< calls.
-             */
-            FileOutput & operator<<(const char c) {
-                os << c;
+            template<typename T>
+            FileOutput & operator<<(T value) {
+                os << value;
                 return *this;
             }
     };

@@ -10,4 +10,6 @@
 
 #include "logging/logging.h"
 
+using namespace ::logging;
+
 #endif

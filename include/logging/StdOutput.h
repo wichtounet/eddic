@@ -51,14 +51,9 @@ namespace logging {
     template <std::ostream & stream = ::std::cout>
     class StdOutput {
         public:
-            /*! \brief operator that can output a simple character.
-             *
-             * \param c the character that needs to be outputed
-             * \return a reference to itself allowing chaning of
-             *         opertor<< calls.
-             */
-            StdOutput & operator<<(const char c) {
-                stream << c;
+            template<typename T>
+            StdOutput & operator<<(T value) {
+                stream << value;
                 return *this;
             }
     };
