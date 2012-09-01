@@ -33,6 +33,8 @@ std::string eddic::ast::toString(Operator op){
             return "&&";
         case ast::Operator::OR:
             return "||";
+        case ast::Operator::NOT:
+            return "!";
         case ast::Operator::DEC:
             return "--";
         case ast::Operator::INC:
