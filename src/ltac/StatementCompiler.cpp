@@ -1212,6 +1212,12 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadrupl
     ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
 }
 
+void ltac::StatementCompiler::compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto reg = manager.get_reg_no_move(quadruple->result);
+    manager.copy(*quadruple->arg1, reg);
+    ltac::add_instruction(function, ltac::Operator::NOT, reg); 
+}
+
 void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple){
     //A return without args is the same as exiting from the function
     if(quadruple->arg1){
@@ -1381,6 +1387,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
             break;
         case mtac::Operator::RETURN:
             compile_RETURN(quadruple);
+            break;
+        case mtac::Operator::NOT:
+            compile_NOT(quadruple);
             break;
         case mtac::Operator::NOP:
             //No code necessary

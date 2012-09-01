@@ -30,7 +30,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
-    AUTO_RETURN_UNARY(ast::Value)
     
     ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
@@ -50,6 +49,12 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
     ast::Value operator()(ast::ArrayValue& value){
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
+
+        return value;
+    }
+    
+    ast::Value operator()(ast::Unary& value){
+        value.Content->value = visit(*this, value.Content->value); 
 
         return value;
     }
