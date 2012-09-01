@@ -210,6 +210,9 @@ struct X86StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::NEG:
                 writer.stream() << "neg " << *instruction->arg1 << std::endl;
                 break;
+            case ltac::Operator::NOT:
+                writer.stream() << "not " << *instruction->arg1 << std::endl;
+                break;
             case ltac::Operator::I2F:
                 writer.stream() << "cvtsi2ss " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
