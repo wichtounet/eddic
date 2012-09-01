@@ -40,8 +40,7 @@ char get_char(){
 
 bool complete(string word, char[] guessed){
     for(int i = 0; i < length(word); ++i){
-        if(contains(guessed, word[i])){
-        } else {
+        if(!contains(guessed, word[i])){
             return false;
         }
     }
