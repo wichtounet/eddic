@@ -80,8 +80,16 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto var_type = foreach.Content->var->type();
             auto array_type = foreach.Content->arrayVar->type();
 
-            if(var_type != array_type->data_type()){
-                throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+            if(array_type->is_array()){
+                if(var_type != array_type->data_type()){
+                    throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+                }
+            } else if(array_type == STRING){
+                if(var_type != CHAR){
+                    throw SemanticalException("Foreach in string yields a char", foreach.Content->position);
+                }
+            } else {
+                throw SemanticalException("Cannot use foreach in variable " + foreach.Content->arrayName, foreach.Content->position);
             }
 
             visit_each(*this, foreach.Content->instructions);
