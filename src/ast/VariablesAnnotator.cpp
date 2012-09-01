@@ -281,6 +281,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
             foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
             foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), INT);
+            
+            //Add references to variables
+            foreach.Content->var->addReference();
+            foreach.Content->iterVar->addReference();
+            foreach.Content->arrayVar->addReference();
         }
 
         visit_each(*proxy, foreach.Content->instructions);

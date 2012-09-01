@@ -228,6 +228,14 @@ BOOST_AUTO_TEST_CASE( string_arrays ){
     assert_output("string_arrays.eddi", "5|6|7|7|5|6|7|7||||a|a|a|a|a||||||2|2|2|7|7||||4|9|4|a|9|9||||4|9|4|2|9|9||||");
 }
 
+BOOST_AUTO_TEST_CASE( string_foreach ){
+    assert_output("string_foreach.eddi", "a|s|d|f|");
+}
+
+BOOST_AUTO_TEST_CASE( string_pointers ){
+    assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
+}
+
 BOOST_AUTO_TEST_CASE( int_pointers ){
     assert_output("int_pointers.eddi", "44|44|55|55|66|66|66|");
 }
@@ -246,10 +254,6 @@ BOOST_AUTO_TEST_CASE( dynamic ){
 
 BOOST_AUTO_TEST_CASE( dynamic_struct ){
     assert_output("dynamic_struct.eddi", "0|-9|55|asdf|999|-9|0||0|666|777|666|777|1000|");
-}
-
-BOOST_AUTO_TEST_CASE( string_pointers ){
-    assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
 }
 
 BOOST_AUTO_TEST_CASE( float_pointers ){
