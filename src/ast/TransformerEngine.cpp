@@ -273,8 +273,13 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         array_var_value.Content->context = foreach.Content->context;
 
         ast::BuiltinOperator size_builtin; 
-        size_builtin.Content->type = ast::BuiltinType::SIZE;
         size_builtin.Content->values.push_back(array_var_value);
+        
+        if(arrayVar->type()->is_array()){
+            size_builtin.Content->type = ast::BuiltinType::SIZE;
+        } else {
+            size_builtin.Content->type = ast::BuiltinType::LENGTH;
+        }
 
         ast::Expression while_condition;
         while_condition.Content->first = iter_var_value;
