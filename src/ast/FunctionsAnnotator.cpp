@@ -26,6 +26,8 @@ namespace {
 class MemberFunctionAnnotator : public boost::static_visitor<> {
     private:
         std::shared_ptr<GlobalContext> context;
+        std::string parent_struct;
+        ast::Struct current_struct;
 
     public:
         void operator()(ast::SourceFile& program){
@@ -35,6 +37,7 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& struct_){
+            current_struct = struct_;
             parent_struct = struct_.Content->name;
 
             visit_each_non_variant(*this, struct_.Content->constructors);
@@ -45,43 +48,51 @@ class MemberFunctionAnnotator : public boost::static_visitor<> {
         }
 
         template<typename T>
-        void add_this(T& declaration){
-            ast::PointerType paramType;
-            paramType.type = parent_struct;
+        void annotate(T& declaration){
+            if(!declaration.Content->marked){
+                declaration.Content->struct_name = parent_struct;
+                declaration.Content->struct_type = current_struct.Content->struct_type;
+                
+                ast::PointerType paramType;
 
-            ast::FunctionParameter param;
-            param.parameterName = "this";
-            param.parameterType = paramType;
+                if(current_struct.Content->template_types.empty()){
+                    ast::SimpleType struct_type;
+                    struct_type.type = parent_struct;
+                    struct_type.const_ = false;
 
-            declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+                    paramType.type = struct_type;
+                } else {
+                    ast::TemplateType struct_type;
+                    struct_type.type = parent_struct;
+                    struct_type.template_types = current_struct.Content->template_types;
+                    struct_type.resolved = true;
+
+                    paramType.type = struct_type;
+                }
+                
+                ast::FunctionParameter param;
+                param.parameterName = "this";
+                param.parameterType = paramType;
+
+                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+            }
         }
 
         void operator()(ast::Constructor& constructor){
-            constructor.Content->struct_name = parent_struct;
-            
-            add_this(constructor);
+            annotate(constructor);
         }
 
         void operator()(ast::Destructor& destructor){
-            destructor.Content->struct_name = parent_struct;
-            
-            add_this(destructor);
+            annotate(destructor);
         }
          
         void operator()(ast::FunctionDeclaration& declaration){
-            if(!declaration.Content->marked){
-                declaration.Content->struct_name = parent_struct;
-
-                if(!parent_struct.empty()){
-                    add_this(declaration);
-                }
+            if(!parent_struct.empty()){
+                annotate(declaration);
             }
         }
 
         AUTO_IGNORE_OTHERS()
-
-    private:
-        std::string parent_struct;
 };
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
@@ -116,6 +127,7 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
                 }
 
                 signature->struct_ = declaration.Content->struct_name;
+                signature->struct_type = declaration.Content->struct_type;
                 signature->context = declaration.Content->context;
 
                 declaration.Content->mangledName = signature->mangledName = mangle(signature);
@@ -129,43 +141,49 @@ class FunctionInserterVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Constructor& constructor){
-            auto signature = std::make_shared<Function>(VOID, "ctor");
-            
-            for(auto& param : constructor.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-            }
-            
-            signature->struct_ = constructor.Content->struct_name;
-            
-            constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
+            if(!constructor.Content->marked){
+                auto signature = std::make_shared<Function>(VOID, "ctor");
 
-            if(context->exists(signature->mangledName)){
-                throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
-            }
+                for(auto& param : constructor.Content->parameters){
+                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+                }
 
-            context->addFunction(signature);
-            context->getFunction(signature->mangledName)->context = constructor.Content->context;
+                signature->struct_ = constructor.Content->struct_name;
+                signature->struct_type = constructor.Content->struct_type;
+
+                constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
+
+                if(context->exists(signature->mangledName)){
+                    throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
+                }
+
+                context->addFunction(signature);
+                context->getFunction(signature->mangledName)->context = constructor.Content->context;
+            }
         }
 
         void operator()(ast::Destructor& destructor){
-            auto signature = std::make_shared<Function>(VOID, "dtor");
-            
-            for(auto& param : destructor.Content->parameters){
-                auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-            }
-            
-            signature->struct_ = destructor.Content->struct_name;
-            
-            destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
+            if(!destructor.Content->marked){
+                auto signature = std::make_shared<Function>(VOID, "dtor");
 
-            if(context->exists(signature->mangledName)){
-                throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
-            }
+                for(auto& param : destructor.Content->parameters){
+                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+                }
 
-            context->addFunction(signature);
-            context->getFunction(signature->mangledName)->context = destructor.Content->context;
+                signature->struct_ = destructor.Content->struct_name;
+                signature->struct_type = destructor.Content->struct_type;
+
+                destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
+
+                if(context->exists(signature->mangledName)){
+                    throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
+                }
+
+                context->addFunction(signature);
+                context->getFunction(signature->mangledName)->context = destructor.Content->context;
+            }
         }
 
         AUTO_IGNORE_OTHERS()
@@ -281,7 +299,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
                 auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
                 auto type = var->type();
-                auto struct_type = type->is_pointer() ? type->data_type()->type() : type->type();
+                auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                 visit_each(*this, functionCall.Content->values);
 

@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "assert.hpp"
+#include "mangling.hpp"
 #include "Type.hpp"
 #include "Platform.hpp"
 #include "GlobalContext.hpp"
@@ -54,6 +55,10 @@ bool Type::is_const() const {
     return false;
 }
 
+bool Type::is_template() const {
+    return false;
+}
+
 unsigned int Type::size() const {
     ASSERT_PATH_NOT_TAKEN("Not specialized type");
 }
@@ -68,6 +73,10 @@ std::string Type::type() const {
 
 std::shared_ptr<const Type> Type::data_type() const {
     ASSERT_PATH_NOT_TAKEN("No data type");
+}
+        
+std::vector<std::shared_ptr<const Type>> Type::template_types() const {
+    ASSERT_PATH_NOT_TAKEN("No template types");
 }
 
 BaseType Type::base() const {
@@ -85,7 +94,11 @@ std::shared_ptr<const Type> Type::non_const() const {
     
     if(is_custom_type()){
         return shared_from_this();
-    } 
+    }
+    
+    if(is_template()){
+        return shared_from_this();
+    }
     
     if(is_standard_type()){
         return std::make_shared<StandardType>(base(), false);
@@ -111,6 +124,23 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
 
     if(lhs->is_standard_type()){
         return rhs->is_standard_type() && lhs->base() == rhs->base();
+    }
+
+    if(lhs->is_template()){
+        if(rhs->is_template() && lhs->data_type() == rhs->data_type()){
+            auto lhs_template_types = lhs->template_types();
+            auto rhs_template_types = rhs->template_types();
+
+            if(lhs_template_types.size() == rhs_template_types.size()){
+                for(unsigned int i = 0; i < lhs_template_types.size(); ++i){
+                    if(lhs_template_types[i] != rhs_template_types[i]){
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
     }
 
     return false;
@@ -143,7 +173,8 @@ unsigned int StandardType::size() const {
 
 /* Implementation of CustomType */
 
-CustomType::CustomType(const std::string& type, unsigned int size) : m_type(type), m_size(size) {}
+CustomType::CustomType(std::shared_ptr<GlobalContext> context, const std::string& type) : 
+    context(context), m_type(type) {}
 
 std::string CustomType::type() const {
     return m_type;
@@ -154,7 +185,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size() const {
-    return m_size;
+    return context->size_of_struct(mangle(shared_from_this()));
 }
         
 /* Implementation of ArrayType  */
@@ -191,6 +222,27 @@ bool PointerType::is_pointer() const {
 
 unsigned int PointerType::size() const {
     return INT->size();
+}
+        
+/* Implementation of TemplateType  */
+
+TemplateType::TemplateType(std::shared_ptr<GlobalContext> context, std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types) : 
+    context(context), main_type(main_type), sub_types(sub_types) {}
+
+std::string TemplateType::type() const {
+    return main_type;
+}
+
+std::vector<std::shared_ptr<const Type>> TemplateType::template_types() const {
+    return sub_types;
+}
+
+bool TemplateType::is_template() const {
+    return true;
+}
+
+unsigned int TemplateType::size() const {
+    return context->size_of_struct(mangle(shared_from_this()));
 }
 
 /* Implementation of factories  */
@@ -245,8 +297,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         }
     } else {
         assert(!const_);
-        unsigned int size = context->size_of_struct(type);
-        return std::make_shared<CustomType>(type, size);
+        return std::make_shared<CustomType>(context, type);
     }
 }
 
@@ -256,6 +307,10 @@ std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> da
 
 std::shared_ptr<const Type> eddic::new_pointer_type(std::shared_ptr<const Type> data_type){
     return std::make_shared<PointerType>(data_type);
+}
+
+std::shared_ptr<const Type> eddic::new_template_type(std::shared_ptr<GlobalContext> context, std::string data_type, std::vector<std::shared_ptr<const Type>> template_types){
+    return std::make_shared<TemplateType>(context, data_type, template_types);
 }
 
 bool eddic::is_standard_type(const std::string& type){

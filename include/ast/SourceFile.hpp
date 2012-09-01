@@ -19,13 +19,14 @@
 
 #include "ast/Position.hpp"
 #include "ast/Deferred.hpp"
-#include "ast/FunctionDeclaration.hpp"
-#include "ast/TemplateFunctionDeclaration.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/GlobalArrayDeclaration.hpp"
 #include "ast/StandardImport.hpp"
 #include "ast/Import.hpp"
 #include "ast/Struct.hpp"
+#include "ast/TemplateStruct.hpp"
+#include "ast/FunctionDeclaration.hpp"
+#include "ast/TemplateFunctionDeclaration.hpp"
 
 #include "Context.hpp"
 
@@ -46,6 +47,7 @@ typedef boost::variant<
             GlobalArrayDeclaration,
             StandardImport,
             Import,
+            TemplateStruct,
             Struct
         > FirstLevelBlock;
 

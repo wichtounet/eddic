@@ -40,3 +40,11 @@ int Variable::referenceCount() const {
 void Variable::setPosition(Position position){
     m_position = position;
 }
+        
+const ast::Position& Variable::source_position() const {
+    return m_source_position;
+}
+
+void Variable::set_source_position(const ast::Position& position){
+    m_source_position = position;
+}

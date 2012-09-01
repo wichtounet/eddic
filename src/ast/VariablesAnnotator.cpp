@@ -17,6 +17,7 @@
 #include "Variable.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "mangling.hpp"
 
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/SourceFile.hpp"
@@ -31,10 +32,13 @@ using namespace eddic;
 
 namespace {
 
-struct VariablesVisitor : public boost::static_visitor<> {
-    std::shared_ptr<GlobalContext> context;
+template<typename Visitor>
+struct VisitorProxy : public boost::static_visitor<> {
+    bool delayed = false;
+    Visitor visitor;
 
-    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
+    template<typename... Args>
+    VisitorProxy(Args... args) : visitor(args...) {}
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_FUNCTION_CALLS()
@@ -54,6 +58,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_SUFFIX()
 
     AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
+    AUTO_IGNORE_TEMPLATE_STRUCT()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
@@ -64,32 +69,54 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
+
+    template<typename T>
+    void operator()(T& t){
+        if(!delayed){
+            visit_non_variant(visitor, t);
+        }
+    }
+};
+
+struct VariablesVisitor : public boost::static_visitor<> {
+    VisitorProxy<VariablesVisitor>* proxy = nullptr;
+    std::shared_ptr<GlobalContext> context;
+
+    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
     
     void operator()(ast::Struct& struct_){
-        if(context->is_recursively_nested(struct_.Content->name)){
-            throw SemanticalException("The structure " + struct_.Content->name + " is invalidly nested", struct_.Content->position);
+        if(context->is_recursively_nested(struct_.Content->mangled_name)){
+            throw SemanticalException("The structure " + struct_.Content->mangled_name + " is invalidly nested", struct_.Content->position);
         }
 
-        visit_each_non_variant(*this, struct_.Content->constructors);
-        visit_each_non_variant(*this, struct_.Content->destructors);
-        visit_each_non_variant(*this, struct_.Content->functions);
+        visit_each_non_variant(*proxy, struct_.Content->constructors);
+        visit_each_non_variant(*proxy, struct_.Content->destructors);
+        visit_each_non_variant(*proxy, struct_.Content->functions);
     }
 
-    bool is_valid(const std::string& type){
-        if(is_standard_type(type)){
-            return true;
+    bool is_resolved(const ast::Type& type){
+        if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            return ptr->resolved;
         }
-
-        return context->struct_exists(type);
+        
+        return true;
     }
 
     bool is_valid(const ast::Type& type){
         if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-            return is_valid(ptr->type);
+            return is_valid(ptr->type.get());
         } else if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-            return is_valid(ptr->type);
+            if(is_standard_type(ptr->type)){
+                return true;
+            }
+
+            auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
+            return context->struct_exists(mangle(t));
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            return is_valid(ptr->type);
+            return is_valid(ptr->type.get());
+        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
+            return context->struct_exists(mangle(t));
         }
 
         ASSERT_PATH_NOT_TAKEN("Invalid type");
@@ -99,21 +126,30 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            if(!is_valid(parameter.parameterType)){
-                throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
+            //if its not resolved, delay the resolution
+            if(!is_resolved(parameter.parameterType)){
+                proxy->delayed = true;
+                return;
             }
 
-            auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-            declaration.Content->context->addParameter(parameter.parameterName, type);    
+            if(check_variable(declaration.Content->context, parameter.parameterName, declaration.Content->position)){
+                if(!is_valid(parameter.parameterType)){
+                    throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
+                }
+
+                auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
+                auto var = declaration.Content->context->addParameter(parameter.parameterName, type);    
+                var->set_source_position(declaration.Content->position);
+            }
         }
 
-        visit_each(*this, declaration.Content->instructions);
+        visit_each(*proxy, declaration.Content->instructions);
     }
    
     void operator()(ast::FunctionDeclaration& declaration){
-        if(!declaration.Content->marked){
-            visit_function(declaration);
-        }
+        visit_function(declaration);
+
+        proxy->delayed = false;
     }
 
     void operator()(ast::Constructor& constructor){
@@ -132,46 +168,71 @@ struct VariablesVisitor : public boost::static_visitor<> {
         auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
         variable->addReference();
 
-        visit_each(*this, functionCall.Content->values);
+        visit_each(*proxy, functionCall.Content->values);
+    }
+
+    bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
+        if(context->exists(name)){
+            auto var = context->getVariable(name);
+
+            if(var->source_position() == position){
+                return false; 
+            } else {
+                throw SemanticalException("The Variable " + name + " has already been declared", position);
+            }
+        }
+
+        return true;
     }
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
-        if (declaration.Content->context->exists(declaration.Content->variableName)) {
-            throw SemanticalException("The global Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
-        }
-    
-        if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-            throw SemanticalException("The value must be constant", declaration.Content->position);
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->variableType)){
+            proxy->delayed = true;
+            return;
         }
 
-        auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
-        declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+        if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
+            if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
+                throw SemanticalException("The value must be constant", declaration.Content->position);
+            }
+
+            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+            
+            auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+            var->set_source_position(declaration.Content->position);
+        }
     }
 
     template<typename ArrayDeclaration>
     void declare_array(ArrayDeclaration& declaration){
-        if (declaration.Content->context->exists(declaration.Content->arrayName)) {
-            throw SemanticalException("The Variable " + declaration.Content->arrayName + " has already been declared", declaration.Content->position);
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->arrayType)){
+            proxy->delayed = true;
+            return;
         }
 
-        auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
-        
-        if(element_type->is_array()){
-            throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
+        visit(*proxy, declaration.Content->size);
+
+        if(check_variable(declaration.Content->context, declaration.Content->arrayName, declaration.Content->position)){
+            auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
+            
+            if(element_type->is_array()){
+                throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
+            }
+
+            auto constant = visit(ast::IsConstantVisitor(), declaration.Content->size);
+
+            if(!constant){
+                throw SemanticalException("Array size must be constant", declaration.Content->position);
+            }
+
+            auto value = visit(ast::GetConstantValue(), declaration.Content->size);
+            auto size = boost::get<int>(value);
+
+            auto var = declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, size));
+            var->set_source_position(declaration.Content->position);
         }
-
-        visit(*this, declaration.Content->size);
-
-        auto constant = visit(ast::IsConstantVisitor(), declaration.Content->size);
-
-        if(!constant){
-            throw SemanticalException("Array size must be constant", declaration.Content->position);
-        }
-
-        auto value = visit(ast::GetConstantValue(), declaration.Content->size);
-        auto size = boost::get<int>(value);
-
-        declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, size));
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -183,36 +244,51 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Foreach& foreach){
-        if(foreach.Content->context->exists(foreach.Content->variableName)){
-            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
+        //Delay if necessary
+        if(!is_resolved(foreach.Content->variableType)){
+            proxy->delayed = true;
+            return;
         }
 
-        foreach.Content->context->addVariable(foreach.Content->variableName, new_type(context, foreach.Content->variableType));
+        if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
+            auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
 
-        visit_each(*this, foreach.Content->instructions);
+            auto var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
+            var->set_source_position(foreach.Content->position);
+        }
+
+        visit_each(*proxy, foreach.Content->instructions);
     }
     
     void operator()(ast::ForeachIn& foreach){
-        if(foreach.Content->context->exists(foreach.Content->variableName)){
-            throw SemanticalException("The foreach variable " + foreach.Content->variableName  + " has already been declared", foreach.Content->position);
-        }
-        
-        if(!foreach.Content->context->exists(foreach.Content->arrayName)){
-            throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
+        //Delay if necessary
+        if(!is_resolved(foreach.Content->variableType)){
+            proxy->delayed = true;
+            return;
         }
 
-        static int generated = 0;
+        if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
+            if(!foreach.Content->context->exists(foreach.Content->arrayName)){
+                throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
+            }
 
-        foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, new_type(context, foreach.Content->variableType));
-        foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-        foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), INT);
+            static int generated = 0;
+            
+            auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
 
-        visit_each(*this, foreach.Content->instructions);
+            foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
+            foreach.Content->var->set_source_position(foreach.Content->position);
+
+            foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
+            foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), INT);
+        }
+
+        visit_each(*proxy, foreach.Content->instructions);
     }
 
     void operator()(ast::Assignment& assignment){
-        visit(*this, assignment.Content->left_value);
-        visit(*this, assignment.Content->value);
+        visit(*proxy, assignment.Content->left_value);
+        visit(*proxy, assignment.Content->value);
     }
 
     void operator()(ast::Delete& delete_){
@@ -225,69 +301,88 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::StructDeclaration& declaration){
-        if (declaration.Content->context->exists(declaration.Content->variableName)) {
-            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->variableType)){
+            proxy->delayed = true;
+            return;
         }
-        
-        auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
-        if(!type->is_custom_type()){
-            throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
-        }
-            
-        if(context->struct_exists(type->type())){
-            if(type->is_const()){
-                throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+        visit_each(*proxy, declaration.Content->values);
+
+        if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
+            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+
+            if(!type->is_custom_type() && !type->is_template()){
+                throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
             }
 
-            declaration.Content->context->addVariable(declaration.Content->variableName, type);
-        } else {
-            throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
-        }
-    }
-    
-    void operator()(ast::VariableDeclaration& declaration){
-        if (declaration.Content->context->exists(declaration.Content->variableName)) {
-            throw SemanticalException("Variable " + declaration.Content->variableName + " has already been declared", declaration.Content->position);
-        }
-        
-        visit_optional(*this, declaration.Content->value);
-
-        auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
-
-        //If it's a standard type
-        if(type->is_standard_type()){
-            if(type->is_const()){
-                if(!declaration.Content->value){
-                    throw SemanticalException("A constant variable must have a value", declaration.Content->position);
-                }
-
-                if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                    throw SemanticalException("The value must be constant", declaration.Content->position);
-                }
-
-                declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-            } else {
-                declaration.Content->context->addVariable(declaration.Content->variableName, type);
-            }
-        } 
-        //If it's a pointer type
-        else if(type->is_pointer()){
-            if(type->is_const()){
-                throw SemanticalException("Pointer types cannot be const", declaration.Content->position);
-            }
-            
-            declaration.Content->context->addVariable(declaration.Content->variableName, type);
-        //If it's a custom type
-        } else {
-            if(context->struct_exists(type->type())){
+            auto mangled = mangle(type);
+                
+            if(context->struct_exists(mangled)){
                 if(type->is_const()){
                     throw SemanticalException("Custom types cannot be const", declaration.Content->position);
                 }
 
-                declaration.Content->context->addVariable(declaration.Content->variableName, type);
+                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
+                var->set_source_position(declaration.Content->position);
             } else {
-                throw SemanticalException("The type \"" + type->type() + "\" does not exists", declaration.Content->position);
+                throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
+            }
+        }
+    }
+    
+    void operator()(ast::VariableDeclaration& declaration){
+        //Delay if necessary
+        if(!is_resolved(declaration.Content->variableType)){
+            proxy->delayed = true;
+            return;
+        }
+        
+        visit_optional(*proxy, declaration.Content->value);
+
+        if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
+            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+
+            //If it's a standard type
+            if(type->is_standard_type()){
+                if(type->is_const()){
+                    if(!declaration.Content->value){
+                        throw SemanticalException("A constant variable must have a value", declaration.Content->position);
+                    }
+
+                    if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
+                        throw SemanticalException("The value must be constant", declaration.Content->position);
+                    }
+
+                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
+                    var->set_source_position(declaration.Content->position);
+                } else {
+                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
+                    var->set_source_position(declaration.Content->position);
+                }
+            } 
+            //If it's a pointer type
+            else if(type->is_pointer()){
+                if(type->is_const()){
+                    throw SemanticalException("Pointer types cannot be const", declaration.Content->position);
+                }
+                
+                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
+                var->set_source_position(declaration.Content->position);
+            //If it's a template or custom type
+            } else {
+                auto mangled = mangle(type);
+
+                if(context->struct_exists(mangled)){
+                    if(type->is_const()){
+                        throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+                    }
+
+                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
+                    var->set_source_position(declaration.Content->position);
+                } else {
+                    throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
+                }
             }
         }
     }
@@ -310,10 +405,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::MemberValue& variable){
-        visit(*this, variable.Content->location);
+        visit(*proxy, variable.Content->location);
 
         auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
-        auto struct_name = type->is_pointer() ? type->data_type()->type() : type->type();
+        auto struct_name = mangle(type->is_pointer() ? type->data_type() : type);
         auto struct_type = context->get_struct(struct_name);
 
         //Reference the structure
@@ -333,7 +428,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             //If it is not the last member
             if(i != members.size() - 1){
                 //The next member will be a member of the current member type
-                struct_type = context->get_struct((*struct_type)[member]->type->type());
+                struct_type = context->get_struct(mangle((*struct_type)[member]->type));
                 struct_name = struct_type->name;
             }
         }
@@ -358,24 +453,26 @@ struct VariablesVisitor : public boost::static_visitor<> {
         array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
         array.Content->var->addReference();
 
-        visit(*this, array.Content->indexValue);
+        visit(*proxy, array.Content->indexValue);
     }
 
     void operator()(ast::DereferenceValue& variable){
-        visit(*this, variable.Content->ref);
+        visit(*proxy, variable.Content->ref);
     }
 
     void operator()(ast::Expression& value){
-        visit(*this, value.Content->first);
+        visit(*proxy, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+            [&](ast::Operation& operation){ visit(*proxy, operation.get<1>()); });
     }
 };
 
 } //end of anonymous namespace
 
 void ast::defineVariables(ast::SourceFile& program){
-    VariablesVisitor visitor(program.Content->context);
-    visit_non_variant(visitor, program);
+    VisitorProxy<VariablesVisitor> proxy(program.Content->context);
+    proxy.visitor.proxy = &proxy;
+
+    visit_non_variant(proxy, program);
 }

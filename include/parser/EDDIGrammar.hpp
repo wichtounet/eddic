@@ -70,6 +70,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
 
     /* Structures */
     qi::rule<lexer::Iterator, ast::Struct()> struct_;
+    qi::rule<lexer::Iterator, ast::TemplateStruct()> template_struct;
     qi::rule<lexer::Iterator, ast::MemberDeclaration()> member_declaration;
     qi::rule<lexer::Iterator, ast::Constructor()> constructor;
     qi::rule<lexer::Iterator, ast::Destructor()> destructor;

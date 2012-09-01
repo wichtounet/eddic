@@ -12,6 +12,8 @@
 #include <string>
 #include <memory>
 
+#include "Type.hpp"
+
 #include "ast/Value.hpp"
 
 namespace eddic {
@@ -46,9 +48,9 @@ std::string mangle_dtor(const std::shared_ptr<Function> function);
  * \param struct_ The struct of the member function.
  * \return The mangled function name. 
  */
-std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_ = "");
-std::string mangle_ctor(const std::vector<ast::Value>& values, const std::string& struct_);
-std::string mangle_dtor(const std::string& struct_);
+std::string mangle(const std::string& functionName, const std::vector<ast::Value>& values, std::shared_ptr<const Type> struct_type = nullptr);
+std::string mangle_ctor(const std::vector<ast::Value>& values, std::shared_ptr<const Type> struct_type);
+std::string mangle_dtor(std::shared_ptr<const Type> struct_type);
 
 /*!
  * \brief Return the mangled representation of the given function. Generic use with a list of types. 
@@ -57,7 +59,7 @@ std::string mangle_dtor(const std::string& struct_);
  * \param struct_ The struct of the member function.
  * \return The mangled function name. 
  */
-std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_ = "");
+std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type = nullptr);
 
 } //end of eddic
 

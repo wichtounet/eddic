@@ -412,6 +412,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
+    AUTO_RECURSE_TEMPLATE_STRUCT()
     AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
@@ -560,6 +561,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_STRUCT()
     
     AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
+    AUTO_IGNORE_TEMPLATE_STRUCT()
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
     AUTO_IGNORE_MEMBER_VALUE()
@@ -626,9 +628,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::FunctionDeclaration& declaration){
-        if(!declaration.Content->marked){
-            transform(declaration.Content->instructions);
-        }
+        transform(declaration.Content->instructions);
     }
     
     void operator()(ast::Constructor& declaration){

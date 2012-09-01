@@ -5,11 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_SIMPLE_TYPE_H
-#define AST_SIMPLE_TYPE_H
+#ifndef AST_TEMPLATE_TYPE_H
+#define AST_TEMPLATE_TYPE_H
 
+#include <vector>
 #include <string>
 #include <ostream>
+
+#include "variant.hpp"
+
+#include "ast/VariableType.hpp"
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -18,17 +23,18 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class SimpleType
- * \brief A simple (non-array) type in the AST.  
+ * \class TemplateType
+ * \brief A template type in the AST.  
  */
-struct SimpleType {
-    bool const_;
+struct TemplateType {
     std::string type;
+    std::vector<Type> template_types;
+    bool resolved = false;
 };
 
-bool operator==(const SimpleType& a, const SimpleType& b);
+bool operator==(const TemplateType& a, const TemplateType& b);
 
-std::ostream& operator<<(std::ostream& out, const ast::SimpleType& type);
+std::ostream& operator<<(std::ostream& out, const ast::TemplateType& type);
 
 } //end of ast
 
@@ -36,9 +42,9 @@ std::ostream& operator<<(std::ostream& out, const ast::SimpleType& type);
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::SimpleType, 
-    (bool, const_)
+    eddic::ast::TemplateType, 
     (std::string, type)
+    (std::vector<eddic::ast::Type>, template_types)
 )
 
 #endif

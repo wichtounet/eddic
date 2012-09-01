@@ -39,6 +39,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
 
+        AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -60,6 +61,36 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
             visit_each(*this, program.Content->blocks);
         }
+
+        void operator()(ast::FunctionDeclaration& function){
+            if(!function.Content->context){
+                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+
+                visit_each(*this, function.Content->instructions);
+
+                currentContext = currentContext->parent();
+            }
+        }
+        
+        void operator()(ast::Constructor& constructor){
+            if(!constructor.Content->context){
+                currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+
+                visit_each(*this, constructor.Content->instructions);
+
+                currentContext = currentContext->parent();
+            }
+        }
+
+        void operator()(ast::Destructor& destructor){
+            if(!destructor.Content->context){
+                currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+
+                visit_each(*this, destructor.Content->instructions);
+
+                currentContext = currentContext->parent();
+            }
+        }
         
         void operator()(ast::MemberFunctionCall& functionCall){
             functionCall.Content->context = currentContext;
@@ -77,32 +108,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, declaration.Content->size);
         }
 
-        void operator()(ast::Constructor& constructor){
-            currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
-
-            visit_each(*this, constructor.Content->instructions);
-    
-            currentContext = currentContext->parent();
-        }
-
-        void operator()(ast::Destructor& destructor){
-            currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
-
-            visit_each(*this, destructor.Content->instructions);
-    
-            currentContext = currentContext->parent();
-        }
-
-        void operator()(ast::FunctionDeclaration& function){
-            if(!function.Content->marked){
-                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
-
-                visit_each(*this, function.Content->instructions);
-
-                currentContext = currentContext->parent();
-            }
-        }
-            
         template<typename Loop>            
         void annotateWhileLoop(Loop& loop){
             currentContext = loop.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);

@@ -8,6 +8,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
+#include "mangling.hpp"
 
 #include "mtac/Utils.hpp"
 
@@ -162,9 +163,9 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 
     std::string struct_name;
     if(type->is_pointer() || type->is_array()){
-        struct_name = type->data_type()->type();
+        struct_name = mangle(type->data_type());
     } else {
-        struct_name = type->type();
+        struct_name = mangle(type);
     }
 
     auto struct_type = context->get_struct(struct_name);
@@ -181,7 +182,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
         offset += context->member_offset(struct_type, member);
 
         if(i != members.size() - 1){
-            struct_name = member_type->type();
+            struct_name = mangle(member_type);
             struct_type = context->get_struct(struct_name);
         }
     }

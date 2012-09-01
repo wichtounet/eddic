@@ -13,6 +13,7 @@
 #include "SemanticalException.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "mangling.hpp"
 
 #include "ast/StructuresAnnotator.hpp"
 #include "ast/SourceFile.hpp"
@@ -32,11 +33,27 @@ struct StructuresCollector : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
-            if(context->struct_exists(struct_.Content->name)){
-                throw SemanticalException("The structure " + struct_.Content->name + " has already been defined", struct_.Content->position);
+            if(struct_.Content->template_types.empty()){
+                struct_.Content->struct_type = new_type(context, struct_.Content->name, false);
+            } else {
+                std::vector<std::shared_ptr<const Type>> template_types;
+
+                ast::TypeTransformer transformer(context);
+
+                for(auto& type : struct_.Content->template_types){
+                    template_types.push_back(visit(transformer, type));
+                }
+                
+                struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
+            }
+            
+            struct_.Content->mangled_name = mangle(struct_.Content->struct_type);
+
+            if(context->struct_exists(struct_.Content->mangled_name)){
+                throw SemanticalException("The structure " + struct_.Content->mangled_name + " has already been defined", struct_.Content->position);
             }
 
-            auto signature = std::make_shared<Struct>(struct_.Content->name);
+            auto signature = std::make_shared<Struct>(struct_.Content->mangled_name);
             context->add_struct(signature);
         }
     }
@@ -53,7 +70,7 @@ struct StructureMembersCollector : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
-            auto signature = context->get_struct(struct_.Content->name);
+            auto signature = context->get_struct(struct_.Content->mangled_name);
             std::vector<std::string> names;
 
             signature->members.clear();
@@ -88,22 +105,19 @@ struct StructuresVerifier : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         if(!struct_.Content->marked){
-            auto struct_type = context->get_struct(struct_.Content->name);
+            auto struct_type = context->get_struct(struct_.Content->mangled_name);
 
             for(auto& member : struct_.Content->members){
                 auto type = (*struct_type)[member.Content->name]->type;
 
                 if(type->is_custom_type()){
-                    auto struct_name = type->type();
+                    auto struct_name = mangle(type);
 
                     if(!context->struct_exists(struct_name)){
                         throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
                     }
                 }
             }
-
-
-            struct_.Content->marked = true;
         }
     }
 

@@ -7,6 +7,7 @@
 
 #include "variant.hpp"
 #include "assert.hpp"
+#include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "iterators.hpp"
@@ -581,11 +582,12 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     }
 };
 
-struct InstructionAdaptor : public boost::static_visitor<> {
-    const std::unordered_map<std::string, std::string>& replacements;
+struct Adaptor : public boost::static_visitor<> {
+    const std::unordered_map<std::string, ast::Type>& replacements;
 
-    InstructionAdaptor(const std::unordered_map<std::string, std::string>& replacements) : replacements(replacements) {}
+    Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
+    AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_SIMPLE_LOOPS()
@@ -595,143 +597,157 @@ struct InstructionAdaptor : public boost::static_visitor<> {
     
     AUTO_IGNORE_SWAP()
 
-    std::string replace(const std::string& current) const {
-        if(replacements.find(current) != replacements.end()){
-            return replacements.at(current);
-        }
-
-        return current;
+    void operator()(ast::Struct& struct_){
+        visit_each_non_variant(*this, struct_.Content->members);
+        visit_each_non_variant(*this, struct_.Content->constructors);
+        visit_each_non_variant(*this, struct_.Content->destructors);
+        visit_each_non_variant(*this, struct_.Content->functions);
+        visit_each_non_variant(*this, struct_.Content->template_functions);
     }
 
-    ast::Type replace(const ast::Type& type) const {
+    bool has_to_be_replaced(const std::string& type){
+        return replacements.find(type) != replacements.end();
+    }
+
+    ast::Type replace(ast::Type& type){
         if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-            ast::SimpleType t = *ptr;
-
-            t.type = replace(t.type);
-
-            return t;
+            if(has_to_be_replaced(ptr->type)){
+                return replacements.at(ptr->type);
+            } else {
+                return *ptr;
+            }
         } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-            ast::ArrayType t = *ptr;
+            ptr->type = replace(ptr->type.get());
 
-            t.type = replace(t.type);
-
-            return t;
+            return *ptr;
         } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            ast::PointerType t = *ptr;
+            ptr->type = replace(ptr->type.get());
 
-            t.type = replace(t.type);
+            return *ptr;
+        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            if(has_to_be_replaced(ptr->type)){
+                auto replacement = replacements.at(ptr->type);
 
-            return t;
+                auto simple = boost::get<ast::SimpleType>(replacement);
+                ptr->type = simple.type;
+            }
+
+            for(std::size_t i = 0; i < ptr->template_types.size(); ++i){
+                ptr->template_types[i] = replace(ptr->template_types[i]);
+            }
+
+            return *ptr;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled type");
         }
     }
+    
+    void operator()(ast::MemberDeclaration& declaration){
+        declaration.Content->type = replace(declaration.Content->type); 
+    }
+    
+    void operator()(ast::Constructor& declaration){
+        for(auto& param : declaration.Content->parameters){
+            param.parameterType = replace(param.parameterType);
+        }
 
-    void operator()(const ast::Assignment& assignment) const {
+        visit_each(*this, declaration.Content->instructions);
+    }
+
+    void operator()(ast::FunctionDeclaration& declaration){
+        declaration.Content->returnType = replace(declaration.Content->returnType);
+
+        for(auto& param : declaration.Content->parameters){
+            param.parameterType = replace(param.parameterType);
+        }
+
+        visit_each(*this, declaration.Content->instructions);
+    }
+
+    void operator()(ast::Assignment& assignment){
         visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
     }
 
     template<typename FunctionCall>
-    void adapt_function_call(const FunctionCall& source) const {
+    void adapt_function_call(FunctionCall& source){
         for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
-            auto a = source.Content->template_types[i];
             source.Content->template_types[i] = replace(source.Content->template_types[i]);
         }
 
         visit_each(*this, source.Content->values);
     }
 
-    void operator()(const ast::MemberFunctionCall& source) const {
+    void operator()(ast::MemberFunctionCall& source){
         adapt_function_call(source);
     }
     
-    void operator()(const ast::FunctionCall& source) const {
+    void operator()(ast::FunctionCall& source){
         adapt_function_call(source);
     }
     
-    void operator()(const ast::VariableDeclaration& source) const {
+    void operator()(ast::VariableDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
         
         visit_optional(*this, source.Content->value);
     }
     
-    void operator()(const ast::StructDeclaration& source) const {
+    void operator()(ast::StructDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
         
         visit_each(*this, source.Content->values);
     }
     
-    void operator()(const ast::ArrayDeclaration& source) const {
+    void operator()(ast::ArrayDeclaration& source){
         source.Content->arrayType = replace(source.Content->arrayType);
     }
     
-    void operator()(const ast::Foreach& source) const {
+    void operator()(ast::Foreach& source){
         source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
     
-    void operator()(const ast::ForeachIn& source) const {
+    void operator()(ast::ForeachIn& source){
         source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
     
-    void operator()(const ast::New& source) const {
+    void operator()(ast::New& source){
         source.Content->type = replace(source.Content->type);
         
         visit_each(*this, source.Content->values);
-    }
-
-    AUTO_IGNORE_OTHERS_CONST_CONST()
-};
-
-struct Collector : public boost::static_visitor<> {
-    ast::TemplateEngine::TemplateMap& template_functions; 
-    std::string parent_struct;
-
-    Collector(ast::TemplateEngine::TemplateMap& template_functions) : template_functions(template_functions) {}
-
-    AUTO_RECURSE_PROGRAM()
-
-    void operator()(ast::TemplateFunctionDeclaration& declaration){
-        template_functions[parent_struct].insert(ast::TemplateEngine::LocalTemplateMap::value_type(declaration.Content->functionName, declaration));
-    }
-        
-    void operator()(ast::Struct& struct_){
-        parent_struct = struct_.Content->name;
-
-        visit_each_non_variant(*this, struct_.Content->template_functions);
-
-        parent_struct = "";
     }
 
     AUTO_IGNORE_OTHERS()
 };
 
 struct Instantiator : public boost::static_visitor<> {
-    ast::TemplateEngine::TemplateMap& template_functions;
-    ast::TemplateEngine::InstantiationMap& instantiations;
+    ast::TemplateEngine::FunctionTemplateMap& function_templates;
+    ast::TemplateEngine::FunctionInstantiationMap& function_template_instantiations;
     
-    std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> instantiated_functions;
+    ast::TemplateEngine::ClassTemplateMap& class_templates;
+    ast::TemplateEngine::ClassInstantiationMap& class_template_instantiations;
+    
+    std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
+    std::vector<ast::Struct> class_template_instantiated;
 
     std::shared_ptr<FunctionContext> current_context;
 
-    Instantiator(ast::TemplateEngine::TemplateMap& template_functions, ast::TemplateEngine::InstantiationMap& instantiations) : 
-        template_functions(template_functions), instantiations(instantiations) {}
+    Instantiator(ast::TemplateEngine& engine) : 
+        function_templates(engine.function_templates), function_template_instantiations(engine.function_template_instantiations),
+        class_templates(engine.class_templates), class_template_instantiations(engine.class_template_instantiations) {}
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_GLOBAL_DECLARATION() 
     AUTO_RECURSE_SIMPLE_LOOPS()
-    AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_BINARY_CONDITION()
     AUTO_RECURSE_BUILTIN_OPERATORS()
     AUTO_RECURSE_COMPOSED_VALUES()
     AUTO_RECURSE_MEMBER_VALUE()
     AUTO_RECURSE_UNARY_VALUES()
-    AUTO_RECURSE_VARIABLE_OPERATIONS()
     AUTO_RECURSE_STRUCT()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
@@ -740,45 +756,221 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_DEFAULT_CASE()
     AUTO_RECURSE_RETURN_VALUES()
 
-    void operator()(ast::FunctionDeclaration& function){
-        current_context = function.Content->context;
+    template<typename Container>
+    bool is_instantiated(const Container& container, const std::string& name, const std::vector<ast::Type>& template_types){
+        auto it_pair = container.equal_range(name);
 
-        visit_each(*this, function.Content->instructions);
-    }
-
-    bool are_equals(const std::vector<std::string>& template_types, const std::vector<std::string>& types){
-        if(types.size() != template_types.size()){
+        if(it_pair.first == it_pair.second && it_pair.second == container.end()){
             return false;
         }
 
-        for(std::size_t i = 0; i < template_types.size(); ++i){
-            if(template_types[i] != types[i]){
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<std::string>& template_types){
-        auto it = instantiations[context].find(name);
-
-        while(it != instantiations[context].end()){
-            auto types = it->second;
+        do {
+            auto types = it_pair.first->second;
            
             if(are_equals(types, template_types)){
                 return true;
             }
 
-            ++it;
-        }
+            ++it_pair.first;
+        } while(it_pair.first != it_pair.second);
 
         return false;
     }
 
-    std::vector<ast::FunctionParameter> copy(const std::vector<ast::FunctionParameter>& source){
-        //All the function parameter can be copied by value
-        return source;
+    bool is_instantiated(const std::string& name, const std::string& context, const std::vector<ast::Type>& template_types){
+        return is_instantiated(function_template_instantiations[context], name, template_types);
+    }
+
+    bool is_class_instantiated(const std::string& name, const std::vector<ast::Type>& template_types){
+        return is_instantiated(class_template_instantiations, name, template_types);
+    }
+    
+    std::vector<ast::Constructor> copy(const std::vector<ast::Constructor>& source){
+        std::vector<ast::Constructor> destination;
+        destination.reserve(source.size());
+    
+        for(auto& constructor : source){
+            ast::Constructor c;
+            c.Content->context = constructor.Content->context;
+            c.Content->struct_name = constructor.Content->struct_name;
+            c.Content->position = constructor.Content->position;
+            c.Content->parameters = constructor.Content->parameters;
+            c.Content->instructions = copy(constructor.Content->instructions);
+
+            destination.push_back(c);
+        }
+
+        return destination;
+    }
+    
+    std::vector<ast::Destructor> copy(const std::vector<ast::Destructor>& source){
+        std::vector<ast::Destructor> destination;
+        destination.reserve(source.size());
+    
+        for(auto& destructor : source){
+            ast::Destructor d;
+            d.Content->context = destructor.Content->context;
+            d.Content->struct_name = destructor.Content->struct_name;
+            d.Content->position = destructor.Content->position;
+            d.Content->parameters = destructor.Content->parameters;
+            d.Content->instructions = copy(destructor.Content->instructions);
+
+            destination.push_back(d);
+        }
+
+        return destination;
+    }
+    
+    std::vector<ast::FunctionDeclaration> copy(const std::vector<ast::FunctionDeclaration>& source){
+        std::vector<ast::FunctionDeclaration> destination;
+        destination.reserve(source.size());
+    
+        for(auto& function : source){
+            ast::FunctionDeclaration f;
+            f.Content->context = function.Content->context;
+            f.Content->position = function.Content->position;
+            f.Content->struct_name = function.Content->struct_name;
+            f.Content->returnType = function.Content->returnType;
+            f.Content->functionName = function.Content->functionName;
+            f.Content->instructions = copy(function.Content->instructions);
+            f.Content->parameters = function.Content->parameters;
+
+            destination.push_back(f);
+        }
+
+        return destination;
+    }
+    
+    std::vector<ast::TemplateFunctionDeclaration> copy(const std::vector<ast::TemplateFunctionDeclaration>& source){
+        std::vector<ast::TemplateFunctionDeclaration> destination;
+        destination.reserve(source.size());
+    
+        for(auto& function : source){
+            ast::TemplateFunctionDeclaration f;
+            f.Content->context = function.Content->context;
+            f.Content->position = function.Content->position;
+            f.Content->struct_name = function.Content->struct_name;
+            f.Content->template_types = function.Content->template_types;
+            f.Content->returnType = function.Content->returnType;
+            f.Content->functionName = function.Content->functionName;
+            f.Content->instructions = copy(function.Content->instructions);
+            f.Content->parameters = function.Content->parameters;
+
+            destination.push_back(f);
+        }
+
+        return destination;
+    }
+    
+    std::vector<ast::MemberDeclaration> copy(const std::vector<ast::MemberDeclaration>& source){
+        std::vector<ast::MemberDeclaration> destination;   
+        destination.reserve(source.size());
+    
+        for(auto& member_declaration : source){
+            ast::MemberDeclaration member;
+            member.Content->position = member_declaration.Content->position;
+            member.Content->type = member_declaration.Content->type;
+            member.Content->name = member_declaration.Content->name;
+
+            destination.push_back(member);
+        }
+
+        return destination;
+    }
+
+    void check_type(ast::Type& type, ast::Position& position){
+        if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            auto template_types = ptr->template_types;
+            auto name = ptr->type;
+
+            auto it = class_templates.find(name);
+
+            if(it == class_templates.end()){
+                throw SemanticalException("There are no class template named " + name, position);
+            }
+            
+            while(it != class_templates.end()){
+                auto struct_declaration = it->second;
+                auto source_types = struct_declaration.Content->template_types;
+
+                if(source_types.size() == template_types.size()){
+                    if(!is_class_instantiated(name, template_types)){
+                        //Instantiate the struct
+                        ast::Struct declaration;
+                        declaration.Content->name = struct_declaration.Content->name;
+                        declaration.Content->position = struct_declaration.Content->position;
+                        declaration.Content->template_types = template_types; 
+                        
+                        declaration.Content->members = copy(struct_declaration.Content->members);
+                        declaration.Content->constructors = copy(struct_declaration.Content->constructors);
+                        declaration.Content->destructors = copy(struct_declaration.Content->destructors);
+                        declaration.Content->functions = copy(struct_declaration.Content->functions);
+                        declaration.Content->template_functions = copy(struct_declaration.Content->template_functions);
+
+                        //For handling later
+                        declaration.Content->instantiated = true;
+                        declaration.Content->marked = false;
+
+                        std::unordered_map<std::string, ast::Type> replacements;
+
+                        for(std::size_t i = 0; i < template_types.size(); ++i){
+                            replacements[source_types[i]] = template_types[i];    
+                        }
+
+                        Adaptor adaptor(replacements);
+                        visit_non_variant(adaptor, declaration);
+
+                        //Mark it as instantiated
+                        class_template_instantiations.insert(ast::TemplateEngine::ClassInstantiationMap::value_type(name, template_types));
+
+                        class_template_instantiated.push_back(declaration);
+                    }
+                    
+                    ptr->resolved = true;
+
+                    return;
+                }
+            }
+        }
+    }
+
+    void operator()(const ast::FunctionDeclaration& function){
+        current_context = function.Content->context;
+
+        for(auto& param_type : function.Content->parameters){
+            check_type(param_type.parameterType, function.Content->position);
+        }
+
+        visit_each(*this, function.Content->instructions);
+    }
+
+    void operator()(const ast::Assignment& assignment){
+        visit(*this, assignment.Content->left_value);
+        visit(*this, assignment.Content->value);
+    }
+
+    void operator()(const ast::VariableDeclaration& declaration){
+        check_type(declaration.Content->variableType, declaration.Content->position);
+
+        visit_optional(*this, declaration.Content->value);
+    }
+
+    void operator()(const ast::StructDeclaration& declaration){
+        check_type(declaration.Content->variableType, declaration.Content->position);
+
+        visit_each(*this, declaration.Content->values);
+    }
+
+    void operator()(ast::Foreach& foreach_){
+        check_type(foreach_.Content->variableType, foreach_.Content->position);
+
+        visit_each(*this, foreach_.Content->instructions);
+    }
+
+    void operator()(ast::ForeachIn& foreach_){
+        check_type(foreach_.Content->variableType, foreach_.Content->position);
+
+        visit_each(*this, foreach_.Content->instructions);
     }
     
     std::vector<ast::Instruction> copy(const std::vector<ast::Instruction>& source){
@@ -797,17 +989,16 @@ struct Instantiator : public boost::static_visitor<> {
     template<typename FunctionCall>
     void handle_template(FunctionCall& functionCall, const std::string context){
         auto template_types = functionCall.Content->template_types;
+        auto name = functionCall.Content->function_name;
 
-        std::string name = functionCall.Content->function_name;
+        auto it_pair = function_templates[context].equal_range(name);
 
-        auto it = template_functions[context].find(name);
-
-        if(it == template_functions[context].end()){
+        if(it_pair.first == it_pair.second && it_pair.second == function_templates[context].end()){
             throw SemanticalException("There are no template function named " + name, functionCall.Content->position);
         }
 
-        while(it != template_functions[context].end()){
-            auto function_declaration = it->second;
+        do{
+            auto function_declaration = it_pair.first->second;
             auto source_types = function_declaration.Content->template_types;
 
             if(source_types.size() == template_types.size()){
@@ -817,39 +1008,35 @@ struct Instantiator : public boost::static_visitor<> {
                     declaration.Content->position = function_declaration.Content->position;
                     declaration.Content->returnType = function_declaration.Content->returnType;
                     declaration.Content->functionName = function_declaration.Content->functionName;
-                    declaration.Content->parameters = copy(function_declaration.Content->parameters);
+                    declaration.Content->parameters = function_declaration.Content->parameters;
                     declaration.Content->instructions = copy(function_declaration.Content->instructions);
 
                     //For handling later
                     declaration.Content->instantiated = true;
                     declaration.Content->marked = false;
 
-                    std::unordered_map<std::string, std::string> replacements;
+                    std::unordered_map<std::string, ast::Type> replacements;
 
                     for(std::size_t i = 0; i < template_types.size(); ++i){
                         replacements[source_types[i]] = template_types[i];    
                     }
 
-                    InstructionAdaptor adaptor(replacements);
-                    visit_each(adaptor, declaration.Content->instructions);
-
-                    for(auto& param : declaration.Content->parameters){
-                        param.parameterType = adaptor.replace(param.parameterType);
-                    }
+                    Adaptor adaptor(replacements);
+                    visit_non_variant(adaptor, declaration);
 
                     //Mark it as instantiated
-                    instantiations[context].insert(ast::TemplateEngine::LocalInstantiationMap::value_type(name, template_types));
+                    function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
 
-                    instantiated_functions[context].push_back(declaration);
-                }
+                    function_template_instantiated[context].push_back(declaration);
+                } 
 
                 functionCall.Content->resolved = true;
 
                 return;
             }
 
-            ++it;
-        }
+            ++it_pair.first;
+        } while(it_pair.first != it_pair.second);
 
         throw SemanticalException("No matching function " + name, functionCall.Content->position);
     }
@@ -867,9 +1054,7 @@ struct Instantiator : public boost::static_visitor<> {
     void operator()(ast::MemberFunctionCall& functionCall){
         visit_each(*this, functionCall.Content->values);
 
-        auto template_types = functionCall.Content->template_types;
-
-        if(!template_types.empty()){
+        if(!functionCall.Content->template_types.empty()){
             auto object_name = functionCall.Content->object_name;
             auto object_var = current_context->getVariable(object_name);
             auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
@@ -879,19 +1064,56 @@ struct Instantiator : public boost::static_visitor<> {
         }
     }
 
+    template<typename T> 
+    void operator()(const T&){
+        //Nothing to check
+    }
+};
+
+struct Collector : public boost::static_visitor<> {
+    ast::TemplateEngine::FunctionTemplateMap& function_templates;
+    ast::TemplateEngine::ClassTemplateMap& class_templates;
+
+    std::string parent_struct;
+
+    Collector(ast::TemplateEngine::FunctionTemplateMap& function_templates, ast::TemplateEngine::ClassTemplateMap& class_templates) : 
+            function_templates(function_templates), class_templates(class_templates) {}
+
+    AUTO_RECURSE_PROGRAM()
+
+    void operator()(ast::TemplateFunctionDeclaration& declaration){
+        function_templates[parent_struct].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(declaration.Content->functionName, declaration));
+    }
+    
+    void operator()(ast::TemplateStruct& template_struct){
+        class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(template_struct.Content->name, template_struct)); 
+    }
+        
+    void operator()(ast::Struct& struct_){
+        parent_struct = struct_.Content->name;
+
+        visit_each_non_variant(*this, struct_.Content->template_functions);
+
+        parent_struct = "";
+    }
+
     AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace
 
 void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
-    Collector collector(template_functions);
+    Collector collector(function_templates, class_templates);
     collector(program);
 
-    Instantiator instantiator(template_functions, template_instantiations);
+    Instantiator instantiator(*this);
     instantiator(program);
 
-    for(auto& context_pair : instantiator.instantiated_functions){
+    for(auto& struct_ : instantiator.class_template_instantiated){
+        program.Content->blocks.push_back(struct_);
+    }
+
+    for(auto& context_pair : instantiator.function_template_instantiated){
         auto context = context_pair.first;
         auto instantiated_functions = context_pair.second;
 
@@ -914,4 +1136,3 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
         }
     }
 }
-

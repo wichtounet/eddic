@@ -44,8 +44,8 @@
 using namespace eddic;
 
 void check_for_main(std::shared_ptr<GlobalContext> context);
-void mark_functions(ast::SourceFile& program);
-bool still_unmarked_functions(ast::SourceFile& program);
+void mark(ast::SourceFile& program);
+bool still_unmarked(ast::SourceFile& program);
 
 std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
     parser::SpiritParser parser;
@@ -76,29 +76,37 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             //Add default values
             ast::defineDefaultValues(program);
 
-            //Fill the string pool
-            ast::checkStrings(program, *pool);
-
             //Add some more informations to the AST
             ast::defineMemberFunctions(program);
             ast::defineVariables(program);
             ast::defineFunctions(program);
 
-            //Static analysis
-            ast::checkTypes(program);
-
-            //Check for warnings
-            ast::checkForWarnings(program);
-
-            //Transform the AST
-            ast::transformAST(program);
-
-            //Mark all the functions as transformed
-            mark_functions(program);
+            //Mark all the functions and struct as transformed
+            mark(program);
             
             //Instantiate templates
             template_engine.template_instantiation(program);
-        } while(still_unmarked_functions(program));
+            
+            //If the dev option is defined, print the whole AST tree
+            if(option_defined("dev")){
+                std::cout << "End of phase" << std::endl;
+
+                ast::Printer printer;
+                printer.print(program);
+            }
+        } while(still_unmarked(program));
+
+        //Fill the string pool
+        ast::checkStrings(program, *pool);
+        
+        //Static analysis
+        ast::checkTypes(program);
+
+        //Transform the AST
+        ast::transformAST(program);
+
+        //Check for warnings
+        ast::checkForWarnings(program);
 
         //Check that there is a main in the program
         check_for_main(program.Content->context);
@@ -140,26 +148,52 @@ void check_for_main(std::shared_ptr<GlobalContext> context){
     }
 }
 
-void mark_functions(ast::SourceFile& program){
+void mark(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             ptr->Content->marked = true;
         } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            ptr->Content->marked = true;
+
             for(auto& function : ptr->Content->functions){
+               function.Content->marked = true; 
+            }
+            
+            for(auto& function : ptr->Content->destructors){
+               function.Content->marked = true; 
+            }
+            
+            for(auto& function : ptr->Content->constructors){
                function.Content->marked = true; 
             }
         }
     }
 }
 
-bool still_unmarked_functions(ast::SourceFile& program){
+bool still_unmarked(ast::SourceFile& program){
     for(auto& block : program.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             if(!ptr->Content->marked){
                 return true;
             }
         } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            if(!ptr->Content->marked){
+                return true;
+            }
+
             for(auto& function : ptr->Content->functions){
+                if(!function.Content->marked){
+                    return true;
+                }
+            }
+
+            for(auto& function : ptr->Content->destructors){
+                if(!function.Content->marked){
+                    return true;
+                }
+            }
+
+            for(auto& function : ptr->Content->constructors){
                 if(!function.Content->marked){
                     return true;
                 }

@@ -24,6 +24,9 @@ struct Position {
 
 std::ostream& operator<< (std::ostream& stream, Position position);
 
+bool operator==(const ast::Position& a, const ast::Position& b);
+bool operator!=(const ast::Position& a, const ast::Position& b);
+
 } //end of ast
 
 } //end of eddic

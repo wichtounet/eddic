@@ -93,7 +93,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  lexer.foreach_ 
         >>  lexer.left_parenth 
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  lexer.from_ 
         >>  lexer.integer 
@@ -108,7 +108,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  lexer.foreach_ 
         >>  lexer.left_parenth 
-        >>  lexer.identifier 
+        >>  type 
         >>  lexer.identifier 
         >>  lexer.in_ 
         >>  lexer.identifier 
@@ -142,7 +142,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  type 
         >>  lexer.identifier 
         >>  lexer.left_parenth
-        >>  (value >> *(lexer.comma > value))
+        >>  -(value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
 
     declaration %= 
@@ -278,6 +278,30 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
+    
+    template_struct %=
+            qi::position(position_begin)
+        >>  lexer.template_
+        >>  qi::omit[lexer.less]
+        >>  +(
+                    lexer.type
+               >>   lexer.identifier
+               >>  *(
+                            lexer.comma
+                       >>   lexer.type
+                       >>   lexer.identifier
+                   )
+            )
+        >>  qi::omit[lexer.greater]
+        >>  lexer.struct_
+        >>  lexer.identifier
+        >>  lexer.left_brace
+        >>  *(member_declaration)
+        >>  *(constructor)
+        >>  *(destructor)
+        >>  *(function)
+        >>  *(template_function)
+        >>  lexer.right_brace;
 
     struct_ %=
             qi::position(position_begin)
@@ -312,6 +336,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
                 |   standardImport 
                 |   import 
                 |   struct_
+                |   template_struct
             );
 
     /* Debugging rules */

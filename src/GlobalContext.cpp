@@ -10,6 +10,7 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "mangling.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -111,7 +112,7 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsign
         auto type = m->type;
 
         if(type->is_custom_type()){
-            if(is_recursively_nested(type->type(), left - 1)){
+            if(is_recursively_nested(mangle(type), left - 1)){
                 return true;
             }
         }

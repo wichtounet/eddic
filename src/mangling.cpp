@@ -41,9 +41,9 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         } else if(type == VOID){
             return "V";
         }
-
-        ASSERT_PATH_NOT_TAKEN("Not a standard type");
-    } else {
+    } 
+    
+    if(type->is_custom_type()){
         std::ostringstream ss;
 
         ss << "C";
@@ -52,16 +52,37 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         
         return ss.str();
     }
+    
+    if(type->is_template()){
+        std::ostringstream ss;
+
+        ss << "CT";
+        ss << type->type().length();
+        ss << type->type();
+
+        auto types = type->template_types();
+
+        ss << types.size();
+
+        for(auto& sub_type : types){
+            ss << mangle(sub_type);
+        }
+        
+        return ss.str();
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Invalid type");
 }
 
 std::string eddic::mangle(std::shared_ptr<Function> function){
     std::ostringstream ss;
 
-    ss << "_F";
+    if(function->struct_type){
+        ss << "_M";
 
-    if(!function->struct_.empty()){
-        ss << function->struct_.length();
-        ss << function->struct_;
+        ss << mangle(function->struct_type);
+    } else {
+        ss << "_F";
     }
 
     ss << function->name.length();
@@ -80,9 +101,7 @@ std::string eddic::mangle_ctor(const std::shared_ptr<Function> function){
     std::ostringstream ss;
 
     ss << "_C";
-
-    ss << function->struct_.length();
-    ss << function->struct_;
+    ss << mangle(function->struct_type);
 
     for(auto type : function->parameters){
         if(type.name != "this"){
@@ -97,21 +116,20 @@ std::string eddic::mangle_dtor(const std::shared_ptr<Function> function){
     std::ostringstream ss;
 
     ss << "_D";
-
-    ss << function->struct_.length();
-    ss << function->struct_;
+    ss << mangle(function->struct_type);
 
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
-    ss << "_F";
+    if(struct_type){
+        ss << "_M";
 
-    if(!struct_.empty()){
-        ss << struct_.length();
-        ss << struct_;
+        ss << mangle(struct_type);
+    } else {
+        ss << "_F";
     }
 
     ss << functionName.length();
@@ -126,13 +144,11 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     return ss.str();
 }
 
-std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, const std::string& struct_){
+std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_C";
-
-    ss << struct_.length();
-    ss << struct_;
+    ss << mangle(struct_type);
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
@@ -143,25 +159,24 @@ std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, const std:
     return ss.str();
 }
 
-std::string eddic::mangle_dtor(const std::string& struct_){
+std::string eddic::mangle_dtor(std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_D";
-
-    ss << struct_.length();
-    ss << struct_;
+    ss << mangle(struct_type);
 
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_){
+std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
-    ss << "_F";
+    if(struct_type){
+        ss << "_M";
 
-    if(!struct_.empty()){
-        ss << struct_.length();
-        ss << struct_;
+        ss << mangle(struct_type);
+    } else {
+        ss << "_F";
     }
 
     ss << functionName.length();

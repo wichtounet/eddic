@@ -20,20 +20,23 @@ namespace ast {
 
 class TemplateEngine {
     public:
-        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> LocalTemplateMap;
-        typedef std::unordered_map<std::string, LocalTemplateMap> TemplateMap;
+        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> LocalFunctionTemplateMap;
+        typedef std::unordered_map<std::string, LocalFunctionTemplateMap> FunctionTemplateMap;
 
-        typedef std::unordered_multimap<std::string, std::vector<std::string>> LocalInstantiationMap;
-        typedef std::unordered_map<std::string, LocalInstantiationMap> InstantiationMap;
+        typedef std::unordered_multimap<std::string, std::vector<ast::Type>> LocalFunctionInstantiationMap;
+        typedef std::unordered_map<std::string, LocalFunctionInstantiationMap> FunctionInstantiationMap;
+
+        typedef std::unordered_multimap<std::string, ast::TemplateStruct> ClassTemplateMap;
+        typedef std::unordered_multimap<std::string, std::vector<ast::Type>> ClassInstantiationMap;
 
         void template_instantiation(SourceFile& program);
     
-    private:
-        TemplateMap template_functions;
-        InstantiationMap template_instantiations;
+        FunctionTemplateMap function_templates;
+        FunctionInstantiationMap function_template_instantiations;
         
+        ClassTemplateMap class_templates;
+        ClassInstantiationMap class_template_instantiations;
 };
-    
 
 } //end of ast
 
