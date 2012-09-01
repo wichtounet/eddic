@@ -734,8 +734,6 @@ struct Instantiator : public boost::static_visitor<> {
     std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
     std::vector<ast::Struct> class_template_instantiated;
 
-    std::shared_ptr<FunctionContext> current_context;
-
     Instantiator(ast::TemplateEngine& engine) : 
         function_templates(engine.function_templates), function_template_instantiations(engine.function_template_instantiations),
         class_templates(engine.class_templates), class_template_instantiations(engine.class_template_instantiations) {}
@@ -938,8 +936,6 @@ struct Instantiator : public boost::static_visitor<> {
     }
 
     void operator()(const ast::FunctionDeclaration& function){
-        current_context = function.Content->context;
-
         for(auto& param_type : function.Content->parameters){
             check_type(param_type.parameterType, function.Content->position);
         }
@@ -990,9 +986,11 @@ struct Instantiator : public boost::static_visitor<> {
     }
 
     template<typename FunctionCall>
-    void handle_template(FunctionCall& functionCall, const std::string context){
+    void handle_template(FunctionCall& functionCall, const std::string& context){
         auto template_types = functionCall.Content->template_types;
         auto name = functionCall.Content->function_name;
+        
+        log::emit<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
 
         auto it_pair = function_templates[context].equal_range(name);
 
@@ -1061,11 +1059,13 @@ struct Instantiator : public boost::static_visitor<> {
 
         if(!functionCall.Content->template_types.empty()){
             auto object_name = functionCall.Content->object_name;
-            auto object_var = current_context->getVariable(object_name);
-            auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
-            auto context = object_type->type();
 
-            handle_template(functionCall, context);            
+            if(functionCall.Content->context->exists(object_name)){
+                auto object_var = functionCall.Content->context->getVariable(object_name);
+                auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
+
+                handle_template(functionCall, object_type->mangle());
+            }
         }
     }
 
@@ -1079,7 +1079,7 @@ struct Collector : public boost::static_visitor<> {
     ast::TemplateEngine::FunctionTemplateMap& function_templates;
     ast::TemplateEngine::ClassTemplateMap& class_templates;
 
-    std::string parent_struct;
+    std::string parent_struct = "";
 
     Collector(ast::TemplateEngine::FunctionTemplateMap& function_templates, ast::TemplateEngine::ClassTemplateMap& class_templates) : 
             function_templates(function_templates), class_templates(class_templates) {}
@@ -1087,6 +1087,8 @@ struct Collector : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
+        log::emit<Trace>("Template") << "Collected function template " << declaration.Content->functionName <<" in context " << parent_struct << log::endl;
+
         function_templates[parent_struct].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(declaration.Content->functionName, declaration));
     }
     
@@ -1095,7 +1097,7 @@ struct Collector : public boost::static_visitor<> {
     }
         
     void operator()(ast::Struct& struct_){
-        parent_struct = struct_.Content->name;
+        parent_struct = struct_.Content->struct_type->mangle();
 
         visit_each_non_variant(*this, struct_.Content->template_functions);
 
@@ -1129,7 +1131,7 @@ void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
         } else {
             for(auto& block : program.Content->blocks){
                 if(auto* struct_type = boost::get<ast::Struct>(&block)){
-                    if(struct_type->Content->name == context){
+                    if(struct_type->Content->struct_type->mangle() == context){
                         for(auto& function : instantiated_functions){
                             struct_type->Content->functions.push_back(function);
                         }
