@@ -40,33 +40,6 @@
 #ifndef __LoggerLevel_h__
 #define __LoggerLevel_h__
 
-/*! \brief The macro genrate %logging levels
- *
- *  \param LEVELNAME is the typename of the generated level.
- *  \param LEVEL is the correcsponding level (info, warning, etc.)
- *  \param DESC is the string that is outputed if the level is used
- *
- *  For example, to generate an own level for algorithm XYZ with the info
- *  level you have to define it like these:
- *  \code
- *  LOGGING_DISABLE_NAME( AlgoXYZ, ::logging::Level::info, "[ AlgorithmXYZ ]");
- *  ...
- *  log::emit< AlgoXYZ >() << "Hello World!" << log::endl;
- *  // prints -- "[ AlgorithmXYZ ] Hello World!" with a linefeed
- *  \endcode
- */
-#define LOGGING_GENERATE_LEVEL(LEVELNAME, LEVEL, DESC)                        \
-struct LEVELNAME {                                                            \
-    /*! \brief delivers the current %level of %logging */                     \
-    static ::logging::Level::levels level () {                                \
-        return LEVEL;                                                         \
-    }                                                                         \
-    /*! \brief delivers the string reporting the current %level of %logging */\
-    static const char * desc() {                                              \
-        return DESC;                                                          \
-    }                                                                         \
-}
-
 namespace logging {
 
     /*! \brief %Level allows for describing the current %level of %logging.
@@ -99,40 +72,6 @@ namespace logging {
         Level& operator = (levels b) {
             l = b;
             return *this;
-        }
-    };
-
-    /*! \brief This class is intended to be used as a template argument for
-     *         the logging::log::emit() function.
-     *
-     *          Prefixes the output with "[ ERROR ] " and enables reporting
-     *          of the current logging level.
-     */
-    struct Error {
-        /*! \brief delivers the current %level of %logging */
-        static ::logging::Level::levels level () {
-            return ::logging::Level::error;
-        }
-        /*! \brief delivers the string reporting the current %level of %logging */
-        static const char * desc() {
-            return "[ ERROR ] ";
-        }
-    };
-
-    /*! \brief This class is intended to be used as a template argument for
-     *         the logging::log::emit() function.
-     *
-     *         Prefixes the output with "[WARNING] " and enables reporting
-     *         of the current logging level.
-     */
-    struct Warning {
-        /*! \brief delivers the current %level of %logging */
-        static ::logging::Level::levels level () {
-            return ::logging::Level::warning;
-        }
-        /*! \brief delivers the string reporting the current %level of %logging */
-        static const char * desc() {
-            return "[Warning] ";
         }
     };
 
@@ -210,4 +149,3 @@ namespace logging {
 } /* logging */
 
 #endif
-
