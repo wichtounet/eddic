@@ -21,6 +21,14 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
         if(mtac::isInt(*quadruple->arg1)){
             if(quadruple->op == mtac::Operator::MINUS){
                 replaceRight(*this, quadruple, -1 * boost::get<int>(*quadruple->arg1), mtac::Operator::ASSIGN);
+            } else if(quadruple->op == mtac::Operator::NOT){
+                int lhs = boost::get<int>(*quadruple->arg1);
+                
+                if(lhs == 0){
+                    replaceRight(*this, quadruple, 1, mtac::Operator::ASSIGN);
+                } else {
+                    replaceRight(*this, quadruple, 0, mtac::Operator::ASSIGN);
+                }
             } else if(quadruple->op == mtac::Operator::I2F){
                 replaceRight(*this, quadruple, (float) boost::get<int>(*quadruple->arg1), mtac::Operator::FASSIGN);
             } else if(quadruple->arg2 && mtac::isInt(*quadruple->arg2)){
