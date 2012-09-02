@@ -9,6 +9,7 @@
 #include "Variable.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+#include "FunctionContext.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -20,6 +21,35 @@ typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
 void mtac::OffsetConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
+}
+
+ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
+    ProblemDomain::Values values;
+    ProblemDomain out(values);
+    
+    for(auto& variable_pair : function->context->stored_variables()){
+        auto variable = variable_pair.second; 
+
+        if(variable->type()->is_array()){
+            auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
+
+            for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                mtac::Offset offset(variable, i);
+                out[offset] = 0;
+            }
+        } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
+            auto struct_size = variable->type()->size();
+
+            for(std::size_t i = 0; i < struct_size; i += INT->size()){
+                mtac::Offset offset(variable, i);
+                out[offset] = 0;
+
+                std::cout << variable->name() << "(" << i << ")" << std::endl;
+            }
+        }
+    }
+
+    return out;
 }
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
