@@ -43,6 +43,24 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
                     case mtac::Operator::MOD:
                         replaceRight(*this, quadruple, lhs % rhs, mtac::Operator::ASSIGN);
                         break;
+                    case mtac::Operator::GREATER:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs > rhs), mtac::Operator::ASSIGN);
+                        break;
+                    case mtac::Operator::GREATER_EQUALS:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs >= rhs), mtac::Operator::ASSIGN);
+                        break;
+                    case mtac::Operator::LESS:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs < rhs), mtac::Operator::ASSIGN);
+                        break;
+                    case mtac::Operator::LESS_EQUALS:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs <= rhs), mtac::Operator::ASSIGN);
+                        break;
+                    case mtac::Operator::EQUALS:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs == rhs), mtac::Operator::ASSIGN);
+                        break;
+                    case mtac::Operator::NOT_EQUALS:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs != rhs), mtac::Operator::ASSIGN);
+                        break;
                     default:
                         break;
                 }
@@ -68,6 +86,24 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
                         break;
                     case mtac::Operator::FDIV:
                         replaceRight(*this, quadruple, lhs / rhs, mtac::Operator::FASSIGN);
+                        break;
+                    case mtac::Operator::FG:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs > rhs), mtac::Operator::FASSIGN);
+                        break;
+                    case mtac::Operator::FGE:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs >= rhs), mtac::Operator::FASSIGN);
+                        break;
+                    case mtac::Operator::FL:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs < rhs), mtac::Operator::FASSIGN);
+                        break;
+                    case mtac::Operator::FLE:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs <= rhs), mtac::Operator::FASSIGN);
+                        break;
+                    case mtac::Operator::FE:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs == rhs), mtac::Operator::FASSIGN);
+                        break;
+                    case mtac::Operator::FNE:
+                        replaceRight(*this, quadruple, static_cast<int>(lhs != rhs), mtac::Operator::FASSIGN);
                         break;
                     default:
                         break;
