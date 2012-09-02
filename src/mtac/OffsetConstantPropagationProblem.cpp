@@ -31,9 +31,16 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
         if(variable->type()->is_array()){
             auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
 
-            for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
-                mtac::Offset offset(variable, i);
-                out[offset] = 0;
+            if(variable->type()->data_type() == FLOAT){
+                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                    mtac::Offset offset(variable, i);
+                    out[offset] = 0.0;
+                }
+            } else {
+                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                    mtac::Offset offset(variable, i);
+                    out[offset] = 0;
+                }
             }
         } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
             auto struct_size = variable->type()->size();
