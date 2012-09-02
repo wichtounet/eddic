@@ -75,6 +75,8 @@ std::string to_string(ltac::Operator op){
             return "NEG"; 
         case ltac::Operator::NOT:
             return "NOT"; 
+        case ltac::Operator::AND:
+            return "AND"; 
         case ltac::Operator::I2F:
             return "I2F"; 
         case ltac::Operator::F2I:

@@ -129,6 +129,8 @@ struct DebugVisitor : public boost::static_visitor<> {
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " / (float) " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::MOD){
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " % " << printArg(*quadruple->arg2) << endl;
+        } else if(op == mtac::Operator::AND){
+            stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " & " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::EQUALS || op == mtac::Operator::FE){
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::NOT_EQUALS || op == mtac::Operator::FNE){
