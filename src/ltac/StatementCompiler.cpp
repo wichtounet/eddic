@@ -162,7 +162,10 @@ void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int
 }
 
 void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, int position){
-    if(auto* ptr = boost::get<double>(&argument)){
+    if(auto* ptr = boost::get<int>(&argument)){
+        auto label = float_pool->label(static_cast<double>(*ptr));
+        ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), ltac::Address(label));
+    } else if(auto* ptr = boost::get<double>(&argument)){
         auto label = float_pool->label(*ptr);
         ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_param_register(position)), ltac::Address(label));
     } else {
@@ -526,6 +529,18 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     //Push by value
     else {
         if(register_allocated){
+            if(auto* ptr = boost::get<int>(&param->arg)){
+                if(*ptr == 0){
+                    if(param->param && param->param->type() == FLOAT){
+                        pass_in_float_register(param->arg, position);
+                        return;
+                    } else if(!param->std_param.empty() && param->function->getParameterType(param->std_param) == FLOAT){
+                        pass_in_float_register(param->arg, position);
+                        return;
+                    } 
+                } 
+            }
+
             if(mtac::is_single_int_register(type)){
                 pass_in_int_register(param->arg, position);
             } else {
@@ -564,6 +579,20 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                     auto reg = manager.get_reg(ltac::get_variable(param->arg));
                     push(reg);
                 }
+            }
+        } else if(auto* ptr = boost::get<int>(&param->arg)){
+            if(*ptr == 0){
+                if(param->param && param->param->type() == FLOAT){
+                    auto label = float_pool->label(0.0);
+                    push(ltac::Address(label));
+                } else if(!param->std_param.empty() && param->function->getParameterType(param->std_param) == FLOAT){
+                    auto label = float_pool->label(0.0);
+                    push(ltac::Address(label));
+                } else {
+                    push(to_arg(param->arg));
+                }
+            } else {
+                push(to_arg(param->arg));
             }
         } else if(auto* ptr = boost::get<double>(&param->arg)){
             auto label = float_pool->label(*ptr);
