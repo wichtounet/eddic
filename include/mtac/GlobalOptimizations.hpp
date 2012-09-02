@@ -67,7 +67,6 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     problem.Gather(function);
    
     OUT[cfg->entry()] = problem.Boundary(function);
-    
     log::emit<Debug>("Data-Flow") << "OUT[" << *cfg->entry() << "] set to " << OUT[cfg->entry()] << log::endl;
 
     ControlFlowGraph::BasicBlockIterator it, end;
