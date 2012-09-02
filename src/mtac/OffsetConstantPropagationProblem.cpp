@@ -19,11 +19,9 @@ using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-void mtac::OffsetConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
-    pointer_escaped = mtac::escape_analysis(function);
-}
-
 ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
+    pointer_escaped = mtac::escape_analysis(function);
+
     ProblemDomain::Values values;
     ProblemDomain out(values);
     
@@ -43,8 +41,6 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
             for(std::size_t i = 0; i < struct_size; i += INT->size()){
                 mtac::Offset offset(variable, i);
                 out[offset] = 0;
-
-                std::cout << variable->name() << "(" << i << ")" << std::endl;
             }
         }
     }

@@ -30,7 +30,6 @@ struct OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::F
     
     mtac::EscapedVariables pointer_escaped;
     
-    void Gather(std::shared_ptr<mtac::Function> function) override;
     ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
 
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
