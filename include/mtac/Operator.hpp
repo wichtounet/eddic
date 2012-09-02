@@ -43,6 +43,7 @@ enum class Operator : unsigned int {
 
     /* boolean operators */
     NOT,
+    AND,
     
     /* float relational operators */
     FE,

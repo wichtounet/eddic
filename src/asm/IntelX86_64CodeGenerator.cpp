@@ -219,6 +219,9 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::NOT:
                 writer.stream() << "not " << *instruction->arg1 << std::endl;
                 break;
+            case ltac::Operator::AND:
+                writer.stream() << "and " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
+                break;
             case ltac::Operator::I2F:
                 writer.stream() << "cvtsi2sd " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;

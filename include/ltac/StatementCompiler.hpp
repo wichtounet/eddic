@@ -134,6 +134,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
         void compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple);
         void compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple);
+        void compile_AND(std::shared_ptr<mtac::Quadruple> quadruple);
 };
 
 } //end of ltac

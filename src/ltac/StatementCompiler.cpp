@@ -1218,6 +1218,12 @@ void ltac::StatementCompiler::compile_NOT(std::shared_ptr<mtac::Quadruple> quadr
     ltac::add_instruction(function, ltac::Operator::NOT, reg); 
 }
 
+void ltac::StatementCompiler::compile_AND(std::shared_ptr<mtac::Quadruple> quadruple){
+    auto reg = manager.get_reg_no_move(quadruple->result);
+    manager.copy(*quadruple->arg1, reg);
+    ltac::add_instruction(function, ltac::Operator::AND, reg, boost::get<int>(*quadruple->arg2));
+}
+
 void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple){
     //A return without args is the same as exiting from the function
     if(quadruple->arg1){
@@ -1390,6 +1396,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
             break;
         case mtac::Operator::NOT:
             compile_NOT(quadruple);
+            break;
+        case mtac::Operator::AND:
+            compile_AND(quadruple);
             break;
         case mtac::Operator::NOP:
             //No code necessary
