@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE( recursive_functions ){
 }
 
 BOOST_AUTO_TEST_CASE( math ){
-    assert_output("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|");
+    assert_output("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|232|40|");
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
