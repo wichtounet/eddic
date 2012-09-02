@@ -3,6 +3,7 @@ int a = 111;
 int b = 222;
 int c = -111;
 int d = -222;
+int e = 1000;
 
 void main(){
     print(a + b);
@@ -28,5 +29,9 @@ void main(){
     print(d % c);
     print("|");
     print(c % d);
+    print("|");
+    print(e % 256);
+    print("|");
+    print(e % 64);
     print("|");
 }
