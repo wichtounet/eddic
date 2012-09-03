@@ -65,12 +65,6 @@ void operator()(ast::FunctionDeclaration& function){\
 
 /* Instructions */
 
-#define AUTO_RECURSE_BINARY_CONDITION()\
-void operator()(ast::BinaryCondition& binaryCondition){\
-    visit(*this, binaryCondition.Content->lhs);\
-    visit(*this, binaryCondition.Content->rhs);\
-}
-
 #define AUTO_RECURSE_TERNARY()\
 void operator()(ast::Ternary& ternary){\
     visit(*this, ternary.Content->condition);\

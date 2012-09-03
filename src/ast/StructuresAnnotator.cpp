@@ -13,6 +13,7 @@
 #include "SemanticalException.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "FunctionContext.hpp"
 #include "mangling.hpp"
 
 #include "ast/StructuresAnnotator.hpp"
@@ -45,6 +46,13 @@ struct StructuresCollector : public boost::static_visitor<> {
                 }
                 
                 struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
+            }
+
+            //Annotate functions with the parent struct
+            for(auto& function : struct_.Content->functions){
+                if(function.Content->context){
+                    function.Content->context->struct_type = struct_.Content->struct_type; 
+                }
             }
             
             auto mangled_name = struct_.Content->struct_type->mangle();

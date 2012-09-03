@@ -158,3 +158,7 @@ void FunctionContext::removeVariable(const std::string& variable){
         reallocate_storage();
     }
 }
+
+std::shared_ptr<FunctionContext> FunctionContext::function(){
+    return shared_from_this();
+}
