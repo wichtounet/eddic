@@ -27,8 +27,7 @@ struct ASTBinaryCondition {
     Value lhs;
     Value rhs;
 
-    mutable long references;
-    ASTBinaryCondition() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

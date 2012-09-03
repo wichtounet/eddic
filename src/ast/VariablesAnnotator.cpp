@@ -57,28 +57,54 @@ struct VisitorProxy : public boost::static_visitor<> {
     }
 };
 
-struct ValueVisitor : public boost::static_visitor<> {
+struct ValueVisitor : public boost::static_visitor<ast::Value> {
     std::shared_ptr<GlobalContext> context;
     
-    AUTO_RECURSE_FUNCTION_CALLS()
-    AUTO_RECURSE_BINARY_CONDITION()
-    AUTO_RECURSE_TERNARY()
-    AUTO_RECURSE_BUILTIN_OPERATORS()
-    AUTO_RECURSE_UNARY_VALUES()
-    AUTO_RECURSE_CAST_VALUES()
-    AUTO_RECURSE_PREFIX()
-    AUTO_RECURSE_SUFFIX()
-    
-    AUTO_IGNORE_FALSE()
-    AUTO_IGNORE_TRUE()
-    AUTO_IGNORE_NULL()
-    AUTO_IGNORE_LITERAL()
-    AUTO_IGNORE_CHAR_LITERAL()
-    AUTO_IGNORE_FLOAT()
-    AUTO_IGNORE_INTEGER()
-    AUTO_IGNORE_INTEGER_SUFFIX()
+    ast::Value operator()(ast::FunctionCall& functionCall){
+        visit_each(*this, functionCall.Content->values);
 
-    void operator()(ast::MemberValue& variable){
+        return functionCall;
+    }
+
+    ast::Value operator()(ast::Ternary& ternary){
+        visit(*this, ternary.Content->condition);
+        visit(*this, ternary.Content->true_value);
+        visit(*this, ternary.Content->false_value);
+
+        return ternary;
+    }
+
+    ast::Value operator()(ast::BuiltinOperator& builtin){
+        visit_each(*this, builtin.Content->values);
+
+        return builtin;
+    }
+
+    ast::Value operator()(ast::Unary& value){
+        visit(*this, value.Content->value);
+
+        return value;
+    }
+
+    ast::Value operator()(ast::Cast& cast){
+        visit(*this, cast.Content->value);
+
+        return cast;
+    }
+
+    ast::Value operator()(ast::PrefixOperation& operation){
+        visit(*this, operation.Content->left_value);
+
+        return operation;
+    }
+
+    ast::Value operator()(ast::SuffixOperation& operation){
+        visit(*this, operation.Content->left_value);
+
+        return operation;
+    }
+
+    ast::Value operator()(ast::MemberValue& variable){
         visit(*this, variable.Content->location);
 
         auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
@@ -106,9 +132,11 @@ struct ValueVisitor : public boost::static_visitor<> {
                 struct_name = struct_type->name;
             }
         }
+
+        return variable;
     }
 
-    void operator()(ast::VariableValue& variable){
+    ast::Value operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
         }
@@ -116,9 +144,11 @@ struct ValueVisitor : public boost::static_visitor<> {
         //Reference the variable
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
         variable.Content->var->addReference();
+
+        return variable;
     }
 
-    void operator()(ast::ArrayValue& array){
+    ast::Value operator()(ast::ArrayValue& array){
         if (!array.Content->context->exists(array.Content->arrayName)) {
             throw SemanticalException("Array " + array.Content->arrayName + " has not been declared", array.Content->position);
         }
@@ -128,20 +158,26 @@ struct ValueVisitor : public boost::static_visitor<> {
         array.Content->var->addReference();
 
         visit(*this, array.Content->indexValue);
+
+        return array;
     }
 
-    void operator()(ast::DereferenceValue& variable){
+    ast::Value operator()(ast::DereferenceValue& variable){
         visit(*this, variable.Content->ref);
+
+        return variable;
     }
 
-    void operator()(ast::Expression& value){
+    ast::Value operator()(ast::Expression& value){
         visit(*this, value.Content->first);
         
         for_each(value.Content->operations.begin(), value.Content->operations.end(), 
             [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+
+        return value;
     }
 
-    void operator()(ast::MemberFunctionCall& functionCall){
+    ast::Value operator()(ast::MemberFunctionCall& functionCall){
         if (!functionCall.Content->context->exists(functionCall.Content->object_name)){
             throw SemanticalException("The variable " + functionCall.Content->object_name + " does not exists", functionCall.Content->position);
         }
@@ -150,16 +186,24 @@ struct ValueVisitor : public boost::static_visitor<> {
         variable->addReference();
 
         visit_each(*this, functionCall.Content->values);
+
+        return functionCall;
     }
 
-    void operator()(ast::Assignment& assignment){
+    ast::Value operator()(ast::Assignment& assignment){
         visit(*this, assignment.Content->left_value);
         visit(*this, assignment.Content->value);
+
+        return assignment;
     }
     
-    void operator()(ast::New& new_){
+    ast::Value operator()(ast::New& new_){
         visit_each(*this, new_.Content->values);
+
+        return new_;
     }
+
+    AUTO_RETURN_OTHERS(ast::Value)
 };
 
 struct VariablesVisitor : public boost::static_visitor<> {

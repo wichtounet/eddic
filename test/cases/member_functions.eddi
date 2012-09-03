@@ -18,6 +18,10 @@ struct Counter {
         this.add(n1);
         this.add(n2);
     }
+
+    void compilete_test(){
+        value = value + 1;
+    }
 }
 
 void main(){
