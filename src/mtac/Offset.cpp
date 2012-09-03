@@ -5,10 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "Variable.hpp"
+
 #include "mtac/Offset.hpp"
 
 using namespace eddic;
 
 std::ostream& mtac::operator<<(std::ostream& stream, const Offset& offset){
-    return stream << "(" << offset.variable << ")" << offset.offset;
+    return stream << "(" << (offset.variable ? offset.variable->name() : "null") << ")" << offset.offset;
 }
