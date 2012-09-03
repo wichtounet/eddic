@@ -19,8 +19,10 @@ using namespace eddic;
 
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-void mtac::ConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::ConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
+
+    return default_element();
 }
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
