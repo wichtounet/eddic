@@ -21,7 +21,7 @@ class GlobalContext;
  * \class FunctionContext
  * \brief A symbol table for a function.
  */
-class FunctionContext : public Context {
+class FunctionContext : public Context, public std::enable_shared_from_this<FunctionContext> {
     private:
         int currentPosition;
         int currentParameter;
@@ -58,6 +58,8 @@ class FunctionContext : public Context {
         Variables stored_variables();
 
         std::shared_ptr<const Type> struct_type = nullptr;
+        
+        std::shared_ptr<FunctionContext> function();
 };
 
 } //end of eddic

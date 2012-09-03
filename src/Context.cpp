@@ -91,3 +91,7 @@ Context::Variables::const_iterator Context::end() const {
 std::shared_ptr<GlobalContext> Context::global() const {
     return global_context;
 }
+
+std::shared_ptr<FunctionContext> Context::function(){
+    return nullptr;
+}

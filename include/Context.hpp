@@ -121,6 +121,7 @@ class Context {
          */
         std::shared_ptr<Context> parent() const;
         
+        std::shared_ptr<FunctionContext> function();
         std::shared_ptr<GlobalContext> global() const;
 };
 
