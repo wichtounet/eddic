@@ -2,25 +2,21 @@ struct Counter {
     int value;
 
     void increment(){
-        this.value = this.value + 1;
+        value = value + 1;
     }
 
     void add(int number){
-        this.value = this.value + number;
+        value = value + number;
     }
     
     void add(int n1, int n2){
-        this.value = this.value + n1;
-        this.value = this.value + n2;
+        value = value + n1;
+        value = value + n2;
     }
     
     void addSub(int n1, int n2){
         this.add(n1);
         this.add(n2);
-    }
-
-    void compilete_test(){
-        value = value + 1;
     }
 }
 
