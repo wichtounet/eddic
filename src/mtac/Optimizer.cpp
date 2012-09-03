@@ -241,28 +241,30 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
     auto& functions = program->functions;
 
-    //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
-
     if(option_defined("dev")){
-        threads = 1;
+        for(auto& function : functions){
+            optimize_function(function, string_pool);
+        }
+    } else {
+        //Find a better heuristic to configure the number of threads
+        std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
+
+        std::vector<std::thread> pool;
+        for(std::size_t tid = 0; tid < threads; ++tid){
+            pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
+                std::size_t i = tid;
+
+                while(i < functions.size()){
+                    optimize_function(functions[i], string_pool); 
+
+                    i += threads;
+                }
+            }));
+        }
+
+        //Wait for all the threads to finish
+        std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
     }
-
-    std::vector<std::thread> pool;
-    for(std::size_t tid = 0; tid < threads; ++tid){
-        pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
-            std::size_t i = tid;
-
-            while(i < functions.size()){
-                optimize_function(functions[i], string_pool); 
-
-                i += threads;
-            }
-        }));
-    }
-
-    //Wait for all the threads to finish
-    std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
 
 } //end of anonymous namespace
@@ -298,26 +300,28 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
 
     auto& functions = program->functions;
 
-    //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
-
     if(option_defined("dev")){
-        threads = 1;
+        for(auto& function : functions){
+            basic_optimize_function(function); 
+        }
+    } else {
+        //Find a better heuristic to configure the number of threads
+        std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
+
+        std::vector<std::thread> pool;
+        for(std::size_t tid = 0; tid < threads; ++tid){
+            pool.push_back(std::thread([tid, threads, &functions](){
+                std::size_t i = tid;
+
+                while(i < functions.size()){
+                    basic_optimize_function(functions[i]); 
+
+                    i += threads;
+                }
+            }));
+        }
+
+        //Wait for all the threads to finish
+        std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
     }
-
-    std::vector<std::thread> pool;
-    for(std::size_t tid = 0; tid < threads; ++tid){
-        pool.push_back(std::thread([tid, threads, &functions](){
-            std::size_t i = tid;
-
-            while(i < functions.size()){
-                basic_optimize_function(functions[i]); 
-
-                i += threads;
-            }
-        }));
-    }
-
-    //Wait for all the threads to finish
-    std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
