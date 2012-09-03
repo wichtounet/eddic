@@ -41,32 +41,11 @@ struct VisitorProxy : public boost::static_visitor<> {
     VisitorProxy(Args... args) : visitor(args...) {}
 
     AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_FUNCTION_CALLS()
-    AUTO_RECURSE_SIMPLE_LOOPS()
-    AUTO_RECURSE_BRANCHES()
-    AUTO_RECURSE_BINARY_CONDITION()
-    AUTO_RECURSE_TERNARY()
-    AUTO_RECURSE_BUILTIN_OPERATORS()
-    AUTO_RECURSE_UNARY_VALUES()
-    AUTO_RECURSE_CAST_VALUES()
-    AUTO_RECURSE_RETURN_VALUES()
-    AUTO_RECURSE_SWITCH()
-    AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
-    AUTO_RECURSE_NEW()
-    AUTO_RECURSE_PREFIX()
-    AUTO_RECURSE_SUFFIX()
+    AUTO_RECURSE_ELSE()
 
     AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_IGNORE_TEMPLATE_STRUCT()
-    AUTO_IGNORE_FALSE()
-    AUTO_IGNORE_TRUE()
-    AUTO_IGNORE_NULL()
-    AUTO_IGNORE_LITERAL()
-    AUTO_IGNORE_CHAR_LITERAL()
-    AUTO_IGNORE_FLOAT()
-    AUTO_IGNORE_INTEGER()
-    AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
 
@@ -78,11 +57,164 @@ struct VisitorProxy : public boost::static_visitor<> {
     }
 };
 
+struct ValueVisitor : public boost::static_visitor<> {
+    std::shared_ptr<GlobalContext> context;
+    
+    AUTO_RECURSE_FUNCTION_CALLS()
+    AUTO_RECURSE_BINARY_CONDITION()
+    AUTO_RECURSE_TERNARY()
+    AUTO_RECURSE_BUILTIN_OPERATORS()
+    AUTO_RECURSE_UNARY_VALUES()
+    AUTO_RECURSE_CAST_VALUES()
+    AUTO_RECURSE_PREFIX()
+    AUTO_RECURSE_SUFFIX()
+    
+    AUTO_IGNORE_FALSE()
+    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_NULL()
+    AUTO_IGNORE_LITERAL()
+    AUTO_IGNORE_CHAR_LITERAL()
+    AUTO_IGNORE_FLOAT()
+    AUTO_IGNORE_INTEGER()
+    AUTO_IGNORE_INTEGER_SUFFIX()
+
+    void operator()(ast::MemberValue& variable){
+        visit(*this, variable.Content->location);
+
+        auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
+        auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
+        auto struct_type = context->get_struct(struct_name);
+
+        //Reference the structure
+        struct_type->add_reference();
+
+        auto& members = variable.Content->memberNames;
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = members[i];
+
+            if(!struct_type->member_exists(member)){ 
+                throw SemanticalException("The struct " + struct_name + " has no member named " + member, variable.Content->position);
+            }
+
+            //Add a reference to the member
+            (*struct_type)[member]->add_reference();
+
+            //If it is not the last member
+            if(i != members.size() - 1){
+                //The next member will be a member of the current member type
+                struct_type = context->get_struct((*struct_type)[member]->type->mangle());
+                struct_name = struct_type->name;
+            }
+        }
+    }
+
+    void operator()(ast::VariableValue& variable){
+        if (!variable.Content->context->exists(variable.Content->variableName)) {
+            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
+        }
+
+        //Reference the variable
+        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
+        variable.Content->var->addReference();
+    }
+
+    void operator()(ast::ArrayValue& array){
+        if (!array.Content->context->exists(array.Content->arrayName)) {
+            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared", array.Content->position);
+        }
+        
+        //Reference the variable
+        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
+        array.Content->var->addReference();
+
+        visit(*this, array.Content->indexValue);
+    }
+
+    void operator()(ast::DereferenceValue& variable){
+        visit(*this, variable.Content->ref);
+    }
+
+    void operator()(ast::Expression& value){
+        visit(*this, value.Content->first);
+        
+        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
+            [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+    }
+
+    void operator()(ast::MemberFunctionCall& functionCall){
+        if (!functionCall.Content->context->exists(functionCall.Content->object_name)){
+            throw SemanticalException("The variable " + functionCall.Content->object_name + " does not exists", functionCall.Content->position);
+        }
+        
+        auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
+        variable->addReference();
+
+        visit_each(*this, functionCall.Content->values);
+    }
+
+    void operator()(ast::Assignment& assignment){
+        visit(*this, assignment.Content->left_value);
+        visit(*this, assignment.Content->value);
+    }
+    
+    void operator()(ast::New& new_){
+        visit_each(*this, new_.Content->values);
+    }
+};
+
 struct VariablesVisitor : public boost::static_visitor<> {
     VisitorProxy<VariablesVisitor>* proxy = nullptr;
+    ValueVisitor value_visitor;
+
     std::shared_ptr<GlobalContext> context;
 
-    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
+    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {
+        value_visitor.context = context;    
+    }
+
+    void operator()(ast::Return& return_){
+        visit(value_visitor, return_.Content->value);
+    }
+
+    void operator()(ast::For& for_){
+        visit_optional(*proxy, for_.Content->start);
+        visit_optional(value_visitor, for_.Content->condition);
+        visit_optional(*proxy, for_.Content->repeat);
+        visit_each(*proxy, for_.Content->instructions);
+    }
+    
+    void operator()(ast::While& while_){
+        visit(value_visitor, while_.Content->condition);
+        visit_each(*proxy, while_.Content->instructions);
+    }
+    
+    void operator()(ast::DoWhile& while_){
+        visit(value_visitor, while_.Content->condition);
+        visit_each(*proxy, while_.Content->instructions);
+    }
+
+    void operator()(ast::If& if_){
+        visit(value_visitor, if_.Content->condition);
+        visit_each(*proxy, if_.Content->instructions);
+        visit_each_non_variant(*proxy, if_.Content->elseIfs);
+        visit_optional_non_variant(*proxy, if_.Content->else_);
+    }
+
+    void operator()(ast::ElseIf& elseIf){
+        visit(value_visitor, elseIf.condition);
+        visit_each(*proxy, elseIf.instructions);
+    }
+
+    void operator()(ast::Switch& switch_){
+        visit(value_visitor, switch_.Content->value);
+        visit_each_non_variant(*proxy, switch_.Content->cases);
+        visit_optional_non_variant(*proxy, switch_.Content->default_case);
+    }
+
+    void operator()(ast::SwitchCase& switch_case){
+        visit(value_visitor, switch_case.value);
+        visit_each(*proxy, switch_case.instructions);
+    }
     
     void operator()(ast::Struct& struct_){
         if(context->is_recursively_nested(struct_.Content->struct_type->mangle())){
@@ -160,17 +292,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_function(destructor);
     }
 
-    void operator()(ast::MemberFunctionCall& functionCall){
-        if (!functionCall.Content->context->exists(functionCall.Content->object_name)){
-            throw SemanticalException("The variable " + functionCall.Content->object_name + " does not exists", functionCall.Content->position);
-        }
-        
-        auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-        variable->addReference();
-
-        visit_each(*proxy, functionCall.Content->values);
-    }
-
     bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
         if(context->exists(name)){
             auto var = context->getVariable(name);
@@ -212,7 +333,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             return;
         }
 
-        visit(*proxy, declaration.Content->size);
+        visit(value_visitor, declaration.Content->size);
 
         if(check_variable(declaration.Content->context, declaration.Content->arrayName, declaration.Content->position)){
             auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
@@ -291,11 +412,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each(*proxy, foreach.Content->instructions);
     }
 
-    void operator()(ast::Assignment& assignment){
-        visit(*proxy, assignment.Content->left_value);
-        visit(*proxy, assignment.Content->value);
-    }
-
     void operator()(ast::Delete& delete_){
         if (!delete_.Content->context->exists(delete_.Content->variable_name)) {
             throw SemanticalException("Variable " + delete_.Content->variable_name + " has not been declared", delete_.Content->position);
@@ -312,7 +428,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             return;
         }
 
-        visit_each(*proxy, declaration.Content->values);
+        visit_each(value_visitor, declaration.Content->values);
 
         if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
@@ -343,7 +459,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             return;
         }
         
-        visit_optional(*proxy, declaration.Content->value);
+        visit_optional(value_visitor, declaration.Content->value);
 
         if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
@@ -392,6 +508,26 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
     }
     
+    void operator()(ast::FunctionCall& function_call){
+        visit_non_variant(value_visitor, function_call);
+    }
+    
+    void operator()(ast::MemberFunctionCall& function_call){
+        visit_non_variant(value_visitor, function_call);
+    }
+    
+    void operator()(ast::Assignment& assignment){
+        visit_non_variant(value_visitor, assignment);
+    }
+
+    void operator()(ast::PrefixOperation& operation){
+        visit_non_variant(value_visitor, operation);
+    }
+
+    void operator()(ast::SuffixOperation& operation){
+        visit_non_variant(value_visitor, operation);
+    }
+    
     void operator()(ast::Swap& swap){
         if (swap.Content->lhs == swap.Content->rhs) {
             throw SemanticalException("Cannot swap a variable with itself", swap.Content->position);
@@ -407,69 +543,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Reference both variables
         swap.Content->lhs_var->addReference();
         swap.Content->rhs_var->addReference();
-    }
-
-    void operator()(ast::MemberValue& variable){
-        visit(*proxy, variable.Content->location);
-
-        auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
-        auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
-        auto struct_type = context->get_struct(struct_name);
-
-        //Reference the structure
-        struct_type->add_reference();
-
-        auto& members = variable.Content->memberNames;
-        for(std::size_t i = 0; i < members.size(); ++i){
-            auto& member = members[i];
-
-            if(!struct_type->member_exists(member)){ 
-                throw SemanticalException("The struct " + struct_name + " has no member named " + member, variable.Content->position);
-            }
-
-            //Add a reference to the member
-            (*struct_type)[member]->add_reference();
-
-            //If it is not the last member
-            if(i != members.size() - 1){
-                //The next member will be a member of the current member type
-                struct_type = context->get_struct((*struct_type)[member]->type->mangle());
-                struct_name = struct_type->name;
-            }
-        }
-    }
-
-    void operator()(ast::VariableValue& variable){
-        if (!variable.Content->context->exists(variable.Content->variableName)) {
-            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
-        }
-
-        //Reference the variable
-        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-        variable.Content->var->addReference();
-    }
-
-    void operator()(ast::ArrayValue& array){
-        if (!array.Content->context->exists(array.Content->arrayName)) {
-            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared", array.Content->position);
-        }
-        
-        //Reference the variable
-        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
-        array.Content->var->addReference();
-
-        visit(*proxy, array.Content->indexValue);
-    }
-
-    void operator()(ast::DereferenceValue& variable){
-        visit(*proxy, variable.Content->ref);
-    }
-
-    void operator()(ast::Expression& value){
-        visit(*proxy, value.Content->first);
-        
-        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](ast::Operation& operation){ visit(*proxy, operation.get<1>()); });
     }
 };
 
