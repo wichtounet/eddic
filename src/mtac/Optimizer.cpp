@@ -37,6 +37,7 @@
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
+#include "mtac/PointerPropagation.hpp"
 
 //The data-flow problems
 #include "mtac/GlobalOptimizations.hpp"
@@ -57,6 +58,20 @@ bool apply_to_all(std::shared_ptr<mtac::Function> function){
     mtac::visit_all_statements(visitor, function);
 
     return visitor.optimized;
+}
+
+template<typename Visitor>
+bool apply_to_basic_blocks(std::shared_ptr<mtac::Function> function){
+    bool optimized = false;
+
+    for(auto& block : function->getBasicBlocks()){
+        Visitor visitor;
+        visit_each(visitor, block->statements);
+
+        optimized |= visitor.optimized;
+    }
+
+    return optimized;
 }
 
 template<typename Visitor>
@@ -181,6 +196,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
 
         optimized |= debug("Common Subexpression Elimination", &data_flow_optimization<mtac::CommonSubexpressionElimination>, function);
 
+        optimized |= debug("Pointer Propagation", &apply_to_basic_blocks<mtac::PointerPropagation>, function);
         optimized |= debug("Math Propagation", &apply_to_basic_blocks_two_pass<mtac::MathPropagation>, function);
 
         optimized |= debug("Optimize Branches", &mtac::optimize_branches, function);
