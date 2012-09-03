@@ -8,10 +8,13 @@
 #ifndef FUNCTION_CONTEXT_H
 #define FUNCTION_CONTEXT_H
 
+#include <memory>
+
 #include "Context.hpp"
 
 namespace eddic {
 
+class Type;
 class GlobalContext;
 
 /*!
@@ -53,6 +56,8 @@ class FunctionContext : public Context {
         void allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_);
 
         Variables stored_variables();
+
+        std::shared_ptr<const Type> struct_type = nullptr;
 };
 
 } //end of eddic
