@@ -31,7 +31,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
     public:
         AUTO_RECURSE_STRUCT()
-        AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_UNARY_VALUES()

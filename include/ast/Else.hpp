@@ -13,8 +13,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Condition.hpp"
-
 namespace eddic {
 
 class Context;
@@ -27,7 +25,6 @@ namespace ast {
  */
 struct Else {
     std::shared_ptr<Context> context; 
-
     std::vector<Instruction> instructions;
 };
 

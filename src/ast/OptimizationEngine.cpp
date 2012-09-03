@@ -265,11 +265,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::BinaryCondition& binaryCondition){
-            binaryCondition.Content->lhs = visit(optimizer, binaryCondition.Content->lhs); 
-            binaryCondition.Content->rhs = visit(optimizer, binaryCondition.Content->rhs); 
-        }
-
         AUTO_IGNORE_OTHERS()
 };
 

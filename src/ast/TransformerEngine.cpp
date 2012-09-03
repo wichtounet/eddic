@@ -557,11 +557,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
             declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
-
-    void operator()(ast::BinaryCondition& binaryCondition){
-        binaryCondition.Content->lhs = visit(transformer, binaryCondition.Content->lhs); 
-        binaryCondition.Content->rhs = visit(transformer, binaryCondition.Content->rhs); 
-    }
 };
 
 struct TransformerVisitor : public boost::static_visitor<> {

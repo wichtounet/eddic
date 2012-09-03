@@ -202,7 +202,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
         AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_MEMBER_VALUE()
