@@ -115,7 +115,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
         auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
 
         //Store the value assigned to result+arg1
-        if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN){
+        if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 if(!quadruple->result->type()->is_pointer()){
                     mtac::Offset offset(quadruple->result, *ptr);
@@ -124,9 +124,8 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
                     visit(collector, *quadruple->arg2);
                 }
             }
-        } 
         //PDOT Lets escape an offset
-        else if(quadruple->op == mtac::Operator::PDOT){
+        } else if(quadruple->op == mtac::Operator::PDOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                 
