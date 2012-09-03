@@ -154,6 +154,28 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
 
     ast::Value operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
+            auto context = variable.Content->context->function();
+            auto global_context = variable.Content->context->global();
+
+            if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
+                auto struct_type = global_context->get_struct(context->struct_type->mangle());
+                
+                if(struct_type->member_exists(variable.Content->variableName)){
+                    ast::VariableValue this_variable;
+                    this_variable.Content->context = variable.Content->context;
+                    this_variable.Content->variableName = "this";
+                    this_variable.Content->position = variable.Content->position;
+
+                    ast::MemberValue member_value;
+                    member_value.Content->context = variable.Content->context;
+                    member_value.Content->position = variable.Content->position;
+                    member_value.Content->location = this_variable;
+                    member_value.Content->memberNames.push_back(variable.Content->variableName);
+
+                    return visit_non_variant(*this, member_value);
+                }
+            }
+
             throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
         }
 
