@@ -115,12 +115,12 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
         auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
 
         //Store the value assigned to result+arg1
-        if(quadruple->op == mtac::Operator::DOT_ASSIGN){
+        if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 if(!quadruple->result->type()->is_pointer()){
                     mtac::Offset offset(quadruple->result, *ptr);
+                    
                     ConstantCollector collector(out, offset);
-
                     visit(collector, *quadruple->arg2);
                 }
             }
