@@ -21,7 +21,7 @@ class GlobalContext;
  * \class FunctionContext
  * \brief A symbol table for a function.
  */
-class FunctionContext : public Context, public std::enable_shared_from_this<FunctionContext> {
+class FunctionContext final : public Context, public std::enable_shared_from_this<FunctionContext> {
     private:
         int currentPosition;
         int currentParameter;

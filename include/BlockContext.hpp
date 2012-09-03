@@ -19,7 +19,7 @@ class GlobalContext;
  * \class BlockContext
  * \brief A symbol table for the block level. 
  */
-class BlockContext : public Context {
+class BlockContext final : public Context {
     private:
         std::shared_ptr<FunctionContext> m_functionContext;
 
