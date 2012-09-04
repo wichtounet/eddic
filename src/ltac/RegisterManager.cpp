@@ -416,7 +416,15 @@ bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable, mtac::St
 }
 
 bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
-    return pointer_escaped->find(variable) != pointer_escaped->end();
+    if(pointer_escaped->count(variable)){
+        log::emit<Trace>("Registers") << variable->name() << " is escaped " << log::endl;
+
+        return true;
+    }
+
+    log::emit<Trace>("Registers") << variable->name() << " is not escaped " << log::endl;
+
+    return false;
 }
 
 bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){
