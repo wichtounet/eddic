@@ -83,8 +83,12 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
         }
     } else if(quadruple->op == mtac::Operator::DOT){
         optimized |= optimize_dot(quadruple, mtac::Operator::ASSIGN, aliases);
+    } else if(quadruple->op == mtac::Operator::FDOT){
+        optimized |= optimize_dot(quadruple, mtac::Operator::FASSIGN, aliases);
     } else if(quadruple->op == mtac::Operator::DOT_ASSIGN){
         optimized |= optimize_dot_assign(quadruple, mtac::Operator::ASSIGN, aliases);
+    } else if(quadruple->op == mtac::Operator::DOT_FASSIGN){
+        optimized |= optimize_dot_assign(quadruple, mtac::Operator::FASSIGN, aliases);
     }
 }
 
