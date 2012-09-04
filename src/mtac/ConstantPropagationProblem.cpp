@@ -56,6 +56,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
     void operator()(int value){
         out[var] = value;
+        std::cout << var->name() << ":" << value << std::endl;
     }
     
     void operator()(const std::string& value){
@@ -86,6 +87,10 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
     //Quadruple affects variable
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr;
+
+        if(quadruple->op == mtac::Operator::NOP){
+            return out;
+        }
 
         if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
             ConstantCollector collector(out, quadruple->result);
