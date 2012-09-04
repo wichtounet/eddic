@@ -88,7 +88,8 @@ struct ConstantCollector : public boost::static_visitor<> {
         out[offset] = value;
     }
     
-    void operator()(const std::string& value){
+    //Warning : Do not pass it by reference to avoid going to the template function
+    void operator()(std::string value){
         out[offset] = value;
     }
     
@@ -183,6 +184,18 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
 
                 if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
                     quadruple->op = mtac::Operator::ASSIGN;
+                    *quadruple->arg1 = results[offset];
+                    quadruple->arg2.reset();
+
+                    changes = true;
+                }
+            }
+        } else if(quadruple->op == mtac::Operator::FDOT){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
+
+                if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
+                    quadruple->op = mtac::Operator::FASSIGN;
                     *quadruple->arg1 = results[offset];
                     quadruple->arg2.reset();
 
