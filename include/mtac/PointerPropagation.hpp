@@ -34,6 +34,7 @@ class PointerPropagation : public boost::static_visitor<> {
 
     private:
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> aliases;
+        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> pointer_copies;
 };
 
 

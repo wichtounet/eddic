@@ -11,6 +11,7 @@
 
 #include "Variable.hpp"
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 using namespace eddic;
 
@@ -61,11 +62,52 @@ bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Opera
     return false;
 }
 
+struct CopyApplier : public boost::static_visitor<> {
+    std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& pointer_copies;
+    bool changes = false;
+
+    CopyApplier(std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& pointer_copies) : pointer_copies(pointer_copies) {}
+
+    bool optimize_arg(mtac::Argument& arg){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            if(pointer_copies.find(*ptr) != pointer_copies.end()){
+                arg = pointer_copies[*ptr];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool optimize_optional(boost::optional<mtac::Argument>& arg){
+        if(arg){
+            return optimize_arg(*arg);
+        }
+
+        return false;
+    }
+
+    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+        changes |= optimize_optional(quadruple->arg1);
+        changes |= optimize_optional(quadruple->arg2);
+    }
+
+    void operator()(std::shared_ptr<mtac::Param> param){
+        changes |= optimize_arg(param->arg);
+    }
+};
+
 } //end of anonymous namespace
 
 void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    CopyApplier optimizer(pointer_copies);
+    visit_non_variant(optimizer, quadruple);
+
+    optimized |= optimizer.changes;
+
     if(mtac::erase_result(quadruple->op)){
         aliases.erase(quadruple->result);
+        pointer_copies.erase(quadruple->result);
     }
 
     if(quadruple->op == mtac::Operator::PASSIGN){
@@ -81,6 +123,12 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
                 }
             }
         }
+        
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+            if((*ptr)->type()->is_pointer() && quadruple->result->type()->is_pointer()){
+                pointer_copies[quadruple->result] = *ptr;    
+            }
+        }
     } else if(quadruple->op == mtac::Operator::DOT){
         optimized |= optimize_dot(quadruple, mtac::Operator::ASSIGN, aliases);
     } else if(quadruple->op == mtac::Operator::FDOT){
@@ -92,6 +140,9 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
     }
 }
 
-void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Param> /*param*/){
-    //Nothing to check
+void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Param> param){
+    CopyApplier optimizer(pointer_copies);
+    visit_non_variant(optimizer, param);
+    
+    optimized |= optimizer.changes;
 }
