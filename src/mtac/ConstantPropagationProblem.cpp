@@ -56,7 +56,6 @@ struct ConstantCollector : public boost::static_visitor<> {
 
     void operator()(int value){
         out[var] = value;
-        std::cout << var->name() << ":" << value << std::endl;
     }
     
     void operator()(const std::string& value){
