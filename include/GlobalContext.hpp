@@ -74,6 +74,7 @@ class GlobalContext final : public Context {
          */
         bool struct_exists(const std::string& struct_);
         
+        std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset);
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
         int size_of_struct(const std::string& struct_);
         bool is_recursively_nested(const std::string& struct_);
