@@ -14,6 +14,55 @@
 
 using namespace eddic;
 
+namespace {
+
+bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+        auto variable = *ptr;
+
+        if(aliases.find(variable) != aliases.end()){
+            auto alias = aliases[variable];
+
+            quadruple->arg1 = alias;
+
+            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
+                if(*offset_ptr == 0){
+                    quadruple->op = op;
+                    quadruple->arg2.reset();
+                }
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
+    auto variable = quadruple->result;
+
+    if(aliases.find(variable) != aliases.end()){
+        auto alias = aliases[variable];
+
+        quadruple->result = alias;
+
+        if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
+            if(*offset_ptr == 0){
+                quadruple->op = op;
+                quadruple->arg1.reset();
+                quadruple->arg1 = quadruple->arg2;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+} //end of anonymous namespace
+
 void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(mtac::erase_result(quadruple->op)){
         aliases.erase(quadruple->result);
@@ -33,53 +82,12 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
             }
         }
     } else if(quadruple->op == mtac::Operator::DOT){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-            auto variable = *ptr;
-
-            if(aliases.find(variable) != aliases.end()){
-                auto alias = aliases[variable];
-
-                quadruple->arg1 = alias;
-
-                if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
-                    if(*offset_ptr == 0){
-                        quadruple->op = mtac::Operator::ASSIGN;
-                        quadruple->arg2.reset();
-                    }
-                }
-
-                optimized = true;
-            }
-        }
+        optimized |= optimize_dot(quadruple, mtac::Operator::ASSIGN, aliases);
     } else if(quadruple->op == mtac::Operator::DOT_ASSIGN){
-        auto variable = quadruple->result;
-
-        if(aliases.find(variable) != aliases.end()){
-            auto alias = aliases[variable];
-
-            quadruple->result = alias;
-
-            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
-                if(*offset_ptr == 0){
-                    quadruple->op = mtac::Operator::ASSIGN;
-                    quadruple->arg1.reset();
-                    quadruple->arg1 = quadruple->arg2;
-                }
-            }
-
-            optimized = true;
-        }
+        optimized |= optimize_dot_assign(quadruple, mtac::Operator::ASSIGN, aliases);
     }
-    
-    //DOT_ASSIGN,     //result+arg1=arg2
-    //DOT_FASSIGN,    //result+arg1=arg2
-    //DOT_PASSIGN,    //result+arg1=arg2
 }
 
-void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Param> param){
-   /* if(param->address){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-            
-        }
-    }*/
+void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Param> /*param*/){
+    //Nothing to check
 }
