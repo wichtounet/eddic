@@ -36,3 +36,7 @@ bool ltac::FloatRegister::operator==(const FloatRegister& rhs) const {
 bool ltac::FloatRegister::operator!=(const FloatRegister& rhs) const {
     return !(*this == rhs); 
 }
+
+std::ostream& ltac::operator<<(std::ostream& out, const ltac::FloatRegister& reg){
+    return out << "fr" << reg.reg;
+}

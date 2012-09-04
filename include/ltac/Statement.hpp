@@ -24,6 +24,9 @@ typedef boost::variant<
         std::string                             //For labels
     > Statement;
 
+std::ostream& operator<<(std::ostream& out, const Statement& statement);
+std::ostream& operator<<(std::ostream& out, std::shared_ptr<Statement> statement);
+
 } //end of ltac
 
 } //end of eddic
