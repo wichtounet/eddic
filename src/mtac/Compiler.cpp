@@ -300,7 +300,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto array = *ptr;
 
             auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-            auto temp = array.Content->context->new_temporary(INT);
+            auto temp = array.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
             auto member_info = mtac::compute_member(function->context->global(), array.Content->var, member_value.Content->memberNames);
@@ -676,7 +676,7 @@ struct DereferenceAssign : public AbstractVisitor {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
             function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
@@ -687,7 +687,7 @@ struct DereferenceAssign : public AbstractVisitor {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
             function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
@@ -698,7 +698,7 @@ struct DereferenceAssign : public AbstractVisitor {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, offset));
             function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
@@ -710,7 +710,7 @@ struct DereferenceAssign : public AbstractVisitor {
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(), mtac::Operator::DOT_ASSIGN, arguments[1]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
             
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
 
@@ -734,7 +734,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
 
             auto index = computeIndexOfArray(source, left.Content->indexValue, function); 
             
-            dest = left.Content->context->new_temporary(INT);
+            dest = left.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
         }
             
