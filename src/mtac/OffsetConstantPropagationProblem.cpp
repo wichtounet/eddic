@@ -187,6 +187,15 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
                     *quadruple->arg1 = results[offset];
                     quadruple->arg2.reset();
 
+                    if(quadruple->result->type()->is_pointer()){
+                        if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                            if(!(*var_ptr)->type()->is_pointer()){
+                                quadruple->op = mtac::Operator::PASSIGN;
+                            }
+                        }
+                    }
+                    
+
                     changes = true;
                 }
             }
