@@ -288,7 +288,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), member_value.Content->memberNames);
 
             if(take_address){
-                auto temp = value.Content->context->new_temporary(INT);
+                auto temp = value.Content->context->new_temporary(new_pointer_type(INT));
                 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
 
@@ -1403,7 +1403,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
 
-                function->add(mtac_param);   
+                function->add(mtac_param);
             }
         }
     }
