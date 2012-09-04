@@ -58,7 +58,8 @@ struct ConstantCollector : public boost::static_visitor<> {
         out[var] = value;
     }
     
-    void operator()(const std::string& value){
+    //Warning : Do not pass it by reference to avoid going to the template function
+    void operator()(std::string value){
         out[var] = value;
     }
     
