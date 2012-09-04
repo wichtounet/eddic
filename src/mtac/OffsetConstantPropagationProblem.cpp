@@ -30,6 +30,9 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
 
         if(variable->type()->is_array()){
             auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
+                    
+            mtac::Offset offset(variable, 0);
+            out[offset] = static_cast<int>(variable->type()->elements());
 
             if(variable->type()->data_type() == FLOAT){
                 for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
