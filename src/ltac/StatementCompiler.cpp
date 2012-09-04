@@ -123,7 +123,7 @@ ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var,
         return ltac::Address("V" + position.name(), offset);
     } 
     
-    assert(position.isTemporary());
+    //In the other cases, the variable is already in a register
     
     auto reg = manager.get_reg(var);
     return ltac::Address(reg, offset);
