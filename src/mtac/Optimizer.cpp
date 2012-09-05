@@ -187,7 +187,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Constant folding", &apply_to_all<mtac::ConstantFolding>, function);
 
         optimized |= debug("Constant propagation", &data_flow_optimization<mtac::ConstantPropagationProblem>, function);
-        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem>, function);
+        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem, std::shared_ptr<StringPool>>, function, pool);
 
         //If there was optimizations here, better to try again before perfoming common subexpression
         if(optimized){

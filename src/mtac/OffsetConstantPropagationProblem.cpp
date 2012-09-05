@@ -19,6 +19,8 @@ using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
+mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool) : string_pool(string_pool) {}
+
 ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
 
