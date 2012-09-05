@@ -145,7 +145,7 @@ struct ConstantOptimizer : public boost::static_visitor<> {
 
     bool optimize_arg(mtac::Argument& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(results.find(*ptr) != results.end() && pointer_escaped->find(*ptr) == pointer_escaped->end()){
+            if(results.count(*ptr) && !pointer_escaped->count(*ptr)){
                 arg = results[*ptr];
                 return true;
             }
@@ -163,8 +163,21 @@ struct ConstantOptimizer : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+        //If the constant is a string, we can use it in the dot operator
+        if(quadruple->op == mtac::Operator::DOT){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                if(results.count(*ptr) && !pointer_escaped->count(*ptr)){
+                    auto arg = results[*ptr];
+                   
+                    if(auto* label_ptr = boost::get<std::string>(&arg)){
+                        quadruple->arg1 = *label_ptr;
+                        
+                        changes = true;
+                    }
+                }
+            }
         //Do not replace a variable by a constant when used in offset
-        if(quadruple->op != mtac::Operator::PDOT && quadruple->op != mtac::Operator::DOT && quadruple->op != mtac::Operator::PASSIGN){
+        } else if(quadruple->op != mtac::Operator::PDOT && quadruple->op != mtac::Operator::PASSIGN){
             changes |= optimize_optional(quadruple->arg1);
         }
         
