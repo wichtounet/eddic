@@ -48,12 +48,12 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platfor
 
     //Allocate parameters into registers
     if(option_defined("fparameter-allocation")){
-        mtac::register_param_allocation(mtacProgram);
+        mtac::register_param_allocation(mtacProgram, platform);
     }
 
     //Allocate variables into registers
     if(option_defined("fvariable-allocation")){
-        mtac::register_variable_allocation(mtacProgram);
+        mtac::register_variable_allocation(mtacProgram, platform);
     }
     
     //If asked by the user, print the Three Address code representation
