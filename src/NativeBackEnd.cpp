@@ -29,7 +29,7 @@
 
 using namespace eddic;
 
-void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
+void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platform platform){
     std::string output = option_value("output");
 
     //Separate into basic blocks

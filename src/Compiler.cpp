@@ -31,7 +31,8 @@ int Compiler::compile(const std::string& file) {
         std::cout << "Compile " << file << std::endl;
     }
 
-    Platform platform;
+    //32 bits by default
+    Platform platform = Platform::INTEL_X86;
 
     if(TargetDetermined && Target64){
         platform = Platform::INTEL_X86_64;
@@ -83,7 +84,7 @@ int Compiler::compile_only(const std::string& file, Platform platform) {
 
             back_end->set_string_pool(front_end->get_string_pool());
 
-            back_end->generate(mtacProgram);
+            back_end->generate(mtacProgram, platform);
         }
     } catch (const SemanticalException& e) {
         if(!option_defined("quiet")){
