@@ -8,7 +8,7 @@
 #ifndef LTAC_PEEPHOLE_OPTIMIZER_H
 #define LTAC_PEEPHOLE_OPTIMIZER_H
 
-#include <memory>
+#include "Platform.hpp"
 
 #include "ltac/Program.hpp"
 
@@ -16,7 +16,7 @@ namespace eddic {
 
 namespace ltac {
 
-void optimize(std::shared_ptr<ltac::Program> program);
+void optimize(std::shared_ptr<ltac::Program> program, Platform platform);
 
 } //end of ltac
 

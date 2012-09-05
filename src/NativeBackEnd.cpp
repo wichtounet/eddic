@@ -75,7 +75,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platfor
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool, platform);
 
         if(option_defined("fpeephole-optimization")){
-            optimize(ltac_program);
+            optimize(ltac_program, platform);
         }
 
         //If asked by the user, print the Three Address code representation
