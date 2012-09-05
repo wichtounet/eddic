@@ -166,7 +166,7 @@ struct ConstantOptimizer : public boost::static_visitor<> {
         //If the constant is a string, we can use it in the dot operator
         if(quadruple->op == mtac::Operator::DOT){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(results.count(*ptr) && !pointer_escaped->count(*ptr)){
+                if((*ptr)->type() != STRING && results.count(*ptr) && !pointer_escaped->count(*ptr)){
                     auto arg = results[*ptr];
                    
                     if(auto* label_ptr = boost::get<std::string>(&arg)){
