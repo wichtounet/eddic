@@ -10,6 +10,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 #include "FunctionContext.hpp"
+#include "StringPool.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -201,9 +202,16 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
                             }
                         }
 
-
                         changes = true;
                     }
+                } else if(auto* string_ptr = boost::get<std::string>(&*quadruple->arg1)){
+                    auto string_value = string_pool->value(*string_ptr);
+
+                    quadruple->op = mtac::Operator::ASSIGN;
+                    *quadruple->arg1 = static_cast<int>(string_value[*ptr + 1]); //+1 because of the " in front of the value
+                    quadruple->arg2.reset();
+                    
+                    changes = true;
                 }
             }
         } else if(quadruple->op == mtac::Operator::FDOT){
