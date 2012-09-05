@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include "Platform.hpp"
+
 namespace eddic {
 
 /*!
@@ -25,14 +27,15 @@ struct Compiler {
      * \param file The file to compile. 
      * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
      */
-    int compile (const std::string& file);
+    int compile(const std::string& file);
     
     /*!
-     * Compile the given file. The compilation is not timed. 
+     * Compile the given file. The compilation is not timed and the platform is not modified.  
      * \param file The file to compile. 
+     * \param platform The platform to compile for. 
      * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
      */
-    int compileOnly (const std::string& file);
+    int compile_only(const std::string& file, Platform platform);
 };
 
 } //end of eddic

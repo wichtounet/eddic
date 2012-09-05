@@ -31,6 +31,8 @@ int Compiler::compile(const std::string& file) {
         std::cout << "Compile " << file << std::endl;
     }
 
+    Platform platform;
+
     if(TargetDetermined && Target64){
         platform = Platform::INTEL_X86_64;
     }
@@ -45,7 +47,7 @@ int Compiler::compile(const std::string& file) {
 
     StopWatch timer;
     
-    int code = compileOnly(file);
+    int code = compile_only(file, platform);
 
     if(!option_defined("quiet")){
         std::cout << "Compilation took " << timer.elapsed() << "ms" << std::endl;
@@ -54,7 +56,7 @@ int Compiler::compile(const std::string& file) {
     return code;
 }
 
-int Compiler::compileOnly(const std::string& file) {
+int Compiler::compile_only(const std::string& file, Platform platform) {
     //Make sure that the file exists 
     if(!file_exists(file)){
         std::cout << "The file \"" + file + "\" does not exists" << std::endl;
