@@ -73,7 +73,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             log::emit<Info>("Template") << "Start template phase" << log::endl;
 
             //Define contexts and structures
-            ast::defineContexts(program);
+            ast::defineContexts(program, platform);
             ast::defineStructures(program);
 
             //Add default values

@@ -30,6 +30,8 @@ class AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Context> currentContext;
 
     public:
+        Platform platform;
+
         AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
@@ -63,7 +65,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::FunctionDeclaration& function){
             if(!function.Content->context){
-                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext, platform);
 
                 visit_each(*this, function.Content->instructions);
 
@@ -73,7 +75,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::Constructor& constructor){
             if(!constructor.Content->context){
-                currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+                currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext, platform);
 
                 visit_each(*this, constructor.Content->instructions);
 
@@ -83,7 +85,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Destructor& destructor){
             if(!destructor.Content->context){
-                currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
+                currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext, platform);
 
                 visit_each(*this, destructor.Content->instructions);
 
@@ -290,7 +292,9 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::defineContexts(ast::SourceFile& program){
+void ast::defineContexts(ast::SourceFile& program, Platform platform){
     AnnotateVisitor visitor;
+    visitor.platform = platform;
+
     visitor(program);
 }

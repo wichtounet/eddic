@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "Context.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
@@ -27,6 +28,7 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         int currentParameter;
         int m_size;
         int temporary = 1;
+        Platform platform;
 
         //Refer all variables that are stored, including temporary
         Variables storage;
@@ -34,7 +36,7 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         void reallocate_storage();
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context);
+        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform);
         
         int size() const;
 
