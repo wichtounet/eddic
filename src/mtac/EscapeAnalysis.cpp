@@ -40,6 +40,11 @@ mtac::EscapedVariables mtac::escape_analysis(std::shared_ptr<mtac::Function> fun
                         auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2);
                         pointer_escaped->insert(var);
                     }
+                } else if(quadruple->op == mtac::Operator::PDOT){
+                    if(quadruple->arg1 && mtac::isVariable(*quadruple->arg1)){
+                        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                        pointer_escaped->insert(var);
+                    }
                 }
             }
         }

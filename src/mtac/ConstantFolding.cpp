@@ -78,7 +78,7 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
                 replaceRight(*this, quadruple, -1 * boost::get<double>(*quadruple->arg1), mtac::Operator::FASSIGN);
             } else if(quadruple->op == mtac::Operator::F2I){
                 replaceRight(*this, quadruple, (int) boost::get<double>(*quadruple->arg1), mtac::Operator::ASSIGN);
-            } else if(quadruple->arg2 && mtac::isInt(*quadruple->arg2)){
+            } else if(quadruple->arg2 && mtac::isFloat(*quadruple->arg2)){
                 double lhs = boost::get<double>(*quadruple->arg1); 
                 double rhs = boost::get<double>(*quadruple->arg2); 
 

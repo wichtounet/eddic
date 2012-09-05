@@ -58,7 +58,8 @@ struct ConstantCollector : public boost::static_visitor<> {
         out[var] = value;
     }
     
-    void operator()(const std::string& value){
+    //Warning : Do not pass it by reference to avoid going to the template function
+    void operator()(std::string value){
         out[var] = value;
     }
     
@@ -86,6 +87,10 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
     //Quadruple affects variable
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr;
+
+        if(quadruple->op == mtac::Operator::NOP){
+            return out;
+        }
 
         if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
             ConstantCollector collector(out, quadruple->result);

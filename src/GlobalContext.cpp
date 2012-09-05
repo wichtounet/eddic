@@ -89,6 +89,23 @@ int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::str
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
 }
 
+std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> struct_, int offset){
+    int current_offset = 0;
+    std::shared_ptr<Member> member = nullptr;
+
+    for(auto m : struct_->members){
+        member = m;
+
+        if(offset <= current_offset){
+            return member->type;
+        }
+        
+        current_offset += m->type->size();
+    }
+
+    return member->type;
+}
+
 int GlobalContext::size_of_struct(const std::string& struct_name){
     int struct_size = 0;
 

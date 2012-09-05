@@ -55,6 +55,12 @@ add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_
     COMMENT "Gathering stats" VERBATIM
 )
 
+# Add a custom target to gather cases
+add_custom_target(cases bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/cases.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Compiling cases" VERBATIM
+)
+
 # Add a custom target to gather git stats
 add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

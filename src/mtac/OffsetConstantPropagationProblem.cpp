@@ -30,6 +30,9 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
 
         if(variable->type()->is_array()){
             auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
+                    
+            mtac::Offset offset(variable, 0);
+            out[offset] = static_cast<int>(variable->type()->elements());
 
             if(variable->type()->data_type() == FLOAT){
                 for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
@@ -88,7 +91,8 @@ struct ConstantCollector : public boost::static_visitor<> {
         out[offset] = value;
     }
     
-    void operator()(const std::string& value){
+    //Warning : Do not pass it by reference to avoid going to the template function
+    void operator()(std::string value){
         out[offset] = value;
     }
     
@@ -183,6 +187,27 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
 
                 if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
                     quadruple->op = mtac::Operator::ASSIGN;
+                    *quadruple->arg1 = results[offset];
+                    quadruple->arg2.reset();
+
+                    if(quadruple->result->type()->is_pointer()){
+                        if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                            if(!(*var_ptr)->type()->is_pointer()){
+                                quadruple->op = mtac::Operator::PASSIGN;
+                            }
+                        }
+                    }
+                    
+
+                    changes = true;
+                }
+            }
+        } else if(quadruple->op == mtac::Operator::FDOT){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
+
+                if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
+                    quadruple->op = mtac::Operator::FASSIGN;
                     *quadruple->arg1 = results[offset];
                     quadruple->arg2.reset();
 

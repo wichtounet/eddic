@@ -26,6 +26,8 @@ struct Printer {
     void print(ltac::Statement& statement) const ;
 };
 
+void print_statement(const ltac::Statement& statement, std::ostream& out = std::cout);
+
 } //end of ltac
 
 } //end of eddic
