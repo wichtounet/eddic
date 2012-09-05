@@ -997,13 +997,9 @@ class CompilerVisitor : public boost::static_visitor<> {
         std::shared_ptr<StringPool> pool;
         std::shared_ptr<mtac::Program> program;
         std::shared_ptr<mtac::Function> function;
-
-        Platform platform;
     
     public:
-        CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram) {
-            platform = function->context->global()->target_platform();    
-        }
+        CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram) {}
 
         AUTO_RECURSE_STRUCT()
 
@@ -1211,13 +1207,13 @@ class CompilerVisitor : public boost::static_visitor<> {
                     auto t2 = swap.Content->context->new_temporary(INT);
 
                     //t1 = 4(b)
-                    function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::DOT, INT->size(platform)));  
+                    function->add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));  
                     //t2 = 4(a)
-                    function->add(std::make_shared<mtac::Quadruple>(t2, lhs_var, mtac::Operator::DOT, INT->size(platform)));  
+                    function->add(std::make_shared<mtac::Quadruple>(t2, lhs_var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));  
                     //4(b) = t2
-                    function->add(std::make_shared<mtac::Quadruple>(rhs_var, INT->size(platform), mtac::Operator::DOT_ASSIGN, t2));  
+                    function->add(std::make_shared<mtac::Quadruple>(rhs_var, INT->size(function->context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t2));  
                     //4(a) = t1
-                    function->add(std::make_shared<mtac::Quadruple>(lhs_var, INT->size(platform), mtac::Operator::DOT_ASSIGN, t1));  
+                    function->add(std::make_shared<mtac::Quadruple>(lhs_var, INT->size(function->context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t1));  
                 }
             } else {
                 ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
