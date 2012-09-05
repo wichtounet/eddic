@@ -23,7 +23,7 @@
 
 using namespace eddic;
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool, Platform platform){
     target->context = source->context;
 
     for(auto& src_function : source->functions){
@@ -32,11 +32,11 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 
         target->functions.push_back(target_function);
 
-        compile(src_function, target_function, float_pool);
+        compile(src_function, target_function, float_pool, platform);
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool, Platform platform){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
@@ -65,6 +65,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, target_function, float_pool);
     compiler->manager.compiler = compiler;
+    compiler->descriptor = getPlatformDescriptor(platform);
 
     auto size = src_function->context->size();
 

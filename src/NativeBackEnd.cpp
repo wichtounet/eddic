@@ -64,11 +64,15 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platfor
 
     //If necessary, continue the compilation process
     if(!option_defined("mtac-only")){
+        //Prepare the float pool
         auto float_pool = std::make_shared<FloatPool>();
 
+        //Create a new LTAC program
         auto ltac_program = std::make_shared<ltac::Program>();
+
+        //Generate LTAC Code
         ltac::Compiler ltacCompiler;
-        ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
+        ltacCompiler.compile(mtacProgram, ltac_program, float_pool, platform);
 
         if(option_defined("fpeephole-optimization")){
             optimize(ltac_program);

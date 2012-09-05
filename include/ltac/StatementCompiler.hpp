@@ -26,6 +26,8 @@ namespace ltac {
 
 class StatementCompiler : public boost::static_visitor<> {
     public:
+        PlatformDescriptor* descriptor;
+
         StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
                 std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
     
@@ -71,8 +73,6 @@ class StatementCompiler : public boost::static_visitor<> {
         std::shared_ptr<ltac::Function> function;
 
         std::shared_ptr<FloatPool> float_pool;
-        
-        PlatformDescriptor* descriptor;
 
         std::unordered_map<std::string, int> offset_labels;
         
