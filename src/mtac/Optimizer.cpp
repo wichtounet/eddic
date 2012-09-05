@@ -94,11 +94,11 @@ bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-template<typename Problem>
-bool data_flow_optimization(std::shared_ptr<mtac::Function> function){
+template<typename Problem, typename... Args>
+bool data_flow_optimization(std::shared_ptr<mtac::Function> function, Args... args){
     bool optimized = false;
 
-    Problem problem;
+    Problem problem(args...);
 
     auto results = mtac::data_flow(function, problem);
 
