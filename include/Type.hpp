@@ -15,6 +15,7 @@
 #include <boost/optional.hpp>
 
 #include "BaseType.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
@@ -110,12 +111,6 @@ class Type : public std::enable_shared_from_this<Type> {
          */
         std::string mangle() const;
 
-        /*!
-         * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
-         * \return a non-const version of this type;
-         */
-        std::shared_ptr<const Type> non_const() const;
-
         friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
         friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
 
@@ -160,6 +155,8 @@ class StandardType : public Type {
         bool is_const() const override;
         
         unsigned int size() const override;
+
+        mutable Platform platform;
 };
 
 /*!

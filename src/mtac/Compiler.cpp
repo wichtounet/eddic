@@ -324,7 +324,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         //If it's a const, we just have to replace it by its constant value
         if(type->is_const()){
             auto val = value.Content->var->val();
-            auto nc_type = type->non_const();
+            auto nc_type = type;//->non_const();
 
             if(nc_type == INT || nc_type == BOOL){
                 return {boost::get<int>(val)};

@@ -87,32 +87,6 @@ std::string Type::mangle() const {
     return ::mangle(shared_from_this());
 }
 
-std::shared_ptr<const Type> Type::non_const() const {
-    if(is_const()){
-        return shared_from_this();
-    }
-
-    if(is_array()){
-        return shared_from_this();
-    } 
-    
-    if(is_custom_type()){
-        return shared_from_this();
-    }
-    
-    if(is_template()){
-        return shared_from_this();
-    }
-    
-    if(is_standard_type()){
-        return std::make_shared<StandardType>(base(), false);
-    } 
-
-    assert(is_pointer());
-    
-    return shared_from_this();
-}
-
 bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
     if(lhs->is_array()){
         return rhs->is_array() && lhs->data_type() == rhs->data_type() && lhs->elements() == rhs->elements();
