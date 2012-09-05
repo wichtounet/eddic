@@ -66,6 +66,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, target_function, float_pool);
     compiler->manager.compiler = compiler;
     compiler->descriptor = getPlatformDescriptor(platform);
+    compiler->platform = platform;
 
     auto size = src_function->context->size();
 

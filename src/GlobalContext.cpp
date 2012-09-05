@@ -244,3 +244,7 @@ void GlobalContext::defineStandardFunctions(){
 GlobalContext::FunctionMap GlobalContext::functions(){
     return m_functions;
 }
+
+Platform GlobalContext::target_platform(){
+    return platform;
+}

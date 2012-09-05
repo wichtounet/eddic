@@ -76,7 +76,7 @@ int Compiler::compile_only(const std::string& file, Platform platform) {
     int code = 0; 
 
     try {
-        auto mtacProgram = front_end->compile(file);
+        auto mtacProgram = front_end->compile(file, platform);
 
         //If program is null, it means that the user didn't wanted it
         if(mtacProgram){

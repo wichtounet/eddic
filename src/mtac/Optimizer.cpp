@@ -127,25 +127,13 @@ bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> func
     return b;
 }
 
-template<typename Functor>
-bool debug(const std::string& name, Functor functor, std::shared_ptr<mtac::Function> function){
+template<typename Functor, typename... Args>
+bool debug(const std::string& name, Functor functor, std::shared_ptr<mtac::Function> function, Args... args){
     bool b;
     {
         PerfsTimer timer(name);
 
-        b = functor(function);
-    }
-
-    return debug(name, b, function);
-}
-
-template<typename Functor, typename Arg2>
-bool debug(const std::string& name, Functor functor, std::shared_ptr<mtac::Function> function, Arg2& arg2){
-    bool b;
-    {
-        PerfsTimer timer(name);
-
-        b = functor(function, arg2);
+        b = functor(function, args...);
     }
 
     return debug(name, b, function);
@@ -171,7 +159,7 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
     }
 }
 
-void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
+void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
     if(option_defined("dev")){
         std::cout << "Start optimizations on " << function->getName() << std::endl;
 
@@ -187,7 +175,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Constant folding", &apply_to_all<mtac::ConstantFolding>, function);
 
         optimized |= debug("Constant propagation", &data_flow_optimization<mtac::ConstantPropagationProblem>, function);
-        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem, std::shared_ptr<StringPool>>, function, pool);
+        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem, std::shared_ptr<StringPool>, Platform>, function, pool, platform);
 
         //If there was optimizations here, better to try again before perfoming common subexpression
         if(optimized){
@@ -252,14 +240,14 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
     }*/
 }
 
-void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool){
+void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform){
     PerfsTimer timer("Whole optimizations");
 
     auto& functions = program->functions;
 
     if(option_defined("dev")){
         for(auto& function : functions){
-            optimize_function(function, string_pool);
+            optimize_function(function, string_pool, platform);
         }
     } else {
         //Find a better heuristic to configure the number of threads
@@ -267,11 +255,11 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
         std::vector<std::thread> pool;
         for(std::size_t tid = 0; tid < threads; ++tid){
-            pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
+            pool.push_back(std::thread([tid, threads, &string_pool, platform, &functions](){
                 std::size_t i = tid;
 
                 while(i < functions.size()){
-                    optimize_function(functions[i], string_pool); 
+                    optimize_function(functions[i], string_pool, platform); 
 
                     i += threads;
                 }
@@ -294,7 +282,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         do{
             mtac::remove_unused_functions(program);
 
-            optimize_all_functions(program, string_pool);
+            optimize_all_functions(program, string_pool, platform);
 
             optimized = mtac::remove_empty_functions(program);
             optimized = mtac::inline_functions(program);

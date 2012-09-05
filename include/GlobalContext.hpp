@@ -11,6 +11,7 @@
 #include "Context.hpp"
 #include "Function.hpp"
 #include "Struct.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
@@ -100,6 +101,8 @@ class GlobalContext final : public Context {
          * \return The reference counter of the given function. 
          */
         int referenceCount(const std::string& function);
+
+        Platform target_platform();
     
     private:
         FunctionMap m_functions;

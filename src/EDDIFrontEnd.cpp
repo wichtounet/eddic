@@ -48,7 +48,7 @@ void check_for_main(std::shared_ptr<GlobalContext> context);
 void mark(ast::SourceFile& program);
 bool still_unmarked(ast::SourceFile& program);
 
-std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
+std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
     parser::SpiritParser parser;
 
     //The program to build
