@@ -24,11 +24,6 @@ enum class Platform : unsigned int {
 };
 
 /*!
- * The current platform. 
- */
-extern Platform platform;
-
-/*!
  * \brief Return the platform descriptor of the specified platform. 
  * \param platform The platform identifier
  * \return The platform descriptor of the given platform. 
