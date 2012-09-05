@@ -20,7 +20,7 @@ using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool) : string_pool(string_pool) {}
+mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool, Platform platform) : string_pool(string_pool), platform(platform) {}
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
@@ -32,26 +32,26 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
         auto variable = variable_pair.second; 
 
         if(variable->type()->is_array()){
-            auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
+            auto array_size = variable->type()->elements()* variable->type()->data_type()->size(platform) + INT->size(platform);
                     
             mtac::Offset offset(variable, 0);
             out[offset] = static_cast<int>(variable->type()->elements());
 
             if(variable->type()->data_type() == FLOAT){
-                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                for(std::size_t i = INT->size(platform); i < array_size; i += INT->size(platform)){
                     mtac::Offset offset(variable, i);
                     out[offset] = 0.0;
                 }
             } else {
-                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                for(std::size_t i = INT->size(platform); i < array_size; i += INT->size(platform)){
                     mtac::Offset offset(variable, i);
                     out[offset] = 0;
                 }
             }
         } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
-            auto struct_size = variable->type()->size();
+            auto struct_size = variable->type()->size(platform);
 
-            for(std::size_t i = 0; i < struct_size; i += INT->size()){
+            for(std::size_t i = 0; i < struct_size; i += INT->size(platform)){
                 mtac::Offset offset(variable, i);
                 out[offset] = 0;
             }
