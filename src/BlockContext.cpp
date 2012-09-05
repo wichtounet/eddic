@@ -36,3 +36,7 @@ std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable,
 std::shared_ptr<Variable> BlockContext::new_temporary(std::shared_ptr<const Type> type){
     return m_functionContext->new_temporary(type);
 }
+
+std::shared_ptr<FunctionContext> BlockContext::function(){
+    return m_functionContext;
+}

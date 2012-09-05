@@ -24,6 +24,21 @@ Function for_each(std::vector<T>& values, Function f){
     return std::for_each(values.begin(), values.end(), f);
 }
 
+template<typename T>
+bool are_equals(const std::vector<T>& a, const std::vector<T>& b){
+    if(a.size() != b.size()){
+        return false;
+    }
+
+    for(std::size_t i = 0; i < a.size(); ++i){
+        if(a[i] != b[i]){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /*!
  * \brief Find the index of an element inside a vector. 
  * \param vector The vector to search into.   

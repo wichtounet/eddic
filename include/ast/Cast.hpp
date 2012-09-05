@@ -22,6 +22,11 @@ class Context;
 
 namespace ast {
 
+/*!
+ * \class ASTCast
+ * \brief The AST node for a cast of a variable to another type.  
+ * Should only be used from the Deferred version (eddic::ast::Cast).
+ */
 struct ASTCast {
     std::shared_ptr<Context> context;
 
@@ -32,6 +37,10 @@ struct ASTCast {
     mutable long references = 0;
 };
 
+/*!
+ * \typedef Cast
+ * \brief The AST node for a cast to another type. 
+ */
 typedef Deferred<ASTCast> Cast;
 
 } //end of ast

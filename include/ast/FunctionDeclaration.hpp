@@ -31,6 +31,10 @@ struct ASTFunctionDeclaration {
     
     std::string mangledName;
     std::string struct_name;
+    std::shared_ptr<const eddic::Type> struct_type = nullptr;
+
+    bool instantiated = false;  /*!< True indicates that this function has been instantiated from a template */
+    bool marked = false;        /*!< Indicates that the function has been treated by the front end */
 
     Position position;
     Type returnType;

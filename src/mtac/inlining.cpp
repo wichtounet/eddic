@@ -243,7 +243,7 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
 
                     dest_var = dest_definition->context->new_temporary(type);
 
-                    if(type == INT || type == BOOL){
+                    if(type == INT || type == BOOL || type == CHAR){
                         quadruple->op = mtac::Operator::ASSIGN; 
                     } else if(type->is_pointer()){
                         quadruple->op = mtac::Operator::PASSIGN;
@@ -347,7 +347,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& param : function->definition->parameters){
-        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && !param.paramType->is_pointer() && !param.paramType->is_array()){
+        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && param.paramType != CHAR && !param.paramType->is_pointer() && !param.paramType->is_array()){
             return false;
         }
     }

@@ -17,6 +17,8 @@
 
 using namespace eddic;
 
+namespace {
+
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
@@ -28,7 +30,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
-    AUTO_RETURN_UNARY(ast::Value)
     
     ast::Value operator()(ast::Expression& value){
         if(value.Content->operations.empty()){
@@ -48,6 +49,12 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
     ast::Value operator()(ast::ArrayValue& value){
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
+
+        return value;
+    }
+    
+    ast::Value operator()(ast::Unary& value){
+        value.Content->value = visit(*this, value.Content->value); 
 
         return value;
     }
@@ -266,8 +273,13 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         array_var_value.Content->context = foreach.Content->context;
 
         ast::BuiltinOperator size_builtin; 
-        size_builtin.Content->type = ast::BuiltinType::SIZE;
         size_builtin.Content->values.push_back(array_var_value);
+        
+        if(arrayVar->type()->is_array()){
+            size_builtin.Content->type = ast::BuiltinType::SIZE;
+        } else {
+            size_builtin.Content->type = ast::BuiltinType::LENGTH;
+        }
 
         ast::Expression while_condition;
         while_condition.Content->first = iter_var_value;
@@ -410,6 +422,8 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
+    AUTO_RECURSE_TEMPLATE_STRUCT()
+    AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_FOREACH()
@@ -543,11 +557,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
             declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
-
-    void operator()(ast::BinaryCondition& binaryCondition){
-        binaryCondition.Content->lhs = visit(transformer, binaryCondition.Content->lhs); 
-        binaryCondition.Content->rhs = visit(transformer, binaryCondition.Content->rhs); 
-    }
 };
 
 struct TransformerVisitor : public boost::static_visitor<> {
@@ -556,6 +565,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_STRUCT()
     
+    AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
+    AUTO_IGNORE_TEMPLATE_STRUCT()
     AUTO_IGNORE_ARRAY_DECLARATION()
     AUTO_IGNORE_ARRAY_VALUE()
     AUTO_IGNORE_MEMBER_VALUE()
@@ -670,6 +681,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
         transform(while_.Content->instructions);
     }
 };
+
+} //end of anonymous namespace
 
 void ast::cleanAST(ast::SourceFile& program){
     CleanerVisitor visitor;

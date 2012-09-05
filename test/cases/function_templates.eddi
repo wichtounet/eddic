@@ -1,0 +1,33 @@
+void main(){
+    test<int>(9);
+    test<float>(5.5);
+
+    test<int, int>(9,99);
+    test<float, int>(9.9,100);
+    test<string, string>("a","b");
+
+    deep_test<int, float, string>(9, 5.5, "a");
+}
+
+template<type T>
+void test(T i){
+    print(i);
+    print("|");
+}
+
+template<type T, type S>
+void test(T a, S b){
+    print(a);
+    print("|");
+    print(b);
+    print("|");
+}
+
+template<type S, type T, type U>
+void deep_test(S s, T t, U u){
+    test<S>(s);
+    test<T>(t);
+    test<U>(u);
+    test<S,S>(s,s);
+    test<U,U>(u,u);
+}

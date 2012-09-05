@@ -9,6 +9,8 @@
 #include "Variable.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+#include "FunctionContext.hpp"
+#include "StringPool.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -18,8 +20,45 @@ using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-void mtac::OffsetConstantPropagationProblem::Gather(std::shared_ptr<mtac::Function> function){
+mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool) : string_pool(string_pool) {}
+
+ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
+
+    ProblemDomain::Values values;
+    ProblemDomain out(values);
+    
+    for(auto& variable_pair : function->context->stored_variables()){
+        auto variable = variable_pair.second; 
+
+        if(variable->type()->is_array()){
+            auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
+                    
+            mtac::Offset offset(variable, 0);
+            out[offset] = static_cast<int>(variable->type()->elements());
+
+            if(variable->type()->data_type() == FLOAT){
+                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                    mtac::Offset offset(variable, i);
+                    out[offset] = 0.0;
+                }
+            } else {
+                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                    mtac::Offset offset(variable, i);
+                    out[offset] = 0;
+                }
+            }
+        } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
+            auto struct_size = variable->type()->size();
+
+            for(std::size_t i = 0; i < struct_size; i += INT->size()){
+                mtac::Offset offset(variable, i);
+                out[offset] = 0;
+            }
+        }
+    }
+
+    return out;
 }
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
@@ -55,7 +94,8 @@ struct ConstantCollector : public boost::static_visitor<> {
         out[offset] = value;
     }
     
-    void operator()(const std::string& value){
+    //Warning : Do not pass it by reference to avoid going to the template function
+    void operator()(std::string value){
         out[offset] = value;
     }
     
@@ -82,18 +122,17 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
         auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
 
         //Store the value assigned to result+arg1
-        if(quadruple->op == mtac::Operator::DOT_ASSIGN){
+        if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
             if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
                 if(!quadruple->result->type()->is_pointer()){
                     mtac::Offset offset(quadruple->result, *ptr);
+                    
                     ConstantCollector collector(out, offset);
-
                     visit(collector, *quadruple->arg2);
                 }
             }
-        } 
         //PDOT Lets escape an offset
-        else if(quadruple->op == mtac::Operator::PDOT){
+        } else if(quadruple->op == mtac::Operator::PDOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                 auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                 
@@ -147,10 +186,40 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
         //If constant replace the value assigned to result by the value stored for arg1+arg2
         if(quadruple->op == mtac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    mtac::Offset offset(*var_ptr, *ptr);
+
+                    if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
+                        quadruple->op = mtac::Operator::ASSIGN;
+                        *quadruple->arg1 = results[offset];
+                        quadruple->arg2.reset();
+
+                        if(quadruple->result->type()->is_pointer()){
+                            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                                if(!(*var_ptr)->type()->is_pointer()){
+                                    quadruple->op = mtac::Operator::PASSIGN;
+                                }
+                            }
+                        }
+
+                        changes = true;
+                    }
+                } else if(auto* string_ptr = boost::get<std::string>(&*quadruple->arg1)){
+                    auto string_value = string_pool->value(*string_ptr);
+
+                    quadruple->op = mtac::Operator::ASSIGN;
+                    *quadruple->arg1 = static_cast<int>(string_value[*ptr + 1]); //+1 because of the " in front of the value
+                    quadruple->arg2.reset();
+                    
+                    changes = true;
+                }
+            }
+        } else if(quadruple->op == mtac::Operator::FDOT){
+            if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
                 mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
 
                 if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
-                    quadruple->op = mtac::Operator::ASSIGN;
+                    quadruple->op = mtac::Operator::FASSIGN;
                     *quadruple->arg1 = results[offset];
                     quadruple->arg2.reset();
 

@@ -73,6 +73,10 @@ std::string to_string(ltac::Operator op){
             return "DEC"; 
         case ltac::Operator::NEG:
             return "NEG"; 
+        case ltac::Operator::NOT:
+            return "NOT"; 
+        case ltac::Operator::AND:
+            return "AND"; 
         case ltac::Operator::I2F:
             return "I2F"; 
         case ltac::Operator::F2I:
@@ -220,58 +224,67 @@ std::string printArg(ltac::Argument arg){
 }
 
 struct DebugVisitor : public boost::static_visitor<> {
+    std::ostream& out;
+
+    DebugVisitor(std::ostream& out) : out(out) {}
+
     void operator()(std::shared_ptr<ltac::Program> program){
-        std::cout << "LTAC Program " << std::endl << std::endl; 
+        out << "LTAC Program " << std::endl << std::endl; 
 
         visit_each_non_variant(*this, program->functions);
     }
 
     void operator()(std::shared_ptr<ltac::Function> function){
-        std::cout << "Function " << function->getName() << std::endl;
+        out << "Function " << function->getName() << std::endl;
 
         visit_each(*this, function->getStatements());
 
-        std::cout << std::endl;
+        out << std::endl;
     }
 
-    void operator()(ltac::Statement& statement){
+    void operator()(const ltac::Statement& statement){
         visit(*this, statement);
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
         if(quadruple->arg1 && quadruple->arg2 && quadruple->arg3){
-            std::cout << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << ", " << printArg(*quadruple->arg3) << std::endl;
+            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << ", " << printArg(*quadruple->arg3) << std::endl;
         } else if(quadruple->arg1 && quadruple->arg2){
-            std::cout << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << std::endl;
+            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << std::endl;
         } else if(quadruple->arg1){
-            std::cout << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << std::endl;
+            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << std::endl;
         } else {
-            std::cout << "\t" << to_string(quadruple->op) << std::endl;
+            out << "\t" << to_string(quadruple->op) << std::endl;
         }
     }
 
-    void operator()(std::shared_ptr<ltac::Jump> jmp){
-        std::cout << "\tjmp (" << to_string(jmp->type) << ") " << jmp->label << std::endl;
+    void operator()(const std::shared_ptr<ltac::Jump> jmp){
+        out << "\tjmp (" << to_string(jmp->type) << ") " << jmp->label << std::endl;
     }
 
-    void operator()(std::string& label){
-        std::cout << "\t" << label << ":" << std::endl;
+    void operator()(const std::string& label){
+        out << "\t" << label << ":" << std::endl;
     }
 };
 
 } //end of anonymous namespace
 
+void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
+   DebugVisitor visitor(out);
+   visit(visitor, statement); 
+}
+
 void ltac::Printer::print(std::shared_ptr<ltac::Program> program) const {
-   DebugVisitor visitor;
+   DebugVisitor visitor(std::cout);
    visitor(program); 
 }
 
 void ltac::Printer::print(std::shared_ptr<ltac::Function> function) const {
-   DebugVisitor visitor;
+   DebugVisitor visitor(std::cout);
    visitor(function); 
 }
 
 void ltac::Printer::print(ltac::Statement& statement) const {
-   DebugVisitor visitor;
+   DebugVisitor visitor(std::cout);
    visit(visitor, statement); 
 }

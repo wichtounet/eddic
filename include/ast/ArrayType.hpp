@@ -8,7 +8,12 @@
 #ifndef AST_ARRAY_TYPE_H
 #define AST_ARRAY_TYPE_H
 
+#include <string>
+#include <ostream>
+
 #include <boost/fusion/include/adapt_struct.hpp>
+
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -19,8 +24,17 @@ namespace ast {
  * \brief An array type in the AST.  
  */
 struct ArrayType {
-    std::string type;
+    boost::recursive_wrapper<ast::Type> type;
 };
+
+bool operator==(const ArrayType& a, const ArrayType& b);
+
+template<typename T>
+std::ostream& operator<<(std::ostream& out, const boost::recursive_wrapper<T>& type){
+    return out << type.get();
+}
+
+std::ostream& operator<<(std::ostream& out, const ast::ArrayType& type);
 
 } //end of ast
 
@@ -29,7 +43,7 @@ struct ArrayType {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayType, 
-    (std::string, type)
+    (boost::recursive_wrapper<eddic::ast::Type>, type)
 )
 
 #endif

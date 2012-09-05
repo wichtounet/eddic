@@ -10,7 +10,7 @@
 using namespace eddic;
 
 SemanticalException::SemanticalException(const std::string& message) : m_message(message) {}
-SemanticalException::SemanticalException(const std::string& message, eddic::ast::Position& position) : m_message(message), m_position(position) {}
+SemanticalException::SemanticalException(const std::string& message, const eddic::ast::Position& position) : m_message(message), m_position(position) {}
 
 SemanticalException::~SemanticalException() throw() {}
 

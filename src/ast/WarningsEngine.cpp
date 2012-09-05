@@ -42,7 +42,7 @@ struct Collector : public boost::static_visitor<> {
             for(auto& param : function.Content->parameters){
                 positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
             }
-            
+
             visit_each(*this, function.Content->instructions);
         }
         
@@ -94,7 +94,6 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
         AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_RETURN_VALUES()
         AUTO_RECURSE_ARRAY_VALUES()

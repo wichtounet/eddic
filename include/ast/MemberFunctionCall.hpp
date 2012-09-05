@@ -17,6 +17,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/Value.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -33,10 +34,13 @@ struct ASTMemberFunctionCall {
     std::shared_ptr<eddic::Function> function;
     std::shared_ptr<Context> context;
     std::string mangled_name;
+    
+    bool resolved = false; /*!< If true, the template has been instantiated, only relevant when the template_types is not empty */
 
     Position position;
     std::string object_name;
     std::string function_name;
+    std::vector<ast::Type> template_types;
     std::vector<Value> values;
 
     mutable long references = 0;
@@ -58,6 +62,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::string, Content->object_name)
     (std::string, Content->function_name)
+    (std::vector<eddic::ast::Type>, Content->template_types)
     (std::vector<eddic::ast::Value>, Content->values)
 )
 

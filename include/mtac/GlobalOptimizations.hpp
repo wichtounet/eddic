@@ -12,13 +12,11 @@
 #include <iostream>
 
 #include "assert.hpp"
+#include "logging.hpp"
 
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
-
-#define DEBUG_GLOBAL_ENABLED false
-#define DEBUG_GLOBAL if(DEBUG_GLOBAL_ENABLED)
 
 #include "PerfsTimer.hpp"
 
@@ -66,18 +64,15 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
 
-    problem.Gather(function);
-   
     OUT[cfg->entry()] = problem.Boundary(function);
-    
-    DEBUG_GLOBAL std::cout << "OUT[" << *cfg->entry() << "] set to " << OUT[cfg->entry()] << std::endl;
+    log::emit<Debug>("Data-Flow") << "OUT[" << *cfg->entry() << "] set to " << OUT[cfg->entry()] << log::endl;
 
     ControlFlowGraph::BasicBlockIterator it, end;
     for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
         //Init all but ENTRY
         if(graph[*it].block->index != -1){
             OUT[graph[*it].block] = problem.Init(function);
-            DEBUG_GLOBAL std::cout << "OUT[" << *graph[*it].block << "] set to " << OUT[graph[*it].block] << std::endl;
+            log::emit<Debug>("Data-Flow") << "OUT[" << *graph[*it].block << "] set to " << OUT[graph[*it].block] << log::endl;
         }
     }
 
@@ -100,13 +95,13 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
                 auto predecessor = boost::source(edge, graph);
                 auto P = graph[predecessor].block;
 
-                DEBUG_GLOBAL std::cout << "Meet B = " << *B << " with P = " << *P << std::endl;
-                DEBUG_GLOBAL std::cout << "IN[B] before " << IN[B] << std::endl;
-                DEBUG_GLOBAL std::cout << "OUT[P] before " << OUT[P] << std::endl;
+                log::emit<Debug>("Data-Flow") << "Meet B = " << *B << " with P = " << *P << log::endl;
+                log::emit<Debug>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
+                log::emit<Debug>("Data-Flow") << "OUT[P] before " << OUT[P] << log::endl;
 
                 IN[B] = problem.meet(IN[B], OUT[P]);
                 
-                DEBUG_GLOBAL std::cout << "IN[B] after " << IN[B] << std::endl;
+                log::emit<Debug>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
 
                 auto& statements = B->statements;
 
@@ -150,10 +145,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
 
-    problem.Gather(function);
-   
     IN[cfg->exit()] = problem.Boundary(function);
-    DEBUG_GLOBAL std::cout << "IN[" << *cfg->exit() << "] set to " << IN[cfg->exit()] << std::endl;
+    log::emit<Debug>("Data-Flow") << "IN[" << *cfg->exit() << "] set to " << IN[cfg->exit()] << log::endl;
 
     ControlFlowGraph::BasicBlockIterator it, end;
     for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
@@ -162,7 +155,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
         //Init all but EXIT
         if(block->index != -2){
             IN[block] = problem.Init(function);
-            DEBUG_GLOBAL std::cout << "IN[" << *block << "] set to " << IN[block] << std::endl;
+            log::emit<Debug>("Data-Flow") << "IN[" << *block << "] set to " << IN[block] << log::endl;
         }
     }
 
@@ -189,13 +182,13 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                     continue;
                 }*/
 
-                DEBUG_GLOBAL std::cout << "Meet B = " << *B << " with S = " << *S << std::endl;
-                DEBUG_GLOBAL std::cout << "OUT[B] before " << OUT[B] << std::endl;
-                DEBUG_GLOBAL std::cout << "IN[S] before " << IN[S] << std::endl;
+                log::emit<Debug>("Data-Flow") << "Meet B = " << *B << " with S = " << *S << log::endl;
+                log::emit<Debug>("Data-Flow") << "OUT[B] before " << OUT[B] << log::endl;
+                log::emit<Debug>("Data-Flow") << "IN[S] before " << IN[S] << log::endl;
 
                 OUT[B] = problem.meet(OUT[B], IN[S]);
                 
-                DEBUG_GLOBAL std::cout << "OUT[B] after " << OUT[B] << std::endl;
+                log::emit<Debug>("Data-Flow") << "OUT[B] after " << OUT[B] << log::endl;
 
                 auto& statements = B->statements;
 
@@ -205,9 +198,9 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                     for(unsigned i = statements.size() - 1; i > 0; --i){
                         auto& statement = statements[i];
 
-                        DEBUG_GLOBAL std::cout << "IN_S[" << i << "] before transfer " << IN_S[statement] << std::endl;
+                        log::emit<Debug>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement] << log::endl;
                         assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
-                        DEBUG_GLOBAL std::cout << "IN_S[" << i << "] after transfer " << IN_S[statement] << std::endl;
+                        log::emit<Debug>("Data-Flow") << "IN_S[" << i << "] after transfer " << IN_S[statement] << log::endl;
                             
                         OUT_S[statements[i-1]] = IN_S[statement];
                     }
@@ -220,7 +213,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                     assign(IN[B], OUT[B], changes);
                 }
                 
-                DEBUG_GLOBAL std::cout << "IN[B] after transfer " << IN[B] << std::endl;
+                log::emit<Debug>("Data-Flow") << "IN[B] after transfer " << IN[B] << log::endl;
             }
         }
     }

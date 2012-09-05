@@ -10,6 +10,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -50,10 +51,16 @@ class Type : public std::enable_shared_from_this<Type> {
 
         /*!
          * Return the data type. In the case of an array it is the type of the elements and 
-         * in the case of a pointer, it is the type of the pointed element
+         * in the case of a pointer, it is the type of the pointed element. 
          * \return the data type
          */
         virtual std::shared_ptr<const Type> data_type() const;
+        
+        /*
+         * Return the template types of a template type. 
+         * \return A vector containing all the template types of the current type. 
+         */
+        virtual std::vector<std::shared_ptr<const Type>> template_types() const;
 
         /*!
          * Indicates if it is an array type
@@ -86,10 +93,22 @@ class Type : public std::enable_shared_from_this<Type> {
         virtual bool is_const() const;
 
         /*!
+         * Indicates if the type is a template type. 
+         * \return true if the type is a template type, false otherwise.
+         */
+        virtual bool is_template() const;
+
+        /*!
          * Return the size of the type in memory in octets. 
          * \return the size of the type, in octets.
          */
         virtual unsigned int size() const;
+
+        /*!
+         * Return the mangled name of the type. 
+         * \return The mangled name of the type. 
+         */
+        std::string mangle() const;
 
         /*!
          * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
@@ -149,11 +168,11 @@ class StandardType : public Type {
  */
 class CustomType : public Type {
     private:
+        std::shared_ptr<GlobalContext> context;
         std::string m_type;
-        unsigned int m_size;
     
     public:
-        CustomType(const std::string& type, unsigned int size); 
+        CustomType(std::shared_ptr<GlobalContext> context, const std::string& type); 
     
         /*!
          * Deleted copy constructor
@@ -231,6 +250,37 @@ class PointerType : public Type {
         unsigned int size() const override;
 };
 
+/*!
+ * \class TemplateType
+ * \brief A template type descriptor.
+ */
+class TemplateType : public Type {
+    private:
+        std::shared_ptr<GlobalContext> context;
+        std::string main_type;
+        std::vector<std::shared_ptr<const Type>> sub_types;
+    
+    public:
+        TemplateType(std::shared_ptr<GlobalContext> context, std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types); 
+    
+        /*!
+         * Deleted copy constructor
+         */
+        TemplateType(const PointerType& rhs) = delete;
+
+        /*!
+         * Deleted copy assignment operator. 
+         */
+        TemplateType& operator=(const PointerType& rhs) = delete;
+
+        std::string type() const override;
+        std::vector<std::shared_ptr<const Type>> template_types() const override;
+
+        bool is_template() const override;
+        
+        unsigned int size() const override;
+};
+
 /* Relational operators  */
         
 bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
@@ -264,6 +314,8 @@ std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type
  * \return the created type;
  */
 std::shared_ptr<const Type> new_pointer_type(std::shared_ptr<const Type> data_type);
+
+std::shared_ptr<const Type> new_template_type(std::shared_ptr<GlobalContext> context, std::string data_type, std::vector<std::shared_ptr<const Type>> template_types);
 
 /*!
  * Indicates if the given type is a standard type or not. 

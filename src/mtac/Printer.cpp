@@ -12,6 +12,7 @@
 #include "assert.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
 
 #include "mtac/Printer.hpp"
 #include "mtac/Program.hpp"
@@ -22,21 +23,49 @@ namespace {
 
 struct ArgumentToString : public boost::static_visitor<std::string> {
    std::string operator()(std::shared_ptr<Variable> variable) const {
+        std::string type = "";
+
+        if(variable->type()->is_pointer()){
+            type = "p";
+        } else if(variable->type()->is_custom_type()){
+            type = "c";
+        } else if(variable->type()->is_standard_type()){
+            if(variable->type() == FLOAT){
+                type = "F";
+            } else if(variable->type() == INT){
+                type = "I";
+            } else if(variable->type() == STRING){
+                type = "S";
+            } else if(variable->type() == CHAR){
+                type = "C";
+            } else if(variable->type() == BOOL){
+                type = "B";
+            } else {
+                type = "s";
+            }
+        } else if(variable->type()->is_array()){
+            type = "a";
+        } else if(variable->type()->is_template()){
+            type = "t";
+        } else {
+            type = "u";
+        }
+
         switch(variable->position().type()){
             case PositionType::STACK:
-                return variable->name() + "(s)";
+                return variable->name() + "(s," + type + ")";
             case PositionType::PARAMETER:
-                return variable->name() + "(p)";
+                return variable->name() + "(p," + type + ")";
             case PositionType::GLOBAL:
-                return variable->name() + "(g)";
+                return variable->name() + "(g," + type + ")";
             case PositionType::CONST:
-                return variable->name() + "(c)";
+                return variable->name() + "(c," + type + ")";
             case PositionType::TEMPORARY:
-                return variable->name() + "(t)";
+                return variable->name() + "(t," + type + ")";
             case PositionType::REGISTER:
-                return variable->name() + "(r)";
+                return variable->name() + "(r," + type + ")";
             case PositionType::PARAM_REGISTER:
-                return variable->name() + "(pr)";
+                return variable->name() + "(pr," + type + ")";
             default:
                 ASSERT_PATH_NOT_TAKEN("Unhandled position type");
         }
@@ -129,6 +158,8 @@ struct DebugVisitor : public boost::static_visitor<> {
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " / (float) " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::MOD){
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " % " << printArg(*quadruple->arg2) << endl;
+        } else if(op == mtac::Operator::AND){
+            stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " & " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::EQUALS || op == mtac::Operator::FE){
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::NOT_EQUALS || op == mtac::Operator::FNE){
@@ -143,6 +174,8 @@ struct DebugVisitor : public boost::static_visitor<> {
             stream << "\t" << printVar(quadruple->result) << " = " << printArg(*quadruple->arg1) << " <= " << printArg(*quadruple->arg2) << endl;
         } else if(op == mtac::Operator::MINUS){
             stream << "\t" << printVar(quadruple->result) << " = - " << printArg(*quadruple->arg1) << endl;
+        } else if(op == mtac::Operator::NOT){
+            stream << "\t" << printVar(quadruple->result) << " = ! " << printArg(*quadruple->arg1) << endl;
         } else if(op == mtac::Operator::I2F){
             stream << "\t" << printVar(quadruple->result) << " = (cast float) " << printArg(*quadruple->arg1) << endl;
         } else if(op == mtac::Operator::F2I){

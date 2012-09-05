@@ -8,6 +8,8 @@
 #ifndef LTAC_REGISTER_H
 #define LTAC_REGISTER_H
 
+#include <ostream>
+
 #include <boost/functional/hash.hpp>
 
 namespace eddic {
@@ -32,6 +34,8 @@ struct Register {
     bool operator==(const Register& rhs) const;
     bool operator!=(const Register& rhs) const;
 };
+
+std::ostream& operator<<(std::ostream& out, const Register& reg);
 
 /*!
  * Represent the stack pointer. 

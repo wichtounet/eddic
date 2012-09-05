@@ -19,6 +19,20 @@
 #include <boost/test/detail/unit_test_parameters.hpp>
 
 /*
+ * \def TEST_APPLICATION(file) 
+ * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode. 
+ */
+#define TEST_APPLICATION(file)\
+BOOST_AUTO_TEST_CASE( applications_##file ){\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O0");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O1");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O2");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O0");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O1");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O2");\
+}
+
+/*
  * \def TEST_SAMPLE(file) 
  * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode. 
  */
@@ -116,6 +130,14 @@ void assert_output(const std::string& file, const std::string& output){
 
 BOOST_GLOBAL_FIXTURE ( ConfigFixture  )
 
+/* Compiles all the applications */
+
+BOOST_FIXTURE_TEST_SUITE( ApplicationsSuite, DeleteOutFixture )
+
+TEST_APPLICATION(hangman)
+
+BOOST_AUTO_TEST_SUITE_END()
+
 /* Compiles all the samples */
 
 BOOST_FIXTURE_TEST_SUITE( SamplesSuite, DeleteOutFixture )
@@ -178,7 +200,7 @@ BOOST_AUTO_TEST_CASE( ctor_dtor_heap ){
 }
 
 BOOST_AUTO_TEST_CASE( ctor_dtor_stack ){
-    assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAI|33|CAS|666|0|DA|DA|DA|");
+    assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAII|3300|CAS|666|0|DA|DA|DA|");
 }
 
 BOOST_AUTO_TEST_CASE( casts ){
@@ -191,7 +213,7 @@ BOOST_AUTO_TEST_CASE( compound ){
 }
 
 BOOST_AUTO_TEST_CASE( if_ ){
-    assert_output("if.eddi", "1|1|");
+    assert_output("if.eddi", "1|1|1|");
 }
 
 BOOST_AUTO_TEST_CASE( includes ){
@@ -204,6 +226,14 @@ BOOST_AUTO_TEST_CASE( int_arrays ){
 
 BOOST_AUTO_TEST_CASE( string_arrays ){
     assert_output("string_arrays.eddi", "5|6|7|7|5|6|7|7||||a|a|a|a|a||||||2|2|2|7|7||||4|9|4|a|9|9||||4|9|4|2|9|9||||");
+}
+
+BOOST_AUTO_TEST_CASE( string_foreach ){
+    assert_output("string_foreach.eddi", "a|s|d|f|");
+}
+
+BOOST_AUTO_TEST_CASE( string_pointers ){
+    assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
 }
 
 BOOST_AUTO_TEST_CASE( int_pointers ){
@@ -226,10 +256,6 @@ BOOST_AUTO_TEST_CASE( dynamic_struct ){
     assert_output("dynamic_struct.eddi", "0|-9|55|asdf|999|-9|0||0|666|777|666|777|1000|");
 }
 
-BOOST_AUTO_TEST_CASE( string_pointers ){
-    assert_output("string_pointers.eddi", "a|a|b|b|c|c|c|");
-}
-
 BOOST_AUTO_TEST_CASE( float_pointers ){
     assert_output_32("float_pointers.eddi", "44.4000|44.4000|55.5000|55.5000|66.5999|66.5999|66.5999|");
     assert_output_64("float_pointers.eddi", "44.3999|44.3999|55.5000|55.5000|66.5999|66.5999|66.5999|");
@@ -245,6 +271,10 @@ BOOST_AUTO_TEST_CASE( member_pointers ){
 
 BOOST_AUTO_TEST_CASE( member_functions ){
     assert_output("member_functions.eddi", "0|1|100|180|260|");
+}
+
+BOOST_AUTO_TEST_CASE( member_functions_param_stack ){
+    assert_output("member_functions_param_stack.eddi", "0|1|100|180|260|");
 }
 
 BOOST_AUTO_TEST_CASE( memory ){
@@ -269,7 +299,11 @@ BOOST_AUTO_TEST_CASE( defaults ){
 }
 
 BOOST_AUTO_TEST_CASE( float_1 ){
-    assert_output_32("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|");
+    /* Precision is different regarding to optimizations */
+    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O0");
+    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O1");
+    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5591|14.4927|3.0|8.0|", "--32", "--O2");
+    
     assert_output_64("float_1.eddi", "5.4989|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|");
 }
 
@@ -319,7 +353,7 @@ BOOST_AUTO_TEST_CASE( recursive_functions ){
 }
 
 BOOST_AUTO_TEST_CASE( math ){
-    assert_output("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|");
+    assert_output("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|232|40|");
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
@@ -383,6 +417,25 @@ BOOST_AUTO_TEST_CASE( args ){
     test_args("--64", "--O0");
     test_args("--64", "--O1");
     test_args("--64", "--O2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+/* Template tests */ 
+
+BOOST_FIXTURE_TEST_SUITE(TemplateSuite, DeleteOutFixture)
+
+BOOST_AUTO_TEST_CASE( class_templates ){
+    assert_output("class_templates.eddi", "C1|C1|C2|100|100|13.3000|13.3000|7|7|88|88|55.2500|55.2500|1.0|10|D|D|D|");
+}
+
+BOOST_AUTO_TEST_CASE( function_templates ){
+    assert_output_32("function_templates.eddi", "9|5.5000|9|99|9.8999|100|a|b|9|5.5000|a|9|9|a|a|");
+    assert_output_64("function_templates.eddi", "9|5.5000|9|99|9.9000|100|a|b|9|5.5000|a|9|9|a|a|");
+}
+
+BOOST_AUTO_TEST_CASE( member_function_templates ){
+    assert_output("member_function_templates.eddi", "1|5|2|5|3|5.5000|4|5|5|100|6|1|");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

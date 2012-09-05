@@ -5,22 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_CONDITION_H
-#define AST_CONDITION_H
+#ifndef LOGGING_H
+#define LOGGING_H
 
-#include "variant.hpp"
+#include "logging/logging.h"
 
-#include "ast/False.hpp"
-#include "ast/True.hpp"
-#include "ast/BinaryCondition.hpp"
+using namespace ::logging;
 
 namespace eddic {
 
-namespace ast {
-
-typedef boost::variant<True, False, BinaryCondition> Condition;
-
-} //end of ast
+void configure_logging(int level);
 
 } //end of eddic
 

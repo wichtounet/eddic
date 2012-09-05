@@ -29,9 +29,10 @@ class TypeTransformer : public boost::static_visitor<std::shared_ptr<const eddic
     public:
         TypeTransformer(std::shared_ptr<GlobalContext> context) : context(context) {}
 
-        std::shared_ptr<const eddic::Type> operator()(ast::SimpleType& type) const;
-        std::shared_ptr<const eddic::Type> operator()(ast::ArrayType& type) const;
-        std::shared_ptr<const eddic::Type> operator()(ast::PointerType& type) const;
+        std::shared_ptr<const eddic::Type> operator()(const ast::SimpleType& type) const;
+        std::shared_ptr<const eddic::Type> operator()(const ast::ArrayType& type) const;
+        std::shared_ptr<const eddic::Type> operator()(const ast::PointerType& type) const;
+        std::shared_ptr<const eddic::Type> operator()(const ast::TemplateType& type) const;
 
     private:
         std::shared_ptr<GlobalContext> context;

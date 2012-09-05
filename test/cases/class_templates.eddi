@@ -1,0 +1,59 @@
+template<type T>
+struct node {
+    T value;
+
+    this(T init){
+        print("C1|");
+        this.value = init;
+    }
+
+    this(T a, T b){
+        print("C2|");
+        this.value = a + b;
+    }
+
+    ~this(){
+        print("D|");
+    }
+
+    T get_value(){
+        return this.value;
+    }
+
+    template<type U>
+    void print_value(U v){
+        print(v);
+        print("|");
+    }
+}
+
+template<type T>
+void debug(T t){
+    print(t);
+    print("|");
+}
+
+template<type T>
+void test(node<T>* node){
+    debug<T>(node.value);
+    debug<T>(node.get_value());
+}
+
+void main(){
+    node<int> first_node(100);
+    node<float> second_node(13.3);
+    node<int> third_node(2, 5);
+
+    test<int>(first_node);
+    test<float>(second_node);
+    test<int>(third_node);
+    
+    first_node.value = 88;
+    second_node.value = 55.25;
+
+    test<int>(first_node);
+    test<float>(second_node);
+
+    first_node.print_value<float>(1.0);
+    second_node.print_value<int>(10);
+}

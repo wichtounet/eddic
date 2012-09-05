@@ -14,3 +14,11 @@ using namespace eddic;
 std::ostream& ast::operator<< (std::ostream& stream, ast::Position){
     return stream << "Position";
 }
+
+bool ast::operator==(const ast::Position& a, const ast::Position& b){
+    return a.file == b.file && a.theLine == b.theLine && a.line == b.line && a.column == b.column;
+}
+
+bool ast::operator!=(const ast::Position& a, const ast::Position& b){
+    return !(a == b);
+}

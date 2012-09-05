@@ -20,11 +20,11 @@ using namespace eddic;
 
 std::string eddic::mangle(std::shared_ptr<const Type> type){
     if(type->is_array()){
-        return "A" + mangle(type->data_type());
+        return "A" + type->data_type()->mangle();
     }
 
     if(type->is_pointer()){
-        return "P" + mangle(type->data_type());
+        return "P" + type->data_type()->mangle();
     }
 
     if(type->is_standard_type()){
@@ -41,9 +41,9 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         } else if(type == VOID){
             return "V";
         }
-
-        ASSERT_PATH_NOT_TAKEN("Not a standard type");
-    } else {
+    } 
+    
+    if(type->is_custom_type()){
         std::ostringstream ss;
 
         ss << "C";
@@ -52,16 +52,36 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         
         return ss.str();
     }
+    
+    if(type->is_template()){
+        std::ostringstream ss;
+
+        ss << "CT";
+        ss << type->type().length();
+        ss << type->type();
+
+        auto types = type->template_types();
+
+        ss << types.size();
+
+        for(auto& sub_type : types){
+            ss << sub_type->mangle();
+        }
+        
+        return ss.str();
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Invalid type");
 }
 
 std::string eddic::mangle(std::shared_ptr<Function> function){
     std::ostringstream ss;
 
-    ss << "_F";
-
-    if(!function->struct_.empty()){
-        ss << function->struct_.length();
-        ss << function->struct_;
+    if(function->struct_type){
+        ss << "_M";
+        ss << function->struct_type->mangle();
+    } else {
+        ss << "_F";
     }
 
     ss << function->name.length();
@@ -69,7 +89,7 @@ std::string eddic::mangle(std::shared_ptr<Function> function){
 
     for(auto type : function->parameters){
         if(type.name != "this"){
-            ss << mangle(type.paramType);
+            ss << type.paramType->mangle();
         }
     }
 
@@ -80,13 +100,11 @@ std::string eddic::mangle_ctor(const std::shared_ptr<Function> function){
     std::ostringstream ss;
 
     ss << "_C";
-
-    ss << function->struct_.length();
-    ss << function->struct_;
+    ss << function->struct_type->mangle();
 
     for(auto type : function->parameters){
         if(type.name != "this"){
-            ss << mangle(type.paramType);
+            ss << type.paramType->mangle();
         }
     }
 
@@ -97,21 +115,19 @@ std::string eddic::mangle_dtor(const std::shared_ptr<Function> function){
     std::ostringstream ss;
 
     ss << "_D";
-
-    ss << function->struct_.length();
-    ss << function->struct_;
+    ss << function->struct_type->mangle();
 
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, const std::string& struct_){
+std::string eddic::mangle(const std::string& functionName, const std::vector<ast::Value>& values, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
-    ss << "_F";
-
-    if(!struct_.empty()){
-        ss << struct_.length();
-        ss << struct_;
+    if(struct_type){
+        ss << "_M";
+        ss << struct_type->mangle();
+    } else {
+        ss << "_F";
     }
 
     ss << functionName.length();
@@ -120,65 +136,61 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<ast
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
         auto type = visit(visitor, value);
-        ss << mangle(type);
+        ss << type->mangle();
     }
 
     return ss.str();
 }
 
-std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, const std::string& struct_){
+std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_C";
-
-    ss << struct_.length();
-    ss << struct_;
+    ss << struct_type->mangle();
 
     ast::GetTypeVisitor visitor;
     for(auto& value : values){
         auto type = visit(visitor, value);
-        ss << mangle(type);
+        ss << type->mangle();
     }
 
     return ss.str();
 }
 
-std::string eddic::mangle_dtor(const std::string& struct_){
+std::string eddic::mangle_dtor(std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_D";
-
-    ss << struct_.length();
-    ss << struct_;
+    ss << struct_type->mangle();
 
     return ss.str();
 }
 
-std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, const std::string& struct_){
+std::string eddic::mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
-    ss << "_F";
-
-    if(!struct_.empty()){
-        ss << struct_.length();
-        ss << struct_;
+    if(struct_type){
+        ss << "_M";
+        ss << struct_type->mangle();
+    } else {
+        ss << "_F";
     }
 
     ss << functionName.length();
     ss << functionName;
 
     for(auto type : types){
-        ss << mangle(type);
+        ss << type->mangle();
     }
 
     return ss.str();
 }
 
-std::string eddic::unmangle(std::string mangled){
+std::string get_name_from_length(const std::string& mangled, unsigned int& i){
     std::ostringstream length;
     int digits = 0;
 
-    for(unsigned int i = 2; i < mangled.length(); ++i){
+    for(; i < mangled.length(); ++i){
         if(isdigit(mangled[i])){
             length << mangled[i];
             ++digits;
@@ -189,27 +201,45 @@ std::string eddic::unmangle(std::string mangled){
 
     int l = toNumber<unsigned int>(length.str());
 
-    std::ostringstream function;
+    std::ostringstream name;
     
-    for(int i = 0; i < l; ++i){
-        function << mangled[i + 2 + digits];
+    auto start = i;
+    for(; i < start + l; ++i){
+        name << mangled[i];
+    }
+
+    return name.str();
+}
+
+std::string eddic::unmangle(std::string mangled){
+    unsigned int o = 2;
+
+    std::ostringstream function;
+
+    function << get_name_from_length(mangled, o);
+
+    //Test if inside a struct
+    if(isdigit(mangled[o])){
+        function << "::";
+        
+        function << get_name_from_length(mangled, o);
     }
 
     function << '(';
 
-    for(unsigned int i = 2 + l + digits; i < mangled.length(); ++i){
-        char current = mangled[i];
+    for(; o < mangled.length(); ++o){
+        char current = mangled[o];
 
         bool array = false;
         if(current == 'A'){
             array = true;
-            current = mangled[++i];
+            current = mangled[++o];
         }
         
         bool pointer = false;
         if(current == 'P'){
             pointer = true;
-            current = mangled[++i];
+            current = mangled[++o];
         }   
 
         if(current == 'I'){
@@ -232,7 +262,7 @@ std::string eddic::unmangle(std::string mangled){
             function << "&";
         }
 
-        if(i < mangled.length() - 1){
+        if(o < mangled.length() - 1){
             function << ", ";
         }
     }

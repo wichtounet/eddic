@@ -9,6 +9,7 @@
 #define AST_FUNCTION_CALL_H
 
 #include <memory>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -17,6 +18,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/Value.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -31,8 +33,11 @@ struct ASTFunctionCall {
     std::shared_ptr<eddic::Function> function;
     std::string mangled_name;
 
+    bool resolved = false; /*!< If true, the template has been instantiated, only relevant when the template_types is not empty */
+
     Position position;
-    std::string functionName;
+    std::string function_name;
+    std::vector<ast::Type> template_types;
     std::vector<Value> values;
 
     mutable long references = 0;
@@ -52,7 +57,8 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionCall, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->functionName)
+    (std::string, Content->function_name)
+    (std::vector<eddic::ast::Type>, Content->template_types)
     (std::vector<eddic::ast::Value>, Content->values)
 )
 

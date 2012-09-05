@@ -37,6 +37,7 @@
 #include "mtac/RemoveAssign.hpp"
 #include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
+#include "mtac/PointerPropagation.hpp"
 
 //The data-flow problems
 #include "mtac/GlobalOptimizations.hpp"
@@ -60,6 +61,20 @@ bool apply_to_all(std::shared_ptr<mtac::Function> function){
 }
 
 template<typename Visitor>
+bool apply_to_basic_blocks(std::shared_ptr<mtac::Function> function){
+    bool optimized = false;
+
+    for(auto& block : function->getBasicBlocks()){
+        Visitor visitor;
+        visit_each(visitor, block->statements);
+
+        optimized |= visitor.optimized;
+    }
+
+    return optimized;
+}
+
+template<typename Visitor>
 bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
@@ -79,11 +94,11 @@ bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-template<typename Problem>
-bool data_flow_optimization(std::shared_ptr<mtac::Function> function){
+template<typename Problem, typename... Args>
+bool data_flow_optimization(std::shared_ptr<mtac::Function> function, Args... args){
     bool optimized = false;
 
-    Problem problem;
+    Problem problem(args...);
 
     auto results = mtac::data_flow(function, problem);
 
@@ -172,7 +187,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Constant folding", &apply_to_all<mtac::ConstantFolding>, function);
 
         optimized |= debug("Constant propagation", &data_flow_optimization<mtac::ConstantPropagationProblem>, function);
-        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem>, function);
+        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem, std::shared_ptr<StringPool>>, function, pool);
 
         //If there was optimizations here, better to try again before perfoming common subexpression
         if(optimized){
@@ -181,6 +196,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
 
         optimized |= debug("Common Subexpression Elimination", &data_flow_optimization<mtac::CommonSubexpressionElimination>, function);
 
+        optimized |= debug("Pointer Propagation", &apply_to_basic_blocks<mtac::PointerPropagation>, function);
         optimized |= debug("Math Propagation", &apply_to_basic_blocks_two_pass<mtac::MathPropagation>, function);
 
         optimized |= debug("Optimize Branches", &mtac::optimize_branches, function);
@@ -241,28 +257,30 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
     auto& functions = program->functions;
 
-    //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
-
     if(option_defined("dev")){
-        threads = 1;
+        for(auto& function : functions){
+            optimize_function(function, string_pool);
+        }
+    } else {
+        //Find a better heuristic to configure the number of threads
+        std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
+
+        std::vector<std::thread> pool;
+        for(std::size_t tid = 0; tid < threads; ++tid){
+            pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
+                std::size_t i = tid;
+
+                while(i < functions.size()){
+                    optimize_function(functions[i], string_pool); 
+
+                    i += threads;
+                }
+            }));
+        }
+
+        //Wait for all the threads to finish
+        std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
     }
-
-    std::vector<std::thread> pool;
-    for(std::size_t tid = 0; tid < threads; ++tid){
-        pool.push_back(std::thread([tid, threads, &string_pool, &functions](){
-            std::size_t i = tid;
-
-            while(i < functions.size()){
-                optimize_function(functions[i], string_pool); 
-
-                i += threads;
-            }
-        }));
-    }
-
-    //Wait for all the threads to finish
-    std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }
 
 } //end of anonymous namespace
@@ -298,26 +316,28 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
 
     auto& functions = program->functions;
 
-    //Find a better heuristic to configure the number of threads
-    std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
-
     if(option_defined("dev")){
-        threads = 1;
+        for(auto& function : functions){
+            basic_optimize_function(function); 
+        }
+    } else {
+        //Find a better heuristic to configure the number of threads
+        std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
+
+        std::vector<std::thread> pool;
+        for(std::size_t tid = 0; tid < threads; ++tid){
+            pool.push_back(std::thread([tid, threads, &functions](){
+                std::size_t i = tid;
+
+                while(i < functions.size()){
+                    basic_optimize_function(functions[i]); 
+
+                    i += threads;
+                }
+            }));
+        }
+
+        //Wait for all the threads to finish
+        std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
     }
-
-    std::vector<std::thread> pool;
-    for(std::size_t tid = 0; tid < threads; ++tid){
-        pool.push_back(std::thread([tid, threads, &functions](){
-            std::size_t i = tid;
-
-            while(i < functions.size()){
-                basic_optimize_function(functions[i]); 
-
-                i += threads;
-            }
-        }));
-    }
-
-    //Wait for all the threads to finish
-    std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
 }

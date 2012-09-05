@@ -1,3 +1,16 @@
+eddic 1.1.3 - 2012.09.05
+
+* Language: Support for template functions and structs
+* Language: Support the ! operator for bool values
+* Language: The this pointer is implicit to access member values
+* Language: Support for foreach loop on strings
+* Optimization: The Constant propagation take into account default values of arrays and structures
+* Optimization: The modulus operation is compiled using AND when possible
+* Optimization: The boolean operations are constant folded when possible
+* Optimization: Propagate pointers
+* inlining: Inline functions that takes char parameters
+* Compiler: Use a powerful system for loggng
+
 eddic 1.1.2 - 2012.08.25
 
 * Language: Support char type

@@ -109,6 +109,7 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
             
             po::options_description backend("Backend options");
             backend.add_options()
+                ("log", po::value<int>()->default_value(0), "Define the logging")
                 ("quiet,q", "Do not print anything")
                 ("verbose,v", "Make the compiler verbose")
                 ("dev,d", "Activate development mode (very verbose)")
@@ -231,5 +232,5 @@ void eddic::print_help(){
 }
 
 void eddic::print_version(){
-    std::cout << "eddic version 1.1.2" << std::endl;
+    std::cout << "eddic version 1.1.3" << std::endl;
 }

@@ -34,8 +34,7 @@ struct ASTReturn {
     Position position;
     Value value;
 
-    mutable long references;
-    ASTReturn() : references(0) {}
+    mutable long references = 0;
 };
 
 /*!

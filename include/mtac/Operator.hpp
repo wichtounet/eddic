@@ -40,6 +40,10 @@ enum class Operator : unsigned int {
     GREATER_EQUALS,
     LESS,
     LESS_EQUALS,
+
+    /* boolean operators */
+    NOT,
+    AND,
     
     /* float relational operators */
     FE,

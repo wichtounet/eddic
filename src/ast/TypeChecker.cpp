@@ -33,20 +33,21 @@ class CheckerVisitor : public boost::static_visitor<> {
         CheckerVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
 
         AUTO_RECURSE_PROGRAM()
+        AUTO_RECURSE_FUNCTION_DECLARATION()
         AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
-        AUTO_RECURSE_FUNCTION_DECLARATION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_BINARY_CONDITION()
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_STRUCT_DECLARATION()
         AUTO_RECURSE_MEMBER_VALUE()
             
+        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
+        AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -78,8 +79,16 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto var_type = foreach.Content->var->type();
             auto array_type = foreach.Content->arrayVar->type();
 
-            if(var_type != array_type->data_type()){
-                throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+            if(array_type->is_array()){
+                if(var_type != array_type->data_type()){
+                    throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+                }
+            } else if(array_type == STRING){
+                if(var_type != CHAR){
+                    throw SemanticalException("Foreach in string yields a char", foreach.Content->position);
+                }
+            } else {
+                throw SemanticalException("Cannot use foreach in variable " + foreach.Content->arrayName, foreach.Content->position);
             }
 
             visit_each(*this, foreach.Content->instructions);

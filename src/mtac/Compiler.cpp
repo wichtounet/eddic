@@ -147,9 +147,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         function->context->global()->addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
             
-        if(type->is_custom_type()){
-            auto struct_ = type->type();
-            auto ctor_name = mangle_ctor(new_.Content->values, struct_);
+        if(type->is_custom_type() || type->is_template()){
+            auto ctor_name = mangle_ctor(new_.Content->values, type);
 
             if(!function->context->global()->exists(ctor_name)){
                 assert(new_.Content->values.empty());
@@ -289,7 +288,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), member_value.Content->memberNames);
 
             if(take_address){
-                auto temp = value.Content->context->new_temporary(INT);
+                auto temp = value.Content->context->new_temporary(new_pointer_type(INT));
                 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
 
@@ -301,7 +300,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             auto array = *ptr;
 
             auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-            auto temp = array.Content->context->new_temporary(INT);
+            auto temp = array.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
             
             auto member_info = mtac::compute_member(function->context->global(), array.Content->var, member_value.Content->memberNames);
@@ -350,7 +349,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size()));
 
                 return {value.Content->var, temp};
-            } else if(type->is_custom_type()) {
+            } else if(type->is_custom_type() || type->is_template()) {
                 //If we are here, it means that we want to pass it by reference
                 return {value.Content->var};
             } else {
@@ -399,7 +398,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         if(auto* ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
             auto member_value = *ptr;
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+            if(boost::get<ast::VariableValue>(&member_value.Content->location)){
                 return dereference_sub(member_value);
             } 
         } else if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
@@ -485,7 +484,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::Unary& value) const {
         if(value.Content->op == ast::Operator::ADD){
             return visit(*this, value.Content->value);
-        } else {
+        } else if(value.Content->op == ast::Operator::SUB){
             mtac::Argument arg = moveToArgument(value.Content->value, function);
 
             auto type = visit(ast::GetTypeVisitor(), value.Content->value);
@@ -498,6 +497,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
 
             return {t1};
+        } else if(value.Content->op == ast::Operator::NOT){
+            mtac::Argument arg = moveToArgument(value.Content->value, function);
+            
+            auto t1 = function->context->new_temporary(BOOL);
+
+            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::NOT));
+
+            return {t1};
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled unary operator");
         }
     }
     
@@ -667,7 +676,7 @@ struct DereferenceAssign : public AbstractVisitor {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
             function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
@@ -678,7 +687,7 @@ struct DereferenceAssign : public AbstractVisitor {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
             function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
@@ -689,7 +698,7 @@ struct DereferenceAssign : public AbstractVisitor {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
 
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, offset));
             function->add(std::make_shared<mtac::Quadruple>(temp, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
@@ -701,7 +710,7 @@ struct DereferenceAssign : public AbstractVisitor {
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(), mtac::Operator::DOT_ASSIGN, arguments[1]));
         } else {
-            auto temp = function->context->new_temporary(INT);
+            auto temp = function->context->new_temporary(new_pointer_type(INT));
             
             function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, offset));
 
@@ -725,7 +734,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
 
             auto index = computeIndexOfArray(source, left.Content->indexValue, function); 
             
-            dest = left.Content->context->new_temporary(INT);
+            dest = left.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
         }
             
@@ -755,7 +764,7 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
                 unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
                 visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
-            } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+            } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
                 ASSERT_PATH_NOT_TAKEN("Unhandled location");
             }
         } else if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
@@ -995,6 +1004,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_STRUCT()
 
         //No code is generated for these nodes
+        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
+        AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
@@ -1020,9 +1031,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                 if(var->position().isStack()){
                     auto type = var->type();
 
-                    if(type->is_custom_type()){
-                        auto struct_ = type->type();
-                        auto dtor_name = mangle_dtor(struct_);
+                    if(type->is_custom_type() || type->is_template()){
+                        auto dtor_name = mangle_dtor(type);
 
                         //If there is a destructor, call it
                         if(program->context->exists(dtor_name)){
@@ -1140,8 +1150,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         
         void operator()(ast::StructDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
-            auto struct_ = var->type()->type();
-            auto ctor_name = mangle_ctor(declaration.Content->values, struct_);
+            auto ctor_name = mangle_ctor(declaration.Content->values, var->type());
 
             if(program->context->exists(ctor_name)){
                 auto ctor_function = program->context->getFunction(ctor_name);
@@ -1161,9 +1170,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::VariableDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
 
-            if(var->type()->is_custom_type()){
-                auto struct_ = var->type()->type();
-                auto ctor_name = mangle_ctor({}, struct_);
+            if(var->type()->is_custom_type() || var->type()->is_template()){
+                auto ctor_name = mangle_ctor({}, var->type());
 
                 if(program->context->exists(ctor_name)){
                     auto ctor_function = program->context->getFunction(ctor_name);
@@ -1255,9 +1263,8 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type()->data_type();
-            if(type->is_custom_type()){
-                auto struct_ = type->type();
-                auto dtor_name = mangle_dtor(struct_);
+            if(type->is_custom_type() || type->is_template()){
+                auto dtor_name = mangle_dtor(type);
 
                 //If there is a destructor, call it
                 if(program->context->exists(dtor_name)){
@@ -1295,7 +1302,7 @@ mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function>
 }
     
 void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
-    auto struct_name = type->type();
+    auto struct_name = type->mangle();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
@@ -1303,7 +1310,7 @@ void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Typ
 
         memberValue.Content->memberNames.push_back(member->name);
 
-        if(member_type->is_custom_type()){
+        if(member_type->is_custom_type() || member_type->is_template()){
             push_struct_member(memberValue, member_type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor(function)(memberValue);
@@ -1325,7 +1332,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
     auto var = value.Content->var;
     auto context = value.Content->context;
 
-    auto struct_name = var->type()->type();
+    auto struct_name = var->type()->mangle();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
@@ -1341,7 +1348,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
         member_value.Content->location = variable_value;
         member_value.Content->memberNames = {member->name};
 
-        if(type->is_custom_type()){
+        if(type->is_custom_type() || type->is_template()){
             push_struct_member(member_value, type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor(function)(member_value);
@@ -1385,7 +1392,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if(type->is_custom_type() && !param->type()->is_pointer()){
+                if((type->is_custom_type() || type->is_template()) && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
@@ -1396,7 +1403,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
 
-                function->add(mtac_param);   
+                function->add(mtac_param);
             }
         }
     }
@@ -1405,7 +1412,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
 void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     std::shared_ptr<eddic::Function> definition;
     if(functionCall.Content->mangled_name.empty()){
-        definition = function->context->global()->getFunction(mangle(functionCall.Content->functionName, functionCall.Content->values));
+        definition = function->context->global()->getFunction(mangle(functionCall.Content->function_name, functionCall.Content->values));
     } else if(functionCall.Content->function){
         definition = functionCall.Content->function;
     } else {
@@ -1505,7 +1512,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
     if(auto* ptr = boost::get<ast::MemberValue>(&operation.Content->left_value)){
         auto member_value = *ptr;
 
-        if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+        if(boost::get<ast::VariableValue>(&member_value.Content->location)){
             ASSERT_PATH_NOT_TAKEN("Unhandled location type");
         } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *left_ptr;

@@ -20,6 +20,8 @@
 
 namespace eddic {
 
+class StringPool;
+
 namespace mtac {
 
 typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> OffsetConstantValue;
@@ -27,10 +29,13 @@ typedef std::unordered_map<Offset, OffsetConstantValue, mtac::OffsetHash> Offset
 
 struct OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, OffsetConstantPropagationValues> {
     std::unordered_set<Offset, mtac::OffsetHash> escaped;
-    
     mtac::EscapedVariables pointer_escaped;
+
+    std::shared_ptr<StringPool> string_pool;
+
+    OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool);
     
-    void Gather(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
 
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;

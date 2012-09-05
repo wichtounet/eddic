@@ -39,6 +39,8 @@ struct Function {
     std::string struct_;
     std::vector<ParameterType> parameters;
     std::shared_ptr<FunctionContext> context;
+    
+    std::shared_ptr<const Type> struct_type = nullptr;
 
     int references;
     bool standard = false;

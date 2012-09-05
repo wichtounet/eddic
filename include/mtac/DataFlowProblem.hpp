@@ -39,8 +39,6 @@ struct DataFlowProblem {
     virtual ProblemDomain Boundary(std::shared_ptr<mtac::Function> function);
     virtual ProblemDomain Init(std::shared_ptr<mtac::Function> function);
 
-    virtual void Gather(std::shared_ptr<mtac::Function> function);
-
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
     virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
 
@@ -54,11 +52,6 @@ struct DataFlowProblem {
         return ProblemDomain(DomainValues());
     }
 };
-
-template<DataFlowType Type, typename DomainValues>
-void DataFlowProblem<Type, DomainValues>::Gather(std::shared_ptr<mtac::Function>/* function*/){
-    //By default, there is nothin to gather
-}
 
 template<DataFlowType Type, typename DomainValues>
 auto DataFlowProblem<Type, DomainValues>::Boundary(std::shared_ptr<mtac::Function>/* function*/) -> ProblemDomain {

@@ -19,20 +19,34 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   boost::spirit::attr(false);
 
     array_type %=
-            lexer.identifier
+            (
+                    template_type
+                |   simple_type
+            )
         >>  lexer.left_bracket
         >>  lexer.right_bracket;
     
     pointer_type %=
-            lexer.identifier
+            (
+                    template_type
+                |   simple_type
+            )
         >>  lexer.multiplication;
 
     simple_type %=
             const_
         >>  lexer.identifier;
 
+    template_type %=
+            lexer.identifier
+        >>  qi::omit[lexer.less]
+        >>  type
+        >>  *(lexer.comma >> type)
+        >>  qi::omit[lexer.greater];                
+
     type %=
             array_type
         |   pointer_type
+        |   template_type
         |   simple_type;
 }

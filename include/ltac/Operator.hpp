@@ -62,6 +62,8 @@ enum class Operator : unsigned int {
     INC,
     DEC,
     NEG,
+    NOT,
+    AND,
 
     I2F,
     F2I,

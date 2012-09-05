@@ -5,14 +5,14 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 1)
-set(VERSION_PATCH 2)
+set(VERSION_PATCH 3)
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(COMMON_CXX_FLAGS          "-pipe -pthread -std=c++11")
     set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long")
     set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DNDEBUG -flto -fuse-linker-plugin -Ofast -funroll-loops -fomit-frame-pointer -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -flto -fuse-linker-plugin -Ofast -funroll-loops -fomit-frame-pointer -march=native")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-flto -Ofast -funroll-loops -fomit-frame-pointer -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
@@ -21,8 +21,8 @@ endif()
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in doc/Doxyfile @ONLY)
-    add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile @ONLY)
+    add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
         WORKING_DIRECTORY doc
         COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
@@ -53,6 +53,12 @@ add_custom_target(oprofile
 add_custom_target(stats bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/stats.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Gathering stats" VERBATIM
+)
+
+# Add a custom target to gather cases
+add_custom_target(cases bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/cases.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Compiling cases" VERBATIM
 )
 
 # Add a custom target to gather git stats

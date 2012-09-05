@@ -17,16 +17,13 @@
 using namespace eddic;
 
 namespace {
-    
-std::string toStringType(ast::Type type){
-    if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-        return ptr->type;
-    } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-        return ptr->type + "[]";
-    } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-        return ptr->type + "*";
+
+template<typename Node>
+std::string mark(Node& node){
+    if(node.Content->marked){
+        return "(M)";
     } else {
-        ASSERT_PATH_NOT_TAKEN("Unhandled type");
+        return "(UM)";
     }
 }
 
@@ -74,6 +71,34 @@ struct DebugVisitor : public boost::static_visitor<> {
         level--;
     }
 
+    void print_template_list(const std::vector<ast::Type>& template_types) const {
+        if(!template_types.empty()){
+            std::cout << "<";
+
+            std::cout << to_string(template_types[0]);
+
+            for(std::size_t i = 1; i < template_types.size(); ++i){
+                std::cout << ", " << to_string(template_types[i]);
+            }
+
+            std::cout << ">"; 
+        }
+    }
+
+    void print_template_list(const std::vector<std::string>& template_types) const {
+        if(!template_types.empty()){
+            std::cout << "<";
+
+            std::cout << template_types[0];
+
+            for(std::size_t i = 1; i < template_types.size(); ++i){
+                std::cout << ", " << template_types[i];
+            }
+
+            std::cout << ">"; 
+        }
+    }
+
     template<typename Container>
     void print_sub(Container& container, const std::string& title) const {
         std::cout << indent() << title << std::endl; 
@@ -91,22 +116,37 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::StandardImport& import) const {
         std::cout << indent() << "include <" << import.header << ">" << std::endl;
     }
+    
+    void operator()(ast::TemplateStruct& declaration) const {
+        std::cout << indent() << "Template Struct";
+        print_template_list(declaration.Content->template_types);
+        std::cout << declaration.Content->name << std::endl; 
+        std::cout << std::endl;
+    }
+    
+    void operator()(ast::TemplateFunctionDeclaration& declaration) const {
+        std::cout << indent() << "Template Function";
+        print_template_list(declaration.Content->template_types);
+        std::cout << declaration.Content->functionName << std::endl; 
+        std::cout << std::endl;
+    }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
-        std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
+        std::cout << indent() << "Function " << declaration.Content->functionName << mark(declaration) << std::endl; 
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
         for(auto param : declaration.Content->parameters){
-            std::cout << indent() << param.parameterName << std::endl; 
+            std::cout << indent() << param.parameterName << " : " << to_string(param.parameterType) << std::endl; 
         }
         level--;
         
         print_each_sub(declaration.Content->instructions, "Instructions:");
+        std::cout << std::endl;
     }
     
     void operator()(ast::Constructor& declaration) const {
-        std::cout << indent() << "Constructor" << std::endl; 
+        std::cout << indent() << "Constructor" << mark(declaration) << std::endl; 
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
@@ -119,24 +159,32 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Destructor& declaration) const {
-        std::cout << indent() << "Destructor" << std::endl; 
+        std::cout << indent() << "Destructor" << mark(declaration) << std::endl; 
         print_each_sub(declaration.Content->instructions, "Instructions:");
     }
 
     void operator()(ast::Struct& struct_) const {
-        std::cout << indent() << "Structure declaration: " << struct_.Content->name << std::endl; 
+        std::cout << indent() << "Structure declaration: " << struct_.Content->name;
+
+        print_template_list(struct_.Content->template_types);
+
+        std::cout << mark(struct_) << std::endl;
+        
         level++;
         
         print_each_sub_non_variant(struct_.Content->members, "Members");
         print_each_sub_non_variant(struct_.Content->constructors, "Constructors");
         print_each_sub_non_variant(struct_.Content->destructors, "Destructors");
         print_each_sub_non_variant(struct_.Content->functions, "Functions");
+        print_each_sub_non_variant(struct_.Content->template_functions, "Template Functions");
         
         level--;
+
+        std::cout << std::endl;
     }
 
     void operator()(ast::MemberDeclaration& declaration) const {
-        std::cout << indent() << toStringType(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
+        std::cout << indent() << ast::to_string(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
     }
 
     void operator()(ast::GlobalVariableDeclaration&) const {
@@ -148,7 +196,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::New& new_) const {
-        std::cout << indent() << "New " << toStringType(new_.Content->type) << std::endl; 
+        std::cout << indent() << "New " << ast::to_string(new_.Content->type) << std::endl; 
         print_each_sub(new_.Content->values, "Value");
     }
     
@@ -238,12 +286,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        std::cout << indent() << "FunctionCall " << call.Content->functionName << std::endl; 
+        std::cout << indent() << "FunctionCall " << call.Content->function_name; 
+        print_template_list(call.Content->template_types);
+        std::cout << std::endl;
         print_each_sub(call.Content->values);
     }
 
     void operator()(ast::MemberFunctionCall& call) const {
-        std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name << std::endl; 
+        std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name;
+        print_template_list(call.Content->template_types);
+        std::cout << std::endl;
         print_each_sub(call.Content->values);
     }
 
@@ -334,7 +386,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        std::cout << indent() << "Variable " << value.Content->var->name() << std::endl;
+        std::cout << indent() << "Variable " << value.Content->variableName << std::endl;
     }
     
     void operator()(ast::MemberValue& value) const {
@@ -378,7 +430,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Cast& cast) const {
         std::cout << indent() << "Cast " << std::endl; 
-        std::cout << indent() << "\tType: " << toStringType(cast.Content->type) << std::endl;
+        std::cout << indent() << "\tType: " << ast::to_string(cast.Content->type) << std::endl;
         print_sub(cast.Content->value);
     }
 };
