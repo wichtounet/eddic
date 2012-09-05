@@ -74,7 +74,13 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
         return (*int_values).end();
     }
     
-    typename Values::iterator find(Key key){
+    auto count(Key key) -> decltype((*int_values).count(key)) {
+        assert(int_values);
+
+        return (*int_values).count(key);
+    }
+    
+    auto find(Key key) -> decltype((*int_values).find(key)) {
         assert(int_values);
 
         return (*int_values).find(key);
