@@ -285,9 +285,9 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
 } //end of anonymous namespace
 
-void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool) const {
+void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform) const {
     //Allocate storage for the temporaries that need to be stored
-    allocate_temporary(program);
+    allocate_temporary(program, platform);
 
     if(option_defined("fglobal-optimization")){
         bool optimized = false;
@@ -299,16 +299,13 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
             optimized = mtac::remove_empty_functions(program);
             optimized = mtac::inline_functions(program);
         } while(optimized);
-    
-        //Allocate storage for the temporaries that need to be stored
-        allocate_temporary(program);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
         basic_optimize(program, string_pool);
-    
-        //Allocate storage for the temporaries that need to be stored
-        allocate_temporary(program);
     }
+    
+    //Allocate storage for the temporaries that need to be stored
+    allocate_temporary(program, platform);
 }
 
 void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/) const {

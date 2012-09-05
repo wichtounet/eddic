@@ -116,7 +116,7 @@ unsigned int count_temporaries(Container& container){
 
 }
 
-void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
+void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program, Platform platform){
     for(auto& function : program->functions){
         auto count = 0;
 
