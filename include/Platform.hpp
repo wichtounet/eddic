@@ -28,7 +28,7 @@ enum class Platform : unsigned int {
  * \param platform The platform identifier
  * \return The platform descriptor of the given platform. 
  */
-PlatformDescriptor* getPlatformDescriptor(Platform platform);
+const PlatformDescriptor* getPlatformDescriptor(Platform platform);
 
 } //end of eddic
 

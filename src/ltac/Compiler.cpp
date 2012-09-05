@@ -49,7 +49,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
         block->label = newLabel();
     }
     
-    PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+    auto descriptor = getPlatformDescriptor(platform);
 
     std::vector<ltac::Register> registers;
     auto symbolic_registers = descriptor->symbolic_registers();

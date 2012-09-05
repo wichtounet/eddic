@@ -434,7 +434,7 @@ bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){
     return live;
 }
     
-void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
     for(auto parameter : definition->parameters){
         auto param = definition->context->getVariable(parameter.name);
 
@@ -448,7 +448,7 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
     }
 }
 
-void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
     for(auto& variable_pair : definition->context->stored_variables()){
         auto variable = variable_pair.second;
 
@@ -483,7 +483,7 @@ void ltac::RegisterManager::restore_pushed_registers(){
     first_param = true;
 }
 
-void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, const PlatformDescriptor* descriptor){
     if(first_param){
         if(param->function){
             std::set<ltac::Register> overriden_registers;

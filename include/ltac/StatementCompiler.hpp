@@ -26,7 +26,7 @@ namespace ltac {
 
 class StatementCompiler : public boost::static_visitor<> {
     public:
-        PlatformDescriptor* descriptor;
+        const PlatformDescriptor* descriptor;
         Platform platform;
 
         StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
