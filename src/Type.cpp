@@ -252,22 +252,6 @@ unsigned int TemplateType::size() const {
 /* Implementation of factories  */
 
 std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_){
-    //Parse array types
-    if(type.find("[]") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 2);
-
-        return new_array_type(new_type(context, baseType));
-    }
-    
-    //Parse pointer types
-    if(type.find("*") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 1);
-
-        return new_pointer_type(new_type(context, baseType));
-    }
-
     //Parse standard and custom types
     if(is_standard_type(type)){
         if(const_){

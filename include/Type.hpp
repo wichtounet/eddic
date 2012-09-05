@@ -296,6 +296,7 @@ extern std::shared_ptr<const Type> VOID;
 /*!
  * \brief Parse the given type into an EDDI std::shared_ptr<Type>. 
  *
+ * \param context The current global context
  * \param type The type to parse. 
  */
 std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_ = false);
