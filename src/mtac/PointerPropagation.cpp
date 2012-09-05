@@ -21,7 +21,7 @@ bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op,
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
         auto variable = *ptr;
 
-        if(aliases.find(variable) != aliases.end()){
+        if(aliases.count(variable)){
             auto alias = aliases[variable];
 
             quadruple->arg1 = alias;
@@ -43,7 +43,7 @@ bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op,
 bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
     auto variable = quadruple->result;
 
-    if(aliases.find(variable) != aliases.end()){
+    if(aliases.count(variable)){
         auto alias = aliases[variable];
 
         quadruple->result = alias;
@@ -70,7 +70,7 @@ struct CopyApplier : public boost::static_visitor<> {
 
     bool optimize_arg(mtac::Argument& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(pointer_copies.find(*ptr) != pointer_copies.end()){
+            if(pointer_copies.count(*ptr)){
                 arg = pointer_copies[*ptr];
                 return true;
             }
@@ -115,7 +115,7 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
             if((*ptr)->type()->is_standard_type()){
                 aliases[quadruple->result] = *ptr;
             } else if((*ptr)->type()->is_pointer()){
-                if(aliases.find(*ptr) != aliases.end()){
+                if(aliases.count(*ptr)){
                     auto alias = aliases[*ptr];
                     quadruple->arg1 = alias;
 

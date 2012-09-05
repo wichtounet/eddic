@@ -10,6 +10,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 #include "FunctionContext.hpp"
+#include "StringPool.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -18,6 +19,8 @@
 using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
+
+mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool) : string_pool(string_pool) {}
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
@@ -183,22 +186,31 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement
         //If constant replace the value assigned to result by the value stored for arg1+arg2
         if(quadruple->op == mtac::Operator::DOT){
             if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    mtac::Offset offset(*var_ptr, *ptr);
 
-                if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
-                    quadruple->op = mtac::Operator::ASSIGN;
-                    *quadruple->arg1 = results[offset];
-                    quadruple->arg2.reset();
+                    if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
+                        quadruple->op = mtac::Operator::ASSIGN;
+                        *quadruple->arg1 = results[offset];
+                        quadruple->arg2.reset();
 
-                    if(quadruple->result->type()->is_pointer()){
-                        if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            if(!(*var_ptr)->type()->is_pointer()){
-                                quadruple->op = mtac::Operator::PASSIGN;
+                        if(quadruple->result->type()->is_pointer()){
+                            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                                if(!(*var_ptr)->type()->is_pointer()){
+                                    quadruple->op = mtac::Operator::PASSIGN;
+                                }
                             }
                         }
-                    }
-                    
 
+                        changes = true;
+                    }
+                } else if(auto* string_ptr = boost::get<std::string>(&*quadruple->arg1)){
+                    auto string_value = string_pool->value(*string_ptr);
+
+                    quadruple->op = mtac::Operator::ASSIGN;
+                    *quadruple->arg1 = static_cast<int>(string_value[*ptr + 1]); //+1 because of the " in front of the value
+                    quadruple->arg2.reset();
+                    
                     changes = true;
                 }
             }

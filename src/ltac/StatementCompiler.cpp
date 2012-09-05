@@ -1121,29 +1121,34 @@ void ltac::StatementCompiler::compile_F2I(std::shared_ptr<mtac::Quadruple> quadr
 }
 
 void ltac::StatementCompiler::compile_DOT(std::shared_ptr<mtac::Quadruple> quadruple){
-    assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
-    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
-
     std::shared_ptr<ltac::Instruction> instruction;
+    
+    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+        auto variable = *var_ptr;
 
-    if(variable->type()->is_pointer()){
-        assert(boost::get<int>(&*quadruple->arg2));
-        int offset = boost::get<int>(*quadruple->arg2);
+        if(variable->type()->is_pointer()){
+            assert(boost::get<int>(&*quadruple->arg2));
+            int offset = boost::get<int>(*quadruple->arg2);
 
-        auto reg = manager.get_reg_no_move(quadruple->result);
-        instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
-    } else {
-        /* To be very conservative
-            if(variable->type() == STRING && manager.is_written(variable)){
-            manager.spills(manager.get_reg(variable));
-        }*/
-
-        if(ltac::is_float_var(quadruple->result)){
-            auto reg = manager.get_float_reg_no_move(quadruple->result);
-            instruction = ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
-        } else {
             auto reg = manager.get_reg_no_move(quadruple->result);
-            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
+        } else {
+            if(ltac::is_float_var(quadruple->result)){
+                auto reg = manager.get_float_reg_no_move(quadruple->result);
+                instruction = ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
+            } else {
+                auto reg = manager.get_reg_no_move(quadruple->result);
+                instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+            }
+        }
+    } else if(auto* string_ptr = boost::get<std::string>(&*quadruple->arg1)){
+        auto reg = manager.get_reg_no_move(quadruple->result);
+
+        if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
+            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(*string_ptr, *offset_ptr));
+        } else if(auto* offset_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+            auto offset_reg = manager.get_reg(*offset_ptr);
+            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(*string_ptr, offset_reg));
         }
     }
 
