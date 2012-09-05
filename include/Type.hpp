@@ -103,7 +103,7 @@ class Type : public std::enable_shared_from_this<Type> {
          * Return the size of the type in memory in octets. 
          * \return the size of the type, in octets.
          */
-        virtual unsigned int size() const;
+        virtual unsigned int size(Platform platform) const;
 
         /*!
          * Return the mangled name of the type. 
@@ -154,7 +154,7 @@ class StandardType : public Type {
         bool is_standard_type() const override;
         bool is_const() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 
         mutable Platform platform;
 };
@@ -185,7 +185,7 @@ class CustomType : public Type {
 
         bool is_custom_type() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
@@ -216,7 +216,7 @@ class ArrayType : public Type {
 
         bool is_array() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
@@ -244,7 +244,7 @@ class PointerType : public Type {
 
         bool is_pointer() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
@@ -275,7 +275,7 @@ class TemplateType : public Type {
 
         bool is_template() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /* Relational operators  */

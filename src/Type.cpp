@@ -59,7 +59,7 @@ bool Type::is_template() const {
     return false;
 }
 
-unsigned int Type::size() const {
+unsigned int Type::size(Platform) const {
     ASSERT_PATH_NOT_TAKEN("Not specialized type");
 }
 
@@ -144,7 +144,7 @@ bool StandardType::is_const() const {
     return const_;
 }
 
-unsigned int StandardType::size() const {
+unsigned int StandardType::size(Platform platform) const {
     auto descriptor = getPlatformDescriptor(platform);
     return descriptor->size_of(base());
 }
@@ -162,7 +162,7 @@ bool CustomType::is_custom_type() const {
     return true;
 }
 
-unsigned int CustomType::size() const {
+unsigned int CustomType::size(Platform) const {
     return context->size_of_struct(mangle());
 }
         
@@ -182,8 +182,8 @@ bool ArrayType::is_array() const {
     return true;
 }
 
-unsigned int ArrayType::size() const {
-    return data_type()->size() * elements() + INT->size(); 
+unsigned int ArrayType::size(Platform platform) const {
+    return data_type()->size(platform) * elements() + INT->size(platform); 
 }
         
 /* Implementation of PointerType  */
@@ -198,8 +198,8 @@ bool PointerType::is_pointer() const {
     return true;
 }
 
-unsigned int PointerType::size() const {
-    return INT->size();
+unsigned int PointerType::size(Platform platform) const {
+    return INT->size(platform);
 }
         
 /* Implementation of TemplateType  */
@@ -219,7 +219,7 @@ bool TemplateType::is_template() const {
     return true;
 }
 
-unsigned int TemplateType::size() const {
+unsigned int TemplateType::size(Platform) const {
     return context->size_of_struct(mangle());
 }
 
