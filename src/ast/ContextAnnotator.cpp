@@ -57,7 +57,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
             if(program.Content->context){
                 currentContext = globalContext = program.Content->context;
             } else {
-                currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
+                currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>(platform);
             }
 
             visit_each(*this, program.Content->blocks);

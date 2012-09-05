@@ -91,9 +91,9 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
             if(type->is_array()){
                 ltac::add_instruction(target_function, ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(type->elements()));
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size()), static_cast<int>((type->data_type()->size() / INT->size() * type->elements())));
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size(platform)), static_cast<int>((type->data_type()->size(platform) / INT->size(platform) * type->elements())));
             } else if(type->is_custom_type()){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size() / INT->size()));
+                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size(platform) / INT->size(platform)));
             }
         }
     }
