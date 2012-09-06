@@ -46,6 +46,10 @@ BOOST_AUTO_TEST_CASE( samples_##file ){\
     assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O2", #file ".6.out");\
 }
 
+inline void remove(const std::string& file){
+    remove(file.c_str());
+}
+
 inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
     std::string output_file = "--output=" + param3;
 
@@ -73,6 +77,8 @@ void assert_compiles(const std::string& file, const std::string& param1, const s
     int code = compiler.compile(file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 0);
+    
+    remove("./" + param3);
 }
 
 void assert_compilation_error(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
@@ -82,14 +88,23 @@ void assert_compilation_error(const std::string& file, const std::string& param1
     int code = compiler.compile("test/cases/" + file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 1);
+    
+    remove("./" + param3);
 }
 
 void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
-    assert_compiles("test/cases/" + file, param1, param2, param3);
+    auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
+
+    eddic::Compiler compiler;
+    int code = compiler.compile(file, configuration);
+
+    BOOST_REQUIRE_EQUAL (code, 0);
 
     std::string out = eddic::execCommand("./" + param3); 
     
     BOOST_CHECK_EQUAL (output, out);
+    
+    remove("./" + param3);
 }
 
 void assert_output_32(const std::string& file, const std::string& output){
