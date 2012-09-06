@@ -50,13 +50,16 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
             auto source = boost::source(*it, g);
             auto target = boost::target(*it, g);
 
-            //targets dominates source
-            
-            if(boost::get(domTreePredMap, source) != boost::graph_traits<G>::null_vertex()){
-                auto dominator = boost::get(domTreePredMap,source);
+            //A node dominates itself
+            if(source == target){
+                std::cout << "Found back edge" << std::endl;
+            } else {
+                if(boost::get(domTreePredMap, source) != boost::graph_traits<G>::null_vertex()){
+                    auto dominator = boost::get(domTreePredMap,source);
 
-                if(dominator == target){
-                    std::cout << "Found back edge" << std::endl;
+                    if(dominator == target){
+                        std::cout << "Found back edge" << std::endl;
+                    }
                 }
             }
         }

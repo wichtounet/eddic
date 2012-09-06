@@ -18,6 +18,7 @@
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/RegisterAllocation.hpp"
+#include "mtac/LoopAnalysis.hpp"
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
@@ -41,6 +42,8 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platfor
         mtac::Printer printer;
         printer.print(mtacProgram);
     }
+
+    mtac::loop_analysis(mtacProgram); 
     
     //Optimize MTAC
     mtac::Optimizer optimizer;
