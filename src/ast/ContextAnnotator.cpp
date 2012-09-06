@@ -34,7 +34,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Configuration> configuration;
 
         AUTO_RECURSE_STRUCT()
-        AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_TERNARY()
@@ -95,6 +94,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::MemberFunctionCall& functionCall){
+            functionCall.Content->context = currentContext;
+
+            visit_each(*this, functionCall.Content->values);
+        }
+
+        void operator()(ast::FunctionCall& functionCall){
             functionCall.Content->context = currentContext;
 
             visit_each(*this, functionCall.Content->values);

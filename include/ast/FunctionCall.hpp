@@ -22,6 +22,8 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 /*!
@@ -31,6 +33,7 @@ namespace ast {
  */
 struct ASTFunctionCall {
     std::shared_ptr<eddic::Function> function;
+    std::shared_ptr<Context> context;
     std::string mangled_name;
 
     bool resolved = false; /*!< If true, the template has been instantiated, only relevant when the template_types is not empty */
