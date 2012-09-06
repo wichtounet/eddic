@@ -450,7 +450,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::SwitchCase& switch_case){
             check_value(switch_case.value);
-            visit_each(*this, switch_case.instructions);
+            check_each(switch_case.instructions);
         }
 
         void operator()(ast::Assignment& assignment){
@@ -478,7 +478,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             for_each(value.Content->operations.begin(), value.Content->operations.end(), 
                 [&](ast::Operation& operation){ check_value(operation.get<1>()); });
         }
-
 
         void operator()(ast::Return& return_){
             return_.Content->function = currentFunction;
