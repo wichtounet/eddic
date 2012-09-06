@@ -1,0 +1,28 @@
+void main(){
+    for(int i = 0; i < 10; ++i){
+        for(int j = 0; j < 10; ++j){
+            print(i + j);
+        }
+    }
+        
+    for(int j = 0; j < 10; ++j){
+        print(j);
+    }
+    
+    int i = 0;
+    while(i < 5){
+        i = i + 1;
+
+        if(i == 0){
+            ++i;
+        } else {
+            ++i;
+
+            for(int ii = 0; ii < 10; ++ii){
+                for(int jj = 0; jj < 10; ++jj){
+                    print(ii + jj);
+                }
+            }
+        }
+    }
+}
