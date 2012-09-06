@@ -103,7 +103,7 @@ file(
 add_executable(eddic_test $<TARGET_OBJECTS:Compiler> ${test_files})
 
 target_link_libraries (eddic_test boost_program_options)
-target_link_libraries (eddic_test boost_unit_test_framework-mt)
+target_link_libraries (eddic_test boost_unit_test_framework)
 
 # Specifications for the installation of eddic
 

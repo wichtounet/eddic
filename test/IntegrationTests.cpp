@@ -16,7 +16,6 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE EddicTestSuites
 #include <boost/test/unit_test.hpp>
-#include <boost/test/detail/unit_test_parameters.hpp>
 
 /*
  * \def TEST_APPLICATION(file) 
