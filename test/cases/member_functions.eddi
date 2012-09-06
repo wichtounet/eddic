@@ -15,8 +15,8 @@ struct Counter {
     }
     
     void addSub(int n1, int n2){
-        this.add(n1);
-        this.add(n2);
+        add(n1);
+        add(n2);
     }
 }
 
