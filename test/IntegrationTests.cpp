@@ -96,7 +96,7 @@ void assert_output_equals(const std::string& file, const std::string& output, co
     auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
 
     eddic::Compiler compiler;
-    int code = compiler.compile(file, configuration);
+    int code = compiler.compile("test/cases/" + file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 0);
 
@@ -394,13 +394,20 @@ BOOST_AUTO_TEST_CASE( nested ){
 }
 
 static void test_args(const std::string& arg1, const std::string& arg2, const std::string& arg3){
-    assert_compiles("test/cases/args.eddi", arg1, arg2, arg3);
+    auto configuration = parse_options("test/cases/args.eddi", arg1, arg2, arg3);
+
+    eddic::Compiler compiler;
+    int code = compiler.compile("test/cases/args.eddi", configuration);
+
+    BOOST_REQUIRE_EQUAL (code, 0);
 
     std::string out = eddic::execCommand("./" + arg3); 
     BOOST_CHECK_EQUAL ("./" + arg3 + "|", out);
     
     out = eddic::execCommand("./" + arg3 + " arg1 arg2 arg3"); 
     BOOST_CHECK_EQUAL ("./" + arg3 + "|arg1|arg2|arg3|", out);
+    
+    remove("./" + arg3);
 }
 
 BOOST_AUTO_TEST_CASE( args ){
