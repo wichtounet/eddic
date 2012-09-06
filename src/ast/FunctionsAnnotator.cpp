@@ -234,8 +234,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             check_value(elseIf.condition);
             check_each(elseIf.instructions);
         }
-
-        AUTO_RECURSE_ELSE()
+        
+        void operator()(ast::Else& else_){
+            check_each(else_.instructions);
+        }
 
         template<typename T>
         void check_each(std::vector<T>& values){
@@ -300,8 +302,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                             if(context->exists(mangled)){
                                 context->addReference(mangled);
-
-                                std::cout << "Found member function " << mangled << std::endl;
 
                                 ast::MemberFunctionCall member_function_call;
                                 member_function_call.Content->function = context->getFunction(mangled);
