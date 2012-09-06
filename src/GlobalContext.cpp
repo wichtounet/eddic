@@ -41,6 +41,10 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
     return variables[variable] = std::make_shared<Variable>(variable, type, position);
 }
 
+std::shared_ptr<Variable> GlobalContext::generate_variable(const std::string& prefix, std::shared_ptr<const Type> type){
+    ASSERT_PATH_NOT_TAKEN("Cannot generate global variable");
+}
+
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
     auto val = visit(ast::GetConstantValue(), value);
      

@@ -88,6 +88,12 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = var;
 }
 
+std::shared_ptr<Variable> FunctionContext::generate_variable(const std::string& prefix, std::shared_ptr<const Type> type){
+    std::string name = prefix + "_" + toString(generated++); 
+
+    return addVariable(name, type);
+}
+
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<const Type> type){
     return variables[parameter] = newParameter(parameter, type);
 }

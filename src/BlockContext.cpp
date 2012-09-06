@@ -23,6 +23,12 @@ std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable,
     return variables[variable] = m_functionContext->newVariable(variable, type);
 }
 
+std::shared_ptr<Variable> BlockContext::generate_variable(const std::string& prefix, std::shared_ptr<const Type> type){
+    auto variable = m_functionContext->generate_variable(prefix, type);
+
+    return variables[variable->name()] = variable;
+}
+
 std::shared_ptr<Variable> BlockContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
     assert(type->is_const());
 

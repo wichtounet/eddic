@@ -491,15 +491,13 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
             }
 
-            static int generated = 0;
-            
             auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
 
             foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
             foreach.Content->var->set_source_position(foreach.Content->position);
 
             foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-            foreach.Content->iterVar = foreach.Content->context->addVariable("foreach_iter_" + toString(++generated), INT);
+            foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
             
             //Add references to variables
             foreach.Content->var->addReference();

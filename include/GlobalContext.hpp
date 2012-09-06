@@ -35,6 +35,8 @@ class GlobalContext final : public Context {
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
         
+        std::shared_ptr<Variable> generate_variable(const std::string& prefix, std::shared_ptr<const Type> type) override;
+        
         /*!
          * Add the given function to the symbol table. 
          * \param function The function to add to the symbol table. 
