@@ -18,17 +18,21 @@
 
 using namespace eddic;
 
-static void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>>& used){
+namespace {
+
+void collect(mtac::Argument* arg, std::unordered_set<std::shared_ptr<Variable>>& used){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
         used.insert(*ptr);
     }
 }
 
-static void collect(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>>& used){
+void collect(boost::optional<mtac::Argument>& arg, std::unordered_set<std::shared_ptr<Variable>>& used){
     if(arg){
         collect(&*arg, used);
     }
 }
+
+} //end of anonymous namespace
 
 void mtac::RemoveMultipleAssign::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(pass == mtac::Pass::DATA_MINING){

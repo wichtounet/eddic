@@ -49,7 +49,7 @@ using namespace eddic;
 
 namespace {
 
-static const unsigned int MAX_THREADS = 2;
+const unsigned int MAX_THREADS = 2;
 
 template<typename Visitor>
 bool apply_to_all(std::shared_ptr<mtac::Function> function){
