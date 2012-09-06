@@ -11,6 +11,7 @@
 #include "Context.hpp"
 #include "Function.hpp"
 #include "Struct.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
@@ -27,12 +28,14 @@ class GlobalContext final : public Context {
         typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
     
     public:
-        GlobalContext();
+        GlobalContext(Platform platform);
         
         Variables getVariables();
         
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
+        
+        std::shared_ptr<Variable> generate_variable(const std::string& prefix, std::shared_ptr<const Type> type) override;
         
         /*!
          * Add the given function to the symbol table. 
@@ -77,6 +80,7 @@ class GlobalContext final : public Context {
         std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset);
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
         int size_of_struct(const std::string& struct_);
+        
         bool is_recursively_nested(const std::string& struct_);
 
         FunctionMap functions();
@@ -99,10 +103,13 @@ class GlobalContext final : public Context {
          * \return The reference counter of the given function. 
          */
         int referenceCount(const std::string& function);
+
+        Platform target_platform();
     
     private:
         FunctionMap m_functions;
         StructMap m_structs;
+        Platform platform;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();

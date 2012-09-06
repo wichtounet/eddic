@@ -379,12 +379,12 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
 
 } //end of anonymous namespace
 
-bool mtac::inline_functions(std::shared_ptr<mtac::Program> program){
-    if(option_defined("fno-inline-functions")){
+bool mtac::inline_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<Configuration> configuration){
+    if(configuration->option_defined("fno-inline-functions")){
         return false;
     }
 
-    if(option_defined("finline-functions")){
+    if(configuration->option_defined("finline-functions")){
         bool optimized = false;
 
         for(auto source_function : program->functions){

@@ -48,7 +48,7 @@ void check_for_main(std::shared_ptr<GlobalContext> context);
 void mark(ast::SourceFile& program);
 bool still_unmarked(ast::SourceFile& program);
 
-std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
+std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
     parser::SpiritParser parser;
 
     //The program to build
@@ -73,7 +73,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             log::emit<Info>("Template") << "Start template phase" << log::endl;
 
             //Define contexts and structures
-            ast::defineContexts(program);
+            ast::defineContexts(program, platform, configuration);
             ast::defineStructures(program);
 
             //Add default values
@@ -91,7 +91,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
             template_engine.template_instantiation(program);
             
             //If the dev option is defined, print the whole AST tree
-            if(option_defined("dev")){
+            if(configuration->option_defined("dev")){
                 ast::Printer printer;
                 printer.print(program);
             }
@@ -107,7 +107,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::transformAST(program);
 
         //Check for warnings
-        ast::checkForWarnings(program);
+        ast::checkForWarnings(program, configuration);
 
         //Check that there is a main in the program
         check_for_main(program.Content->context);
@@ -116,13 +116,13 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file){
         ast::optimizeAST(program, *pool);
 
         //If the user asked for it, print the Abstract Syntax Tree
-        if(option_defined("ast") || option_defined("ast-only")){
+        if(configuration->option_defined("ast") || configuration->option_defined("ast-only")){
             ast::Printer printer;
             printer.print(program);
         }
         
         //If the user wants only the AST prints, it is not necessary to compile the AST
-        if(option_defined("ast-only")){
+        if(configuration->option_defined("ast-only")){
             return nullptr;
         }
 

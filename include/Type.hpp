@@ -15,6 +15,7 @@
 #include <boost/optional.hpp>
 
 #include "BaseType.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
@@ -102,19 +103,13 @@ class Type : public std::enable_shared_from_this<Type> {
          * Return the size of the type in memory in octets. 
          * \return the size of the type, in octets.
          */
-        virtual unsigned int size() const;
+        virtual unsigned int size(Platform platform) const;
 
         /*!
          * Return the mangled name of the type. 
          * \return The mangled name of the type. 
          */
         std::string mangle() const;
-
-        /*!
-         * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
-         * \return a non-const version of this type;
-         */
-        std::shared_ptr<const Type> non_const() const;
 
         friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
         friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
@@ -159,7 +154,9 @@ class StandardType : public Type {
         bool is_standard_type() const override;
         bool is_const() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
+
+        mutable Platform platform;
 };
 
 /*!
@@ -188,7 +185,7 @@ class CustomType : public Type {
 
         bool is_custom_type() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
@@ -219,7 +216,7 @@ class ArrayType : public Type {
 
         bool is_array() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
@@ -247,7 +244,7 @@ class PointerType : public Type {
 
         bool is_pointer() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
@@ -278,7 +275,7 @@ class TemplateType : public Type {
 
         bool is_template() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /* Relational operators  */
@@ -296,6 +293,7 @@ extern std::shared_ptr<const Type> VOID;
 /*!
  * \brief Parse the given type into an EDDI std::shared_ptr<Type>. 
  *
+ * \param context The current global context
  * \param type The type to parse. 
  */
 std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_ = false);

@@ -12,6 +12,8 @@
 #include <unordered_set>
 
 #include "FloatPool.hpp"
+#include "Platform.hpp"
+#include "Options.hpp"
 
 #include "ltac/Program.hpp"
 
@@ -27,6 +29,8 @@ namespace ltac {
  */
 class Compiler {
     public:
+        Compiler(Platform platform, std::shared_ptr<Configuration> configuration);
+
         /*!
          * Compile the MTAC Program into an LTAC Program. 
          * \param source The source MTAC Program. 
@@ -39,6 +43,8 @@ class Compiler {
         void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool);
 
         std::unordered_set<std::shared_ptr<mtac::BasicBlock>> block_usage;
+        Platform platform;
+        std::shared_ptr<Configuration> configuration;
 };
 
 } //end of ltac

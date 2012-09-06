@@ -303,7 +303,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
     return false;
 }
 
-inline bool multiple_statement_optimizations_second(ltac::Statement& s1, ltac::Statement& s2){
+inline bool multiple_statement_optimizations_second(ltac::Statement& s1, ltac::Statement& s2, Platform platform){
     if(mtac::is<std::shared_ptr<ltac::Instruction>>(s1) && mtac::is<std::shared_ptr<ltac::Instruction>>(s2)){
         auto& i1 = boost::get<std::shared_ptr<ltac::Instruction>>(s1);
         auto& i2 = boost::get<std::shared_ptr<ltac::Instruction>>(s2);
@@ -383,7 +383,7 @@ inline bool is_nop(ltac::Statement& statement){
     return false;
 }
 
-bool basic_optimizations(std::shared_ptr<ltac::Function> function){
+bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform platform){
     auto& statements = function->getStatements();
 
     bool optimized = false;
@@ -421,7 +421,7 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function){
         auto& s1 = *it;
         auto& s2 = *(it + 1);
 
-        optimized |= multiple_statement_optimizations_second(s1, s2);
+        optimized |= multiple_statement_optimizations_second(s1, s2, platform);
 
         ++it;
     }
@@ -510,7 +510,7 @@ void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::Registe
     }
 }
 
-bool copy_propagation(std::shared_ptr<ltac::Function> function){
+bool copy_propagation(std::shared_ptr<ltac::Function> function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
 
     bool optimized = false;
@@ -576,7 +576,7 @@ bool copy_propagation(std::shared_ptr<ltac::Function> function){
 
 typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
 
-void add_param_registers(RegisterUsage& usage){
+void add_param_registers(RegisterUsage& usage, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     
     for(unsigned int i = 1; i <= descriptor->numberOfIntParamRegisters(); ++i){
@@ -591,7 +591,7 @@ void add_param_registers(RegisterUsage& usage){
     usage.insert(ltac::BP);
 }
 
-void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function){
+void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     
     if(function->definition->returnType == STRING){
@@ -601,7 +601,7 @@ void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function>
         usage.insert(ltac::Register(descriptor->int_return_register1()));
     }
 
-    add_param_registers(usage);
+    add_param_registers(usage, platform);
 
     for(auto var : function->context->stored_variables()){
         if(var.second->position().is_register() && mtac::is_single_int_register(var.second->type())){
@@ -631,11 +631,11 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
     }   
 }
 
-RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function){
+RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function, Platform platform){
     auto& statements = function->getStatements();
    
     RegisterUsage usage;
-    add_escaped_registers(usage, function);
+    add_escaped_registers(usage, function, platform);
 
     for(auto statement : statements){
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -650,7 +650,7 @@ RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function){
     return usage;
 }
 
-ltac::Register get_free_reg(RegisterUsage& usage){
+ltac::Register get_free_reg(RegisterUsage& usage, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
    
     for(auto& reg : descriptor->symbolic_registers()){
@@ -667,13 +667,13 @@ inline bool one_of(const T& value, const std::vector<T>& container){
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
-bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
+bool dead_code_elimination(std::shared_ptr<ltac::Function> function, Platform platform){
     bool optimized = false;
 
     auto& statements = function->getStatements();
     
     RegisterUsage usage; 
-    add_escaped_registers(usage, function);
+    add_escaped_registers(usage, function, platform);
 
     for(auto statement : boost::adaptors::reverse(statements)){
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -689,7 +689,7 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
                     }
                     
                     usage.erase(reg1);
-                    add_param_registers(usage);
+                    add_param_registers(usage, platform);
                 } else {
                     collect_usage(usage, instruction->arg1);
                 }
@@ -728,14 +728,14 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function){
             //Takes care of safe functions
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
                 if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
-                    add_param_registers(usage);
+                    add_param_registers(usage, platform);
                     continue;
                 }
             }
             
             //At this point, the basic block is at its end
             usage.clear();
-            add_escaped_registers(usage, function);
+            add_escaped_registers(usage, function, platform);
         }
     }
 
@@ -769,12 +769,12 @@ ltac::Operator get_cmov_op(ltac::JumpType op){
     }
 }
 
-bool conditional_move(std::shared_ptr<ltac::Function> function){
+bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platform){
     bool optimized = false;
 
-    RegisterUsage usage = collect_register_usage(function);
+    RegisterUsage usage = collect_register_usage(function, platform);
 
-    auto free_reg = get_free_reg(usage);
+    auto free_reg = get_free_reg(usage, platform);
     if(free_reg == ltac::SP){
         return optimized;
     }
@@ -857,8 +857,8 @@ bool conditional_move(std::shared_ptr<ltac::Function> function){
     return optimized;
 }
 
-bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
-    if(option_defined("dev")){
+bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function, std::shared_ptr<Configuration> configuration){
+    if(configuration->option_defined("dev")){
         if(b){
             std::cout << "optimization " << name << " returned true" << std::endl;
 
@@ -875,11 +875,11 @@ bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> func
 
 } //end of anonymous namespace
 
-void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
+void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program, Platform platform, std::shared_ptr<Configuration> configuration){
     PerfsTimer timer("Peephole optimizations");
 
     for(auto& function : program->functions){
-        if(option_defined("dev")){
+        if(configuration->option_defined("dev")){
             std::cout << "Start optimizations on " << function->getName() << std::endl;
 
             //Print the function
@@ -891,11 +891,11 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program){
         do {
             optimized = false;
             
-            optimized |= debug("Basic optimizations", basic_optimizations(function), function);
-            optimized |= debug("Constant propagation", constant_propagation(function), function);
-            optimized |= debug("Copy propagation", copy_propagation(function), function);
-            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
-            optimized |= debug("Conditional move", conditional_move(function), function);
+            optimized |= debug("Basic optimizations", basic_optimizations(function, platform), function, configuration);
+            optimized |= debug("Constant propagation", constant_propagation(function), function, configuration);
+            optimized |= debug("Copy propagation", copy_propagation(function, platform), function, configuration);
+            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function, platform), function, configuration);
+            optimized |= debug("Conditional move", conditional_move(function, platform), function, configuration);
         } while(optimized);
     }
 }

@@ -69,6 +69,14 @@ class Context {
         virtual std::shared_ptr<Variable> addVariable(const std::string& name, std::shared_ptr<const Type> type, ast::Value& value) = 0;
         
         /*!
+         * Generate a new variable with the given prefix and a generated index.
+         * \param prefix The prefix of the generate variable. 
+         * \param type The type of the variable to generate. 
+         * \return the created Variable.
+         */
+        virtual std::shared_ptr<Variable> generate_variable(const std::string& prefix, std::shared_ptr<const Type> type) = 0;
+        
+        /*!
          * Remove the given variable from this context.  
          * \param variable The name of the variable to remove. 
          */

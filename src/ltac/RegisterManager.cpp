@@ -13,6 +13,7 @@
 #include "Type.hpp"
 #include "Options.hpp"
 #include "logging.hpp"
+#include "GlobalContext.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
@@ -433,7 +434,7 @@ bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){
     return live;
 }
     
-void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
     for(auto parameter : definition->parameters){
         auto param = definition->context->getVariable(parameter.name);
 
@@ -447,7 +448,7 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
     }
 }
 
-void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
     for(auto& variable_pair : definition->context->stored_variables()){
         auto variable = variable_pair.second;
 
@@ -470,8 +471,8 @@ void ltac::RegisterManager::restore_pushed_registers(){
     //Restore the float parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(float_pushed)){
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
-        ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size()));
-        access_compiler()->bp_offset -= FLOAT->size();
+        ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(function->context->global()->target_platform())));
+        access_compiler()->bp_offset -= FLOAT->size(function->context->global()->target_platform());
     }
 
     //Each register has been restored
@@ -482,13 +483,13 @@ void ltac::RegisterManager::restore_pushed_registers(){
     first_param = true;
 }
 
-void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, PlatformDescriptor* descriptor){
+void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, const PlatformDescriptor* descriptor){
     if(first_param){
         if(param->function){
             std::set<ltac::Register> overriden_registers;
             std::set<ltac::FloatRegister> overriden_float_registers;
     
-            if(param->function->standard || option_defined("fparameter-allocation")){
+            if(param->function->standard || configuration->option_defined("fparameter-allocation")){
                 unsigned int maxInt = descriptor->numberOfIntParamRegisters();
                 unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
@@ -538,9 +539,9 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, P
                     if(float_registers[reg]->position().isParamRegister() || float_registers[reg]->position().is_register()){
                         float_pushed.push_back(reg);
 
-                        ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size()));
+                        ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(function->context->global()->target_platform())));
                         ltac::add_instruction(function, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
-                        access_compiler()->bp_offset += FLOAT->size();
+                        access_compiler()->bp_offset += FLOAT->size(function->context->global()->target_platform());
                     } else {
                         spills(reg);
                     }

@@ -59,7 +59,7 @@ bool Type::is_template() const {
     return false;
 }
 
-unsigned int Type::size() const {
+unsigned int Type::size(Platform) const {
     ASSERT_PATH_NOT_TAKEN("Not specialized type");
 }
 
@@ -85,32 +85,6 @@ BaseType Type::base() const {
 
 std::string Type::mangle() const {
     return ::mangle(shared_from_this());
-}
-
-std::shared_ptr<const Type> Type::non_const() const {
-    if(is_const()){
-        return shared_from_this();
-    }
-
-    if(is_array()){
-        return shared_from_this();
-    } 
-    
-    if(is_custom_type()){
-        return shared_from_this();
-    }
-    
-    if(is_template()){
-        return shared_from_this();
-    }
-    
-    if(is_standard_type()){
-        return std::make_shared<StandardType>(base(), false);
-    } 
-
-    assert(is_pointer());
-    
-    return shared_from_this();
 }
 
 bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
@@ -170,7 +144,7 @@ bool StandardType::is_const() const {
     return const_;
 }
 
-unsigned int StandardType::size() const {
+unsigned int StandardType::size(Platform platform) const {
     auto descriptor = getPlatformDescriptor(platform);
     return descriptor->size_of(base());
 }
@@ -188,7 +162,7 @@ bool CustomType::is_custom_type() const {
     return true;
 }
 
-unsigned int CustomType::size() const {
+unsigned int CustomType::size(Platform) const {
     return context->size_of_struct(mangle());
 }
         
@@ -208,8 +182,8 @@ bool ArrayType::is_array() const {
     return true;
 }
 
-unsigned int ArrayType::size() const {
-    return data_type()->size() * elements() + INT->size(); 
+unsigned int ArrayType::size(Platform platform) const {
+    return data_type()->size(platform) * elements() + INT->size(platform); 
 }
         
 /* Implementation of PointerType  */
@@ -224,8 +198,8 @@ bool PointerType::is_pointer() const {
     return true;
 }
 
-unsigned int PointerType::size() const {
-    return INT->size();
+unsigned int PointerType::size(Platform platform) const {
+    return INT->size(platform);
 }
         
 /* Implementation of TemplateType  */
@@ -245,29 +219,13 @@ bool TemplateType::is_template() const {
     return true;
 }
 
-unsigned int TemplateType::size() const {
+unsigned int TemplateType::size(Platform) const {
     return context->size_of_struct(mangle());
 }
 
 /* Implementation of factories  */
 
 std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_){
-    //Parse array types
-    if(type.find("[]") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 2);
-
-        return new_array_type(new_type(context, baseType));
-    }
-    
-    //Parse pointer types
-    if(type.find("*") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 1);
-
-        return new_pointer_type(new_type(context, baseType));
-    }
-
     //Parse standard and custom types
     if(is_standard_type(type)){
         if(const_){

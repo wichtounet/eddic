@@ -10,7 +10,9 @@
 
 #include <memory>
 
+#include "Options.hpp"
 #include "Context.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
@@ -27,6 +29,8 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         int currentParameter;
         int m_size;
         int temporary = 1;
+        int generated = 0;
+        Platform platform;
 
         //Refer all variables that are stored, including temporary
         Variables storage;
@@ -34,17 +38,20 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         void reallocate_storage();
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context);
+        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration);
         
         int size() const;
 
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
+        
         std::shared_ptr<Variable> addParameter(const std::string& a, std::shared_ptr<const Type> type);
+        
         std::shared_ptr<Variable> newVariable(const std::string& a, std::shared_ptr<const Type> type);
-        std::shared_ptr<Variable> newParameter(const std::string& a, std::shared_ptr<const Type> type);
-
         std::shared_ptr<Variable> newVariable(std::shared_ptr<Variable> source);
+        std::shared_ptr<Variable> newParameter(const std::string& a, std::shared_ptr<const Type> type);
+        
+        std::shared_ptr<Variable> generate_variable(const std::string& prefix, std::shared_ptr<const Type> type) override;
         
         std::shared_ptr<Variable> new_temporary(std::shared_ptr<const Type> type);
         

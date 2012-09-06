@@ -10,13 +10,16 @@
 
 #include <memory>
 
+#include "Platform.hpp"
+#include "Options.hpp"
+
 #include "ltac/Program.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-void optimize(std::shared_ptr<ltac::Program> program);
+void optimize(std::shared_ptr<ltac::Program> program, Platform platform, std::shared_ptr<Configuration> configuration);
 
 } //end of ltac
 

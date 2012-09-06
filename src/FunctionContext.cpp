@@ -16,20 +16,21 @@
 
 using namespace eddic;
 
-FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context) : Context(parent, global_context){
-    currentPosition = -INT->size(); 
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration) : 
+        Context(parent, global_context), platform(platform) {
+    currentPosition = -INT->size(platform); 
     
-    if(option_defined("fomit-frame-pointer")){
-        currentParameter = INT->size();
+    if(configuration->option_defined("fomit-frame-pointer")){
+        currentParameter = INT->size(platform);
     } else {
-        currentParameter = 2 * INT->size();
+        currentParameter = 2 * INT->size(platform);
     }
 }
 
 int FunctionContext::size() const {
     auto size = -currentPosition;
 
-    if(size == -INT->size()){
+    if(size == -INT->size(platform)){
         return 0;
     }
 
@@ -39,15 +40,15 @@ int FunctionContext::size() const {
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::PARAMETER, currentParameter);
 
-    currentParameter += type->size();
+    currentParameter += type->size(platform);
 
     return std::make_shared<Variable>(variable, type, position);
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<const Type> type){
-    currentPosition -= type->size();
+    currentPosition -= type->size(platform);
 
-    Position position(PositionType::STACK, currentPosition + INT->size());
+    Position position(PositionType::STACK, currentPosition + INT->size(platform));
     auto var = std::make_shared<Variable>(variable, type, position);
 
     storage[variable] = var;
@@ -88,6 +89,12 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = var;
 }
 
+std::shared_ptr<Variable> FunctionContext::generate_variable(const std::string& prefix, std::shared_ptr<const Type> type){
+    std::string name = prefix + "_" + toString(generated++); 
+
+    return addVariable(name, type);
+}
+
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<const Type> type){
     return variables[parameter] = newParameter(parameter, type);
 }
@@ -104,15 +111,15 @@ std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const T
 }
 
 void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
-    currentPosition -= temp->type()->size();
+    currentPosition -= temp->type()->size(platform);
 
-    Position position(PositionType::STACK, currentPosition + INT->size());
+    Position position(PositionType::STACK, currentPosition + INT->size(platform));
     
     temp->setPosition(position); 
 }
 
 void FunctionContext::reallocate_storage(){
-    currentPosition = -INT->size();
+    currentPosition = -INT->size(platform);
 
     auto it = storage.begin();
     auto end = storage.end();
@@ -121,8 +128,8 @@ void FunctionContext::reallocate_storage(){
         auto v = it->second;
 
         if(v->position().isStack()){
-            currentPosition -= v->type()->size();
-            Position position(PositionType::STACK, currentPosition + INT->size());
+            currentPosition -= v->type()->size(platform);
+            Position position(PositionType::STACK, currentPosition + INT->size(platform));
             v->setPosition(position);
         }
 

@@ -16,3 +16,11 @@ void BackEnd::set_string_pool(std::shared_ptr<StringPool> pool){
 std::shared_ptr<StringPool> BackEnd::get_string_pool(){
     return pool;
 }
+        
+void BackEnd::set_configuration(std::shared_ptr<Configuration> configuration){
+    this->configuration = configuration;
+}
+
+std::shared_ptr<Configuration> BackEnd::get_configuration(){
+    return configuration;
+}

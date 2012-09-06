@@ -20,8 +20,8 @@
 
 using namespace eddic;
 
-void mtac::register_param_allocation(std::shared_ptr<mtac::Program> program){
-    PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+void mtac::register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
+    auto descriptor = getPlatformDescriptor(platform);
 
     auto maxInt = descriptor->numberOfIntParamRegisters();
     auto maxFloat = descriptor->numberOfFloatParamRegisters();
@@ -82,8 +82,8 @@ void search_candidates(mtac::VariableUsage& usage, Candidates& candidates, std::
     }
 }
 
-void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program){
-    PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
+void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
+    auto descriptor = getPlatformDescriptor(platform);
 
     if(descriptor->number_of_variable_registers() > 0 || descriptor->number_of_float_variable_registers() > 0){
         for(auto function : program->functions){

@@ -8,7 +8,7 @@
 #include "Labels.hpp"
 #include "Utils.hpp"
 
-static int currentLabel = 0;
+__thread int currentLabel = 0;
 
 std::string eddic::newLabel(){
    return "L" + toString(currentLabel++); 

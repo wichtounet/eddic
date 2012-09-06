@@ -205,7 +205,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 auto var = (*declaration.Content->context)[declaration.Content->variableName];
                 
                 auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
-                if (valueType != var->type()->non_const()) {
+                if (valueType != var->type()) {
                     throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
                 }
             }
@@ -311,7 +311,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("Too many arguments to the builtin operator", builtin.Content->position);
             }
             
-            auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0])->non_const();
+            auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0]);
 
             if(builtin.Content->type == ast::BuiltinType::SIZE){
                 if(!type->is_array()){

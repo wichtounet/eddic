@@ -15,6 +15,7 @@
 #include "variant.hpp"
 #include "Platform.hpp"
 #include "FloatPool.hpp"
+#include "Options.hpp"
 
 #include "mtac/Program.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
@@ -33,6 +34,8 @@ class RegisterManager : public AbstractRegisterManager {
     public:
         //Keep track of the written variables to spills them
         std::unordered_set<std::shared_ptr<Variable>> written;
+
+        std::shared_ptr<Configuration> configuration;
 
         //Liveness information
         std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;
@@ -94,10 +97,10 @@ class RegisterManager : public AbstractRegisterManager {
         bool is_live(std::shared_ptr<Variable> variable);
         bool is_escaped(std::shared_ptr<Variable> variable);
 
-        void collect_parameters(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
-        void collect_variables(std::shared_ptr<eddic::Function> definition, PlatformDescriptor* descriptor);
+        void collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor);
+        void collect_variables(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor);
 
-        void save_registers(std::shared_ptr<mtac::Param> param, PlatformDescriptor* descriptor);
+        void save_registers(std::shared_ptr<mtac::Param> param, const PlatformDescriptor* descriptor);
         void restore_pushed_registers();
 
         std::shared_ptr<StatementCompiler> access_compiler();

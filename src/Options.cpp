@@ -7,9 +7,9 @@
 
 #include <string>
 #include <iostream>
-#include <memory>
 #include <vector>
-#include <unordered_map>
+#include <thread>
+#include <mutex>
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -22,21 +22,7 @@ using namespace eddic;
 
 namespace po = boost::program_options;
 
-struct ConfigValue {
-    bool defined;
-    boost::any value;
-};
-
-struct Configuration {
-    std::unordered_map<std::string, ConfigValue> values;
-};
-
-std::shared_ptr<Configuration> configuration;
-std::unordered_map<std::string, std::vector<std::string>> triggers;
-
-bool desc_init = false;
-po::options_description visible("Usage : eddic [options] source.eddi");
-po::options_description all("Usage : eddic [options] source.eddi");
+namespace {
 
 std::pair<std::string, std::string> numeric_parser(const std::string& s){
     if (s.find("-32") == 0) {
@@ -48,85 +34,97 @@ std::pair<std::string, std::string> numeric_parser(const std::string& s){
     }
 }
 
+std::once_flag description_flag;
+
+po::options_description visible("Usage : eddic [options] source.eddi");
+po::options_description all("Usage : eddic [options] source.eddi");
+
+std::unordered_map<std::string, std::vector<std::string>> triggers;
+
 void add_trigger(const std::string& option, const std::vector<std::string>& childs){
    triggers[option] = childs; 
 }
 
-inline void trigger_childs(const std::vector<std::string>& childs){
+void init_descriptions(){
+    po::options_description general("General options");
+    general.add_options()
+        ("help,h", "Generate this help message")
+        ("assembly,S", "Generate only the assembly")
+        ("keep,k", "Keep the assembly file")
+        ("version", "Print the version of eddic")
+        ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
+       
+        ("debug,g", "Add debugging symbols")
+        
+        ("32", "Force the compilation for 32 bits platform")
+        ("64", "Force the compilation for 64 bits platform")
+
+        ("warning-all", "Enable all the warning messages")
+        ("warning-unused", "Warn about unused variables, parameters and functions")
+        ("warning-cast", "Warn about useless casts");
+    
+    po::options_description display("Display options");
+    display.add_options()
+        ("ast", "Print the Abstract Syntax Tree representation of the source")
+        ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
+
+        ("mtac", "Print the medium-level Three Address Code representation of the source")
+        ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
+        ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
+
+        ("ltac", "Print the low-level Three Address Code representation of the source")
+        ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)");
+
+    po::options_description optimization("Optimization options");
+    optimization.add_options()
+        ("Opt,O", po::value<int>()->implicit_value(0)->default_value(2), "Define the optimization level")
+        ("O0", "Disable all optimizations")
+        ("O1", "Enable low-level optimizations")
+        ("O2", "Enable all optimizations. This can be slow for big programs.")
+        
+        ("fglobal-optimization", "Enable optimizer engine")
+        ("fvariable-allocation", "Enable variable allocation in register")
+        ("fparameter-allocation", "Enable parameter allocation in register")
+        ("fpeephole-optimization", "Enable peephole optimizer")
+        ("fomit-frame-pointer", "Omit frame pointer from functions")
+        ("finline-functions", "Enable inlining")
+        ("fno-inline-functions", "Disable inlining");
+    
+    po::options_description backend("Backend options");
+    backend.add_options()
+        ("log", po::value<int>()->default_value(0), "Define the logging")
+        ("quiet,q", "Do not print anything")
+        ("verbose,v", "Make the compiler verbose")
+        ("dev,d", "Activate development mode (very verbose)")
+        ("perfs", "Display performance information")
+        ("input", po::value<std::string>(), "Input file");
+
+    all.add(general).add(display).add(optimization).add(backend);
+    visible.add(general).add(display).add(optimization);
+
+    add_trigger("warning-all", {"warning-unused", "warning-cast"});
+    
+    //Special triggers for optimization levels
+    add_trigger("__1", {"fpeephole-optimization"});
+    add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
+}
+
+inline void trigger_childs(std::shared_ptr<Configuration> configuration, const std::vector<std::string>& childs){
     for(auto& child : childs){
         configuration->values[child].defined = true;
         configuration->values[child].value = std::string("true");
     }
 }
 
-bool eddic::parseOptions(int argc, const char* argv[]) {
+} //end of anonymous namespace
+
+std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[]) {
+    //Create a new configuration
+    auto configuration = std::make_shared<Configuration>();
+
     try {
         //Only if the description has not been already defined
-        if(!desc_init){
-            po::options_description general("General options");
-            general.add_options()
-                ("help,h", "Generate this help message")
-                ("assembly,S", "Generate only the assembly")
-                ("keep,k", "Keep the assembly file")
-                ("version", "Print the version of eddic")
-                ("output,o", po::value<std::string>()->default_value("a.out"), "Set the name of the executable")
-               
-                ("debug,g", "Add debugging symbols")
-                
-                ("32", "Force the compilation for 32 bits platform")
-                ("64", "Force the compilation for 64 bits platform")
-
-                ("warning-all", "Enable all the warning messages")
-                ("warning-unused", "Warn about unused variables, parameters and functions")
-                ("warning-cast", "Warn about useless casts");
-            
-            po::options_description display("Display options");
-            display.add_options()
-                ("ast", "Print the Abstract Syntax Tree representation of the source")
-                ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
-
-                ("mtac", "Print the medium-level Three Address Code representation of the source")
-                ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
-                ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
-
-                ("ltac", "Print the low-level Three Address Code representation of the source")
-                ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)");
-
-            po::options_description optimization("Optimization options");
-            optimization.add_options()
-                ("Opt,O", po::value<int>()->implicit_value(0)->default_value(2), "Define the optimization level")
-                ("O0", "Disable all optimizations")
-                ("O1", "Enable low-level optimizations")
-                ("O2", "Enable all optimizations. This can be slow for big programs.")
-                
-                ("fglobal-optimization", "Enable optimizer engine")
-                ("fvariable-allocation", "Enable variable allocation in register")
-                ("fparameter-allocation", "Enable parameter allocation in register")
-                ("fpeephole-optimization", "Enable peephole optimizer")
-                ("fomit-frame-pointer", "Omit frame pointer from functions")
-                ("finline-functions", "Enable inlining")
-                ("fno-inline-functions", "Disable inlining");
-            
-            po::options_description backend("Backend options");
-            backend.add_options()
-                ("log", po::value<int>()->default_value(0), "Define the logging")
-                ("quiet,q", "Do not print anything")
-                ("verbose,v", "Make the compiler verbose")
-                ("dev,d", "Activate development mode (very verbose)")
-                ("perfs", "Display performance information")
-                ("input", po::value<std::string>(), "Input file");
-
-            all.add(general).add(display).add(optimization).add(backend);
-            visible.add(general).add(display).add(optimization);
-
-            add_trigger("warning-all", {"warning-unused", "warning-cast"});
-            
-            //Special triggers for optimization levels
-            add_trigger("__1", {"fpeephole-optimization"});
-            add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
-            
-            desc_init = true;
-        }
+        std::call_once(description_flag, init_descriptions);
 
         //Add the option of the input file
         po::positional_options_description p;
@@ -134,9 +132,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         //Create a new set of options
         po::variables_map options;
-
-        //Create a new configuration
-        configuration = std::make_shared<Configuration>();
 
         //Parse the command line options
         po::store(po::command_line_parser(argc, argv).options(all).extra_parser(numeric_parser).positional(p).run(), options);
@@ -160,13 +155,13 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         if(options.count("O0") + options.count("O1") + options.count("O2") > 1){
             std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
 
-            return false;
+            return nullptr;
         }
 
         if(options.count("64") && options.count("32")){
             std::cout << "Invalid command line options : a compilation cannot be both 32 and 64 bits" << std::endl;
 
-            return false;
+            return nullptr;
         }
 
         //Update optimization level based on special switches
@@ -180,51 +175,45 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         //Triggers dependent options
         for(auto& trigger : triggers){
-            if(option_defined(trigger.first)){
-                trigger_childs(trigger.second);
+            if(configuration->option_defined(trigger.first)){
+                trigger_childs(configuration, trigger.second);
             }
         }
 
-        if(option_int_value("Opt") >= 1){
-            trigger_childs(triggers["__1"]);
+        if(configuration->option_int_value("Opt") >= 1){
+            trigger_childs(configuration, triggers["__1"]);
         } 
         
-        if(option_int_value("Opt") >= 2){
-            trigger_childs(triggers["__2"]);
+        if(configuration->option_int_value("Opt") >= 2){
+            trigger_childs(configuration, triggers["__2"]);
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
-        return false;
+        return nullptr;
     } catch (const po::unknown_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
-        return false;
+        return nullptr;
     } catch (const po::multiple_occurrences& e) {
         std::cout << "Only one file can be compiled" << std::endl;
 
-        return false;
+        return nullptr;
     }
 
-    return true;
+    return configuration;
 }
 
-bool eddic::option_defined(const std::string& option_name){
-    ASSERT(configuration, "The configuration have not been initialized");
-
-    return configuration->values[option_name].defined;
+bool Configuration::option_defined(const std::string& option_name){
+    return values[option_name].defined;
 }
 
-std::string eddic::option_value(const std::string& option_name){
-    ASSERT(configuration, "The configuration have not been initialized");
-
-    return boost::any_cast<std::string>(configuration->values[option_name].value);
+std::string Configuration::option_value(const std::string& option_name){
+    return boost::any_cast<std::string>(values[option_name].value);
 }
 
-int eddic::option_int_value(const std::string& option_name){
-    ASSERT(configuration, "The configuration have not been initialized");
-
-    return boost::any_cast<int>(configuration->values[option_name].value);
+int Configuration::option_int_value(const std::string& option_name){
+    return boost::any_cast<int>(values[option_name].value);
 }
 
 void eddic::print_help(){

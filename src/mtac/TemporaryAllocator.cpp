@@ -14,6 +14,7 @@
 #include "Options.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+#include "logging.hpp"
 
 #include "mtac/TemporaryAllocator.hpp"
 #include "mtac/Program.hpp"
@@ -116,7 +117,7 @@ unsigned int count_temporaries(Container& container){
 
 }
 
-void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
+void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program, Platform platform){
     for(auto& function : program->functions){
         auto count = 0;
 
@@ -160,8 +161,8 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program){
             }
         }
 
-        if(count > 0 && option_defined("dev")){
-            std::cout << "Temporaries have been stored for registers" << std::endl;
+        if(count > 0 && log::enabled<Dev>()){
+            log::emit<Dev>("Optimizer") << "Temporaries have been stored for registers" << log::endl;
 
             mtac::print(function);
         }

@@ -41,9 +41,7 @@ struct register_guard {
 
 ltac::StatementCompiler::StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
         std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
-        manager(registers, float_registers, function, float_pool), function(function), float_pool(float_pool) {
-    descriptor = getPlatformDescriptor(platform);
-}
+        manager(registers, float_registers, function, float_pool), function(function), float_pool(float_pool) {}
 
 void ltac::StatementCompiler::set_current(mtac::Statement statement){
     manager.set_current(statement);
@@ -78,7 +76,7 @@ ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
 }
 
 ltac::Address ltac::StatementCompiler::stack_address(int offset){
-    if(option_defined("fomit-frame-pointer")){
+    if(configuration->option_defined("fomit-frame-pointer")){
         return ltac::Address(ltac::SP, offset + bp_offset);
     } else {
         return ltac::Address(ltac::BP, offset);
@@ -86,7 +84,7 @@ ltac::Address ltac::StatementCompiler::stack_address(int offset){
 }
 
 ltac::Address ltac::StatementCompiler::stack_address(ltac::Register offsetReg, int offset){
-    if(option_defined("fomit-frame-pointer")){
+    if(configuration->option_defined("fomit-frame-pointer")){
         return ltac::Address(ltac::SP, offsetReg, 1, offset + bp_offset);
     } else {
         return ltac::Address(ltac::BP, offsetReg, 1, offset);
@@ -256,7 +254,7 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
 //Div eax by arg2 
 void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple){
     ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->d_register()), ltac::Register(descriptor->a_register()));
-    ltac::add_instruction(function, ltac::Operator::SHIFT_RIGHT, ltac::Register(descriptor->d_register()), static_cast<int>(INT->size() * 8 - 1));
+    ltac::add_instruction(function, ltac::Operator::SHIFT_RIGHT, ltac::Register(descriptor->d_register()), static_cast<int>(INT->size(platform) * 8 - 1));
 
     if(isInt(*quadruple->arg2)){
         auto reg = manager.get_free_reg();
@@ -295,12 +293,12 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
         
 void ltac::StatementCompiler::push(ltac::Argument arg){
     ltac::add_instruction(function, ltac::Operator::PUSH, arg);
-    bp_offset += INT->size();
+    bp_offset += INT->size(platform);
 }
 
 void ltac::StatementCompiler::pop(ltac::Argument arg){
     ltac::add_instruction(function, ltac::Operator::POP, arg);
-    bp_offset -= INT->size();
+    bp_offset -= INT->size(platform);
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
@@ -484,7 +482,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     bool register_allocated = false;
     unsigned int position = 0;
         
-    if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
+    if(param->std_param.length() > 0 || (param->param && configuration->option_defined("fparameter-allocation"))){
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
@@ -613,7 +611,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call->functionDefinition->standard && !option_defined("fparameter-allocation")){
+    if(!call->functionDefinition->standard && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
@@ -623,24 +621,24 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
 
         if(type->is_array()){
             //Passing an array is just passing an adress
-            total += INT->size();
+            total += INT->size(platform);
         } else {
             if(mtac::is_single_int_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxInt > 0){
                     --maxInt;
                 } else {
-                    total += type->size();
+                    total += type->size(platform);
                 }
             } else if(mtac::is_single_float_register(type)){
                 //If the parameter is allocated in a register, there is no need to deallocate stack space for it
                 if(maxFloat > 0){
                     --maxFloat;
                 } else {
-                    total += type->size();
+                    total += type->size(platform);
                 }
             } else {
-                total += type->size();
+                total += type->size(platform);
             }
         }
     }
@@ -1312,7 +1310,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     //The basic block must be ended before the jump
     end_basic_block();
 
-    if(!option_defined("fomit-frame-pointer")){
+    if(!configuration->option_defined("fomit-frame-pointer")){
         ltac::add_instruction(function, ltac::Operator::LEAVE);
     }
 

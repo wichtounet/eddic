@@ -8,15 +8,17 @@
 #ifndef MTAC_TEMPORARY_ALLOCATOR_H
 #define MTAC_TEMPORARY_ALLOCATOR_H
 
+#include "Platform.hpp"
+
 #include "mtac/Program.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-void allocate_temporary(std::shared_ptr<mtac::Program> program);
+void allocate_temporary(std::shared_ptr<mtac::Program> program, Platform platform);
 
-} //end of ast
+} //end of mtac
 
 } //end of eddic
 

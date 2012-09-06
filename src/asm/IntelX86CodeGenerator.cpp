@@ -23,11 +23,12 @@ using namespace eddic;
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
 
 namespace {
+    
+const std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
+const std::string float_registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
 struct X86_32StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
     std::string operator()(ltac::Register& reg) const {
-        static std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
-
         if(static_cast<int>(reg) == 1000){
             return "esp"; 
         } else if(static_cast<int>(reg) == 1001){
@@ -38,9 +39,7 @@ struct X86_32StringConverter : public as::StringConverter, public boost::static_
     }
     
     std::string operator()(ltac::FloatRegister& reg) const {
-        static std::string registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
-
-        return registers[static_cast<int>(reg)];
+        return float_registers[static_cast<int>(reg)];
     }
     
     std::string operator()(ltac::Address& address) const {

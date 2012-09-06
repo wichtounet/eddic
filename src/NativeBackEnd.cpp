@@ -29,58 +29,62 @@
 
 using namespace eddic;
 
-void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
-    std::string output = option_value("output");
+void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platform platform){
+    std::string output = configuration->option_value("output");
 
     //Separate into basic blocks
     mtac::BasicBlockExtractor extractor;
     extractor.extract(mtacProgram);
     
     //If asked by the user, print the Three Address code representation before optimization
-    if(option_defined("mtac-opt")){
+    if(configuration->option_defined("mtac-opt")){
         mtac::Printer printer;
         printer.print(mtacProgram);
     }
     
     //Optimize MTAC
     mtac::Optimizer optimizer;
-    optimizer.optimize(mtacProgram, get_string_pool());
+    optimizer.optimize(mtacProgram, get_string_pool(), platform, configuration);
 
     //Allocate parameters into registers
-    if(option_defined("fparameter-allocation")){
-        mtac::register_param_allocation(mtacProgram);
+    if(configuration->option_defined("fparameter-allocation")){
+        mtac::register_param_allocation(mtacProgram, platform);
     }
 
     //Allocate variables into registers
-    if(option_defined("fvariable-allocation")){
-        mtac::register_variable_allocation(mtacProgram);
+    if(configuration->option_defined("fvariable-allocation")){
+        mtac::register_variable_allocation(mtacProgram, platform);
     }
     
     //If asked by the user, print the Three Address code representation
-    if(option_defined("mtac") || option_defined("mtac-only")){
+    if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
         mtac::Printer printer;
         printer.print(mtacProgram);
     }
 
     //If necessary, continue the compilation process
-    if(!option_defined("mtac-only")){
+    if(!configuration->option_defined("mtac-only")){
+        //Prepare the float pool
         auto float_pool = std::make_shared<FloatPool>();
 
+        //Create a new LTAC program
         auto ltac_program = std::make_shared<ltac::Program>();
-        ltac::Compiler ltacCompiler;
+
+        //Generate LTAC Code
+        ltac::Compiler ltacCompiler(platform, configuration);
         ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
 
-        if(option_defined("fpeephole-optimization")){
-            optimize(ltac_program);
+        if(configuration->option_defined("fpeephole-optimization")){
+            optimize(ltac_program, platform, configuration);
         }
 
         //If asked by the user, print the Three Address code representation
-        if(option_defined("ltac") || option_defined("ltac-only")){
+        if(configuration->option_defined("ltac") || configuration->option_defined("ltac-only")){
             ltac::Printer printer;
             printer.print(ltac_program);
         }
 
-        if(!option_defined("ltac-only")){
+        if(!configuration->option_defined("ltac-only")){
             //Generate assembly from TAC
             AssemblyFileWriter writer("output.asm");
 
@@ -94,11 +98,11 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram){
             writer.write(); 
 
             //If it's necessary, assemble and link the assembly
-            if(!option_defined("assembly")){
-                assemble(platform, output, option_defined("debug"), option_defined("verbose"));
+            if(!configuration->option_defined("assembly")){
+                assemble(platform, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
 
                 //Remove temporary files
-                if(!option_defined("keep")){
+                if(!configuration->option_defined("keep")){
                     remove("output.asm");
                 }
 

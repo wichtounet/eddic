@@ -8,7 +8,7 @@
 #ifndef REGISTER_ALLOCATION_H
 #define REGISTER_ALLOCATION_H
 
-#include <memory>
+#include "Platform.hpp"
 
 #include "mtac/Program.hpp"
 
@@ -16,9 +16,8 @@ namespace eddic {
 
 namespace mtac {
 
-void register_param_allocation(std::shared_ptr<mtac::Program> program);
-
-void register_variable_allocation(std::shared_ptr<mtac::Program> program);
+void register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
+void register_variable_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
 
 } //end of mtac
 

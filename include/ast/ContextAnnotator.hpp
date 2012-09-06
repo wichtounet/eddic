@@ -8,13 +8,18 @@
 #ifndef CONTEXT_ANNOTATOR_H
 #define CONTEXT_ANNOTATOR_H
 
+#include <memory>
+
+#include "Options.hpp"
+#include "Platform.hpp"
+
 #include "ast/source_def.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-void defineContexts(ast::SourceFile& program);
+void defineContexts(ast::SourceFile& program, Platform platform, std::shared_ptr<Configuration> configuration);
 
 } //end of ast
 
