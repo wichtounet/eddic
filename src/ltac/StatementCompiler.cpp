@@ -76,7 +76,7 @@ ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
 }
 
 ltac::Address ltac::StatementCompiler::stack_address(int offset){
-    if(option_defined("fomit-frame-pointer")){
+    if(configuration->option_defined("fomit-frame-pointer")){
         return ltac::Address(ltac::SP, offset + bp_offset);
     } else {
         return ltac::Address(ltac::BP, offset);
@@ -84,7 +84,7 @@ ltac::Address ltac::StatementCompiler::stack_address(int offset){
 }
 
 ltac::Address ltac::StatementCompiler::stack_address(ltac::Register offsetReg, int offset){
-    if(option_defined("fomit-frame-pointer")){
+    if(configuration->option_defined("fomit-frame-pointer")){
         return ltac::Address(ltac::SP, offsetReg, 1, offset + bp_offset);
     } else {
         return ltac::Address(ltac::BP, offsetReg, 1, offset);
@@ -482,7 +482,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     bool register_allocated = false;
     unsigned int position = 0;
         
-    if(param->std_param.length() > 0 || (param->param && option_defined("fparameter-allocation"))){
+    if(param->std_param.length() > 0 || (param->param && configuration->option_defined("fparameter-allocation"))){
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
@@ -611,7 +611,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call->functionDefinition->standard && !option_defined("fparameter-allocation")){
+    if(!call->functionDefinition->standard && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
@@ -1310,7 +1310,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     //The basic block must be ended before the jump
     end_basic_block();
 
-    if(!option_defined("fomit-frame-pointer")){
+    if(!configuration->option_defined("fomit-frame-pointer")){
         ltac::add_instruction(function, ltac::Operator::LEAVE);
     }
 

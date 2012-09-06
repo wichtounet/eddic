@@ -13,6 +13,7 @@
 
 #include "FloatPool.hpp"
 #include "Platform.hpp"
+#include "Options.hpp"
 
 #include "ltac/Program.hpp"
 
@@ -28,19 +29,22 @@ namespace ltac {
  */
 class Compiler {
     public:
+        Compiler(Platform platform, std::shared_ptr<Configuration> configuration);
+
         /*!
          * Compile the MTAC Program into an LTAC Program. 
          * \param source The source MTAC Program. 
          * \param target The target LTAC Program. 
-         * \param platform The target platform. 
          * \param float_pool The float pool to use. 
          */
-        void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool, Platform platform);
+        void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool);
     
     private:
-        void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool, Platform platform);
+        void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool);
 
         std::unordered_set<std::shared_ptr<mtac::BasicBlock>> block_usage;
+        Platform platform;
+        std::shared_ptr<Configuration> configuration;
 };
 
 } //end of ltac

@@ -489,7 +489,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, c
             std::set<ltac::Register> overriden_registers;
             std::set<ltac::FloatRegister> overriden_float_registers;
     
-            if(param->function->standard || option_defined("fparameter-allocation")){
+            if(param->function->standard || configuration->option_defined("fparameter-allocation")){
                 unsigned int maxInt = descriptor->numberOfIntParamRegisters();
                 unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 

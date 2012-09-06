@@ -8,7 +8,10 @@
 #ifndef MTAC_OPTIMIZER_H
 #define MTAC_OPTIMIZER_H
 
+#include <memory>
+
 #include "Platform.hpp"
+#include "Options.hpp"
 
 #include "mtac/Program.hpp"
 
@@ -19,8 +22,8 @@ class StringPool;
 namespace mtac {
 
 struct Optimizer {
-    void optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, Platform platform) const ;
-    void basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool) const ;
+    void optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;
+    void basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration) const ;
 };
 
 } //end of mtac

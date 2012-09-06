@@ -7,9 +7,7 @@
 
 #include <string>
 #include <iostream>
-#include <memory>
 #include <vector>
-#include <unordered_map>
 #include <thread>
 #include <mutex>
 
@@ -25,17 +23,6 @@ using namespace eddic;
 namespace po = boost::program_options;
 
 namespace {
-
-struct ConfigValue {
-    bool defined;
-    boost::any value;
-};
-
-struct Configuration {
-    std::unordered_map<std::string, ConfigValue> values;
-};
-
-std::shared_ptr<Configuration> configuration;
 
 std::pair<std::string, std::string> numeric_parser(const std::string& s){
     if (s.find("-32") == 0) {
@@ -122,7 +109,7 @@ void init_descriptions(){
     add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
 }
 
-inline void trigger_childs(const std::vector<std::string>& childs){
+inline void trigger_childs(std::shared_ptr<Configuration> configuration, const std::vector<std::string>& childs){
     for(auto& child : childs){
         configuration->values[child].defined = true;
         configuration->values[child].value = std::string("true");
@@ -131,7 +118,10 @@ inline void trigger_childs(const std::vector<std::string>& childs){
 
 } //end of anonymous namespace
 
-bool eddic::parseOptions(int argc, const char* argv[]) {
+std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[]) {
+    //Create a new configuration
+    auto configuration = std::make_shared<Configuration>();
+
     try {
         //Only if the description has not been already defined
         std::call_once(description_flag, init_descriptions);
@@ -142,9 +132,6 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         //Create a new set of options
         po::variables_map options;
-
-        //Create a new configuration
-        configuration = std::make_shared<Configuration>();
 
         //Parse the command line options
         po::store(po::command_line_parser(argc, argv).options(all).extra_parser(numeric_parser).positional(p).run(), options);
@@ -168,13 +155,13 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
         if(options.count("O0") + options.count("O1") + options.count("O2") > 1){
             std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
 
-            return false;
+            return nullptr;
         }
 
         if(options.count("64") && options.count("32")){
             std::cout << "Invalid command line options : a compilation cannot be both 32 and 64 bits" << std::endl;
 
-            return false;
+            return nullptr;
         }
 
         //Update optimization level based on special switches
@@ -188,51 +175,45 @@ bool eddic::parseOptions(int argc, const char* argv[]) {
 
         //Triggers dependent options
         for(auto& trigger : triggers){
-            if(option_defined(trigger.first)){
-                trigger_childs(trigger.second);
+            if(configuration->option_defined(trigger.first)){
+                trigger_childs(configuration, trigger.second);
             }
         }
 
-        if(option_int_value("Opt") >= 1){
-            trigger_childs(triggers["__1"]);
+        if(configuration->option_int_value("Opt") >= 1){
+            trigger_childs(configuration, triggers["__1"]);
         } 
         
-        if(option_int_value("Opt") >= 2){
-            trigger_childs(triggers["__2"]);
+        if(configuration->option_int_value("Opt") >= 2){
+            trigger_childs(configuration, triggers["__2"]);
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
-        return false;
+        return nullptr;
     } catch (const po::unknown_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
 
-        return false;
+        return nullptr;
     } catch (const po::multiple_occurrences& e) {
         std::cout << "Only one file can be compiled" << std::endl;
 
-        return false;
+        return nullptr;
     }
 
-    return true;
+    return configuration;
 }
 
-bool eddic::option_defined(const std::string& option_name){
-    ASSERT(configuration, "The configuration have not been initialized");
-
-    return configuration->values[option_name].defined;
+bool Configuration::option_defined(const std::string& option_name){
+    return values[option_name].defined;
 }
 
-std::string eddic::option_value(const std::string& option_name){
-    ASSERT(configuration, "The configuration have not been initialized");
-
-    return boost::any_cast<std::string>(configuration->values[option_name].value);
+std::string Configuration::option_value(const std::string& option_name){
+    return boost::any_cast<std::string>(values[option_name].value);
 }
 
-int eddic::option_int_value(const std::string& option_name){
-    ASSERT(configuration, "The configuration have not been initialized");
-
-    return boost::any_cast<int>(configuration->values[option_name].value);
+int Configuration::option_int_value(const std::string& option_name){
+    return boost::any_cast<int>(values[option_name].value);
 }
 
 void eddic::print_help(){

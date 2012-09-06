@@ -857,8 +857,8 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
     return optimized;
 }
 
-bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
-    if(option_defined("dev")){
+bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function, std::shared_ptr<Configuration> configuration){
+    if(configuration->option_defined("dev")){
         if(b){
             std::cout << "optimization " << name << " returned true" << std::endl;
 
@@ -875,11 +875,11 @@ bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> func
 
 } //end of anonymous namespace
 
-void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program, Platform platform){
+void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program, Platform platform, std::shared_ptr<Configuration> configuration){
     PerfsTimer timer("Peephole optimizations");
 
     for(auto& function : program->functions){
-        if(option_defined("dev")){
+        if(configuration->option_defined("dev")){
             std::cout << "Start optimizations on " << function->getName() << std::endl;
 
             //Print the function
@@ -891,11 +891,11 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program, Platform plat
         do {
             optimized = false;
             
-            optimized |= debug("Basic optimizations", basic_optimizations(function, platform), function);
-            optimized |= debug("Constant propagation", constant_propagation(function), function);
-            optimized |= debug("Copy propagation", copy_propagation(function, platform), function);
-            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function, platform), function);
-            optimized |= debug("Conditional move", conditional_move(function, platform), function);
+            optimized |= debug("Basic optimizations", basic_optimizations(function, platform), function, configuration);
+            optimized |= debug("Constant propagation", constant_propagation(function), function, configuration);
+            optimized |= debug("Copy propagation", copy_propagation(function, platform), function, configuration);
+            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function, platform), function, configuration);
+            optimized |= debug("Conditional move", conditional_move(function, platform), function, configuration);
         } while(optimized);
     }
 }

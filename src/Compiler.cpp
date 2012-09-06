@@ -26,8 +26,8 @@
 
 using namespace eddic;
 
-int Compiler::compile(const std::string& file) {
-    if(!option_defined("quiet")){
+int Compiler::compile(const std::string& file, std::shared_ptr<Configuration> configuration) {
+    if(!configuration->option_defined("quiet")){
         std::cout << "Compile " << file << std::endl;
     }
 
@@ -38,26 +38,26 @@ int Compiler::compile(const std::string& file) {
         platform = Platform::INTEL_X86_64;
     }
 
-    if(option_defined("32")){
+    if(configuration->option_defined("32")){
         platform = Platform::INTEL_X86;
     }
     
-    if(option_defined("64")){
+    if(configuration->option_defined("64")){
         platform = Platform::INTEL_X86_64;
     }
 
     StopWatch timer;
     
-    int code = compile_only(file, platform);
+    int code = compile_only(file, platform, configuration);
 
-    if(!option_defined("quiet")){
+    if(!configuration->option_defined("quiet")){
         std::cout << "Compilation took " << timer.elapsed() << "ms" << std::endl;
     }
 
     return code;
 }
 
-int Compiler::compile_only(const std::string& file, Platform platform) {
+int Compiler::compile_only(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration) {
     //Make sure that the file exists 
     if(!file_exists(file)){
         std::cout << "The file \"" + file + "\" does not exists" << std::endl;
@@ -66,6 +66,7 @@ int Compiler::compile_only(const std::string& file, Platform platform) {
     }
 
     auto front_end = get_front_end(file);
+    front_end->set_configuration(configuration);
 
     if(!front_end){
         std::cout << "The file \"" + file + "\" cannot be compiled using eddic" << std::endl;
@@ -83,11 +84,12 @@ int Compiler::compile_only(const std::string& file, Platform platform) {
             auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 
             back_end->set_string_pool(front_end->get_string_pool());
+            back_end->set_configuration(configuration);
 
             back_end->generate(mtacProgram, platform);
         }
     } catch (const SemanticalException& e) {
-        if(!option_defined("quiet")){
+        if(!configuration->option_defined("quiet")){
             if(e.position()){
                 auto& position = *e.position();
 

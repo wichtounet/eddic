@@ -13,6 +13,7 @@
 #include "PerfsTimer.hpp"
 #include "iterators.hpp"
 #include "likely.hpp"
+#include "logging.hpp"
 
 #include "mtac/Utils.hpp"
 #include "mtac/Pass.hpp"
@@ -113,14 +114,14 @@ bool data_flow_optimization(std::shared_ptr<mtac::Function> function, Args... ar
 }
 
 bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
-    if(option_defined("dev")){
+    if(log::enabled<Dev>()){
         if(b){
-            std::cout << "optimization " << name << " returned true" << std::endl;
+            log::emit<Dev>("Optimizer") << "Optimization" << name << " returned true" << log::endl;
 
             //Print the function
             print(function);
         } else {
-            std::cout << "optimization " << name << " returned false" << std::endl;
+            log::emit<Dev>("Optimizer") << "Optimization" << name << " returned false" << log::endl;
         }
     }
 
@@ -160,8 +161,8 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
 }
 
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
-    if(option_defined("dev")){
-        std::cout << "Start optimizations on " << function->getName() << std::endl;
+    if(log::enabled<Dev>()){
+        log::emit<Dev>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
 
         print(function);
     }
@@ -203,49 +204,21 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
 }
 
 void basic_optimize_function(std::shared_ptr<mtac::Function> function){
-    if(option_defined("dev")){
-        std::cout << "Start basic optimizations on " << function->getName() << std::endl;
+    if(log::enabled<Dev>()){
+        log::emit<Dev>("Optimizer") << "Start basic optimizations on " << function->getName() << log::endl;
 
         print(function);
     }
 
     debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
-    
-    /*//Liveness debugging
-    mtac::LiveVariableAnalysisProblem problem;
-    auto results = mtac::data_flow(function, problem);
-
-    for(auto& block : function->getBasicBlocks()){
-        auto it = block->statements.begin();
-        auto end = block->statements.end();
-
-        while(it != end){
-            auto statement = *it;
-
-            mtac::Printer printer;
-            printer.printStatement(statement);
-            std::cout << "OUT{";
-            for(auto& var : results->OUT_S[statement].values()){
-                std::cout << var->name() << ", ";
-            }
-            std::cout << "}" << std::endl;
-            std::cout << "IN{";
-            for(auto& var : results->IN_S[statement].values()){
-                std::cout << var->name() << ", ";
-            }
-            std::cout << "}" << std::endl;
-
-            ++it;
-        }
-    }*/
 }
 
-void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform){
+void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration){
     PerfsTimer timer("Whole optimizations");
 
     auto& functions = program->functions;
 
-    if(option_defined("dev")){
+    if(configuration->option_defined("dev")){
         for(auto& function : functions){
             optimize_function(function, string_pool, platform);
         }
@@ -273,35 +246,35 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
 } //end of anonymous namespace
 
-void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform) const {
+void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     //Allocate storage for the temporaries that need to be stored
     allocate_temporary(program, platform);
 
-    if(option_defined("fglobal-optimization")){
+    if(configuration->option_defined("fglobal-optimization")){
         bool optimized = false;
         do{
             mtac::remove_unused_functions(program);
 
-            optimize_all_functions(program, string_pool, platform);
+            optimize_all_functions(program, string_pool, platform, configuration);
 
             optimized = mtac::remove_empty_functions(program);
-            optimized = mtac::inline_functions(program);
+            optimized = mtac::inline_functions(program, configuration);
         } while(optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        basic_optimize(program, string_pool);
+        basic_optimize(program, string_pool, configuration);
     }
     
     //Allocate storage for the temporaries that need to be stored
     allocate_temporary(program, platform);
 }
 
-void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/) const {
+void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/, std::shared_ptr<Configuration> configuration) const {
     PerfsTimer timer("Whole basic optimizations");
 
     auto& functions = program->functions;
 
-    if(option_defined("dev")){
+    if(configuration->option_defined("dev")){
         for(auto& function : functions){
             basic_optimize_function(function); 
         }

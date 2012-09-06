@@ -15,6 +15,7 @@
 #include "variant.hpp"
 #include "Platform.hpp"
 #include "FloatPool.hpp"
+#include "Options.hpp"
 
 #include "mtac/Program.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
@@ -33,6 +34,8 @@ class RegisterManager : public AbstractRegisterManager {
     public:
         //Keep track of the written variables to spills them
         std::unordered_set<std::shared_ptr<Variable>> written;
+
+        std::shared_ptr<Configuration> configuration;
 
         //Liveness information
         std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;

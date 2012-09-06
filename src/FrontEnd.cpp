@@ -16,3 +16,11 @@ void FrontEnd::set_string_pool(std::shared_ptr<StringPool> pool){
 std::shared_ptr<StringPool> FrontEnd::get_string_pool(){
     return pool;
 }
+        
+void FrontEnd::set_configuration(std::shared_ptr<Configuration> configuration){
+    this->configuration = configuration;
+}
+
+std::shared_ptr<Configuration> FrontEnd::get_configuration(){
+    return configuration;
+}

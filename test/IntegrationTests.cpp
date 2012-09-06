@@ -71,7 +71,7 @@ struct DeleteOutFixture {
     }
 };
 
-inline void parse_options(const std::string& file, const std::string& param1, const std::string& param2){
+inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& file, const std::string& param1, const std::string& param2){
     const char* argv[5];
     argv[0] = "./bin/test";
     argv[1] = param1.c_str();
@@ -79,24 +79,28 @@ inline void parse_options(const std::string& file, const std::string& param1, co
     argv[3] = param2.c_str();
     argv[4] = file.c_str();
 
-    BOOST_REQUIRE (eddic::parseOptions(5, argv));
+    auto configuration = eddic::parseOptions(5, argv);
+
+    BOOST_REQUIRE (configuration);
+
+    return configuration;
 }
 
 void assert_compiles(const std::string& file, const std::string& param1, const std::string& param2){
     BOOST_TEST_MESSAGE( "Compile with options " + param1 + " "  + param2 ); 
-    parse_options(file, param1, param2);
+    auto configuration = parse_options(file, param1, param2);
 
     eddic::Compiler compiler;
-    int code = compiler.compile(file);
+    int code = compiler.compile(file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 0);
 }
 
 void assert_compilation_error(const std::string& file, const std::string& param1, const std::string& param2){
-    parse_options("test/cases/" + file, param1, param2);
+    auto configuration = parse_options("test/cases/" + file, param1, param2);
 
     eddic::Compiler compiler;
-    int code = compiler.compile("test/cases/" + file);
+    int code = compiler.compile("test/cases/" + file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 1);
 }

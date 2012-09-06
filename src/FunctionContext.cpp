@@ -16,10 +16,11 @@
 
 using namespace eddic;
 
-FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform) : Context(parent, global_context), platform(platform) {
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration) : 
+        Context(parent, global_context), platform(platform) {
     currentPosition = -INT->size(platform); 
     
-    if(option_defined("fomit-frame-pointer")){
+    if(configuration->option_defined("fomit-frame-pointer")){
         currentParameter = INT->size(platform);
     } else {
         currentParameter = 2 * INT->size(platform);

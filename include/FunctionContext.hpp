@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "Options.hpp"
 #include "Context.hpp"
 #include "Platform.hpp"
 
@@ -37,7 +38,7 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         void reallocate_storage();
 
     public:
-        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform);
+        FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration);
         
         int size() const;
 

@@ -23,7 +23,9 @@
 
 using namespace eddic;
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool, Platform platform){
+ltac::Compiler::Compiler(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {}
+
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool){
     target->context = source->context;
 
     for(auto& src_function : source->functions){
@@ -32,11 +34,11 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
 
         target->functions.push_back(target_function);
 
-        compile(src_function, target_function, float_pool, platform);
+        compile(src_function, target_function, float_pool);
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool, Platform platform){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
@@ -65,13 +67,15 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, target_function, float_pool);
     compiler->manager.compiler = compiler;
+    compiler->manager.configuration = configuration;
     compiler->descriptor = getPlatformDescriptor(platform);
     compiler->platform = platform;
+    compiler->configuration = configuration;
 
     auto size = src_function->context->size();
 
     //Enter stack frame
-    if(!option_defined("fomit-frame-pointer")){
+    if(!configuration->option_defined("fomit-frame-pointer")){
         ltac::add_instruction(target_function, ltac::Operator::ENTER);
     }
 
@@ -132,7 +136,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     compiler->bp_offset -= size;
         
     //Leave stack frame
-    if(!option_defined("fomit-frame-pointer")){
+    if(!configuration->option_defined("fomit-frame-pointer")){
         ltac::add_instruction(target_function, ltac::Operator::LEAVE);
     }
 

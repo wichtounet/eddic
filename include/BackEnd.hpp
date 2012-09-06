@@ -12,6 +12,7 @@
 #include <string>
 
 #include "Platform.hpp"
+#include "Options.hpp"
 
 #include "mtac/Program.hpp"
 
@@ -44,8 +45,12 @@ class BackEnd {
          */
         std::shared_ptr<StringPool> get_string_pool();
 
+        void set_configuration(std::shared_ptr<Configuration> configuration);
+        std::shared_ptr<Configuration> get_configuration();
+    
     protected:
         std::shared_ptr<StringPool> pool; /**< The string pool that is used during this compilation */
+        std::shared_ptr<Configuration> configuration; /**< The configuration of the compilation */
 };
 
 }

@@ -18,8 +18,6 @@
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
 
-#include "PerfsTimer.hpp"
-
 namespace eddic {
 
 namespace mtac {

@@ -10,13 +10,15 @@
 
 #include <memory>
 
+#include "Options.hpp"
+
 #include "mtac/Program.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-bool inline_functions(std::shared_ptr<mtac::Program> program);
+bool inline_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<Configuration> configuration);
 
 } //end of mtac
 
