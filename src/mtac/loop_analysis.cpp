@@ -14,26 +14,10 @@
 using namespace eddic;
 
 typedef mtac::ControlFlowGraph::InternalControlFlowGraph G;
+typedef mtac::ControlFlowGraph::EdgeInfo Edge;
 typedef mtac::ControlFlowGraph::BasicBlockInfo Vertex;
 typedef boost::property_map<mtac::ControlFlowGraph::InternalControlFlowGraph, boost::vertex_index_t>::type IndexMap;
 typedef boost::iterator_property_map<std::vector<Vertex>::iterator, IndexMap> PredMap;
-
-struct dfs_visitor : public boost::default_dfs_visitor {
-    G& graph;
-
-    dfs_visitor(G& graph) : graph(graph) {}
-
-    template<typename U>
-    void discover_vertex(U u, const G& g){
-        auto new_vertex = add_vertex(graph);
-        graph[new_vertex].block = g[u].block;
-    }
-    
-    template<typename E>
-    void tree_edge(E e, const G& g){
-        add_edge(boost::source(e, g), boost::target(e, g), graph); 
-    }
-};
 
 void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
@@ -44,6 +28,8 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
         PredMap domTreePredMap = boost::make_iterator_property_map(domTreePredVector.begin(), boost::get(boost::vertex_index, g));
 
         boost::lengauer_tarjan_dominator_tree(g, boost::vertex(0, g), domTreePredMap);
+
+        std::vector<Edge> back_edges;
         
         ControlFlowGraph::EdgeIterator it, end;
         for(boost::tie(it,end) = boost::edges(g); it != end; ++it){
@@ -52,23 +38,31 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
 
             //A node dominates itself
             if(source == target){
-                std::cout << "Found back edge" << std::endl;
+                back_edges.push_back(*it);
             } else {
                 if(boost::get(domTreePredMap, source) != boost::graph_traits<G>::null_vertex()){
                     auto dominator = boost::get(domTreePredMap,source);
 
                     if(dominator == target){
-                        std::cout << "Found back edge" << std::endl;
+                        back_edges.push_back(*it);
                     }
                 }
             }
         }
 
-        /*G depth_first_tree;
-        dfs_visitor visitor(depth_first_tree);
+        std::vector<std::set<Vertex>> natural_loops;
 
-        boost::depth_first_search(g, boost::visitor(visitor));
+        //Get all edges n -> d
+        for(auto& back_edge : back_edges){
+            std::set<Vertex> natural_loop;
+            natural_loop.insert(boost::target(back_edge, g));
 
-        std::cout << "Dominators found" << std::endl;*/
+            //Add all predecessors of d in the set
+            //
+            
+            natural_loops.push_back(natural_loop);
+        }
+
+        std::cout << "Found " << natural_loops.size() << " natural loops" << std::endl;
     }
 }
