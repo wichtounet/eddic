@@ -18,8 +18,6 @@
 
 namespace eddic {
 
-class Variable;
-
 namespace mtac {
 
 class BasicBlock;
@@ -29,6 +27,7 @@ struct If {
     boost::optional<BinaryOperator> op;
     boost::optional<Argument> arg2;
     std::string label;
+    unsigned int depth;
     
     //Filled only in later phase replacing the label
     std::shared_ptr<BasicBlock> block;

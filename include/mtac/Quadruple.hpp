@@ -34,6 +34,7 @@ struct Quadruple {
     boost::optional<mtac::Argument> arg2;
     mtac::Operator op;
     mtac::Size size = mtac::Size::DEFAULT;
+    unsigned int depth;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;

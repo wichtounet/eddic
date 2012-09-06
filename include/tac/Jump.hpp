@@ -18,6 +18,7 @@ namespace tac {
 template<typename JumpType, typename BasicBlock>
 struct Jump {
     std::string label;
+    unsigned int depth;
 
     JumpType type;
     
