@@ -40,13 +40,19 @@ namespace {
 
 struct VariableUsageCollector : public boost::static_visitor<> {
     mtac::VariableUsage& usage;
+    int depth_factor;
+    int current_depth;
 
-    VariableUsageCollector(mtac::VariableUsage& usage) : usage(usage) {}
+    VariableUsageCollector(mtac::VariableUsage& usage, int depth_factor) : usage(usage), depth_factor(depth_factor) {}
+
+    void inc_usage(std::shared_ptr<Variable> variable){
+        usage[variable] += pow(depth_factor, current_depth);
+    }
 
     template<typename T>
     void collect(T& arg){
         if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            ++usage[*variablePtr];
+            inc_usage(*variablePtr);
         }
     }
 
@@ -58,21 +64,29 @@ struct VariableUsageCollector : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        ++usage[quadruple->result];
+        current_depth = quadruple->depth;
+
+        inc_usage(quadruple->result);
         collect_optional(quadruple->arg1);
         collect_optional(quadruple->arg2);
     }
     
     void operator()(std::shared_ptr<mtac::Param> param){
+        current_depth = param->depth;
+
         collect(param->arg);
     }
     
     void operator()(std::shared_ptr<mtac::If> if_){
+        current_depth = if_->depth;
+
         collect(if_->arg1);
         collect_optional(if_->arg2);
     }
     
     void operator()(std::shared_ptr<mtac::IfFalse> if_false){
+        current_depth = if_false->depth;
+
         collect(if_false->arg1);
         collect_optional(if_false->arg2);
     }
@@ -109,9 +123,13 @@ struct BasicBlockUsageCollector : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 mtac::VariableUsage mtac::compute_variable_usage(std::shared_ptr<mtac::Function> function){
+    return compute_variable_usage_with_depth(function, 1);
+}
+
+mtac::VariableUsage mtac::compute_variable_usage_with_depth(std::shared_ptr<mtac::Function> function, int factor){
     mtac::VariableUsage usage;
 
-    VariableUsageCollector collector(usage);
+    VariableUsageCollector collector(usage, factor);
 
     visit_all_statements(collector, function);
 

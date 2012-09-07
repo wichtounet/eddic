@@ -73,6 +73,7 @@ void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_
 typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
 
 VariableUsage compute_variable_usage(std::shared_ptr<mtac::Function> function);
+VariableUsage compute_variable_usage_with_depth(std::shared_ptr<mtac::Function> function, int factor);
 
 bool is_recursive(std::shared_ptr<mtac::Function> function);
 
