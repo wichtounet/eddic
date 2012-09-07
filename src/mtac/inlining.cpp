@@ -226,13 +226,23 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
 
     std::unordered_map<std::shared_ptr<Variable>, bool> string_states;
 
+    unsigned int parameters = 0;
+
+    for(auto param : source_definition->parameters){
+        if(param.paramType == STRING){
+            parameters += 2;
+        } else {
+            ++parameters;
+        }
+    }
+
     if(source_definition->parameters.size() > 0){
         //Param are in the previous block
         --bit;
 
         auto pit = (*bit)->statements.end() - 1;
 
-        for(int i = source_definition->parameters.size() - 1; i >= 0;){
+        for(int i = parameters - 1; i >= 0;){
             auto statement = *pit;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
@@ -253,11 +263,10 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
                         variable_clones[src_var] = dest_var;
 
                         //Copy the label
-                        auto quadruple = std::make_shared<mtac::Quadruple>();
-                        quadruple->op = mtac::Operator::DOT_ASSIGN;
-                        quadruple->result = dest_var;
-                        quadruple->arg1 = static_cast<int>(INT->size(dest_definition->context->global()->target_platform()));
-                        quadruple->arg2 = (*ptr)->arg;
+                            auto quadruple = std::make_shared<mtac::Quadruple>();
+                            quadruple->op = mtac::Operator::ASSIGN;
+                            quadruple->result = dest_var;
+                            quadruple->arg1 = (*ptr)->arg;
 
                         *pit = quadruple;
 
@@ -269,10 +278,11 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
                             auto dest_var = variable_clones[src_var];
 
                             //Copy the size
-                            auto quadruple = std::make_shared<mtac::Quadruple>();
-                            quadruple->op = mtac::Operator::ASSIGN;
-                            quadruple->result = dest_var;
-                            quadruple->arg1 = (*ptr)->arg;
+                        auto quadruple = std::make_shared<mtac::Quadruple>();
+                        quadruple->op = mtac::Operator::DOT_ASSIGN;
+                        quadruple->result = dest_var;
+                        quadruple->arg1 = static_cast<int>(INT->size(dest_definition->context->global()->target_platform()));
+                        quadruple->arg2 = (*ptr)->arg;
 
                             *pit = quadruple;
 
