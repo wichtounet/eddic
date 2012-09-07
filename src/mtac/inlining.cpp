@@ -117,6 +117,10 @@ struct BBReplace : public boost::static_visitor<> {
 };
 
 struct StatementClone : public boost::static_visitor<mtac::Statement> {
+    std::shared_ptr<GlobalContext> global_context;
+
+    StatementClone(std::shared_ptr<GlobalContext> global_context) : global_context(global_context) {}
+
     mtac::Statement operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         auto copy = std::make_shared<mtac::Quadruple>();
 
@@ -165,6 +169,8 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
     }
     
     mtac::Statement operator()(std::shared_ptr<mtac::Call> call){
+        global_context->addReference(call->functionDefinition->mangledName);
+
         return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
     }
 
@@ -184,9 +190,11 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
 };
 
 template<typename Iterator>
-BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit){
+BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit, std::shared_ptr<GlobalContext> context){
+    log::emit<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
+
     BBClones bb_clones;
-    StatementClone cloner;
+    StatementClone cloner(context);
 
     for(auto block : source_function->getBasicBlocks()){
         //Copy all basic blocks except ENTRY and EXIT
@@ -395,10 +403,10 @@ std::shared_ptr<mtac::Function> get_target(std::shared_ptr<mtac::Call> call, std
     return nullptr;
 }
 
-bool call_site_inlining(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Program> program){
+bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::Program> program){
     bool optimized = false;
         
-    for(auto bit = iterate(source_function->getBasicBlocks()); bit.has_next(); ++bit){
+    for(auto bit = iterate(dest_function->getBasicBlocks()); bit.has_next(); ++bit){
         auto basic_block = *bit;
 
         auto it = iterate(basic_block->statements);
@@ -407,31 +415,31 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> source_function, std::sh
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
                 auto call = *ptr;
 
-                auto source_definition = source_function->definition;
-                auto target_function = get_target(call, program);
+                auto source_function = get_target(call, program);
 
                 //If the function is not present in the program, it's a standard function, not inlinable
-                if(!target_function){
+                if(!source_function){
                     ++it;
                     continue;
                 }
 
-                auto target_definition = target_function->definition;
+                auto source_definition = source_function->definition;
+                auto dest_definition = dest_function->definition;
 
-                if(will_inline(source_function, target_function, call)){
-                    log::emit<Trace>("Inlining") << "Inline " << target_function->getName() << " into " << source_function->getName() << log::endl;
+                if(will_inline(dest_function, source_function, call)){
+                    log::emit<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
                     //Copy the parameters
-                    auto variable_clones = copy_parameters(target_function, source_function, bit);
+                    auto variable_clones = copy_parameters(source_function, dest_function, bit);
 
                     //Allocate storage for the local variables of the inlined function
-                    for(auto variable_pair : target_definition->context->stored_variables()){
+                    for(auto variable_pair : source_definition->context->stored_variables()){
                         auto variable = variable_pair.second;
-                        variable_clones[variable] = source_definition->context->newVariable(variable);
+                        variable_clones[variable] = dest_definition->context->newVariable(variable);
                     }
 
-                    //Clone all the source basic blocks in the source function
-                    auto bb_clones = clone(target_function, source_function, bit);
+                    //Clone all the source basic blocks in the dest function
+                    auto bb_clones = clone(source_function, dest_function, bit, program->context);
 
                     //Fix all the instructions (clones and return)
                     adapt_instructions(variable_clones, bb_clones, call, bit);
@@ -440,7 +448,7 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> source_function, std::sh
                     it.erase();
 
                     //The target function is called one less time
-                    program->context->removeReference(target_function->getName());
+                    program->context->removeReference(source_function->getName());
                     optimized = true;
 
                     continue;
