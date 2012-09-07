@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "logging.hpp"
 #include "Options.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
@@ -359,13 +360,18 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     return true;
 }
 
-bool will_inline(std::shared_ptr<mtac::Function> function){
-    if(can_be_inlined(function)){
+bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> /*call*/){
+    //Do not inline recursive calls
+    if(source_function == target_function){
+        return false;
+    }
+
+    if(can_be_inlined(target_function)){
         //function called once
-        if(function->context->global()->referenceCount(function->getName()) == 1){
+        if(target_function->context->global()->referenceCount(target_function->getName()) == 1){
             return true;
         } else {
-            auto size = function->size();
+            auto size = target_function->size();
 
             //Inline little functions
             if(size < 10){
@@ -377,6 +383,77 @@ bool will_inline(std::shared_ptr<mtac::Function> function){
     return false;
 }
 
+std::shared_ptr<mtac::Function> get_target(std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::Program> program){
+    auto target_definition = call->functionDefinition;
+
+    for(auto& function : program->functions){
+        if(function->definition == target_definition){
+            return function;
+        }
+    }
+
+    return nullptr;
+}
+
+bool call_site_inlining(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Program> program){
+    bool optimized = false;
+        
+    for(auto bit = iterate(source_function->getBasicBlocks()); bit.has_next(); ++bit){
+        auto basic_block = *bit;
+
+        auto it = iterate(basic_block->statements);
+
+        while(it.has_next()){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
+                auto call = *ptr;
+
+                auto source_definition = source_function->definition;
+                auto target_function = get_target(call, program);
+
+                //If the function is not present in the program, it's a standard function, not inlinable
+                if(!target_function){
+                    ++it;
+                    continue;
+                }
+
+                auto target_definition = target_function->definition;
+
+                if(will_inline(source_function, target_function, call)){
+                    log::emit<Trace>("Inlining") << "Inline " << target_function->getName() << " into " << source_function->getName() << log::endl;
+
+                    //Copy the parameters
+                    auto variable_clones = copy_parameters(target_function, source_function, bit);
+
+                    //Allocate storage for the local variables of the inlined function
+                    for(auto variable_pair : target_definition->context->stored_variables()){
+                        auto variable = variable_pair.second;
+                        variable_clones[variable] = source_definition->context->newVariable(variable);
+                    }
+
+                    //Clone all the source basic blocks in the source function
+                    auto bb_clones = clone(target_function, source_function, bit);
+
+                    //Fix all the instructions (clones and return)
+                    adapt_instructions(variable_clones, bb_clones, call, bit);
+
+                    //Erase the original call
+                    it.erase();
+
+                    //The target function is called one less time
+                    program->context->removeReference(target_function->getName());
+                    optimized = true;
+
+                    continue;
+                }
+            }
+
+            ++it;
+        }
+    }
+
+    return optimized;
+}
+
 } //end of anonymous namespace
 
 bool mtac::inline_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<Configuration> configuration){
@@ -386,63 +463,15 @@ bool mtac::inline_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
     if(configuration->option_defined("finline-functions")){
         bool optimized = false;
+        auto global_context = program->context;
 
-        for(auto source_function : program->functions){
-            if(!will_inline(source_function)){
-                continue;
+        for(auto function : program->functions){
+            //If the function is never called, no need to optimize it
+            if(global_context->referenceCount(function->getName()) <= 0){
+                continue; 
             }
 
-            auto source_definition = source_function->definition;
-
-            for(auto dest_function : program->functions){
-                if(dest_function == source_function){
-                    continue;
-                }
-
-                //If the function has already been inlined
-                if(program->context->referenceCount(dest_function->getName()) <= 0){
-                    continue;
-                }
-
-                for(auto bit = iterate(dest_function->getBasicBlocks()); bit.has_next(); ++bit){
-                    auto basic_block = *bit;
-
-                    auto it = iterate(basic_block->statements);
-
-                    while(it.has_next()){
-                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
-                            auto call = *ptr;
-
-                            if(call->functionDefinition == source_definition){
-                                //Copy the parameters
-                                auto variable_clones = copy_parameters(source_function, dest_function, bit);
-
-                                //Allocate storage for the local variables of the inlined function
-                                for(auto variable_pair : source_definition->context->stored_variables()){
-                                    auto variable = variable_pair.second;
-                                    variable_clones[variable] = dest_function->definition->context->newVariable(variable);
-                                }
-
-                                //Clone all the source basic blocks in the dest function
-                                auto bb_clones = clone(source_function, dest_function, bit);
-
-                                //Fix all the instructions (clones and return)
-                                adapt_instructions(variable_clones, bb_clones, call, bit);
-
-                                //Erase the original call
-                                it.erase();
-
-                                program->context->removeReference(source_function->getName());
-                                optimized = true;
-
-                                continue;
-                            }
-                        }
-
-                        ++it;
-                    }
-                }
-            }
+            optimized |= call_site_inlining(function, program);
         }
 
         return optimized;
