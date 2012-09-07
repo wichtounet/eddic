@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "iterators.hpp"
+#include "logging.hpp"
 #include "GlobalContext.hpp"
 
 #include "mtac/FunctionOptimizations.hpp"
@@ -24,9 +25,11 @@ bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
         auto function = *it;
 
         if(program->context->referenceCount(function->getName()) == 0){
+            log::emit<Debug>("Optimizer") << "Remove unused function " << function->getName() << log::endl;
             it.erase();
             continue;
         } else if(program->context->referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
+            log::emit<Debug>("Optimizer") << "Remove unused recursive function " << function->getName() << log::endl;
             it.erase();
             continue;
         } 
