@@ -368,24 +368,33 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     return true;
 }
 
-bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> /*call*/){
+bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> call){
     //Do not inline recursive calls
     if(source_function == target_function){
         return false;
     }
 
     if(can_be_inlined(target_function)){
+        auto source_size = source_function->size();
+        auto target_size = target_function->size();
+
+        //For inner loop, increase the chances of inlining
+        if(call->depth > 1){
+            return source_size < 500 && target_size < 100;
+        }
+        
+        //For single loop, increase a bit the changes of inlining
+        if(call->depth > 0){
+            return source_size < 300 && target_size < 75;
+        }
+
         //function called once
         if(target_function->context->global()->referenceCount(target_function->getName()) == 1){
-            return true;
-        } else {
-            auto size = target_function->size();
+            return source_size < 300 && target_size < 100;
+        } 
 
-            //Inline little functions
-            if(size < 10){
-                return true;
-            }
-        }
+        //Inline little functions
+        return target_size < 15 && source_size < 300;
     }
 
     return false;
