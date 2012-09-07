@@ -13,7 +13,7 @@
 #include "VisitorUtils.hpp"
 #include "logging.hpp"
 
-#include "mtac/LoopAnalysis.hpp"
+#include "mtac/loop_analysis.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 
