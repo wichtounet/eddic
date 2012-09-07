@@ -88,23 +88,29 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
             natural_loop.insert(d);
             natural_loop.insert(n);
 
-            std::stack<Vertex> vertices;
-            vertices.push(n);
-            
-            while(!vertices.empty()){
-                auto vertex = vertices.top();
-                vertices.pop();
+            std::cout << "n = B" << g[n].block->index << std::endl;
+            std::cout << "d = B" << g[d].block->index << std::endl;
 
-                ControlFlowGraph::InEdgeIterator iit, iend;
-                for(boost::tie(iit, iend) = boost::in_edges(vertex, g); iit != iend; ++iit){
-                    auto edge = *iit;
+            if(n != d){
+                std::stack<Vertex> vertices;
+                vertices.push(n);
 
-                    auto target = boost::source(edge, g);
-                    auto source = boost::target(edge, g);
+                while(!vertices.empty()){
+                    auto vertex = vertices.top();
+                    vertices.pop();
 
-                    if(target != source && target != d && !natural_loop.count(target)){
-                        natural_loop.insert(target);
-                        vertices.push(target);
+                    ControlFlowGraph::InEdgeIterator iit, iend;
+                    for(boost::tie(iit, iend) = boost::in_edges(vertex, g); iit != iend; ++iit){
+                        auto edge = *iit;
+
+                        auto target = boost::source(edge, g);
+                        auto source = boost::target(edge, g);
+
+                        if(target != source && target != d && !natural_loop.count(target)){
+                            std::cout << "Add B" << g[target].block->index << std::endl;
+                            natural_loop.insert(target);
+                            vertices.push(target);
+                        }
                     }
                 }
             }
