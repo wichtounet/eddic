@@ -224,6 +224,8 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
     auto source_definition = source_function->definition;
     auto dest_definition = dest_function->definition;
 
+    std::unordered_map<std::shared_ptr<Variable>, bool> string_states;
+
     if(source_definition->parameters.size() > 0){
         //Param are in the previous block
         --bit;
@@ -244,6 +246,41 @@ VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, 
                     auto quadruple = std::make_shared<mtac::Quadruple>();
                     quadruple->op = mtac::Operator::NOP;
                     *pit = quadruple;
+                } else if(src_var->type() == STRING){
+                    if(!string_states.count(src_var)){
+                        auto dest_var = dest_definition->context->newVariable(src_var);
+
+                        variable_clones[src_var] = dest_var;
+
+                        //Copy the label
+                        auto quadruple = std::make_shared<mtac::Quadruple>();
+                        quadruple->op = mtac::Operator::DOT_ASSIGN;
+                        quadruple->result = dest_var;
+                        quadruple->arg1 = static_cast<int>(INT->size(dest_definition->context->global()->target_platform()));
+                        quadruple->arg2 = (*ptr)->arg;
+
+                        *pit = quadruple;
+
+                        string_states[src_var] = true;
+                    } else {
+                        auto state = string_states[src_var];
+
+                        if(state){
+                            auto dest_var = variable_clones[src_var];
+
+                            //Copy the size
+                            auto quadruple = std::make_shared<mtac::Quadruple>();
+                            quadruple->op = mtac::Operator::ASSIGN;
+                            quadruple->result = dest_var;
+                            quadruple->arg1 = (*ptr)->arg;
+
+                            *pit = quadruple;
+
+                            string_states[src_var] = false;
+                        } else {
+                            std::cout << "why ?" << std::endl;
+                        }
+                    }
                 } else {
                     auto quadruple = std::make_shared<mtac::Quadruple>();
                     std::shared_ptr<Variable> dest_var;
@@ -397,7 +434,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& param : function->definition->parameters){
-        if(param.paramType != INT && param.paramType != FLOAT && param.paramType != BOOL && param.paramType != CHAR && !param.paramType->is_pointer() && !param.paramType->is_array()){
+        if(!param.paramType->is_standard_type() && !param.paramType->is_pointer() && !param.paramType->is_array()){
             return false;
         }
     }
