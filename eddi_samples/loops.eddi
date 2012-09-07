@@ -25,4 +25,10 @@ void main(){
             }
         }
     }
+
+    test();
+}
+
+void test(){
+    print("Test");
 }
