@@ -5,7 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <vector>
+#include <stack>
+
 #include <boost/graph/dominator_tree.hpp>
+
+#include "VisitorUtils.hpp"
 
 #include "mtac/LoopAnalysis.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -18,6 +23,27 @@ typedef mtac::ControlFlowGraph::EdgeInfo Edge;
 typedef mtac::ControlFlowGraph::BasicBlockInfo Vertex;
 typedef boost::property_map<mtac::ControlFlowGraph::InternalControlFlowGraph, boost::vertex_index_t>::type IndexMap;
 typedef boost::iterator_property_map<std::vector<Vertex>::iterator, IndexMap> PredMap;
+
+struct DepthIncrementer : public boost::static_visitor<void> {
+    void operator()(std::string){
+        //Nothing
+    }
+    
+    void operator()(std::shared_ptr<mtac::NoOp>){
+        //Nothing
+    }
+    
+    template<typename T>
+    void operator()(T t){
+        ++t->depth;
+    }
+};
+
+void increase_depth(std::shared_ptr<mtac::BasicBlock> bb){
+    DepthIncrementer incrementer;
+
+    visit_each(incrementer, bb->statements);
+}
 
 void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
@@ -55,14 +81,47 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
         //Get all edges n -> d
         for(auto& back_edge : back_edges){
             std::set<Vertex> natural_loop;
-            natural_loop.insert(boost::target(back_edge, g));
 
-            //Add all predecessors of d in the set
-            //
+            auto n = boost::source(back_edge, g);
+            auto d = boost::target(back_edge, g);
+
+            natural_loop.insert(d);
+            natural_loop.insert(n);
+
+            std::stack<Vertex> vertices;
+            vertices.push(n);
+            
+            while(!vertices.empty()){
+                auto vertex = vertices.top();
+                vertices.pop();
+
+                ControlFlowGraph::InEdgeIterator iit, iend;
+                for(boost::tie(iit, iend) = boost::in_edges(vertex, g); iit != iend; ++iit){
+                    auto edge = *iit;
+
+                    auto target = boost::source(edge, g);
+                    auto source = boost::target(edge, g);
+
+                    if(target != source && target != d && !natural_loop.count(target)){
+                        natural_loop.insert(target);
+                        vertices.push(target);
+                    }
+                }
+            }
+
+            std::cout << "Natural loop of size " << natural_loop.size() << std::endl;
             
             natural_loops.push_back(natural_loop);
         }
 
         std::cout << "Found " << natural_loops.size() << " natural loops" << std::endl;
+
+        for(auto& loop : natural_loops){
+            for(auto& parts : loop){
+                auto bb = g[parts].block;
+
+                increase_depth(bb);
+            }
+        }
     }
 }
