@@ -11,6 +11,7 @@
 #include <boost/graph/dominator_tree.hpp>
 
 #include "VisitorUtils.hpp"
+#include "logging.hpp"
 
 #include "mtac/LoopAnalysis.hpp"
 #include "mtac/GlobalOptimizations.hpp"
@@ -18,11 +19,28 @@
 
 using namespace eddic;
 
+namespace {
+
 typedef mtac::ControlFlowGraph::InternalControlFlowGraph G;
 typedef mtac::ControlFlowGraph::EdgeInfo Edge;
 typedef mtac::ControlFlowGraph::BasicBlockInfo Vertex;
 typedef boost::property_map<mtac::ControlFlowGraph::InternalControlFlowGraph, boost::vertex_index_t>::type IndexMap;
 typedef boost::iterator_property_map<std::vector<Vertex>::iterator, IndexMap> PredMap;
+
+struct DepthInit : public boost::static_visitor<void> {
+    void operator()(std::string){
+        //Nothing
+    }
+    
+    void operator()(std::shared_ptr<mtac::NoOp>){
+        //Nothing
+    }
+    
+    template<typename T>
+    void operator()(T t){
+        t->depth = 0;
+    }
+};
 
 struct DepthIncrementer : public boost::static_visitor<void> {
     void operator()(std::string){
@@ -39,14 +57,26 @@ struct DepthIncrementer : public boost::static_visitor<void> {
     }
 };
 
+void init_depth(std::shared_ptr<mtac::BasicBlock> bb){
+    DepthInit init;
+
+    visit_each(init, bb->statements);
+}
+
 void increase_depth(std::shared_ptr<mtac::BasicBlock> bb){
     DepthIncrementer incrementer;
 
     visit_each(incrementer, bb->statements);
 }
 
+} //end of anonymous namespace
+
 void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
+        for(auto& bb : function->getBasicBlocks()){
+            init_depth(bb);
+        }
+
         auto graph = mtac::build_control_flow_graph(function);
         auto g = graph->get_graph();
         
@@ -88,8 +118,8 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
             natural_loop.insert(d);
             natural_loop.insert(n);
 
-            std::cout << "n = B" << g[n].block->index << std::endl;
-            std::cout << "d = B" << g[d].block->index << std::endl;
+            log::emit<Trace>("Control-Flow") << "Back edge n = B" << g[n].block->index << log::endl;
+            log::emit<Trace>("Control-Flow") << "Back edge d = B" << g[d].block->index << log::endl;
 
             if(n != d){
                 std::stack<Vertex> vertices;
@@ -107,7 +137,6 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
                         auto source = boost::target(edge, g);
 
                         if(target != source && target != d && !natural_loop.count(target)){
-                            std::cout << "Add B" << g[target].block->index << std::endl;
                             natural_loop.insert(target);
                             vertices.push(target);
                         }
@@ -115,12 +144,12 @@ void mtac::loop_analysis(std::shared_ptr<mtac::Program> program){
                 }
             }
 
-            std::cout << "Natural loop of size " << natural_loop.size() << std::endl;
+            log::emit<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
             
             natural_loops.push_back(natural_loop);
         }
 
-        std::cout << "Found " << natural_loops.size() << " natural loops" << std::endl;
+        log::emit<Trace>("Control-Flow") << "Found " << natural_loops.size() << " natural loops" << log::endl;
 
         for(auto& loop : natural_loops){
             for(auto& parts : loop){
