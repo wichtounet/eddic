@@ -9,14 +9,20 @@
 #define MTAC_LOOP_ANALYSIS_H
 
 #include <memory>
+#include <vector>
+#include <set>
 
 #include "mtac/Program.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-void loop_analysis(std::shared_ptr<mtac::Program> program);
+void full_loop_analysis(std::shared_ptr<mtac::Program> program);
+void full_loop_analysis(std::shared_ptr<mtac::Function> function);
+
+std::vector<std::set<mtac::ControlFlowGraph::BasicBlockInfo>> find_natural_loops(mtac::ControlFlowGraph::InternalControlFlowGraph& g);
 
 } //end of mtac
 

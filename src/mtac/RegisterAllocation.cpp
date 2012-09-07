@@ -88,7 +88,7 @@ void mtac::register_variable_allocation(std::shared_ptr<mtac::Program> program, 
 
     if(descriptor->number_of_variable_registers() > 0 || descriptor->number_of_float_variable_registers() > 0){
         //Find loops to allocate variables mostly used in loops
-        mtac::loop_analysis(program);
+        mtac::full_loop_analysis(program);
 
         for(auto function : program->functions){
             //Compute Liveness
