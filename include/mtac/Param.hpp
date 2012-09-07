@@ -27,6 +27,7 @@ struct Param {
     std::shared_ptr<Variable> param;
     std::string std_param;
     std::shared_ptr<Function> function;
+    unsigned int depth;
     
     bool address = false;
 
