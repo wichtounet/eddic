@@ -67,6 +67,10 @@ unsigned int Type::elements() const {
     ASSERT_PATH_NOT_TAKEN("Not an array type");
 }
 
+bool Type::has_elements() const {
+    ASSERT_PATH_NOT_TAKEN("Not an array type");
+}
+
 std::string Type::type() const {
     ASSERT_PATH_NOT_TAKEN("Not a custom type");
 }
@@ -168,9 +172,16 @@ unsigned int CustomType::size(Platform) const {
         
 /* Implementation of ArrayType  */
 
+ArrayType::ArrayType(std::shared_ptr<const Type> sub_type) : sub_type(sub_type) {}
 ArrayType::ArrayType(std::shared_ptr<const Type> sub_type, int size) : sub_type(sub_type), m_elements(size) {}
 
 unsigned int ArrayType::elements() const {
+    assert(has_elements());
+
+    return *m_elements;
+}
+
+bool ArrayType::has_elements() const {
     return m_elements;
 }
 
@@ -183,6 +194,8 @@ bool ArrayType::is_array() const {
 }
 
 unsigned int ArrayType::size(Platform platform) const {
+    assert(has_elements());
+
     return data_type()->size(platform) * elements() + INT->size(platform); 
 }
         
@@ -261,6 +274,10 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         assert(!const_);
         return std::make_shared<CustomType>(context, type);
     }
+}
+
+std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> data_type){
+    return std::make_shared<ArrayType>(data_type);
 }
 
 std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> data_type, int size){

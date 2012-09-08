@@ -179,6 +179,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         auto platform = function->context->global()->target_platform();
 
         function->add(std::make_shared<mtac::Quadruple>(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform))));
+        function->add(std::make_shared<mtac::Quadruple>(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform))));
     
         auto param = std::make_shared<mtac::Param>(size);
         param->std_param = "a";
@@ -189,6 +190,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         function->context->global()->addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
+        
+        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::DOT_ASSIGN, size_temp));
 
         return {t1};
     }
@@ -204,7 +207,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 if(variable->position().isGlobal()){
                     return {variable->type()->elements()};
-                } else if(variable->position().isStack()){
+                } else if(variable->position().isStack() || variable->type()->has_elements()){
                     return {variable->type()->elements()};
                 } else if(variable->position().isParameter()){
                     auto t1 = function->context->new_temporary(INT);
@@ -215,7 +218,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     return {t1};
                 }
 
-                ASSERT_PATH_NOT_TAKEN("The variale is not of a valid type");
+                ASSERT_PATH_NOT_TAKEN("The variable is not of a valid type");
             }
             case ast::BuiltinType::LENGTH:
                 return {visit(*this, value)[1]};
@@ -576,7 +579,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
         if(type->is_pointer()){
             pointerAssign(ToArgumentsVisitor(function)(value));
-        } else if(type == INT || type == CHAR || type == BOOL){
+        } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
             intAssign(ToArgumentsVisitor(function)(value));
         } else if(type == STRING){
             stringAssign(ToArgumentsVisitor(function)(value));

@@ -87,6 +87,8 @@ class Type : public std::enable_shared_from_this<Type> {
          */
         virtual bool is_pointer() const;
 
+        virtual bool has_elements() const;
+
         /*!
          * Indicates if the type is const
          * \return true if the type is const, false otherwise.
@@ -195,10 +197,12 @@ class CustomType : public Type {
 class ArrayType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
-        unsigned int m_elements = 0;
+        boost::optional<unsigned int> m_elements;
+
     
     public:
-        ArrayType(std::shared_ptr<const Type> sub_type, int size = 0);
+        ArrayType(std::shared_ptr<const Type> sub_type);
+        ArrayType(std::shared_ptr<const Type> sub_type, int size);
     
         /*!
          * Deleted copy constructor
@@ -211,6 +215,7 @@ class ArrayType : public Type {
         ArrayType& operator=(const ArrayType& rhs) = delete;
 
         unsigned int elements() const override;
+        bool has_elements() const override;
 
         std::shared_ptr<const Type> data_type() const override;
 
@@ -304,7 +309,9 @@ std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, con
  * \param size The number of elements, if known.
  * \return the created type;
  */
-std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size = 0);
+std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type);
+
+std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size);
 
 /*!
  * Create a new pointer type of the given type.

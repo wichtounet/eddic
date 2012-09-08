@@ -71,4 +71,11 @@ int* allocator(){
 
 void test_dynamic_arrays(){
     int[] dynamic_array = new int[5];
+
+    for(int i = 0; i < size(dynamic_array); ++i){
+        dynamic_array[i] = i;
+    }
+
+    print(dynamic_array[0]);
+    print("|");
 }
