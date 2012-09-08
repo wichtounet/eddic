@@ -11,6 +11,7 @@
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -50,6 +51,8 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
 
     Position position(PositionType::STACK, currentPosition + INT->size(platform));
     auto var = std::make_shared<Variable>(variable, type, position);
+
+    log::emit<Info>("Variables") << "Allocate " << variable << " at " << position.offset() << log::endl;
 
     storage[variable] = var;
 
@@ -115,6 +118,8 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
 
     Position position(PositionType::STACK, currentPosition + INT->size(platform));
     
+    log::emit<Info>("Variables") << "Store temporary " << temp->name() << " at " << position.offset() << log::endl;
+    
     temp->setPosition(position); 
 }
 
@@ -131,6 +136,8 @@ void FunctionContext::reallocate_storage(){
             currentPosition -= v->type()->size(platform);
             Position position(PositionType::STACK, currentPosition + INT->size(platform));
             v->setPosition(position);
+    
+            log::emit<Info>("Variables") << "Reallocate " << v->name() << " at " << position.offset() << log::endl;
         }
 
         ++it;
