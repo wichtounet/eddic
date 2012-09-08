@@ -449,9 +449,7 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
 }
 
 void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
-    for(auto& variable_pair : definition->context->stored_variables()){
-        auto variable = variable_pair.second;
-
+    for(auto& variable : definition->context->stored_variables()){
         if(variable->position().is_register()){
             if(mtac::is_single_int_register(variable->type())){
                 registers.setLocation(variable, ltac::Register(descriptor->int_variable_register(variable->position().offset())));
@@ -508,9 +506,7 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, c
             }
 
             if(param->function->context){
-                for(auto variable_pair : param->function->context->stored_variables()){
-                    auto variable = variable_pair.second;
-
+                for(auto variable : param->function->context->stored_variables()){
                     if(variable->position().is_register()){
                         if(variable->type() == INT){
                             overriden_registers.insert(ltac::Register(variable->position().offset()));

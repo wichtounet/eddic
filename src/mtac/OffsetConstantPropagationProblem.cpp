@@ -28,9 +28,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
     ProblemDomain::Values values;
     ProblemDomain out(values);
     
-    for(auto& variable_pair : function->context->stored_variables()){
-        auto variable = variable_pair.second; 
-
+    for(auto& variable : function->context->stored_variables()){
         if(variable->type()->is_array() && variable->type()->has_elements()){
             auto array_size = variable->type()->elements()* variable->type()->data_type()->size(platform) + INT->size(platform);
                     

@@ -604,8 +604,8 @@ void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function>
     add_param_registers(usage, platform);
 
     for(auto var : function->context->stored_variables()){
-        if(var.second->position().is_register() && mtac::is_single_int_register(var.second->type())){
-            usage.insert(ltac::Register(descriptor->int_variable_register(var.second->position().offset())));
+        if(var->position().is_register() && mtac::is_single_int_register(var->type())){
+            usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
         }
     }
 }
