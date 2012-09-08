@@ -169,6 +169,29 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         return {t1};
     }
+    
+    result_type operator()(ast::NewArray& new_) const {
+        auto type = visit_non_variant(ast::GetTypeVisitor(), new_);
+
+        auto size = function->context->new_temporary(INT);
+        auto size_temp = visit(ToArgumentsVisitor(function), new_.Content->size)[0];
+        
+        auto platform = function->context->global()->target_platform();
+
+        function->add(std::make_shared<mtac::Quadruple>(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform))));
+    
+        auto param = std::make_shared<mtac::Param>(size);
+        param->std_param = "a";
+        param->function = function->context->global()->getFunction("_F5allocI");
+        function->add(param);
+
+        auto t1 = function->context->new_temporary(new_pointer_type(INT));
+
+        function->context->global()->addReference("_F5allocI");
+        function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
+
+        return {t1};
+    }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
         auto& value = builtin.Content->values[0];
