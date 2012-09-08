@@ -93,7 +93,7 @@ std::string Type::mangle() const {
 
 bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
     if(lhs->is_array()){
-        return rhs->is_array() && lhs->data_type() == rhs->data_type() && lhs->elements() == rhs->elements();
+        return rhs->is_array() && lhs->data_type() == rhs->data_type() ;//&& lhs->elements() == rhs->elements();
     }
 
     if(lhs->is_pointer()){
@@ -194,9 +194,11 @@ bool ArrayType::is_array() const {
 }
 
 unsigned int ArrayType::size(Platform platform) const {
-    assert(has_elements());
-
-    return data_type()->size(platform) * elements() + INT->size(platform); 
+    if(has_elements()){
+        return data_type()->size(platform) * elements() + INT->size(platform); 
+    } else {
+        return INT->size(platform); 
+    }
 }
         
 /* Implementation of PointerType  */
