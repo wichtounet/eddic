@@ -588,8 +588,14 @@ struct VariablesVisitor : public boost::static_visitor<> {
                 
                 auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                 var->set_source_position(declaration.Content->position);
+            } 
+            //If it's a array
+            else if(type->is_array()){
+                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
+                var->set_source_position(declaration.Content->position);
+            } 
             //If it's a template or custom type
-            } else {
+            else {
                 auto mangled = type->mangle();
 
                 if(context->struct_exists(mangled)){
