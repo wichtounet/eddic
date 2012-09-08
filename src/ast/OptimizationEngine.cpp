@@ -123,85 +123,48 @@ struct ValueOptimizer : public boost::static_visitor<ast::Value> {
         AUTO_RETURN_OTHERS_CONST(ast::Value)
 };
 
-struct CanBeRemoved : public boost::static_visitor<bool> {
-    std::shared_ptr<GlobalContext> context;
-
-    CanBeRemoved(std::shared_ptr<GlobalContext> context) : context(context) {}
-
-    bool operator()(ast::FirstLevelBlock block){
-        return visit(*this, block);
-    }
-
-    bool operator()(ast::FunctionDeclaration& declaration){
-        if(context->referenceCount(declaration.Content->mangledName) <= 0){
-            return true;
-        }
-
-        return false;
-    }
-
-    //Nothing to optimize for the other types
-    template<typename T>
-    bool operator()(T&) {
-        return false;
-    }
-};
-
 struct OptimizationVisitor : public boost::static_visitor<> {
     private:
         StringPool& pool;
         ValueOptimizer optimizer;
-        CanBeRemoved visitor;
 
     public:
-        OptimizationVisitor(StringPool& p, std::shared_ptr<GlobalContext> context) : pool(p), optimizer(ValueOptimizer(pool)), visitor(context) {}
-
-        template<typename T>
-        void removeUnused(std::vector<T>& vector){
-            auto iter = vector.begin();
-            auto end = vector.end();
-
-            auto newEnd = remove_if(iter, end, visitor);
-
-            vector.erase(newEnd, end);
-
-            visit_each(*this, vector);
-        }
+        OptimizationVisitor(StringPool& p) : pool(p), optimizer(ValueOptimizer(pool)) {}
 
         void operator()(ast::SourceFile& program){\
-            removeUnused(program.Content->blocks);
+            visit_each(*this, program.Content->blocks);
         }
         
         void operator()(ast::FunctionDeclaration& function){
-            removeUnused(function.Content->instructions);
+            visit_each(*this, function.Content->instructions);
         }
 
         void operator()(ast::If& if_){
             visit(*this, if_.Content->condition);
-            removeUnused(if_.Content->instructions);
+            visit_each(*this, if_.Content->instructions);
             visit_each_non_variant(*this, if_.Content->elseIfs);
             visit_optional_non_variant(*this, if_.Content->else_);
         }
 
         void operator()(ast::ElseIf& elseIf){
             visit(*this, elseIf.condition);
-            removeUnused(elseIf.instructions);
+            visit_each(*this, elseIf.instructions);
         }
 
         void operator()(ast::Else& else_){
-            removeUnused(else_.instructions);
+            visit_each(*this, else_.instructions);
         }
 
         void operator()(ast::For& for_){
             visit_optional(*this, for_.Content->start);
             visit_optional(*this, for_.Content->condition);
             visit_optional(*this, for_.Content->repeat);
-            removeUnused(for_.Content->instructions);
+            visit_each(*this, for_.Content->instructions);
         }
 
         void operator()(ast::While& while_){
             visit(*this, while_.Content->condition);
-            removeUnused(while_.Content->instructions);
+            visit_each(*this, while_.Content->instructions);
         }
 
         void operator()(ast::Foreach&){
@@ -209,7 +172,7 @@ struct OptimizationVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::ForeachIn& foreach){
-            removeUnused(foreach.Content->instructions);
+            visit_each(*this, foreach.Content->instructions);
         }
 
         void operator()(ast::FunctionCall& functionCall){
@@ -244,6 +207,6 @@ struct OptimizationVisitor : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void ast::optimizeAST(ast::SourceFile& program, StringPool& pool){
-    OptimizationVisitor visitor(pool, program.Content->context);
+    OptimizationVisitor visitor(pool);
     visitor(program);
 }
