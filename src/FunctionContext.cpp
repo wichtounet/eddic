@@ -155,17 +155,18 @@ void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> varia
     reallocate_storage();
 }
 
-void FunctionContext::removeVariable(const std::string& variable){
-    /*TODO auto var = storage[variable];
+void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
+    auto iter_var = std::find(storage.begin(), storage.end(), variable);
+    auto var = *iter_var;
     
-    storage.erase(variable);
+    storage.erase(iter_var);
     
-    log::emit<Info>("Variables") << "Remove " << variable << log::endl;
+    log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
 
     //If its a temporary, no need to recalculate positions
     if(!var->position().isTemporary()){
         reallocate_storage();
-    }*/
+    }
 }
 
 std::shared_ptr<FunctionContext> FunctionContext::function(){

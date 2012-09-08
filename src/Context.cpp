@@ -13,6 +13,7 @@
 #include "GlobalContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+#include "Variable.hpp"
 
 using namespace eddic;
 
@@ -65,14 +66,14 @@ std::shared_ptr<Variable> Context::getVariable(const std::string& variable) cons
     return iter->second;
 }
 
-void Context::removeVariable(const std::string& variable){
-    auto iter = variables.find(variable);
+void Context::removeVariable(std::shared_ptr<Variable> variable){
+    auto iter = variables.find(variable->name());
     auto end = variables.end();
 
     auto parent = m_parent;
     
     while(iter == end){
-        iter = parent->variables.find(variable);
+        iter = parent->variables.find(variable->name());
         end = parent->variables.end();
         parent = parent->m_parent;
     }

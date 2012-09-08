@@ -135,7 +135,7 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
     bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
         if(context->getVariable(variable)->referenceCount() <= 0){
             //Removing from the AST is not enough, because it is stored in the context now
-            context->removeVariable(variable);
+            context->removeVariable(context->getVariable(variable));
 
             return true;   
         }

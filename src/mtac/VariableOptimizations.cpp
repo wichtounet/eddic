@@ -257,6 +257,6 @@ void mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& variable : unused){
-        function->context->removeVariable(variable->name());
+        function->context->removeVariable(variable);
     }
 }

@@ -58,7 +58,7 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         
         std::shared_ptr<Variable> new_temporary(std::shared_ptr<const Type> type);
         
-        void removeVariable(const std::string& variable) override;
+        void removeVariable(std::shared_ptr<Variable> variable) override;
 
         void storeTemporary(std::shared_ptr<Variable> temp);
 
