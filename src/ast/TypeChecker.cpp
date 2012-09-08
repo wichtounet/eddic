@@ -340,10 +340,18 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
         
+        void operator()(ast::NewArray& new_){
+            auto type = visit(ast::TypeTransformer(context), new_.Content->type);
+
+            if(type->is_array()){
+                throw SemanticalException("Multidimensional arrays are not supported", new_.Content->position);
+            }
+        }
+        
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type();
 
-            if(!type->is_pointer()){
+            if(!type->is_pointer() && !type->is_dynamic_array()){
                 throw SemanticalException("Only pointers can be deleted", delete_.Content->position);
             }
         }

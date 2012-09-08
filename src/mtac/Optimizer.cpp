@@ -114,14 +114,14 @@ bool data_flow_optimization(std::shared_ptr<mtac::Function> function, Args... ar
 }
 
 bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
-    if(log::enabled<Dev>()){
+    if(log::enabled<Debug>()){
         if(b){
-            log::emit<Dev>("Optimizer") << "Optimization" << name << " returned true" << log::endl;
+            log::emit<Debug>("Optimizer") << "Optimization" << name << " returned true" << log::endl;
 
             //Print the function
             print(function);
         } else {
-            log::emit<Dev>("Optimizer") << "Optimization" << name << " returned false" << log::endl;
+            log::emit<Debug>("Optimizer") << "Optimization" << name << " returned false" << log::endl;
         }
     }
 
@@ -161,8 +161,8 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
 }
 
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
-    if(log::enabled<Dev>()){
-        log::emit<Dev>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
+    if(log::enabled<Debug>()){
+        log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
 
         print(function);
     }
@@ -204,8 +204,8 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
 }
 
 void basic_optimize_function(std::shared_ptr<mtac::Function> function){
-    if(log::enabled<Dev>()){
-        log::emit<Dev>("Optimizer") << "Start basic optimizations on " << function->getName() << log::endl;
+    if(log::enabled<Debug>()){
+        log::emit<Debug>("Optimizer") << "Start basic optimizations on " << function->getName() << log::endl;
 
         print(function);
     }

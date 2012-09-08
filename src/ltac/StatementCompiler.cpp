@@ -91,68 +91,61 @@ ltac::Address ltac::StatementCompiler::stack_address(ltac::Register offsetReg, i
     }
 }
 
-ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var, int offset){
-    assert(var->type()->is_pointer());
+ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mtac::Argument offset){
+    if(var->type()->is_pointer() || (var->type()->is_dynamic_array() && !var->position().isParameter())){
+        auto reg = manager.get_reg(var);
 
-    auto reg = manager.get_reg(var);
-    return ltac::Address(reg, offset);
-}
+        if(auto* ptr = boost::get<int>(&offset)){
+            return ltac::Address(reg, *ptr);
+        } else {
+            auto offsetReg = manager.get_reg(ltac::get_variable(offset));
+            return ltac::Address(reg, offsetReg);
+        }
+    } else {
+        auto position = var->position();
 
-ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, int offset){
-    auto position = var->position();
+        if(auto* ptr = boost::get<int>(&offset)){
+            if(position.isStack()){
+                return stack_address(position.offset() + *ptr);
+            } else if(position.isParameter()){
+                //The case of array is special because only the address is passed, not the complete array
+                if(var->type()->is_array()){
+                    auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
-    if(position.isStack()){
-        return stack_address(position.offset() + offset);
-    } else if(position.isParameter()){
-        //The case of array is special because only the address is passed, not the complete array
-        if(var->type()->is_array())
-        {
+                    ltac::add_instruction(function, ltac::Operator::MOV, reg, stack_address(position.offset()));
+
+                    return ltac::Address(reg, *ptr);
+                //In the other cases, the value is passed, so we can compute the offset directly
+                } else {
+                    return stack_address(position.offset() + *ptr);
+                }
+            } else if(position.isGlobal()){
+                return ltac::Address("V" + position.name(), *ptr);
+            } 
+
+            auto reg = manager.get_reg(var);
+            return ltac::Address(reg, *ptr);
+        }
+
+        auto offsetReg = manager.get_reg(ltac::get_variable(offset));
+
+        if(position.isStack()){
+            return stack_address(offsetReg, position.offset());
+        } else if(position.isParameter()){
             auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
             ltac::add_instruction(function, ltac::Operator::MOV, reg, stack_address(position.offset()));
 
-            return ltac::Address(reg, offset);
-        }
-        //In the other cases, the value is passed, so we can compute the offset directly
-        else {
-            return stack_address(position.offset() + offset);
-        }
-    } else if(position.isGlobal()){
-        return ltac::Address("V" + position.name(), offset);
-    } 
-    
-    //In the other cases, the variable is already in a register
-    
-    auto reg = manager.get_reg(var);
-    return ltac::Address(reg, offset);
-}
+            return ltac::Address(reg, offsetReg);
+        } else if(position.isGlobal()){
+            return ltac::Address("V" + position.name(), offsetReg);
+        } 
 
-ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, mtac::Argument offset){
-    if(auto* ptr = boost::get<int>(&offset)){
-        return to_address(var, *ptr);
-    }
+        assert(position.isTemporary());
 
-    auto position = var->position();
-    
-    assert(ltac::is_variable(offset));
-    auto offsetReg = manager.get_reg(ltac::get_variable(offset));
-
-    if(position.isStack()){
-        return stack_address(offsetReg, position.offset());
-    } else if(position.isParameter()){
-        auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
-
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, stack_address(position.offset()));
-
+        auto reg = manager.get_reg(var);
         return ltac::Address(reg, offsetReg);
-    } else if(position.isGlobal()){
-        return ltac::Address("V" + position.name(), offsetReg);
-    } 
-    
-    assert(position.isTemporary());
-    
-    auto reg = manager.get_reg(var);
-    return ltac::Address(reg, offsetReg);
+    }
 }
 
 void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int position){
@@ -460,7 +453,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
     auto reg = manager.get_free_reg();
     
-    ltac::add_instruction(function, ltac::Operator::LEA, reg, to_address(var, 0));
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, 0));
     ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
     
     return reg;
@@ -469,7 +462,7 @@ inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_p
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
     auto reg = manager.get_free_reg();
 
-    ltac::add_instruction(function, ltac::Operator::LEA, reg, to_address(var, offset));
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, offset));
     
     return reg;
 }
@@ -1124,19 +1117,16 @@ void ltac::StatementCompiler::compile_DOT(std::shared_ptr<mtac::Quadruple> quadr
     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
         auto variable = *var_ptr;
 
-        if(variable->type()->is_pointer()){
-            assert(boost::get<int>(&*quadruple->arg2));
-            int offset = boost::get<int>(*quadruple->arg2);
-
+        if(variable->type()->is_pointer() || (variable->type()->is_dynamic_array() && !variable->position().isParameter())){
             auto reg = manager.get_reg_no_move(quadruple->result);
-            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
+            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, address(variable, *quadruple->arg2));
         } else {
             if(ltac::is_float_var(quadruple->result)){
                 auto reg = manager.get_float_reg_no_move(quadruple->result);
-                instruction = ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, *quadruple->arg2));
+                instruction = ltac::add_instruction(function, ltac::Operator::FMOV, reg, address(variable, *quadruple->arg2));
             } else {
                 auto reg = manager.get_reg_no_move(quadruple->result);
-                instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_address(variable, *quadruple->arg2));
+                instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, address(variable, *quadruple->arg2));
             }
         }
     } else if(auto* string_ptr = boost::get<std::string>(&*quadruple->arg1)){
@@ -1179,12 +1169,7 @@ void ltac::StatementCompiler::compile_FDOT(std::shared_ptr<mtac::Quadruple> quad
     int offset = boost::get<int>(*quadruple->arg2);
 
     auto reg = manager.get_float_reg_no_move(quadruple->result);
-
-    if(variable->type()->is_pointer()){
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_pointer(variable, offset));
-    } else {
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, to_address(variable, offset));
-    }
+    ltac::add_instruction(function, ltac::Operator::FMOV, reg, address(variable, offset));
 
     manager.set_written(quadruple->result);
 }
@@ -1214,26 +1199,14 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
 }
 
 void ltac::StatementCompiler::compile_DOT_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
-    if(quadruple->result->type()->is_pointer()){
-        ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-        int offset = boost::get<int>(*quadruple->arg1);
-        ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
-    } else {
-        ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
-    }
+    ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
 }
 
 void ltac::StatementCompiler::compile_DOT_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
     auto reg = register_guard<ltac::FloatRegister>(manager.get_free_float_reg(), manager);
     manager.copy(*quadruple->arg2, reg);
 
-    if(quadruple->result->type()->is_pointer()){
-        ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-        int offset = boost::get<int>(*quadruple->arg1);
-        ltac::add_instruction(function, ltac::Operator::FMOV, to_pointer(quadruple->result, offset), reg);
-    } else {
-        ltac::add_instruction(function, ltac::Operator::FMOV, to_address(quadruple->result, *quadruple->arg1), reg);
-    }
+    ltac::add_instruction(function, ltac::Operator::FMOV, address(quadruple->result, *quadruple->arg1), reg);
 }
 
 void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
@@ -1241,7 +1214,7 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadrupl
     auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
 
     auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
-    ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), reg); 
+    ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
 }
 
 void ltac::StatementCompiler::compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple){

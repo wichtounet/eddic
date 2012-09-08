@@ -11,6 +11,7 @@
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -51,12 +52,14 @@ std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variab
     Position position(PositionType::STACK, currentPosition + INT->size(platform));
     auto var = std::make_shared<Variable>(variable, type, position);
 
-    storage[variable] = var;
+    log::emit<Info>("Variables") << "Allocate " << variable << " at " << position.offset() << log::endl;
+
+    storage.push_back(var);
 
     return var;
 }
 
-FunctionContext::Variables FunctionContext::stored_variables(){
+Storage FunctionContext::stored_variables(){
     return storage;
 }
 
@@ -71,7 +74,7 @@ std::shared_ptr<Variable> FunctionContext::newVariable(std::shared_ptr<Variable>
         Position position(PositionType::TEMPORARY);
 
         auto var = std::make_shared<Variable>(name, source->type(), position); 
-        storage[name] = var;
+        storage.push_back(var);
         return variables[name] = var;
     } else {
         return addVariable(name, source->type());
@@ -106,7 +109,7 @@ std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const T
 
     std::string name = "t_" + toString(temporary++);
     auto var = std::make_shared<Variable>(name, type, position); 
-    storage[name] = var;
+    storage.push_back(var);
     return variables[name] = var;
 }
 
@@ -115,25 +118,22 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
 
     Position position(PositionType::STACK, currentPosition + INT->size(platform));
     
+    log::emit<Info>("Variables") << "Store temporary " << temp->name() << " at " << position.offset() << log::endl;
+    
     temp->setPosition(position); 
 }
 
 void FunctionContext::reallocate_storage(){
     currentPosition = -INT->size(platform);
 
-    auto it = storage.begin();
-    auto end = storage.end();
-
-    while(it != end){
-        auto v = it->second;
-
+    for(auto& v : storage){
         if(v->position().isStack()){
             currentPosition -= v->type()->size(platform);
             Position position(PositionType::STACK, currentPosition + INT->size(platform));
             v->setPosition(position);
+    
+            log::emit<Info>("Variables") << "Reallocate " << v->name() << " at " << position.offset() << log::endl;
         }
-
-        ++it;
     }
 }
 
@@ -155,10 +155,13 @@ void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> varia
     reallocate_storage();
 }
 
-void FunctionContext::removeVariable(const std::string& variable){
-    auto var = storage[variable];
+void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
+    auto iter_var = std::find(storage.begin(), storage.end(), variable);
+    auto var = *iter_var;
     
-    storage.erase(variable);
+    storage.erase(iter_var);
+    
+    log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
 
     //If its a temporary, no need to recalculate positions
     if(!var->position().isTemporary()){

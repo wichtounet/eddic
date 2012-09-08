@@ -96,11 +96,17 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
         return functionCall;
     }
-
+    
     ast::Value operator()(ast::New& new_){
         for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
             *it = visit(*this, *it);
         }
+
+        return new_;
+    }
+
+    ast::Value operator()(ast::NewArray& new_){
+        new_.Content->size = visit(*this, new_.Content->size);
 
         return new_;
     }
@@ -440,7 +446,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
     AUTO_IGNORE_SWAP()
-    AUTO_IGNORE_NEW()
     AUTO_IGNORE_DELETE()
 
     void operator()(ast::If& if_){
@@ -551,6 +556,16 @@ struct CleanerVisitor : public boost::static_visitor<> {
             *it = visit(transformer, *it);
         }
     }
+    
+    void operator()(ast::New& new_){
+        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
+            *it = visit(transformer, *it);
+        }
+    }
+    
+    void operator()(ast::NewArray& new_){
+        new_.Content->size = visit(transformer, new_.Content->size);
+    }
 
     void operator()(ast::VariableDeclaration& declaration){
         if(declaration.Content->value){
@@ -585,6 +600,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
     AUTO_IGNORE_NEW()
+    AUTO_IGNORE_NEW_ARRAY()
     AUTO_IGNORE_DELETE()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_CHAR_LITERAL()

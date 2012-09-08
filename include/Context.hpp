@@ -80,7 +80,7 @@ class Context {
          * Remove the given variable from this context.  
          * \param variable The name of the variable to remove. 
          */
-        virtual void removeVariable(const std::string& variable);
+        virtual void removeVariable(std::shared_ptr<Variable> variable);
 
         /*!
          * \brief Create a new temporary of the given type in this context. 

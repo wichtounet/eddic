@@ -538,8 +538,7 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                     auto variable_clones = copy_parameters(source_function, dest_function, bit);
 
                     //Allocate storage for the local variables of the inlined function
-                    for(auto variable_pair : source_definition->context->stored_variables()){
-                        auto variable = variable_pair.second;
+                    for(auto variable : source_definition->context->stored_variables()){
                         variable_clones[variable] = dest_definition->context->newVariable(variable);
                     }
 

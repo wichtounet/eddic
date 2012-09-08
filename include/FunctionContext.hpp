@@ -9,6 +9,7 @@
 #define FUNCTION_CONTEXT_H
 
 #include <memory>
+#include <vector>
 
 #include "Options.hpp"
 #include "Context.hpp"
@@ -18,6 +19,8 @@ namespace eddic {
 
 class Type;
 class GlobalContext;
+
+typedef std::vector<std::shared_ptr<Variable>> Storage;
 
 /*!
  * \class FunctionContext
@@ -33,7 +36,7 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         Platform platform;
 
         //Refer all variables that are stored, including temporary
-        Variables storage;
+        Storage storage;
 
         void reallocate_storage();
 
@@ -55,14 +58,14 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         
         std::shared_ptr<Variable> new_temporary(std::shared_ptr<const Type> type);
         
-        void removeVariable(const std::string& variable) override;
+        void removeVariable(std::shared_ptr<Variable> variable) override;
 
         void storeTemporary(std::shared_ptr<Variable> temp);
 
         void allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_);
         void allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_);
 
-        Variables stored_variables();
+        Storage stored_variables();
 
         std::shared_ptr<const Type> struct_type = nullptr;
         

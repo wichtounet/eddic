@@ -223,6 +223,11 @@ void operator()(ast::New& new_){\
     visit_each(*this, new_.Content->values);\
 }
 
+#define AUTO_RECURSE_NEW_ARRAY()\
+void operator()(ast::NewArray& new_){\
+    visit(*this, new_.Content->size);\
+}
+
 /* Ignore macros  */
 
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
@@ -250,6 +255,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_CHAR_LITERAL() void operator()(ast::CharLiteral&){}
 #define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_NEW() void operator()(ast::New&){}
+#define AUTO_IGNORE_NEW_ARRAY() void operator()(ast::NewArray&){}
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}

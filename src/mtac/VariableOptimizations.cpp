@@ -195,8 +195,7 @@ bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
 
     auto pointer_escaped = mtac::escape_analysis(function);
 
-    for(auto& pair : function->context->stored_variables()){
-        auto var = pair.second;
+    for(auto& var : function->context->stored_variables()){
         auto position = var->position();
         auto type = var->type();
 
@@ -248,9 +247,7 @@ void mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     auto variable_usage = mtac::compute_variable_usage(function);
     
     std::vector<std::shared_ptr<Variable>> unused;
-    for(auto variable_pair : function->context->stored_variables()){
-        auto variable = variable_pair.second;
-
+    for(auto variable : function->context->stored_variables()){
         //Temporary and parameters are not interesting, because they dot not take any space
         if(!variable->position().isParameter() && !variable->position().isParamRegister()){
             if(variable_usage[variable] == 0){
@@ -260,6 +257,6 @@ void mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     }
 
     for(auto& variable : unused){
-        function->context->removeVariable(variable->name());
+        function->context->removeVariable(variable);
     }
 }
