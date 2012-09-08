@@ -49,9 +49,17 @@ typedef boost::mpl::vector<
             PrefixOperation
         > types_initial;
 
-typedef boost::mpl::push_back<types_initial,    Ternary>::type first_types;
-typedef boost::mpl::push_back<first_types,      MemberValue>::type second_types;
-typedef boost::mpl::push_back<second_types,     New>::type types;
+//typedef boost::mpl::push_back<types_initial,    Ternary>::type first_types;
+//typedef boost::mpl::push_back<first_types,      MemberValue>::type second_types;
+//typedef boost::mpl::push_back<second_types,     New>::type types;
+
+typedef boost::mpl::push_back<
+        boost::mpl::push_back<
+        boost::mpl::push_back<
+        boost::mpl::push_back<types_initial, Ternary>::type, 
+        MemberValue>::type,
+        New>::type,
+        NewArray>::type types;
 
 typedef boost::make_variant_over<types>::type Value;
 
@@ -70,6 +78,7 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/Unary.hpp"
 #include "ast/Cast.hpp"
 #include "ast/New.hpp"
+#include "ast/NewArray.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 

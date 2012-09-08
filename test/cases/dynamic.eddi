@@ -59,10 +59,16 @@ void main(){
     print("|");
 
     delete a;
+
+    test_dynamic_arrays();
 }
 
 int* allocator(){
     int* ptr = new int();
     *ptr = 666;
     return ptr;
+}
+
+void test_dynamic_arrays(){
+    int[] dynamic_array = new int[5];
 }
