@@ -1089,7 +1089,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& f){
-            if(program->context->referenceCount(f.Content->mangledName) > 0){
+            if(f.Content->functionName == "main" || program->context->referenceCount(f.Content->mangledName) > 0){
                 issue_function(f);
             }
         }
