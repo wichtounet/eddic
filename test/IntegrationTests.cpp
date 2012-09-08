@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( cmove ){
 }
 
 BOOST_AUTO_TEST_CASE( dynamic ){
-    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|");
+    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|0|1|2|3|4|");
 }
 
 BOOST_AUTO_TEST_CASE( dynamic_struct ){
