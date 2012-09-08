@@ -39,6 +39,10 @@ bool Type::is_array() const {
     return false;
 }
 
+bool Type::is_dynamic_array() const {
+    return is_array() && !has_elements();
+}
+
 bool Type::is_pointer() const {
     return false;
 }

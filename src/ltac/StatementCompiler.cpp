@@ -92,10 +92,22 @@ ltac::Address ltac::StatementCompiler::stack_address(ltac::Register offsetReg, i
 }
 
 ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var, int offset){
-    assert(var->type()->is_pointer());
+    assert(var->type()->is_pointer() || var->type()->is_dynamic_array());
 
     auto reg = manager.get_reg(var);
     return ltac::Address(reg, offset);
+}
+
+ltac::Address ltac::StatementCompiler::to_pointer(std::shared_ptr<Variable> var, mtac::Argument offset){
+    if(auto* ptr = boost::get<int>(&offset)){
+        return to_pointer(var, *ptr);
+    }
+    
+    assert(ltac::is_variable(offset));
+    auto offsetReg = manager.get_reg(ltac::get_variable(offset));
+    
+    auto reg = manager.get_reg(var);
+    return ltac::Address(reg, offsetReg);
 }
 
 ltac::Address ltac::StatementCompiler::to_address(std::shared_ptr<Variable> var, int offset){
@@ -1124,12 +1136,9 @@ void ltac::StatementCompiler::compile_DOT(std::shared_ptr<mtac::Quadruple> quadr
     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
         auto variable = *var_ptr;
 
-        if(variable->type()->is_pointer()){
-            assert(boost::get<int>(&*quadruple->arg2));
-            int offset = boost::get<int>(*quadruple->arg2);
-
+        if(variable->type()->is_pointer() || variable->type()->is_dynamic_array()){
             auto reg = manager.get_reg_no_move(quadruple->result);
-            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, offset));
+            instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, *quadruple->arg2));
         } else {
             if(ltac::is_float_var(quadruple->result)){
                 auto reg = manager.get_float_reg_no_move(quadruple->result);
@@ -1214,10 +1223,8 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
 }
 
 void ltac::StatementCompiler::compile_DOT_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
-    if(quadruple->result->type()->is_pointer()){
-        ASSERT(boost::get<int>(&*quadruple->arg1), "The offset must be be an int");
-        int offset = boost::get<int>(*quadruple->arg1);
-        ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, offset), to_arg(*quadruple->arg2));
+    if(quadruple->result->type()->is_pointer() || quadruple->result->type()->is_dynamic_array()){
+        ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
     } else {
         ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
     }

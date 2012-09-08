@@ -100,6 +100,7 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::Address to_address(std::shared_ptr<Variable> var, mtac::Argument offset);
         
         ltac::Address to_pointer(std::shared_ptr<Variable> var, int offset);
+        ltac::Address to_pointer(std::shared_ptr<Variable> var, mtac::Argument offset);
     
         void compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
         void compile_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);

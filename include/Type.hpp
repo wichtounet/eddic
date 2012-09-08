@@ -68,6 +68,8 @@ class Type : public std::enable_shared_from_this<Type> {
          * \return true if it's an array type, false otherwise.
          */
         virtual bool is_array() const;
+        
+        bool is_dynamic_array() const;
 
         /*!
          * Indicates if it is a custom type

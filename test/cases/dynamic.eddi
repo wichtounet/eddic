@@ -76,6 +76,10 @@ void test_dynamic_arrays(){
         dynamic_array[i] = i;
     }
 
-    print(dynamic_array[0]);
-    print("|");
+    foreach(int i in dynamic_array){
+        print(i);
+        print("|");
+    }
+
+    delete dynamic_array;
 }
