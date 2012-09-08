@@ -169,7 +169,7 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
     }
     
     mtac::Statement operator()(std::shared_ptr<mtac::Call> call){
-        global_context->addReference(call->functionDefinition->mangledName);
+        global_context->addReference(call->function);
 
         return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
     }
@@ -552,7 +552,7 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                     it.erase();
 
                     //The target function is called one less time
-                    program->context->removeReference(source_function->getName());
+                    program->context->removeReference(source_definition->mangledName);
                     optimized = true;
 
                     continue;
