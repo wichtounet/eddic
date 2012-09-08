@@ -132,39 +132,12 @@ struct CanBeRemoved : public boost::static_visitor<bool> {
         return visit(*this, block);
     }
 
-    bool optimizeVariable(std::shared_ptr<Context> context, const std::string& variable){
-        if(context->getVariable(variable)->referenceCount() <= 0){
-            //Removing from the AST is not enough, because it is stored in the context now
-            context->removeVariable(context->getVariable(variable));
-
-            return true;   
-        }
-
-        return false;
-    }
-
-    bool operator()(ast::GlobalVariableDeclaration& declaration){
-        return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
-    }
-
-    bool operator()(ast::VariableDeclaration& declaration){
-        return optimizeVariable(declaration.Content->context, declaration.Content->variableName);
-    }
-
-    bool operator()(ast::ArrayDeclaration& declaration){
-        return optimizeVariable(declaration.Content->context, declaration.Content->arrayName);
-    }
-
     bool operator()(ast::FunctionDeclaration& declaration){
         if(context->referenceCount(declaration.Content->mangledName) <= 0){
             return true;
         }
 
         return false;
-    }
-
-    bool operator()(ast::Instruction& instruction){
-        return visit(*this, instruction); 
     }
 
     //Nothing to optimize for the other types
