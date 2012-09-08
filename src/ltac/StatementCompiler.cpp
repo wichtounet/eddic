@@ -1136,7 +1136,7 @@ void ltac::StatementCompiler::compile_DOT(std::shared_ptr<mtac::Quadruple> quadr
     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
         auto variable = *var_ptr;
 
-        if(variable->type()->is_pointer() || variable->type()->is_dynamic_array()){
+        if(variable->type()->is_pointer() || (variable->type()->is_dynamic_array() && !variable->position().isParameter())){
             auto reg = manager.get_reg_no_move(quadruple->result);
             instruction = ltac::add_instruction(function, ltac::Operator::MOV, reg, to_pointer(variable, *quadruple->arg2));
         } else {
@@ -1223,7 +1223,7 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
 }
 
 void ltac::StatementCompiler::compile_DOT_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
-    if(quadruple->result->type()->is_pointer() || quadruple->result->type()->is_dynamic_array()){
+    if(quadruple->result->type()->is_pointer() || (quadruple->result->type()->is_dynamic_array() && !quadruple->result->position().isParameter())){
         ltac::add_instruction(function, ltac::Operator::MOV, to_pointer(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
     } else {
         ltac::add_instruction(function, ltac::Operator::MOV, to_address(quadruple->result, *quadruple->arg1), to_arg(*quadruple->arg2));
