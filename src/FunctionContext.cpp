@@ -166,6 +166,8 @@ void FunctionContext::removeVariable(const std::string& variable){
     auto var = storage[variable];
     
     storage.erase(variable);
+    
+    log::emit<Info>("Variables") << "Remove " << var->name() << log::endl;
 
     //If its a temporary, no need to recalculate positions
     if(!var->position().isTemporary()){
