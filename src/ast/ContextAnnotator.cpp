@@ -294,6 +294,12 @@ class AnnotateVisitor : public boost::static_visitor<> {
             
             visit_each(*this, new_.Content->values);
         }
+        
+        void operator()(ast::NewArray& new_){
+            new_.Content->context = currentContext;
+            
+            visit(*this, new_.Content->size);
+        }
 };
 
 } //end of anonymous namespace

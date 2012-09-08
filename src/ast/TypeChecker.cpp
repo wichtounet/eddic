@@ -340,6 +340,14 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
         
+        void operator()(ast::NewArray& new_){
+            auto type = visit_non_variant(ast::GetTypeVisitor(), new_);
+
+            if(type->is_array()){
+                throw SemanticalException("Multidimensional arrays are not supported", new_.Content->position);
+            }
+        }
+        
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type();
 

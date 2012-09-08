@@ -200,6 +200,11 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_each_sub(new_.Content->values, "Value");
     }
     
+    void operator()(ast::NewArray& new_array) const {
+        std::cout << indent() << "New array of " << ast::to_string(new_array.Content->type) << std::endl; 
+        print_sub(new_array.Content->size, "Size");
+    }
+    
     void operator()(ast::Delete& delete_) const {
         std::cout << indent() << "Delete " << delete_.Content->variable_name << std::endl; 
     }

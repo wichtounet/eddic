@@ -51,7 +51,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::NewArray, 
     (eddic::ast::Position, Content->position)
     (eddic::ast::Type, Content->type)
-    (eddic::ast::Value, size)
+    (eddic::ast::Value, Content->size)
 )
 
 #endif

@@ -278,6 +278,17 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         
         return copy;
     }
+    
+    ast::Value operator()(const ast::NewArray& source) const {
+        ast::NewArray copy;
+
+        copy.Content->context = source.Content->context;
+        copy.Content->position = source.Content->position;
+        copy.Content->type = source.Content->type;
+        copy.Content->size = visit(*this, source.Content->size);
+        
+        return copy;
+    }
 };
 
 struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
@@ -719,6 +730,12 @@ struct Adaptor : public boost::static_visitor<> {
         source.Content->type = replace(source.Content->type);
         
         visit_each(*this, source.Content->values);
+    }
+    
+    void operator()(ast::NewArray& source){
+        source.Content->type = replace(source.Content->type);
+        
+        visit(*this, source.Content->size);
     }
 
     AUTO_IGNORE_OTHERS()

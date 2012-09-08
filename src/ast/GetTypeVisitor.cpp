@@ -39,6 +39,10 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::New& valu
     return new_pointer_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
 }
 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::NewArray& value) const {
+    return new_array_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
    return visit(*this, ternary.Content->true_value); 
 }
