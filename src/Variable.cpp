@@ -29,14 +29,6 @@ Val Variable::val() const {
     return v_value;
 }
 
-void Variable::addReference(){
-    ++references;
-}
-
-int Variable::referenceCount() const {
-    return references;
-}
-
 void Variable::setPosition(Position position){
     m_position = position;
 }

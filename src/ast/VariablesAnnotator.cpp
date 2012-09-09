@@ -181,7 +181,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
 
         //Reference the variable
         variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-        variable.Content->var->addReference();
+        variable.Content->context->add_reference(variable.Content->var);
 
         return variable;
     }
@@ -193,7 +193,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         
         //Reference the variable
         array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
-        array.Content->var->addReference();
+        array.Content->context->add_reference(array.Content->var);
 
         array.Content->indexValue = visit(*this, array.Content->indexValue);
 
@@ -233,7 +233,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         }
         
         auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-        variable->addReference();
+        functionCall.Content->context->add_reference(variable);
 
         replace_each(functionCall.Content->values);
 
@@ -500,9 +500,9 @@ struct VariablesVisitor : public boost::static_visitor<> {
             foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
             
             //Add references to variables
-            foreach.Content->var->addReference();
-            foreach.Content->iterVar->addReference();
-            foreach.Content->arrayVar->addReference();
+            foreach.Content->context->add_reference(foreach.Content->var);
+            foreach.Content->context->add_reference(foreach.Content->iterVar);
+            foreach.Content->context->add_reference(foreach.Content->arrayVar);
         }
 
         visit_each(*proxy, foreach.Content->instructions);
@@ -514,7 +514,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
         
         delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
-        delete_.Content->variable->addReference();
+        delete_.Content->context->add_reference(delete_.Content->variable);
     }
     
     void operator()(ast::StructDeclaration& declaration){
@@ -625,8 +625,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
 
         //Reference both variables
-        swap.Content->lhs_var->addReference();
-        swap.Content->rhs_var->addReference();
+        swap.Content->context->add_reference(swap.Content->lhs_var);
+        swap.Content->context->add_reference(swap.Content->rhs_var);
     }
 
     /* Forward to value visitor, don't care about return value, as only variable are transformed */

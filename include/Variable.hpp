@@ -37,8 +37,6 @@ class Variable {
         ast::Position m_source_position;
         Val v_value;
 
-        int references;
-
     public:
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
@@ -51,9 +49,6 @@ class Variable {
         
         const ast::Position& source_position() const ;
         void set_source_position(const ast::Position& position);
-
-        void addReference();
-        int referenceCount() const ;
 
         void setPosition(Position position);
 };
