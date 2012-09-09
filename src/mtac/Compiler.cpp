@@ -1455,17 +1455,17 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
 }
 
 void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-
     auto definition = functionCall.Content->function;
 
     ASSERT(definition, "All the member functions should be in the function table");
 
     //Pass all normal arguments
     pass_arguments(function, definition, functionCall);
+
+    auto location_args = visit(ToArgumentsVisitor(function), functionCall.Content->object);
                 
     //Pass the address of the object to the member function
-    auto mtac_param = std::make_shared<mtac::Param>(var, definition->context->getVariable(definition->parameters[0].name), definition);
+    auto mtac_param = std::make_shared<mtac::Param>(location_args[0], definition->context->getVariable(definition->parameters[0].name), definition);
     mtac_param->address = true;
     function->add(mtac_param);   
 
