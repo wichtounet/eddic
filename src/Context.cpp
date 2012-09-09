@@ -96,3 +96,11 @@ std::shared_ptr<GlobalContext> Context::global() const {
 std::shared_ptr<FunctionContext> Context::function(){
     return nullptr;
 }
+        
+void Context::add_reference(std::shared_ptr<Variable> variable){
+    global()->add_reference(variable);
+}
+
+unsigned int Context::reference_count(std::shared_ptr<Variable> variable){
+    return global()->reference_count(variable);
+}

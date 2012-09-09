@@ -131,6 +131,9 @@ class Context {
         
         virtual std::shared_ptr<FunctionContext> function();
         std::shared_ptr<GlobalContext> global() const;
+
+        virtual void add_reference(std::shared_ptr<Variable> variable);
+        virtual unsigned int reference_count(std::shared_ptr<Variable> variable);
 };
 
 } //end of eddic

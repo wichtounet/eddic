@@ -18,6 +18,8 @@ using namespace eddic;
         
 GlobalContext::GlobalContext(Platform platform) : Context(NULL), platform(platform) {
     Val zero = 0;
+
+    references = std::make_shared<std::map<std::shared_ptr<Variable>, unsigned int>>();
     
     variables["_mem_start"] = std::make_shared<Variable>("_mem_start", INT, Position(PositionType::GLOBAL, "_mem_start"), zero);
     variables["_mem_start"]->addReference(); //In order to not display a warning
@@ -251,4 +253,12 @@ GlobalContext::FunctionMap GlobalContext::functions(){
 
 Platform GlobalContext::target_platform(){
     return platform;
+}
+        
+void GlobalContext::add_reference(std::shared_ptr<Variable> variable){
+    ++((*references)[variable]);
+}
+
+unsigned int GlobalContext::reference_count(std::shared_ptr<Variable> variable){
+    return (*references)[variable];
 }
