@@ -8,10 +8,12 @@
 #ifndef LTAC_FUNCTION_H
 #define LTAC_FUNCTION_H
 
-#include "tac/Function.hpp"
 #include "ltac/Statement.hpp"
 
 namespace eddic {
+
+class Function;
+class FunctionContext;
 
 namespace ltac {
 
