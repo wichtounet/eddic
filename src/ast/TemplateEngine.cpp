@@ -19,6 +19,7 @@
 #include "ast/TemplateEngine.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
@@ -167,7 +168,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->context = source.Content->context;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
-        copy.Content->object_name = source.Content->object_name;
+        copy.Content->object = visit(*this, source.Content->object);
         copy.Content->function_name = source.Content->function_name;
         copy.Content->template_types = source.Content->template_types;
 
@@ -299,7 +300,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->context = source.Content->context;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
-        copy.Content->object_name = source.Content->object_name;
+        copy.Content->object = visit(ValueCopier(), source.Content->object);
         copy.Content->function_name = source.Content->function_name;
         copy.Content->template_types = source.Content->template_types;
         
@@ -1072,16 +1073,13 @@ struct Instantiator : public boost::static_visitor<> {
 
     void operator()(ast::MemberFunctionCall& functionCall){
         visit_each(*this, functionCall.Content->values);
+        visit(*this, functionCall.Content->object);
 
         if(!functionCall.Content->template_types.empty()){
-            auto object_name = functionCall.Content->object_name;
+            auto object_var_type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
+            auto object_type = object_var_type->is_pointer() ? object_var_type->data_type() : object_var_type;
 
-            if(functionCall.Content->context->exists(object_name)){
-                auto object_var = functionCall.Content->context->getVariable(object_name);
-                auto object_type = object_var->type()->is_pointer() ? object_var->type()->data_type() : object_var->type();
-
-                handle_template(functionCall, object_type->mangle());
-            }
+            handle_template(functionCall, object_type->mangle());
         }
     }
 
