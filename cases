@@ -1,0 +1,444 @@
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/args.eddi
+TAC Program 
+
+Function _F4mainAS
+ENTRY
+B1->
+	foreach_iter_0(r,I) = (normal) 0 : 0
+	t_1(t,I) = (normal) (args(p,a))0 : 0
+	ifFalse 0 < t_1(t,I) goto B3 : 0
+B2->
+	t_2(t,I) = foreach_iter_0(r,I) * 16 : 1
+	t_2(t,I) = t_2(t,I) + 8 : 1
+	t_3(t,I) = (normal) (args(p,a))t_2(t,I) : 1
+	t_5(t,I) = t_2(t,I) + 8 : 1
+	t_4(t,I) = (normal) (args(p,a))t_5(t,I) : 1
+	param (std::a) t_4(t,I) : 1
+	param (std::a) t_3(t,I) : 1
+	call _F5printS : 1
+	param (std::a) 1 : 1
+	param (std::a) S5 : 1
+	call _F5printS : 1
+	foreach_iter_0(r,I) = foreach_iter_0(r,I) + 1 : 1
+	t_8(t,I) = (normal) (args(p,a))0 : 1
+	if foreach_iter_0(r,I) < t_8(t,I) goto B2 : 1
+B3->
+EXIT
+
+Compilation took 35ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/array_foreach_global.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	(global(g,a))8 = (normal) 4 : 0
+	(global(g,a))16 = (normal) 3 : 0
+	(global(g,a))24 = (normal) 2 : 0
+	(global(g,a))32 = (normal) 1 : 0
+	(global(g,a))40 = (normal) 0 : 0
+	foreach_iter_0(r,I) = (normal) 0 : 0
+B2->
+	t_6(t,I) = foreach_iter_0(r,I) * 8 : 1
+	t_6(t,I) = t_6(t,I) + 8 : 1
+	t_7(t,I) = (normal) (global(g,a))t_6(t,I) : 1
+	param (std::a) t_7(t,I) : 1
+	call _F5printI : 1
+	foreach_iter_0(r,I) = foreach_iter_0(r,I) + 1 : 1
+	if foreach_iter_0(r,I) < 5 goto B2 : 1
+EXIT
+
+Compilation took 36ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/array_foreach_local.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	(local(s,a))8 = (normal) 4 : 0
+	(local(s,a))16 = (normal) 3 : 0
+	(local(s,a))24 = (normal) 2 : 0
+	(local(s,a))32 = (normal) 1 : 0
+	(local(s,a))40 = (normal) 0 : 0
+	foreach_iter_0(r,I) = (normal) 0 : 0
+B2->
+	t_6(t,I) = foreach_iter_0(r,I) * 8 : 1
+	t_6(t,I) = t_6(t,I) + 8 : 1
+	t_7(t,I) = (normal) (local(s,a))t_6(t,I) : 1
+	param (std::a) t_7(t,I) : 1
+	call _F5printI : 1
+	foreach_iter_0(r,I) = foreach_iter_0(r,I) + 1 : 1
+	if foreach_iter_0(r,I) < 5 goto B2 : 1
+EXIT
+
+Compilation took 42ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/array_foreach_param_global.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	(global(g,a))8 = (normal) 4 : 0
+	(global(g,a))16 = (normal) 3 : 0
+	(global(g,a))24 = (normal) 2 : 0
+	(global(g,a))32 = (normal) 1 : 0
+	(global(g,a))40 = (normal) 0 : 0
+	g_foreach_iter_0_6(r,I) = (normal) 0 : 0
+	g_t_1_7(t,I) = (normal) (global(g,a))0 : 0
+	ifFalse 0 < g_t_1_7(t,I) goto B7 : 0
+B6->
+	g_t_2_8(t,I) = g_foreach_iter_0_6(r,I) * 8 : 1
+	g_t_2_8(t,I) = g_t_2_8(t,I) + 8 : 1
+	g_t_3_9(t,I) = (normal) (global(g,a))g_t_2_8(t,I) : 1
+	param (std::a) g_t_3_9(t,I) : 1
+	call _F5printI : 1
+	g_foreach_iter_0_6(r,I) = g_foreach_iter_0_6(r,I) + 1 : 1
+	g_t_5_10(t,I) = (normal) (global(g,a))0 : 1
+	if g_foreach_iter_0_6(r,I) < g_t_5_10(t,I) goto B6 : 1
+B7->
+EXIT
+
+Compilation took 35ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/array_foreach_param_local.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	(local(s,a))8 = (normal) 4 : 0
+	(local(s,a))16 = (normal) 3 : 0
+	(local(s,a))24 = (normal) 2 : 0
+	(local(s,a))32 = (normal) 1 : 0
+	(local(s,a))40 = (normal) 0 : 0
+	g_foreach_iter_0_6(r,I) = (normal) 0 : 0
+B6->
+	g_t_2_8(t,I) = g_foreach_iter_0_6(r,I) * 8 : 1
+	g_t_2_8(t,I) = g_t_2_8(t,I) + 8 : 1
+	g_t_3_9(t,I) = (normal) (local(s,a))g_t_2_8(t,I) : 1
+	param (std::a) g_t_3_9(t,I) : 1
+	call _F5printI : 1
+	g_foreach_iter_0_6(r,I) = g_foreach_iter_0_6(r,I) + 1 : 1
+	if g_foreach_iter_0_6(r,I) < 5 goto B6 : 1
+EXIT
+
+Compilation took 42ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/array_foreach_param_param.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	(local(s,a))8 = (normal) 4 : 0
+	(local(s,a))16 = (normal) 3 : 0
+	(local(s,a))24 = (normal) 2 : 0
+	(local(s,a))32 = (normal) 1 : 0
+	(local(s,a))40 = (normal) 0 : 0
+	g_foreach_iter_0_6(r,I) = (normal) 0 : 0
+B6->
+	g_t_2_8(t,I) = g_foreach_iter_0_6(r,I) * 8 : 1
+	g_t_2_8(t,I) = g_t_2_8(t,I) + 8 : 1
+	g_t_3_9(t,I) = (normal) (local(s,a))g_t_2_8(t,I) : 1
+	param (std::a) g_t_3_9(t,I) : 1
+	call _F5printI : 1
+	g_foreach_iter_0_6(r,I) = g_foreach_iter_0_6(r,I) + 1 : 1
+	if g_foreach_iter_0_6(r,I) < 5 goto B6 : 1
+EXIT
+
+Compilation took 50ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/assign_value.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	param (std::a) 6 : 0
+	call _F5printI : 0
+	param (std::a) 6 : 0
+	call _F5printI : 0
+	param (std::a) 7 : 0
+	call _F5printI : 0
+	param (std::a) 7 : 0
+	call _F5printI : 0
+	param (std::a) 9 : 0
+	call _F5printI : 0
+	param (std::a) 9 : 0
+	call _F5printI : 0
+	param (std::a) 2 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	call _F5printI : 0
+EXIT
+
+Compilation took 26ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/bool_pointers.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	param (std::a) 0 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 0 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 1 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 1 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 0 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 0 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 1 : 0
+	call _F5printB : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+EXIT
+
+Compilation took 57ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/builtin.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	param (std::a) 10 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 11 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 12 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 13 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 12 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 13 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	g_t_1_12(t,I) = (normal) (globalArray(g,a))0 : 0
+	param (std::a) g_t_1_12(t,I) : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	g_t_1_13(t,I) = (normal) (globalArrayB(g,a))0 : 0
+	param (std::a) g_t_1_13(t,I) : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 4 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 8 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 13 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 8 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 0 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 3 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+EXIT
+
+Compilation took 228ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/casts.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	param (std::a) 5 : 0
+	call _F5printF : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 5 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 4 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 333 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 5 : 0
+	call _F5printF : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 8.3300000000000001 : 0
+	call _F5printF : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 66 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 66 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 90 : 0
+	call _F5printI : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+EXIT
+
+Compilation took 54ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/char_at.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	param (std::a) 4 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 97 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 115 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 100 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+	param (std::a) 1 : 0
+	param (std::a) S7 : 0
+	call _F5printS : 0
+	param (std::a) 1 : 0
+	param (std::a) S6 : 0
+	call _F5printS : 0
+EXIT
+
+Compilation took 47ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/char_type.eddi
+TAC Program 
+
+Function _F4main
+ENTRY
+B1->
+	param (std::a) 97 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 48 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 122 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 101 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 101 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 117 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+	param (std::a) 117 : 0
+	call _F5printC : 0
+	param (std::a) 1 : 0
+	param (std::a) S5 : 0
+	call _F5printS : 0
+EXIT
+
+Compilation took 68ms
+
+Compile /home/wichtounet/dev/eddi/eddic/test/cases/class_templates.eddi
