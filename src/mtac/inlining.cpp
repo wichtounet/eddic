@@ -175,7 +175,7 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
     }
 
     mtac::Statement operator()(std::shared_ptr<mtac::Goto> goto_){
-        auto copy = std::make_shared<mtac::Goto>(goto_->label, goto_->type);
+        auto copy = std::make_shared<mtac::Goto>(goto_->label);
         copy->block = goto_->block;
         return copy;
     }

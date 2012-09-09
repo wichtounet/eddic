@@ -8,14 +8,19 @@
 #ifndef MTAC_PROGRAM_H
 #define MTAC_PROGRAM_H
 
-#include "tac/Program.hpp"
 #include "mtac/Function.hpp"
 
 namespace eddic {
 
+struct GlobalContext;
+
 namespace mtac {
 
-typedef tac::Program<mtac::Function> Program;
+struct Program {
+    std::shared_ptr<GlobalContext> context;
+
+    std::vector<std::shared_ptr<Function>> functions;
+};
 
 } //end of mtac
 
