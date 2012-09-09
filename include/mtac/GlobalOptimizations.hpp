@@ -22,8 +22,6 @@ namespace eddic {
 
 namespace mtac {
 
-std::shared_ptr<ControlFlowGraph> build_control_flow_graph(std::shared_ptr<Function> function);
-
 template<DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     if(Type == DataFlowType::Forward){
