@@ -99,6 +99,8 @@ std::shared_ptr<mtac::BasicBlock> create_pre_header(const Loop& loop, std::share
 bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
     std::shared_ptr<mtac::BasicBlock> pre_header;
 
+    bool optimized = false;
+
     auto usage = compute_usage(loop, g);
 
     for(auto& vertex : loop){
@@ -119,13 +121,17 @@ bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function
                     
                 it.erase();
                 pre_header->statements.push_back(statement);
+
+                optimized = true;
+
+                continue;
             }
 
             ++it;
         }
     }
 
-    return false;
+    return optimized;
 }
 
 } //end of anonymous namespace
