@@ -30,6 +30,7 @@
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/ConcatReduction.hpp"
 #include "mtac/inlining.hpp"
+#include "mtac/loop_optimizations.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -197,6 +198,8 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
         
         optimized |= debug("Remove aliases", &mtac::remove_aliases, function);
+
+        optimized |= debug("Loop Invariant Code Motion", &mtac::loop_invariant_code_motion, function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations

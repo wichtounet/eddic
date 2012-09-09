@@ -14,7 +14,6 @@
 #include "logging.hpp"
 
 #include "mtac/loop_analysis.hpp"
-#include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
