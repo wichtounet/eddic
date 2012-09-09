@@ -5,14 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "ltac/Call.hpp"
+#include <string>
+
+#include "mtac/Goto.hpp"
 
 using namespace eddic;
 
-ltac::Call::Call(){
-    //Nothing to init    
+mtac::Goto::Goto(){
+    //Nothing to init
 }
 
-ltac::Call::Call(const std::string& f, std::shared_ptr<Function> functionDefinition) : function(f), functionDefinition(functionDefinition) {
-    //Nothing to init    
+mtac::Goto::Goto(const std::string& label) : label(label) {
+    //Nothing to init
 }

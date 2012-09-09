@@ -8,13 +8,9 @@
 #ifndef LTAC_JUMP_H
 #define LTAC_JUMP_H
 
-#include "tac/Jump.hpp"
-
 namespace eddic {
 
 namespace ltac {
-
-class BasicBlock;
 
 enum class JumpType : unsigned int {
     ALWAYS,
@@ -42,7 +38,13 @@ enum class JumpType : unsigned int {
     NZ      //Not zero
 };
 
-typedef tac::Jump<JumpType, BasicBlock> Jump;
+struct Jump {
+    std::string label;
+    JumpType type;
+
+    Jump();
+    Jump(const std::string& label, JumpType type);
+};
 
 } //end of ltac
 

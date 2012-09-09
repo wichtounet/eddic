@@ -5,29 +5,16 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef LTAC_CALL_H
-#define LTAC_CALL_H
-
 #include <string>
-#include <memory>
 
-namespace eddic {
+#include "ltac/Jump.hpp"
 
-class Variable;
-class Function;
+using namespace eddic;
 
-namespace ltac {
+ltac::Jump::Jump(){
+    //Nothing to init
+}
 
-struct Call {
-    std::string function;
-    std::shared_ptr<Function> functionDefinition;
-
-    Call();
-    Call(const std::string& function, std::shared_ptr<Function> functionDefinition);
-};
-
-} //end of ltac
-
-} //end of eddic
-
-#endif
+ltac::Jump::Jump(const std::string& label, JumpType type) : label(label), type(type) {
+    //Nothing to init
+}

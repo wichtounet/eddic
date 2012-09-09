@@ -8,7 +8,7 @@
 #ifndef MTAC_GOTO_H
 #define MTAC_GOTO_H
 
-#include "tac/Jump.hpp"
+#include <memory>
 
 namespace eddic {
 
@@ -16,11 +16,16 @@ namespace mtac {
 
 class BasicBlock;
 
-enum class JumpType : unsigned int {
-    ALWAYS
-};
+struct Goto {
+    std::string label;
+    unsigned int depth;
+    
+    //Filled only in later phase replacing the label
+    std::shared_ptr<BasicBlock> block;
 
-typedef tac::Jump<JumpType, BasicBlock> Goto;
+    Goto();
+    Goto(const std::string& label);
+};
 
 } //end of mtac
 
