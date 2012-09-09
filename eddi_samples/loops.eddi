@@ -27,11 +27,19 @@ void main(){
     }
 
     test();
+    test2();
 }
 
 void test(){
     int a[100];
     for(int i = 0; i < 100; ++i){
         a[i] = 202 - 2 * i;
+    }
+}
+
+void test2(){
+    int a[100];
+    for(int i = 0; i < 100; ++i){
+        a[i] = 0;
     }
 }

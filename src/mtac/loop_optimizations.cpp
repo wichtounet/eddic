@@ -241,6 +241,98 @@ bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function
     return optimized;
 }
 
+std::unordered_map<std::shared_ptr<Variable>, int> find_all_candidates(const Loop& loop, const G& g){
+    std::unordered_map<std::shared_ptr<Variable>, int> candidates;
+    
+    for(auto& vertex : loop){
+        auto bb = g[vertex].block;
+
+        for(auto& statement : bb->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if(mtac::erase_result((*ptr)->op)){
+                    candidates[(*ptr)->result] = 0;
+                }
+            }
+        }
+    }
+
+    return candidates;
+}
+
+std::unordered_map<std::shared_ptr<Variable>, int> find_basic_induction_variables(const Loop& loop, const G& g){
+    auto basic_induction_variables = find_all_candidates(loop, g);
+
+    for(auto& vertex : loop){
+        auto bb = g[vertex].block;
+
+        for(auto& statement : bb->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                auto quadruple = *ptr;
+                auto var = quadruple->result;
+
+                //If it is not a candidate, do not test it
+                if(!basic_induction_variables.count(var)){
+                    continue;
+                }
+
+                auto value = basic_induction_variables[var];
+
+                //TODO In the future, induction variables written several times could be splitted into several induction variables
+                if(value != 0){
+                    basic_induction_variables.erase(var);
+                }
+
+                if(quadruple->op == mtac::Operator::ADD){
+                    auto arg1 = *quadruple->arg1;
+                    auto arg2 = *quadruple->arg2;
+
+                    if(mtac::isInt(arg1) && mtac::equals(arg2, var)){
+                        basic_induction_variables[var] = boost::get<int>(arg1); 
+                    } else if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
+                        basic_induction_variables[var] = boost::get<int>(arg2); 
+                    } else {
+                        basic_induction_variables.erase(var);
+                    }
+                } else {
+                    basic_induction_variables.erase(var);
+                }
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                auto call = *ptr;
+
+                if(call->return_){
+                    basic_induction_variables.erase(call->return_);
+                }
+
+                if(call->return2_){
+                    basic_induction_variables.erase(call->return2_);
+                }
+            }
+        }
+    }
+
+    return basic_induction_variables;
+}
+
+bool loop_strength_reduction(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
+    std::shared_ptr<mtac::BasicBlock> pre_header;
+
+    bool optimized = false;
+
+    auto basic = find_basic_induction_variables(loop, g);
+
+    for(auto& biv : basic){
+        std::cout << biv.first->name() << " : " << biv.second << std::endl;
+    }
+
+    for(auto& vertex : loop){
+        auto bb = g[vertex].block;
+
+
+    }
+
+    return optimized;
+}
+
 } //end of anonymous namespace
 
 bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
@@ -264,5 +356,24 @@ bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
         optimized |= ::loop_invariant_code_motion(loop, function, g, domTreePredMap);
     }
     
+    return optimized;
+}
+
+bool mtac::loop_strength_reduction(std::shared_ptr<mtac::Function> function){
+    auto graph = mtac::build_control_flow_graph(function);
+    auto g = graph->get_graph();
+    
+    auto natural_loops = find_natural_loops(g);
+
+    if(natural_loops.empty()){
+        return false;
+    }
+
+    bool optimized = false;
+    
+    for(auto& loop : natural_loops){
+        optimized |= ::loop_strength_reduction(loop, function, g);
+    }
+
     return optimized;
 }

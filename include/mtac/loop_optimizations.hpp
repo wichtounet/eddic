@@ -17,6 +17,7 @@ namespace mtac {
 class Function;
 
 bool loop_invariant_code_motion(std::shared_ptr<mtac::Function> function);
+bool loop_strength_reduction(std::shared_ptr<mtac::Function> function);
 
 } //end of mtac
 
