@@ -163,6 +163,7 @@ void operator()(ast::FunctionCall& functionCall){\
 
 #define AUTO_RECURSE_MEMBER_FUNCTION_CALLS()\
 void operator()(ast::MemberFunctionCall& functionCall){\
+    visit(*this, functionCall.Content->object);\
     visit_each(*this, functionCall.Content->values);\
 }
 
