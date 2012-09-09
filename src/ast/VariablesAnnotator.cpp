@@ -163,6 +163,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
                 if(struct_type->member_exists(variable.Content->variableName)){
                     ast::VariableValue this_variable;
                     this_variable.Content->context = variable.Content->context;
+                    this_variable.Content->var = variable.Content->context->getVariable("this");
                     this_variable.Content->variableName = "this";
                     this_variable.Content->position = variable.Content->position;
 
@@ -228,12 +229,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::MemberFunctionCall& functionCall){
-        if (!functionCall.Content->context->exists(functionCall.Content->object_name)){
-            throw SemanticalException("The variable " + functionCall.Content->object_name + " does not exists", functionCall.Content->position);
-        }
-        
-        auto variable = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-        functionCall.Content->context->add_reference(variable);
+        functionCall.Content->object = visit(*this, functionCall.Content->object);
 
         replace_each(functionCall.Content->values);
 

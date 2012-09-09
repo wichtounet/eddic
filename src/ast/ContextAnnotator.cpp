@@ -39,6 +39,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
+        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
 
         AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
@@ -91,12 +92,6 @@ class AnnotateVisitor : public boost::static_visitor<> {
 
                 currentContext = currentContext->parent();
             }
-        }
-        
-        void operator()(ast::MemberFunctionCall& functionCall){
-            functionCall.Content->context = currentContext;
-
-            visit_each(*this, functionCall.Content->values);
         }
 
         void operator()(ast::FunctionCall& functionCall){

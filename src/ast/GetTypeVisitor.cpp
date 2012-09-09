@@ -96,7 +96,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberVal
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    return variable.variable()->type();
+    return variable.Content->var->type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {

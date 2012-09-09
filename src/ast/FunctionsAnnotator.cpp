@@ -308,12 +308,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             if(context->exists(mangled)){
                                 context->addReference(mangled);
 
+                                ast::VariableValue variable_value;
+                                variable_value.Content->context = functionCall.Content->context;
+                                variable_value.Content->position = functionCall.Content->position;
+                                variable_value.Content->variableName = "this";
+                                variable_value.Content->var = functionCall.Content->context->getVariable("this");
+
                                 ast::MemberFunctionCall member_function_call;
                                 member_function_call.Content->function = context->getFunction(mangled);
-                                member_function_call.Content->context = functionCall.Content->context;
                                 member_function_call.Content->mangled_name = mangled;
                                 member_function_call.Content->position = functionCall.Content->position;
-                                member_function_call.Content->object_name = "this";
+                                member_function_call.Content->object = variable_value;
                                 member_function_call.Content->function_name = functionCall.Content->function_name;
                                 member_function_call.Content->resolved = functionCall.Content->resolved;
                                 member_function_call.Content->template_types = functionCall.Content->template_types;
@@ -411,6 +416,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::MemberFunctionCall& functionCall){
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
+                check_value(functionCall.Content->object);
                 check_each(functionCall.Content->values);
 
                 //If the function has already been resolved, we can return directly
@@ -418,8 +424,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     return;
                 }
 
-                auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-                auto type = var->type();
+                auto type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
                 auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                 std::string name = functionCall.Content->function_name;
