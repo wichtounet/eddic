@@ -200,6 +200,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Remove aliases", &mtac::remove_aliases, function);
 
         optimized |= debug("Loop Invariant Code Motion", &mtac::loop_invariant_code_motion, function);
+        optimized |= debug("Loop Strength Reduction", &mtac::loop_strength_reduction, function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations
