@@ -30,5 +30,8 @@ void main(){
 }
 
 void test(){
-    print("Test");
+    int a[100];
+    for(int i = 0; i < 100; ++i){
+        a[i] = 202 - 2 * i;
+    }
 }
