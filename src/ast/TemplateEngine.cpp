@@ -1069,15 +1069,25 @@ struct Instantiator : public boost::static_visitor<> {
         }
     }
 
+    bool is_init(ast::Value& value){
+        if(auto* ptr = boost::get<ast::VariableValue>(&value)){
+            return ptr->Content->var != 0;
+        }
+
+        ASSERT_PATH_NOT_TAKEN("Unhandled value type");
+    }
+
     void operator()(ast::MemberFunctionCall& functionCall){
         visit_each(*this, functionCall.Content->values);
         visit(*this, functionCall.Content->object);
 
         if(!functionCall.Content->template_types.empty()){
-            auto object_var_type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
-            auto object_type = object_var_type->is_pointer() ? object_var_type->data_type() : object_var_type;
+            if(is_init(functionCall.Content->object)){
+                auto object_var_type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
+                auto object_type = object_var_type->is_pointer() ? object_var_type->data_type() : object_var_type;
 
-            handle_template(functionCall, object_type->mangle());
+                handle_template(functionCall, object_type->mangle());
+            }
         }
     }
 
