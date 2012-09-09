@@ -118,7 +118,7 @@ struct Inspector : public boost::static_visitor<> {
                 for(; iter != end; iter++){
                     auto var = iter->second;
 
-                    if(var->referenceCount() == 0){
+                    if(context->reference_count(var) == 0){
                         if(var->position().isStack()){
                             warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
                         } else if(var->position().isGlobal()){

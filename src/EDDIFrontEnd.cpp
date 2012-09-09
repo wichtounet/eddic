@@ -33,7 +33,6 @@
 
 //Visitors
 #include "ast/DependenciesResolver.hpp"
-#include "ast/OptimizationEngine.hpp"
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
 #include "ast/Printer.hpp"
@@ -112,8 +111,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Check that there is a main in the program
         check_for_main(program.Content->context);
 
-        //Optimize the AST
-        ast::optimizeAST(program, *pool);
+        program.Content->context->release_references();
 
         //If the user asked for it, print the Abstract Syntax Tree
         if(configuration->option_defined("ast") || configuration->option_defined("ast-only")){

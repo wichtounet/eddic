@@ -254,6 +254,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
                     check_each(functionCall.Content->values);
 
+                    //If the function has already been resolved, we can return directly
+                    if(functionCall.Content->function){
+                        return;
+                    }
+
                     std::string name = functionCall.Content->function_name;
 
                     auto types = get_types(functionCall);
@@ -406,11 +411,16 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::MemberFunctionCall& functionCall){
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
+                check_each(functionCall.Content->values);
+
+                //If the function has already been resolved, we can return directly
+                if(functionCall.Content->function){
+                    return;
+                }
+
                 auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
                 auto type = var->type();
                 auto struct_type = type->is_pointer() ? type->data_type() : type;
-
-                check_each(functionCall.Content->values);
 
                 std::string name = functionCall.Content->function_name;
 

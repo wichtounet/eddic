@@ -8,6 +8,8 @@
 #ifndef GLOBAL_CONTEXT_H
 #define GLOBAL_CONTEXT_H
 
+#include <map>
+
 #include "Context.hpp"
 #include "Function.hpp"
 #include "Struct.hpp"
@@ -29,6 +31,8 @@ class GlobalContext final : public Context {
     
     public:
         GlobalContext(Platform platform);
+
+        void release_references();
         
         Variables getVariables();
         
@@ -104,12 +108,17 @@ class GlobalContext final : public Context {
          */
         int referenceCount(const std::string& function);
 
+        void add_reference(std::shared_ptr<Variable> variable) override;
+        unsigned int reference_count(std::shared_ptr<Variable> variable) override;
+
         Platform target_platform();
     
     private:
         FunctionMap m_functions;
         StructMap m_structs;
         Platform platform;
+
+        std::shared_ptr<std::map<std::shared_ptr<Variable>, unsigned int>> references;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
