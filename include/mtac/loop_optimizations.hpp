@@ -10,11 +10,11 @@
 
 #include <memory>
 
-#include "mtac/Function.hpp"
-
 namespace eddic {
 
 namespace mtac {
+
+class Function;
 
 bool loop_invariant_code_motion(std::shared_ptr<mtac::Function> function);
 
