@@ -55,6 +55,9 @@ void test3(){
 
 void test4(){
     for(int i = 0; i < 10; ++i){
-        print(100 + i);
+        int a = 100 + i;
+        int b = a * 3;
+        print(a);
+        print(b);
     }
 }

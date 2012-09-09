@@ -258,13 +258,29 @@ InductionVariables find_all_candidates(const Loop& loop, const G& g){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
-                    candidates[(*ptr)->result] = {(*ptr)->result, 0, 0};
+                    candidates[(*ptr)->result] = {nullptr, 0, 0};
                 }
             }
         }
     }
 
     return candidates;
+}
+
+void clean_defaults(InductionVariables& induction_variables){
+    auto it = iterate(induction_variables);
+
+    //Erase induction variables that have been created by default
+    while(it.has_next()){
+        auto equation = (*it).second;
+
+        if(!equation.i){
+            it.erase();
+            continue;
+        }
+
+        ++it;
+    }
 }
 
 InductionVariables find_basic_induction_variables(const Loop& loop, const G& g){
@@ -286,7 +302,7 @@ InductionVariables find_basic_induction_variables(const Loop& loop, const G& g){
                 auto value = basic_induction_variables[var];
 
                 //TODO In the future, induction variables written several times could be splitted into several induction variables
-                if(value.e != 0){
+                if(value.i){
                     basic_induction_variables.erase(var);
 
                     continue;
@@ -298,14 +314,14 @@ InductionVariables find_basic_induction_variables(const Loop& loop, const G& g){
 
                     if(mtac::isInt(arg1) && mtac::equals(arg2, var)){
                         basic_induction_variables[var] = {var, 1, boost::get<int>(arg1)};
+                        continue;
                     } else if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
                         basic_induction_variables[var] = {var, 1, boost::get<int>(arg2)}; 
-                    } else {
-                        basic_induction_variables.erase(var);
-                    }
-                } else {
-                    basic_induction_variables.erase(var);
-                }
+                        continue;
+                    } 
+                } 
+                
+                basic_induction_variables.erase(var);
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
                 auto call = *ptr;
 
@@ -320,10 +336,12 @@ InductionVariables find_basic_induction_variables(const Loop& loop, const G& g){
         }
     }
 
+    clean_defaults(basic_induction_variables);
+
     return basic_induction_variables;
 }
 
-InductionVariables find_dependent_induction_variables(const Loop& loop, const G& g, InductionVariables& basic_induction_variables){
+InductionVariables find_dependent_induction_variables(const Loop& loop, const G& g, const InductionVariables& basic_induction_variables){
     auto dependent_induction_variables = find_all_candidates(loop, g);
 
     for(auto& vertex : loop){
@@ -349,7 +367,7 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                 auto value = dependent_induction_variables[var];
 
                 //TODO In the future, induction variables written several times could be splitted into several induction variables
-                if(value.e != 0){
+                if(value.i){
                     dependent_induction_variables.erase(var);
 
                     continue;
@@ -361,16 +379,26 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                     if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
+                        auto e = boost::get<int>(arg1);
 
                         if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, boost::get<int>(arg1), 0}; 
+                            dependent_induction_variables[var] = {variable, e, 0}; 
+                            continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
                             continue;
                         }
                     } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+                        auto e = boost::get<int>(arg2);
                         
                         if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, boost::get<int>(arg2), 0}; 
+                            dependent_induction_variables[var] = {variable, e, 0}; 
+                            continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
                             continue;
                         }
                     } 
@@ -380,16 +408,26 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                     if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
+                        auto e = boost::get<int>(arg1);
 
                         if(basic_induction_variables.count(variable)){
                             dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg1)}; 
                             continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
+                            continue;
                         }
                     } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+                        auto e = boost::get<int>(arg2);
                         
                         if(basic_induction_variables.count(variable)){
                             dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg2)}; 
+                            continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
                             continue;
                         }
                     }
@@ -399,16 +437,26 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                     if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
+                        auto e = boost::get<int>(arg1);
 
                         if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, -1, -1 * boost::get<int>(arg1)}; 
+                            dependent_induction_variables[var] = {variable, -1, -1 * e}; 
+                            continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, -1 * equation.e, e - equation.d}; 
                             continue;
                         }
                     } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+                        auto e = boost::get<int>(arg2);
                         
                         if(basic_induction_variables.count(variable)){
                             dependent_induction_variables[var] = {variable, 1, -1 * boost::get<int>(arg2)}; 
+                            continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, equation.e, equation.d - e}; 
                             continue;
                         }
                     } 
@@ -420,6 +468,10 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(basic_induction_variables.count(variable)){
                             dependent_induction_variables[var] = {variable, -1, 0}; 
+                            continue;
+                        } else if(dependent_induction_variables[variable].i){
+                            auto equation = dependent_induction_variables[variable];
+                            dependent_induction_variables[var] = {equation.i, -1 * equation.e, -1 * equation.d}; 
                             continue;
                         }
                     } 
@@ -439,6 +491,8 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
             }
         }
     }
+
+    clean_defaults(dependent_induction_variables);
 
     return dependent_induction_variables;
 }
