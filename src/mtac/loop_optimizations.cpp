@@ -13,7 +13,6 @@
 #include "mtac/loop_analysis.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -73,7 +72,31 @@ bool is_invariant(mtac::Statement& statement, Usage& usage){
     return false;
 }
 
-bool loop_invariant_code_motion(const Loop& loop, const G& g){
+std::shared_ptr<mtac::BasicBlock> create_pre_header(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
+    //Create a new basic block and detach it from the function
+    auto pre_header = function->newBasicBlock();
+    function->getBasicBlocks().pop_back();
+    
+    auto first_bb = g[*loop.begin()].block;
+
+    auto bit = iterate(function->getBasicBlocks());
+
+    while(bit.has_next()){
+        if(*bit == first_bb){
+            bit.insert(pre_header);
+
+            break;
+        }
+
+        ++bit;
+    }
+
+    //TODO There are certainly cases when this is not enough
+    
+    return pre_header;
+}
+
+bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
     std::shared_ptr<mtac::BasicBlock> pre_header;
 
     auto usage = compute_usage(loop, g);
@@ -87,8 +110,15 @@ bool loop_invariant_code_motion(const Loop& loop, const G& g){
             auto statement = *it;
 
             if(is_invariant(statement, usage)){
-                mtac::Printer printer;
-                printer.printStatement(statement);
+                //TODO Test if the invariant can be moved to the preheader
+                
+                //Create the preheader if necessary
+                if(!pre_header){
+                    pre_header = create_pre_header(loop, function, g);
+                }
+                    
+                it.erase();
+                pre_header->statements.push_back(statement);
             }
 
             ++it;
@@ -113,7 +143,7 @@ bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
     for(auto& loop : natural_loops){
-        optimized |= ::loop_invariant_code_motion(loop, g);
+        optimized |= ::loop_invariant_code_motion(loop, function, g);
     }
     
     return optimized;
