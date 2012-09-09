@@ -231,7 +231,7 @@ bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function
                     optimized = true;
 
                     continue;
-                }
+                } 
             }
 
             ++it;
