@@ -315,7 +315,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                                 ast::MemberFunctionCall member_function_call;
                                 member_function_call.Content->function = context->getFunction(mangled);
-                                member_function_call.Content->context = functionCall.Content->context;
+                                //member_function_call.Content->context = functionCall.Content->context;
                                 member_function_call.Content->mangled_name = mangled;
                                 member_function_call.Content->position = functionCall.Content->position;
                                 member_function_call.Content->object = variable_value;

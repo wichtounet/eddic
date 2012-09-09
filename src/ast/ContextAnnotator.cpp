@@ -94,8 +94,7 @@ class AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::MemberFunctionCall& functionCall){
-            functionCall.Content->context = currentContext;
-
+            visit(*this, functionCall.Content->object);
             visit_each(*this, functionCall.Content->values);
         }
 

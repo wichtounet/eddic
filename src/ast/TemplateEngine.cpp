@@ -165,7 +165,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         ast::MemberFunctionCall copy;
 
         copy.Content->function = source.Content->function;
-        copy.Content->context = source.Content->context;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->object = visit(*this, source.Content->object);
@@ -297,7 +296,6 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::MemberFunctionCall copy;
 
         copy.Content->function = source.Content->function;
-        copy.Content->context = source.Content->context;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->object = visit(ValueCopier(), source.Content->object);
