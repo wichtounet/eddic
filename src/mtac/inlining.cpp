@@ -19,73 +19,13 @@
 #include "mtac/inlining.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/VariableReplace.hpp"
 
 using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> VariableClones;
 typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>> BBClones;
-
-struct VariableReplace : public boost::static_visitor<> {
-    VariableClones& clones;
-
-    VariableReplace(VariableClones& clones) : clones(clones) {}
-
-    template<typename Value>
-    void update_usage(Value& value){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&value)){
-            if(clones.find(*ptr) != clones.end()){
-                value = clones[*ptr];
-            }
-        }
-    }
-
-    template<typename Opt>
-    void update_usage_optional(Opt& opt){
-        if(opt){
-            update_usage(*opt);
-        }
-    }
-    
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        if(clones.find(quadruple->result) != clones.end()){
-            quadruple->result = clones[quadruple->result];
-        }
-
-        update_usage_optional(quadruple->arg1);
-        update_usage_optional(quadruple->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::Param> param){
-        update_usage(param->arg);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        update_usage(if_false->arg1);
-        update_usage_optional(if_false->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        update_usage(if_->arg1);
-        update_usage_optional(if_->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::Call> call_){
-        if(call_->return_ && clones.find(call_->return_) != clones.end()){
-            call_->return_ = clones[call_->return_];
-        }
-
-        if(call_->return2_ && clones.find(call_->return2_) != clones.end()){
-            call_->return2_ = clones[call_->return2_];
-        }
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
-    }
-};
 
 struct BBReplace : public boost::static_visitor<> {
     BBClones& clones;
@@ -218,8 +158,8 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
 }
 
 template<typename Iterator>
-VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit){
-    VariableClones variable_clones;
+mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit){
+    mtac::VariableClones variable_clones;
 
     auto source_definition = source_function->definition;
     auto dest_definition = dest_function->definition;
@@ -367,8 +307,8 @@ unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_fu
 }
 
 template<typename Iterator>
-void adapt_instructions(VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, Iterator bit){
-    VariableReplace variable_replacer(variable_clones);
+void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, Iterator bit){
+    mtac::VariableReplace variable_replacer(variable_clones);
     BBReplace bb_replacer(bb_clones);
 
     auto basic_block = *bit;

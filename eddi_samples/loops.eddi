@@ -26,9 +26,48 @@ void main(){
         }
     }
 
+    /* Here to test strength reduction of induction variables */
     test();
+    test2();
+    test3();
+    test4();
+    test5();
 }
 
 void test(){
-    print("Test");
+    int a[100];
+    for(int i = 0; i < 100; ++i){
+        a[i] = 202 - 2 * i;
+    }
+}
+
+void test2(){
+    int a[100];
+    for(int i = 0; i < 100; ++i){
+        a[i] = 0;
+    }
+}
+
+void test3(){
+    for(int i = 0; i < 10; ++i){
+        print(100 * i);
+    }
+}
+
+void test4(){
+    for(int i = 0; i < 10; ++i){
+        int a = 100 + i;
+        int b = a * 3;
+        print(a);
+        print(b);
+    }
+}
+
+void test5(){
+    int a = 0;
+    for(int i = 0; i < 100; ++i){
+        a += i;
+    }
+    print(a);
+
 }
