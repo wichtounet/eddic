@@ -319,10 +319,10 @@ struct LinearEquation {
     bool generated;
 };
 
-typedef std::unordered_map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
+typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
 
 InductionVariables find_all_candidates(const Loop& loop, const G& g){
-    std::unordered_map<std::shared_ptr<Variable>, LinearEquation> candidates;
+    InductionVariables candidates;
     
     for(auto& vertex : loop){
         auto bb = g[vertex].block;
