@@ -1,5 +1,5 @@
 void main(){
-    /*for(int i = 0; i < 10; ++i){
+    for(int i = 0; i < 10; ++i){
         for(int j = 0; j < 10; ++j){
             print(i * 100 + j);
         }
@@ -24,13 +24,13 @@ void main(){
                 }
             }
         }
-    }*/
+    }
 
     /* Here to test strength reduction of induction variables */
-//    test();
-//    test2();
+    test();
+    test2();
     test3();
-//    test4();
+    test4();
 }
 
 void test(){
@@ -60,4 +60,13 @@ void test4(){
         print(a);
         print(b);
     }
+}
+
+void test5(){
+    int a = 0;
+    for(int i = 0; i < 100; ++i){
+        a += i;
+    }
+    print(a);
+
 }
