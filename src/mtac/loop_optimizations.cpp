@@ -575,6 +575,8 @@ bool strength_reduce(const Loop& loop, LinearEquation& equation, const G& g, Ind
                 pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, equation.d));
 
                 new_induction_variables[tj] = {i, equation.e, equation.d};
+
+                optimized = true;
             }
         }
     }
