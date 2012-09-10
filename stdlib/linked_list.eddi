@@ -3,7 +3,7 @@ struct linked_list_node {
     T data;
     linked_list_node<T>* next;
 
-    linked_list_node(T data, node<T>* next){
+    this(T data, node<T>* next){
         this.data = data;
         this.next = next;
     }
@@ -14,7 +14,7 @@ struct linked_list {
     linked_list_node<T>* head;
     int size;
 
-    linked_list(){
+    this(){
         size = 0;
     }
 
