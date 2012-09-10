@@ -13,6 +13,7 @@
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
+#include "logging.hpp"
 
 #include "mtac/loop_optimizations.hpp"
 #include "mtac/loop_analysis.hpp"
@@ -528,7 +529,7 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
             auto j = dependent.first;
 
             //If the equation is a single addition, there is no need to strength reduce it
-            if(equation.e != 0){
+            if(equation.e != 1){
                 auto tj = function->context->new_temporary(INT);
                 auto db = equation.e * basic_equation.d;
 
@@ -543,9 +544,7 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                     auto it = iterate(bb->statements);
 
                     while(it.has_next()){
-                        auto statement = *it;
-
-                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
                             auto quadruple = *ptr;
                         
                             //There is only a single assignment to j, replace it with j = tj
@@ -553,14 +552,18 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                                 quadruple->op = mtac::Operator::ASSIGN;
                                 quadruple->arg1 = tj;
                                 quadruple->arg2.reset();
+
+                                ++it;//To avoid replacing j by tj
                             //After an assignment to a basic induction variable, insert addition for tj
                             } else if(mtac::erase_result(quadruple->op) && quadruple->result == i){
                                 ++it;
                                 it.insert(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db));
+                                
+                                ++it;//To avoid replacing j by tj
                             }
                         }
 
-                        visit(replacer, statement);
+                        visit(replacer, *it);
 
                         ++it;
                     }
@@ -594,16 +597,12 @@ bool loop_strength_reduction(const Loop& loop, std::shared_ptr<mtac::Function> f
     auto basic_induction_variables = find_basic_induction_variables(loop, g);
     auto dependent_induction_variables = find_dependent_induction_variables(loop, g, basic_induction_variables);
     
-    std::cout << "Basic induction variables" << std::endl;
-
     for(auto& biv : basic_induction_variables){
-        std::cout << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << std::endl;
+        log::emit<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
     }
-
-    std::cout << "Dependent induction variables" << std::endl;
     
     for(auto& biv : dependent_induction_variables){
-        std::cout << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << std::endl;
+        log::emit<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
     }
 
     for(auto& basic : basic_induction_variables){
