@@ -246,6 +246,7 @@ bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function
 }
 
 struct LinearEquation {
+    std::shared_ptr<mtac::Quadruple> def;
     std::shared_ptr<Variable> i;
     int e;
     int d;
@@ -262,7 +263,7 @@ InductionVariables find_all_candidates(const Loop& loop, const G& g){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
-                    candidates[(*ptr)->result] = {nullptr, 0, 0};
+                    candidates[(*ptr)->result] = {*ptr, nullptr, 0, 0};
                 }
             }
         }
@@ -317,10 +318,10 @@ InductionVariables find_basic_induction_variables(const Loop& loop, const G& g){
                     auto arg2 = *quadruple->arg2;
 
                     if(mtac::isInt(arg1) && mtac::equals(arg2, var)){
-                        basic_induction_variables[var] = {var, 1, boost::get<int>(arg1)};
+                        basic_induction_variables[var] = {quadruple, var, 1, boost::get<int>(arg1)};
                         continue;
                     } else if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
-                        basic_induction_variables[var] = {var, 1, boost::get<int>(arg2)}; 
+                        basic_induction_variables[var] = {quadruple, var, 1, boost::get<int>(arg2)}; 
                         continue;
                     } 
                 } 
@@ -387,11 +388,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                         
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, e, 0}; 
+                                dependent_induction_variables[var] = {quadruple, variable, e, 0}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, equation.e * e, equation.d * e}; 
                                 continue;
                             }
                         }
@@ -401,11 +402,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                         
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, e, 0}; 
+                                dependent_induction_variables[var] = {quadruple, variable, e, 0}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, equation.e * e, equation.d * e}; 
                                 continue;
                             }
                         }
@@ -420,11 +421,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg1)}; 
+                                dependent_induction_variables[var] = {quadruple, variable, 1, boost::get<int>(arg1)}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, equation.e, equation.d + e}; 
                                 continue;
                             }
                         }
@@ -434,11 +435,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg2)}; 
+                                dependent_induction_variables[var] = {quadruple, variable, 1, boost::get<int>(arg2)}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, equation.e, equation.d + e}; 
                                 continue;
                             }
                         }
@@ -448,11 +449,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(var1 == var2 && var1 != var){
                             if(basic_induction_variables.count(var1)){
-                                dependent_induction_variables[var] = {var1, 2, 0}; 
+                                dependent_induction_variables[var] = {quadruple, var1, 2, 0}; 
                                 continue;
                             } else if(dependent_induction_variables[var1].i){
                                 auto equation = dependent_induction_variables[var1];
-                                dependent_induction_variables[var] = {equation.i, equation.e * 2, equation.d * 2}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, equation.e * 2, equation.d * 2}; 
                                 continue;
                             }
                         }
@@ -467,11 +468,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, -1, -1 * e}; 
+                                dependent_induction_variables[var] = {quadruple, variable, -1, -1 * e}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, -1 * equation.e, e - equation.d}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, -1 * equation.e, e - equation.d}; 
                                 continue;
                             }
                         }
@@ -481,11 +482,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, 1, -1 * boost::get<int>(arg2)}; 
+                                dependent_induction_variables[var] = {quadruple, variable, 1, -1 * boost::get<int>(arg2)}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, equation.e, equation.d - e}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, equation.e, equation.d - e}; 
                                 continue;
                             }
                         }
@@ -498,11 +499,11 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
 
                         if(variable != var){
                             if(basic_induction_variables.count(variable)){
-                                dependent_induction_variables[var] = {variable, -1, 0}; 
+                                dependent_induction_variables[var] = {quadruple, variable, -1, 0}; 
                                 continue;
                             } else if(dependent_induction_variables[variable].i){
                                 auto equation = dependent_induction_variables[variable];
-                                dependent_induction_variables[var] = {equation.i, -1 * equation.e, -1 * equation.d}; 
+                                dependent_induction_variables[var] = {quadruple, equation.i, -1 * equation.e, -1 * equation.d}; 
                                 continue;
                             }
                         }
@@ -571,7 +572,10 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                             //After an assignment to a basic induction variable, insert addition for tj
                             } else if(mtac::erase_result(quadruple->op) && quadruple->result == i){
                                 ++it;
-                                it.insert(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db));
+                                auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
+                                it.insert(new_quadruple);
+
+                                new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d};
                                 
                                 ++it;//To avoid replacing j by tj
                             }
@@ -590,8 +594,6 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
 
                 pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, equation.e, mtac::Operator::MUL, i));
                 pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, equation.d));
-
-                new_induction_variables[tj] = {i, equation.e, equation.d};
 
                 optimized = true;
             }
