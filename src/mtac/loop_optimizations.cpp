@@ -552,6 +552,11 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                 variable_clones[j] = tj;
 
                 mtac::VariableReplace replacer(variable_clones);
+                                
+                //There is only a single assignment to j, replace it with j = tj
+                equation.def->op = mtac::Operator::ASSIGN;
+                equation.def->arg1 = tj;
+                equation.def->arg2.reset();
 
                 for(auto& vertex : loop){
                     auto bb = g[vertex].block;
@@ -561,16 +566,14 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                     while(it.has_next()){
                         if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
                             auto quadruple = *ptr;
-                        
-                            //There is only a single assignment to j, replace it with j = tj
-                            if(mtac::erase_result(quadruple->op) && quadruple->result == j){
-                                quadruple->op = mtac::Operator::ASSIGN;
-                                quadruple->arg1 = tj;
-                                quadruple->arg2.reset();
-
-                                ++it;//To avoid replacing j by tj
+                            
+                            //To avoid replacing j by tj
+                            if(quadruple == equation.def){
+                                ++it;
+                            } 
+                            
                             //After an assignment to a basic induction variable, insert addition for tj
-                            } else if(mtac::erase_result(quadruple->op) && quadruple->result == i){
+                            else if(quadruple == basic_equation.def){
                                 ++it;
                                 auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
                                 it.insert(new_quadruple);
