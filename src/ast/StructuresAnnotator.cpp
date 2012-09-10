@@ -55,6 +55,18 @@ struct StructuresCollector : public boost::static_visitor<> {
                 }
             }
             
+            for(auto& function : struct_.Content->constructors){
+                if(function.Content->context){
+                    function.Content->context->struct_type = struct_.Content->struct_type; 
+                }
+            }
+            
+            for(auto& function : struct_.Content->destructors){
+                if(function.Content->context){
+                    function.Content->context->struct_type = struct_.Content->struct_type; 
+                }
+            }
+            
             auto mangled_name = struct_.Content->struct_type->mangle();
 
             if(context->struct_exists(mangled_name)){
