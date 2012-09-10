@@ -414,8 +414,21 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             ASSERT_PATH_NOT_TAKEN("Should be handled by check_value");
         }
 
+        bool is_init(ast::Value& value){
+            if(auto* ptr = boost::get<ast::VariableValue>(&value)){
+                return ptr->Content->var != 0;
+            }
+
+            ASSERT_PATH_NOT_TAKEN("Unhandled value type");
+        }
+
         void operator()(ast::MemberFunctionCall& functionCall){
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
+                //It is possible that the object has not been handled by the template engine at this point
+                if(!is_init(functionCall.Content->object)){
+                    return;
+                }
+
                 check_value(functionCall.Content->object);
                 check_each(functionCall.Content->values);
 
