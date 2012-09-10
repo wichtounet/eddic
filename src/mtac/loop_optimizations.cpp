@@ -847,10 +847,10 @@ bool loop_induction_variables_optimization(const Loop& loop, std::shared_ptr<mta
     }
 
     //3. Removal of dependent induction variables
-    //induction_variable_removal(loop, dependent_induction_variables, g);
+    induction_variable_removal(loop, dependent_induction_variables, g);
 
     //4. Replace basic induction variable with another dependent variable
-    //induction_variable_replace(loop, basic_induction_variables, dependent_induction_variables, g);
+    induction_variable_replace(loop, basic_induction_variables, dependent_induction_variables, g);
 
     return optimized;
 }
