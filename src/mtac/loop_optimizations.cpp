@@ -442,6 +442,20 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                                 continue;
                             }
                         }
+                    } else if(mtac::isVariable(arg1) && mtac::isVariable(arg2)){
+                        auto var1 = boost::get<std::shared_ptr<Variable>>(arg1);
+                        auto var2 = boost::get<std::shared_ptr<Variable>>(arg2);
+
+                        if(var1 == var2 && var1 != var){
+                            if(basic_induction_variables.count(var1)){
+                                dependent_induction_variables[var] = {var1, 2, 0}; 
+                                continue;
+                            } else if(dependent_induction_variables[var1].i){
+                                auto equation = dependent_induction_variables[var1];
+                                dependent_induction_variables[var] = {equation.i, equation.e * 2, equation.d * 2}; 
+                                continue;
+                            }
+                        }
                     }
                 } else if(quadruple->op == mtac::Operator::SUB){
                     auto arg1 = *quadruple->arg1;
