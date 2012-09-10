@@ -423,14 +423,14 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
                 auto var = quadruple->result;
-                
-                //We know for sure that all the candidates have a first arg
-                auto arg1 = *quadruple->arg1;
 
                 //If it is not a candidate, do not test it
                 if(!dependent_induction_variables.count(var)){
                     continue;
                 }
+                
+                //We know for sure that all the candidates have a first arg
+                auto arg1 = *quadruple->arg1;
                 
                 //If it is a basic induction variable, it is not a dependent induction variable
                 if(basic_induction_variables.count(var)){
@@ -789,6 +789,8 @@ void induction_variable_replace(const Loop& loop, InductionVariables& basic_indu
         if(!div){
             return;
         }
+
+        log::emit<Trace>("Loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
        
         auto div_equation = dependent_induction_variables[div];
         auto new_end = div_equation.e * end + div_equation.d;
@@ -823,6 +825,9 @@ void induction_variable_replace(const Loop& loop, InductionVariables& basic_indu
         basic_induction_variables[biv].def->result = nullptr;
         basic_induction_variables[biv].def->arg1.reset();
         basic_induction_variables[biv].def->arg2.reset();
+
+        //Not a basic induction variable anymore
+        basic_induction_variables.erase(biv);
     }
 }
 
@@ -848,6 +853,10 @@ bool loop_induction_variables_optimization(const Loop& loop, std::shared_ptr<mta
 
     //3. Removal of dependent induction variables
     induction_variable_removal(loop, dependent_induction_variables, g);
+    
+    //Update induction variables for the last phase
+    basic_induction_variables = find_basic_induction_variables(loop, g);
+    dependent_induction_variables = find_dependent_induction_variables(loop, g, basic_induction_variables, function);
 
     //4. Replace basic induction variable with another dependent variable
     induction_variable_replace(loop, basic_induction_variables, dependent_induction_variables, g);
