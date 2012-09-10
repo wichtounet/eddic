@@ -11,11 +11,14 @@
 
 #include "iterators.hpp"
 #include "VisitorUtils.hpp"
+#include "Type.hpp"
+#include "FunctionContext.hpp"
 
 #include "mtac/loop_optimizations.hpp"
 #include "mtac/loop_analysis.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/VariableReplace.hpp"
 
 using namespace eddic;
 
@@ -380,26 +383,30 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                     if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
                         auto e = boost::get<int>(arg1);
-
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, e, 0}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
-                            continue;
+                        
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, e, 0}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
+                                continue;
+                            }
                         }
                     } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
                         auto e = boost::get<int>(arg2);
                         
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, e, 0}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
-                            continue;
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, e, 0}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, equation.e * e, equation.d * e}; 
+                                continue;
+                            }
                         }
                     } 
                 } else if(quadruple->op == mtac::Operator::ADD){
@@ -410,25 +417,29 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
                         auto e = boost::get<int>(arg1);
 
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg1)}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
-                            continue;
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg1)}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
+                                continue;
+                            }
                         }
                     } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
                         auto e = boost::get<int>(arg2);
-                        
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg2)}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
-                            continue;
+
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, 1, boost::get<int>(arg2)}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, equation.e, equation.d + e}; 
+                                continue;
+                            }
                         }
                     }
                 } else if(quadruple->op == mtac::Operator::SUB){
@@ -439,25 +450,29 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
                         auto e = boost::get<int>(arg1);
 
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, -1, -1 * e}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, -1 * equation.e, e - equation.d}; 
-                            continue;
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, -1, -1 * e}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, -1 * equation.e, e - equation.d}; 
+                                continue;
+                            }
                         }
                     } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
                         auto e = boost::get<int>(arg2);
-                        
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, 1, -1 * boost::get<int>(arg2)}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, equation.e, equation.d - e}; 
-                            continue;
+
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, 1, -1 * boost::get<int>(arg2)}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, equation.e, equation.d - e}; 
+                                continue;
+                            }
                         }
                     } 
                 } else if(quadruple->op == mtac::Operator::MINUS){
@@ -466,13 +481,15 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                     if(mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
 
-                        if(basic_induction_variables.count(variable)){
-                            dependent_induction_variables[var] = {variable, -1, 0}; 
-                            continue;
-                        } else if(dependent_induction_variables[variable].i){
-                            auto equation = dependent_induction_variables[variable];
-                            dependent_induction_variables[var] = {equation.i, -1 * equation.e, -1 * equation.d}; 
-                            continue;
+                        if(variable != var){
+                            if(basic_induction_variables.count(variable)){
+                                dependent_induction_variables[var] = {variable, -1, 0}; 
+                                continue;
+                            } else if(dependent_induction_variables[variable].i){
+                                auto equation = dependent_induction_variables[variable];
+                                dependent_induction_variables[var] = {equation.i, -1 * equation.e, -1 * equation.d}; 
+                                continue;
+                            }
                         }
                     } 
                 } 
@@ -497,30 +514,98 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
     return dependent_induction_variables;
 }
 
-bool loop_strength_reduction(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
-    std::shared_ptr<mtac::BasicBlock> pre_header;
-
+bool strength_reduce(const Loop& loop, LinearEquation& equation, const G& g, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
+    std::shared_ptr<mtac::BasicBlock> pre_header = nullptr;
     bool optimized = false;
 
-    auto basic = find_basic_induction_variables(loop, g);
-    auto dependent = find_dependent_induction_variables(loop, g, basic);
+    InductionVariables new_induction_variables;
+
+    auto i = equation.i;
+
+    for(auto& dependent : dependent_induction_variables){
+        auto& equation = dependent.second;
+        if(equation.i == i){
+            auto j = dependent.first;
+
+            //If the equation is a single addition, there is no need to strength reduce it
+            if(equation.e != 0){
+                auto tj = function->context->new_temporary(INT);
+                auto db = equation.e * equation.d;
+
+                mtac::VariableClones variable_clones;
+                variable_clones[j] = tj;
+
+                mtac::VariableReplace replacer(variable_clones);
+
+                for(auto& vertex : loop){
+                    auto bb = g[vertex].block;
+
+                    auto it = iterate(bb->statements);
+
+                    while(it.has_next()){
+                        auto statement = *it;
+
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                            auto quadruple = *ptr;
+                        
+                            //There is only a single assignment to j, replace it with j = tj
+                            if(mtac::erase_result(quadruple->op) && quadruple->result == j){
+                                quadruple->op = mtac::Operator::ASSIGN;
+                                quadruple->arg1 = tj;
+                                quadruple->arg2.reset();
+                            //After an assignment to a basic induction variable, insert addition for tj
+                            } else if(mtac::erase_result(quadruple->op) && quadruple->result == i){
+                                ++it;
+                                it.insert(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db));
+                            }
+                        }
+
+                        visit(replacer, statement);
+
+                        ++it;
+                    }
+                }
+
+                //Create the preheader if necessary
+                if(!pre_header){
+                    pre_header = create_pre_header(loop, function, g);
+                }
+
+                pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, equation.e, mtac::Operator::MUL, i));
+                pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, equation.d));
+
+                new_induction_variables[tj] = {i, equation.e, equation.d};
+            }
+        }
+    }
+
+    for(auto& new_var : new_induction_variables){
+        dependent_induction_variables[new_var.first] = new_var.second;
+    }
+
+    return optimized;
+}
+
+bool loop_strength_reduction(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
+    bool optimized = false;
+
+    auto basic_induction_variables = find_basic_induction_variables(loop, g);
+    auto dependent_induction_variables = find_dependent_induction_variables(loop, g, basic_induction_variables);
     
     std::cout << "Basic induction variables" << std::endl;
 
-    for(auto& biv : basic){
+    for(auto& biv : basic_induction_variables){
         std::cout << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << std::endl;
     }
 
     std::cout << "Dependent induction variables" << std::endl;
     
-    for(auto& biv : dependent){
+    for(auto& biv : dependent_induction_variables){
         std::cout << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << std::endl;
     }
 
-    for(auto& vertex : loop){
-        auto bb = g[vertex].block;
-
-
+    for(auto& basic : basic_induction_variables){
+        optimized |= strength_reduce(loop, basic.second, g, dependent_induction_variables, function);
     }
 
     return optimized;
