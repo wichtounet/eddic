@@ -263,6 +263,7 @@ InductionVariables find_all_candidates(const Loop& loop, const G& g){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
+                    //TODO Be more restrictive by considering args and operator (to avoid copies later)
                     candidates[(*ptr)->result] = {*ptr, nullptr, 0, 0};
                 }
             }
@@ -346,7 +347,7 @@ InductionVariables find_basic_induction_variables(const Loop& loop, const G& g){
     return basic_induction_variables;
 }
 
-InductionVariables find_dependent_induction_variables(const Loop& loop, const G& g, const InductionVariables& basic_induction_variables){
+InductionVariables find_dependent_induction_variables(const Loop& loop, const G& g, const InductionVariables& basic_induction_variables, std::shared_ptr<mtac::Function> function){
     auto dependent_induction_variables = find_all_candidates(loop, g);
 
     for(auto& vertex : loop){
@@ -369,13 +370,23 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
                     continue;
                 }
 
-                auto value = dependent_induction_variables[var];
+                auto source_equation = dependent_induction_variables[var];
 
-                //TODO In the future, induction variables written several times could be splitted into several induction variables
-                if(value.i){
+                if(source_equation.i && ((quadruple->arg1 && mtac::equals(*quadruple->arg1, var)) || (quadruple->arg2 && mtac::equals(*quadruple->arg2, var))) ){
+                    auto tj = function->context->new_temporary(INT);
+
+                    source_equation.def->result = tj;
+                    
                     dependent_induction_variables.erase(var);
+                    dependent_induction_variables[tj] = source_equation;
 
-                    continue;
+                    if(quadruple->arg1 && mtac::equals(*quadruple->arg1, var)){
+                        quadruple->arg1 = tj;
+                    }
+
+                    if(quadruple->arg2 && mtac::equals(*quadruple->arg2, var)){
+                        quadruple->arg2 = tj;
+                    }
                 }
 
                 if(quadruple->op == mtac::Operator::MUL){
@@ -571,7 +582,6 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                             if(quadruple == equation.def){
                                 ++it;
                             } 
-                            
                             //After an assignment to a basic induction variable, insert addition for tj
                             else if(quadruple == basic_equation.def){
                                 ++it;
@@ -580,7 +590,8 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
 
                                 new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d};
                                 
-                                ++it;//To avoid replacing j by tj
+                                //To avoid replacing j by tj
+                                ++it;
                             }
                         }
 
@@ -614,7 +625,7 @@ bool loop_strength_reduction(const Loop& loop, std::shared_ptr<mtac::Function> f
     bool optimized = false;
 
     auto basic_induction_variables = find_basic_induction_variables(loop, g);
-    auto dependent_induction_variables = find_dependent_induction_variables(loop, g, basic_induction_variables);
+    auto dependent_induction_variables = find_dependent_induction_variables(loop, g, basic_induction_variables, function);
     
     for(auto& biv : basic_induction_variables){
         log::emit<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
