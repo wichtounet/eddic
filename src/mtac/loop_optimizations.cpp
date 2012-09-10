@@ -620,63 +620,60 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
         if(equation.i == i){
             auto j = dependent.first;
 
-            //If the equation is a single addition, there is no need to strength reduce it
-            if(equation.e != 1){
-                auto tj = function->context->new_temporary(INT);
-                auto db = equation.e * basic_equation.d;
+            auto tj = function->context->new_temporary(INT);
+            auto db = equation.e * basic_equation.d;
 
-                mtac::VariableClones variable_clones;
-                variable_clones[j] = tj;
+            mtac::VariableClones variable_clones;
+            variable_clones[j] = tj;
 
-                mtac::VariableReplace replacer(variable_clones);
-                                
-                //There is only a single assignment to j, replace it with j = tj
-                equation.def->op = mtac::Operator::ASSIGN;
-                equation.def->arg1 = tj;
-                equation.def->arg2.reset();
+            mtac::VariableReplace replacer(variable_clones);
 
-                for(auto& vertex : loop){
-                    auto bb = g[vertex].block;
+            //There is only a single assignment to j, replace it with j = tj
+            equation.def->op = mtac::Operator::ASSIGN;
+            equation.def->arg1 = tj;
+            equation.def->arg2.reset();
 
-                    auto it = iterate(bb->statements);
+            for(auto& vertex : loop){
+                auto bb = g[vertex].block;
 
-                    while(it.has_next()){
-                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                            auto quadruple = *ptr;
-                            
+                auto it = iterate(bb->statements);
+
+                while(it.has_next()){
+                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
+                        auto quadruple = *ptr;
+
+                        //To avoid replacing j by tj
+                        if(quadruple == equation.def){
+                            ++it;
+                        } 
+                        //After an assignment to a basic induction variable, insert addition for tj
+                        else if(quadruple == basic_equation.def){
+                            ++it;
+                            auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
+                            it.insert(new_quadruple);
+
+                            new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d, true};
+
                             //To avoid replacing j by tj
-                            if(quadruple == equation.def){
-                                ++it;
-                            } 
-                            //After an assignment to a basic induction variable, insert addition for tj
-                            else if(quadruple == basic_equation.def){
-                                ++it;
-                                auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
-                                it.insert(new_quadruple);
-
-                                new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d, true};
-                                
-                                //To avoid replacing j by tj
-                                ++it;
-                            }
+                            ++it;
                         }
-
-                        visit(replacer, *it);
-
-                        ++it;
                     }
+
+                    visit(replacer, *it);
+
+                    ++it;
                 }
-
-                //Create the preheader if necessary
-                if(!pre_header){
-                    pre_header = create_pre_header(loop, function, g);
-                }
-
-                pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, equation.e, mtac::Operator::MUL, i));
-                pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, equation.d));
-
-                optimized = true;
             }
+
+            //Create the preheader if necessary
+            if(!pre_header){
+                pre_header = create_pre_header(loop, function, g);
+            }
+
+            pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, equation.e, mtac::Operator::MUL, i));
+            pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, equation.d));
+
+            optimized = true;
         }
     }
 
@@ -850,10 +847,10 @@ bool loop_induction_variables_optimization(const Loop& loop, std::shared_ptr<mta
     }
 
     //3. Removal of dependent induction variables
-    induction_variable_removal(loop, dependent_induction_variables, g);
+    //induction_variable_removal(loop, dependent_induction_variables, g);
 
     //4. Replace basic induction variable with another dependent variable
-    induction_variable_replace(loop, basic_induction_variables, dependent_induction_variables, g);
+    //induction_variable_replace(loop, basic_induction_variables, dependent_induction_variables, g);
 
     return optimized;
 }
