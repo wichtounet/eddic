@@ -514,13 +514,13 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const G&
     return dependent_induction_variables;
 }
 
-bool strength_reduce(const Loop& loop, LinearEquation& equation, const G& g, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
+bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& g, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
     std::shared_ptr<mtac::BasicBlock> pre_header = nullptr;
     bool optimized = false;
 
     InductionVariables new_induction_variables;
 
-    auto i = equation.i;
+    auto i = basic_equation.i;
 
     for(auto& dependent : dependent_induction_variables){
         auto& equation = dependent.second;
@@ -530,7 +530,7 @@ bool strength_reduce(const Loop& loop, LinearEquation& equation, const G& g, Ind
             //If the equation is a single addition, there is no need to strength reduce it
             if(equation.e != 0){
                 auto tj = function->context->new_temporary(INT);
-                auto db = equation.e * equation.d;
+                auto db = equation.e * basic_equation.d;
 
                 mtac::VariableClones variable_clones;
                 variable_clones[j] = tj;
