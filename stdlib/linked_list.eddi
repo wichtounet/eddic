@@ -1,0 +1,35 @@
+template<type T>
+struct linked_list_node {
+    T data;
+    linked_list_node<T>* next;
+
+    linked_list_node(T data, node<T>* next){
+        this.data = data;
+        this.next = next;
+    }
+}
+
+template<type T>
+struct linked_list {
+    linked_list_node<T>* head;
+    int size;
+
+    linked_list(){
+        size = 0;
+    }
+
+    void push_back(T value){
+        if(head == null){
+            head = new linked_list_Node(value, null);
+        } else {
+            Node* node = new linked_list_Node(value, null);
+            head.next = node;
+        }
+
+        ++size;
+    }
+
+    int size(){
+        return size;
+    }
+}
