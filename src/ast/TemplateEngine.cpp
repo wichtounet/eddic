@@ -762,7 +762,6 @@ struct Instantiator : public boost::static_visitor<> {
     AUTO_RECURSE_COMPOSED_VALUES()
     AUTO_RECURSE_MEMBER_VALUE()
     AUTO_RECURSE_UNARY_VALUES()
-    AUTO_RECURSE_STRUCT()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_SWITCH()
@@ -941,13 +940,32 @@ struct Instantiator : public boost::static_visitor<> {
 
                         class_template_instantiated.push_back(declaration);
                     }
-                    
+
                     ptr->resolved = true;
 
                     return;
                 }
             }
+        } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
+            check_type(ptr->type.get(), position);
+        } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
+            check_type(ptr->type.get(), position);
+        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            for(auto& type : ptr->template_types){
+                check_type(type, position);
+            }
         }
+    }
+
+    void operator()(ast::Struct& struct_){
+        for(auto& member : struct_.Content->members){
+            check_type(member.Content->type, member.Content->position);
+        }
+
+        visit_each_non_variant(*this, struct_.Content->constructors);
+        visit_each_non_variant(*this, struct_.Content->destructors);
+        visit_each_non_variant(*this, struct_.Content->functions);
+        visit_each_non_variant(*this, struct_.Content->template_functions);
     }
 
     void operator()(const ast::FunctionDeclaration& function){
