@@ -264,11 +264,21 @@ class CheckerVisitor : public boost::static_visitor<> {
             for(auto& operation : value.Content->operations){
                 auto operationType = visit(visitor, operation.get<1>());
 
-                if(type != operationType){
+                if(type->is_pointer()){
+                    if(!operationType->is_pointer()){
+                        throw SemanticalException("Incompatible type", value.Content->position);
+                    }
+                } else if(type != operationType){
                     throw SemanticalException("Incompatible type", value.Content->position);
                 }
                     
                 auto op = operation.get<0>();
+
+                if(type->is_pointer()){
+                    if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers");
+                    }
+                }
                 
                 if(type == INT){
                     if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
