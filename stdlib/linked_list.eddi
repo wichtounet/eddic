@@ -22,7 +22,7 @@ struct linked_list {
         if(head == null){
             head = new linked_list_node<T>(value, null);
         } else {
-            Node* node = new linked_list_node<T>(value, null);
+            linked_list_node<T>* node = new linked_list_node<T>(value, null);
             head.next = node;
         }
 
