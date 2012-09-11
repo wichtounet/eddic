@@ -113,19 +113,8 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
     }
 
     if(lhs->is_template()){
-        if(rhs->is_template() && lhs->data_type() == rhs->data_type()){
-            auto lhs_template_types = lhs->template_types();
-            auto rhs_template_types = rhs->template_types();
-
-            if(lhs_template_types.size() == rhs_template_types.size()){
-                for(unsigned int i = 0; i < lhs_template_types.size(); ++i){
-                    if(lhs_template_types[i] != rhs_template_types[i]){
-                        return false;
-                    }
-                }
-            }
-            
-            return true;
+        if(rhs->is_template() && lhs->type() == rhs->type()){
+            return lhs->template_types() == rhs->template_types();
         }
     }
 
