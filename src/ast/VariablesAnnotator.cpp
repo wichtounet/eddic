@@ -110,22 +110,55 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return operation;
     }
 
-    ast::MemberLocation to_member_location(ast::Value left_value){
-        if(auto* ptr = boost::get<ast::VariableValue>(&left_value)){
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left_value)){
-            return *ptr;
+    //Warning : The location of the MemberValue is not modified
+    //TODO If there are new transformation in the future, adapt the following function
+
+    ast::Value operator()(ast::MemberValue& variable){
+        auto location = variable.Content->location;
+
+        if(auto* ptr = boost::get<ast::VariableValue>(&location)){
+            auto location_variable = *ptr;
+            bool transformed = false;
+
+            if (!location_variable.Content->context->exists(location_variable.Content->variableName)) {
+                auto context = location_variable.Content->context->function();
+                auto global_context = location_variable.Content->context->global();
+
+                if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
+                    auto struct_type = global_context->get_struct(context->struct_type->mangle());
+
+                    if(struct_type->member_exists(location_variable.Content->variableName)){
+                        ast::VariableValue this_variable;
+                        this_variable.Content->context = location_variable.Content->context;
+                        this_variable.Content->var = location_variable.Content->context->getVariable("this");
+                        this_variable.Content->variableName = "this";
+                        this_variable.Content->position = location_variable.Content->position;
+
+                        variable.Content->location = this_variable;
+                        variable.Content->memberNames.insert(variable.Content->memberNames.begin(), location_variable.Content->variableName);
+
+                        transformed = true;
+                    }
+                }
+            }
+            
+            if(!transformed){
+                visit_non_variant(*this, location_variable);
+            }
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
+            visit_non_variant(*this, *ptr);
         } else {
             ASSERT_PATH_NOT_TAKEN("Not a left value");
         }
-    }
-
-    ast::Value operator()(ast::MemberValue& variable){
-        variable.Content->location = to_member_location(visit(*this, variable.Content->location));
 
         auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
         auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
         auto struct_type = context->get_struct(struct_name);
+
+        //We delay it
+        if(!struct_type){
+            return variable;
+        }
 
         //Reference the structure
         struct_type->add_reference();
@@ -145,6 +178,12 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
             if(i != members.size() - 1){
                 //The next member will be a member of the current member type
                 struct_type = context->get_struct((*struct_type)[member]->type->mangle());
+
+                //We delay it
+                if(!struct_type){
+                    return variable;
+                }
+
                 struct_name = struct_type->name;
             }
         }
