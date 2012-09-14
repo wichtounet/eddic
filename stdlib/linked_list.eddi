@@ -20,9 +20,9 @@ struct linked_list {
 
     void push_back(T value){
         if(head == null){
-            head = new linked_list_node<T>(value, null);
+            head = new linked_list_node<T>(value, (linked_list_node<T>*) null);
         } else {
-            linked_list_node<T>* node = new linked_list_node<T>(value, null);
+            linked_list_node<T>* node = new linked_list_node<T>(value, (linked_list_node<T>*) null);
             head.next = node;
         }
 
