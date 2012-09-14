@@ -555,6 +555,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 }
             } else if(destType == CHAR){
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
+            } else {
+                return {arg};
             }
             
             return {t1};
