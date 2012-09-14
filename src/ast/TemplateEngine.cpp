@@ -697,6 +697,11 @@ struct Adaptor : public boost::static_visitor<> {
         adapt_function_call(source);
     }
     
+    void operator()(ast::Cast& source){
+        source.Content->type = replace(source.Content->type);
+        visit(*this, source.Content->value);
+    }
+    
     void operator()(ast::VariableDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
         
