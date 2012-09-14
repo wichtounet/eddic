@@ -75,6 +75,10 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> globa
         if(i == memberNames.size() - 1){
             return member_type;
         } else {
+            if(member_type->is_pointer()){
+                member_type = member_type->data_type();
+            }
+
             struct_name = member_type->mangle();
             struct_type = global_context->get_struct(struct_name);
         }
