@@ -200,6 +200,11 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
         offset += context->member_offset(struct_type, member);
 
         if(i != members.size() - 1){
+            //Warnings, this will not work for the offset calculation
+            if(member_type->is_pointer()){
+                member_type = member_type->data_type();
+            }
+
             struct_name = member_type->mangle();
             struct_type = context->get_struct(struct_name);
         }
