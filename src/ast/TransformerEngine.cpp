@@ -19,7 +19,7 @@ using namespace eddic;
 
 namespace {
 
-struct ValueTransformer : public boost::static_visitor<ast::Value> {
+struct ValueCleaner : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
     AUTO_RETURN_TRUE(ast::Value)
@@ -61,7 +61,142 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     
     ast::Value operator()(ast::MemberValue& value){
         auto left = visit(*this, value.Content->location); 
+       
+        //TODO Check if there is a pointer on the path (memberNames) and if there is, split the value in several AST nodes
+
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->location = *ptr;
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->location = *ptr;
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+        }
+
+        return value;
+    }
+
+    ast::Value operator()(ast::DereferenceValue& value){
+        auto left = visit(*this, value.Content->ref); 
+
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
+            value.Content->ref = *ptr;
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+        }
+
+        return value;
+    }
+
+    ast::Value operator()(ast::FunctionCall& functionCall){
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return functionCall;
+    }
+    
+    ast::Value operator()(ast::New& new_){
+        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return new_;
+    }
+
+    ast::Value operator()(ast::NewArray& new_){
+        new_.Content->size = visit(*this, new_.Content->size);
+
+        return new_;
+    }
+
+    ast::Value operator()(ast::MemberFunctionCall& functionCall){
+        functionCall.Content->object = visit(*this, functionCall.Content->object); 
+
+        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return functionCall;
+    }
+
+    ast::Value operator()(ast::Assignment& assignment){
+        assignment.Content->value = visit(*this, assignment.Content->value);
+
+        return assignment;
+    }
+
+    ast::Value operator()(ast::Ternary& ternary){
+        ternary.Content->condition = visit(*this, ternary.Content->condition);
+        ternary.Content->true_value = visit(*this, ternary.Content->true_value);
+        ternary.Content->false_value = visit(*this, ternary.Content->false_value);
+
+        return ternary;
+    }
+    
+    ast::Value operator()(ast::PrefixOperation& operation){
+        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+
+        return operation;
+    }
+
+    ast::Value operator()(ast::SuffixOperation& operation){
+        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+
+        return operation;
+    }
+
+    ast::Value operator()(ast::BuiltinOperator& builtin){
+        for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
+            *it = visit(*this, *it);
+        }
+
+        return builtin;
+    }
+};
+
+struct ValueTransformer : public boost::static_visitor<ast::Value> {
+    AUTO_RETURN_CAST(ast::Value)
+    AUTO_RETURN_FALSE(ast::Value)
+    AUTO_RETURN_TRUE(ast::Value)
+    AUTO_RETURN_NULL(ast::Value)
+    AUTO_RETURN_LITERAL(ast::Value)
+    AUTO_RETURN_CHAR_LITERAL(ast::Value)
+    AUTO_RETURN_FLOAT(ast::Value)
+    AUTO_RETURN_INTEGER(ast::Value)
+    AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
+    AUTO_RETURN_VARIABLE_VALUE(ast::Value)
+    
+    ast::Value operator()(ast::Expression& value){
+        value.Content->first = visit(*this, value.Content->first);
         
+        for(auto it = iterate(value.Content->operations); it.has_next(); ++it){
+            (*it).get<1>() = visit(*this, (*it).get<1>());
+        }
+
+        return value;
+    }
+
+    ast::Value operator()(ast::ArrayValue& value){
+        value.Content->indexValue = visit(*this, value.Content->indexValue); 
+
+        return value;
+    }
+    
+    ast::Value operator()(ast::Unary& value){
+        value.Content->value = visit(*this, value.Content->value); 
+
+        return value;
+    }
+    
+    ast::Value operator()(ast::MemberValue& value){
+        auto left = visit(*this, value.Content->location); 
+       
+        //TODO Check if there is a pointer on the path (memberNames) and if there is, split the value in several AST nodes
+
         if(auto* ptr = boost::get<ast::VariableValue>(&left)){
             value.Content->location = *ptr;
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
@@ -425,7 +560,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 };
 
 struct CleanerVisitor : public boost::static_visitor<> {
-    ValueTransformer transformer;
+    ValueCleaner transformer;
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
@@ -580,6 +715,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
 
 struct TransformerVisitor : public boost::static_visitor<> {
     InstructionTransformer instructionTransformer;
+    ValueCleaner transformer;
 
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_STRUCT()
