@@ -21,7 +21,12 @@ class Context;
 
 namespace ast {
 
-typedef boost::variant<VariableValue, ArrayValue> MemberLocation;
+/*!
+ * \typedef MemberLocation
+ * \brief the Type of value that can be accessed to get a member
+ * The MemberValue is only nested by transformation never by grammar
+ */
+typedef boost::variant<MemberValue, VariableValue, ArrayValue> MemberLocation;
 
 /*!
  * \class ASTMemberValue
