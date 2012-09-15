@@ -764,6 +764,8 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             
             dest = left.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unhandled location type");
         }
             
         unsigned int offset = 0;
