@@ -10,10 +10,12 @@
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "iterators.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/TransformerEngine.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
+#include "ast/GetTypeVisitor.hpp"
 
 using namespace eddic;
 
@@ -194,8 +196,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     
     ast::Value operator()(ast::MemberValue& value){
         auto left = visit(*this, value.Content->location); 
-       
-        //TODO Check if there is a pointer on the path (memberNames) and if there is, split the value in several AST nodes
 
         if(auto* ptr = boost::get<ast::VariableValue>(&left)){
             value.Content->location = *ptr;
@@ -205,7 +205,54 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
             ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
         }
 
-        return value;
+        auto fixed = value;
+    
+        auto type = visit(ast::GetTypeVisitor(), left);
+
+        std::string struct_name;
+        if(type->is_pointer() || type->is_array()){
+            struct_name = type->data_type()->mangle();
+        } else {
+            struct_name = type->mangle();
+        }
+
+        auto struct_type = value.Content->context->global()->get_struct(struct_name);
+        std::shared_ptr<const Type> member_type;
+
+        std::vector<std::string> members;
+        std::vector<std::string> memberNames = value.Content->memberNames;
+
+        for(std::size_t i = 0; i < members.size(); ++i){
+            auto& member = memberNames[i];
+            
+            members.push_back(member);
+
+            member_type = (*struct_type)[member]->type;
+
+            if(i != memberNames.size() - 1){
+                //Warnings, this will not work for the offset calculation
+                if(member_type->is_pointer()){
+                    ast::MemberValue member_value;
+                    member_value.Content->context = fixed.Content->context;
+                    member_value.Content->position = fixed.Content->position;
+                    member_value.Content->memberNames = members;
+                    member_value.Content->location = fixed.Content->location;
+
+                    for(std::size_t i = 0; i < members.size(); ++i){
+                        fixed.Content->memberNames.erase(fixed.Content->memberNames.begin());
+                    }
+
+                    members.clear();
+
+                    fixed.Content->location = member_value;
+                }
+
+                struct_name = member_type->mangle();
+                struct_type = value.Content->context->global()->get_struct(struct_name);
+            }
+        }
+
+        return fixed;
     }
 
     ast::Value operator()(ast::DereferenceValue& value){
