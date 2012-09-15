@@ -210,25 +210,18 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     
         auto type = visit(ast::GetTypeVisitor(), left);
 
-        std::string struct_name;
-        if(type->is_pointer() || type->is_array()){
-            struct_name = type->data_type()->mangle();
-        } else {
-            struct_name = type->mangle();
-        }
-
+        auto struct_name = (type->is_pointer() || type->is_array()) ? type->data_type()->mangle() : type->mangle();
         auto struct_type = value.Content->context->global()->get_struct(struct_name);
-        std::shared_ptr<const Type> member_type;
 
         std::vector<std::string> members;
         std::vector<std::string> memberNames = value.Content->memberNames;
 
-        for(std::size_t i = 0; i < members.size(); ++i){
+        for(std::size_t i = 0; i < memberNames.size(); ++i){
             auto& member = memberNames[i];
             
             members.push_back(member);
 
-            member_type = (*struct_type)[member]->type;
+            auto member_type = (*struct_type)[member]->type;
 
             if(i != memberNames.size() - 1){
                 if(member_type->is_pointer()){
@@ -238,13 +231,15 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
                     member_value.Content->memberNames = members;
                     member_value.Content->location = fixed.Content->location;
 
-                    for(std::size_t i = 0; i < members.size(); ++i){
+                    for(std::size_t j = 0; j < members.size(); ++j){
                         fixed.Content->memberNames.erase(fixed.Content->memberNames.begin());
                     }
 
                     members.clear();
 
                     fixed.Content->location = member_value;
+
+                    member_type = member_type->data_type();
                 }
 
                 struct_name = member_type->mangle();
