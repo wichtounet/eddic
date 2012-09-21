@@ -9,6 +9,7 @@
 #define LTAC_PRINTER_H
 
 #include <memory>
+#include <iostream>
 
 #include "ltac/Program.hpp"
 
