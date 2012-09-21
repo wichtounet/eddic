@@ -179,7 +179,7 @@ namespace logging {
 #ifdef LOGGING_DISABLE
         template<typename Level>
         static inline bool enabled () {
-            return true;
+            return false;
         }
 #else
         template<typename Level>
