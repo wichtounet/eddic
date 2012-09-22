@@ -41,6 +41,7 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
 void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
+void assign(std::shared_ptr<mtac::Function> function, ast::LValue& left_value, ast::Value& value);
 std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
 
 template<typename Call>
@@ -828,9 +829,13 @@ struct AssignVisitor : public boost::static_visitor<> {
     }
 };
 
+void assign(std::shared_ptr<mtac::Function> function, ast::LValue& left_value, ast::Value& value){
+    AssignVisitor visitor(function, value);
+    visit(visitor, left_value);
+}
+
 void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
-    AssignVisitor visitor(function, assignment.Content->value);
-    visit(visitor, assignment.Content->left_value);
+    assign(function, assignment.Content->left_value, assignment.Content->value);
 }
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
@@ -1562,13 +1567,59 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     return t1;
 }
 
+ast::VariableValue to_variable_value(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable){
+    ast::VariableValue value;
+    value.Content->var = variable;
+    value.Content->variableName = variable->name();
+    value.Content->context = function->context;
+
+    return value;
+}
+
 template<typename Operation>
 std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
     if(auto* ptr = boost::get<ast::MemberValue>(&operation.Content->left_value)){
         auto member_value = *ptr;
 
-        if(boost::get<ast::VariableValue>(&member_value.Content->location)){
-            ASSERT_PATH_NOT_TAKEN("Unhandled location type");
+        if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+            auto left = *left_ptr;
+            auto type = visit_non_variant(ast::GetTypeVisitor(), left);
+            
+            if(type == FLOAT){
+                auto t1 = function->context->new_temporary(FLOAT);
+
+                //Load left value in t1
+                visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+
+                if(operation.Content->op == ast::Operator::INC){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
+                } else if(operation.Content->op == ast::Operator::DEC){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+                }
+
+                //Assign the new value to the left value
+                ast::Value value = to_variable_value(function, t1);
+                assign(function, operation.Content->left_value, value);
+
+                return t1;
+            } else if (type == INT){
+                auto t1 = function->context->new_temporary(INT);
+
+                //Load left value in t1
+                visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+
+                if(operation.Content->op == ast::Operator::INC){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
+                } else if(operation.Content->op == ast::Operator::DEC){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+                }
+
+                //Assign the new value to the left value
+                ast::Value value = to_variable_value(function, t1);
+                assign(function, operation.Content->left_value, value);
+
+                return t1;
+            }
         } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *left_ptr;
             auto type = visit_non_variant(ast::GetTypeVisitor(), left);
