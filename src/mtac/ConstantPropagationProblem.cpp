@@ -124,10 +124,10 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
         auto param = *ptr;
 
         if(param->address){
-            auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
-
-            //Impossible to know if the variable is modified or not, consider it modified
-            out.erase(variable);
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+                //Impossible to know if the variable is modified or not, consider it modified
+                out.erase(*ptr);
+            }
         }
     }
 

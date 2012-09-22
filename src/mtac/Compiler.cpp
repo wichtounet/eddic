@@ -1583,7 +1583,7 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 
         if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             auto left = *left_ptr;
-            auto type = visit_non_variant(ast::GetTypeVisitor(), left);
+            auto type = visit_non_variant(ast::GetTypeVisitor(), member_value);
             
             if(type == FLOAT){
                 auto t1 = function->context->new_temporary(FLOAT);
@@ -1619,6 +1619,8 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
                 assign(function, operation.Content->left_value, value);
 
                 return t1;
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unhandled type");
             }
         } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *left_ptr;
