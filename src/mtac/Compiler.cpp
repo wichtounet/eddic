@@ -1677,6 +1677,44 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
 };
 
 template<typename Operation>
+struct SuffixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
+    std::shared_ptr<mtac::Function> function;
+    Operation& operation;
+
+    SuffixOperationVisitor(std::shared_ptr<mtac::Function> function, Operation& operation) : function(function), operation(operation) {}
+
+    template<typename V>
+    std::shared_ptr<Variable> perform(V& value){
+        auto type = visit_non_variant(ast::GetTypeVisitor(), value);
+        auto t1 = function->context->new_temporary(type);
+
+        //Load left value in t1
+        visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+
+        //Note: The extra temporary will be removed by optimizations
+        performPrefixOperation(operation, function);
+
+        return t1;
+    }
+
+    std::shared_ptr<Variable> operator()(ast::MemberValue& member_value){
+        return perform(member_value);
+    }
+    
+    std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
+        return perform(variable_value);
+    }
+
+    std::shared_ptr<Variable> operator()(ast::ArrayValue& array_value){
+        return perform(array_value);
+    }
+    
+    std::shared_ptr<Variable> operator()(ast::DereferenceValue& dereference_value){
+        return perform(dereference_value);
+    }
+};
+
+template<typename Operation>
 std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
     PrefixOperationVisitor<Operation> visitor(function, operation);
     return visit(visitor, operation.Content->left_value);
@@ -1684,53 +1722,8 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 
 template<typename Operation>
 std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
-    if(auto* ptr = boost::get<ast::VariableValue>(&operation.Content->left_value)){
-        auto var = (*ptr).Content->var;
-
-        if(var->type() == FLOAT){
-            auto temp = function->context->new_temporary(FLOAT);
-
-            function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FASSIGN));
-
-            performPrefixOperation(operation, function);
-
-            return temp;
-        } else if(var->type() == INT){
-            auto temp = function->context->new_temporary(INT);
-
-            function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::ASSIGN));
-
-            performPrefixOperation(operation, function);
-
-            return temp;
-        } 
-    } else if(boost::get<ast::ArrayValue>(&operation.Content->left_value)){
-        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
-
-        if(type == FLOAT){
-            auto temp = function->context->new_temporary(FLOAT);
-
-            //Load left value in temp
-            visit(AssignValueToVariable(function, temp), operation.Content->left_value);
-            
-            //Note: The extra temporary will be removed by optimizations
-            performPrefixOperation(operation, function);
-
-            return temp;
-        } else if (type == INT){
-            auto temp = function->context->new_temporary(INT);
-
-            //Load left value in temp
-            visit(AssignValueToVariable(function, temp), operation.Content->left_value);
-            
-            //Note: The extra temporary will be removed by optimizations
-            performPrefixOperation(operation, function);
-
-            return temp;
-        }
-    }
-            
-    ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
+    SuffixOperationVisitor<Operation> visitor(function, operation);
+    return visit(visitor, operation.Content->left_value);
 }
 
 } //end of anonymous namespace
