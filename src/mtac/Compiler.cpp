@@ -93,12 +93,11 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 template<typename Operation>
 std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shared_ptr<mtac::Function> function);
 
+template<bool Address = false>
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
     ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
-    ToArgumentsVisitor(std::shared_ptr<mtac::Function> f, bool take_address) : function(f), take_address(take_address) {}
     
     mutable std::shared_ptr<mtac::Function> function;
-    bool take_address = false;
 
     result_type operator()(ast::Literal& literal) const {
         return {literal.label, (int) literal.value.size() - 2};
@@ -174,7 +173,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         auto type = visit_non_variant(ast::GetTypeVisitor(), new_);
 
         auto size = function->context->new_temporary(INT);
-        auto size_temp = visit(ToArgumentsVisitor(function), new_.Content->size)[0];
+        auto size_temp = visit(ToArgumentsVisitor<>(function), new_.Content->size)[0];
         
         auto platform = function->context->global()->target_platform();
 
@@ -313,7 +312,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             unsigned int offset = 0;
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), member_value.Content->memberNames);
 
-            if(take_address){
+            if(Address){
                 auto temp = value.Content->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
                 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
@@ -341,7 +340,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::VariableValue& value) const {
-        if(take_address){
+        if(Address){
             return {value.Content->var};
         }
 
@@ -580,13 +579,13 @@ struct AbstractVisitor : public boost::static_visitor<> {
     template<typename T>
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
         if(type->is_pointer()){
-            pointerAssign(ToArgumentsVisitor(function)(value));
+            pointerAssign(ToArgumentsVisitor<>(function)(value));
         } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
-            intAssign(ToArgumentsVisitor(function)(value));
+            intAssign(ToArgumentsVisitor<>(function)(value));
         } else if(type == STRING){
-            stringAssign(ToArgumentsVisitor(function)(value));
+            stringAssign(ToArgumentsVisitor<>(function)(value));
         } else if(type == FLOAT){
-            floatAssign(ToArgumentsVisitor(function)(value));
+            floatAssign(ToArgumentsVisitor<>(function)(value));
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
         }
@@ -663,7 +662,7 @@ struct AssignValueToVariable : public AbstractVisitor {
     void operator()(ast::MemberValue& value) const {
         if(type){
             if(type->is_pointer()){
-                pointerAssign(ToArgumentsVisitor(function, true)(value));
+                pointerAssign(ToArgumentsVisitor<true>(function)(value));
             } else {
                 complexAssign(type, value);
             }
@@ -675,13 +674,13 @@ struct AssignValueToVariable : public AbstractVisitor {
     void operator()(ast::VariableValue& value) const {
         if(type){
             if(type->is_pointer()){
-                pointerAssign(ToArgumentsVisitor(function, true)(value));
+                pointerAssign(ToArgumentsVisitor<true>(function)(value));
             } else {
                 complexAssign(type, value);
             }
         } else {
             if(variable->type()->is_array() && variable->type()->data_type()->is_pointer()){
-                pointerAssign(ToArgumentsVisitor(function)(value));
+                pointerAssign(ToArgumentsVisitor<>(function)(value));
             } else {
                 complexAssign(value.variable()->type(), value);
             }
@@ -768,7 +767,7 @@ struct AssignVisitor : public boost::static_visitor<> {
             dest = left.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
-            auto visitor = ToArgumentsVisitor(function, true);
+            auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
             auto variable = boost::get<std::shared_ptr<Variable>>(left_value[0]);
 
@@ -817,7 +816,7 @@ struct AssignVisitor : public boost::static_visitor<> {
             auto left = *array_ptr;
 
             //As the array hold pointers, the visitor will return a temporary
-            auto visitor = ToArgumentsVisitor(function);
+            auto visitor = ToArgumentsVisitor<>(function);
             auto values = visit_non_variant(visitor, left);
 
             ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
@@ -844,7 +843,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     
     template<typename T>
     void operator()(T& value) const {
-        auto argument = ToArgumentsVisitor(function)(value)[0];
+        auto argument = ToArgumentsVisitor<>(function)(value)[0];
 
         function->add(std::make_shared<mtac::IfFalse>(argument, label));
     }
@@ -913,7 +912,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
    
     template<typename T>
     void operator()(T& value) const {
-        auto argument = ToArgumentsVisitor(function)(value)[0];
+        auto argument = ToArgumentsVisitor<>(function)(value)[0];
 
         function->add(std::make_shared<mtac::If>(argument, label));
     }
@@ -982,14 +981,14 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
         auto t2 = function->context->new_temporary(INT);
         
         visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
-        auto args = visit(ToArgumentsVisitor(function), ternary.Content->true_value);
+        auto args = visit(ToArgumentsVisitor<>(function), ternary.Content->true_value);
         function->add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
         function->add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
 
         function->add(std::make_shared<mtac::Goto>(endLabel));
         
         function->add(falseLabel);
-        args = visit(ToArgumentsVisitor(function), ternary.Content->false_value);
+        args = visit(ToArgumentsVisitor<>(function), ternary.Content->false_value);
         function->add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
         function->add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
         
@@ -1008,14 +1007,14 @@ void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Functi
 
     std::vector<mtac::Argument> arguments;
 
-    auto first = visit(ToArgumentsVisitor(function), value.Content->first);
+    auto first = visit(ToArgumentsVisitor<>(function), value.Content->first);
     arguments.insert(arguments.end(), first.begin(), first.end());
 
     //Perfom all the additions
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
-        auto second = visit(ToArgumentsVisitor(function), operation.get<1>());
+        auto second = visit(ToArgumentsVisitor<>(function), operation.get<1>());
         arguments.insert(arguments.end(), second.begin(), second.end());
         
         for(auto& arg : arguments){
@@ -1300,7 +1299,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            auto arguments = visit(ToArgumentsVisitor(function), return_.Content->value);
+            auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
 
             if(arguments.size() == 1){
                 function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
@@ -1348,7 +1347,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 };
 
 mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function){
-    return visit(ToArgumentsVisitor(function), value)[0];
+    return visit(ToArgumentsVisitor<>(function), value)[0];
 }
     
 void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
@@ -1363,7 +1362,7 @@ void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Typ
         if(member_type->is_custom_type() || member_type->is_template()){
             push_struct_member(memberValue, member_type, function, param, definition);
         } else {
-            auto member_values = ToArgumentsVisitor(function)(memberValue);
+            auto member_values = ToArgumentsVisitor<>(function)(memberValue);
 
             for(auto& v : boost::adaptors::reverse(member_values)){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
@@ -1401,7 +1400,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
         if(type->is_custom_type() || type->is_template()){
             push_struct_member(member_value, type, function, param, definition);
         } else {
-            auto member_values = ToArgumentsVisitor(function)(member_value);
+            auto member_values = ToArgumentsVisitor<>(function)(member_value);
 
             for(auto& v : boost::adaptors::reverse(member_values)){
                 if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
@@ -1428,7 +1427,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
         for(auto& first : boost::adaptors::reverse(values)){
             auto param = parameters[i--].name; 
             
-            auto args = visit(ToArgumentsVisitor(function), first);
+            auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
                 function->add(std::make_shared<mtac::Param>(arg, param, definition));   
             }
@@ -1448,7 +1447,13 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
                 }
             } 
 
-            auto args = visit(ToArgumentsVisitor(function, param->type()->is_pointer()), first);
+            std::vector<mtac::Argument> args;
+            if(param->type()->is_pointer()){
+                args = visit(ToArgumentsVisitor<true>(function), first);
+            } else {
+                args = visit(ToArgumentsVisitor<>(function), first);
+            }
+            
             for(auto& arg : boost::adaptors::reverse(args)){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
@@ -1484,7 +1489,7 @@ void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<
     //Pass all normal arguments
     pass_arguments(function, definition, functionCall);
 
-    auto location_args = visit(ToArgumentsVisitor(function), functionCall.Content->object);
+    auto location_args = visit(ToArgumentsVisitor<>(function), functionCall.Content->object);
                 
     //Pass the address of the object to the member function
     auto mtac_param = std::make_shared<mtac::Param>(location_args[0], definition->context->getVariable(definition->parameters[0].name), definition);
