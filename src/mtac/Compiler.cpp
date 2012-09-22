@@ -314,7 +314,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), member_value.Content->memberNames);
 
             if(take_address){
-                auto temp = value.Content->context->new_temporary(new_pointer_type(INT));
+                auto temp = value.Content->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
                 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
 
@@ -767,6 +767,12 @@ struct AssignVisitor : public boost::static_visitor<> {
 
             dest = left.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
+            auto visitor = ToArgumentsVisitor(function, true);
+            auto left_value = visit_non_variant(visitor, *ptr);
+            auto variable = boost::get<std::shared_ptr<Variable>>(left_value[0]);
+
+            source = dest = variable;
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled location type");
         }
@@ -811,7 +817,8 @@ struct AssignVisitor : public boost::static_visitor<> {
             auto left = *array_ptr;
 
             //As the array hold pointers, the visitor will return a temporary
-            auto values = ToArgumentsVisitor(function)(left);
+            auto visitor = ToArgumentsVisitor(function);
+            auto values = visit_non_variant(visitor, left);
 
             ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
 
