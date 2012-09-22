@@ -748,10 +748,13 @@ struct DereferenceAssign : public AbstractVisitor {
     }
 };
 
-void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
-    if(auto* ptr = boost::get<ast::MemberValue>(&assignment.Content->left_value)){
-        auto member_value = *ptr;
+struct AssignVisitor : public boost::static_visitor<> {
+    std::shared_ptr<mtac::Function> function;
+    ast::Value& value;
 
+    AssignVisitor(std::shared_ptr<mtac::Function> function, ast::Value& value) : function(function), value(value) {}
+
+    void operator()(ast::MemberValue& member_value){
         std::shared_ptr<Variable> source, dest;
 
         if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
@@ -761,30 +764,33 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
             source = left.Content->var;
 
             auto index = computeIndexOfArray(source, left.Content->indexValue, function); 
-            
+
             dest = left.Content->context->new_temporary(new_pointer_type(INT));
             function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
         } else {
             ASSERT_PATH_NOT_TAKEN("Unhandled location type");
         }
-            
+
         unsigned int offset = 0;
         std::shared_ptr<const Type> member_type;
         boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), source, member_value.Content->memberNames);
 
-        visit(AssignValueToVariable(function, dest, offset, member_type), assignment.Content->value);
-    } else if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
-        auto left = *ptr;
-        auto variable = left.Content->var;
+        visit(AssignValueToVariable(function, dest, offset, member_type), value);
+    }
 
-        visit(AssignValueToVariable(function, variable), assignment.Content->value);
-    } else if(auto* ptr = boost::get<ast::ArrayValue>(&assignment.Content->left_value)){
-        auto left = *ptr;
-        auto variable = left.Content->var;
+    void operator()(ast::VariableValue& variable_value){
+        auto variable = variable_value.Content->var;
 
-        visit(AssignValueToVariable(function, variable, left.Content->indexValue), assignment.Content->value);
-    } else if(auto* ptr = boost::get<ast::DereferenceValue>(&assignment.Content->left_value)){
-        if(auto* var_ptr = boost::get<ast::MemberValue>(&(*ptr).Content->ref)){
+        visit(AssignValueToVariable(function, variable), value);
+    }
+    void operator()(ast::ArrayValue& array_value){
+        auto variable = array_value.Content->var;
+
+        visit(AssignValueToVariable(function, variable, array_value.Content->indexValue), value);
+    }
+
+    void operator()(ast::DereferenceValue& dereference_value){
+        if(auto* var_ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
             auto member_value = *var_ptr;
 
             if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
@@ -793,15 +799,15 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
                 auto variable = left.Content->var;
                 unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
-                visit(DereferenceAssign(function, variable, offset), assignment.Content->value);
+                visit(DereferenceAssign(function, variable, offset), value);
             } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
                 ASSERT_PATH_NOT_TAKEN("Unhandled location");
             }
-        } else if(auto* var_ptr = boost::get<ast::VariableValue>(&(*ptr).Content->ref)){
+        } else if(auto* var_ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
             auto left = *var_ptr;
 
-            visit(DereferenceAssign(function, left.Content->var, 0), assignment.Content->value);
-        } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&(*ptr).Content->ref)){
+            visit(DereferenceAssign(function, left.Content->var, 0), value);
+        } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
             auto left = *array_ptr;
 
             //As the array hold pointers, the visitor will return a temporary
@@ -811,9 +817,14 @@ void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignmen
 
             auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
 
-            visit(DereferenceAssign(function, variable, 0), assignment.Content->value);
+            visit(DereferenceAssign(function, variable, 0), value);
         }
     }
+};
+
+void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
+    AssignVisitor visitor(function, assignment.Content->value);
+    visit(visitor, assignment.Content->left_value);
 }
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
