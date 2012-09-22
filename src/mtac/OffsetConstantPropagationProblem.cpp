@@ -144,16 +144,18 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
         auto param = *ptr;
 
         if(param->address){
-            auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+                auto variable = *ptr;
 
-            //Impossible to know if the variable is modified or not, consider it modified
-            for(auto it = std::begin(out.values()); it != std::end(out.values());){
-                auto offset = it->first;
+                //Impossible to know if the variable is modified or not, consider it modified
+                for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                    auto offset = it->first;
 
-                if(offset.variable == variable){
-                    it = out.values().erase(it);
-                } else {
-                    ++it;
+                    if(offset.variable == variable){
+                        it = out.values().erase(it);
+                    } else {
+                        ++it;
+                    }
                 }
             }
         }

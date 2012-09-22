@@ -67,9 +67,14 @@ auto DataFlowProblem<Type, DomainValues>::Init(std::shared_ptr<mtac::Function>/*
 
 template<typename ProblemDomain>
 ProblemDomain intersection_meet(ProblemDomain& in, ProblemDomain& out){
-    ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
+    //ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
-    if(in.top()){
+    if(in.top() && out.top()){
+        typename ProblemDomain::Values values;
+        ProblemDomain result(values);
+
+        return result;
+    } else if(in.top()){
         return out;
     } else if(out.top()){
         return in;
