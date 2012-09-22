@@ -1577,10 +1577,13 @@ ast::VariableValue to_variable_value(std::shared_ptr<mtac::Function> function, s
 }
 
 template<typename Operation>
-std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
-    if(auto* ptr = boost::get<ast::MemberValue>(&operation.Content->left_value)){
-        auto member_value = *ptr;
+struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
+    std::shared_ptr<mtac::Function> function;
+    Operation& operation;
 
+    PrefixOperationVisitor(std::shared_ptr<mtac::Function> function, Operation& operation) : function(function), operation(operation) {}
+
+    std::shared_ptr<Variable> operator()(ast::MemberValue& member_value){
         if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             auto left = *left_ptr;
             auto type = visit_non_variant(ast::GetTypeVisitor(), member_value);
@@ -1679,9 +1682,13 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
 
                 return t1;
             }
-        }
-    } else if(auto* ptr = boost::get<ast::VariableValue>(&operation.Content->left_value)){
-        auto var = (*ptr).Content->var;
+        } 
+        
+        ASSERT_PATH_NOT_TAKEN("Unhandled location type");
+    }
+    
+    std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
+        auto var = variable_value.Content->var;
 
         if(operation.Content->op == ast::Operator::INC){
             if(var->type() == FLOAT){
@@ -1698,14 +1705,16 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
         }
 
         return var;
-    } else if(auto* ptr = boost::get<ast::ArrayValue>(&operation.Content->left_value)){
-        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+    }
+
+    std::shared_ptr<Variable> operator()(ast::ArrayValue& array_value){
+        auto type = visit_non_variant(ast::GetTypeVisitor(), array_value);
 
         if(type == FLOAT){
             auto t1 = function->context->new_temporary(FLOAT);
 
             //Load left value in t1
-            visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+            visit_non_variant(AssignValueToVariable(function, t1), array_value);
             
             if(operation.Content->op == ast::Operator::INC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
@@ -1713,15 +1722,14 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
             }
 
-            auto left = *ptr;
-            visit_non_variant(AssignValueToVariable(function, left.Content->var, left.Content->indexValue), t1);
+            visit_non_variant(AssignValueToVariable(function, array_value.Content->var, array_value.Content->indexValue), t1);
 
             return t1;
         } else if (type == INT){
             auto t1 = function->context->new_temporary(INT);
 
             //Load left value in t1
-            visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+            visit_non_variant(AssignValueToVariable(function, t1), array_value);
             
             if(operation.Content->op == ast::Operator::INC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
@@ -1729,14 +1737,24 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shar
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
             }
 
-            auto left = *ptr;
-            visit_non_variant(AssignValueToVariable(function, left.Content->var, left.Content->indexValue), t1);
+            visit_non_variant(AssignValueToVariable(function, array_value.Content->var, array_value.Content->indexValue), t1);
 
             return t1;
         }
-    } 
+        
+        ASSERT_PATH_NOT_TAKEN("Unhandled location type");
+    }
+    
+    std::shared_ptr<Variable> operator()(ast::DereferenceValue&){
+        //TODO Support this feature
+        ASSERT_PATH_NOT_TAKEN("Unsupported feature");
+    }
+};
 
-    ASSERT_PATH_NOT_TAKEN("Unhandled operation type");
+template<typename Operation>
+std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
+    PrefixOperationVisitor<Operation> visitor(function, operation);
+    return visit(visitor, operation.Content->left_value);
 }
 
 template<typename Operation>
