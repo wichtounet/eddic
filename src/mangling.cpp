@@ -46,7 +46,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     if(type->is_custom_type()){
         std::ostringstream ss;
 
-        ss << "C";
+        ss << "U";
         ss << type->type().length();
         ss << type->type();
         
@@ -56,7 +56,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     if(type->is_template()){
         std::ostringstream ss;
 
-        ss << "CT";
+        ss << "T";
         ss << type->type().length();
         ss << type->type();
 
@@ -186,7 +186,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<std
     return ss.str();
 }
 
-std::string get_name_from_length(const std::string& mangled, unsigned int& i){
+unsigned int read_length(const std::string& mangled, unsigned int& i){
     std::ostringstream length;
     int digits = 0;
 
@@ -199,7 +199,11 @@ std::string get_name_from_length(const std::string& mangled, unsigned int& i){
         }
     }
 
-    int l = toNumber<unsigned int>(length.str());
+    return toNumber<unsigned int>(length.str());
+}
+
+std::string get_name_from_length(const std::string& mangled, unsigned int& i){
+    int l = read_length(mangled, i);
 
     std::ostringstream name;
     
@@ -211,56 +215,88 @@ std::string get_name_from_length(const std::string& mangled, unsigned int& i){
     return name.str();
 }
 
-std::string eddic::unmangle(std::string mangled){
-    unsigned int o = 2;
+std::string extract_type(const std::string& mangled, unsigned int& o){
+    std::stringstream ss;
 
-    std::ostringstream function;
+    char current = mangled[o];
 
-    function << get_name_from_length(mangled, o);
-
-    //Test if inside a struct
-    if(isdigit(mangled[o])){
-        function << "::";
-        
-        function << get_name_from_length(mangled, o);
+    bool array = false;
+    if(current == 'A'){
+        array = true;
+        current = mangled[++o];
     }
 
+    bool pointer = false;
+    if(current == 'P'){
+        pointer = true;
+        current = mangled[++o];
+    }   
+        
+    ++o;
+
+    if(current == 'I'){
+        ss << "int";
+    } else if(current == 'C'){
+        ss << "char";
+    } else if(current == 'S'){
+        ss << "string";
+    } else if(current == 'B'){
+        ss << "bool";
+    } else if(current == 'F'){
+        ss << "float";
+    } else if(current == 'U'){
+        ss << get_name_from_length(mangled, o);
+    } else if(current == 'T'){
+        ss << get_name_from_length(mangled, o);
+        ss << "<";
+
+        auto params = read_length(mangled, o);
+        
+        for(unsigned int i = 0; i < params; ++i){
+            ss << extract_type(mangled, o);
+
+            if(i < params - 1){
+                ss << ", ";
+            }
+        }
+
+        ss << ">";
+    }
+
+    if(array){
+        ss << "[]";
+    }
+
+    if(pointer){
+        ss << "&";
+    }
+
+    return ss.str();
+}
+
+std::string eddic::unmangle(std::string mangled){
+    std::ostringstream function;
+
+    std::string prefix;
+    prefix += mangled[0];
+    prefix += mangled[1];
+    
+    unsigned int o = 2;
+
+    //Member function
+    if(prefix == "_M"){
+        auto type = extract_type(mangled, o);
+        function << type << "::";
+    }
+
+    //Get the name of the function
+    function << get_name_from_length(mangled, o);
     function << '(';
 
-    for(; o < mangled.length(); ++o){
-        char current = mangled[o];
-
-        bool array = false;
-        if(current == 'A'){
-            array = true;
-            current = mangled[++o];
-        }
-        
-        bool pointer = false;
-        if(current == 'P'){
-            pointer = true;
-            current = mangled[++o];
-        }   
-
-        if(current == 'I'){
-            function << "int";
-        } else if(current == 'C'){
-            function << "char";
-        } else if(current == 'S'){
-            function << "string";
-        } else if(current == 'B'){
-            function << "bool";
-        } else if(current == 'F'){
-            function << "float";
-        } 
-
-        if(array){
-            function << "[]";
-        }
-
-        if(pointer){
-            function << "&";
-        }
+    //Get the parameters
+    while(o < mangled.length()){
+        auto type = extract_type(mangled, o);
+        function << type;
 
         if(o < mangled.length() - 1){
             function << ", ";
