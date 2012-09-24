@@ -497,24 +497,29 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 
     //Push the address of the var
     if(param->address){
-        auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+            auto variable = *ptr;
 
-        if(variable->type()->is_pointer()){
-            auto reg = manager.get_reg(variable);
+            if(variable->type()->is_pointer()){
+                auto reg = manager.get_reg(variable);
 
-            if(register_allocated){
-                ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+                if(register_allocated){
+                    ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+                } else {
+                    push(reg);
+                }
             } else {
-                push(reg);
+                auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
+
+                if(register_allocated){
+                    ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
+                } else {
+                    push(reg);
+                }
             }
         } else {
-            auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
-
-            if(register_allocated){
-                ltac::add_instruction(function, ltac::Operator::MOV, ltac::Register(descriptor->int_param_register(position)), reg);
-            } else {
-                push(reg);
-            }
+            auto value = boost::get<int>(param->arg);
+            push(value);
         }
     } 
     //Push by value
