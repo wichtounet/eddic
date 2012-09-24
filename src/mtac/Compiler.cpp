@@ -314,7 +314,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), value.variable(), member_value.Content->memberNames);
 
             if(Address){
-                auto temp = value.Content->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
+                auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
                 
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::PDOT, offset));
 
@@ -331,6 +331,24 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             
             auto member_info = mtac::compute_member(function->context->global(), array.Content->var, member_value.Content->memberNames);
             return get_member(member_info.first, member_info.second, temp);
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
+            auto visitor = ToArgumentsVisitor<true>(function);
+            auto left_value = visit_non_variant(visitor, *ptr);
+            auto variable = boost::get<std::shared_ptr<Variable>>(left_value[0]);
+
+            std::shared_ptr<const Type> member_type;
+            unsigned int offset = 0;
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
+
+            if(Address){
+                auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
+                
+                function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, offset));
+
+                return {temp};
+            } else {
+                return get_member(offset, member_type, variable);
+            }
         }
         
         ASSERT_PATH_NOT_TAKEN("Invalid location type");
