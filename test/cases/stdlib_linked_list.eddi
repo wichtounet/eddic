@@ -2,7 +2,14 @@ include <linked_list>
 
 void main(){
     linked_list<int> list;
-    list.push_back(55);
-
+    
     print(list.size());
+    print("|");
+
+    list.push_back(55);
+    print(list.size());
+    print("|");
+    
+    print(list.head());
+    print("|");
 }

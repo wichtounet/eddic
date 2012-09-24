@@ -29,6 +29,10 @@ struct linked_list {
         ++size;
     }
 
+    T head(){
+        return head.data;
+    }
+
     int size(){
         return size;
     }
