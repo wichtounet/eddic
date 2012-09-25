@@ -881,7 +881,7 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Fun
 
     auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
 
-    if(typeLeft == INT || typeLeft == CHAR){
+    if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){
         function->add(std::make_shared<Control>(mtac::toBinaryOperator(op), left, right, label));
     } else if(typeLeft == FLOAT){
         function->add(std::make_shared<Control>(mtac::toFloatBinaryOperator(op), left, right, label));
