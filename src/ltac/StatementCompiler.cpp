@@ -1185,19 +1185,35 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
 
     auto reg = manager.get_reg_no_move(quadruple->result);
 
-    if(mtac::is<int>(*quadruple->arg2)){
-        int offset = boost::get<int>(*quadruple->arg2);
+    //TODO This should probably be done directly in get_address_in_reg
+    //The pointer has to be dereferenced
+    if(variable->type()->is_pointer()){
+        auto ptr_reg = manager.get_reg(variable);
 
-        auto reg2 = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
+        if(mtac::is<int>(*quadruple->arg2)){
+            int offset = boost::get<int>(*quadruple->arg2);
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ptr_reg, offset));
+        } else {
+            assert(ltac::is_variable(*quadruple->arg2));
 
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+            auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ptr_reg, offset));
+        }
     } else {
-        assert(ltac::is_variable(*quadruple->arg2));
+        if(mtac::is<int>(*quadruple->arg2)){
+            int offset = boost::get<int>(*quadruple->arg2);
 
-        auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
-        auto reg2 = register_guard<ltac::Register>(get_address_in_reg2(variable, offset), manager);
+            auto reg2 = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
 
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+        } else {
+            assert(ltac::is_variable(*quadruple->arg2));
+
+            auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
+            auto reg2 = register_guard<ltac::Register>(get_address_in_reg2(variable, offset), manager);
+
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
+        }
     }
                 
     manager.set_written(quadruple->result);
