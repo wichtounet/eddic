@@ -10,6 +10,19 @@ void main(){
     print(list.size());
     print("|");
     
-    print(list.head());
+    print(list.front());
+    print("|");
+    
+    print(list.back());
+    print("|");
+    
+    list.push_back(11);
+    print(list.size());
+    print("|");
+    
+    print(list.front());
+    print("|");
+    
+    print(list.back());
     print("|");
 }

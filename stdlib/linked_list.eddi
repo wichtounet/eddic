@@ -12,6 +12,7 @@ struct linked_list_node {
 template<type T>
 struct linked_list {
     linked_list_node<T>* head;
+    linked_list_node<T>* tail;
     int size;
 
     this(){
@@ -19,18 +20,24 @@ struct linked_list {
     }
 
     void push_back(T value){
-        if(head == null){
+        if(size == 0){
             head = new linked_list_node<T>(value, (linked_list_node<T>*) null);
+            tail = head;
         } else {
             linked_list_node<T>* node = new linked_list_node<T>(value, (linked_list_node<T>*) null);
-            head.next = node;
+            tail.next = node;
+            tail = node;
         }
 
         ++size;
     }
-
-    T head(){
+    
+    T front(){
         return head.data;
+    }
+
+    T back(){
+        return tail.data;
     }
 
     int size(){
