@@ -2,10 +2,12 @@ template<type T>
 struct linked_list_node {
     T data;
     linked_list_node<T>* next;
+    linked_list_node<T>* previous;
 
-    this(T data, linked_list_node<T>* next){
+    this(T data, linked_list_node<T>* next, linked_list_node<T>* previous){
         this.data = data;
         this.next = next;
+        this.previous = previous;
     }
 }
 
@@ -21,10 +23,10 @@ struct linked_list {
 
     void push_back(T value){
         if(size == 0){
-            head = new linked_list_node<T>(value, (linked_list_node<T>*) null);
+            head = new linked_list_node<T>(value, (linked_list_node<T>*) null, (linked_list_node<T>*) null);
             tail = head;
         } else {
-            linked_list_node<T>* node = new linked_list_node<T>(value, (linked_list_node<T>*) null);
+            linked_list_node<T>* node = new linked_list_node<T>(value, (linked_list_node<T>*) null, tail);
             tail.next = node;
             tail = node;
         }
