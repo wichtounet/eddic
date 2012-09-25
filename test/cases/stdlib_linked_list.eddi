@@ -1,5 +1,17 @@
 include <linked_list>
 
+template<type T>
+void debug(linked_list<T>* list){
+    print(list.size());
+    print("|");
+    
+    print(list.front());
+    print("|");
+    
+    print(list.back());
+    print("|");
+}
+
 void main(){
     linked_list<int> list;
     
@@ -7,22 +19,14 @@ void main(){
     print("|");
 
     list.push_back(55);
-    print(list.size());
-    print("|");
-    
-    print(list.front());
-    print("|");
-    
-    print(list.back());
-    print("|");
+    debug(list);
     
     list.push_back(11);
-    print(list.size());
-    print("|");
+    debug(list);
     
-    print(list.front());
-    print("|");
+    list.push_front(33);
+    debug(list);
     
-    print(list.back());
-    print("|");
+    list.push_front(99);
+    debug(list);
 }
