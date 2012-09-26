@@ -11,6 +11,7 @@
 
 //The passes
 #include "ast/TransformerEngine.hpp"
+#include "ast/TemplateCollectionPass.hpp"
 
 using namespace eddic;
 
@@ -21,6 +22,9 @@ ast::PassManager::PassManager(ast::TemplateEngine& template_engine) : template_e
 void ast::PassManager::init_passes(){
     //Clean pass
     passes.push_back(std::make_shared<ast::CleanPass>(template_engine));
+
+    //Template Collection pass
+    passes.push_back(std::make_shared<ast::TemplateCollectionPass>(template_engine));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){
