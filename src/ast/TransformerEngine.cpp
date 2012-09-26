@@ -926,6 +926,8 @@ void ast::transformAST(ast::SourceFile& program){
     visitor(program);
 }
 
+ast::CleanPass::CleanPass(ast::TemplateEngine& template_engine) : Pass(template_engine) {}
+
 bool ast::CleanPass::is_simple(){
     return false;
 }

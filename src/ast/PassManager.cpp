@@ -5,10 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <algorithm>
-
-#include "iterators.hpp"
-
 #include "ast/PassManager.hpp"
 #include "ast/Pass.hpp"
 #include "ast/SourceFile.hpp"
@@ -18,9 +14,13 @@
 
 using namespace eddic;
 
+ast::PassManager::PassManager(ast::TemplateEngine& template_engine) : template_engine(template_engine) {
+    //NOP
+}
+
 void ast::PassManager::init_passes(){
     //Clean pass
-    passes.push_back(std::make_shared<ast::CleanPass>());
+    passes.push_back(std::make_shared<ast::CleanPass>(template_engine));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){

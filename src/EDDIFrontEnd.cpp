@@ -66,13 +66,14 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Read dependencies
         resolveDependencies(program, parser);
 
+        ast::TemplateEngine template_engine;
+
         //Init the passes
-        ast::PassManager pass_manager;
+        ast::PassManager pass_manager(template_engine);
         pass_manager.init_passes();
 
+        //Run all the passes on the program
         pass_manager.run_passes(program);
-
-        ast::TemplateEngine template_engine;
 
         do {
             log::emit<Info>("Template") << "Start template phase" << log::endl;

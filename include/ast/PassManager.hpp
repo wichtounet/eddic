@@ -18,13 +18,18 @@ namespace eddic {
 namespace ast {
 
 class Pass;
+class TemplateEngine;
 
 class PassManager {
     public:
+        PassManager(ast::TemplateEngine& template_engine);
+
         void init_passes();
         void run_passes(ast::SourceFile& program);
 
     private:
+        ast::TemplateEngine& template_engine;
+
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;
 };
