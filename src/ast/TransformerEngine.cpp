@@ -929,7 +929,7 @@ void ast::transformAST(ast::SourceFile& program){
 ast::CleanPass::CleanPass(ast::TemplateEngine& template_engine) : Pass(template_engine) {}
 
 bool ast::CleanPass::is_simple(){
-    return false;
+    return true;
 }
 
 void ast::CleanPass::apply_program(ast::SourceFile& program){
