@@ -17,11 +17,15 @@ namespace ast {
 struct ASTSourceFile;
 typedef Deferred<ASTSourceFile> SourceFile;
 
+//Structures
+
 struct ASTStruct;
 typedef Deferred<ASTStruct> Struct;
 
 struct ASTTemplateStruct;
 typedef Deferred<ASTTemplateStruct> TemplateStruct;
+
+//Functions
 
 struct ASTFunctionDeclaration;
 typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration;
@@ -34,6 +38,14 @@ typedef Deferred<ASTDestructor> Destructor;
 
 struct ASTTemplateFunctionDeclaration;
 typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
+
+//Instructions
+
+struct ASTFunctionCall;
+typedef Deferred<ASTFunctionCall> FunctionCall;
+
+struct ASTMemberFunctionCall;
+typedef Deferred<ASTMemberFunctionCall> MemberFunctionCall;
 
 } //end of ast
 
