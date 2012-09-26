@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+
 #include "iterators.hpp"
 
 #include "ast/PassManager.hpp"
@@ -22,17 +24,17 @@ void ast::PassManager::init_passes(){
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){
-    auto it = iterate(passes);
-
-    while(it.has_next()){
-        auto pass = *it;
-
-        pass->apply_program(program);
-
-        if(!pass->is_simple()){
+    for(auto& pass : passes){
+        //A simple pass is only applied once to the whole program
+        if(pass->is_simple()){
+            pass->apply_program(program);
+        } 
+        //Normal pass are applied until all function and structures have been handled
+        else {
+            //The next passes will have to apply it again to fresh functions
             applied_passes.push_back(pass);
-        }
 
-        ++it;
+
+        }
     }
 }
