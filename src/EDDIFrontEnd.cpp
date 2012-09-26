@@ -20,6 +20,9 @@
 
 #include "ast/SourceFile.hpp"
 
+//Pass manager
+#include "ast/PassManager.hpp"
+
 //Annotators
 #include "ast/DefaultValues.hpp"
 #include "ast/ContextAnnotator.hpp"
@@ -62,6 +65,12 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
         //Read dependencies
         resolveDependencies(program, parser);
+
+        //Init the passes
+        ast::PassManager pass_manager;
+        pass_manager.init_passes();
+
+        pass_manager.run_passes(program);
 
         //Apply some cleaning transformations
         ast::cleanAST(program);
