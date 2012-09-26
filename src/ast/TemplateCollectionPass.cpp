@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "logging.hpp"
-
 #include "ast/TemplateCollectionPass.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/SourceFile.hpp"
@@ -17,24 +15,20 @@ using namespace eddic;
 namespace {
 
 struct Collector : public boost::static_visitor<> {
-    ast::TemplateEngine::FunctionTemplateMap& function_templates;
-    ast::TemplateEngine::ClassTemplateMap& class_templates;
+    ast::TemplateEngine& template_engine;
 
     std::string parent_struct = "";
 
-    Collector(ast::TemplateEngine::FunctionTemplateMap& function_templates, ast::TemplateEngine::ClassTemplateMap& class_templates) : 
-            function_templates(function_templates), class_templates(class_templates) {}
+    Collector(ast::TemplateEngine& template_engine) : template_engine(template_engine) {}
 
     AUTO_RECURSE_PROGRAM()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
-        log::emit<Trace>("Template") << "Collected function template " << declaration.Content->functionName <<" in context " << parent_struct << log::endl;
-
-        function_templates[parent_struct].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(declaration.Content->functionName, declaration));
+        template_engine.add_template_function(parent_struct, declaration.Content->functionName, declaration);
     }
     
     void operator()(ast::TemplateStruct& template_struct){
-        class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(template_struct.Content->name, template_struct)); 
+        template_engine.add_template_struct(template_struct.Content->name, template_struct);
     }
         
     void operator()(ast::Struct& struct_){
@@ -57,6 +51,6 @@ bool ast::TemplateCollectionPass::is_simple(){
 }
 
 void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program){
-    Collector collector(template_engine.function_templates, template_engine.class_templates);
+    Collector collector(template_engine);
     collector(program);
 }

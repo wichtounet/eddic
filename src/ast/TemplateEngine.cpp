@@ -1121,6 +1121,18 @@ struct Instantiator : public boost::static_visitor<> {
 };
 
 } //end of anonymous namespace
+        
+void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration){
+    log::emit<Trace>("Template") << "Collected class template " << struct_ << log::endl;
+
+    class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration)); 
+}
+
+void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration){
+    log::emit<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
+
+    function_templates[context].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(function, declaration));
+}
 
 void ast::TemplateEngine::template_instantiation(ast::SourceFile& program){
     Instantiator instantiator(*this);

@@ -33,6 +33,9 @@ class TemplateEngine {
         void check_member_function(ast::MemberFunctionCall& member_function_call);
         void check_type(ast::Type& type, ast::Position& position);
 
+        void add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration);
+        void add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration);
+
         void template_instantiation(SourceFile& program);
    
         FunctionTemplateMap function_templates;
