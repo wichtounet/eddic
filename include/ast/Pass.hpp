@@ -19,8 +19,7 @@ class Pass {
         virtual void apply_program(ast::SourceFile& program) = 0;
         virtual void apply_struct(ast::Struct& struct_) = 0;
         virtual void apply_function(ast::FunctionDeclaration& function) = 0;
-
-        bool simple = false;
+        virtual bool is_simple() = 0;
 };
 
 } //end of ast

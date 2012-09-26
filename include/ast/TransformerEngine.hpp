@@ -9,12 +9,19 @@
 #define TRANSFORMER_ENGINE_H
 
 #include "ast/source_def.hpp"
+#include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
+
+struct CleanPass : Pass {
+    void apply_program(ast::SourceFile& program) override;
+    void apply_struct(ast::Struct& struct_) override;
+    void apply_function(ast::FunctionDeclaration& function) override;
+    bool is_simple() override;
+};
     
-void cleanAST(SourceFile& program);
 void transformAST(SourceFile& program);
 
 } //end of ast

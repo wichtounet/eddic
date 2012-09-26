@@ -72,9 +72,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
         pass_manager.run_passes(program);
 
-        //Apply some cleaning transformations
-        ast::cleanAST(program);
-
         ast::TemplateEngine template_engine;
 
         do {
