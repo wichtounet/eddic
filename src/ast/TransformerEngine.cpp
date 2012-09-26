@@ -936,11 +936,3 @@ void ast::CleanPass::apply_program(ast::SourceFile& program){
     CleanerVisitor visitor;
     visitor(program);
 }
-
-void ast::CleanPass::apply_struct(ast::Struct& struct_){
-    //NOP
-}
-
-void ast::CleanPass::apply_function(ast::FunctionDeclaration& function){
-    //NOP
-}

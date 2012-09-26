@@ -10,3 +10,27 @@
 using namespace eddic;
 
 ast::Pass::Pass(ast::TemplateEngine& template_engine) : template_engine(template_engine) {}
+        
+void ast::Pass::apply_program(ast::SourceFile&){
+    //Do nothing by default
+}
+
+void ast::Pass::apply_function(ast::FunctionDeclaration&){
+    //Do nothing by default
+}
+
+void ast::Pass::apply_struct(ast::Struct&){
+    //Do nothing by default
+}
+
+void ast::Pass::apply_struct_function(ast::FunctionDeclaration&){
+    //Do nothing by default
+}
+
+void ast::Pass::apply_struct_constructor(ast::Constructor&){
+    //Do nothing by default
+}
+
+void ast::Pass::apply_struct_destructor(ast::Destructor&){
+    //Do nothing by default
+}

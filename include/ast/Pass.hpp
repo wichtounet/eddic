@@ -20,9 +20,13 @@ class Pass {
     public:
         Pass(ast::TemplateEngine& template_engine);
 
-        virtual void apply_program(ast::SourceFile& program) = 0;
-        virtual void apply_struct(ast::Struct& struct_) = 0;
-        virtual void apply_function(ast::FunctionDeclaration& function) = 0;
+        virtual void apply_program(ast::SourceFile& program);
+        virtual void apply_function(ast::FunctionDeclaration& function);
+        virtual void apply_struct(ast::Struct& struct_);
+        virtual void apply_struct_function(ast::FunctionDeclaration& function);
+        virtual void apply_struct_constructor(ast::Constructor& constructor);
+        virtual void apply_struct_destructor(ast::Destructor& destructor);
+        
         virtual bool is_simple() = 0;
 
     protected:

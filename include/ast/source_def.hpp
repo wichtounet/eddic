@@ -26,6 +26,12 @@ typedef Deferred<ASTTemplateStruct> TemplateStruct;
 struct ASTFunctionDeclaration;
 typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration;
 
+struct ASTConstructor;
+typedef Deferred<ASTConstructor> Constructor;
+
+struct ASTDestructor;
+typedef Deferred<ASTDestructor> Destructor;
+
 struct ASTTemplateFunctionDeclaration;
 typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
 

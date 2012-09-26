@@ -27,6 +27,7 @@ void ast::PassManager::run_passes(ast::SourceFile& program){
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
         if(pass->is_simple()){
+            //It is up to the simple pass to recurse into the program
             pass->apply_program(program);
         } 
         //Normal pass are applied until all function and structures have been handled
