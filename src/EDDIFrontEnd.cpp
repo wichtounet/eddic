@@ -5,10 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-
 #include "EDDIFrontEnd.hpp"
-#include "logging.hpp"
 #include "SemanticalException.hpp"
 #include "DebugStopWatch.hpp"
 #include "Options.hpp"
@@ -46,8 +43,6 @@
 using namespace eddic;
 
 void check_for_main(std::shared_ptr<GlobalContext> context);
-void mark(ast::SourceFile& program);
-bool still_unmarked(ast::SourceFile& program);
 
 std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
     parser::SpiritParser parser;
@@ -74,9 +69,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Run all the passes on the program
         pass_manager.run_passes(program);
 
-        do {
-            log::emit<Info>("Template") << "Start template phase" << log::endl;
-
             //Define contexts and structures
             ast::defineStructures(program);
 
@@ -87,16 +79,12 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
             ast::defineMemberFunctions(program);
             ast::defineVariables(program);
             ast::defineFunctions(program);
-
-            //Mark all the functions and struct as transformed
-            mark(program);
             
             //If the dev option is defined, print the whole AST tree
             if(configuration->option_defined("dev")){
                 ast::Printer printer;
                 printer.print(program);
             }
-        } while(still_unmarked(program));
 
         //Fill the string pool
         ast::checkStrings(program, *pool);
@@ -147,60 +135,4 @@ void check_for_main(std::shared_ptr<GlobalContext> context){
     } else {
         throw SemanticalException("The program does not contain a valid main function"); 
     }
-}
-
-void mark(ast::SourceFile& program){
-    for(auto& block : program.Content->blocks){
-        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            ptr->Content->marked = true;
-        } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-            ptr->Content->marked = true;
-
-            for(auto& function : ptr->Content->functions){
-               function.Content->marked = true; 
-            }
-            
-            for(auto& function : ptr->Content->destructors){
-               function.Content->marked = true; 
-            }
-            
-            for(auto& function : ptr->Content->constructors){
-               function.Content->marked = true; 
-            }
-        }
-    }
-}
-
-bool still_unmarked(ast::SourceFile& program){
-    for(auto& block : program.Content->blocks){
-        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            if(!ptr->Content->marked){
-                return true;
-            }
-        } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-            if(!ptr->Content->marked){
-                return true;
-            }
-
-            for(auto& function : ptr->Content->functions){
-                if(!function.Content->marked){
-                    return true;
-                }
-            }
-
-            for(auto& function : ptr->Content->destructors){
-                if(!function.Content->marked){
-                    return true;
-                }
-            }
-
-            for(auto& function : ptr->Content->constructors){
-                if(!function.Content->marked){
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
 }
