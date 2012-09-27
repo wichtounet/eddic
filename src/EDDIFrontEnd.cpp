@@ -69,7 +69,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         ast::TemplateEngine template_engine;
 
         //Init the passes
-        ast::PassManager pass_manager(template_engine);
+        ast::PassManager pass_manager(template_engine, platform, configuration);
         pass_manager.init_passes();
 
         //Run all the passes on the program

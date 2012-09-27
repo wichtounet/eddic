@@ -11,9 +11,13 @@
 #include <memory>
 #include <vector>
 
+#include "Platform.hpp"
+
 #include "ast/source_def.hpp"
 
 namespace eddic {
+
+class Configuration;
 
 namespace ast {
 
@@ -22,13 +26,15 @@ class TemplateEngine;
 
 class PassManager {
     public:
-        PassManager(ast::TemplateEngine& template_engine);
+        PassManager(ast::TemplateEngine& template_engine, Platform platform, std::shared_ptr<Configuration> configuration);
 
         void init_passes();
         void run_passes(ast::SourceFile& program);
 
     private:
         ast::TemplateEngine& template_engine;
+        Platform platform;
+        std::shared_ptr<Configuration> configuration;
 
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;

@@ -11,6 +11,14 @@ using namespace eddic;
 
 ast::Pass::Pass(ast::TemplateEngine& template_engine) : template_engine(template_engine) {}
         
+void ast::Pass::set_platform(Platform platform){
+    this->platform = platform;
+}
+
+void ast::Pass::set_configuration(std::shared_ptr<Configuration> configuration){
+    this->configuration = configuration;
+}
+        
 void ast::Pass::apply_program(ast::SourceFile&){
     //Do nothing by default
 }

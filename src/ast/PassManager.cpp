@@ -106,18 +106,29 @@ void add_instantiations_to_program(ast::TemplateEngine& template_engine, ast::So
     template_engine.function_template_instantiated.clear();
 }
 
+template<typename Pass>
+std::shared_ptr<Pass> make_pass(ast::TemplateEngine& template_engine, Platform platform, std::shared_ptr<Configuration> configuration){
+    auto pass = std::make_shared<Pass>(template_engine);
+    
+    pass->set_platform(platform);
+    pass->set_configuration(configuration);
+
+    return pass;
+}
+
 } //end of anonymous namespace
 
-ast::PassManager::PassManager(ast::TemplateEngine& template_engine) : template_engine(template_engine) {
+ast::PassManager::PassManager(ast::TemplateEngine& template_engine, Platform platform, std::shared_ptr<Configuration> configuration) : 
+        template_engine(template_engine), platform(platform), configuration(configuration) {
     //NOP
 }
 
 void ast::PassManager::init_passes(){
     //Clean pass
-    passes.push_back(std::make_shared<ast::CleanPass>(template_engine));
+    passes.push_back(make_pass<ast::CleanPass>(template_engine, platform, configuration));
 
     //Template Collection pass
-    passes.push_back(std::make_shared<ast::TemplateCollectionPass>(template_engine));
+    passes.push_back(make_pass<ast::TemplateCollectionPass>(template_engine, platform, configuration));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){

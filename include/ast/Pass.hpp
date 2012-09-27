@@ -8,9 +8,15 @@
 #ifndef AST_PASS_H
 #define AST_PASS_H
 
+#include <memory>
+
+#include "Platform.hpp"
+
 #include "ast/source_def.hpp"
 
 namespace eddic {
+
+struct Configuration;
 
 namespace ast {
 
@@ -26,11 +32,16 @@ class Pass {
         virtual void apply_struct_function(ast::FunctionDeclaration& function);
         virtual void apply_struct_constructor(ast::Constructor& constructor);
         virtual void apply_struct_destructor(ast::Destructor& destructor);
+
+        void set_platform(Platform platform);
+        void set_configuration(std::shared_ptr<Configuration> configuration);
         
         virtual bool is_simple() = 0;
 
     protected:
         ast::TemplateEngine& template_engine;
+        Platform platform;
+        std::shared_ptr<Configuration> configuration;
 };
 
 } //end of ast
