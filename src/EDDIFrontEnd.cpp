@@ -93,9 +93,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
             //Mark all the functions and struct as transformed
             mark(program);
             
-            //Instantiate templates
-            template_engine.template_instantiation(program);
-            
             //If the dev option is defined, print the whole AST tree
             if(configuration->option_defined("dev")){
                 ast::Printer printer;

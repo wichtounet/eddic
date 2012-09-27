@@ -35,14 +35,21 @@ class TemplateEngine {
 
         void add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration);
         void add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration);
-
-        void template_instantiation(SourceFile& program);
+    
+        std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
+        std::vector<ast::Struct> class_template_instantiated;
    
         FunctionTemplateMap function_templates;
         FunctionInstantiationMap function_template_instantiations;
         
         ClassTemplateMap class_templates;
         ClassInstantiationMap class_template_instantiations;
+
+    private:
+        void check_function(std::vector<ast::Type>& template_types, const std::string& function, ast::Position& position, const std::string& context);
+
+        bool is_instantiated(const std::string& name, const std::string& context, const std::vector<ast::Type>& template_types);
+        bool is_class_instantiated(const std::string& name, const std::vector<ast::Type>& template_types);
 };
 
 } //end of ast

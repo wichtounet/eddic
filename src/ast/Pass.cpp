@@ -19,7 +19,7 @@ void ast::Pass::apply_function(ast::FunctionDeclaration&){
     //Do nothing by default
 }
 
-void ast::Pass::apply_struct(ast::Struct&){
+void ast::Pass::apply_struct(ast::Struct&, bool){
     //Do nothing by default
 }
 

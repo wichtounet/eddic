@@ -22,7 +22,7 @@ class Pass {
 
         virtual void apply_program(ast::SourceFile& program);
         virtual void apply_function(ast::FunctionDeclaration& function);
-        virtual void apply_struct(ast::Struct& struct_);
+        virtual void apply_struct(ast::Struct& struct_, bool indicator);
         virtual void apply_struct_function(ast::FunctionDeclaration& function);
         virtual void apply_struct_constructor(ast::Constructor& constructor);
         virtual void apply_struct_destructor(ast::Destructor& destructor);
