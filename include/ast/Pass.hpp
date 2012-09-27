@@ -24,22 +24,21 @@ struct TemplateEngine;
 
 class Pass {
     public:
-        Pass(ast::TemplateEngine& template_engine);
-
-        virtual void apply_program(ast::SourceFile& program);
+        virtual void apply_program(ast::SourceFile& program, bool indicator);
         virtual void apply_function(ast::FunctionDeclaration& function);
         virtual void apply_struct(ast::Struct& struct_, bool indicator);
         virtual void apply_struct_function(ast::FunctionDeclaration& function);
         virtual void apply_struct_constructor(ast::Constructor& constructor);
         virtual void apply_struct_destructor(ast::Destructor& destructor);
 
+        void set_template_engine(std::shared_ptr<ast::TemplateEngine> template_engine);
         void set_platform(Platform platform);
         void set_configuration(std::shared_ptr<Configuration> configuration);
         
-        virtual bool is_simple() = 0;
+        virtual bool is_simple();
 
     protected:
-        ast::TemplateEngine& template_engine;
+        std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 };

@@ -18,6 +18,8 @@ namespace eddic {
 
 namespace ast {
 
+class Position;
+
 class TemplateEngine {
     public:
         typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> LocalFunctionTemplateMap;

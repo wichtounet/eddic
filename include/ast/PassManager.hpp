@@ -26,13 +26,13 @@ class TemplateEngine;
 
 class PassManager {
     public:
-        PassManager(ast::TemplateEngine& template_engine, Platform platform, std::shared_ptr<Configuration> configuration);
+        PassManager(std::shared_ptr<ast::TemplateEngine> template_engine, Platform platform, std::shared_ptr<Configuration> configuration);
 
         void init_passes();
         void run_passes(ast::SourceFile& program);
 
     private:
-        ast::TemplateEngine& template_engine;
+        std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 

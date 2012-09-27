@@ -926,13 +926,11 @@ void ast::transformAST(ast::SourceFile& program){
     visitor(program);
 }
 
-ast::CleanPass::CleanPass(ast::TemplateEngine& template_engine) : Pass(template_engine) {}
-
 bool ast::CleanPass::is_simple(){
     return true;
 }
 
-void ast::CleanPass::apply_program(ast::SourceFile& program){
+void ast::CleanPass::apply_program(ast::SourceFile& program, bool indicator){
     CleanerVisitor visitor;
     visitor(program);
 }

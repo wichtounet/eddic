@@ -44,13 +44,11 @@ struct Collector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ast::TemplateCollectionPass::TemplateCollectionPass(ast::TemplateEngine& template_engine) : Pass(template_engine) {}
-
 bool ast::TemplateCollectionPass::is_simple(){
     return true;
 }
 
-void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program){
-    Collector collector(template_engine);
+void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program, bool){
+    Collector collector(*template_engine);
     collector(program);
 }

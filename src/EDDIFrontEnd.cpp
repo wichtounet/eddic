@@ -25,7 +25,6 @@
 
 //Annotators
 #include "ast/DefaultValues.hpp"
-#include "ast/ContextAnnotator.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/StructuresAnnotator.hpp"
@@ -66,7 +65,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Read dependencies
         resolveDependencies(program, parser);
 
-        ast::TemplateEngine template_engine;
+        auto template_engine = std::make_shared<ast::TemplateEngine>();
 
         //Init the passes
         ast::PassManager pass_manager(template_engine, platform, configuration);
@@ -79,7 +78,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
             log::emit<Info>("Template") << "Start template phase" << log::endl;
 
             //Define contexts and structures
-            ast::defineContexts(program, platform, configuration);
             ast::defineStructures(program);
 
             //Add default values

@@ -16,9 +16,7 @@ namespace eddic {
 namespace ast {
 
 struct TemplateCollectionPass : Pass {
-    TemplateCollectionPass(ast::TemplateEngine& template_engine);
-
-    void apply_program(ast::SourceFile& program) override;
+    void apply_program(ast::SourceFile& program, bool indicator) override;
     bool is_simple() override;
 };
 
