@@ -23,6 +23,14 @@ void ast::Pass::set_configuration(std::shared_ptr<Configuration> configuration){
     this->configuration = configuration;
 }
 
+unsigned int ast::Pass::passes(){
+    return 1;
+}
+
+void ast::Pass::set_current_pass(unsigned int i){
+    pass = i;
+}
+
 bool ast::Pass::is_simple(){
     return false;
 }

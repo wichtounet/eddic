@@ -34,10 +34,13 @@ class Pass {
         void set_template_engine(std::shared_ptr<ast::TemplateEngine> template_engine);
         void set_platform(Platform platform);
         void set_configuration(std::shared_ptr<Configuration> configuration);
+        void set_current_pass(unsigned int i);
         
+        virtual unsigned int passes();
         virtual bool is_simple();
 
     protected:
+        unsigned int pass = 0;
         std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
