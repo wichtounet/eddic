@@ -14,13 +14,6 @@ namespace eddic {
 
 namespace ast {
 
-/*!
- * \brief Annotate the program
- * 
- * After this phase, all the variables are resolved as entry to the symbol table. 
- */
-void defineVariables(ast::SourceFile& program);
-
 } //end of ast
 
 } //end of eddic

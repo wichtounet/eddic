@@ -67,14 +67,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Run all the passes on the program
         pass_manager.run_passes(program);
 
-        ast::defineVariables(program);
         ast::defineFunctions(program);
-
-        //If the dev option is defined, print the whole AST tree
-        if(configuration->option_defined("dev")){
-            ast::Printer printer;
-            printer.print(program);
-        }
 
         //TODO The following passes can be rewritten to simple passes
 
