@@ -29,7 +29,6 @@
 #include "ast/TransformerEngine.hpp"
 #include "ast/WarningsEngine.hpp"
 #include "ast/Printer.hpp"
-#include "ast/TemplateEngine.hpp"
 
 #include "mtac/Compiler.hpp"
 #include "mtac/RegisterAllocation.hpp"
@@ -54,10 +53,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Read dependencies
         resolveDependencies(program, parser);
 
-        auto template_engine = std::make_shared<ast::TemplateEngine>();
-
         //Init the passes
-        ast::PassManager pass_manager(template_engine, platform, configuration);
+        ast::PassManager pass_manager(platform, configuration);
         pass_manager.init_passes();
 
         //Run all the passes on the program
