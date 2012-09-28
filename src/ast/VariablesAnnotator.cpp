@@ -325,16 +325,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         switch_case.value = visit(value_visitor, switch_case.value);
         visit_each(*this, switch_case.instructions);
     }
-    
-    void operator()(ast::Struct& struct_){
-        if(context->is_recursively_nested(struct_.Content->struct_type->mangle())){
-            throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
-        }
-
-        visit_each_non_variant(*this, struct_.Content->constructors);
-        visit_each_non_variant(*this, struct_.Content->destructors);
-        visit_each_non_variant(*this, struct_.Content->functions);
-    }
 
     bool is_resolved(const ast::Type& type){
         if(auto* ptr = boost::get<ast::TemplateType>(&type)){
@@ -382,18 +372,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         }
 
         visit_each(*this, declaration.Content->instructions);
-    }
-   
-    void operator()(ast::FunctionDeclaration& declaration){
-        visit_function(declaration);
-    }
-
-    void operator()(ast::Constructor& constructor){
-        visit_function(constructor);
-    }
-
-    void operator()(ast::Destructor& destructor){
-        visit_function(destructor);
     }
 
     bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
@@ -635,3 +613,29 @@ struct VariablesVisitor : public boost::static_visitor<> {
 };
 
 } //end of anonymous namespace
+    
+void ast::VariableAnnotationPass::apply_struct(ast::Struct& struct_, bool indicator){
+    if(!indicator && context->is_recursively_nested(struct_.Content->struct_type->mangle())){
+        throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
+    }
+}
+
+void ast::VariableAnnotationPass::apply_function(ast::FunctionDeclaration& function){
+    VariablesVisitor visitor(context);
+    visitor.visit_function(function);
+}
+
+void ast::VariableAnnotationPass::apply_struct_function(ast::FunctionDeclaration& function){
+    VariablesVisitor visitor(context);
+    visitor.visit_function(function);
+}
+
+void ast::VariableAnnotationPass::apply_struct_constructor(ast::Constructor& constructor){
+    VariablesVisitor visitor(context);
+    visitor.visit_function(constructor);
+}
+
+void ast::VariableAnnotationPass::apply_struct_destructor(ast::Destructor& destructor){
+    VariablesVisitor visitor(context);
+    visitor.visit_function(destructor);
+}

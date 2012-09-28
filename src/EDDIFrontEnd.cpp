@@ -22,7 +22,6 @@
 
 //Annotators
 #include "ast/FunctionsAnnotator.hpp"
-#include "ast/VariablesAnnotator.hpp"
 
 //Checkers
 #include "ast/StringChecker.hpp"
