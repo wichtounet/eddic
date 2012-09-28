@@ -24,7 +24,6 @@
 #include "ast/DefaultValues.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
-#include "ast/StructuresAnnotator.hpp"
 
 //Checkers
 #include "ast/StringChecker.hpp"
@@ -69,22 +68,19 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Run all the passes on the program
         pass_manager.run_passes(program);
 
-            //Define contexts and structures
-            ast::defineStructures(program);
+        //Add default values
+        ast::defineDefaultValues(program);
 
-            //Add default values
-            ast::defineDefaultValues(program);
+        //Add some more informations to the AST
+        ast::defineMemberFunctions(program);
+        ast::defineVariables(program);
+        ast::defineFunctions(program);
 
-            //Add some more informations to the AST
-            ast::defineMemberFunctions(program);
-            ast::defineVariables(program);
-            ast::defineFunctions(program);
-            
-            //If the dev option is defined, print the whole AST tree
-            if(configuration->option_defined("dev")){
-                ast::Printer printer;
-                printer.print(program);
-            }
+        //If the dev option is defined, print the whole AST tree
+        if(configuration->option_defined("dev")){
+            ast::Printer printer;
+            printer.print(program);
+        }
 
         //Fill the string pool
         ast::checkStrings(program, *pool);

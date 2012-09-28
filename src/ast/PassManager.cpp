@@ -14,6 +14,7 @@
 #include "ast/TransformerEngine.hpp"
 #include "ast/TemplateCollectionPass.hpp"
 #include "ast/ContextAnnotator.hpp"
+#include "ast/StructuresAnnotator.hpp"
 
 using namespace eddic;
 
@@ -144,6 +145,9 @@ void ast::PassManager::init_passes(){
     
     //Context annotation pass
     passes.push_back(make_pass<ast::ContextAnnotationPass>(template_engine, platform, configuration));
+    
+    //Structures collection pass
+    passes.push_back(make_pass<ast::StructureCollectionPass>(template_engine, platform, configuration));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){

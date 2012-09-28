@@ -9,12 +9,18 @@
 #define STRUCTURES_ANNOTATOR_H
 
 #include "ast/source_def.hpp"
+#include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
-    
-void defineStructures(ast::SourceFile& program);
+
+struct StructureCollectionPass : Pass {
+    void apply_program(ast::SourceFile& program, bool indicator) override;
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
+
+    std::shared_ptr<GlobalContext> context;
+};
 
 } //end of ast
 
