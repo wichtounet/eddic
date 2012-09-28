@@ -8,7 +8,7 @@
 #ifndef FUNCTIONS_ANNOTATOR_H
 #define FUNCTIONS_ANNOTATOR_H
 
-#include "ast/Pass.hpp"
+#include "ast/ContextAwarePass.hpp"
 
 namespace eddic {
 
@@ -22,8 +22,13 @@ struct MemberFunctionCollectionPass : Pass {
 
     ast::Struct current_struct;
 };
-    
-void defineFunctions(ast::SourceFile& program);
+
+struct FunctionCollectionPass : ContextAwarePass {
+    void apply_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_constructor(ast::Constructor& constructor) override;
+    void apply_struct_destructor(ast::Destructor& destructor) override;
+};
 
 } //end of ast
 

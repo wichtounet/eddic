@@ -18,6 +18,7 @@
 #include "ast/DefaultValues.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
+#include "ast/FunctionsAnnotator.hpp"
 
 using namespace eddic;
 
@@ -166,6 +167,9 @@ void ast::PassManager::init_passes(){
 
     //Variables annotation pass
     passes.push_back(make_pass<ast::VariableAnnotationPass>(template_engine, platform, configuration));
+    
+    //Function collection pass
+    passes.push_back(make_pass<ast::FunctionCollectionPass>(template_engine, platform, configuration));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){

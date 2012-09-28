@@ -20,9 +20,6 @@
 //Pass manager
 #include "ast/PassManager.hpp"
 
-//Annotators
-#include "ast/FunctionsAnnotator.hpp"
-
 //Checkers
 #include "ast/StringChecker.hpp"
 #include "ast/TypeChecker.hpp"
@@ -65,8 +62,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
         //Run all the passes on the program
         pass_manager.run_passes(program);
-
-        ast::defineFunctions(program);
 
         //TODO The following passes can be rewritten to simple passes
 
