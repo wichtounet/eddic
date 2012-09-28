@@ -67,8 +67,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         //Run all the passes on the program
         pass_manager.run_passes(program);
 
-        //Add some more informations to the AST
-        ast::defineMemberFunctions(program);
         ast::defineVariables(program);
         ast::defineFunctions(program);
 
@@ -77,6 +75,8 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
             ast::Printer printer;
             printer.print(program);
         }
+
+        //TODO The following passes can be rewritten to simple passes
 
         //Fill the string pool
         ast::checkStrings(program, *pool);

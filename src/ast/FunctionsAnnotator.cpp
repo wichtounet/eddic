@@ -24,77 +24,34 @@ using namespace eddic;
 
 namespace {
 
-class MemberFunctionAnnotator : public boost::static_visitor<> {
-    private:
-        std::shared_ptr<GlobalContext> context;
-        std::string parent_struct;
-        ast::Struct current_struct;
+template<typename T>
+void annotate(T& declaration, ast::Struct& current_struct){
+    declaration.Content->struct_name = current_struct.Content->name;
+    declaration.Content->struct_type = current_struct.Content->struct_type;
 
-    public:
-        void operator()(ast::SourceFile& program){
-            context = program.Content->context;
+    ast::PointerType paramType;
 
-            visit_each(*this, program.Content->blocks);
-        }
-        
-        void operator()(ast::Struct& struct_){
-            current_struct = struct_;
-            parent_struct = struct_.Content->name;
+    if(current_struct.Content->template_types.empty()){
+        ast::SimpleType struct_type;
+        struct_type.type = current_struct.Content->name;
+        struct_type.const_ = false;
 
-            visit_each_non_variant(*this, struct_.Content->constructors);
-            visit_each_non_variant(*this, struct_.Content->destructors);
-            visit_each_non_variant(*this, struct_.Content->functions);
+        paramType.type = struct_type;
+    } else {
+        ast::TemplateType struct_type;
+        struct_type.type = current_struct.Content->name;
+        struct_type.template_types = current_struct.Content->template_types;
+        struct_type.resolved = true;
 
-            parent_struct = "";
-        }
+        paramType.type = struct_type;
+    }
 
-        template<typename T>
-        void annotate(T& declaration){
-            if(!declaration.Content->marked){
-                declaration.Content->struct_name = parent_struct;
-                declaration.Content->struct_type = current_struct.Content->struct_type;
-                
-                ast::PointerType paramType;
+    ast::FunctionParameter param;
+    param.parameterName = "this";
+    param.parameterType = paramType;
 
-                if(current_struct.Content->template_types.empty()){
-                    ast::SimpleType struct_type;
-                    struct_type.type = parent_struct;
-                    struct_type.const_ = false;
-
-                    paramType.type = struct_type;
-                } else {
-                    ast::TemplateType struct_type;
-                    struct_type.type = parent_struct;
-                    struct_type.template_types = current_struct.Content->template_types;
-                    struct_type.resolved = true;
-
-                    paramType.type = struct_type;
-                }
-                
-                ast::FunctionParameter param;
-                param.parameterName = "this";
-                param.parameterType = paramType;
-
-                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
-            }
-        }
-
-        void operator()(ast::Constructor& constructor){
-            annotate(constructor);
-        }
-
-        void operator()(ast::Destructor& destructor){
-            annotate(destructor);
-        }
-         
-        void operator()(ast::FunctionDeclaration& declaration){
-            if(!parent_struct.empty()){
-                annotate(declaration);
-            }
-        }
-
-        AUTO_IGNORE_OTHERS()
-};
+    declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+}
 
 class FunctionInserterVisitor : public boost::static_visitor<> {
     private:
@@ -542,11 +499,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::defineMemberFunctions(ast::SourceFile& program){
-    MemberFunctionAnnotator annotator;
-    annotator(program);
-}
-
 void ast::defineFunctions(ast::SourceFile& program){
     //First phase : Collect functions
     FunctionInserterVisitor inserterVisitor;
@@ -555,4 +507,20 @@ void ast::defineFunctions(ast::SourceFile& program){
     //Second phase : Verify calls
     FunctionCheckerVisitor checkerVisitor;
     checkerVisitor(program);
+}
+        
+void ast::MemberFunctionCollectionPass::apply_struct(ast::Struct& struct_, bool){
+    current_struct = struct_;
+}
+    
+void ast::MemberFunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
+    annotate(function, current_struct);
+}
+
+void ast::MemberFunctionCollectionPass::apply_struct_constructor(ast::Constructor& constructor){
+    annotate(constructor, current_struct);
+}
+
+void ast::MemberFunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
+    annotate(destructor, current_struct);
 }
