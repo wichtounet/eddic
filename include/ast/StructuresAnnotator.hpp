@@ -22,6 +22,20 @@ struct StructureCollectionPass : Pass {
     std::shared_ptr<GlobalContext> context;
 };
 
+struct StructureMemberCollectionPass : Pass {
+    void apply_program(ast::SourceFile& program, bool indicator) override;
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
+
+    std::shared_ptr<GlobalContext> context;
+};
+
+struct StructureCheckPass : Pass {
+    void apply_program(ast::SourceFile& program, bool indicator) override;
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
+
+    std::shared_ptr<GlobalContext> context;
+};
+
 } //end of ast
 
 } //end of eddic

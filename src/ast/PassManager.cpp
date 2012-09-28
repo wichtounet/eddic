@@ -148,6 +148,12 @@ void ast::PassManager::init_passes(){
     
     //Structures collection pass
     passes.push_back(make_pass<ast::StructureCollectionPass>(template_engine, platform, configuration));
+    
+    //Structures member collection pass
+    passes.push_back(make_pass<ast::StructureMemberCollectionPass>(template_engine, platform, configuration));
+    
+    //Structures check pass
+    passes.push_back(make_pass<ast::StructureCheckPass>(template_engine, platform, configuration));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){
