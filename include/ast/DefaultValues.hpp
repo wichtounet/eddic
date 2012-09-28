@@ -8,13 +8,18 @@
 #ifndef DEFAULT_VALUES_H
 #define DEFAULT_VALUES_H
 
-#include "ast/source_def.hpp"
+#include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-void defineDefaultValues(SourceFile& program);
+struct DefaultValuesPass : Pass {
+    void apply_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_constructor(ast::Constructor& constructor) override;
+    void apply_struct_destructor(ast::Destructor& destructor) override;
+};
 
 } //end of ast
 

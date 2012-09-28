@@ -20,9 +20,6 @@ using namespace eddic;
 namespace {
 
 struct SetDefaultValues : public boost::static_visitor<> {
-    AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_UNMARKED_STRUCT()
-    AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_BRANCHES()
@@ -73,7 +70,22 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::defineDefaultValues(ast::SourceFile& program){
+void ast::DefaultValuesPass::apply_function(ast::FunctionDeclaration& function){
     SetDefaultValues visitor;
-    visitor(program);
+    visit_each(visitor, function.Content->instructions);
+}
+
+void ast::DefaultValuesPass::apply_struct_function(ast::FunctionDeclaration& function){
+    SetDefaultValues visitor;
+    visit_each(visitor, function.Content->instructions);
+}
+
+void ast::DefaultValuesPass::apply_struct_constructor(ast::Constructor& constructor){
+    SetDefaultValues visitor;
+    visit_each(visitor, constructor.Content->instructions);
+}
+
+void ast::DefaultValuesPass::apply_struct_destructor(ast::Destructor& destructor){
+    SetDefaultValues visitor;
+    visit_each(visitor, destructor.Content->instructions);
 }

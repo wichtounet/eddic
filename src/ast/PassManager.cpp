@@ -15,6 +15,7 @@
 #include "ast/TemplateCollectionPass.hpp"
 #include "ast/ContextAnnotator.hpp"
 #include "ast/StructuresAnnotator.hpp"
+#include "ast/DefaultValues.hpp"
 
 using namespace eddic;
 
@@ -154,6 +155,9 @@ void ast::PassManager::init_passes(){
     
     //Structures check pass
     passes.push_back(make_pass<ast::StructureCheckPass>(template_engine, platform, configuration));
+    
+    //Structures check pass
+    passes.push_back(make_pass<ast::DefaultValuesPass>(template_engine, platform, configuration));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){

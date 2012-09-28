@@ -21,7 +21,6 @@
 #include "ast/PassManager.hpp"
 
 //Annotators
-#include "ast/DefaultValues.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
 
@@ -67,9 +66,6 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
         //Run all the passes on the program
         pass_manager.run_passes(program);
-
-        //Add default values
-        ast::defineDefaultValues(program);
 
         //Add some more informations to the AST
         ast::defineMemberFunctions(program);
