@@ -23,10 +23,6 @@
 
 using namespace eddic;
 
-void ast::StructureCollectionPass::apply_program(ast::SourceFile& program, bool){
-    context = program.Content->context;
-}
-
 void ast::StructureCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
     if(indicator){
         return;
@@ -75,10 +71,6 @@ void ast::StructureCollectionPass::apply_struct(ast::Struct& struct_, bool indic
     context->add_struct(signature);
 }
 
-void ast::StructureMemberCollectionPass::apply_program(ast::SourceFile& program, bool){
-    context = program.Content->context;
-}
-
 void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
     if(indicator){
         return;
@@ -102,10 +94,6 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
 
         signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
     }
-}
-
-void ast::StructureCheckPass::apply_program(ast::SourceFile& program, bool){
-    context = program.Content->context;
 }
 
 void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator){

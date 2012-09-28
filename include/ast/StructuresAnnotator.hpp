@@ -8,32 +8,22 @@
 #ifndef STRUCTURES_ANNOTATOR_H
 #define STRUCTURES_ANNOTATOR_H
 
-#include "ast/source_def.hpp"
-#include "ast/Pass.hpp"
+#include "ast/ContextAwarePass.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-struct StructureCollectionPass : Pass {
-    void apply_program(ast::SourceFile& program, bool indicator) override;
+struct StructureCollectionPass : ContextAwarePass {
     void apply_struct(ast::Struct& struct_, bool indicator) override;
-
-    std::shared_ptr<GlobalContext> context;
 };
 
-struct StructureMemberCollectionPass : Pass {
-    void apply_program(ast::SourceFile& program, bool indicator) override;
+struct StructureMemberCollectionPass : ContextAwarePass {
     void apply_struct(ast::Struct& struct_, bool indicator) override;
-
-    std::shared_ptr<GlobalContext> context;
 };
 
-struct StructureCheckPass : Pass {
-    void apply_program(ast::SourceFile& program, bool indicator) override;
+struct StructureCheckPass : ContextAwarePass {
     void apply_struct(ast::Struct& struct_, bool indicator) override;
-
-    std::shared_ptr<GlobalContext> context;
 };
 
 } //end of ast
