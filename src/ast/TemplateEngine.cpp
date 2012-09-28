@@ -20,6 +20,7 @@
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/PassManager.hpp"
 
 using namespace eddic;
 
@@ -940,7 +941,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
                 //Mark it as instantiated
                 function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
 
-                function_template_instantiated[context].push_back(declaration);
+                pass_manager.function_instantiated(declaration, context);
             } 
 
             //TODO Check it functionCall.Content->resolved = true;
@@ -1002,7 +1003,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     //Mark it as instantiated
                     class_template_instantiations.insert(ast::TemplateEngine::ClassInstantiationMap::value_type(name, template_types));
 
-                    class_template_instantiated.push_back(declaration);
+                    pass_manager.struct_instantiated(declaration);
                 }
 
                 ptr->resolved = true;

@@ -32,10 +32,14 @@ class PassManager {
         void init_passes();
         void run_passes(ast::SourceFile& program);
 
+        void function_instantiated(ast::FunctionDeclaration& function, const std::string& context);
+        void struct_instantiated(ast::Struct& struct_);
+
     private:
         std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
+        ast::SourceFile program;
 
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;

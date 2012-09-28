@@ -41,9 +41,6 @@ class TemplateEngine {
         void add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration);
         void add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration);
 
-        std::unordered_map<std::string, std::vector<ast::FunctionDeclaration>> function_template_instantiated;
-        std::vector<ast::Struct> class_template_instantiated;
-
         FunctionTemplateMap function_templates;
         FunctionInstantiationMap function_template_instantiations;
         

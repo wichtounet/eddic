@@ -22,6 +22,12 @@
 
 using namespace eddic;
 
+/*
+ * TODO Check if the overhead of copying each block of the program and each 
+ * block of each struct is not too high. Another solution would be to store temporarily
+ * all the instantiated class and function templates and add then after the pass for the next pass. 
+*/
+
 namespace {
     
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
@@ -29,97 +35,30 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
         pass->set_current_pass(i);
         pass->apply_program(program, false);
 
-        for(auto& block : program.Content->blocks){
+        std::vector<ast::FirstLevelBlock> blocks = program.Content->blocks;
+        for(auto& block : blocks){
             if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                 pass->apply_function(*ptr);
             } else if(auto* ptr = boost::get<ast::Struct>(&block)){
                 pass->apply_struct(*ptr, false);
 
+                std::vector<ast::FunctionDeclaration> functions = ptr->Content->functions;
                 for(auto& function : ptr->Content->functions){
                     pass->apply_struct_function(function);
                 }
 
-                for(auto& function : ptr->Content->destructors){
+                std::vector<ast::Destructor> destructors = ptr->Content->destructors;
+                for(auto& function : destructors){
                     pass->apply_struct_destructor(function);
                 }
 
-                for(auto& function : ptr->Content->constructors){
+                std::vector<ast::Constructor> constructors = ptr->Content->constructors;
+                for(auto& function : constructors){
                     pass->apply_struct_constructor(function);
                 }
             }
         }
     }
-}
-
-void handle_instantiations(ast::TemplateEngine& template_engine, std::vector<std::shared_ptr<ast::Pass>>& applied_passes, ast::SourceFile& program){
-    for(auto& pass : applied_passes){
-        for(unsigned int i = 0; i < pass->passes(); ++i){
-            pass->set_current_pass(i);
-            pass->apply_program(program, true);
-
-            for(auto& struct_ : template_engine.class_template_instantiated){
-                pass->apply_struct(struct_, false);
-            }
-
-            for(auto& context_pair : template_engine.function_template_instantiated){
-                auto context = context_pair.first;
-                auto instantiated_functions = context_pair.second;
-
-                if(context.empty()){
-                    for(auto& function : instantiated_functions){
-                        pass->apply_function(function);
-                    }
-                } else {
-                    for(auto& block : program.Content->blocks){
-                        if(auto* struct_type = boost::get<ast::Struct>(&block)){
-                            if(struct_type->Content->struct_type->mangle() == context){
-                                pass->apply_struct(*struct_type, true);
-
-                                for(auto& function : instantiated_functions){
-                                    pass->apply_struct_function(function);
-                                }
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-void add_instantiations_to_program(ast::TemplateEngine& template_engine, ast::SourceFile& program){
-    for(auto& struct_ : template_engine.class_template_instantiated){
-        program.Content->blocks.push_back(struct_);
-    }
-
-    for(auto& context_pair : template_engine.function_template_instantiated){
-        auto context = context_pair.first;
-        auto instantiated_functions = context_pair.second;
-
-        if(context.empty()){
-            for(auto& function : instantiated_functions){
-                program.Content->blocks.push_back(function);
-            }
-        } else {
-            for(auto& block : program.Content->blocks){
-                if(auto* struct_type = boost::get<ast::Struct>(&block)){
-                    if(struct_type->Content->struct_type->mangle() == context){
-                        for(auto& function : instantiated_functions){
-                            struct_type->Content->functions.push_back(function);
-                        }
-
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    //They are no more instantiated
-    template_engine.class_template_instantiated.clear();
-    template_engine.function_template_instantiated.clear();
 }
 
 template<typename Pass>
@@ -173,8 +112,59 @@ void ast::PassManager::init_passes(){
     //Function check pass
     passes.push_back(make_pass<ast::FunctionCheckPass>(template_engine, platform, configuration));
 }
+        
+void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
+    for(auto& pass : applied_passes){
+        for(unsigned int i = 0; i < pass->passes(); ++i){
+            pass->set_current_pass(i);
+            pass->apply_program(program, true);
+
+            if(context.empty()){
+                pass->apply_function(function);
+            } else {
+                for(auto& block : program.Content->blocks){
+                    if(auto* struct_type = boost::get<ast::Struct>(&block)){
+                        if(struct_type->Content->struct_type->mangle() == context){
+                            pass->apply_struct(*struct_type, true);
+                            pass->apply_struct_function(function);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    if(context.empty()){
+        program.Content->blocks.push_back(function);
+    } else {
+        for(auto& block : program.Content->blocks){
+            if(auto* struct_type = boost::get<ast::Struct>(&block)){
+                if(struct_type->Content->struct_type->mangle() == context){
+                    struct_type->Content->functions.push_back(function);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void ast::PassManager::struct_instantiated(ast::Struct& struct_){
+    for(auto& pass : applied_passes){
+        for(unsigned int i = 0; i < pass->passes(); ++i){
+            pass->set_current_pass(i);
+            pass->apply_program(program, true);
+            pass->apply_struct(struct_, false);
+        }
+    }
+    
+    program.Content->blocks.push_back(struct_);
+}
 
 void ast::PassManager::run_passes(ast::SourceFile& program){
+    this->program = program;
+
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
         if(pass->is_simple()){
@@ -191,10 +181,6 @@ void ast::PassManager::run_passes(ast::SourceFile& program){
             applied_passes.push_back(pass);
 
             apply_pass(pass, program);
-
-            handle_instantiations(*template_engine, applied_passes, program);
-
-            add_instantiations_to_program(*template_engine, program);
         }
     }
 }
