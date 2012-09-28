@@ -874,6 +874,8 @@ bool is_instantiated(const Container& container, const std::string& name, const 
 
 } //end of anonymous namespace
 
+ast::TemplateEngine::TemplateEngine(ast::PassManager& pass_manager) : pass_manager(pass_manager) {}
+
 bool ast::TemplateEngine::is_instantiated(const std::string& name, const std::string& context, const std::vector<ast::Type>& template_types){
     return ::is_instantiated(function_template_instantiations[context], name, template_types);
 }

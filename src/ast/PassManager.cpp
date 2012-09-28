@@ -136,7 +136,7 @@ std::shared_ptr<Pass> make_pass(std::shared_ptr<ast::TemplateEngine> template_en
 } //end of anonymous namespace
 
 ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {
-    template_engine = std::make_shared<ast::TemplateEngine>();
+    template_engine = std::make_shared<ast::TemplateEngine>(*this);
 }
 
 void ast::PassManager::init_passes(){
