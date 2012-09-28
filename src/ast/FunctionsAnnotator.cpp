@@ -54,22 +54,12 @@ void annotate(T& declaration, ast::Struct& current_struct){
 }
 
 class FunctionCheckerVisitor : public boost::static_visitor<> {
-    private:
-        std::shared_ptr<Function> currentFunction;
-        std::shared_ptr<GlobalContext> context;
-
     public:
+        std::shared_ptr<GlobalContext> context;
+        std::shared_ptr<Function> currentFunction;
+
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_MEMBER_VALUE()
-        AUTO_RECURSE_STRUCT()
-
-        void operator()(ast::Constructor& function){
-            check_each(function.Content->instructions);
-        }
-
-        void operator()(ast::Destructor& function){
-            check_each(function.Content->instructions);
-        }
 
         void operator()(ast::DefaultCase& default_case){
             check_each(default_case.instructions);
@@ -239,12 +229,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             visit_each(*this, program.Content->blocks);
         }
 
-        void operator()(ast::FunctionDeclaration& declaration){
-            currentFunction = context->getFunction(declaration.Content->mangledName);
-
-            check_each(declaration.Content->instructions);
-        }
-        
         void permute(std::vector<std::vector<std::shared_ptr<const Type>>>& perms, std::vector<std::shared_ptr<const Type>>& types, int start){
             for(std::size_t i = start; i < types.size(); ++i){
                 if(!types[i]->is_pointer() && !types[i]->is_array()){
@@ -492,4 +476,27 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
 
     context->addFunction(signature);
     context->getFunction(signature->mangledName)->context = destructor.Content->context;
+}
+    
+void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
+    FunctionCheckerVisitor visitor;
+    visitor.context = context;
+    visitor.currentFunction = context->getFunction(declaration.Content->mangledName);
+    visitor.check_each(declaration.Content->instructions);
+}
+
+void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& function){
+    apply_function(function);
+}
+
+void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){
+    FunctionCheckerVisitor visitor;
+    visitor.context = context;
+    visitor.check_each(constructor.Content->instructions);
+}
+
+void ast::FunctionCheckPass::apply_struct_destructor(ast::Destructor& destructor){
+    FunctionCheckerVisitor visitor;
+    visitor.context = context;
+    visitor.check_each(destructor.Content->instructions);
 }

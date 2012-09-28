@@ -30,6 +30,15 @@ struct FunctionCollectionPass : ContextAwarePass {
     void apply_struct_destructor(ast::Destructor& destructor) override;
 };
 
+struct FunctionCheckPass : ContextAwarePass {
+    void apply_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_constructor(ast::Constructor& constructor) override;
+    void apply_struct_destructor(ast::Destructor& destructor) override;
+        
+    std::shared_ptr<Function> currentFunction;
+};
+
 } //end of ast
 
 } //end of eddic

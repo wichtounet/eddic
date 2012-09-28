@@ -170,6 +170,9 @@ void ast::PassManager::init_passes(){
     
     //Function collection pass
     passes.push_back(make_pass<ast::FunctionCollectionPass>(template_engine, platform, configuration));
+    
+    //Function check pass
+    passes.push_back(make_pass<ast::FunctionCheckPass>(template_engine, platform, configuration));
 }
 
 void ast::PassManager::run_passes(ast::SourceFile& program){
