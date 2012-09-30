@@ -639,3 +639,19 @@ void ast::VariableAnnotationPass::apply_struct_destructor(ast::Destructor& destr
     VariablesVisitor visitor(context);
     visitor.visit_function(destructor);
 }
+
+void ast::VariableAnnotationPass::apply_program(ast::SourceFile& program, bool indicator){
+    context = program.Content->context;
+
+    if(!indicator){
+        VariablesVisitor visitor(context);
+
+        for(auto& block : program.Content->blocks){
+            if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
+                visit_non_variant(visitor, *ptr);
+            } else if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
+                visit_non_variant(visitor, *ptr);
+            }
+        }
+    }
+}
