@@ -27,6 +27,7 @@
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/VariableType.hpp"
+#include "ast/TemplateEngine.hpp"
 
 using namespace eddic;
 
@@ -491,7 +492,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::StructDeclaration& declaration){
-        //TODO
+        template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
 
         value_visitor.replace_each(declaration.Content->values);
 
@@ -518,7 +519,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::VariableDeclaration& declaration){
-        //TODO
+        template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
         
         if(declaration.Content->value){
             declaration.Content->value = visit(value_visitor, *declaration.Content->value);
