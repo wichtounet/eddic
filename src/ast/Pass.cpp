@@ -14,6 +14,14 @@ using namespace eddic;
 void ast::Pass::set_template_engine(std::shared_ptr<ast::TemplateEngine> template_engine){
     this->template_engine = template_engine;
 }
+        
+void ast::Pass::set_name(const std::string& name){
+    this->pass_name = name;
+}
+
+std::string ast::Pass::name(){
+    return pass_name;
+}
 
 void ast::Pass::set_platform(Platform platform){
     this->platform = platform;
