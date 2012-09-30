@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "logging.hpp"
+
 #include "ast/PassManager.hpp"
 #include "ast/Pass.hpp"
 #include "ast/SourceFile.hpp"
@@ -31,6 +33,8 @@ using namespace eddic;
 namespace {
     
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
+    log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
+
     for(unsigned int i = 0; i < pass->passes(); ++i){
         pass->set_current_pass(i);
         pass->apply_program(program, false);
@@ -116,6 +120,8 @@ void ast::PassManager::init_passes(){
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
     for(auto& pass : applied_passes){
+        log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
+
         for(unsigned int i = 0; i < pass->passes(); ++i){
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -153,6 +159,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
 
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     for(auto& pass : applied_passes){
+        log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
+
         for(unsigned int i = 0; i < pass->passes(); ++i){
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -169,6 +177,8 @@ void ast::PassManager::run_passes(ast::SourceFile& program){
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
         if(pass->is_simple()){
+            log::emit<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;
+
             for(unsigned int i = 0; i < pass->passes(); ++i){
                 pass->set_current_pass(i);
                 
