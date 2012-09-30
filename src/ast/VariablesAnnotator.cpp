@@ -34,6 +34,9 @@ namespace {
 
 struct ValueVisitor : public boost::static_visitor<ast::Value> {
     std::shared_ptr<GlobalContext> context;
+    std::shared_ptr<ast::TemplateEngine> template_engine;
+
+    ValueVisitor(std::shared_ptr<GlobalContext> context, std::shared_ptr<ast::TemplateEngine> template_engine) : context(context), template_engine(template_engine) {}
     
     void replace_each(std::vector<ast::Value>& values){
         for(std::size_t i = 0; i < values.size(); ++i){
@@ -270,9 +273,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     ValueVisitor value_visitor;
 
     std::shared_ptr<GlobalContext> context;
+    std::shared_ptr<ast::TemplateEngine> template_engine;
 
-    VariablesVisitor(std::shared_ptr<GlobalContext> context) : context(context) {
-        value_visitor.context = context;    
+    VariablesVisitor(std::shared_ptr<GlobalContext> context, std::shared_ptr<ast::TemplateEngine> template_engine) : 
+            value_visitor(context, template_engine), context(context), template_engine(template_engine) {
+                //NOP
     }
 
     AUTO_RECURSE_ELSE()
@@ -621,22 +626,22 @@ void ast::VariableAnnotationPass::apply_struct(ast::Struct& struct_, bool indica
 }
 
 void ast::VariableAnnotationPass::apply_function(ast::FunctionDeclaration& function){
-    VariablesVisitor visitor(context);
+    VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(function);
 }
 
 void ast::VariableAnnotationPass::apply_struct_function(ast::FunctionDeclaration& function){
-    VariablesVisitor visitor(context);
+    VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(function);
 }
 
 void ast::VariableAnnotationPass::apply_struct_constructor(ast::Constructor& constructor){
-    VariablesVisitor visitor(context);
+    VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(constructor);
 }
 
 void ast::VariableAnnotationPass::apply_struct_destructor(ast::Destructor& destructor){
-    VariablesVisitor visitor(context);
+    VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(destructor);
 }
 
@@ -644,7 +649,7 @@ void ast::VariableAnnotationPass::apply_program(ast::SourceFile& program, bool i
     context = program.Content->context;
 
     if(!indicator){
-        VariablesVisitor visitor(context);
+        VariablesVisitor visitor(context, template_engine);
 
         for(auto& block : program.Content->blocks){
             if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
