@@ -81,15 +81,15 @@ ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> 
 void ast::PassManager::init_passes(){
     //Clean pass
     passes.push_back(make_pass<ast::CleanPass>(template_engine, platform, configuration));
-
-    //Template Collection pass
-    passes.push_back(make_pass<ast::TemplateCollectionPass>(template_engine, platform, configuration));
     
     //Context annotation pass
     passes.push_back(make_pass<ast::ContextAnnotationPass>(template_engine, platform, configuration));
     
     //Structures collection pass
     passes.push_back(make_pass<ast::StructureCollectionPass>(template_engine, platform, configuration));
+
+    //Template Collection pass
+    passes.push_back(make_pass<ast::TemplateCollectionPass>(template_engine, platform, configuration));
     
     //Structures member collection pass
     passes.push_back(make_pass<ast::StructureMemberCollectionPass>(template_engine, platform, configuration));
