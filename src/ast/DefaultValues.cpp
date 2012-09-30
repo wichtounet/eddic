@@ -89,3 +89,17 @@ void ast::DefaultValuesPass::apply_struct_destructor(ast::Destructor& destructor
     SetDefaultValues visitor;
     visit_each(visitor, destructor.Content->instructions);
 }
+
+void ast::DefaultValuesPass::apply_program(ast::SourceFile& program, bool indicator){
+    if(!indicator){
+        SetDefaultValues visitor;
+
+        for(auto& block : program.Content->blocks){
+            if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
+                visit_non_variant(visitor, *ptr);
+            } else if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
+                visit_non_variant(visitor, *ptr);
+            }
+        }
+    }
+}
