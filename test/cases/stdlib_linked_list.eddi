@@ -4,19 +4,21 @@ template<type T>
 void debug(linked_list<T>* list){
     print(list.size());
     print("|");
-    
-    print(list.front());
-    print("|");
-    
-    print(list.back());
-    print("|");
+
+    if(list.size() > 0){
+        print(list.front());
+        print("|");
+
+        print(list.back());
+        print("|");
+    } else {
+        print("|");
+    }
 }
 
 void main(){
     linked_list<int> list;
-    
-    print(list.size());
-    print("|");
+    debug<int>(list);
 
     list.push_back(55);
     debug<int>(list);
@@ -28,5 +30,17 @@ void main(){
     debug<int>(list);
     
     list.push_front(99);
+    debug<int>(list);
+
+    list.pop_front();
+    debug<int>(list);
+
+    list.pop_back();
+    debug<int>(list);
+
+    list.pop_front();
+    debug<int>(list);
+
+    list.pop_back();
     debug<int>(list);
 }

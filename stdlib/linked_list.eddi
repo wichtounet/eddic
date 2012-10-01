@@ -47,6 +47,36 @@ struct linked_list {
         ++size;
     }
 
+    void pop_front(){
+        linked_list_node<T>* old = head;
+        
+        if(size == 1){
+            tail = head = (linked_list_node<T>*) null;
+        } else {
+            head = head.next;
+            head.previous = (linked_list_node<T>*) null;
+        }
+            
+        delete old;
+
+        --size;
+    }
+
+    void pop_back(){
+        linked_list_node<T>* old = tail;
+
+        if(size == 1){
+            tail = head = (linked_list_node<T>*) null;
+        } else {
+            tail = tail.previous;
+            tail.next = (linked_list_node<T>*) null;
+        }
+        
+        delete old;
+
+        --size;
+    }
+
     T front(){
         return head.data;
     }
