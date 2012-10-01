@@ -57,6 +57,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
     public:
         std::shared_ptr<GlobalContext> context;
         std::shared_ptr<Function> currentFunction;
+        std::shared_ptr<ast::TemplateEngine> template_engine;
+
+        FunctionCheckerVisitor(std::shared_ptr<ast::TemplateEngine> template_engine) : template_engine(template_engine) {}
 
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_MEMBER_VALUE()
@@ -479,7 +482,7 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
 }
     
 void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
-    FunctionCheckerVisitor visitor;
+    FunctionCheckerVisitor visitor(template_engine);
     visitor.context = context;
     visitor.currentFunction = context->getFunction(declaration.Content->mangledName);
     visitor.check_each(declaration.Content->instructions);
@@ -490,13 +493,13 @@ void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& fun
 }
 
 void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){
-    FunctionCheckerVisitor visitor;
+    FunctionCheckerVisitor visitor(template_engine);
     visitor.context = context;
     visitor.check_each(constructor.Content->instructions);
 }
 
 void ast::FunctionCheckPass::apply_struct_destructor(ast::Destructor& destructor){
-    FunctionCheckerVisitor visitor;
+    FunctionCheckerVisitor visitor(template_engine);
     visitor.context = context;
     visitor.check_each(destructor.Content->instructions);
 }
