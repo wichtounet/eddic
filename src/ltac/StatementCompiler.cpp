@@ -1231,11 +1231,16 @@ void ltac::StatementCompiler::compile_DOT_FASSIGN(std::shared_ptr<mtac::Quadrupl
 }
 
 void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
-    ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
-    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+        auto variable = *ptr;
 
-    auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
-    ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
+        auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
+        ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
+    } else if(mtac::is<int>(*quadruple->arg2)){
+        ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), boost::get<int>(*quadruple->arg2)); 
+    } else {
+        ASSERT_PATH_NOT_TAKEN("Unsupported rhs type in DOT_PASSIGN");
+    }
 }
 
 void ltac::StatementCompiler::compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple){
