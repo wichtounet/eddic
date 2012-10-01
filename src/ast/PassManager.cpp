@@ -11,7 +11,6 @@
 #include "ast/Pass.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/TemplateEngine.hpp"
-#include "ast/Printer.hpp"
 
 //The passes
 #include "ast/TransformerEngine.hpp"
@@ -173,9 +172,6 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
 
 void ast::PassManager::run_passes(){
     for(auto& pass : passes){
-        ast::Printer printer;
-        printer.print(program);
-
         //A simple pass is only applied once to the whole program
         if(pass->is_simple()){
             log::emit<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;

@@ -390,8 +390,6 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
 
     declaration.Content->mangledName = signature->mangledName = mangle(signature);
 
-    std::cout << "collect function " << declaration.Content->mangledName << std::endl;
-
     if(context->exists(signature->mangledName)){
         throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
     }
