@@ -17,7 +17,7 @@ namespace ast {
 
 struct TemplateCollectionPass : Pass {
     void apply_program(ast::SourceFile& program, bool indicator) override;
-    bool is_simple() override;
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
 };
 
 } //end of ast

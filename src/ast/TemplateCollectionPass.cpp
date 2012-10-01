@@ -22,6 +22,7 @@ struct Collector : public boost::static_visitor<> {
     Collector(ast::TemplateEngine& template_engine) : template_engine(template_engine) {}
 
     AUTO_RECURSE_PROGRAM()
+    AUTO_IGNORE_STRUCT()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
         template_engine.add_template_function(parent_struct, declaration.Content->functionName, declaration);
@@ -30,25 +31,23 @@ struct Collector : public boost::static_visitor<> {
     void operator()(ast::TemplateStruct& template_struct){
         template_engine.add_template_struct(template_struct.Content->name, template_struct);
     }
-        
-    void operator()(ast::Struct& struct_){
-        parent_struct = struct_.Content->struct_type->mangle();
-
-        visit_each_non_variant(*this, struct_.Content->template_functions);
-
-        parent_struct = "";
-    }
 
     AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace
 
-bool ast::TemplateCollectionPass::is_simple(){
-    return true;
+void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program, bool indicator){
+    if(!indicator){
+        Collector collector(*template_engine);
+        collector(program);
+    }
 }
-
-void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program, bool){
-    Collector collector(*template_engine);
-    collector(program);
+    
+void ast::TemplateCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
+    if(!indicator){
+        Collector collector(*template_engine);
+        collector.parent_struct = struct_.Content->struct_type->mangle();
+        visit_each_non_variant(collector, struct_.Content->template_functions);
+    }
 }
