@@ -114,15 +114,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     if(functionCall.Content->function){
                         return;
                     }
-                
-                    //It is possible that the values contains an object that has not been handled by the template engine at this point
-                    for(auto& value : functionCall.Content->values){
-                        if(auto* ptr = boost::get<ast::MemberFunctionCall>(&value)){
-                            if(!is_init(ptr->Content->object)){
-                                return;
-                            }
-                        }
-                    }
 
                     std::string name = functionCall.Content->function_name;
 
@@ -263,12 +254,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             ast::GetTypeVisitor visitor;
             for(auto& value : functionCall.Content->values){
-                if(auto* ptr = boost::get<ast::MemberFunctionCall>(&value)){
-                    if(!is_init(ptr->Content->object)){
-                        ;
-                    }
-                }
-
                 types.push_back(visit(visitor, value));
             }
 
@@ -279,32 +264,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             ASSERT_PATH_NOT_TAKEN("Should be handled by check_value");
         }
 
-        bool is_init(ast::Value& value){
-            if(auto* ptr = boost::get<ast::VariableValue>(&value)){
-                return ptr->Content->var != 0;
-            }
-
-            ASSERT_PATH_NOT_TAKEN("Unhandled value type");
-        }
-
         void operator()(ast::MemberFunctionCall& functionCall){
             template_engine->check_member_function(functionCall);
 
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
-                //It is possible that the object has not been handled by the template engine at this point
-                if(!is_init(functionCall.Content->object)){
-                    return;
-                }
-                
-                //It is possible that the values contains an object that has not been handled by the template engine at this point
-                for(auto& value : functionCall.Content->values){
-                    if(auto* ptr = boost::get<ast::MemberFunctionCall>(&value)){
-                        if(!is_init(ptr->Content->object)){
-                            return;
-                        }
-                    }
-                }
-
                 check_value(functionCall.Content->object);
                 check_each(functionCall.Content->values);
 
@@ -432,6 +395,8 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     signature->context = declaration.Content->context;
 
     declaration.Content->mangledName = signature->mangledName = mangle(signature);
+
+    std::cout << "collect function " << declaration.Content->mangledName << std::endl;
 
     if(context->exists(signature->mangledName)){
         throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
