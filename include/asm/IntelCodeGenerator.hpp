@@ -12,10 +12,6 @@
 #include <string>
 #include <iostream>
 
-#include <boost/utility/enable_if.hpp>
-
-#include "AssemblyFileWriter.hpp"
-
 #include "asm/CodeGenerator.hpp"
 
 namespace eddic {
@@ -23,6 +19,12 @@ namespace eddic {
 class AssemblyFileWriter;
 class GlobalContext;
 class Function;
+
+namespace ltac {
+
+class Function;
+
+}
 
 namespace as {
 

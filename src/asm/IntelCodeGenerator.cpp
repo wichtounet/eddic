@@ -7,12 +7,16 @@
 
 #include "asm/IntelCodeGenerator.hpp"
 
+#include "ltac/Program.hpp"
+
+#include "AssemblyFileWriter.hpp"
 #include "assert.hpp"
 #include "Labels.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
 #include "Variable.hpp"
+#include "FloatPool.hpp"
 
 using namespace eddic;
 

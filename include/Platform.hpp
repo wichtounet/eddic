@@ -8,8 +8,6 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include <string>
-
 #include "PlatformDescriptor.hpp"
 
 namespace eddic {

@@ -8,15 +8,19 @@
 #ifndef CODE_GENERATOR_H
 #define CODE_GENERATOR_H
 
-#include "ltac/Program.hpp"
-#include "FloatPool.hpp"
-
 #include <memory>
 
 namespace eddic {
 
+class FloatPool;
 class StringPool;
 class AssemblyFileWriter;
+
+namespace ltac {
+
+class Program;
+
+}
 
 namespace as {
 

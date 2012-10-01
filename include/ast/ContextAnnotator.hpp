@@ -10,9 +10,6 @@
 
 #include <memory>
 
-#include "Options.hpp"
-#include "Platform.hpp"
-
 #include "ast/source_def.hpp"
 #include "ast/Pass.hpp"
 

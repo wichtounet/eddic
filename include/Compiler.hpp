@@ -9,11 +9,13 @@
 #define COMPILER_H
 
 #include <string>
+#include <memory>
 
 #include "Platform.hpp"
-#include "Options.hpp"
 
 namespace eddic {
+
+class Configuration;
 
 /*!
  * \class Compiler

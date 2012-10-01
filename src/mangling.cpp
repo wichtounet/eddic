@@ -15,6 +15,7 @@
 #include "Type.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/Value.hpp"
 
 using namespace eddic;
 

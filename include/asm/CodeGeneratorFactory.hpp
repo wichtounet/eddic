@@ -11,11 +11,12 @@
 #include <memory>
 
 #include "Platform.hpp"
-#include "GlobalContext.hpp"
 
 #include "asm/CodeGenerator.hpp"
 
 namespace eddic {
+
+class GlobalContext;
 
 namespace as {
 
