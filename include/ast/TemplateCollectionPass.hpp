@@ -5,18 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TYPE_CHECKER_H
-#define TYPE_CHECKER_H
+#ifndef TEMPLATE_COLLECTION_PASS_H
+#define TEMPLATE_COLLECTION_PASS_H
 
+#include "ast/source_def.hpp"
 #include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-struct TypeCheckingPass : Pass {
+struct TemplateCollectionPass : Pass {
     void apply_program(ast::SourceFile& program, bool indicator) override;
-    bool is_simple() override;
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
 };
 
 } //end of ast

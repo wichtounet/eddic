@@ -29,7 +29,6 @@ namespace ast {
 struct TemplateType {
     std::string type;
     std::vector<Type> template_types;
-    bool resolved = false;
 };
 
 bool operator==(const TemplateType& a, const TemplateType& b);

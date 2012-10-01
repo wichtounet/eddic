@@ -5,18 +5,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TYPE_CHECKER_H
-#define TYPE_CHECKER_H
+#ifndef AST_CONTEXT_AWARE_PASS_H
+#define AST_CONTEXT_AWARE_PASS_H
 
 #include "ast/Pass.hpp"
 
 namespace eddic {
 
+class GlobalContext;
+
 namespace ast {
 
-struct TypeCheckingPass : Pass {
+struct ContextAwarePass : Pass {
     void apply_program(ast::SourceFile& program, bool indicator) override;
-    bool is_simple() override;
+
+    std::shared_ptr<GlobalContext> context;
 };
 
 } //end of ast

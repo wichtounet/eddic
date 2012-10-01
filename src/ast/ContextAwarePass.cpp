@@ -5,22 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef TYPE_CHECKER_H
-#define TYPE_CHECKER_H
+#include "ast/ContextAwarePass.hpp"
+#include "ast/SourceFile.hpp"
 
-#include "ast/Pass.hpp"
+using namespace eddic;
 
-namespace eddic {
-
-namespace ast {
-
-struct TypeCheckingPass : Pass {
-    void apply_program(ast::SourceFile& program, bool indicator) override;
-    bool is_simple() override;
-};
-
-} //end of ast
-
-} //end of eddic
-
-#endif
+void ast::ContextAwarePass::apply_program(ast::SourceFile& program, bool){
+    context = program.Content->context;
+}

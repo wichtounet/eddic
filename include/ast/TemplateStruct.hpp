@@ -25,8 +25,6 @@ namespace eddic {
 namespace ast {
 
 struct ASTTemplateStruct {
-    bool marked = false;        /*!< Indicates that the structure has been handled by the front end */
-    
     Position position;
     std::vector<std::string> template_types;
     std::string name;

@@ -200,7 +200,6 @@ class ArrayType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
         boost::optional<unsigned int> m_elements;
-
     
     public:
         ArrayType(std::shared_ptr<const Type> sub_type);

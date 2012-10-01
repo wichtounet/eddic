@@ -8,17 +8,16 @@
 #ifndef WARNINGS_ENGINE_H
 #define WARNINGS_ENGINE_H
 
-#include <memory>
-
-#include "ast/source_def.hpp"
-
-#include "Options.hpp"
+#include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-void checkForWarnings(SourceFile& program, std::shared_ptr<Configuration> configuration);
+struct WarningsPass : Pass {
+    void apply_program(ast::SourceFile& program, bool indicator) override;
+    bool is_simple() override;
+};
 
 } //end of ast
 

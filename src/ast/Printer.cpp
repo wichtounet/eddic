@@ -18,15 +18,6 @@ using namespace eddic;
 
 namespace {
 
-template<typename Node>
-std::string mark(Node& node){
-    if(node.Content->marked){
-        return "(M)";
-    } else {
-        return "(UM)";
-    }
-}
-
 struct DebugVisitor : public boost::static_visitor<> {
     mutable int level = 0;
 
@@ -132,7 +123,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
-        std::cout << indent() << "Function " << declaration.Content->functionName << mark(declaration) << std::endl; 
+        std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
@@ -146,7 +137,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Constructor& declaration) const {
-        std::cout << indent() << "Constructor" << mark(declaration) << std::endl; 
+        std::cout << indent() << "Constructor" << std::endl; 
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
@@ -159,7 +150,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Destructor& declaration) const {
-        std::cout << indent() << "Destructor" << mark(declaration) << std::endl; 
+        std::cout << indent() << "Destructor" << std::endl; 
         print_each_sub(declaration.Content->instructions, "Instructions:");
     }
 
@@ -168,7 +159,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         print_template_list(struct_.Content->template_types);
 
-        std::cout << mark(struct_) << std::endl;
+        std::cout << std::endl;
         
         level++;
         

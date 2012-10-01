@@ -14,6 +14,8 @@
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
 
+#include "ltac/Program.hpp"
+
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
 #include "asm/IntelAssemblyUtils.hpp"

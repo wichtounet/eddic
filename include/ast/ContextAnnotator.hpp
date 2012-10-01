@@ -10,16 +10,26 @@
 
 #include <memory>
 
-#include "Options.hpp"
-#include "Platform.hpp"
-
 #include "ast/source_def.hpp"
+#include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-void defineContexts(ast::SourceFile& program, Platform platform, std::shared_ptr<Configuration> configuration);
+class ContextAnnotationPass : public Pass {
+    public:
+        void apply_program(ast::SourceFile& program, bool indicator) override;
+        void apply_function(ast::FunctionDeclaration& function) override;
+        void apply_struct_function(ast::FunctionDeclaration& function) override;
+        void apply_struct_constructor(ast::Constructor& constructor) override;
+        void apply_struct_destructor(ast::Destructor& destructor) override;
+
+    private:
+        std::shared_ptr<GlobalContext> globalContext;
+        std::shared_ptr<FunctionContext> functionContext;
+        std::shared_ptr<Context> currentContext;
+};
 
 } //end of ast
 

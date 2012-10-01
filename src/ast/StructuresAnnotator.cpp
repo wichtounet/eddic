@@ -15,145 +15,103 @@
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "mangling.hpp"
+#include "VisitorUtils.hpp"
 
 #include "ast/StructuresAnnotator.hpp"
 #include "ast/SourceFile.hpp"
-#include "ast/ASTVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 
 using namespace eddic;
 
-namespace {
+void ast::StructureCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
+    if(indicator){
+        return;
+    }
 
-struct StructuresCollector : public boost::static_visitor<> {
-    std::shared_ptr<GlobalContext> context;
+    if(struct_.Content->template_types.empty()){
+        struct_.Content->struct_type = new_type(context, struct_.Content->name, false);
+    } else {
+        std::vector<std::shared_ptr<const eddic::Type>> template_types;
 
-    StructuresCollector(std::shared_ptr<GlobalContext> context) : context(context) {}
+        ast::TypeTransformer transformer(context);
 
-    AUTO_RECURSE_PROGRAM()
+        for(auto& type : struct_.Content->template_types){
+            template_types.push_back(visit(transformer, type));
+        }
 
-    void operator()(ast::Struct& struct_){
-        if(!struct_.Content->marked){
-            if(struct_.Content->template_types.empty()){
-                struct_.Content->struct_type = new_type(context, struct_.Content->name, false);
-            } else {
-                std::vector<std::shared_ptr<const Type>> template_types;
+        struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
+    }
 
-                ast::TypeTransformer transformer(context);
-
-                for(auto& type : struct_.Content->template_types){
-                    template_types.push_back(visit(transformer, type));
-                }
-                
-                struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
-            }
-
-            //Annotate functions with the parent struct
-            for(auto& function : struct_.Content->functions){
-                if(function.Content->context){
-                    function.Content->context->struct_type = struct_.Content->struct_type; 
-                }
-            }
-            
-            for(auto& function : struct_.Content->constructors){
-                if(function.Content->context){
-                    function.Content->context->struct_type = struct_.Content->struct_type; 
-                }
-            }
-            
-            for(auto& function : struct_.Content->destructors){
-                if(function.Content->context){
-                    function.Content->context->struct_type = struct_.Content->struct_type; 
-                }
-            }
-            
-            auto mangled_name = struct_.Content->struct_type->mangle();
-
-            if(context->struct_exists(mangled_name)){
-                throw SemanticalException("The structure " + mangled_name + " has already been defined", struct_.Content->position);
-            }
-
-            auto signature = std::make_shared<Struct>(mangled_name);
-            context->add_struct(signature);
+    //Annotate functions with the parent struct
+    for(auto& function : struct_.Content->functions){
+        if(function.Content->context){
+            function.Content->context->struct_type = struct_.Content->struct_type; 
         }
     }
 
-    AUTO_IGNORE_OTHERS()
-};
-
-struct StructureMembersCollector : public boost::static_visitor<> {
-    std::shared_ptr<GlobalContext> context;
-
-    StructureMembersCollector(std::shared_ptr<GlobalContext> context) : context(context) {}
-
-    AUTO_RECURSE_PROGRAM()
-
-    void operator()(ast::Struct& struct_){
-        if(!struct_.Content->marked){
-            auto signature = context->get_struct(struct_.Content->struct_type->mangle());
-            std::vector<std::string> names;
-
-            signature->members.clear();
-
-            for(auto& member : struct_.Content->members){
-                if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
-                    throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
-                }
-
-                names.push_back(member.Content->name);
-
-                auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
-
-                if(member_type->is_array()){
-                    throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
-                }
-
-                signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
-            }
+    for(auto& function : struct_.Content->constructors){
+        if(function.Content->context){
+            function.Content->context->struct_type = struct_.Content->struct_type; 
         }
     }
 
-    AUTO_IGNORE_OTHERS()
-};
-
-struct StructuresVerifier : public boost::static_visitor<> {
-    std::shared_ptr<GlobalContext> context;
-
-    StructuresVerifier(std::shared_ptr<GlobalContext> context) : context(context) {}
-    
-    AUTO_RECURSE_PROGRAM()
-
-    void operator()(ast::Struct& struct_){
-        if(!struct_.Content->marked){
-            auto struct_type = context->get_struct(struct_.Content->struct_type->mangle());
-
-            for(auto& member : struct_.Content->members){
-                auto type = (*struct_type)[member.Content->name]->type;
-
-                if(type->is_custom_type()){
-                    auto struct_name = type->mangle();
-
-                    if(!context->struct_exists(struct_name)){
-                        throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
-                    }
-                }
-            }
+    for(auto& function : struct_.Content->destructors){
+        if(function.Content->context){
+            function.Content->context->struct_type = struct_.Content->struct_type; 
         }
     }
 
-    AUTO_IGNORE_OTHERS()
-};
+    auto mangled_name = struct_.Content->struct_type->mangle();
 
-} //end of anonymous namespace
+    if(context->struct_exists(mangled_name)){
+        throw SemanticalException("The structure " + mangled_name + " has already been defined", struct_.Content->position);
+    }
 
-void ast::defineStructures(ast::SourceFile& program){
-    StructuresCollector collector(program.Content->context);
-    collector(program);
-    
-    StructureMembersCollector member_collector(program.Content->context);
-    member_collector(program);
-    member_collector(program);
-    
-    StructuresVerifier verify(program.Content->context);
-    verify(program);
+    auto signature = std::make_shared<eddic::Struct>(mangled_name);
+    context->add_struct(signature);
+}
+
+void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
+    if(indicator){
+        return;
+    }
+
+    auto signature = context->get_struct(struct_.Content->struct_type->mangle());
+    std::vector<std::string> names;
+
+    for(auto& member : struct_.Content->members){
+        if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
+            throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
+        }
+
+        names.push_back(member.Content->name);
+
+        auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
+
+        if(member_type->is_array()){
+            throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
+        }
+
+        signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
+    }
+}
+
+void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator){
+    if(indicator){
+        return;
+    }
+
+    auto struct_type = context->get_struct(struct_.Content->struct_type->mangle());
+
+    for(auto& member : struct_.Content->members){
+        auto type = (*struct_type)[member.Content->name]->type;
+
+        if(type->is_custom_type()){
+            auto struct_name = type->mangle();
+
+            if(!context->struct_exists(struct_name)){
+                throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+            }
+        }
+    }
 }

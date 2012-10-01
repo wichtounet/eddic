@@ -8,13 +8,23 @@
 #ifndef STRUCTURES_ANNOTATOR_H
 #define STRUCTURES_ANNOTATOR_H
 
-#include "ast/source_def.hpp"
+#include "ast/ContextAwarePass.hpp"
 
 namespace eddic {
 
 namespace ast {
-    
-void defineStructures(ast::SourceFile& program);
+
+struct StructureCollectionPass : ContextAwarePass {
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
+};
+
+struct StructureMemberCollectionPass : ContextAwarePass {
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
+};
+
+struct StructureCheckPass : ContextAwarePass {
+    void apply_struct(ast::Struct& struct_, bool indicator) override;
+};
 
 } //end of ast
 

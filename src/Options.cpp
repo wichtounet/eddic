@@ -96,7 +96,6 @@ void init_descriptions(){
         ("quiet,q", "Do not print anything")
         ("verbose,v", "Make the compiler verbose")
         ("dev,d", "Activate development mode (very verbose)")
-        ("perfs", "Display performance information")
         ("input", po::value<std::string>(), "Input file");
 
     all.add(general).add(display).add(optimization).add(backend);

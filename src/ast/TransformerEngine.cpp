@@ -921,12 +921,20 @@ struct TransformerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::cleanAST(ast::SourceFile& program){
+void ast::CleanPass::apply_program(ast::SourceFile& program, bool){
     CleanerVisitor visitor;
     visitor(program);
 }
 
-void ast::transformAST(ast::SourceFile& program){
+bool ast::CleanPass::is_simple(){
+    return true;
+}
+
+bool ast::TransformPass::is_simple(){
+    return true;
+}
+
+void ast::TransformPass::apply_program(ast::SourceFile& program, bool){
     TransformerVisitor visitor;
     visitor(program);
 }
