@@ -12,6 +12,35 @@ struct linked_list_node {
 }
 
 template<type T>
+struct linked_list_iterator {
+    linked_list_node<T>* current;
+
+    this(linked_list_node<T>* current){
+        this.current = current;
+    }
+
+    void next(){
+        current = current.next;
+    }
+    
+    void previous(){
+        current = current.previous;
+    }
+
+    bool has_next(){
+        return current.next != null;
+    }
+
+    bool has_previous(){
+        return current.previous != null;
+    }
+
+    T get(){
+        return current.data;
+    }
+}
+
+template<type T>
 struct linked_list {
     linked_list_node<T>* head;
     linked_list_node<T>* tail;
@@ -91,5 +120,9 @@ struct linked_list {
     
     bool empty(){
         return size == 0;
+    }
+
+    linked_list_iterator<T>* iterator(){
+        return new linked_list_iterator<T>(head);
     }
 }
