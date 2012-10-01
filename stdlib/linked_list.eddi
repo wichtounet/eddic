@@ -20,7 +20,7 @@ struct linked_list {
     this(){
         size = 0;
     }
-    
+
     void push_front(T value){
         if(size == 0){
             head = new linked_list_node<T>(value, (linked_list_node<T>*) null, (linked_list_node<T>*) null);
@@ -46,7 +46,7 @@ struct linked_list {
 
         ++size;
     }
-    
+
     T front(){
         return head.data;
     }
