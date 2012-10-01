@@ -944,8 +944,6 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
                 pass_manager.function_instantiated(declaration, context);
             } 
 
-            //TODO Check it functionCall.Content->resolved = true;
-
             return;
         }
 

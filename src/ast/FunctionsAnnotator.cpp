@@ -175,7 +175,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             member_function_call.Content->position = functionCall.Content->position;
                             member_function_call.Content->object = variable_value;
                             member_function_call.Content->function_name = functionCall.Content->function_name;
-                            member_function_call.Content->resolved = functionCall.Content->resolved;
                             member_function_call.Content->template_types = functionCall.Content->template_types;
                             member_function_call.Content->values = functionCall.Content->values;
 
