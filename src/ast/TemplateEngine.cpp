@@ -925,10 +925,6 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
                 declaration.Content->parameters = function_declaration.Content->parameters;
                 declaration.Content->instructions = copy(function_declaration.Content->instructions);
 
-                //For handling later
-                declaration.Content->instantiated = true;
-                declaration.Content->marked = false;
-
                 std::unordered_map<std::string, ast::Type> replacements;
 
                 for(std::size_t i = 0; i < template_types.size(); ++i){
@@ -984,10 +980,6 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     declaration.Content->destructors = copy(struct_declaration.Content->destructors);
                     declaration.Content->functions = copy(struct_declaration.Content->functions);
                     declaration.Content->template_functions = copy(struct_declaration.Content->template_functions);
-
-                    //For handling later
-                    declaration.Content->instantiated = true;
-                    declaration.Content->marked = false;
 
                     std::unordered_map<std::string, ast::Type> replacements;
 
