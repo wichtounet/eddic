@@ -44,8 +44,19 @@ Usage compute_write_usage(const Loop& loop, const G& g){
         
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if(mtac::erase_result((*ptr)->op)){
-                    ++(usage.written[(*ptr)->result]);
+                auto quadruple = *ptr;
+                if(mtac::erase_result(quadruple->op)){
+                    ++(usage.written[quadruple->result]);
+                } 
+            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                auto call = *ptr;
+
+                if(call->return_){
+                    ++(usage.written[call->return_]);
+                }
+                
+                if(call->return2_){
+                    ++(usage.written[call->return2_]);
                 }
             }
         }
@@ -132,6 +143,11 @@ bool is_invariant(boost::optional<mtac::Argument>& argument, Usage& usage){
 bool is_invariant(mtac::Statement& statement, Usage& usage){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr;
+
+        //TODO Relax this rule by making a more powerful memory analysis
+        if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
+            return false;
+        }
 
         if(mtac::erase_result(quadruple->op)){
             //If there are more than one write to this variable, the computation is not invariant
