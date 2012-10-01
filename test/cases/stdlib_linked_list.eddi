@@ -46,6 +46,14 @@ void main(){
     delete it;
     
     print("}");
+
+    it = list.begin();
+    it.next();
+    it.next();
+
+    list.remove(it);
+
+    delete it;
     
     print("{");
 
@@ -61,6 +69,16 @@ void main(){
     delete it;
     
     print("}");
+    
+    it = list.begin();
+    it.next();
+    it.next();
+
+    list.insert_before(it, 88);
+
+    delete it;
+
+    debug<int>(list);
 
     list.pop_front();
     debug<int>(list);
@@ -71,6 +89,6 @@ void main(){
     list.pop_front();
     debug<int>(list);
 
-    list.pop_back();
-    debug<int>(list);
+    //list.pop_back();
+    //debug<int>(list);
 }
