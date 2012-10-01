@@ -27,10 +27,10 @@ class Pass;
 
 class PassManager {
     public:
-        PassManager(Platform platform, std::shared_ptr<Configuration> configuration);
+        PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program);
 
         void init_passes();
-        void run_passes(ast::SourceFile& program);
+        void run_passes();
 
         void function_instantiated(ast::FunctionDeclaration& function, const std::string& context);
         void struct_instantiated(ast::Struct& struct_);
@@ -39,7 +39,7 @@ class PassManager {
         std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
-        ast::SourceFile program;
+        ast::SourceFile& program;
 
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;

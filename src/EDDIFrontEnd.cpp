@@ -54,11 +54,11 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
         resolveDependencies(program, parser);
 
         //Init the passes
-        ast::PassManager pass_manager(platform, configuration);
+        ast::PassManager pass_manager(platform, configuration, program);
         pass_manager.init_passes();
 
         //Run all the passes on the program
-        pass_manager.run_passes(program);
+        pass_manager.run_passes();
 
         //TODO The following passes can be rewritten to simple passes
 

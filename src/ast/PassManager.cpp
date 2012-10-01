@@ -11,6 +11,7 @@
 #include "ast/Pass.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/TemplateEngine.hpp"
+#include "ast/Printer.hpp"
 
 //The passes
 #include "ast/TransformerEngine.hpp"
@@ -83,7 +84,8 @@ std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::Te
 
 } //end of anonymous namespace
 
-ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {
+ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program) : 
+        platform(platform), configuration(configuration), program(program) {
     template_engine = std::make_shared<ast::TemplateEngine>(*this);
 }
 
@@ -123,6 +125,8 @@ void ast::PassManager::init_passes(){
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
+    log::emit<Info>("Passes") << "Apply passes to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
+
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
@@ -147,6 +151,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
         }
     }
     
+    log::emit<Info>("Passes") << "Passes applied to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
+    
     if(context.empty()){
         program.Content->blocks.push_back(function);
     } else {
@@ -162,6 +168,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
 }
 
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
+    log::emit<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
+
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
@@ -172,13 +180,16 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
         }
     }
     
+    log::emit<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
+    
     program.Content->blocks.push_back(struct_);
 }
 
-void ast::PassManager::run_passes(ast::SourceFile& program){
-    this->program = program;
-
+void ast::PassManager::run_passes(){
     for(auto& pass : passes){
+        ast::Printer printer;
+        printer.print(program);
+
         //A simple pass is only applied once to the whole program
         if(pass->is_simple()){
             log::emit<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;
