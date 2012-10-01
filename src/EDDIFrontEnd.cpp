@@ -16,22 +16,11 @@
 #include "parser/SpiritParser.hpp"
 
 #include "ast/SourceFile.hpp"
-
-//Pass manager
 #include "ast/PassManager.hpp"
-
-//Checkers
-#include "ast/StringChecker.hpp"
-#include "ast/TypeChecker.hpp"
-
-//Visitors
 #include "ast/DependenciesResolver.hpp"
-#include "ast/TransformerEngine.hpp"
-#include "ast/WarningsEngine.hpp"
 #include "ast/Printer.hpp"
 
 #include "mtac/Compiler.hpp"
-#include "mtac/RegisterAllocation.hpp"
 
 using namespace eddic;
 
@@ -89,11 +78,6 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
 
     //Run all the passes on the program
     pass_manager.run_passes();
-
-    //TODO The following passes can be rewritten to simple passes
-
-    //Check for warnings
-    ast::checkForWarnings(program, configuration);
 
     //Check that there is a main in the program
     check_for_main(program.Content->context);

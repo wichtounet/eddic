@@ -23,6 +23,7 @@
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/StringChecker.hpp"
 #include "ast/TypeChecker.hpp"
+#include "ast/WarningsEngine.hpp"
 
 using namespace eddic;
 
@@ -125,6 +126,9 @@ void ast::PassManager::init_passes(){
     
     //Transform pass
     passes.push_back(make_pass<ast::TransformPass>("Transform", template_engine, platform, configuration, pool));
+    
+    //Transform pass
+    passes.push_back(make_pass<ast::WarningsPass>("Warnings", template_engine, platform, configuration, pool));
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){

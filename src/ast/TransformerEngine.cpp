@@ -921,8 +921,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::transformAST(ast::SourceFile& program){
-    TransformerVisitor visitor;
+void ast::CleanPass::apply_program(ast::SourceFile& program, bool){
+    CleanerVisitor visitor;
     visitor(program);
 }
 
@@ -934,7 +934,7 @@ bool ast::TransformPass::is_simple(){
     return true;
 }
 
-void ast::TransformPass::apply_program(ast::SourceFile& program, bool indicator){
+void ast::TransformPass::apply_program(ast::SourceFile& program, bool){
     TransformerVisitor visitor;
     visitor(program);
 }

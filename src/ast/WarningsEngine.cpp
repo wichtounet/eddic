@@ -184,10 +184,14 @@ struct Inspector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::checkForWarnings(ast::SourceFile& program, std::shared_ptr<Configuration> configuration){
+void ast::WarningsPass::apply_program(ast::SourceFile& program, bool){
     Collector collector;
     visit_non_variant(collector, program);
 
     Inspector inspector(collector, program.Content->context, configuration);
     visit_non_variant(inspector, program);
+}
+
+bool ast::WarningsPass::is_simple(){
+    return true;
 }
