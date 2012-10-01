@@ -5,13 +5,13 @@ void debug(linked_list<T>* list){
     print(list.size());
     print("|");
 
-    if(list.size() > 0){
+    if(list.empty()){
+        print("|");
+    } else {
         print(list.front());
         print("|");
 
         print(list.back());
-        print("|");
-    } else {
         print("|");
     }
 }

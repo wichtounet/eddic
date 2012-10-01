@@ -88,4 +88,8 @@ struct linked_list {
     int size(){
         return size;
     }
+    
+    bool empty(){
+        return size == 0;
+    }
 }
