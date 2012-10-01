@@ -122,6 +122,9 @@ void ast::PassManager::init_passes(){
     
     //Type checking pass
     passes.push_back(make_pass<ast::TypeCheckingPass>("Type checking", template_engine, platform, configuration, pool));
+    
+    //Transform pass
+    passes.push_back(make_pass<ast::TransformPass>("Transform", template_engine, platform, configuration, pool));
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){

@@ -930,7 +930,11 @@ bool ast::CleanPass::is_simple(){
     return true;
 }
 
-void ast::CleanPass::apply_program(ast::SourceFile& program, bool indicator){
-    CleanerVisitor visitor;
+bool ast::TransformPass::is_simple(){
+    return true;
+}
+
+void ast::TransformPass::apply_program(ast::SourceFile& program, bool indicator){
+    TransformerVisitor visitor;
     visitor(program);
 }

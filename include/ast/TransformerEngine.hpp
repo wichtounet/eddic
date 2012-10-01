@@ -19,8 +19,11 @@ struct CleanPass : Pass {
     void apply_program(ast::SourceFile& program, bool indicator) override;
     bool is_simple() override;
 };
-    
-void transformAST(SourceFile& program);
+
+struct TransformPass : Pass {
+    void apply_program(ast::SourceFile& program, bool indicator) override;
+    bool is_simple() override;
+};
 
 } //end of ast
 
