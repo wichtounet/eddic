@@ -43,6 +43,9 @@ class PassManager {
 
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;
+        
+        std::vector<ast::Struct> class_instantiated;
+        std::vector<std::pair<std::string, ast::FunctionDeclaration>> functions_instantiated;
 };
 
 } //end of ast

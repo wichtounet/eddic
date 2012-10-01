@@ -36,18 +36,15 @@ namespace {
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
     pass->apply_struct(struct_, false);
 
-    std::vector<ast::FunctionDeclaration> functions = struct_.Content->functions;
-    for(auto& function : functions){
+    for(auto& function : struct_.Content->functions){
         pass->apply_struct_function(function);
     }
 
-    std::vector<ast::Destructor> destructors = struct_.Content->destructors;
-    for(auto& function : destructors){
+    for(auto& function : struct_.Content->destructors){
         pass->apply_struct_destructor(function);
     }
 
-    std::vector<ast::Constructor> constructors = struct_.Content->constructors;
-    for(auto& function : constructors){
+    for(auto& function : struct_.Content->constructors){
         pass->apply_struct_constructor(function);
     }
 }
@@ -152,19 +149,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
     }
     
     log::emit<Info>("Passes") << "Passes applied to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
-    
-    if(context.empty()){
-        program.Content->blocks.push_back(function);
-    } else {
-        for(auto& block : program.Content->blocks){
-            if(auto* struct_type = boost::get<ast::Struct>(&block)){
-                if(struct_type->Content->struct_type->mangle() == context){
-                    struct_type->Content->functions.push_back(function);
-                    break;
-                }
-            }
-        }
-    }
+        
+    functions_instantiated.push_back(std::make_pair(context, function));
 }
 
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
@@ -182,7 +168,7 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     
     log::emit<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
     
-    program.Content->blocks.push_back(struct_);
+    class_instantiated.push_back(struct_);
 }
 
 void ast::PassManager::run_passes(){
@@ -207,6 +193,30 @@ void ast::PassManager::run_passes(){
             applied_passes.push_back(pass);
 
             apply_pass(pass, program);
+
+            //Add the instantiated class and function templates to the actual program
+    
+            for(auto& struct_ : class_instantiated){
+                program.Content->blocks.push_back(struct_);
+            }
+            
+            for(auto& function_pair : functions_instantiated){
+                auto& context = function_pair.first;
+                auto& function = function_pair.second;
+                
+                if(context.empty()){
+                    program.Content->blocks.push_back(function);
+                } else {
+                    for(auto& block : program.Content->blocks){
+                        if(auto* struct_type = boost::get<ast::Struct>(&block)){
+                            if(struct_type->Content->struct_type->mangle() == context){
+                                struct_type->Content->functions.push_back(function);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
