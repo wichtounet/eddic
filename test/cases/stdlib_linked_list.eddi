@@ -32,14 +32,35 @@ void main(){
     list.push_front(99);
     debug<int>(list);
 
-    linked_list_iterator<int>* it = list.iterator();
+    print("{");
+
+    linked_list_iterator<int>* it = list.begin();
     
-    while(it.has_next()){
+    while(it.not_over()){
         print(it.get());
         print("|");
 
         it.next();
     }
+
+    delete it;
+    
+    print("}");
+    
+    print("{");
+
+    it = list.end();
+    
+    while(it.not_over()){
+        print(it.get());
+        print("|");
+
+        it.previous();
+    }
+
+    delete it;
+    
+    print("}");
 
     list.pop_front();
     debug<int>(list);

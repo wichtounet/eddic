@@ -27,6 +27,10 @@ struct linked_list_iterator {
         current = current.previous;
     }
 
+    bool not_over(){
+        return current != null;
+    }
+
     bool has_next(){
         return current.next != null;
     }
@@ -122,7 +126,11 @@ struct linked_list {
         return size == 0;
     }
 
-    linked_list_iterator<T>* iterator(){
+    linked_list_iterator<T>* begin(){
         return new linked_list_iterator<T>(head);
+    }
+    
+    linked_list_iterator<T>* end(){
+        return new linked_list_iterator<T>(tail);
     }
 }
