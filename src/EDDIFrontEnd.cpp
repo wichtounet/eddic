@@ -7,11 +7,11 @@
 
 #include "EDDIFrontEnd.hpp"
 #include "SemanticalException.hpp"
-#include "DebugStopWatch.hpp"
 #include "Options.hpp"
 #include "StringPool.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "PerfsTimer.hpp"
 
 #include "parser/SpiritParser.hpp"
 
@@ -36,48 +36,25 @@
 using namespace eddic;
 
 void check_for_main(std::shared_ptr<GlobalContext> context);
+void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> configuration, Platform platform, std::shared_ptr<StringPool> pool);
 
 std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
-    parser::SpiritParser parser;
-
     //The program to build
     ast::SourceFile program;
 
     //Parse the file into the program
+    parser::SpiritParser parser;
     bool parsing = parser.parse(file, program); 
 
-    //If the parsing was sucessfully
+    //If the parsing was successfully
     if(parsing){
         set_string_pool(std::make_shared<StringPool>());
 
         //Read dependencies
         resolveDependencies(program, parser);
-
-        //Init the passes
-        ast::PassManager pass_manager(platform, configuration, program);
-        pass_manager.init_passes();
-
-        //Run all the passes on the program
-        pass_manager.run_passes();
-
-        //TODO The following passes can be rewritten to simple passes
-
-        //Fill the string pool
-        ast::checkStrings(program, *pool);
         
-        //Static analysis
-        ast::checkTypes(program);
-
-        //Transform the AST
-        ast::transformAST(program);
-
-        //Check for warnings
-        ast::checkForWarnings(program, configuration);
-
-        //Check that there is a main in the program
-        check_for_main(program.Content->context);
-
-        program.Content->context->release_references();
+        //AST Passes
+        generate_program(program, configuration, platform, pool);
 
         //If the user asked for it, print the Abstract Syntax Tree
         if(configuration->option_defined("ast") || configuration->option_defined("ast-only")){
@@ -101,6 +78,36 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
     //If the parsing fails, the error is already printed to the console
     return nullptr;
+}
+
+void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> configuration, Platform platform, std::shared_ptr<StringPool> pool){
+    PerfsTimer timer("AST Passes");
+
+    //Initialize the passes
+    ast::PassManager pass_manager(platform, configuration, program);
+    pass_manager.init_passes();
+
+    //Run all the passes on the program
+    pass_manager.run_passes();
+
+    //TODO The following passes can be rewritten to simple passes
+
+    //Fill the string pool
+    ast::checkStrings(program, *pool);
+
+    //Static analysis
+    ast::checkTypes(program);
+
+    //Transform the AST
+    ast::transformAST(program);
+
+    //Check for warnings
+    ast::checkForWarnings(program, configuration);
+
+    //Check that there is a main in the program
+    check_for_main(program.Content->context);
+
+    program.Content->context->release_references();
 }
 
 void check_for_main(std::shared_ptr<GlobalContext> context){
