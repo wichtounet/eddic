@@ -108,11 +108,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                 check_each(functionCall.Content->values);
 
-                //If the function has already been resolved, we can return directly
-                if(functionCall.Content->function){
-                    return;
-                }
-
                 std::string name = functionCall.Content->function_name;
 
                 auto types = get_types(functionCall);
@@ -265,11 +260,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             check_value(functionCall.Content->object);
             check_each(functionCall.Content->values);
-
-            //If the function has already been resolved, we can return directly
-            if(functionCall.Content->function){
-                return;
-            }
 
             auto type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
             auto struct_type = type->is_pointer() ? type->data_type() : type;
