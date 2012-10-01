@@ -19,14 +19,14 @@ void main(){
     print("|");
 
     list.push_back(55);
-    debug(list);
+    debug<int>(list);
     
     list.push_back(11);
-    debug(list);
+    debug<int>(list);
     
     list.push_front(33);
-    debug(list);
+    debug<int>(list);
     
     list.push_front(99);
-    debug(list);
+    debug<int>(list);
 }
