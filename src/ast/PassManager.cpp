@@ -21,14 +21,9 @@
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/FunctionsAnnotator.hpp"
+#include "ast/StringChecker.hpp"
 
 using namespace eddic;
-
-/*
- * TODO Check if the overhead of copying each block of the program and each 
- * block of each struct is not too high. Another solution would be to store temporarily
- * all the instantiated class and function templates and add then after the pass for the next pass. 
-*/
 
 namespace {
 
@@ -120,6 +115,9 @@ void ast::PassManager::init_passes(){
     
     //Function check pass
     passes.push_back(make_pass<ast::FunctionCheckPass>("function check", template_engine, platform, configuration, pool));
+    
+    //String collection pass
+    passes.push_back(make_pass<ast::StringCollectionPass>("string collection", template_engine, platform, configuration, pool));
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){

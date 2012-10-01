@@ -92,9 +92,6 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
 
     //TODO The following passes can be rewritten to simple passes
 
-    //Fill the string pool
-    ast::checkStrings(program, *pool);
-
     //Static analysis
     ast::checkTypes(program);
 
