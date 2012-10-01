@@ -19,6 +19,7 @@
 #include "ast/TypeTransformer.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/TemplateEngine.hpp"
 
 using namespace eddic;
 
@@ -103,6 +104,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         void check_value(V& value){
             if(auto* ptr = boost::get<ast::FunctionCall>(&value)){
                 auto functionCall = *ptr;
+            
+                template_engine->check_function(functionCall);
 
                 if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
                     check_each(functionCall.Content->values);
@@ -285,6 +288,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::MemberFunctionCall& functionCall){
+            template_engine->check_member_function(functionCall);
+
             if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
                 //It is possible that the object has not been handled by the template engine at this point
                 if(!is_init(functionCall.Content->object)){
