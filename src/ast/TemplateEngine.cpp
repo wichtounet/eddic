@@ -1004,8 +1004,6 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     pass_manager.struct_instantiated(declaration);
                 }
 
-                ptr->resolved = true;
-
                 return;
             }
         }

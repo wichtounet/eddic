@@ -332,14 +332,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_each(*this, switch_case.instructions);
     }
 
-    bool is_resolved(const ast::Type& type){
-        if(auto* ptr = boost::get<ast::TemplateType>(&type)){
-            return ptr->resolved;
-        }
-        
-        return true;
-    }
-
     bool is_valid(const ast::Type& type){
         if(auto* ptr = boost::get<ast::ArrayType>(&type)){
             return is_valid(ptr->type.get());
@@ -364,7 +356,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void visit_function(Function& declaration){
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
-            //TODO Check
+            template_engine->check_type(parameter.parameterType, declaration.Content->position);
 
             if(check_variable(declaration.Content->context, parameter.parameterName, declaration.Content->position)){
                 if(!is_valid(parameter.parameterType)){
@@ -395,7 +387,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::GlobalVariableDeclaration& declaration){
-        //TODO
+        template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
 
         if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
             if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
@@ -411,7 +403,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     template<typename ArrayDeclaration>
     void declare_array(ArrayDeclaration& declaration){
-        //TODO
+        template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
 
         declaration.Content->size = visit(value_visitor, declaration.Content->size);
 
@@ -445,7 +437,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Foreach& foreach){
-        //TODO
+        template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
 
         if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
             auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
@@ -458,7 +450,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::ForeachIn& foreach){
-        //TODO
+        template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
 
         if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
             if(!foreach.Content->context->exists(foreach.Content->arrayName)){

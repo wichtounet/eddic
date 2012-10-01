@@ -42,7 +42,6 @@ void annotate(T& declaration, ast::Struct& current_struct){
         ast::TemplateType struct_type;
         struct_type.type = current_struct.Content->name;
         struct_type.template_types = current_struct.Content->template_types;
-        struct_type.resolved = true;
 
         paramType.type = struct_type;
     }
