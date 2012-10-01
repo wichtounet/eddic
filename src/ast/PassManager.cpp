@@ -139,9 +139,9 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
                         if(struct_type->Content->struct_type->mangle() == context){
                             pass->apply_struct(*struct_type, true);
                             pass->apply_struct_function(function);
-                        }
 
-                        break;
+                            break;
+                        }
                     }
                 }
             }
