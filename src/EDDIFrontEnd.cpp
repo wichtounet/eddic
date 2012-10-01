@@ -92,9 +92,6 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
 
     //TODO The following passes can be rewritten to simple passes
 
-    //Static analysis
-    ast::checkTypes(program);
-
     //Transform the AST
     ast::transformAST(program);
 

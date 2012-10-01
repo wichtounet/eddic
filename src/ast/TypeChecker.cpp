@@ -372,7 +372,11 @@ class CheckerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::checkTypes(ast::SourceFile& program){
+void ast::TypeCheckingPass::apply_program(ast::SourceFile& program, bool){
     CheckerVisitor visitor(program.Content->context);
     visit_non_variant(visitor, program);
+}
+
+bool ast::TypeCheckingPass::is_simple(){
+    return true;
 }

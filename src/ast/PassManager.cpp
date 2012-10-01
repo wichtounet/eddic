@@ -22,6 +22,7 @@
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/FunctionsAnnotator.hpp"
 #include "ast/StringChecker.hpp"
+#include "ast/TypeChecker.hpp"
 
 using namespace eddic;
 
@@ -118,6 +119,9 @@ void ast::PassManager::init_passes(){
     
     //String collection pass
     passes.push_back(make_pass<ast::StringCollectionPass>("string collection", template_engine, platform, configuration, pool));
+    
+    //Type checking pass
+    passes.push_back(make_pass<ast::TypeCheckingPass>("Type checking", template_engine, platform, configuration, pool));
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
