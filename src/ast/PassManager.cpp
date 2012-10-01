@@ -31,6 +31,25 @@ using namespace eddic;
 */
 
 namespace {
+
+void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
+    pass->apply_struct(struct_, false);
+
+    std::vector<ast::FunctionDeclaration> functions = struct_.Content->functions;
+    for(auto& function : functions){
+        pass->apply_struct_function(function);
+    }
+
+    std::vector<ast::Destructor> destructors = struct_.Content->destructors;
+    for(auto& function : destructors){
+        pass->apply_struct_destructor(function);
+    }
+
+    std::vector<ast::Constructor> constructors = struct_.Content->constructors;
+    for(auto& function : constructors){
+        pass->apply_struct_constructor(function);
+    }
+}
     
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
     log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
@@ -44,22 +63,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
             if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                 pass->apply_function(*ptr);
             } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-                pass->apply_struct(*ptr, false);
-
-                std::vector<ast::FunctionDeclaration> functions = ptr->Content->functions;
-                for(auto& function : ptr->Content->functions){
-                    pass->apply_struct_function(function);
-                }
-
-                std::vector<ast::Destructor> destructors = ptr->Content->destructors;
-                for(auto& function : destructors){
-                    pass->apply_struct_destructor(function);
-                }
-
-                std::vector<ast::Constructor> constructors = ptr->Content->constructors;
-                for(auto& function : constructors){
-                    pass->apply_struct_constructor(function);
-                }
+                apply_pass(pass, *ptr);
             }
         }
     }
@@ -120,9 +124,9 @@ void ast::PassManager::init_passes(){
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
     for(auto& pass : applied_passes){
-        log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
-
         for(unsigned int i = 0; i < pass->passes(); ++i){
+            log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+
             pass->set_current_pass(i);
             pass->apply_program(program, true);
 
@@ -159,12 +163,12 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
 
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     for(auto& pass : applied_passes){
-        log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
-
         for(unsigned int i = 0; i < pass->passes(); ++i){
+            log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+
             pass->set_current_pass(i);
             pass->apply_program(program, true);
-            pass->apply_struct(struct_, false);
+            apply_pass(pass, struct_);
         }
     }
     
