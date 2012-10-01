@@ -17,6 +17,7 @@
 namespace eddic {
 
 struct Configuration;
+struct StringPool;
 
 namespace ast {
 
@@ -31,6 +32,7 @@ class Pass {
         virtual void apply_struct_constructor(ast::Constructor& constructor);
         virtual void apply_struct_destructor(ast::Destructor& destructor);
 
+        void set_string_pool(std::shared_ptr<StringPool> pool);
         void set_template_engine(std::shared_ptr<ast::TemplateEngine> template_engine);
         void set_platform(Platform platform);
         void set_configuration(std::shared_ptr<Configuration> configuration);
@@ -45,6 +47,7 @@ class Pass {
         unsigned int pass = 0;
         std::string pass_name;
 
+        std::shared_ptr<StringPool> pool;
         std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;

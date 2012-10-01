@@ -20,6 +20,7 @@
 namespace eddic {
 
 class Configuration;
+class StringPool;
 
 namespace ast {
 
@@ -27,7 +28,7 @@ class Pass;
 
 class PassManager {
     public:
-        PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program);
+        PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program, std::shared_ptr<StringPool> pool);
 
         void init_passes();
         void run_passes();
@@ -40,6 +41,7 @@ class PassManager {
         Platform platform;
         std::shared_ptr<Configuration> configuration;
         ast::SourceFile& program;
+        std::shared_ptr<StringPool> pool;
 
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;

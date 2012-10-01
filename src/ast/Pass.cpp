@@ -23,6 +23,10 @@ std::string ast::Pass::name(){
     return pass_name;
 }
 
+void ast::Pass::set_string_pool(std::shared_ptr<StringPool> pool){
+    this->pool = pool;
+}
+
 void ast::Pass::set_platform(Platform platform){
     this->platform = platform;
 }

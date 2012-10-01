@@ -67,57 +67,59 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
 }
 
 template<typename Pass>
-std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::TemplateEngine> template_engine, Platform platform, std::shared_ptr<Configuration> configuration){
+std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::TemplateEngine> template_engine, 
+            Platform platform, std::shared_ptr<Configuration> configuration, std::shared_ptr<StringPool> pool){
     auto pass = std::make_shared<Pass>();
     
     pass->set_name(name);
     pass->set_template_engine(template_engine);
     pass->set_platform(platform);
     pass->set_configuration(configuration);
+    pass->set_string_pool(pool);
 
     return pass;
 }
 
 } //end of anonymous namespace
 
-ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program) : 
-        platform(platform), configuration(configuration), program(program) {
+ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program, std::shared_ptr<StringPool> pool) : 
+        platform(platform), configuration(configuration), program(program), pool(pool) {
     template_engine = std::make_shared<ast::TemplateEngine>(*this);
 }
 
 void ast::PassManager::init_passes(){
     //Clean pass
-    passes.push_back(make_pass<ast::CleanPass>("clean", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::CleanPass>("clean", template_engine, platform, configuration, pool));
     
     //Context annotation pass
-    passes.push_back(make_pass<ast::ContextAnnotationPass>("context annotation", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::ContextAnnotationPass>("context annotation", template_engine, platform, configuration, pool));
     
     //Structures collection pass
-    passes.push_back(make_pass<ast::StructureCollectionPass>("structures collection", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::StructureCollectionPass>("structures collection", template_engine, platform, configuration, pool));
 
     //Template Collection pass
-    passes.push_back(make_pass<ast::TemplateCollectionPass>("templates collection", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::TemplateCollectionPass>("templates collection", template_engine, platform, configuration, pool));
     
     //Structures member collection pass
-    passes.push_back(make_pass<ast::StructureMemberCollectionPass>("structures member collection", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::StructureMemberCollectionPass>("structures member collection", template_engine, platform, configuration, pool));
     
     //Structures check pass
-    passes.push_back(make_pass<ast::StructureCheckPass>("structure check", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::StructureCheckPass>("structure check", template_engine, platform, configuration, pool));
     
     //Structures check pass
-    passes.push_back(make_pass<ast::DefaultValuesPass>("default values", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::DefaultValuesPass>("default values", template_engine, platform, configuration, pool));
     
     //Member function collection pass
-    passes.push_back(make_pass<ast::MemberFunctionCollectionPass>("member function collection", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::MemberFunctionCollectionPass>("member function collection", template_engine, platform, configuration, pool));
 
     //Variables annotation pass
-    passes.push_back(make_pass<ast::VariableAnnotationPass>("variable annotation", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::VariableAnnotationPass>("variable annotation", template_engine, platform, configuration, pool));
     
     //Function collection pass
-    passes.push_back(make_pass<ast::FunctionCollectionPass>("function collection", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::FunctionCollectionPass>("function collection", template_engine, platform, configuration, pool));
     
     //Function check pass
-    passes.push_back(make_pass<ast::FunctionCheckPass>("function check", template_engine, platform, configuration));
+    passes.push_back(make_pass<ast::FunctionCheckPass>("function check", template_engine, platform, configuration, pool));
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){

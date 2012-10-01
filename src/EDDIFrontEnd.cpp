@@ -84,7 +84,7 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
     PerfsTimer timer("AST Passes");
 
     //Initialize the passes
-    ast::PassManager pass_manager(platform, configuration, program);
+    ast::PassManager pass_manager(platform, configuration, program, pool);
     pass_manager.init_passes();
 
     //Run all the passes on the program
