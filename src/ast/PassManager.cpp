@@ -213,6 +213,9 @@ void ast::PassManager::run_passes(){
                     }
                 }
             }
+
+            class_instantiated.clear();
+            functions_instantiated.clear();
         }
     }
 }
