@@ -18,6 +18,7 @@ class Function;
 
 bool loop_invariant_code_motion(std::shared_ptr<mtac::Function> function);
 bool loop_induction_variables_optimization(std::shared_ptr<mtac::Function> function);
+bool remove_empty_loops(std::shared_ptr<mtac::Function> function);
 
 } //end of mtac
 

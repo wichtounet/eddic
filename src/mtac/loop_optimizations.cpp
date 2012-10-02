@@ -880,6 +880,46 @@ bool loop_induction_variables_optimization(const Loop& loop, std::shared_ptr<mta
     return optimized;
 }
 
+int number_of_iterations(LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&if_statement)){
+        auto if_ = *ptr;
+
+        if(mtac::isVariable(if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+
+            if(var != linear_equation.i){
+                return -1;   
+            }
+
+            if(auto* cst_ptr = boost::get<int>(&*if_->arg2)){
+                int number = *cst_ptr;
+
+                //We found the form "var op number"
+                
+                if(if_->op == mtac::BinaryOperator::LESS){
+                    return (number - initial_value) / linear_equation.d;
+                }
+                
+                //TODO
+            } 
+        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+            int number = *cst_ptr;
+
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(*var_ptr != linear_equation.i){
+                    return -1;   
+                }
+
+                //TODO
+            } 
+        } 
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&if_statement)){
+
+    }
+
+    return -1;
+}
+
 } //end of anonymous namespace
 
 bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
@@ -920,6 +960,84 @@ bool mtac::loop_induction_variables_optimization(std::shared_ptr<mtac::Function>
     
     for(auto& loop : natural_loops){
         optimized |= ::loop_induction_variables_optimization(loop, function, g);
+    }
+
+    return optimized;
+}
+
+std::shared_ptr<mtac::BasicBlock> get_previous_bb(std::shared_ptr<mtac::Function> function, std::shared_ptr<mtac::BasicBlock> bb){
+    auto blocks_it = function->blocks();
+    auto it = std::find(blocks_it.first, blocks_it.second, bb);
+
+    if(it == blocks_it.second || it == blocks_it.first){
+        return nullptr;
+    }
+
+    --it;
+
+    return *it;
+}
+
+std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable> var){
+    auto it = bb->statements.rbegin();
+    auto end = bb->statements.rend();
+
+    while(it != end){
+        auto statement = *it;
+
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+            if((*ptr)->result == var){
+                if((*ptr)->op == mtac::Operator::ASSIGN){
+                    if(auto* val_ptr = boost::get<int>(&*(*ptr)->arg1)){
+                        return std::make_pair(true, *val_ptr);                    
+                    }
+                }
+
+                return std::make_pair(false, 0);
+            }
+        }
+    }
+    
+    return std::make_pair(false, 0);
+}
+
+bool mtac::remove_empty_loops(std::shared_ptr<mtac::Function> function){
+    auto graph = mtac::build_control_flow_graph(function);
+    auto g = graph->get_graph();
+    
+    auto natural_loops = find_natural_loops(g);
+
+    if(natural_loops.empty()){
+        return false;
+    }
+
+    bool optimized = false;
+    
+    for(auto& loop : natural_loops){
+        if(loop.size() == 1){
+            auto bb = g[*loop.begin()].block;
+
+            if(bb->statements.size() == 2){
+                if(auto* first_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&bb->statements[0])){
+                    auto first = *first_ptr;
+                
+                    auto basic_induction_variables = find_basic_induction_variables(loop, g);
+                    
+                    auto prev_bb = get_previous_bb(function, bb);
+
+                    if(prev_bb){
+                        if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
+                            auto initial_value = get_initial_value(prev_bb, first->result);
+                            if(initial_value.first){
+                                auto it = number_of_iterations(basic_induction_variables[first->result], initial_value.second, bb->statements[1]);
+
+                                std::cout << it << std::endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return optimized;
