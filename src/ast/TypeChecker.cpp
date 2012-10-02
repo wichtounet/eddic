@@ -236,17 +236,22 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto dst_type = visit(ast::TypeTransformer(context), cast.Content->type);
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
+            //Cast with no effects are always valid
+            if(dst_type == src_type || (dst_type->is_pointer() && src_type->is_pointer())){
+                return;
+            }
+
             if(dst_type == INT){
-                if(src_type != FLOAT && src_type != INT && src_type != CHAR){
-                    throw SemanticalException("Invalid cast", cast.Content->position);
+                if(src_type != FLOAT && src_type != CHAR){
+                    throw SemanticalException("Invalid cast to int", cast.Content->position);
                 }
             } else if(dst_type == FLOAT){
-                if(src_type != INT && src_type != FLOAT){
-                    throw SemanticalException("Invalid cast", cast.Content->position);
+                if(src_type != INT){
+                    throw SemanticalException("Invalid cast to float", cast.Content->position);
                 }
             } else if(dst_type == CHAR){
-                if(src_type != INT && src_type != CHAR){
-                    throw SemanticalException("Invalid cast", cast.Content->position);
+                if(src_type != INT){
+                    throw SemanticalException("Invalid cast to char", cast.Content->position);
                 }
             } else {
                 throw SemanticalException("Invalid cast", cast.Content->position);
@@ -343,6 +348,8 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::New& new_){
+            visit_each(*this, new_.Content->values);
+
             auto type = visit(ast::TypeTransformer(context), new_.Content->type);
 
             if(!(type->is_standard_type() || type->is_custom_type() || type->is_template())){

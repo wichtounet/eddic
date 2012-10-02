@@ -4,29 +4,91 @@ template<type T>
 void debug(linked_list<T>* list){
     print(list.size());
     print("|");
-    
-    print(list.front());
-    print("|");
-    
-    print(list.back());
-    print("|");
+
+    if(list.empty()){
+        print("|");
+    } else {
+        print(list.front());
+        print("|");
+
+        print(list.back());
+        print("|");
+    }
 }
 
 void main(){
     linked_list<int> list;
-    
-    print(list.size());
-    print("|");
+    debug<int>(list);
 
     list.push_back(55);
-    debug(list);
+    debug<int>(list);
     
     list.push_back(11);
-    debug(list);
+    debug<int>(list);
     
     list.push_front(33);
-    debug(list);
+    debug<int>(list);
     
     list.push_front(99);
-    debug(list);
+    debug<int>(list);
+
+    print("{");
+
+    linked_list_iterator<int>* it = list.begin();
+    
+    while(it.not_over()){
+        print(it.get());
+        print("|");
+
+        it.next();
+    }
+
+    delete it;
+    
+    print("}");
+
+    it = list.begin();
+    it.next();
+    it.next();
+
+    list.remove(it);
+
+    delete it;
+    
+    print("{");
+
+    it = list.end();
+    
+    while(it.not_over()){
+        print(it.get());
+        print("|");
+
+        it.previous();
+    }
+
+    delete it;
+    
+    print("}");
+    
+    it = list.begin();
+    it.next();
+    it.next();
+
+    list.insert_before(it, 88);
+
+    delete it;
+
+    debug<int>(list);
+
+    list.pop_front();
+    debug<int>(list);
+
+    list.pop_back();
+    debug<int>(list);
+
+    list.pop_front();
+    debug<int>(list);
+
+    //list.pop_back();
+    //debug<int>(list);
 }

@@ -12,6 +12,39 @@ struct linked_list_node {
 }
 
 template<type T>
+struct linked_list_iterator {
+    linked_list_node<T>* current;
+
+    this(linked_list_node<T>* current){
+        this.current = current;
+    }
+
+    void next(){
+        current = current.next;
+    }
+    
+    void previous(){
+        current = current.previous;
+    }
+
+    bool not_over(){
+        return current != null;
+    }
+
+    bool has_next(){
+        return current.next != null;
+    }
+
+    bool has_previous(){
+        return current.previous != null;
+    }
+
+    T get(){
+        return current.data;
+    }
+}
+
+template<type T>
 struct linked_list {
     linked_list_node<T>* head;
     linked_list_node<T>* tail;
@@ -20,7 +53,7 @@ struct linked_list {
     this(){
         size = 0;
     }
-    
+
     void push_front(T value){
         if(size == 0){
             head = new linked_list_node<T>(value, (linked_list_node<T>*) null, (linked_list_node<T>*) null);
@@ -46,7 +79,79 @@ struct linked_list {
 
         ++size;
     }
-    
+
+    void pop_front(){
+        linked_list_node<T>* old = head;
+        
+        if(size == 1){
+            tail = head = (linked_list_node<T>*) null;
+        } else {
+            head = head.next;
+            head.previous = (linked_list_node<T>*) null;
+        }
+            
+        delete old;
+
+        --size;
+    }
+
+    void pop_back(){
+        linked_list_node<T>* old = tail;
+
+        if(size == 1){
+            tail = head = (linked_list_node<T>*) null;
+        } else {
+            tail = tail.previous;
+            tail.next = (linked_list_node<T>*) null;
+        }
+        
+        delete old;
+
+        --size;
+    }
+
+    void insert_before(linked_list_iterator<T>* it, T value){
+        linked_list_node<T>* node = new linked_list_node<T>(value, (linked_list_node<T>*) null, (linked_list_node<T>*) null);
+
+        if(size == 0){
+            tail = head = node;
+        } else if(head == it.current){
+            head = node;
+            head.next = it.current;
+            it.current.previous = node;
+        } else {
+            node.previous = it.current.previous;
+            node.next = it.current;
+            it.current.previous.next = node;
+            it.current.previous = node;
+        }
+
+        ++size;
+    }
+
+    void remove(linked_list_iterator<T>* it){
+        linked_list_node<T>* current = it.current;
+
+        if(size == 1){
+            tail = head = (linked_list_node<T>*) null;
+            head.next = (linked_list_node<T>*) null;
+            tail.previous = (linked_list_node<T>*) null;
+        } else if(head == current){
+            head = head.next;
+            head.previous = (linked_list_node<T>*) null;
+        } else if(tail == current){
+            tail = tail.previous;
+            tail.next = (linked_list_node<T>*) null;
+        } else {
+            current.previous.next = current.next;
+            current.next.previous = current.previous;
+        }
+
+        delete current;
+
+        --size;
+    }
+
     T front(){
         return head.data;
     }
@@ -57,5 +162,17 @@ struct linked_list {
 
     int size(){
         return size;
+    }
+    
+    bool empty(){
+        return size == 0;
+    }
+
+    linked_list_iterator<T>* begin(){
+        return new linked_list_iterator<T>(head);
+    }
+    
+    linked_list_iterator<T>* end(){
+        return new linked_list_iterator<T>(tail);
     }
 }

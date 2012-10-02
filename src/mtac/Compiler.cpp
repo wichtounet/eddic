@@ -396,10 +396,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else if(type->is_custom_type() || type->is_template()) {
                 //If we are here, it means that we want to pass it by reference
                 return {value.Content->var};
-            } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled type");
-            }
+            } 
         }
+    
+        ASSERT_PATH_NOT_TAKEN("Unhandled type");
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
@@ -515,7 +515,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {performFloatOperation(value, function)};
         } else if(type == BOOL){
             return {performBoolOperation(value, function)};
-        } else {
+        } else if(type == STRING){
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
 
@@ -523,6 +523,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             
             return {t1, t2};
         }
+
+        ASSERT_PATH_NOT_TAKEN("Unsupported type");
     }
 
     result_type operator()(ast::Unary& value) const {
@@ -843,6 +845,8 @@ struct AssignVisitor : public boost::static_visitor<> {
             auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
 
             visit(DereferenceAssign(function, variable, 0), value);
+        } else {
+           ASSERT_PATH_NOT_TAKEN("Unsupported type"); 
         }
     }
 };
@@ -1021,8 +1025,6 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
     }
 
     ASSERT_PATH_NOT_TAKEN("Unhandled ternary type");
-
-    return {};
 }
 
 void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
@@ -1569,12 +1571,16 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
         
         auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        if(typeLeft == INT || typeLeft == CHAR){
+        if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
         } else if(typeLeft == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Unsupported type in relational operator");
         }
-    } 
+    } else {
+        ASSERT_PATH_NOT_TAKEN("Unsupported operator");
+    }
     
     return t1;
 }
@@ -1601,12 +1607,16 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
             } else if(operation.Content->op == ast::Operator::DEC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unsupported operator");    
             }
         } else if (t1->type() == INT){
             if(operation.Content->op == ast::Operator::INC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
             } else if(operation.Content->op == ast::Operator::DEC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+            } else {
+                ASSERT_PATH_NOT_TAKEN("Unsupported operator");    
             }
         } 
     }

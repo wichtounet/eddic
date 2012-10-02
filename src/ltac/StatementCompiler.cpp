@@ -235,10 +235,10 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
 
         ltac::add_instruction(function, ltac::Operator::OR, reg, reg);
     } else {
+        auto reg = manager.get_reg(ltac::get_variable(arg1));
+
         //The basic block must be ended before the jump
         end_basic_block();
-
-        auto reg = manager.get_reg(ltac::get_variable(arg1));
 
         ltac::add_instruction(function, ltac::Operator::OR, reg, reg);
     }
@@ -266,12 +266,15 @@ void ltac::StatementCompiler::div_eax(std::shared_ptr<mtac::Quadruple> quadruple
 void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple){
     auto reg = manager.get_reg_no_move(quadruple->result);
 
+    //The default value is 0
+    ltac::add_instruction(function, ltac::Operator::MOV, reg, 0);
+
     //The first argument is not important, it can be immediate, but the second must be a register
     if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-        auto reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
+        auto cmp_reg = register_guard<ltac::Register>(manager.get_free_reg(), manager);
 
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, *ptr); 
-        ltac::add_instruction(function, ltac::Operator::CMP_INT, reg, to_arg(*quadruple->arg2)); 
+        ltac::add_instruction(function, ltac::Operator::MOV, cmp_reg, *ptr); 
+        ltac::add_instruction(function, ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple->arg2)); 
     } else {
         ltac::add_instruction(function, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
     }
@@ -1231,11 +1234,16 @@ void ltac::StatementCompiler::compile_DOT_FASSIGN(std::shared_ptr<mtac::Quadrupl
 }
 
 void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
-    ASSERT(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2), "Can only take the address of a variable");
-    auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg2); 
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
+        auto variable = *ptr;
 
-    auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
-    ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
+        auto reg = register_guard<ltac::Register>(get_address_in_reg(variable, 0), manager);
+        ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
+    } else if(mtac::is<int>(*quadruple->arg2)){
+        ltac::add_instruction(function, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), boost::get<int>(*quadruple->arg2)); 
+    } else {
+        ASSERT_PATH_NOT_TAKEN("Unsupported rhs type in DOT_PASSIGN");
+    }
 }
 
 void ltac::StatementCompiler::compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple){
