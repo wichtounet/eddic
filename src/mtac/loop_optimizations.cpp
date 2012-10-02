@@ -1029,9 +1029,19 @@ bool mtac::remove_empty_loops(std::shared_ptr<mtac::Function> function){
                         if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
                             auto initial_value = get_initial_value(prev_bb, first->result);
                             if(initial_value.first){
-                                auto it = number_of_iterations(basic_induction_variables[first->result], initial_value.second, bb->statements[1]);
+                                auto linear_equation = basic_induction_variables[first->result];
+                                auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[1]);
+                                
+                                //The loop does not iterate
+                                if(it == 0){
+                                    bb->statements.clear();
+                                    optimized = true;
+                                } else if(it > 0){
+                                    bb->statements.clear();
+                                    optimized = true;
 
-                                std::cout << it << std::endl;
+                                    bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, initial_value.second + it * linear_equation.d, mtac::Operator::ASSIGN));
+                                }
                             }
                         }
                     }
