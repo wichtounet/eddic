@@ -897,7 +897,7 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
                 //We found the form "var op number"
                 
                 if(if_->op == mtac::BinaryOperator::LESS){
-                    return (number - initial_value) / linear_equation.d;
+                    return (number - initial_value) / linear_equation.d + 1;
                 }
                 
                 //TODO
