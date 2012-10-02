@@ -235,10 +235,10 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
 
         ltac::add_instruction(function, ltac::Operator::OR, reg, reg);
     } else {
+        auto reg = manager.get_reg(ltac::get_variable(arg1));
+
         //The basic block must be ended before the jump
         end_basic_block();
-
-        auto reg = manager.get_reg(ltac::get_variable(arg1));
 
         ltac::add_instruction(function, ltac::Operator::OR, reg, reg);
     }

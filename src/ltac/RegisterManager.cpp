@@ -47,7 +47,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
     //First, try to take a register that doesn't need to be spilled (variable has not modified)
     for(Reg remaining : registers){
-        if(!registers.reserved(remaining) && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
+        if(!registers.reserved(remaining) && !registers[remaining]->position().isTemporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
             if(!manager.is_written(registers[remaining])){
                 reg = remaining;
                 found = true;
@@ -395,12 +395,14 @@ void ltac::RegisterManager::spills_all(){
 }
 
 ltac::Register ltac::RegisterManager::get_free_reg(){
+    log::emit<Trace>("Registers") << "Get a free reg" << log::endl;
     auto reg = ::get_free_reg(registers, *this);
     reserve(reg);
     return reg;
 }
 
 ltac::FloatRegister ltac::RegisterManager::get_free_float_reg(){
+    log::emit<Trace>("Registers") << "Get a free float reg" << log::endl;
     auto reg = ::get_free_reg(float_registers, *this);
     reserve(reg);
     return reg;

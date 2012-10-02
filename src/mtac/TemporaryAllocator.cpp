@@ -138,8 +138,6 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program, Platform p
         auto registers = descriptor->number_of_registers();
         
         for(auto& block : function->getBasicBlocks()){
-            visitor.block = block;
-
             for(auto& statement : block->statements){
                 auto values = results->OUT_S[statement].values();
                 auto temporaries = count_temporaries(values);
