@@ -898,9 +898,11 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
                 
                 if(if_->op == mtac::BinaryOperator::LESS){
                     return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
-                
-                //TODO
+
+                return -1;
             } 
         } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
             int number = *cst_ptr;
@@ -909,12 +911,60 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
                 if(*var_ptr != linear_equation.i){
                     return -1;   
                 }
+                
+                //We found the form "number op var"
+                
+                if(if_->op == mtac::BinaryOperator::GREATER){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
 
-                //TODO
+                return -1;
             } 
         } 
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&if_statement)){
+        auto if_ = *ptr;
 
+        if(mtac::isVariable(if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+
+            if(var != linear_equation.i){
+                return -1;   
+            }
+
+            if(auto* cst_ptr = boost::get<int>(&*if_->arg2)){
+                int number = *cst_ptr;
+
+                //We found the form "var op number"
+                
+                if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::GREATER){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+            int number = *cst_ptr;
+
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(*var_ptr != linear_equation.i){
+                    return -1;   
+                }
+                
+                //We found the form "number op var"
+                
+                if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::LESS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } 
     }
 
     return -1;
