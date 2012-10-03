@@ -389,6 +389,16 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform plat
     for(auto& bb : function->basic_blocks()){
         auto& statements = bb->statements;
 
+        if(statements.empty()){
+            continue;
+        }
+
+        if(statements.size() == 1){
+            optimized |= optimize_statement(statements.front());
+
+            continue;
+        }
+
         auto it = statements.begin();
         auto end = statements.end() - 1;
 
@@ -747,18 +757,32 @@ ltac::Operator get_cmov_op(ltac::JumpType op){
 }
 
 template<typename BIt, typename It>
-bool move_forward(BIt& bit, BIt bend, It& it, It& end){
+bool move_forward(BIt& bit, BIt& bend, It& it, It& end){
     if(it != end){
         ++it;
+
+        if(it == end){
+            return move_forward(bit, bend, it, end);
+        }
+
         return true;
     }
 
     if(bit != bend){
         ++bit;
+
+        if(bit == bend){
+            return false;
+        }
         
-        auto bb = *bit;
+        auto& bb = *bit;
+
         it = bb->statements.begin();
         end = bb->statements.end();
+
+        if(bb->statements.empty()){
+            return move_forward(bit, bend, it, end);
+        }
 
         return true;
     }
@@ -786,6 +810,10 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
     auto end = bb->statements.end();
 
     while(true){
+        if(it == end){
+            move_forward(bit, bend, it, end);
+        }
+
         auto statement = *it;
 
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
