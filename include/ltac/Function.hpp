@@ -8,6 +8,7 @@
 #ifndef LTAC_FUNCTION_H
 #define LTAC_FUNCTION_H
 
+#include "ltac/BasicBlock.hpp"
 #include "ltac/Statement.hpp"
 
 namespace eddic {
@@ -19,21 +20,27 @@ namespace ltac {
 
 class Function {
     public:
-        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
+        typedef std::shared_ptr<BasicBlock> BlockPtr;
+        typedef std::list<BlockPtr> BlockList;
+        typedef BlockList::iterator BlockIterator;
 
+    public:
         std::shared_ptr<eddic::Function> definition;
-        
         std::shared_ptr<FunctionContext> context;
+
+        Function(std::shared_ptr<FunctionContext> context, const std::string& name);
 
         void add(Statement statement);
 
         std::string getName() const;
 
-        std::vector<Statement>& getStatements();
+        BlockPtr current_bb();
+        BlockPtr new_bb();
+
+        BlockList& basic_blocks();
 
     private:
-        //Before being partitioned, the function has only statement
-        std::vector<Statement> statements;
+        BlockList _basic_blocks;
 
         std::string name;
 };

@@ -72,6 +72,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     compiler->platform = platform;
     compiler->configuration = configuration;
 
+    target_function->new_bb();
+
     auto size = src_function->context->size();
 
     //Enter stack frame
@@ -110,6 +112,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
 
     //Then we compile each of them
     for(auto block : src_function->getBasicBlocks()){
+        target_function->new_bb();
+
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
             (*compiler)(block->label);
@@ -131,6 +135,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
             compiler->end_basic_block();
         }
     }
+    
+    target_function->new_bb();
     
     ltac::add_instruction(target_function, ltac::Operator::ADD, ltac::SP, size);
     compiler->bp_offset -= size;
