@@ -237,9 +237,15 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::Function> function){
         out << "Function " << function->getName() << std::endl;
 
-        visit_each(*this, function->getStatements());
+        visit_each_non_variant(*this, function->basic_blocks());
 
         out << std::endl;
+    }
+    
+    void operator()(std::shared_ptr<ltac::BasicBlock> bb){
+        out << bb << std::endl;
+
+        visit_each(*this, bb->statements);
     }
 
     void operator()(const ltac::Statement& statement){

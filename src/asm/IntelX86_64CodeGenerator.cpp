@@ -330,7 +330,10 @@ void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> funct
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86_64StatementCompiler compiler(writer);
-    visit_each(compiler, function->getStatements());
+    
+    for(auto& bb : function->basic_blocks()){
+        visit_each(compiler, bb->statements);
+    }
 }
 
 void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){

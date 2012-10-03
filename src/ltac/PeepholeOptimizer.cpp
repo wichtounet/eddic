@@ -384,46 +384,48 @@ inline bool is_nop(ltac::Statement& statement){
 }
 
 bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform platform){
-    auto& statements = function->getStatements();
-
     bool optimized = false;
+    
+    for(auto& bb : function->basic_blocks()){
+        auto& statements = bb->statements;
 
-    auto it = statements.begin();
-    auto end = statements.end() - 1;
+        auto it = statements.begin();
+        auto end = statements.end() - 1;
 
-    while(it != end){
-        auto& s1 = *it;
-        auto& s2 = *(it + 1);
+        while(it != end){
+            auto& s1 = *it;
+            auto& s2 = *(it + 1);
 
-        //Optimizations that looks at only one statement
-        optimized |= optimize_statement(s1);
-        optimized |= optimize_statement(s2);
+            //Optimizations that looks at only one statement
+            optimized |= optimize_statement(s1);
+            optimized |= optimize_statement(s2);
 
-        //Optimizations that looks at several statements at once
-        optimized |= multiple_statement_optimizations(s1, s2);
+            //Optimizations that looks at several statements at once
+            optimized |= multiple_statement_optimizations(s1, s2);
 
-        if(unlikely(is_nop(s1))){
-            it = statements.erase(it);
-            end = statements.end() - 1;
+            if(unlikely(is_nop(s1))){
+                it = statements.erase(it);
+                end = statements.end() - 1;
 
-            optimized = true;
+                optimized = true;
 
-            continue;
+                continue;
+            }
+
+            ++it;
         }
 
-        ++it;
-    }
-    
-    it = statements.begin();
-    end = statements.end() - 1;
+        it = statements.begin();
+        end = statements.end() - 1;
 
-    while(it != end){
-        auto& s1 = *it;
-        auto& s2 = *(it + 1);
+        while(it != end){
+            auto& s1 = *it;
+            auto& s2 = *(it + 1);
 
-        optimized |= multiple_statement_optimizations_second(s1, s2, platform);
+            optimized |= multiple_statement_optimizations_second(s1, s2, platform);
 
-        ++it;
+            ++it;
+        }
     }
 
     return optimized;
@@ -432,65 +434,58 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform plat
 bool constant_propagation(std::shared_ptr<ltac::Function> function){
     bool optimized = false;
 
-    auto& statements = function->getStatements();
-    
-    std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
+    for(auto& bb : function->basic_blocks()){
+        auto& statements = bb->statements;
 
-    for(std::size_t i = 0; i < statements.size(); ++i){
-        auto statement = statements[i];
+        std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
 
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-            auto instruction = *ptr;
+        for(std::size_t i = 0; i < statements.size(); ++i){
+            auto statement = statements[i];
 
-            //Erase constant
-            if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
-                auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
 
-                constants.erase(reg1);
-            }
-
-            //Collect constants
-            if(instruction->op == ltac::Operator::XOR){
-                if(ltac::is_reg(*instruction->arg1) && ltac::is_reg(*instruction->arg2)){
+                //Erase constant
+                if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
 
-                    if(reg1 == reg2){
-                        constants[reg1] = 0;
-                    }
+                    constants.erase(reg1);
                 }
-            } else if(instruction->op == ltac::Operator::MOV){
-                if(ltac::is_reg(*instruction->arg1)){
-                    if (auto* valuePtr = boost::get<int>(&*instruction->arg2)){
+
+                //Collect constants
+                if(instruction->op == ltac::Operator::XOR){
+                    if(ltac::is_reg(*instruction->arg1) && ltac::is_reg(*instruction->arg2)){
                         auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                        constants[reg1] = *valuePtr;
+                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+
+                        if(reg1 == reg2){
+                            constants[reg1] = 0;
+                        }
+                    }
+                } else if(instruction->op == ltac::Operator::MOV){
+                    if(ltac::is_reg(*instruction->arg1)){
+                        if (auto* valuePtr = boost::get<int>(&*instruction->arg2)){
+                            auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                            constants[reg1] = *valuePtr;
+                        }
                     }
                 }
-            }
 
-            //Optimize MOV
-            if(instruction->op == ltac::Operator::MOV){
-                if(ltac::is_reg(*instruction->arg2)){
-                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+                //Optimize MOV
+                if(instruction->op == ltac::Operator::MOV){
+                    if(ltac::is_reg(*instruction->arg2)){
+                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
 
-                    if(constants.find(reg2) != constants.end()){
-                        instruction->arg2 = constants[reg2];
-                        optimized = true;
+                        if(constants.find(reg2) != constants.end()){
+                            instruction->arg2 = constants[reg2];
+                            optimized = true;
+                        }
                     }
                 }
-            }
-        } else {
-            //Takes care of safe functions
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
-                    continue;
-                }
-            }
-
-            //At this point, the basic block is at its end
-            constants.clear();
+            } 
         }
     }
+    
 
     return optimized;
 }
@@ -515,59 +510,51 @@ bool copy_propagation(std::shared_ptr<ltac::Function> function, Platform platfor
 
     bool optimized = false;
 
-    auto& statements = function->getStatements();
-    
-    std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
+    for(auto& bb : function->basic_blocks()){
+        auto& statements = bb->statements;
 
-    for(std::size_t i = 0; i < statements.size(); ++i){
-        auto statement = statements[i];
+        std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
 
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-            auto instruction = *ptr;
+        for(std::size_t i = 0; i < statements.size(); ++i){
+            auto statement = statements[i];
 
-            //Erase constant
-            if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
-                auto reg = boost::get<ltac::Register>(*instruction->arg1);
-                
-                remove_reg(copies, reg);
-            }
-            
-            if(instruction->op == ltac::Operator::DIV){
-                remove_reg(copies, ltac::Register(descriptor->a_register()));
-                remove_reg(copies, ltac::Register(descriptor->d_register()));
-            }
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
 
-            //Collect copies
-            if(instruction->op == ltac::Operator::MOV){
-                if(ltac::is_reg(*instruction->arg1)){
-                    if (auto* reg_ptr = boost::get<ltac::Register>(&*instruction->arg2)){
-                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-                        copies[reg1] = *reg_ptr;
+                //Erase constant
+                if(instruction->arg1 && ltac::is_reg(*instruction->arg1)){
+                    auto reg = boost::get<ltac::Register>(*instruction->arg1);
+
+                    remove_reg(copies, reg);
+                }
+
+                if(instruction->op == ltac::Operator::DIV){
+                    remove_reg(copies, ltac::Register(descriptor->a_register()));
+                    remove_reg(copies, ltac::Register(descriptor->d_register()));
+                }
+
+                //Collect copies
+                if(instruction->op == ltac::Operator::MOV){
+                    if(ltac::is_reg(*instruction->arg1)){
+                        if (auto* reg_ptr = boost::get<ltac::Register>(&*instruction->arg2)){
+                            auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+                            copies[reg1] = *reg_ptr;
+                        }
                     }
                 }
-            }
 
-            //Optimize MOV
-            if(instruction->op == ltac::Operator::MOV){
-                if(ltac::is_reg(*instruction->arg2)){
-                    auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
+                //Optimize MOV
+                if(instruction->op == ltac::Operator::MOV){
+                    if(ltac::is_reg(*instruction->arg2)){
+                        auto reg2 = boost::get<ltac::Register>(*instruction->arg2);
 
-                    if(copies.find(reg2) != copies.end()){
-                        instruction->arg2 = copies[reg2];
-                        optimized = true;
+                        if(copies.find(reg2) != copies.end()){
+                            instruction->arg2 = copies[reg2];
+                            optimized = true;
+                        }
                     }
                 }
-            }
-        } else {
-            //Takes care of safe functions
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
-                    continue;
-                }
-            }
-
-            //At this point, the basic block is at its end
-            copies.clear();
+            } 
         }
     }
 
@@ -632,18 +619,18 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
 }
 
 RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function, Platform platform){
-    auto& statements = function->getStatements();
-   
     RegisterUsage usage;
     add_escaped_registers(usage, function, platform);
 
-    for(auto statement : statements){
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-            auto instruction = *ptr;
+    for(auto& bb : function->basic_blocks()){
+        for(auto& statement : bb->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
 
-            collect_usage(usage, instruction->arg1);
-            collect_usage(usage, instruction->arg2);
-            collect_usage(usage, instruction->arg3);
+                collect_usage(usage, instruction->arg1);
+                collect_usage(usage, instruction->arg2);
+                collect_usage(usage, instruction->arg3);
+            }
         }
     }
 
@@ -670,32 +657,33 @@ inline bool one_of(const T& value, const std::vector<T>& container){
 bool dead_code_elimination(std::shared_ptr<ltac::Function> function, Platform platform){
     bool optimized = false;
 
-    auto& statements = function->getStatements();
-    
-    RegisterUsage usage; 
-    add_escaped_registers(usage, function, platform);
+    for(auto& bb : function->basic_blocks()){
+        auto& statements = bb->statements;
 
-    for(auto statement : boost::adaptors::reverse(statements)){
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-            auto instruction = *ptr;
+        RegisterUsage usage; 
+        add_escaped_registers(usage, function, platform);
 
-            //Optimize MOV, LEA, XOR
-            if(one_of(instruction->op, {ltac::Operator::MOV, ltac::Operator::LEA, ltac::Operator::XOR})){
-                if(ltac::is_reg(*instruction->arg1)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+        for(auto statement : boost::adaptors::reverse(statements)){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                auto instruction = *ptr;
 
-                    if(usage.find(reg1) == usage.end()){
-                        optimized = transform_to_nop(instruction);
+                //Optimize MOV, LEA, XOR
+                if(one_of(instruction->op, {ltac::Operator::MOV, ltac::Operator::LEA, ltac::Operator::XOR})){
+                    if(ltac::is_reg(*instruction->arg1)){
+                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
+
+                        if(usage.find(reg1) == usage.end()){
+                            optimized = transform_to_nop(instruction);
+                        }
+
+                        usage.erase(reg1);
+                        add_param_registers(usage, platform);
+                    } else {
+                        collect_usage(usage, instruction->arg1);
                     }
-                    
-                    usage.erase(reg1);
-                    add_param_registers(usage, platform);
-                } else {
-                    collect_usage(usage, instruction->arg1);
-                }
-            
-                collect_usage(usage, instruction->arg2);
-            //} else if(one_of(instruction->op, {})){
+
+                    collect_usage(usage, instruction->arg2);
+                    //} else if(one_of(instruction->op, {})){
             } else if(instruction->op == ltac::Operator::ADD){
                 if(ltac::is_reg(*instruction->arg1)){
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
@@ -706,7 +694,7 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function, Platform pl
                 } else {
                     collect_usage(usage, instruction->arg1);
                 }
-            
+
                 collect_usage(usage, instruction->arg2);
             } else if(one_of(instruction->op, {ltac::Operator::INC, ltac::Operator::DEC})){
                 if(ltac::is_reg(*instruction->arg1)){
@@ -724,18 +712,7 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function, Platform pl
                 collect_usage(usage, instruction->arg2);
                 collect_usage(usage, instruction->arg3);
             }
-        } else {
-            //Takes care of safe functions
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                if((*ptr)->type == ltac::JumpType::CALL && mtac::safe((*ptr)->label)){
-                    add_param_registers(usage, platform);
-                    continue;
-                }
-            }
-            
-            //At this point, the basic block is at its end
-            usage.clear();
-            add_escaped_registers(usage, function, platform);
+            } 
         }
     }
 
@@ -769,6 +746,26 @@ ltac::Operator get_cmov_op(ltac::JumpType op){
     }
 }
 
+template<typename BIt, typename It>
+bool move_forward(BIt& bit, BIt bend, It& it, It& end){
+    if(it != end){
+        ++it;
+        return true;
+    }
+
+    if(bit != bend){
+        ++bit;
+        
+        auto bb = *bit;
+        it = bb->statements.begin();
+        end = bb->statements.end();
+
+        return true;
+    }
+
+    return false;
+}
+
 bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platform){
     bool optimized = false;
 
@@ -779,47 +776,75 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
         return optimized;
     }
 
-    auto& statements = function->getStatements();
+    auto& basic_blocks = function->basic_blocks();
+    auto bit = basic_blocks.begin();
+    auto bend = basic_blocks.end();
 
-    auto it = statements.begin();
-    auto end = statements.end();
+    auto& bb = *bit;
 
-    while(it != end){
+    auto it = bb->statements.begin();
+    auto end = bb->statements.end();
+
+    while(true){
         auto statement = *it;
 
         if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
             if((*ptr)->op != ltac::Operator::CMP_INT){
-                ++it;
+                if(!move_forward(bit, bend, it, end)){
+                    return optimized;
+                }
+
                 continue;
             }
 
+            auto temp_bit = bit;
             auto temp_it = it;
-            ++temp_it;
+            auto temp_end = end;
+
+            if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                return optimized;
+            }
 
             if(auto* jump_1_ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
-                ++temp_it;
-        
+                if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                    return optimized;
+                }
+
                 if(auto* mov_1_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
                     if((*mov_1_ptr)->op != ltac::Operator::MOV){
-                        ++it;
+                        if(!move_forward(bit, bend, it, end)){
+                            return optimized;
+                        }
+
                         continue;
                     }
 
-                    ++temp_it;
+                    if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                        return optimized;
+                    }
 
                     if(boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
-                        ++temp_it;
+                        if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                            return optimized;
+                        }
 
                         if(boost::get<std::string>(&*temp_it)){
-                            ++temp_it;
+                            if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                                return optimized;
+                            }
 
                             if(auto* mov_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
                                 if((*mov_2_ptr)->op != ltac::Operator::MOV){
-                                    ++it;
+                                    if(!move_forward(bit, bend, it, end)){
+                                        return optimized;
+                                    }
+
                                     continue;
                                 }
 
-                                ++temp_it;
+                                if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                                    return optimized;
+                                }
 
                                 if(boost::get<std::string>(&*temp_it)){
                                     if(ltac::is_reg(*(*mov_1_ptr)->arg1) && ltac::is_reg(*(*mov_2_ptr)->arg1)){
@@ -827,19 +852,28 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
                                         auto& reg2 = boost::get<ltac::Register>(*(*mov_2_ptr)->arg1); 
 
                                         if(reg1 != reg2){
-                                            ++it;
+                                            if(!move_forward(bit, bend, it, end)){
+                                                return optimized;
+                                            }
+
                                             continue;
                                         }
 
                                         auto cmov_op = get_cmov_op((*jump_1_ptr)->type);
 
-                                        *(++it) = *mov_1_ptr;
-                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
-                                        *(++it) = std::make_shared<ltac::Instruction>(cmov_op, reg1, free_reg);
+                                        *it = *mov_1_ptr;
+                                        move_forward(bit, bend, it, end);
+                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
+                                        move_forward(bit, bend, it, end);
+                                        *it = std::make_shared<ltac::Instruction>(cmov_op, reg1, free_reg);
+                                        move_forward(bit, bend, it, end);
                                         
-                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
-                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
-                                        *(++it) = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        move_forward(bit, bend, it, end);
+                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        move_forward(bit, bend, it, end);
+                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                        move_forward(bit, bend, it, end);
 
                                         optimized = true;
                                     }
@@ -851,7 +885,9 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
             }
         }
 
-        ++it;
+        if(!move_forward(bit, bend, it, end)){
+            return optimized;
+        }
     }
 
     return optimized;
