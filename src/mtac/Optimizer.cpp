@@ -201,6 +201,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
 
         optimized |= debug("Loop Invariant Code Motion", &mtac::loop_invariant_code_motion, function);
         optimized |= debug("Loop Induction Variables Optimization", &mtac::loop_induction_variables_optimization, function);
+        optimized |= debug("Remove empty loops", &mtac::remove_empty_loops, function);
     } while (optimized);
 
     //Remove variables that are not used after optimizations

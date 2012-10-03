@@ -880,6 +880,96 @@ bool loop_induction_variables_optimization(const Loop& loop, std::shared_ptr<mta
     return optimized;
 }
 
+int number_of_iterations(LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&if_statement)){
+        auto if_ = *ptr;
+
+        if(mtac::isVariable(if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+
+            if(var != linear_equation.i){
+                return -1;   
+            }
+
+            if(auto* cst_ptr = boost::get<int>(&*if_->arg2)){
+                int number = *cst_ptr;
+
+                //We found the form "var op number"
+                
+                if(if_->op == mtac::BinaryOperator::LESS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+            int number = *cst_ptr;
+
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(*var_ptr != linear_equation.i){
+                    return -1;   
+                }
+                
+                //We found the form "number op var"
+                
+                if(if_->op == mtac::BinaryOperator::GREATER){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } 
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&if_statement)){
+        auto if_ = *ptr;
+
+        if(mtac::isVariable(if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+
+            if(var != linear_equation.i){
+                return -1;   
+            }
+
+            if(auto* cst_ptr = boost::get<int>(&*if_->arg2)){
+                int number = *cst_ptr;
+
+                //We found the form "var op number"
+                
+                if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::GREATER){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+            int number = *cst_ptr;
+
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(*var_ptr != linear_equation.i){
+                    return -1;   
+                }
+                
+                //We found the form "number op var"
+                
+                if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::LESS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } 
+    }
+
+    return -1;
+}
+
 } //end of anonymous namespace
 
 bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
@@ -920,6 +1010,94 @@ bool mtac::loop_induction_variables_optimization(std::shared_ptr<mtac::Function>
     
     for(auto& loop : natural_loops){
         optimized |= ::loop_induction_variables_optimization(loop, function, g);
+    }
+
+    return optimized;
+}
+
+std::shared_ptr<mtac::BasicBlock> get_previous_bb(std::shared_ptr<mtac::Function> function, std::shared_ptr<mtac::BasicBlock> bb){
+    auto blocks_it = function->blocks();
+    auto it = std::find(blocks_it.first, blocks_it.second, bb);
+
+    if(it == blocks_it.second || it == blocks_it.first){
+        return nullptr;
+    }
+
+    --it;
+
+    return *it;
+}
+
+std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable> var){
+    auto it = bb->statements.rbegin();
+    auto end = bb->statements.rend();
+
+    while(it != end){
+        auto statement = *it;
+
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+            if((*ptr)->result == var){
+                if((*ptr)->op == mtac::Operator::ASSIGN){
+                    if(auto* val_ptr = boost::get<int>(&*(*ptr)->arg1)){
+                        return std::make_pair(true, *val_ptr);                    
+                    }
+                }
+
+                return std::make_pair(false, 0);
+            }
+        }
+    }
+    
+    return std::make_pair(false, 0);
+}
+
+bool mtac::remove_empty_loops(std::shared_ptr<mtac::Function> function){
+    auto graph = mtac::build_control_flow_graph(function);
+    auto g = graph->get_graph();
+    
+    auto natural_loops = find_natural_loops(g);
+
+    if(natural_loops.empty()){
+        return false;
+    }
+
+    bool optimized = false;
+    
+    for(auto& loop : natural_loops){
+        if(loop.size() == 1){
+            auto bb = g[*loop.begin()].block;
+
+            if(bb->statements.size() == 2){
+                if(auto* first_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&bb->statements[0])){
+                    auto first = *first_ptr;
+                
+                    auto basic_induction_variables = find_basic_induction_variables(loop, g);
+                    
+                    auto prev_bb = get_previous_bb(function, bb);
+
+                    if(prev_bb){
+                        if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
+                            auto initial_value = get_initial_value(prev_bb, first->result);
+                            if(initial_value.first){
+                                auto linear_equation = basic_induction_variables[first->result];
+                                auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[1]);
+                                
+                                //The loop does not iterate
+                                if(it == 0){
+                                    bb->statements.clear();
+                                    optimized = true;
+                                } else if(it > 0){
+                                    bb->statements.clear();
+                                    optimized = true;
+
+                                    bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, initial_value.second + it * linear_equation.d, mtac::Operator::ASSIGN));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return optimized;
