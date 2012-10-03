@@ -889,6 +889,7 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
 
                                         auto cmov_op = get_cmov_op((*jump_1_ptr)->type);
 
+                                        move_forward(bit, bend, it, end);
                                         *it = *mov_1_ptr;
                                         move_forward(bit, bend, it, end);
                                         *it = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
