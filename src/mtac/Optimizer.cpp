@@ -8,6 +8,10 @@
 #include <memory>
 #include <thread>
 
+#include "boost_cfg.hpp"
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/for_each.hpp>
+
 #include "VisitorUtils.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
@@ -161,7 +165,24 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
     }
 }
 
+//TODO Find a more elegant way than using pointers
+
+typedef boost::mpl::vector<mtac::ArithmeticIdentities*, mtac::ReduceInStrength*, mtac::ConstantFolding*> passes;
+
+struct pass_runner {
+    template<typename Pass>
+    void operator()(Pass* pass){
+        std::cout << pass << std::endl;
+    }
+};
+
+void run_all_passes() {
+    boost::mpl::for_each<passes>(pass_runner());
+}
+
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
+    run_all_passes();
+
     if(log::enabled<Debug>()){
         log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
 
