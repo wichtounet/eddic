@@ -179,11 +179,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Constant propagation", &data_flow_optimization<mtac::ConstantPropagationProblem>, function);
         optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem, std::shared_ptr<StringPool>, Platform>, function, pool, platform);
 
-        //If there was optimizations here, better to try again before perfoming common subexpression
-        if(optimized){
-            continue;
-        }
-
         optimized |= debug("Common Subexpression Elimination", &data_flow_optimization<mtac::CommonSubexpressionElimination>, function);
 
         optimized |= debug("Pointer Propagation", &apply_to_basic_blocks<mtac::PointerPropagation>, function);
@@ -202,10 +197,10 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Loop Invariant Code Motion", &mtac::loop_invariant_code_motion, function);
         optimized |= debug("Loop Induction Variables Optimization", &mtac::loop_induction_variables_optimization, function);
         optimized |= debug("Remove empty loops", &mtac::remove_empty_loops, function);
-    } while (optimized);
 
-    //Remove variables that are not used after optimizations
-    clean_variables(function);
+        //Remove variables that are not used after optimizations
+        clean_variables(function);
+    } while (optimized);
 }
 
 void basic_optimize_function(std::shared_ptr<mtac::Function> function){
