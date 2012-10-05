@@ -923,15 +923,15 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
 }
 
 bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function, std::shared_ptr<Configuration> configuration){
-    if(configuration->option_defined("dev")){
+    if(log::enabled<Debug>()){
         if(b){
-            std::cout << "optimization " << name << " returned true" << std::endl;
+            log::emit<Debug>("Peephole") << name << " returned false" << log::endl;
 
             //Print the function
             ltac::Printer printer;
             printer.print(function);
         } else {
-            std::cout << "optimization " << name << " returned false" << std::endl;
+            log::emit<Debug>("Peephole") << name << " returned false" << log::endl;
         }
     }
 
@@ -945,7 +945,7 @@ void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program, Platform plat
 
     for(auto& function : program->functions){
         if(configuration->option_defined("dev")){
-            std::cout << "Start optimizations on " << function->getName() << std::endl;
+            log::emit<Debug>("Peephole") << "Start optimizations on " << function->getName() << log::endl;
 
             //Print the function
             ltac::Printer printer;
