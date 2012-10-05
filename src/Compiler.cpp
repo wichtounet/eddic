@@ -8,7 +8,7 @@
 #include <iostream>
 #include <cstdio>
 
-#include "DebugStopWatch.hpp"
+#include "StopWatch.hpp"
 #include "Compiler.hpp"
 #include "Target.hpp"
 #include "Utils.hpp"

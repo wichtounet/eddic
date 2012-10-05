@@ -10,6 +10,7 @@
 #include <boost/range/adaptors.hpp>
 
 #include "assert.hpp"
+#include "logging.hpp"
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
