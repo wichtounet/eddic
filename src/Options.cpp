@@ -95,7 +95,7 @@ void init_descriptions(){
         ("log", po::value<int>()->default_value(0), "Define the logging")
         ("quiet,q", "Do not print anything")
         ("verbose,v", "Make the compiler verbose")
-        ("dev,d", "Activate development mode (very verbose)")
+        ("single-threaded", "Disable the multi-threaded optimization")
         ("input", po::value<std::string>(), "Input file");
 
     all.add(general).add(display).add(optimization).add(backend);
