@@ -193,6 +193,8 @@ struct VariableReplace : public boost::static_visitor<bool> {
 bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
+    return optimized;
+
     auto pointer_escaped = mtac::escape_analysis(function);
 
     for(auto& var : function->context->stored_variables()){
