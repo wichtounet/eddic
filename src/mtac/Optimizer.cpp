@@ -223,7 +223,7 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
     auto& functions = program->functions;
 
-    if(configuration->option_defined("dev")){
+    if(configuration->option_defined("single-threaded")){
         for(auto& function : functions){
             optimize_function(function, string_pool, platform);
         }
@@ -279,7 +279,7 @@ void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std
 
     auto& functions = program->functions;
 
-    if(configuration->option_defined("dev")){
+    if(configuration->option_defined("single-threaded")){
         for(auto& function : functions){
             basic_optimize_function(function); 
         }
