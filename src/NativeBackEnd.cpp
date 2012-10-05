@@ -12,13 +12,6 @@
 #include "Assembler.hpp"
 #include "FloatPool.hpp"
 
-//Medium-level Three Address Code
-#include "mtac/Program.hpp"
-#include "mtac/BasicBlockExtractor.hpp"
-#include "mtac/Optimizer.hpp"
-#include "mtac/Printer.hpp"
-#include "mtac/RegisterAllocation.hpp"
-
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
 #include "ltac/PeepholeOptimizer.hpp"
@@ -32,82 +25,49 @@ using namespace eddic;
 void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platform platform){
     std::string output = configuration->option_value("output");
 
-    //Separate into basic blocks
-    mtac::BasicBlockExtractor extractor;
-    extractor.extract(mtacProgram);
-    
-    //If asked by the user, print the Three Address code representation before optimization
-    if(configuration->option_defined("mtac-opt")){
-        mtac::Printer printer;
-        printer.print(mtacProgram);
-    }
-    
-    //Optimize MTAC
-    mtac::Optimizer optimizer;
-    optimizer.optimize(mtacProgram, get_string_pool(), platform, configuration);
+    //Prepare the float pool
+    auto float_pool = std::make_shared<FloatPool>();
 
-    //Allocate parameters into registers
-    if(configuration->option_defined("fparameter-allocation")){
-        mtac::register_param_allocation(mtacProgram, platform);
+    //Create a new LTAC program
+    auto ltac_program = std::make_shared<ltac::Program>();
+
+    //Generate LTAC Code
+    ltac::Compiler ltacCompiler(platform, configuration);
+    ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
+
+    if(configuration->option_defined("fpeephole-optimization")){
+        optimize(ltac_program, platform);
     }
 
-    //Allocate variables into registers
-    if(configuration->option_defined("fvariable-allocation")){
-        mtac::register_variable_allocation(mtacProgram, platform);
-    }
-    
     //If asked by the user, print the Three Address code representation
-    if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
-        mtac::Printer printer;
-        printer.print(mtacProgram);
+    if(configuration->option_defined("ltac") || configuration->option_defined("ltac-only")){
+        ltac::Printer printer;
+        printer.print(ltac_program);
     }
 
-    //If necessary, continue the compilation process
-    if(!configuration->option_defined("mtac-only")){
-        //Prepare the float pool
-        auto float_pool = std::make_shared<FloatPool>();
+    if(!configuration->option_defined("ltac-only")){
+        //Generate assembly from TAC
+        AssemblyFileWriter writer("output.asm");
 
-        //Create a new LTAC program
-        auto ltac_program = std::make_shared<ltac::Program>();
+        as::CodeGeneratorFactory factory;
+        auto generator = factory.get(platform, writer, mtacProgram->context);
 
-        //Generate LTAC Code
-        ltac::Compiler ltacCompiler(platform, configuration);
-        ltacCompiler.compile(mtacProgram, ltac_program, float_pool);
+        //Generate the code from the LTAC Program
+        generator->generate(ltac_program, get_string_pool(), float_pool); 
 
-        if(configuration->option_defined("fpeephole-optimization")){
-            optimize(ltac_program, platform);
-        }
+        //Write the output
+        writer.write(); 
 
-        //If asked by the user, print the Three Address code representation
-        if(configuration->option_defined("ltac") || configuration->option_defined("ltac-only")){
-            ltac::Printer printer;
-            printer.print(ltac_program);
-        }
+        //If it's necessary, assemble and link the assembly
+        if(!configuration->option_defined("assembly")){
+            assemble(platform, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
 
-        if(!configuration->option_defined("ltac-only")){
-            //Generate assembly from TAC
-            AssemblyFileWriter writer("output.asm");
-
-            as::CodeGeneratorFactory factory;
-            auto generator = factory.get(platform, writer, mtacProgram->context);
-
-            //Generate the code from the LTAC Program
-            generator->generate(ltac_program, get_string_pool(), float_pool); 
-
-            //Write the output
-            writer.write(); 
-
-            //If it's necessary, assemble and link the assembly
-            if(!configuration->option_defined("assembly")){
-                assemble(platform, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
-
-                //Remove temporary files
-                if(!configuration->option_defined("keep")){
-                    remove("output.asm");
-                }
-
-                remove("output.o");
+            //Remove temporary files
+            if(!configuration->option_defined("keep")){
+                remove("output.asm");
             }
+
+            remove("output.o");
         }
     }
 }

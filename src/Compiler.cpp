@@ -21,8 +21,12 @@
 #include "BackEnd.hpp"
 #include "Platform.hpp"
 
-//Three Address Code
+//Medium-level Three Address Code
 #include "mtac/Program.hpp"
+#include "mtac/BasicBlockExtractor.hpp"
+#include "mtac/Optimizer.hpp"
+#include "mtac/Printer.hpp"
+#include "mtac/RegisterAllocation.hpp"
 
 using namespace eddic;
 
@@ -81,12 +85,44 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 
         //If program is null, it means that the user didn't wanted it
         if(mtacProgram){
-            auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
+            //Separate into basic blocks
+            mtac::BasicBlockExtractor extractor;
+            extractor.extract(mtacProgram);
 
-            back_end->set_string_pool(front_end->get_string_pool());
-            back_end->set_configuration(configuration);
+            //If asked by the user, print the Three Address code representation before optimization
+            if(configuration->option_defined("mtac-opt")){
+                mtac::Printer printer;
+                printer.print(mtacProgram);
+            }
 
-            back_end->generate(mtacProgram, platform);
+            //Optimize MTAC
+            mtac::Optimizer optimizer;
+            optimizer.optimize(mtacProgram, front_end->get_string_pool(), platform, configuration);
+
+            //Allocate parameters into registers
+            if(configuration->option_defined("fparameter-allocation")){
+                mtac::register_param_allocation(mtacProgram, platform);
+            }
+
+            //Allocate variables into registers
+            if(configuration->option_defined("fvariable-allocation")){
+                mtac::register_variable_allocation(mtacProgram, platform);
+            }
+
+            //If asked by the user, print the Three Address code representation
+            if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
+                mtac::Printer printer;
+                printer.print(mtacProgram);
+            }
+
+            if(!configuration->option_defined("mtac-only")){
+                auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
+
+                back_end->set_string_pool(front_end->get_string_pool());
+                back_end->set_configuration(configuration);
+
+                back_end->generate(mtacProgram, platform);
+            }
         }
     } catch (const SemanticalException& e) {
         if(!configuration->option_defined("quiet")){
