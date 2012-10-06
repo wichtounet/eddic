@@ -19,6 +19,7 @@
 #include "likely.hpp"
 #include "logging.hpp"
 
+#include "mtac/pass_traits.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
@@ -170,14 +171,24 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
 typedef boost::mpl::vector<mtac::ArithmeticIdentities*, mtac::ReduceInStrength*, mtac::ConstantFolding*> passes;
 
 struct pass_runner {
+    bool optimized = false;
+
     template<typename Pass>
-    void operator()(Pass* pass){
-        std::cout << pass << std::endl;
+    inline void operator()(Pass* pass){
+        if(mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL){
+            std::cout << pass << std::endl;
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Invalid pass type");
+        }
     }
 };
 
 void run_all_passes() {
-    boost::mpl::for_each<passes>(pass_runner());
+    pass_runner runner;
+
+    do{
+        boost::mpl::for_each<passes>(runner);
+    } while(runner.optimized);
 }
 
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){

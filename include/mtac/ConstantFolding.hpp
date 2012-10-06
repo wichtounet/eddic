@@ -13,6 +13,7 @@
 #include "variant.hpp"
 
 #include "mtac/forward.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
@@ -31,6 +32,10 @@ struct ConstantFolding : public boost::static_visitor<void> {
     }
 };
 
+template<>
+struct pass_traits<ConstantFolding> {
+   static const pass_type type = pass_type::LOCAL; 
+};
 
 } //end of mtac
 
