@@ -13,6 +13,7 @@
 
 #include "variant.hpp"
 
+#include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
@@ -33,6 +34,12 @@ struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+};
+
+template<>
+struct pass_traits<ConstantPropagationProblem> {
+    STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
+    STATIC_STRING(name, "constant_propagation");
 };
 
 } //end of mtac

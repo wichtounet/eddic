@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "boost_cfg.hpp"
+#include <boost/utility/enable_if.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/for_each.hpp>
 
@@ -168,7 +169,12 @@ void remove_nop(std::shared_ptr<mtac::Function> function){
 
 //TODO Find a more elegant way than using pointers
 
-typedef boost::mpl::vector<mtac::ArithmeticIdentities*, mtac::ReduceInStrength*, mtac::ConstantFolding*> passes;
+typedef boost::mpl::vector<
+        mtac::ArithmeticIdentities*, 
+        mtac::ReduceInStrength*, 
+        mtac::ConstantFolding*, 
+        mtac::ConstantPropagationProblem*
+    > passes;
 
 struct pass_runner {
     bool optimized = false;
@@ -177,14 +183,22 @@ struct pass_runner {
     pass_runner(std::shared_ptr<mtac::Function> function) : function(function) {};
 
     template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(){
+        return apply_to_all<Pass>(function);
+    }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(){
+        return data_flow_optimization<Pass>(function); 
+    }
+
+    template<typename Pass>
     inline void operator()(Pass*){
         bool local = false;
         {
             PerfsTimer timer(mtac::pass_traits<Pass>::name());
 
-            if(mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL){
-                local = apply_to_all<Pass>(function);
-            } 
+            apply<Pass>();
         }
     
         if(log::enabled<Debug>()){

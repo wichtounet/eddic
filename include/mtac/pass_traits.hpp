@@ -18,7 +18,8 @@ namespace eddic {
 namespace mtac {
 
 enum class pass_type : unsigned int {
-    LOCAL
+    LOCAL, 
+    DATA_FLOW 
 };
 
 template<typename T>
