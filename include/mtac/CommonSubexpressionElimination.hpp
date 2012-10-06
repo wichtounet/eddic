@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <boost/optional.hpp>
 
+#include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/Quadruple.hpp"
 
@@ -40,6 +41,14 @@ struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::For
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 
     boost::optional<Expressions> init;
+};
+
+template<>
+struct pass_traits<CommonSubexpressionElimination> {
+    STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
+    STATIC_STRING(name, "common_subexpression_elimination");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
 };
 
 } //end of mtac

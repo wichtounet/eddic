@@ -173,23 +173,69 @@ typedef boost::mpl::vector<
         mtac::ArithmeticIdentities*, 
         mtac::ReduceInStrength*, 
         mtac::ConstantFolding*, 
-        mtac::ConstantPropagationProblem*
+        mtac::ConstantPropagationProblem*,
+        mtac::OffsetConstantPropagationProblem*,
+        mtac::CommonSubexpressionElimination*
     > passes;
 
 struct pass_runner {
     bool optimized = false;
     std::shared_ptr<mtac::Function> function;
+    std::shared_ptr<StringPool> pool;
+    Platform platform;
 
-    pass_runner(std::shared_ptr<mtac::Function> function) : function(function) {};
+    pass_runner(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform) : 
+            function(function), pool(pool), platform(platform) {};
+
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_pool, void>::type set_pool(Pass& pass){
+        pass.set_pool(pool);
+    }
+    
+    template<typename Pass>
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_pool, void>::type set_pool(Pass&){
+        //NOP
+    }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_platform, void>::type set_platform(Pass& pass){
+        pass.set_platform(platform);
+    }
+    
+    template<typename Pass>
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_platform, void>::type set_platform(Pass&){
+        //NOP
+    }
 
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(){
-        return apply_to_all<Pass>(function);
+        Pass visitor;
+        set_pool(visitor);
+        set_platform(visitor);
+
+        mtac::visit_all_statements(visitor, function);
+
+        return visitor.optimized;
     }
     
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(){
-        return data_flow_optimization<Pass>(function); 
+        bool optimized = false;
+
+        Pass problem;
+        set_pool(problem);
+        set_platform(problem);
+
+        auto results = mtac::data_flow(function, problem);
+
+        //Once the data-flow problem is fixed, statements can be optimized
+        for(auto& block : function->getBasicBlocks()){
+            for(auto& statement : block->statements){
+                optimized |= problem.optimize(statement, results);
+            }
+        }
+
+        return optimized;
     }
 
     template<typename Pass>
@@ -216,16 +262,12 @@ struct pass_runner {
     }
 };
 
-void run_all_passes(std::shared_ptr<mtac::Function> function) {
-    pass_runner runner(function);
+void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
+    pass_runner runner(function, pool, platform);
 
     do{
         boost::mpl::for_each<passes>(runner);
     } while(runner.optimized);
-}
-
-void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
-    run_all_passes(function);
 
     if(log::enabled<Debug>()){
         log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
@@ -236,15 +278,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     bool optimized;
     do {
         optimized = false;
-
-        optimized |= debug("Aritmetic Identities", &apply_to_all<mtac::ArithmeticIdentities>, function);
-        optimized |= debug("Reduce in Strength", &apply_to_all<mtac::ReduceInStrength>, function);
-        optimized |= debug("Constant folding", &apply_to_all<mtac::ConstantFolding>, function);
-
-        optimized |= debug("Constant propagation", &data_flow_optimization<mtac::ConstantPropagationProblem>, function);
-        optimized |= debug("Offset Constant Propagation", &data_flow_optimization<mtac::OffsetConstantPropagationProblem, std::shared_ptr<StringPool>, Platform>, function, pool, platform);
-
-        optimized |= debug("Common Subexpression Elimination", &data_flow_optimization<mtac::CommonSubexpressionElimination>, function);
 
         optimized |= debug("Pointer Propagation", &apply_to_basic_blocks<mtac::PointerPropagation>, function);
         optimized |= debug("Math Propagation", &apply_to_basic_blocks_two_pass<mtac::MathPropagation>, function);

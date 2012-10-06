@@ -15,6 +15,7 @@
 #include "variant.hpp"
 #include "Platform.hpp"
 
+#include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/Offset.hpp"      
 #include "mtac/EscapeAnalysis.hpp"
@@ -33,7 +34,8 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
         std::unordered_set<Offset, mtac::OffsetHash> escaped;
         mtac::EscapedVariables pointer_escaped;
 
-        OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool, Platform platform);
+        void set_pool(std::shared_ptr<StringPool> string_pool);
+        void set_platform(Platform platform);
 
         ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
 
@@ -45,6 +47,14 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
     private:
         std::shared_ptr<StringPool> string_pool;
         Platform platform;
+};
+
+template<>
+struct pass_traits<OffsetConstantPropagationProblem> {
+    STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
+    STATIC_STRING(name, "constant_propagation");
+    STATIC_CONSTANT(bool, need_pool, true);
+    STATIC_CONSTANT(bool, need_platform, true);
 };
 
 } //end of mtac

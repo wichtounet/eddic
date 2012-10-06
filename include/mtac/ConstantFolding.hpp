@@ -36,6 +36,8 @@ template<>
 struct pass_traits<ConstantFolding> {
     STATIC_CONSTANT(pass_type, type, pass_type::LOCAL);
     STATIC_STRING(name, "strength_reduction");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
 };
 
 } //end of mtac

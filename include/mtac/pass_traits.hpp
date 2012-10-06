@@ -24,7 +24,7 @@ enum class pass_type : unsigned int {
 
 template<typename T>
 struct pass_traits {
-    
+
 };
 
 } //end of mtac
