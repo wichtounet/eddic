@@ -188,9 +188,11 @@ struct pass_runner {
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::BB, bool>::type apply(){
         bool optimized = false;
+        
+        auto visitor = make_pass<Pass>();
 
         for(auto& block : function->getBasicBlocks()){
-            auto visitor = make_pass<Pass>();
+            visitor.clear();
 
             visit_each(visitor, block->statements);
 
@@ -203,9 +205,11 @@ struct pass_runner {
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::BB_TWO_PASS, bool>::type apply(){
         bool optimized = false;
+        
+        auto visitor = make_pass<Pass>();
 
         for(auto& block : function->getBasicBlocks()){
-            auto visitor = make_pass<Pass>();
+            visitor.clear();
 
             visitor.pass = mtac::Pass::DATA_MINING;
             visit_each(visitor, block->statements);

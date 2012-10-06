@@ -25,6 +25,8 @@ class PointerPropagation : public boost::static_visitor<> {
     public:
         bool optimized = false;
 
+        void clear();
+
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
         void operator()(std::shared_ptr<mtac::Param> param);
 

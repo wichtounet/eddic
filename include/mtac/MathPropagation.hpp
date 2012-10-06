@@ -29,6 +29,8 @@ class MathPropagation : public boost::static_visitor<void> {
     public:
         bool optimized = false;
         Pass pass;
+        
+        void clear();
 
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
         void operator()(std::shared_ptr<mtac::IfFalse> ifFalse);
