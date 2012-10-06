@@ -172,19 +172,28 @@ typedef boost::mpl::vector<mtac::ArithmeticIdentities*, mtac::ReduceInStrength*,
 
 struct pass_runner {
     bool optimized = false;
+    std::shared_ptr<mtac::Function> function;
+
+    pass_runner(std::shared_ptr<mtac::Function> function) : function(function) {};
 
     template<typename Pass>
-    inline void operator()(Pass* pass){
+    inline void operator()(Pass*){
+        bool local = false;
+        
         if(mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL){
-            std::cout << pass << std::endl;
-        } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid pass type");
+            local = apply_to_all<Pass>(function);
+        } 
+
+        if(local){
+
         }
+
+        optimized = local;
     }
 };
 
-void run_all_passes() {
-    pass_runner runner;
+void run_all_passes(std::shared_ptr<mtac::Function> function) {
+    pass_runner runner(function);
 
     do{
         boost::mpl::for_each<passes>(runner);
@@ -192,7 +201,7 @@ void run_all_passes() {
 }
 
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
-    run_all_passes();
+    run_all_passes(function);
 
     if(log::enabled<Debug>()){
         log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
