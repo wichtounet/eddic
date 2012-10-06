@@ -19,7 +19,9 @@ namespace mtac {
 
 enum class pass_type : unsigned int {
     LOCAL, 
-    DATA_FLOW 
+    DATA_FLOW,
+    BB,
+    BB_TWO_PASS
 };
 
 template<typename T>

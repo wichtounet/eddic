@@ -59,67 +59,6 @@ namespace {
 
 const unsigned int MAX_THREADS = 2;
 
-template<typename Visitor>
-bool apply_to_all(std::shared_ptr<mtac::Function> function){
-    Visitor visitor;
-
-    mtac::visit_all_statements(visitor, function);
-
-    return visitor.optimized;
-}
-
-template<typename Visitor>
-bool apply_to_basic_blocks(std::shared_ptr<mtac::Function> function){
-    bool optimized = false;
-
-    for(auto& block : function->getBasicBlocks()){
-        Visitor visitor;
-        visit_each(visitor, block->statements);
-
-        optimized |= visitor.optimized;
-    }
-
-    return optimized;
-}
-
-template<typename Visitor>
-bool apply_to_basic_blocks_two_pass(std::shared_ptr<mtac::Function> function){
-    bool optimized = false;
-
-    for(auto& block : function->getBasicBlocks()){
-        Visitor visitor;
-        visitor.pass = mtac::Pass::DATA_MINING;
-
-        visit_each(visitor, block->statements);
-
-        visitor.pass = mtac::Pass::OPTIMIZE;
-
-        visit_each(visitor, block->statements);
-
-        optimized |= visitor.optimized;
-    }
-
-    return optimized;
-}
-
-template<typename Problem, typename... Args>
-bool data_flow_optimization(std::shared_ptr<mtac::Function> function, Args... args){
-    bool optimized = false;
-
-    Problem problem(args...);
-
-    auto results = mtac::data_flow(function, problem);
-
-    //Once the data-flow problem is fixed, statements can be optimized
-    for(auto& block : function->getBasicBlocks()){
-        for(auto& statement : block->statements){
-            optimized |= problem.optimize(statement, results);
-        }
-    }
-
-    return optimized;
-}
-
 bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
     if(log::enabled<Debug>()){
         if(b){
@@ -175,7 +114,9 @@ typedef boost::mpl::vector<
         mtac::ConstantFolding*, 
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
-        mtac::CommonSubexpressionElimination*
+        mtac::CommonSubexpressionElimination*,
+        mtac::PointerPropagation*,
+        mtac::MathPropagation*
     > passes;
 
 struct pass_runner {
@@ -237,6 +178,44 @@ struct pass_runner {
 
         return optimized;
     }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::BB, bool>::type apply(){
+        bool optimized = false;
+
+        for(auto& block : function->getBasicBlocks()){
+            Pass visitor;
+            set_pool(visitor);
+            set_platform(visitor);
+
+            visit_each(visitor, block->statements);
+
+            optimized |= visitor.optimized;
+        }
+
+        return optimized;
+    }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::BB_TWO_PASS, bool>::type apply(){
+        bool optimized = false;
+
+        for(auto& block : function->getBasicBlocks()){
+            Pass visitor;
+            set_pool(visitor);
+            set_platform(visitor);
+
+            visitor.pass = mtac::Pass::DATA_MINING;
+            visit_each(visitor, block->statements);
+
+            visitor.pass = mtac::Pass::OPTIMIZE;
+            visit_each(visitor, block->statements);
+
+            optimized |= visitor.optimized;
+        }
+
+        return optimized;
+    }
 
     template<typename Pass>
     inline void operator()(Pass*){
@@ -279,9 +258,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     do {
         optimized = false;
 
-        optimized |= debug("Pointer Propagation", &apply_to_basic_blocks<mtac::PointerPropagation>, function);
-        optimized |= debug("Math Propagation", &apply_to_basic_blocks_two_pass<mtac::MathPropagation>, function);
-
         optimized |= debug("Optimize Branches", &mtac::optimize_branches, function);
         optimized |= debug("Optimize Concat", &mtac::optimize_concat, function, pool);
         optimized |= debug("Remove dead basic block", &mtac::remove_dead_basic_blocks, function);
@@ -308,7 +284,7 @@ void basic_optimize_function(std::shared_ptr<mtac::Function> function){
         print(function);
     }
 
-    debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
+    //TODO debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
 }
 
 void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration){

@@ -15,6 +15,7 @@
 
 #include "mtac/Quadruple.hpp"
 #include "mtac/Param.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
@@ -37,6 +38,13 @@ class PointerPropagation : public boost::static_visitor<> {
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> pointer_copies;
 };
 
+template<>
+struct pass_traits<PointerPropagation> {
+    STATIC_CONSTANT(pass_type, type, pass_type::BB);
+    STATIC_STRING(name, "pointer_propagation");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
 
 } //end of mtac
 

@@ -13,6 +13,7 @@
 
 #include "variant.hpp"
 
+#include "mtac/pass_traits.hpp"
 #include "mtac/Pass.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
@@ -26,10 +27,8 @@ namespace mtac {
 
 class MathPropagation : public boost::static_visitor<void> {
     public:
-        bool optimized;
+        bool optimized = false;
         Pass pass;
-
-        MathPropagation() : optimized(false) {}
 
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
         void operator()(std::shared_ptr<mtac::IfFalse> ifFalse);
@@ -48,6 +47,13 @@ class MathPropagation : public boost::static_visitor<void> {
         std::unordered_map<std::shared_ptr<Variable>, int> usage;
 };
 
+template<>
+struct pass_traits<MathPropagation> {
+    STATIC_CONSTANT(pass_type, type, pass_type::BB_TWO_PASS);
+    STATIC_STRING(name, "math_propagation");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
 
 } //end of mtac
 
