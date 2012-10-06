@@ -32,7 +32,8 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
 
 template<>
 struct pass_traits<ArithmeticIdentities> {
-   static const pass_type type = pass_type::LOCAL; 
+    STATIC_CONSTANT(pass_type, type, pass_type::LOCAL);
+    STATIC_STRING(name, "strength_reduction");
 };
 
 } //end of mtac

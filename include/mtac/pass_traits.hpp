@@ -8,6 +8,11 @@
 #ifndef MTAC_PASS_TRAITS_H
 #define MTAC_PASS_TRAITS_H
 
+#include <boost/utility.hpp>
+
+#define STATIC_CONSTANT(type,name,value) BOOST_STATIC_CONSTANT(type, name = value)
+#define STATIC_STRING(name,value) static inline constexpr const char* name(){ return value; }
+
 namespace eddic {
 
 namespace mtac {

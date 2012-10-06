@@ -179,13 +179,23 @@ struct pass_runner {
     template<typename Pass>
     inline void operator()(Pass*){
         bool local = false;
-        
-        if(mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL){
-            local = apply_to_all<Pass>(function);
-        } 
+        {
+            PerfsTimer timer(mtac::pass_traits<Pass>::name());
 
-        if(local){
+            if(mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL){
+                local = apply_to_all<Pass>(function);
+            } 
+        }
+    
+        if(log::enabled<Debug>()){
+            if(local){
+                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
 
+                //Print the function
+                print(function);
+            } else {
+                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
+            }
         }
 
         optimized = local;
