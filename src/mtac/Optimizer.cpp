@@ -149,10 +149,18 @@ struct pass_runner {
     }
 
     template<typename Pass>
+    Pass make_pass(){
+        Pass pass;
+
+        set_pool(pass);
+        set_platform(pass);
+
+        return pass;
+    }
+
+    template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(){
-        Pass visitor;
-        set_pool(visitor);
-        set_platform(visitor);
+        auto visitor = make_pass<Pass>();
 
         mtac::visit_all_statements(visitor, function);
 
@@ -163,9 +171,7 @@ struct pass_runner {
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(){
         bool optimized = false;
 
-        Pass problem;
-        set_pool(problem);
-        set_platform(problem);
+        auto problem = make_pass<Pass>();
 
         auto results = mtac::data_flow(function, problem);
 
@@ -184,9 +190,7 @@ struct pass_runner {
         bool optimized = false;
 
         for(auto& block : function->getBasicBlocks()){
-            Pass visitor;
-            set_pool(visitor);
-            set_platform(visitor);
+            auto visitor = make_pass<Pass>();
 
             visit_each(visitor, block->statements);
 
@@ -201,9 +205,7 @@ struct pass_runner {
         bool optimized = false;
 
         for(auto& block : function->getBasicBlocks()){
-            Pass visitor;
-            set_pool(visitor);
-            set_platform(visitor);
+            auto visitor = make_pass<Pass>();
 
             visitor.pass = mtac::Pass::DATA_MINING;
             visit_each(visitor, block->statements);
