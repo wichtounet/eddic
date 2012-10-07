@@ -205,8 +205,6 @@ struct pass_runner {
     
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(){
-        bool optimized = false;
-
         auto& functions = program->functions;
         for(auto& function : functions){
             this->function = function;
@@ -220,7 +218,7 @@ struct pass_runner {
             boost::mpl::for_each<typename mtac::pass_traits<Pass>::sub_passes>(boost::ref(*this));
         }
 
-        return optimized;
+        return false;
     }
     
     template<typename Pass>
@@ -342,6 +340,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         //Apply Interprocedural Optimizations
         pass_runner runner(program, string_pool, configuration, platform);
         do{
+            runner.optimized = false;
             boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
