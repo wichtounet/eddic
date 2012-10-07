@@ -134,6 +134,19 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
                     ConstantCollector collector(out, offset);
                     visit(collector, *quadruple->arg2);
                 }
+            } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                auto variable = quadruple->result;
+
+                //Impossible to know which offset is modified, consider the whole variable modified
+                for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                    auto offset = it->first;
+
+                    if(offset.variable == variable){
+                        it = out.values().erase(it);
+                    } else {
+                        ++it;
+                    }
+                }
             }
         //PDOT Lets escape an offset
         } else if(quadruple->op == mtac::Operator::PDOT){

@@ -52,7 +52,7 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
 template<>
 struct pass_traits<OffsetConstantPropagationProblem> {
     STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
-    STATIC_STRING(name, "constant_propagation");
+    STATIC_STRING(name, "offset_constant_propagation");
     STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_POOL | PROPERTY_PLATFORM);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
