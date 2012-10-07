@@ -23,7 +23,6 @@ namespace mtac {
 
 struct Optimizer {
     void optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;
-    void basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration) const ;
 };
 
 } //end of mtac

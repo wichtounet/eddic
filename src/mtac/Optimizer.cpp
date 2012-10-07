@@ -102,6 +102,10 @@ const unsigned int MAX_THREADS = 2;
 //TODO Find a more elegant way than using pointers
 
 typedef boost::mpl::vector<
+        mtac::ConstantFolding* 
+    > basic_passes;
+
+typedef boost::mpl::vector<
         mtac::ArithmeticIdentities*, 
         mtac::ReduceInStrength*, 
         mtac::ConstantFolding*, 
@@ -258,6 +262,7 @@ struct pass_runner {
     }
 };
 
+template<typename Passes>
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
     if(log::enabled<Debug>()){
         log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
@@ -267,7 +272,7 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     
     pass_runner runner(function, pool, platform);
     do{
-        boost::mpl::for_each<passes>(runner);
+        boost::mpl::for_each<Passes>(runner);
     } while(runner.optimized);
 }
 
@@ -288,7 +293,7 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 
     if(configuration->option_defined("single-threaded")){
         for(auto& function : functions){
-            optimize_function(function, string_pool, platform);
+            optimize_function<passes>(function, string_pool, platform);
         }
     } else {
         //Find a better heuristic to configure the number of threads
@@ -300,7 +305,7 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
                 std::size_t i = tid;
 
                 while(i < functions.size()){
-                    optimize_function(functions[i], string_pool, platform); 
+                    optimize_function<passes>(functions[i], string_pool, platform); 
 
                     i += threads;
                 }
@@ -315,6 +320,8 @@ void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
+    PerfsTimer timer("Whole optimizations");
+
     //Allocate storage for the temporaries that need to be stored
     allocate_temporary(program, platform);
 
@@ -330,40 +337,11 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         } while(optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        basic_optimize(program, string_pool, configuration);
+        for(auto& function : program->functions){
+            optimize_function<basic_passes>(function, string_pool, platform); 
+        }
     }
     
     //Allocate storage for the temporaries that need to be stored
     allocate_temporary(program, platform);
-}
-
-void mtac::Optimizer::basic_optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> /*string_pool*/, std::shared_ptr<Configuration> configuration) const {
-    PerfsTimer timer("Whole basic optimizations");
-
-    auto& functions = program->functions;
-
-    if(configuration->option_defined("single-threaded")){
-        for(auto& function : functions){
-            basic_optimize_function(function); 
-        }
-    } else {
-        //Find a better heuristic to configure the number of threads
-        std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
-
-        std::vector<std::thread> pool;
-        for(std::size_t tid = 0; tid < threads; ++tid){
-            pool.push_back(std::thread([tid, threads, &functions](){
-                std::size_t i = tid;
-
-                while(i < functions.size()){
-                    basic_optimize_function(functions[i]); 
-
-                    i += threads;
-                }
-            }));
-        }
-
-        //Wait for all the threads to finish
-        std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
-    }
 }
