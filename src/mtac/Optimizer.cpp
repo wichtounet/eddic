@@ -88,7 +88,7 @@ struct pass_traits<all_optimizations> {
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
     STATIC_CONSTANT(bool, need_configuration, false);
-    STATIC_CONSTANT(unsigned int, todo_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 
     typedef passes sub_passes;
 };
@@ -127,7 +127,7 @@ struct pass_runner {
             program(program), pool(pool), configuration(configuration), platform(platform) {};
 
     template<typename Pass>
-    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::todo_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
         for(auto& block : function->getBasicBlocks()){
             auto it = iterate(block->statements);
 
@@ -148,7 +148,7 @@ struct pass_runner {
     }
     
     template<typename Pass>
-    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::todo_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
         //NOP
     }
     
