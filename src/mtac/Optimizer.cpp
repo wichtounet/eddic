@@ -268,37 +268,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     } while(runner.optimized);
 }
 
-void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration){
-    PerfsTimer timer("Whole optimizations");
-
-    auto& functions = program->functions;
-
-    if(configuration->option_defined("single-threaded")){
-        for(auto& function : functions){
-            optimize_function<passes>(function, string_pool, platform);
-        }
-    } else {
-        //Find a better heuristic to configure the number of threads
-        std::size_t threads = std::min(functions.size(), static_cast<std::size_t>(MAX_THREADS));
-
-        std::vector<std::thread> pool;
-        for(std::size_t tid = 0; tid < threads; ++tid){
-            pool.push_back(std::thread([tid, threads, &string_pool, platform, &functions](){
-                std::size_t i = tid;
-
-                while(i < functions.size()){
-                    optimize_function<passes>(functions[i], string_pool, platform); 
-
-                    i += threads;
-                }
-            }));
-        }
-
-        //Wait for all the threads to finish
-        std::for_each(pool.begin(), pool.end(), [](std::thread& thread){thread.join();});
-    }
-}
-
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
@@ -312,7 +281,10 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         do{
             mtac::remove_unused_functions(program);
 
-            optimize_all_functions(program, string_pool, platform, configuration);
+            auto& functions = program->functions;
+            for(auto& function : functions){
+                optimize_function<passes>(function, string_pool, platform);
+            }
 
             optimized = mtac::remove_empty_functions(program);
             optimized = mtac::inline_functions(program, configuration);
