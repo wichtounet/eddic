@@ -13,6 +13,12 @@
 
 using namespace eddic;
 
+void mtac::MathPropagation::clear(){
+    optimized = false;
+    assigns.clear();
+    usage.clear();
+}
+
 void mtac::MathPropagation::collect(mtac::Argument* arg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
         usage[*ptr] += 1;

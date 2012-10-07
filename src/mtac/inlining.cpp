@@ -508,7 +508,11 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
 
 } //end of anonymous namespace
 
-bool mtac::inline_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<Configuration> configuration){
+void mtac::inline_functions::set_configuration(std::shared_ptr<Configuration> configuration){
+    this->configuration = configuration;
+}
+
+bool mtac::inline_functions::operator()(std::shared_ptr<mtac::Program> program){
     if(configuration->option_defined("fno-inline-functions")){
         return false;
     }

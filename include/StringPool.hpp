@@ -24,7 +24,7 @@ class StringPool {
         std::unordered_map<std::string, std::string> pool;
         unsigned int currentString;
 
-        mutable std::mutex mutex;
+//        mutable std::mutex mutex;
 
     public:
         StringPool();

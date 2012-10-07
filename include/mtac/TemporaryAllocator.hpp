@@ -11,12 +11,27 @@
 #include "Platform.hpp"
 
 #include "mtac/Program.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-void allocate_temporary(std::shared_ptr<mtac::Program> program, Platform platform);
+struct allocate_temporary {
+    Platform platform;
+
+    void set_platform(Platform platform);
+
+    bool operator()(std::shared_ptr<mtac::Program> program);
+};
+
+template<>
+struct pass_traits<allocate_temporary> {
+    STATIC_CONSTANT(pass_type, type, pass_type::IPA);
+    STATIC_STRING(name, "allocate_temporary");
+    STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_PLATFORM);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+};
 
 } //end of mtac
 

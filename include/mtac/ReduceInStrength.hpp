@@ -13,6 +13,7 @@
 #include "variant.hpp"
 
 #include "mtac/forward.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
@@ -27,6 +28,14 @@ struct ReduceInStrength : public boost::static_visitor<void> {
     void operator()(T&) const { 
         //Nothing to optimize
     }
+};
+
+template<>
+struct pass_traits<ReduceInStrength> {
+    STATIC_CONSTANT(pass_type, type, pass_type::LOCAL);
+    STATIC_STRING(name, "strength_reduction");
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
 } //end of mtac

@@ -20,7 +20,7 @@ StringPool::StringPool() : currentString(0) {
 }
 
 std::string StringPool::label(const std::string& value) {
-    std::lock_guard<std::mutex> lock(mutex);
+//    std::lock_guard<std::mutex> lock(mutex);
 
     if (pool.find(value) == pool.end()) {
         std::stringstream ss;
@@ -33,7 +33,7 @@ std::string StringPool::label(const std::string& value) {
 }
 
 std::string StringPool::value(const std::string& label) const {
-    std::lock_guard<std::mutex> lock(mutex);
+//    std::lock_guard<std::mutex> lock(mutex);
 
     for (auto it : pool){
         if(it.second == label){

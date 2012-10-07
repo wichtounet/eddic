@@ -16,8 +16,12 @@ template<typename T>
 bool isParam(T& statement){
     return boost::get<std::shared_ptr<mtac::Param>>(&statement);
 }
+    
+void mtac::optimize_concat::set_pool(std::shared_ptr<StringPool> pool){
+    this->pool = pool;
+}
 
-bool mtac::optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
+bool mtac::optimize_concat::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
     
     auto& blocks = function->getBasicBlocks();

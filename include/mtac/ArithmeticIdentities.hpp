@@ -13,15 +13,14 @@
 #include "variant.hpp"
 
 #include "mtac/forward.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
 struct ArithmeticIdentities : public boost::static_visitor<void> {
-    bool optimized;
-
-    ArithmeticIdentities() : optimized(false) {}
+    bool optimized = false;
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
 
@@ -31,6 +30,13 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
     }
 };
 
+template<>
+struct pass_traits<ArithmeticIdentities> {
+    STATIC_CONSTANT(pass_type, type, pass_type::LOCAL);
+    STATIC_STRING(name, "strength_reduction");
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+};
 
 } //end of mtac
 

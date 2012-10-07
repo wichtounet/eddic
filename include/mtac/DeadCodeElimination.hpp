@@ -11,12 +11,23 @@
 #include <memory>
 
 #include "mtac/Function.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-bool dead_code_elimination(std::shared_ptr<mtac::Function> function);
+struct dead_code_elimination {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<dead_code_elimination> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "dead_code_elimination");
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+};
 
 } //end of mtac
 

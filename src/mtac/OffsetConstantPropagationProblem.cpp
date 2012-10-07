@@ -20,7 +20,13 @@ using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool, Platform platform) : string_pool(string_pool), platform(platform) {}
+void mtac::OffsetConstantPropagationProblem::set_pool(std::shared_ptr<StringPool> string_pool){
+    this->string_pool = string_pool;
+}
+
+void mtac::OffsetConstantPropagationProblem::set_platform(Platform platform){
+    this->platform = platform;
+}
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
     pointer_escaped = mtac::escape_analysis(function);
@@ -127,6 +133,19 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
                     
                     ConstantCollector collector(out, offset);
                     visit(collector, *quadruple->arg2);
+                }
+            } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                auto variable = quadruple->result;
+
+                //Impossible to know which offset is modified, consider the whole variable modified
+                for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                    auto offset = it->first;
+
+                    if(offset.variable == variable){
+                        it = out.values().erase(it);
+                    } else {
+                        ++it;
+                    }
                 }
             }
         //PDOT Lets escape an offset

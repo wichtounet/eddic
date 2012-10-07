@@ -9,6 +9,7 @@
 #define AST_PASS_H
 
 #include <memory>
+#include <string>
 
 #include "Platform.hpp"
 

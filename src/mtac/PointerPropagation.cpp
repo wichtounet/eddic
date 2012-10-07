@@ -99,6 +99,12 @@ struct CopyApplier : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
+void mtac::PointerPropagation::clear(){
+    optimized = false;
+    aliases.clear();
+    pointer_copies.clear();
+}
+
 void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     CopyApplier optimizer(pointer_copies);
     visit_non_variant(optimizer, quadruple);
