@@ -31,9 +31,7 @@ template<>
 struct pass_traits<optimize_concat> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "optimize_concat");
-    STATIC_CONSTANT(bool, need_pool, true);
-    STATIC_CONSTANT(bool, need_platform, false);
-    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 

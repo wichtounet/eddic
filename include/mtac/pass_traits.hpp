@@ -31,6 +31,12 @@ enum TODO {
     TODO_REMOVE_NOP = 1
 };
 
+enum PROPERTY {
+    PROPERTY_POOL,
+    PROPERTY_PLATFORM,
+    PROPERTY_CONFIGURATION
+};
+
 template<typename T>
 struct pass_traits {
 

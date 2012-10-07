@@ -29,9 +29,7 @@ template<>
 struct pass_traits<allocate_temporary> {
     STATIC_CONSTANT(pass_type, type, pass_type::IPA);
     STATIC_STRING(name, "allocate_temporary");
-    STATIC_CONSTANT(bool, need_pool, false);
-    STATIC_CONSTANT(bool, need_platform, true);
-    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 

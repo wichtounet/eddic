@@ -25,9 +25,7 @@ template<>
 struct pass_traits<merge_basic_blocks> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "remove_dead_bb");
-    STATIC_CONSTANT(bool, need_pool, false);
-    STATIC_CONSTANT(bool, need_platform, false);
-    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_REMOVE_NOP);
 };
 
@@ -39,9 +37,7 @@ template<>
 struct pass_traits<remove_dead_basic_blocks> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "remove_dead_bb");
-    STATIC_CONSTANT(bool, need_pool, false);
-    STATIC_CONSTANT(bool, need_platform, false);
-    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 

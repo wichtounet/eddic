@@ -85,9 +85,7 @@ template<>
 struct pass_traits<all_optimizations> {
     STATIC_CONSTANT(pass_type, type, pass_type::IPA_SUB);
     STATIC_STRING(name, "all_optimizations");
-    STATIC_CONSTANT(bool, need_pool, false);
-    STATIC_CONSTANT(bool, need_platform, false);
-    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 
     typedef passes sub_passes;
@@ -158,32 +156,32 @@ struct pass_runner {
     }
 
     template<typename Pass>
-    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_pool, void>::type set_pool(Pass& pass){
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_POOL, void>::type set_pool(Pass& pass){
         pass.set_pool(pool);
     }
     
     template<typename Pass>
-    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_pool, void>::type set_pool(Pass&){
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_POOL, void>::type set_pool(Pass&){
         //NOP
     }
     
     template<typename Pass>
-    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_platform, void>::type set_platform(Pass& pass){
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_PLATFORM, void>::type set_platform(Pass& pass){
         pass.set_platform(platform);
     }
     
     template<typename Pass>
-    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_platform, void>::type set_platform(Pass&){
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_PLATFORM, void>::type set_platform(Pass&){
         //NOP
     }
     
     template<typename Pass>
-    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_configuration, void>::type set_configuration(Pass& pass){
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_CONFIGURATION, void>::type set_configuration(Pass& pass){
         pass.set_configuration(configuration);
     }
     
     template<typename Pass>
-    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_configuration, void>::type set_configuration(Pass&){
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_CONFIGURATION, void>::type set_configuration(Pass&){
         //NOP
     }
 

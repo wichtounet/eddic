@@ -53,9 +53,7 @@ template<>
 struct pass_traits<OffsetConstantPropagationProblem> {
     STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
     STATIC_STRING(name, "constant_propagation");
-    STATIC_CONSTANT(bool, need_pool, true);
-    STATIC_CONSTANT(bool, need_platform, true);
-    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_POOL | PROPERTY_PLATFORM);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
