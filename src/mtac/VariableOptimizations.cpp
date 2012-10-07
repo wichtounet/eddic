@@ -190,7 +190,7 @@ struct VariableReplace : public boost::static_visitor<bool> {
 
 }
 
-bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
+bool mtac::remove_aliases::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
     return optimized;
@@ -245,7 +245,7 @@ bool mtac::remove_aliases(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-void mtac::clean_variables(std::shared_ptr<mtac::Function> function){
+bool mtac::clean_variables::operator()(std::shared_ptr<mtac::Function> function){
     auto variable_usage = mtac::compute_variable_usage(function);
     
     std::vector<std::shared_ptr<Variable>> unused;
@@ -261,4 +261,6 @@ void mtac::clean_variables(std::shared_ptr<mtac::Function> function){
     for(auto& variable : unused){
         function->context->removeVariable(variable);
     }
+
+    return false;
 }

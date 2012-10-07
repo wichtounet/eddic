@@ -17,7 +17,7 @@
 
 using namespace eddic;
 
-bool mtac::dead_code_elimination(std::shared_ptr<mtac::Function> function){
+bool mtac::dead_code_elimination::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
     mtac::LiveVariableAnalysisProblem problem;

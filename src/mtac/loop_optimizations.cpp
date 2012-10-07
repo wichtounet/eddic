@@ -972,7 +972,7 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
 
 } //end of anonymous namespace
 
-bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
+bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function> function){
     auto graph = mtac::build_control_flow_graph(function);
     auto g = graph->get_graph();
 
@@ -996,7 +996,7 @@ bool mtac::loop_invariant_code_motion(std::shared_ptr<mtac::Function> function){
     return optimized;
 }
 
-bool mtac::loop_induction_variables_optimization(std::shared_ptr<mtac::Function> function){
+bool mtac::loop_induction_variables_optimization::operator()(std::shared_ptr<mtac::Function> function){
     auto graph = mtac::build_control_flow_graph(function);
     auto g = graph->get_graph();
     
@@ -1051,7 +1051,7 @@ std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std
     return std::make_pair(false, 0);
 }
 
-bool mtac::remove_empty_loops(std::shared_ptr<mtac::Function> function){
+bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> function){
     auto graph = mtac::build_control_flow_graph(function);
     auto g = graph->get_graph();
     

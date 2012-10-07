@@ -11,13 +11,35 @@
 #include <memory>
 
 #include "mtac/Function.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-bool merge_basic_blocks(std::shared_ptr<mtac::Function> function);
-bool remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function);
+struct merge_basic_blocks {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<merge_basic_blocks> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "remove_dead_bb");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
+
+struct remove_dead_basic_blocks {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<remove_dead_basic_blocks> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "remove_dead_bb");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
 
 } //end of mtac
 

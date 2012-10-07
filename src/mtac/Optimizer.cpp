@@ -55,56 +55,49 @@
 
 using namespace eddic;
 
+namespace eddic {
+
+    namespace mtac {
+
+//TODO Do that, as a TODO from other passes
+
+struct remove_nop {
+    bool operator()(std::shared_ptr<mtac::Function> function){
+        for(auto& block : function->getBasicBlocks()){
+            auto it = iterate(block->statements);
+
+            while(it.has_next()){
+                if(unlikely(boost::get<std::shared_ptr<mtac::NoOp>>(&*it))){
+                    it.erase();
+                    continue;
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
+                    if((*ptr)->op == mtac::Operator::NOP){
+                        it.erase();
+                        continue;
+                    }
+                }
+
+                ++it;
+            }
+        }
+
+        return false;
+    }
+};
+
+template<>
+struct pass_traits<remove_nop> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "remove");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
+
+}}
+
 namespace {
 
 const unsigned int MAX_THREADS = 2;
-
-bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
-    if(log::enabled<Debug>()){
-        if(b){
-            log::emit<Debug>("Optimizer") << name << " returned true" << log::endl;
-
-            //Print the function
-            print(function);
-        } else {
-            log::emit<Debug>("Optimizer") << name << " returned false" << log::endl;
-        }
-    }
-
-    return b;
-}
-
-template<typename Functor, typename... Args>
-bool debug(const std::string& name, Functor functor, std::shared_ptr<mtac::Function> function, Args... args){
-    bool b;
-    {
-        PerfsTimer timer(name);
-
-        b = functor(function, args...);
-    }
-
-    return debug(name, b, function);
-}
-
-void remove_nop(std::shared_ptr<mtac::Function> function){
-    for(auto& block : function->getBasicBlocks()){
-        auto it = iterate(block->statements);
-
-        while(it.has_next()){
-            if(unlikely(boost::get<std::shared_ptr<mtac::NoOp>>(&*it))){
-                it.erase();
-                continue;
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                if((*ptr)->op == mtac::Operator::NOP){
-                    it.erase();
-                    continue;
-                }
-            }
-
-            ++it;
-        }
-    }
-}
 
 //TODO Find a more elegant way than using pointers
 
@@ -117,7 +110,17 @@ typedef boost::mpl::vector<
         mtac::CommonSubexpressionElimination*,
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
-        mtac::optimize_branches*
+        mtac::optimize_branches*,
+        mtac::optimize_concat*,
+        mtac::remove_dead_basic_blocks*,
+        mtac::merge_basic_blocks*,
+        mtac::remove_nop*,
+        mtac::dead_code_elimination*,
+        mtac::remove_aliases*,
+        mtac::loop_invariant_code_motion*,
+        mtac::loop_induction_variables_optimization*,
+        mtac::remove_empty_loops*,
+        mtac::clean_variables*
     > passes;
 
 struct pass_runner {
@@ -263,31 +266,9 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     }
     
     pass_runner runner(function, pool, platform);
-
     do{
         boost::mpl::for_each<passes>(runner);
-
-        //Remove variables that are not used after optimizations
-        clean_variables(function);
     } while(runner.optimized);
-
-    bool optimized;
-    do {
-        optimized = false;
-
-        optimized |= debug("Optimize Concat", &mtac::optimize_concat, function, pool);
-        optimized |= debug("Remove dead basic block", &mtac::remove_dead_basic_blocks, function);
-        optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
-
-        remove_nop(function);
-        optimized |= debug("Dead-Code Elimination", &mtac::dead_code_elimination, function);
-        
-        optimized |= debug("Remove aliases", &mtac::remove_aliases, function);
-
-        optimized |= debug("Loop Invariant Code Motion", &mtac::loop_invariant_code_motion, function);
-        optimized |= debug("Loop Induction Variables Optimization", &mtac::loop_induction_variables_optimization, function);
-        optimized |= debug("Remove empty loops", &mtac::remove_empty_loops, function);
-    } while (optimized);
 }
 
 void basic_optimize_function(std::shared_ptr<mtac::Function> function){

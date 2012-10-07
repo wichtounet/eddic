@@ -11,14 +11,35 @@
 #include <memory>
 
 #include "mtac/Function.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-bool remove_aliases(std::shared_ptr<mtac::Function> function);
+struct remove_aliases {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
 
-void clean_variables(std::shared_ptr<mtac::Function> function);
+template<>
+struct pass_traits<remove_aliases> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "optimize_branches");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
+
+struct clean_variables {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<clean_variables> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "clean_variables");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
 
 } //end of mtac
 
