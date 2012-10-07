@@ -294,6 +294,27 @@ struct pass_runner {
 
         return optimized;
     }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type 
+    debug_local(bool){
+        //NOP
+    }
+
+    template<typename Pass>
+    inline typename boost::enable_if_c<boost::type_traits::ice_and<mtac::pass_traits<Pass>::type != mtac::pass_type::IPA, mtac::pass_traits<Pass>::type != mtac::pass_type::IPA_SUB>::value, void>::type 
+    debug_local(bool local){
+        if(log::enabled<Debug>()){
+            if(local){
+                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
+
+                //Print the function
+                print(function);
+            } else {
+                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
+            }
+        }
+    }
 
     template<typename Pass>
     inline void operator()(Pass*){
@@ -305,18 +326,8 @@ struct pass_runner {
         }
 
         apply_todo<Pass>();
-    
-        //TODO Do that, only if the pass is local
-        if(log::enabled<Debug>()){
-            if(local){
-                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
 
-                //Print the function
-                print(function);
-            } else {
-                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
-            }
-        }
+        debug_local<Pass>(local);
 
         optimized |= local;
     }
