@@ -277,18 +277,10 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     allocate_temporary(program, platform);
 
     if(configuration->option_defined("fglobal-optimization")){
-        bool optimized = false;
-        do{
-            mtac::remove_unused_functions(program);
-
-            auto& functions = program->functions;
-            for(auto& function : functions){
-                optimize_function<passes>(function, string_pool, platform);
-            }
-
-            optimized = mtac::remove_empty_functions(program);
-            optimized = mtac::inline_functions(program, configuration);
-        } while(optimized);
+        auto& functions = program->functions;
+        for(auto& function : functions){
+            optimize_function<passes>(function, string_pool, platform);
+        }
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
         for(auto& function : program->functions){

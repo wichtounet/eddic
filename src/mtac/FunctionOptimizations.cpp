@@ -30,9 +30,7 @@ void remove_references(std::shared_ptr<mtac::Program> program, std::shared_ptr<m
 
 } //end of anonymous namespace
 
-bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
-    bool optimized = false;
-
+bool mtac::remove_unused_functions::operator()(std::shared_ptr<mtac::Program> program){
     auto it = iterate(program->functions);
 
     while(it.has_next()){
@@ -53,12 +51,11 @@ bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
         ++it;
     }
 
-    return optimized;
+    //Not necessary to restart the other passes
+    return false;
 }
 
-bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
-    bool optimized = false;
-
+bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> program){
     std::vector<std::string> removed_functions;
 
     auto it = iterate(program->functions);
@@ -150,6 +147,6 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
         }
     }
 
-    return optimized;
+    //Not necessary to restart the other passes
+    return false;
 }
-

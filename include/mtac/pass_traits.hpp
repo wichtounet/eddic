@@ -18,6 +18,7 @@ namespace eddic {
 namespace mtac {
 
 enum class pass_type : unsigned int {
+    IPA,
     LOCAL, 
     DATA_FLOW,
     BB,
