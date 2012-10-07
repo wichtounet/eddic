@@ -59,6 +59,22 @@ namespace eddic {
 namespace mtac {
 
 typedef boost::mpl::vector<
+        mtac::ConstantFolding*
+    > basic_passes;
+
+struct all_basic_optimizations {};
+
+template<>
+struct pass_traits<all_basic_optimizations> {
+    STATIC_CONSTANT(pass_type, type, pass_type::IPA_SUB);
+    STATIC_STRING(name, "all_basic_optimizations");
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+
+    typedef basic_passes sub_passes;
+};
+
+typedef boost::mpl::vector<
         mtac::ArithmeticIdentities*, 
         mtac::ReduceInStrength*, 
         mtac::ConstantFolding*, 
@@ -99,9 +115,9 @@ namespace {
 //TODO Find a more elegant way than using pointers
 
 typedef boost::mpl::vector<
-        mtac::ConstantFolding*,
+        mtac::all_basic_optimizations*,
         mtac::allocate_temporary*
-    > basic_passes;
+    > ipa_basic_passes;
 
 typedef boost::mpl::vector<
         mtac::allocate_temporary*,
@@ -344,8 +360,8 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
             boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
-        //Even if global optimizations are disabled, perform basic optimization (only constant folding)
+        //Even if global optimizations are disabled, perform basic optimization (only constant folding and temporary cleaning)
         pass_runner runner(program, string_pool, configuration, platform);
-        boost::mpl::for_each<basic_passes>(boost::ref(runner));
+        boost::mpl::for_each<ipa_basic_passes>(boost::ref(runner));
     }
 }
