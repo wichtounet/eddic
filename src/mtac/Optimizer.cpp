@@ -101,10 +101,12 @@ namespace {
 //TODO Find a more elegant way than using pointers
 
 typedef boost::mpl::vector<
-        mtac::ConstantFolding* 
+        mtac::ConstantFolding*,
+        mtac::allocate_temporary*
     > basic_passes;
 
 typedef boost::mpl::vector<
+        mtac::allocate_temporary*,
         mtac::remove_unused_functions*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
@@ -346,9 +348,6 @@ void optimize_program(std::shared_ptr<mtac::Program> program, std::shared_ptr<St
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     PerfsTimer timer("Whole optimizations");
 
-    //Allocate storage for the temporaries that need to be stored
-    allocate_temporary(program, platform);
-
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
         pass_runner runner(program, string_pool, configuration, platform);
@@ -360,7 +359,4 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         pass_runner runner(program, string_pool, configuration, platform);
         boost::mpl::for_each<basic_passes>(runner);
     }
-    
-    //Allocate storage for the temporaries that need to be stored
-    allocate_temporary(program, platform);
 }

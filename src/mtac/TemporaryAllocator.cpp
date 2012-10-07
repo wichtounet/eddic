@@ -117,7 +117,11 @@ unsigned int count_temporaries(Container& container){
 
 }
 
-void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program, Platform platform){
+void mtac::allocate_temporary::set_platform(Platform platform){
+    this->platform = platform;
+}
+
+bool mtac::allocate_temporary::operator()(std::shared_ptr<mtac::Program> program){
     for(auto& function : program->functions){
         auto count = 0;
 
@@ -165,4 +169,7 @@ void mtac::allocate_temporary(std::shared_ptr<mtac::Program> program, Platform p
             mtac::print(function);
         }
     }
+
+    //Do not restart other passes
+    return false;
 }
