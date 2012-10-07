@@ -21,7 +21,8 @@ enum class pass_type : unsigned int {
     LOCAL, 
     DATA_FLOW,
     BB,
-    BB_TWO_PASS
+    BB_TWO_PASS,
+    CUSTOM
 };
 
 template<typename T>

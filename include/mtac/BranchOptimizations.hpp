@@ -11,12 +11,23 @@
 #include <memory>
 
 #include "mtac/Function.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-bool optimize_branches(std::shared_ptr<mtac::Function> function);
+struct optimize_branches {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<optimize_branches> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "optimize_branches");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+};
 
 } //end of mtac
 

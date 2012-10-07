@@ -116,7 +116,8 @@ typedef boost::mpl::vector<
         mtac::OffsetConstantPropagationProblem*,
         mtac::CommonSubexpressionElimination*,
         mtac::PointerPropagation*,
-        mtac::MathPropagation*
+        mtac::MathPropagation*,
+        mtac::optimize_branches*
     > passes;
 
 struct pass_runner {
@@ -156,6 +157,13 @@ struct pass_runner {
         set_platform(pass);
 
         return pass;
+    }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::CUSTOM, bool>::type apply(){
+        auto pass = make_pass<Pass>();
+
+        return pass(function);
     }
 
     template<typename Pass>
@@ -248,23 +256,25 @@ struct pass_runner {
 };
 
 void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
-    pass_runner runner(function, pool, platform);
-
-    do{
-        boost::mpl::for_each<passes>(runner);
-    } while(runner.optimized);
-
     if(log::enabled<Debug>()){
         log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
 
         print(function);
     }
+    
+    pass_runner runner(function, pool, platform);
+
+    do{
+        boost::mpl::for_each<passes>(runner);
+
+        //Remove variables that are not used after optimizations
+        clean_variables(function);
+    } while(runner.optimized);
 
     bool optimized;
     do {
         optimized = false;
 
-        optimized |= debug("Optimize Branches", &mtac::optimize_branches, function);
         optimized |= debug("Optimize Concat", &mtac::optimize_concat, function, pool);
         optimized |= debug("Remove dead basic block", &mtac::remove_dead_basic_blocks, function);
         optimized |= debug("Merge basic block", &mtac::merge_basic_blocks, function);
@@ -277,9 +287,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
         optimized |= debug("Loop Invariant Code Motion", &mtac::loop_invariant_code_motion, function);
         optimized |= debug("Loop Induction Variables Optimization", &mtac::loop_induction_variables_optimization, function);
         optimized |= debug("Remove empty loops", &mtac::remove_empty_loops, function);
-
-        //Remove variables that are not used after optimizations
-        clean_variables(function);
     } while (optimized);
 }
 

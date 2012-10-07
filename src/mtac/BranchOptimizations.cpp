@@ -11,7 +11,7 @@
 
 using namespace eddic;
 
-bool mtac::optimize_branches(std::shared_ptr<mtac::Function> function){
+bool mtac::optimize_branches::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
     
     for(auto& block : function->getBasicBlocks()){
