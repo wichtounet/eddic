@@ -27,6 +27,7 @@ struct pass_traits<merge_basic_blocks> {
     STATIC_STRING(name, "remove_dead_bb");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(unsigned int, todo_flags, TODO_REMOVE_NOP);
 };
 
 struct remove_dead_basic_blocks {
@@ -39,6 +40,7 @@ struct pass_traits<remove_dead_basic_blocks> {
     STATIC_STRING(name, "remove_dead_bb");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
 } //end of mtac

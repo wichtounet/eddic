@@ -55,46 +55,6 @@
 
 using namespace eddic;
 
-namespace eddic {
-
-    namespace mtac {
-
-//TODO Do that, as a TODO from other passes
-
-struct remove_nop {
-    bool operator()(std::shared_ptr<mtac::Function> function){
-        for(auto& block : function->getBasicBlocks()){
-            auto it = iterate(block->statements);
-
-            while(it.has_next()){
-                if(unlikely(boost::get<std::shared_ptr<mtac::NoOp>>(&*it))){
-                    it.erase();
-                    continue;
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                    if((*ptr)->op == mtac::Operator::NOP){
-                        it.erase();
-                        continue;
-                    }
-                }
-
-                ++it;
-            }
-        }
-
-        return false;
-    }
-};
-
-template<>
-struct pass_traits<remove_nop> {
-    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
-    STATIC_STRING(name, "remove");
-    STATIC_CONSTANT(bool, need_pool, false);
-    STATIC_CONSTANT(bool, need_platform, false);
-};
-
-}}
-
 namespace {
 
 const unsigned int MAX_THREADS = 2;
@@ -118,7 +78,6 @@ typedef boost::mpl::vector<
         mtac::optimize_concat*,
         mtac::remove_dead_basic_blocks*,
         mtac::merge_basic_blocks*,
-        mtac::remove_nop*,
         mtac::dead_code_elimination*,
         mtac::remove_aliases*,
         mtac::loop_invariant_code_motion*,
@@ -135,6 +94,37 @@ struct pass_runner {
 
     pass_runner(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform) : 
             function(function), pool(pool), platform(platform) {};
+
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::todo_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
+        for(auto& block : function->getBasicBlocks()){
+            auto it = iterate(block->statements);
+
+            while(it.has_next()){
+                if(unlikely(boost::get<std::shared_ptr<mtac::NoOp>>(&*it))){
+                    it.erase();
+                    continue;
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
+                    if((*ptr)->op == mtac::Operator::NOP){
+                        it.erase();
+                        continue;
+                    }
+                }
+
+                ++it;
+            }
+        }
+    }
+    
+    template<typename Pass>
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::todo_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
+        //NOP
+    }
+    
+    template<typename Pass>
+    inline void apply_todo(){
+        remove_nop<Pass>();
+    }
 
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_pool, void>::type set_pool(Pass& pass){
@@ -244,8 +234,10 @@ struct pass_runner {
         {
             PerfsTimer timer(mtac::pass_traits<Pass>::name());
 
-            apply<Pass>();
+            local = apply<Pass>();
         }
+
+        apply_todo<Pass>();
     
         if(log::enabled<Debug>()){
             if(local){
@@ -274,16 +266,6 @@ void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr
     do{
         boost::mpl::for_each<Passes>(runner);
     } while(runner.optimized);
-}
-
-void basic_optimize_function(std::shared_ptr<mtac::Function> function){
-    if(log::enabled<Debug>()){
-        log::emit<Debug>("Optimizer") << "Start basic optimizations on " << function->getName() << log::endl;
-
-        print(function);
-    }
-
-    //TODO debug("Constant folding", apply_to_all<mtac::ConstantFolding>(function), function);
 }
 
 void optimize_all_functions(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration){

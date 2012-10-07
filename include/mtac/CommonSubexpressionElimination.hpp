@@ -49,6 +49,7 @@ struct pass_traits<CommonSubexpressionElimination> {
     STATIC_STRING(name, "common_subexpression_elimination");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
 } //end of mtac

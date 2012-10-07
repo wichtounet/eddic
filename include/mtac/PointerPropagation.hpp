@@ -46,6 +46,7 @@ struct pass_traits<PointerPropagation> {
     STATIC_STRING(name, "pointer_propagation");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
 } //end of mtac

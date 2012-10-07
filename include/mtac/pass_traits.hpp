@@ -25,6 +25,10 @@ enum class pass_type : unsigned int {
     CUSTOM
 };
 
+enum TODO {
+    TODO_REMOVE_NOP = 1
+};
+
 template<typename T>
 struct pass_traits {
 
