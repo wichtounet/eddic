@@ -351,10 +351,14 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
 
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
-        optimize_program<ipa_passes>(program, string_pool, configuration, platform);
+        pass_runner runner(program, string_pool, configuration, platform);
+        do{
+            boost::mpl::for_each<ipa_passes>(runner);
+        } while(runner.optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        optimize_program<basic_passes>(program, string_pool, configuration, platform);
+        pass_runner runner(program, string_pool, configuration, platform);
+        boost::mpl::for_each<basic_passes>(runner);
     }
     
     //Allocate storage for the temporaries that need to be stored
