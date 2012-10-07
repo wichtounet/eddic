@@ -217,7 +217,7 @@ struct pass_runner {
                 print(function);
             }
 
-            boost::mpl::for_each<typename mtac::pass_traits<Pass>::sub_passes>(*this);
+            boost::mpl::for_each<typename mtac::pass_traits<Pass>::sub_passes>(boost::ref(*this));
         }
 
         return optimized;
@@ -297,8 +297,8 @@ struct pass_runner {
     
     template<typename Pass>
     inline typename boost::enable_if_c<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type 
-    debug_local(bool){
-        //NOP
+    debug_local(bool local){
+        log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
     }
 
     template<typename Pass>
@@ -342,11 +342,11 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
         //Apply Interprocedural Optimizations
         pass_runner runner(program, string_pool, configuration, platform);
         do{
-            boost::mpl::for_each<ipa_passes>(runner);
+            boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
         pass_runner runner(program, string_pool, configuration, platform);
-        boost::mpl::for_each<basic_passes>(runner);
+        boost::mpl::for_each<basic_passes>(boost::ref(runner));
     }
 }
