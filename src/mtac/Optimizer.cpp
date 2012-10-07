@@ -333,14 +333,6 @@ struct pass_runner {
     }
 };
 
-template<typename Passes>
-void optimize_program(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform){
-    pass_runner runner(program, pool, configuration, platform);
-    do{
-        boost::mpl::for_each<Passes>(runner);
-    } while(runner.optimized);
-}
-
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
