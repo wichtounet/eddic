@@ -55,15 +55,8 @@
 
 using namespace eddic;
 
-namespace {
-
-const unsigned int MAX_THREADS = 2;
-
-//TODO Find a more elegant way than using pointers
-
-typedef boost::mpl::vector<
-        mtac::ConstantFolding* 
-    > basic_passes;
+namespace eddic {
+namespace mtac {
 
 typedef boost::mpl::vector<
         mtac::ArithmeticIdentities*, 
@@ -86,14 +79,50 @@ typedef boost::mpl::vector<
         mtac::clean_variables*
     > passes;
 
+struct all_optimizations {};
+
+template<>
+struct pass_traits<all_optimizations> {
+    STATIC_CONSTANT(pass_type, type, pass_type::IPA_SUB);
+    STATIC_STRING(name, "all_optimizations");
+    STATIC_CONSTANT(bool, need_pool, false);
+    STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
+    STATIC_CONSTANT(unsigned int, todo_flags, 0);
+
+    typedef passes sub_passes;
+};
+
+}
+}
+
+namespace {
+
+//TODO Find a more elegant way than using pointers
+
+typedef boost::mpl::vector<
+        mtac::ConstantFolding* 
+    > basic_passes;
+
+typedef boost::mpl::vector<
+        mtac::remove_unused_functions*,
+        mtac::all_optimizations*,
+        mtac::remove_empty_functions*,
+        mtac::inline_functions*
+    > ipa_passes;
+
 struct pass_runner {
     bool optimized = false;
+    
+    std::shared_ptr<mtac::Program> program;
     std::shared_ptr<mtac::Function> function;
+
     std::shared_ptr<StringPool> pool;
+    std::shared_ptr<Configuration> configuration;
     Platform platform;
 
-    pass_runner(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform) : 
-            function(function), pool(pool), platform(platform) {};
+    pass_runner(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform) : 
+            program(program), pool(pool), configuration(configuration), platform(platform) {};
 
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::todo_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
@@ -145,6 +174,16 @@ struct pass_runner {
     inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_platform, void>::type set_platform(Pass&){
         //NOP
     }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::need_configuration, void>::type set_configuration(Pass& pass){
+        pass.set_configuration(configuration);
+    }
+    
+    template<typename Pass>
+    inline typename boost::disable_if_c<mtac::pass_traits<Pass>::need_configuration, void>::type set_configuration(Pass&){
+        //NOP
+    }
 
     template<typename Pass>
     Pass make_pass(){
@@ -152,8 +191,36 @@ struct pass_runner {
 
         set_pool(pass);
         set_platform(pass);
+        set_configuration(pass);
 
         return pass;
+    }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, bool>::type apply(){
+        auto pass = make_pass<Pass>();
+
+        return pass(program);
+    }
+    
+    template<typename Pass>
+    inline typename boost::enable_if_c<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(){
+        bool optimized = false;
+
+        auto& functions = program->functions;
+        for(auto& function : functions){
+            this->function = function;
+    
+            if(log::enabled<Debug>()){
+                log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
+
+                print(function);
+            }
+
+            boost::mpl::for_each<typename mtac::pass_traits<Pass>::sub_passes>(*this);
+        }
+
+        return optimized;
     }
     
     template<typename Pass>
@@ -239,6 +306,7 @@ struct pass_runner {
 
         apply_todo<Pass>();
     
+        //TODO Do that, only if the pass is local
         if(log::enabled<Debug>()){
             if(local){
                 log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
@@ -250,19 +318,13 @@ struct pass_runner {
             }
         }
 
-        optimized = local;
+        optimized |= local;
     }
 };
 
 template<typename Passes>
-void optimize_function(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool, Platform platform){
-    if(log::enabled<Debug>()){
-        log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
-
-        print(function);
-    }
-    
-    pass_runner runner(function, pool, platform);
+void optimize_program(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform){
+    pass_runner runner(program, pool, configuration, platform);
     do{
         boost::mpl::for_each<Passes>(runner);
     } while(runner.optimized);
@@ -277,15 +339,11 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     allocate_temporary(program, platform);
 
     if(configuration->option_defined("fglobal-optimization")){
-        auto& functions = program->functions;
-        for(auto& function : functions){
-            optimize_function<passes>(function, string_pool, platform);
-        }
+        //Apply Interprocedural Optimizations
+        optimize_program<ipa_passes>(program, string_pool, configuration, platform);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        for(auto& function : program->functions){
-            optimize_function<basic_passes>(function, string_pool, platform); 
-        }
+        optimize_program<basic_passes>(program, string_pool, configuration, platform);
     }
     
     //Allocate storage for the temporaries that need to be stored

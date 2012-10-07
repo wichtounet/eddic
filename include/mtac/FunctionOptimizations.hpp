@@ -27,6 +27,7 @@ struct pass_traits<remove_unused_functions> {
     STATIC_STRING(name, "remove_unused_functions");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
@@ -40,6 +41,7 @@ struct pass_traits<remove_empty_functions> {
     STATIC_STRING(name, "remove_empty_functions");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 

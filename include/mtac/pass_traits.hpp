@@ -19,6 +19,7 @@ namespace mtac {
 
 enum class pass_type : unsigned int {
     IPA,
+    IPA_SUB,
     LOCAL, 
     DATA_FLOW,
     BB,

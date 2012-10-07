@@ -55,6 +55,7 @@ struct pass_traits<OffsetConstantPropagationProblem> {
     STATIC_STRING(name, "constant_propagation");
     STATIC_CONSTANT(bool, need_pool, true);
     STATIC_CONSTANT(bool, need_platform, true);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 

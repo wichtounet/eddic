@@ -27,6 +27,7 @@ struct pass_traits<optimize_branches> {
     STATIC_STRING(name, "optimize_branches");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 

@@ -28,6 +28,7 @@ struct pass_traits<loop_invariant_code_motion> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
@@ -41,6 +42,7 @@ struct pass_traits<loop_induction_variables_optimization> {
     STATIC_STRING(name, "loop_iv_optimization");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
@@ -54,6 +56,7 @@ struct pass_traits<remove_empty_loops> {
     STATIC_STRING(name, "remove_empty_loops");
     STATIC_CONSTANT(bool, need_pool, false);
     STATIC_CONSTANT(bool, need_platform, false);
+    STATIC_CONSTANT(bool, need_configuration, false);
     STATIC_CONSTANT(unsigned int, todo_flags, 0);
 };
 
