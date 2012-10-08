@@ -5,16 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "logging.hpp"
+
 #include "mtac/Function.hpp"
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n), _cfg(nullptr) {
     //Nothing to do   
 }
 
 std::shared_ptr<mtac::ControlFlowGraph> mtac::Function::cfg(){
     if(!_cfg){
+        log::emit<Debug>("CFG") << "Rebuild CFG for " << name << log::endl;
         _cfg = mtac::build_control_flow_graph(shared_from_this());
     }
 
