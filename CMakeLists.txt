@@ -99,10 +99,25 @@ file(
 	test/*
 )
 
-add_executable(eddic_test $<TARGET_OBJECTS:Compiler> ${test_files})
+include(BoostTestTargets.cmake)
+add_boost_test(eddic_boost_test
+    SOURCES ${test_files}
+    LIBRARIES boost_program_options
+    TESTS 
+    SpecificSuite/inc
+    SamplesSuite/samples_asm
+    SamplesSuite/samples_optimize
+    SamplesSuite/samples_includes
+    SamplesSuite/samples_casts
+    SamplesSuite/samples_concat
+    SamplesSuite/samples_compound
+    SamplesSuite/samples_bool
+    )
 
-target_link_libraries (eddic_test boost_program_options)
-target_link_libraries (eddic_test boost_unit_test_framework)
+#add_executable(eddic_boost_test $<TARGET_OBJECTS:Compiler> ${test_files})
+
+target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_program_options)
+#target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_unit_test_framework)
 
 # Specifications for the installation of eddic
 
@@ -115,7 +130,7 @@ INCLUDE(CTest)
 
 ENABLE_TESTING()
 
-ADD_TEST(
-    NAME integration_tests 
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND eddic_test --show_progress)
+#ADD_TEST(
+#    NAME integration_tests 
+#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#    COMMAND eddic_boost_test --show_progress)
