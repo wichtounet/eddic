@@ -1149,7 +1149,7 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
 
                         auto statements = bb->statements;
 
-                        for(int i = 0; i < it - 1; ++i){
+                        for(int i = 0; i < it - 2; ++i){
                             for(auto& statement : statements){
                                bb->statements.push_back(mtac::copy(statement, function->context->global())); 
                             }
