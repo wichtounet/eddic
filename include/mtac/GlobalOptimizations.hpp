@@ -14,7 +14,6 @@
 #include "assert.hpp"
 #include "logging.hpp"
 
-#include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
 
@@ -25,11 +24,9 @@ namespace mtac {
 template<DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     if(Type == DataFlowType::Forward){
-        auto graph = mtac::build_control_flow_graph(function);
-        return forward_data_flow(function, graph, problem);
+        return forward_data_flow(function, function->cfg(), problem);
     } else if(Type == DataFlowType::Backward){
-        auto graph = mtac::build_control_flow_graph(function);
-        return backward_data_flow(function, graph, problem);
+        return backward_data_flow(function, function->cfg(), problem);
     } else {
         ASSERT_PATH_NOT_TAKEN("This data-flow type is not handled");
     }

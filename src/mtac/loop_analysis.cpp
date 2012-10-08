@@ -14,7 +14,6 @@
 #include "logging.hpp"
 
 #include "mtac/loop_analysis.hpp"
-#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
@@ -81,7 +80,7 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
         init_depth(bb);
     }
     
-    auto graph = mtac::build_control_flow_graph(function);
+    auto graph = function->cfg(); 
     auto g = graph->get_graph();
 
     auto natural_loops = find_natural_loops(g);
