@@ -92,6 +92,7 @@ typedef boost::mpl::vector<
         mtac::loop_invariant_code_motion*,
         mtac::loop_induction_variables_optimization*,
         mtac::remove_empty_loops*,
+        mtac::complete_loop_peeling*,
         mtac::clean_variables*
     > passes;
 
