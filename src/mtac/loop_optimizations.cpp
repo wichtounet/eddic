@@ -675,6 +675,10 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                         }
                     }
 
+                    if(!it.has_next()){
+                        break;
+                    }
+
                     visit(replacer, *it);
 
                     ++it;
@@ -1118,6 +1122,11 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
     for(auto& loop : natural_loops){
         if(loop.size() == 1){
             auto bb = g[*loop.begin()].block;
+
+            if(bb->statements.size() < 2){
+                continue;
+            }
+
             auto prev_bb = get_previous_bb(function, bb);
 
             auto basic_induction_variables = find_basic_induction_variables(loop, g);
