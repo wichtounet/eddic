@@ -91,6 +91,11 @@ add_executable(eddic $<TARGET_OBJECTS:Compiler> src/eddi.cpp)
 
 target_link_libraries (eddic boost_program_options)
 
+# Enable testing
+INCLUDE(CTest)
+
+ENABLE_TESTING()
+
 # Create the test executable
 
 file(
@@ -114,23 +119,10 @@ add_boost_test(eddic_boost_test
     SamplesSuite/samples_bool
     )
 
-#add_executable(eddic_boost_test $<TARGET_OBJECTS:Compiler> ${test_files})
-
 target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_program_options)
-#target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_unit_test_framework)
 
 # Specifications for the installation of eddic
 
 INSTALL(TARGETS eddic
     RUNTIME DESTINATION bin
 )
-
-# Enable and configure testing
-INCLUDE(CTest)
-
-ENABLE_TESTING()
-
-#ADD_TEST(
-#    NAME integration_tests 
-#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#    COMMAND eddic_boost_test --show_progress)
