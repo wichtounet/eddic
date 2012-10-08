@@ -54,6 +54,18 @@ struct pass_traits<remove_empty_loops> {
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
+struct complete_loop_peeling {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<complete_loop_peeling> {
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_STRING(name, "complete_loop_peeling");
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+};
+
 } //end of mtac
 
 } //end of eddic
