@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Function.hpp"
 
 using namespace eddic;
         
