@@ -1050,6 +1050,8 @@ std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std
                 return std::make_pair(false, 0);
             }
         }
+
+        ++it;
     }
     
     return std::make_pair(false, 0);
