@@ -1125,7 +1125,7 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
         if(loop.size() == 1){
             auto bb = g[*loop.begin()].block;
 
-            if(bb->statements.size() < 2){
+            if(bb->statements.size() < 2 || bb->statements.size() > 100){
                 continue;
             }
 
