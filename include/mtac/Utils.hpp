@@ -83,6 +83,8 @@ bool erase_result(mtac::Operator op);
 bool is_distributive(mtac::Operator op);
 bool is_expression(mtac::Operator op);
 
+mtac::Statement copy(const mtac::Statement& statement, std::shared_ptr<GlobalContext> context);
+
 } //end of mtac
 
 } //end of eddic

@@ -675,6 +675,10 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, const G& 
                         }
                     }
 
+                    if(!it.has_next()){
+                        break;
+                    }
+
                     visit(replacer, *it);
 
                     ++it;
@@ -1046,6 +1050,8 @@ std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std
                 return std::make_pair(false, 0);
             }
         }
+
+        ++it;
     }
     
     return std::make_pair(false, 0);
@@ -1092,6 +1098,60 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
 
                                     bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, initial_value.second + it * linear_equation.d, mtac::Operator::ASSIGN));
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return optimized;
+}
+
+bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> function){
+    auto graph = mtac::build_control_flow_graph(function);
+    auto g = graph->get_graph();
+    
+    auto natural_loops = find_natural_loops(g);
+
+    if(natural_loops.empty()){
+        return false;
+    }
+
+    bool optimized = false;
+    
+    for(auto& loop : natural_loops){
+        if(loop.size() == 1){
+            auto bb = g[*loop.begin()].block;
+
+            if(bb->statements.size() < 2 || bb->statements.size() > 100){
+                continue;
+            }
+
+            auto prev_bb = get_previous_bb(function, bb);
+
+            auto basic_induction_variables = find_basic_induction_variables(loop, g);
+
+            if(basic_induction_variables.size() == 1){
+                auto biv = *basic_induction_variables.begin();
+                auto linear_equation = biv.second;
+                            
+                auto initial_value = get_initial_value(prev_bb, linear_equation.i);
+                if(initial_value.first){
+                    auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[bb->statements.size() - 1]);
+
+                    if(it > 0 && it < 12){
+                        optimized = true;
+
+                        //The comparison is not necessary anymore
+                        bb->statements.pop_back();
+
+                        auto statements = bb->statements;
+
+                        for(int i = 0; i < it - 2; ++i){
+                            for(auto& statement : statements){
+                               bb->statements.push_back(mtac::copy(statement, function->context->global())); 
                             }
                         }
                     }
