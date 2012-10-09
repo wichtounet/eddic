@@ -21,7 +21,7 @@ namespace eddic {
  * \param debug The debug mode flag. 
  * \param verbose The verbose mode flag. 
  */
-void assemble(Platform platform, const std::string& output, bool debug, bool verbose);
+void assemble(Platform platform, const std::string& s, const std::string& o, const std::string& output, bool debug, bool verbose);
 
 } //end of eddic
 

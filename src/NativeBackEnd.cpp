@@ -46,8 +46,12 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platfor
     }
 
     if(!configuration->option_defined("ltac-only")){
+        auto input_file_name = configuration->option_value("input");
+        auto asm_file_name = input_file_name + ".s";
+        auto object_file_name = input_file_name + ".o";
+
         //Generate assembly from TAC
-        AssemblyFileWriter writer("output.asm");
+        AssemblyFileWriter writer(asm_file_name);
 
         as::CodeGeneratorFactory factory;
         auto generator = factory.get(platform, writer, mtacProgram->context);
@@ -60,14 +64,14 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtacProgram, Platfor
 
         //If it's necessary, assemble and link the assembly
         if(!configuration->option_defined("assembly")){
-            assemble(platform, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
+            assemble(platform, asm_file_name, object_file_name, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
 
             //Remove temporary files
             if(!configuration->option_defined("keep")){
-                remove("output.asm");
+                remove(asm_file_name.c_str());
             }
 
-            remove("output.o");
+            remove(object_file_name.c_str());
         }
     }
 }
