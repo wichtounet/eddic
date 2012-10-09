@@ -79,3 +79,11 @@ std::size_t mtac::Function::size(){
 std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function::blocks(){
     return std::make_pair(begin(), end());
 }
+
+mtac::basic_block_iterator mtac::Function::begin(std::shared_ptr<mtac::Function> function){
+    return function->begin();
+}
+
+mtac::basic_block_iterator mtac::Function::end(std::shared_ptr<mtac::Function> function){
+    return function->end();
+}

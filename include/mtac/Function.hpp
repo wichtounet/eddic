@@ -62,6 +62,9 @@ class Function {
         std::string name;
 };
 
+basic_block_iterator begin(std::shared_ptr<mtac::Function> function);
+basic_block_iterator end(std::shared_ptr<mtac::Function> function);
+
 } //end of mtac
 
 } //end of eddic
