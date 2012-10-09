@@ -23,6 +23,14 @@ mtac::basic_block_iterator mtac::Function::end(){
     return basic_block_iterator(nullptr);    
 }
         
+std::shared_ptr<mtac::BasicBlock> mtac::Function::entry_bb(){
+    return entry;
+}
+
+std::shared_ptr<mtac::BasicBlock> mtac::Function::exit_bb(){
+    return exit;
+}
+        
 void mtac::Function::add(Statement statement){
     statements.push_back(statement);
 }

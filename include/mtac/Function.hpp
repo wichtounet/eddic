@@ -32,14 +32,17 @@ class Function {
         std::shared_ptr<FunctionContext> context;
 
         void add(Statement statement);
+        std::vector<Statement>& getStatements();
 
         std::shared_ptr<BasicBlock> currentBasicBlock();
         std::shared_ptr<BasicBlock> newBasicBlock();
 
         std::string getName() const;
 
-        std::vector<Statement>& getStatements();
         BlockList& getBasicBlocks();
+        
+        std::shared_ptr<BasicBlock> entry_bb();
+        std::shared_ptr<BasicBlock> exit_bb();
 
         basic_block_iterator begin();
         basic_block_iterator end();
