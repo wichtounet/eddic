@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "likely.hpp"
+
 #include "mtac/Function.hpp"
 
 using namespace eddic;
@@ -12,21 +14,36 @@ using namespace eddic;
 mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {
     //Nothing to do   
 }
+
+mtac::basic_block_iterator mtac::Function::begin(){
+    return basic_block_iterator(entry);
+}
+
+mtac::basic_block_iterator mtac::Function::end(){
+    return basic_block_iterator(nullptr);    
+}
         
 void mtac::Function::add(Statement statement){
     statements.push_back(statement);
 }
 
-mtac::Function::BlockPtr mtac::Function::currentBasicBlock(){
-    assert(!basic_blocks.empty());
-
-    return basic_blocks.back();
+std::shared_ptr<mtac::BasicBlock> mtac::Function::currentBasicBlock(){
+    return exit;
 }
 
-mtac::Function::BlockPtr mtac::Function::newBasicBlock(){
-    basic_blocks.push_back(std::make_shared<mtac::BasicBlock>(basic_blocks.size() + 1));
-    basic_blocks.back()->context = context;
-    return basic_blocks.back();
+std::shared_ptr<mtac::BasicBlock> mtac::Function::newBasicBlock(){
+    auto new_block = std::make_shared<mtac::BasicBlock>(++bb_count);
+    
+    if(unlikely(!entry)){
+        entry = new_block;
+    } else {
+        exit->next = new_block;
+        new_block->prev = exit;
+    }
+
+    exit = new_block;
+
+    return new_block;
 }   
 
 std::string mtac::Function::getName() const {
