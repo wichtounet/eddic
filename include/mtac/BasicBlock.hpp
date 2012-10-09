@@ -27,6 +27,9 @@ class BasicBlock {
         std::vector<mtac::Statement> statements;
         std::shared_ptr<FunctionContext> context;
 
+        std::shared_ptr<BasicBlock> next;
+        std::shared_ptr<BasicBlock> prev;
+
         BasicBlock(int index);
 
         void add(mtac::Statement statement);
