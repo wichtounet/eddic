@@ -40,7 +40,7 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::currentBasicBlock(){
 }
 
 std::shared_ptr<mtac::BasicBlock> mtac::Function::newBasicBlock(){
-    auto new_block = std::make_shared<mtac::BasicBlock>(++bb_count);
+    auto new_block = std::make_shared<mtac::BasicBlock>(++count);
     
     if(unlikely(!entry)){
         entry = new_block;
@@ -62,20 +62,20 @@ std::vector<mtac::Statement>& mtac::Function::getStatements(){
     return statements;
 }
 
+std::size_t mtac::Function::bb_count(){
+    return count;
+}
+
 std::size_t mtac::Function::size(){
     std::size_t size = 0;
 
-    for(auto block : getBasicBlocks()){
+    for(auto& block : *this){
         size += block->statements.size();
     }
 
     return size;
 }
 
-mtac::Function::BlockList& mtac::Function::getBasicBlocks(){
-    return basic_blocks;
-}
-
-std::pair<mtac::Function::BlockIterator, mtac::Function::BlockIterator> mtac::Function::blocks(){
-    return std::make_pair(basic_blocks.begin(), basic_blocks.end());
+std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function::blocks(){
+    return std::make_pair(begin(), end());
 }

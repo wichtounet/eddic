@@ -52,7 +52,7 @@ class basic_block_iterator : public std::iterator<std::bidirectional_iterator_ta
             return current != rhs.current;
         }
 
-        std::shared_ptr<BasicBlock> operator*() {
+        std::shared_ptr<BasicBlock>& operator*() {
             return current;
         }
             

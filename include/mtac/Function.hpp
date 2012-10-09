@@ -31,15 +31,13 @@ class Function {
         
         std::shared_ptr<FunctionContext> context;
 
+        std::string getName() const;
+
         void add(Statement statement);
         std::vector<Statement>& getStatements();
 
         std::shared_ptr<BasicBlock> currentBasicBlock();
         std::shared_ptr<BasicBlock> newBasicBlock();
-
-        std::string getName() const;
-
-        BlockList& getBasicBlocks();
         
         std::shared_ptr<BasicBlock> entry_bb();
         std::shared_ptr<BasicBlock> exit_bb();
@@ -47,8 +45,9 @@ class Function {
         basic_block_iterator begin();
         basic_block_iterator end();
 
-        std::pair<BlockIterator, BlockIterator> blocks();
+        std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
+        std::size_t bb_count();
         std::size_t size();
 
     private:
@@ -56,11 +55,9 @@ class Function {
         std::vector<Statement> statements;
         
         //There is no basic blocks at the beginning
-        unsigned int bb_count = 0;
+        std::size_t count = 0;
         std::shared_ptr<BasicBlock> entry;
         std::shared_ptr<BasicBlock> exit;
-
-        BlockList basic_blocks;
 
         std::string name;
 };
