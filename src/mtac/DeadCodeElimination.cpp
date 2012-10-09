@@ -23,7 +23,7 @@ bool mtac::dead_code_elimination::operator()(std::shared_ptr<mtac::Function> fun
     mtac::LiveVariableAnalysisProblem problem;
     auto results = mtac::data_flow(function, problem);
 
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         auto it = block->statements.begin();
         auto end = block->statements.end();
 
@@ -47,7 +47,7 @@ bool mtac::dead_code_elimination::operator()(std::shared_ptr<mtac::Function> fun
 
     std::unordered_set<Offset, mtac::OffsetHash> used_offsets;
 
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
@@ -64,7 +64,7 @@ bool mtac::dead_code_elimination::operator()(std::shared_ptr<mtac::Function> fun
         }
     }
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         auto it = block->statements.begin();
         auto end = block->statements.end();
 

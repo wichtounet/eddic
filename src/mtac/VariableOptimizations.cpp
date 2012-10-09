@@ -24,7 +24,7 @@ namespace {
 bool is_written_once(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::Function> function){
     bool written = false;
 
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op) && (*ptr)->result == variable){
@@ -50,7 +50,7 @@ bool is_written_once(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::F
 }
 
 bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target, std::shared_ptr<mtac::Function> function){
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
@@ -72,7 +72,7 @@ bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Varia
 std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::Function> function){
     std::vector<std::shared_ptr<Variable>> targets;
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
@@ -94,7 +94,7 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
 std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> variable, std::shared_ptr<mtac::Function> function){
     std::vector<std::shared_ptr<Variable>> sources;
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
@@ -210,7 +210,7 @@ bool mtac::remove_aliases::operator()(std::shared_ptr<mtac::Function> function){
                         if(is_not_direct_alias(var, targets[0], function) && targets[0]->type() != STRING){
                             VariableReplace replacer(function, var, targets[0]);
 
-                            for(auto& block : function->getBasicBlocks()){
+                            for(auto& block : function){
                                 for(auto& statement : block->statements){
                                     optimized |= visit(replacer, statement);
                                 }
@@ -229,7 +229,7 @@ bool mtac::remove_aliases::operator()(std::shared_ptr<mtac::Function> function){
                             if(is_not_direct_alias(var, sources[0], function) && sources[0]->type() != STRING){
                                 VariableReplace replacer(function, var, sources[0]);
 
-                                for(auto& block : function->getBasicBlocks()){
+                                for(auto& block : function){
                                     for(auto& statement : block->statements){
                                         optimized |= visit(replacer, statement);
                                     }
