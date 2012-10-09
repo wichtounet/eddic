@@ -29,22 +29,22 @@ void exec(const std::string& command, bool verbose) {
     }
 }
 
-void assembleWithoutDebug(Platform platform, const std::string& output, bool verbose){
+void assembleWithoutDebug(Platform platform, const std::string& s, const std::string& o, const std::string& output, bool verbose){
     switch(platform){
         case Platform::INTEL_X86:
-            exec("nasm -f elf32 -o output.o output.asm", verbose);
-            exec("ld -S -m elf_i386 output.o -o " + output, verbose);
+            exec("nasm -f elf32 -o " + o + " " + s, verbose);
+            exec("ld -S -m elf_i386 " + o  + " -o " + output, verbose);
 
             break;
         case Platform::INTEL_X86_64:
-            exec("nasm -f elf64 -o output.o output.asm", verbose);
-            exec("ld -S -m elf_x86_64 output.o -o " + output, verbose);
+            exec("nasm -f elf64 -o " + o + " " + s, verbose);
+            exec("ld -S -m elf_x86_64 " + o  + " -o " + output, verbose);
 
             break;
     }
 }
 
-void assembleWithDebug(Platform platform, const std::string& output, bool verbose){
+void assembleWithDebug(Platform platform, const std::string& s, const std::string& o, const std::string& output, bool verbose){
     switch(platform){
         case Platform::INTEL_X86:
             exec("nasm -g -f elf32 -o output.o output.asm", verbose);
@@ -61,10 +61,10 @@ void assembleWithDebug(Platform platform, const std::string& output, bool verbos
 
 } //end of anonymous namespace
 
-void eddic::assemble(Platform platform, const std::string& output, bool debug, bool verbose){
+void eddic::assemble(Platform platform, const std::string& s, const std::string& o, const std::string& output, bool debug, bool verbose){
    if(debug){
-       assembleWithDebug(platform, output, verbose);
+       assembleWithDebug(platform, s, o, output, verbose);
    } else {
-       assembleWithoutDebug(platform, output, verbose);
+       assembleWithoutDebug(platform, s, o, output, verbose);
    }
 }
