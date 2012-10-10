@@ -200,6 +200,7 @@ add_boost_test(eddic_boost_test
     #Unit tests
     toString
     toNumber
+    bb_iterators
     )
 
 target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_program_options)
