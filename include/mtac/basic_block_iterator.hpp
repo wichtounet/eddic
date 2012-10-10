@@ -18,11 +18,11 @@ namespace mtac {
 
 class basic_block_iterator : public std::iterator<std::bidirectional_iterator_tag, std::shared_ptr<BasicBlock>> {
     public:
-        basic_block_iterator(std::shared_ptr<BasicBlock> bb) : current(bb) {}
-
-        basic_block_iterator(const basic_block_iterator& it) : current(it.current) {}
+        basic_block_iterator(std::shared_ptr<BasicBlock> current, std::shared_ptr<BasicBlock> prev) : current(current), prev(prev) {}
+        basic_block_iterator(const basic_block_iterator& it) : current(it.current), prev(it.prev) {}
 
         basic_block_iterator& operator++() {
+            prev = current;
             current = current->next;
             return *this;
         }
@@ -34,7 +34,10 @@ class basic_block_iterator : public std::iterator<std::bidirectional_iterator_ta
         }
         
         basic_block_iterator& operator--() {
-            current = current->prev;
+            current = prev;
+            if(current){
+                prev = current->prev;
+            }
             return *this;
         }
 
@@ -58,6 +61,7 @@ class basic_block_iterator : public std::iterator<std::bidirectional_iterator_ta
             
     private:
         std::shared_ptr<BasicBlock> current;
+        std::shared_ptr<BasicBlock> prev;
 };
 
 } //end of mtac

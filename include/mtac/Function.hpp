@@ -50,9 +50,11 @@ class Function {
 
         basic_block_iterator begin();
         basic_block_iterator end();
+        basic_block_iterator at(std::shared_ptr<BasicBlock> bb);
 
         basic_block_iterator insert_before(basic_block_iterator it, std::shared_ptr<BasicBlock> block);
         basic_block_iterator remove(basic_block_iterator it);
+        basic_block_iterator remove(std::shared_ptr<BasicBlock> bb);
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 

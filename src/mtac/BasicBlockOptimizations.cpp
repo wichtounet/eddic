@@ -40,7 +40,7 @@ bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> functi
         auto next = block->next;
 
         if(unlikely(block->statements.empty())){
-            if(usage.find(*it) == usage.end()){
+            if(usage.find(block) == usage.end()){
                 it = function->remove(it);
                 optimized = true;
 

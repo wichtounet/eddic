@@ -198,10 +198,7 @@ unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_fu
     auto dest_definition = dest_function->definition;
 
     if(source_definition->parameters.size() > 0){
-        //Param are in the previous block
-        --bit;
-
-        auto pit = (*bit)->statements.end() - 1;
+        auto pit = --(*bit)->prev->statements.end();
 
         for(int i = source_definition->parameters.size() - 1; i >= 0;){
             auto statement = *pit;

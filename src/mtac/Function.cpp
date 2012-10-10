@@ -16,11 +16,19 @@ mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& 
 }
 
 mtac::basic_block_iterator mtac::Function::begin(){
-    return basic_block_iterator(entry);
+    return basic_block_iterator(entry, nullptr);
 }
 
 mtac::basic_block_iterator mtac::Function::end(){
-    return basic_block_iterator(nullptr);    
+    return basic_block_iterator(nullptr, exit);    
+}
+
+mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<BasicBlock> bb){
+    if(bb){
+        return basic_block_iterator(bb, bb->prev);
+    } else {
+        return basic_block_iterator(nullptr, nullptr);
+    }
 }
         
 std::shared_ptr<mtac::BasicBlock> mtac::Function::entry_bb(){
@@ -46,7 +54,7 @@ void mtac::Function::create_entry_bb(){
 }
 
 void mtac::Function::create_exit_bb(){
-    auto new_block = std::make_shared<mtac::BasicBlock>(2);
+    auto new_block = std::make_shared<mtac::BasicBlock>(-2);
     
     exit->next = new_block;
     new_block->prev = exit;
@@ -77,11 +85,10 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
     bb->prev->next = block;
     bb->prev = block;
     
-    return mtac::basic_block_iterator(bb);
+    return at(bb);
 }
 
-mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it){
-    auto& block = *it;
+mtac::basic_block_iterator mtac::Function::remove(std::shared_ptr<mtac::BasicBlock> block){
     auto& next = block->next;
 
     block->prev->next = next;
@@ -90,7 +97,11 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it)
     block->prev = nullptr;
     block->next = nullptr;
 
-    return mtac::basic_block_iterator(next);
+    return at(next);
+}
+
+mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it){
+    return remove(*it);
 }
 
 std::string mtac::Function::getName() const {
