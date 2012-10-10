@@ -47,11 +47,11 @@ class basic_block_iterator : public std::iterator<std::bidirectional_iterator_ta
             return tmp;
         }
 
-        bool operator==(const basic_block_iterator& rhs) {
+        bool operator==(const basic_block_iterator& rhs) const {
             return current == rhs.current;
         }
 
-        bool operator!=(const basic_block_iterator& rhs) {
+        bool operator!=(const basic_block_iterator& rhs) const {
             return current != rhs.current;
         }
 

@@ -200,6 +200,7 @@ add_boost_test(eddic_boost_test
     #Unit tests
     toString
     toNumber
+    bb_entry_exit_count 
     bb_iterators
     )
 
