@@ -80,13 +80,7 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
 
     if(!removed_functions.empty()){
         for(auto& function : program->functions){
-            auto& blocks = function->getBasicBlocks();
-
-            auto bit = blocks.begin();
-
-            while(bit != blocks.end()){
-                auto block = *bit;
-
+            for(auto& block : function){
                 auto fit = block->statements.begin();
 
                 while(fit != block->statements.end()){
@@ -101,9 +95,7 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
                             if(parameters > 0){
                                 //The parameters are in the previous block
                                 if(fit == block->statements.begin()){
-                                    auto pit = bit;
-                                    --pit;
-                                    auto previous = *pit;
+                                    auto previous = block->prev;
 
                                     auto fend = previous->statements.end();
                                     --fend;
@@ -137,8 +129,6 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
 
                     ++fit;
                 }
-
-                ++bit;
             }
         }
     }

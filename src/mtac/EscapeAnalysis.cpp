@@ -13,7 +13,7 @@ using namespace eddic;
 mtac::EscapedVariables mtac::escape_analysis(std::shared_ptr<mtac::Function> function){
     mtac::EscapedVariables pointer_escaped = std::make_shared<mtac::EscapedVariables::element_type>();
 
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             //Passing a variable as param by address escape its liveness
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){

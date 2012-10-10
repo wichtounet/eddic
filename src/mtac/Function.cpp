@@ -54,8 +54,12 @@ void mtac::Function::create_exit_bb(){
     exit = new_block;
 }
 
+std::shared_ptr<mtac::BasicBlock> mtac::Function::new_bb(){
+    return std::make_shared<mtac::BasicBlock>(++count);
+}
+
 std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
-    auto new_block = std::make_shared<mtac::BasicBlock>(++count);
+    auto new_block = new_bb();
     
     exit->next = new_block;
     new_block->prev = exit;
@@ -64,6 +68,30 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
 
     return new_block;
 }   
+        
+mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, std::shared_ptr<mtac::BasicBlock> block){
+    auto& bb = *it;
+
+    block->prev = bb->prev;
+    block->next = bb;
+    bb->prev->next = block;
+    bb->prev = block;
+    
+    return mtac::basic_block_iterator(bb);
+}
+
+mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it){
+    auto& block = *it;
+    auto& next = block->next;
+
+    block->prev->next = next;
+    next->prev = block->prev;
+
+    block->prev = nullptr;
+    block->next = nullptr;
+
+    return mtac::basic_block_iterator(next);
+}
 
 std::string mtac::Function::getName() const {
     return name;
@@ -74,7 +102,7 @@ std::vector<mtac::Statement>& mtac::Function::getStatements(){
 }
 
 std::size_t mtac::Function::bb_count(){
-    return count;
+    return count + 2;
 }
 
 std::size_t mtac::Function::size(){

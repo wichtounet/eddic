@@ -23,7 +23,7 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
 }
 
 bool mtac::is_recursive(std::shared_ptr<mtac::Function> function){
-    for(auto& basic_block : function->getBasicBlocks()){
+    for(auto& basic_block : function){
         for(auto& statement : basic_block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
                 if((*ptr)->functionDefinition == function->definition){

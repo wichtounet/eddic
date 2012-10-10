@@ -62,11 +62,10 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
 
     BBClones bb_clones;
 
-    for(auto block : source_function->getBasicBlocks()){
+    for(auto& block : source_function){
         //Copy all basic blocks except ENTRY and EXIT
         if(block->index >= 0){
-            auto new_bb = std::make_shared<mtac::BasicBlock>(dest_function->getBasicBlocks().size() + 1);
-            new_bb->context = block->context;
+            auto new_bb = dest_function->new_bb();
     
             for(auto& statement : block->statements){
                 new_bb->statements.push_back(mtac::copy(statement, context));
@@ -377,7 +376,7 @@ std::shared_ptr<mtac::Function> get_target(std::shared_ptr<mtac::Call> call, std
 bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::Program> program){
     bool optimized = false;
         
-    for(auto bit = iterate(dest_function->getBasicBlocks()); bit.has_next(); ++bit){
+    for(auto bit = iterate(dest_function); bit.has_next(); ++bit){
         auto basic_block = *bit;
 
         auto it = iterate(basic_block->statements);

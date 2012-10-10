@@ -127,7 +127,7 @@ bool mtac::allocate_temporary::operator()(std::shared_ptr<mtac::Program> program
 
         CollectTemporary visitor(function);
 
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             visitor.block = block;
 
             for(auto& statement : block->statements){
@@ -141,7 +141,7 @@ bool mtac::allocate_temporary::operator()(std::shared_ptr<mtac::Program> program
         auto descriptor = getPlatformDescriptor(platform);
         auto registers = descriptor->number_of_registers();
         
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             for(auto& statement : block->statements){
                 auto values = results->OUT_S[statement].values();
                 auto temporaries = count_temporaries(values);

@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef ITERATORS_H
+#define ITERATORS_H
 
 namespace eddic {
     

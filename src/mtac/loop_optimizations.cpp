@@ -20,6 +20,7 @@
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
+#include "mtac/Function.hpp"
 
 using namespace eddic;
 
@@ -165,13 +166,11 @@ bool is_invariant(mtac::Statement& statement, Usage& usage){
 }
 
 std::shared_ptr<mtac::BasicBlock> create_pre_header(const Loop& loop, std::shared_ptr<mtac::Function> function, const G& g){
-    //Create a new basic block and detach it from the function
-    auto pre_header = function->newBasicBlock();
-    function->getBasicBlocks().pop_back();
+    auto pre_header = function->new_bb();
     
     auto first_bb = g[*loop.begin()].block;
 
-    auto bit = iterate(function->getBasicBlocks());
+    auto bit = iterate(function);
 
     while(bit.has_next()){
         if(*bit == first_bb){

@@ -111,7 +111,10 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << "Function " << function->getName() << endl;
 
         visit_each(*this, function->getStatements());
-        visit_each_non_variant(*this, function->getBasicBlocks());
+
+        for(auto& block : function){
+            visit_non_variant(*this, block);
+        }
 
         stream << endl;
     }

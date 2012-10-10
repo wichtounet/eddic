@@ -8,6 +8,8 @@
 #ifndef MTAC_FUNCTION_H
 #define MTAC_FUNCTION_H
 
+#include "iterators.hpp"
+
 #include "mtac/BasicBlock.hpp"
 #include "mtac/Statement.hpp"
 #include "mtac/basic_block_iterator.hpp"
@@ -41,12 +43,16 @@ class Function {
 
         std::shared_ptr<BasicBlock> current_bb();
         std::shared_ptr<BasicBlock> append_bb();
+        std::shared_ptr<BasicBlock> new_bb();
         
         std::shared_ptr<BasicBlock> entry_bb();
         std::shared_ptr<BasicBlock> exit_bb();
 
         basic_block_iterator begin();
         basic_block_iterator end();
+
+        basic_block_iterator insert_before(basic_block_iterator it, std::shared_ptr<BasicBlock> block);
+        basic_block_iterator remove(basic_block_iterator it);
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
@@ -69,6 +75,40 @@ basic_block_iterator begin(std::shared_ptr<mtac::Function> function);
 basic_block_iterator end(std::shared_ptr<mtac::Function> function);
 
 } //end of mtac
+
+template<>
+struct Iterators<std::shared_ptr<mtac::Function>> {
+    std::shared_ptr<mtac::Function> container;
+
+    mtac::basic_block_iterator it;
+    mtac::basic_block_iterator end;
+
+    Iterators(std::shared_ptr<mtac::Function> container) : container(container), it(container->begin()), end(container->end()) {}
+
+    auto operator*() -> decltype(*it) {
+        return *it;
+    }
+
+    void operator++(){
+        ++it;
+    }
+    
+    void operator--(){
+        --it;
+    }
+
+    void insert(std::shared_ptr<mtac::BasicBlock> bb){
+        it = container->insert_before(it, bb);
+    }
+
+    void erase(){
+        it = container->remove(it);
+    }
+
+    bool has_next(){
+        return it != end;
+    }
+};
 
 } //end of eddic
 
