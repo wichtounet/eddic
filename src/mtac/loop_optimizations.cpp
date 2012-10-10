@@ -1018,19 +1018,6 @@ bool mtac::loop_induction_variables_optimization::operator()(std::shared_ptr<mta
     return optimized;
 }
 
-std::shared_ptr<mtac::BasicBlock> get_previous_bb(std::shared_ptr<mtac::Function> function, std::shared_ptr<mtac::BasicBlock> bb){
-    auto blocks_it = function->blocks();
-    auto it = std::find(blocks_it.first, blocks_it.second, bb);
-
-    if(it == blocks_it.second || it == blocks_it.first){
-        return nullptr;
-    }
-
-    --it;
-
-    return *it;
-}
-
 std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable> var){
     auto it = bb->statements.rbegin();
     auto end = bb->statements.rend();
@@ -1078,7 +1065,7 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
                 
                     auto basic_induction_variables = find_basic_induction_variables(loop, g);
                     
-                    auto prev_bb = get_previous_bb(function, bb);
+                    auto prev_bb = bb->prev;
 
                     if(prev_bb){
                         if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
@@ -1128,7 +1115,7 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
                 continue;
             }
 
-            auto prev_bb = get_previous_bb(function, bb);
+            auto prev_bb = bb->prev;
 
             auto basic_induction_variables = find_basic_induction_variables(loop, g);
 
