@@ -13,9 +13,8 @@
 #include "Utils.hpp"
 #include "Platform.hpp"
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE EddicTestSuites
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE eddic_test_suite
+#include <BoostTestTargetConfig.h>
 
 /*
  * \def TEST_APPLICATION(file) 
