@@ -36,17 +36,19 @@ void mtac::BasicBlockExtractor::extract(std::shared_ptr<mtac::Program> program) 
         //The first is always a leader 
         bool nextIsLeader = true;
 
+        function->create_entry_bb();
+
         //First separate the statements into basic blocks
         for(auto& statement : function->getStatements()){
             if(auto* ptr = boost::get<std::string>(&statement)){
-                function->newBasicBlock();
+                function->append_bb();
 
-                labels[*ptr] = function->currentBasicBlock();
+                labels[*ptr] = function->current_bb();
 
                 nextIsLeader = false;
             } else {
                 if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Call>>(statement)))){
-                    function->newBasicBlock();
+                    function->append_bb();
                     nextIsLeader = false;
                 }
 
@@ -55,12 +57,12 @@ void mtac::BasicBlockExtractor::extract(std::shared_ptr<mtac::Program> program) 
                     nextIsLeader = true;
                 } 
 
-                function->currentBasicBlock()->add(statement);
+                function->current_bb()->add(statement);
             }
         }
 
         //Then, replace all the the labels by reference to basic blocks
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             for(auto& statement : block->statements){
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];
@@ -72,8 +74,7 @@ void mtac::BasicBlockExtractor::extract(std::shared_ptr<mtac::Program> program) 
             }
         }
 
-        function->getBasicBlocks().push_front(std::make_shared<mtac::BasicBlock>(-1));
-        function->getBasicBlocks().push_back(std::make_shared<mtac::BasicBlock>(-2));
+        function->create_exit_bb();
 
         function->getStatements().clear();
     }

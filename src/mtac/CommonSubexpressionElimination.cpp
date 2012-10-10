@@ -121,7 +121,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
 
     typename ProblemDomain::Values values;
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::is_expression((*ptr)->op)){

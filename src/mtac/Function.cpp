@@ -35,19 +35,30 @@ void mtac::Function::add(Statement statement){
     statements.push_back(statement);
 }
 
-std::shared_ptr<mtac::BasicBlock> mtac::Function::currentBasicBlock(){
+std::shared_ptr<mtac::BasicBlock> mtac::Function::current_bb(){
     return exit;
 }
+        
+void mtac::Function::create_entry_bb(){
+    auto new_block = std::make_shared<mtac::BasicBlock>(-1);
 
-std::shared_ptr<mtac::BasicBlock> mtac::Function::newBasicBlock(){
+    entry = exit = new_block;
+}
+
+void mtac::Function::create_exit_bb(){
+    auto new_block = std::make_shared<mtac::BasicBlock>(2);
+    
+    exit->next = new_block;
+    new_block->prev = exit;
+
+    exit = new_block;
+}
+
+std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
     auto new_block = std::make_shared<mtac::BasicBlock>(++count);
     
-    if(unlikely(!entry)){
-        entry = new_block;
-    } else {
-        exit->next = new_block;
-        new_block->prev = exit;
-    }
+    exit->next = new_block;
+    new_block->prev = exit;
 
     exit = new_block;
 

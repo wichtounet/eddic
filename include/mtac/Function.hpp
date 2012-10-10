@@ -36,8 +36,11 @@ class Function {
         void add(Statement statement);
         std::vector<Statement>& getStatements();
 
-        std::shared_ptr<BasicBlock> currentBasicBlock();
-        std::shared_ptr<BasicBlock> newBasicBlock();
+        void create_entry_bb();
+        void create_exit_bb();
+
+        std::shared_ptr<BasicBlock> current_bb();
+        std::shared_ptr<BasicBlock> append_bb();
         
         std::shared_ptr<BasicBlock> entry_bb();
         std::shared_ptr<BasicBlock> exit_bb();
