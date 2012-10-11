@@ -202,6 +202,7 @@ add_boost_test(eddic_boost_test
     toNumber
     bb_entry_exit_count 
     bb_iterators
+    bb_new_bb
     )
 
 target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_program_options)
