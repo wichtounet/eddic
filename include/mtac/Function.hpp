@@ -68,8 +68,8 @@ class Function {
         //There is no basic blocks at the beginning
         std::size_t count = 0;
         std::size_t index = 0;
-        std::shared_ptr<BasicBlock> entry;
-        std::shared_ptr<BasicBlock> exit;
+        std::shared_ptr<BasicBlock> entry = nullptr;
+        std::shared_ptr<BasicBlock> exit = nullptr;
 
         std::string name;
 };
@@ -88,7 +88,7 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
 
     Iterators(std::shared_ptr<mtac::Function> container) : container(container), it(container->begin()), end(container->end()) {}
 
-    auto operator*() -> decltype(*it) {
+    std::shared_ptr<mtac::BasicBlock>& operator*(){
         return *it;
     }
 
@@ -102,10 +102,12 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
 
     void insert(std::shared_ptr<mtac::BasicBlock> bb){
         it = container->insert_before(it, bb);
+        end = container->end();
     }
 
     void erase(){
         it = container->remove(it);
+        end = container->end();
     }
 
     bool has_next(){

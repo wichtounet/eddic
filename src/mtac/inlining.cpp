@@ -56,8 +56,7 @@ struct BBReplace : public boost::static_visitor<> {
     }
 };
 
-template<typename Iterator>
-BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit, std::shared_ptr<GlobalContext> context){
+BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<GlobalContext> context){
     log::emit<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
     BBClones bb_clones;
@@ -73,17 +72,14 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
 
             bb_clones[block] = new_bb;
 
-            bit.insert(new_bb);
-
-            ++bit;
+            dest_function->insert_before(dest_function->at(bb), new_bb);
         }
     }
     
     return bb_clones;
 }
 
-template<typename Iterator>
-mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit){
+mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::BasicBlock> bb){
     mtac::VariableClones variable_clones;
 
     auto source_definition = source_function->definition;
@@ -102,10 +98,9 @@ mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_func
     }
 
     if(source_definition->parameters.size() > 0){
-        //Param are in the previous block
-        --bit;
+        auto param_bb = bb->prev;
 
-        auto pit = (*bit)->statements.end() - 1;
+        auto pit = param_bb->statements.end() - 1;
 
         for(int i = parameters - 1; i >= 0;){
             auto statement = *pit;
@@ -190,15 +185,16 @@ mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_func
     return variable_clones;
 }
 
-template<typename Iterator>
-unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, Iterator bit){
+unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::BasicBlock> bb){
     unsigned int constant = 0;
 
     auto source_definition = source_function->definition;
     auto dest_definition = dest_function->definition;
 
     if(source_definition->parameters.size() > 0){
-        auto pit = --(*bit)->prev->statements.end();
+        auto param_bb = bb->prev;
+
+        auto pit = param_bb->statements.end() - 1;
 
         for(int i = source_definition->parameters.size() - 1; i >= 0;){
             auto statement = *pit;
@@ -228,19 +224,15 @@ unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_fu
     return constant;
 }
 
-template<typename Iterator>
-void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, Iterator bit){
+void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::BasicBlock> basic_block){
     mtac::VariableReplace variable_replacer(variable_clones);
     BBReplace bb_replacer(bb_clones);
 
-    auto basic_block = *bit;
-    --bit;
+    auto new_bb = basic_block->prev;
 
     auto cloned_bb = bb_clones.size();
 
     while(cloned_bb > 0){
-        auto new_bb = *bit;
-
         auto ssit = iterate(new_bb->statements);
 
         while(ssit.has_next()){
@@ -295,7 +287,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
         }
 
         --cloned_bb;
-        --bit;
+        new_bb = new_bb->prev;
     }
 }
 
@@ -318,8 +310,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     return true;
 }
 
-template<typename Iterator>
-bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> call, Iterator bit){
+bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::BasicBlock> bb){
     //Do not inline recursive calls
     if(source_function == target_function){
         return false;
@@ -329,7 +320,7 @@ bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_pt
         auto source_size = source_function->size();
         auto target_size = target_function->size();
 
-        auto constant_parameters = count_constant_parameters(target_function, source_function, bit);
+        auto constant_parameters = count_constant_parameters(target_function, source_function, bb);
 
         //If all parameters are constant, there are high chances of further optimizations
         if(target_function->definition->parameters.size() == constant_parameters){
@@ -372,8 +363,11 @@ std::shared_ptr<mtac::Function> get_target(std::shared_ptr<mtac::Call> call, std
 
 bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::Program> program){
     bool optimized = false;
+
+    auto bit = dest_function->begin();
+    auto bend = dest_function->end();
         
-    for(auto bit = iterate(dest_function); bit.has_next(); ++bit){
+    while(bit != bend){
         auto basic_block = *bit;
 
         auto it = iterate(basic_block->statements);
@@ -393,11 +387,11 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                 auto source_definition = source_function->definition;
                 auto dest_definition = dest_function->definition;
 
-                if(will_inline(dest_function, source_function, call, bit)){
+                if(will_inline(dest_function, source_function, call, basic_block)){
                     log::emit<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
                     //Copy the parameters
-                    auto variable_clones = copy_parameters(source_function, dest_function, bit);
+                    auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
                     //Allocate storage for the local variables of the inlined function
                     for(auto variable : source_definition->context->stored_variables()){
@@ -405,10 +399,10 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                     }
 
                     //Clone all the source basic blocks in the dest function
-                    auto bb_clones = clone(source_function, dest_function, bit, program->context);
+                    auto bb_clones = clone(source_function, dest_function, basic_block, program->context);
 
                     //Fix all the instructions (clones and return)
-                    adapt_instructions(variable_clones, bb_clones, call, bit);
+                    adapt_instructions(variable_clones, bb_clones, call, basic_block);
 
                     //Erase the original call
                     it.erase();
@@ -423,6 +417,8 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
 
             ++it;
         }
+
+        ++bit;
     }
 
     return optimized;

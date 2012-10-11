@@ -169,18 +169,7 @@ std::shared_ptr<mtac::BasicBlock> create_pre_header(const Loop& loop, std::share
     auto pre_header = function->new_bb();
     
     auto first_bb = g[*loop.begin()].block;
-
-    auto bit = iterate(function);
-
-    while(bit.has_next()){
-        if(*bit == first_bb){
-            bit.insert(pre_header);
-
-            break;
-        }
-
-        ++bit;
-    }
+    function->insert_before(function->at(first_bb), pre_header);
     
     return pre_header;
 }

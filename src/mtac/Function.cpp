@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "likely.hpp"
+#include "assert.hpp"
 
 #include "mtac/Function.hpp"
 
@@ -51,6 +52,7 @@ void mtac::Function::create_entry_bb(){
     ++count;
 
     auto new_block = std::make_shared<mtac::BasicBlock>(-1);
+    new_block->context = context;
 
     entry = exit = new_block;
 }
@@ -59,6 +61,7 @@ void mtac::Function::create_exit_bb(){
     ++count;
 
     auto new_block = std::make_shared<mtac::BasicBlock>(-2);
+    new_block->context = context;
     
     exit->next = new_block;
     new_block->prev = exit;
@@ -67,7 +70,9 @@ void mtac::Function::create_exit_bb(){
 }
 
 std::shared_ptr<mtac::BasicBlock> mtac::Function::new_bb(){
-    return std::make_shared<mtac::BasicBlock>(++index);
+    auto bb = std::make_shared<mtac::BasicBlock>(++index);
+    bb->context = context;
+    return bb;
 }
 
 std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
@@ -83,7 +88,12 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
 }   
         
 mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, std::shared_ptr<mtac::BasicBlock> block){
-    auto& bb = *it;
+    auto bb = *it;
+
+    ASSERT(block, "Cannot add null block"); 
+    ASSERT(it != begin(), "Cannot add before entry");
+
+    block->context = context;
     
     ++count;
 
@@ -92,10 +102,13 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
     bb->prev->next = block;
     bb->prev = block;
     
-    return at(bb);
+    return at(block);
 }
 
 mtac::basic_block_iterator mtac::Function::remove(std::shared_ptr<mtac::BasicBlock> block){
+    ASSERT(block, "Cannot remove null block"); 
+    ASSERT(block != exit, "Cannot remove exit"); 
+
     auto& next = block->next;
 
     --count;

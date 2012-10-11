@@ -104,7 +104,7 @@ bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> functi
     }
 
     if(optimized){
-        merge_basic_blocks(function);
+        (*this)(function);
     }
    
     return optimized; 

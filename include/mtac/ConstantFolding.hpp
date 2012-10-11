@@ -35,7 +35,7 @@ struct ConstantFolding : public boost::static_visitor<void> {
 template<>
 struct pass_traits<ConstantFolding> {
     STATIC_CONSTANT(pass_type, type, pass_type::LOCAL);
-    STATIC_STRING(name, "strength_reduction");
+    STATIC_STRING(name, "constant_folding");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
