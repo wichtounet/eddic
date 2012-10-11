@@ -67,6 +67,7 @@ class Function {
         
         //There is no basic blocks at the beginning
         std::size_t count = 0;
+        std::size_t index = 0;
         std::shared_ptr<BasicBlock> entry;
         std::shared_ptr<BasicBlock> exit;
 
