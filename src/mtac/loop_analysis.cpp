@@ -77,7 +77,7 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Program> program){
 }
 
 void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
-    for(auto& bb : function->getBasicBlocks()){
+    for(auto& bb : function){
         init_depth(bb);
     }
     

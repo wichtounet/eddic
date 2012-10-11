@@ -57,7 +57,7 @@ inline void assertIntOrVariable(T& variant){
 
 template<typename Visitor>
 void visit_all_statements(Visitor& visitor, std::shared_ptr<mtac::Function> function){
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         visit_each(visitor, block->statements);
     }
 }

@@ -24,23 +24,12 @@ void mtac::optimize_concat::set_pool(std::shared_ptr<StringPool> pool){
 bool mtac::optimize_concat::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
     
-    auto& blocks = function->getBasicBlocks();
-
-    auto it = blocks.begin();
-    auto end = blocks.end();
-    auto previous = it;
-
-    //we start at 1 because the first block cannot start with a call to concat
-    ++it;
-
-    while(it != end){
-        auto block = *it;
-
+    for(auto& block : function){
         if(likely(!block->statements.empty())){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
                 if((*ptr)->function == "_F6concatSS"){
                     //The params are on the previous block
-                    auto& paramBlock = *previous;
+                    auto& paramBlock = block->prev;
 
                     //Must have at least four params
                     if(paramBlock->statements.size() >= 4){
@@ -88,9 +77,6 @@ bool mtac::optimize_concat::operator()(std::shared_ptr<mtac::Function> function)
                 }
             }
         }
-
-        previous = it;
-        ++it;
     }
 
     return optimized;

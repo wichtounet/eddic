@@ -223,6 +223,10 @@ struct ConstantOptimizer : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+    if(global_results->IN_S[statement].top()){
+        return false;
+    }
+
     ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
 
     visit(optimizer, statement);

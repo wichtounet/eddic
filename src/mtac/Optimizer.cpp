@@ -143,7 +143,7 @@ struct pass_runner {
 
     template<typename Pass>
     inline typename boost::enable_if_c<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             auto it = iterate(block->statements);
 
             while(it.has_next()){
@@ -263,7 +263,7 @@ struct pass_runner {
         auto results = mtac::data_flow(function, problem);
 
         //Once the data-flow problem is fixed, statements can be optimized
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             for(auto& statement : block->statements){
                 optimized |= problem.optimize(statement, results);
             }
@@ -278,7 +278,7 @@ struct pass_runner {
         
         auto visitor = make_pass<Pass>();
 
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             visitor.clear();
 
             visit_each(visitor, block->statements);
@@ -295,7 +295,7 @@ struct pass_runner {
         
         auto visitor = make_pass<Pass>();
 
-        for(auto& block : function->getBasicBlocks()){
+        for(auto& block : function){
             visitor.clear();
 
             visitor.pass = mtac::Pass::DATA_MINING;

@@ -47,7 +47,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     resetNumbering();
 
     //First we computes a label for each basic block
-    for(auto block : src_function->getBasicBlocks()){
+    for(auto block : src_function){
         block->label = newLabel();
     }
     
@@ -111,7 +111,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     compiler->manager.pointer_escaped = problem.pointer_escaped;
 
     //Then we compile each of them
-    for(auto block : src_function->getBasicBlocks()){
+    for(auto block : src_function){
         target_function->new_bb();
 
         //If necessary add a label for the block

@@ -14,7 +14,7 @@ using namespace eddic;
 bool mtac::optimize_branches::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
                 if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){

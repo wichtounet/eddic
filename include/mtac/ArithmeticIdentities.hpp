@@ -33,7 +33,7 @@ struct ArithmeticIdentities : public boost::static_visitor<void> {
 template<>
 struct pass_traits<ArithmeticIdentities> {
     STATIC_CONSTANT(pass_type, type, pass_type::LOCAL);
-    STATIC_STRING(name, "strength_reduction");
+    STATIC_STRING(name, "arithmetic_identities");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };

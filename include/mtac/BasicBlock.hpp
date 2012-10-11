@@ -25,7 +25,10 @@ class BasicBlock {
         std::string label;
 
         std::vector<mtac::Statement> statements;
-        std::shared_ptr<FunctionContext> context;
+        std::shared_ptr<FunctionContext> context = nullptr;
+
+        std::shared_ptr<BasicBlock> next = nullptr;
+        std::shared_ptr<BasicBlock> prev = nullptr;
 
         BasicBlock(int index);
 

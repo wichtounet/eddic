@@ -197,6 +197,10 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
 bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
 
+    if(results.top()){
+        return false;
+    }
+
     bool changes = false;
 
     if(boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){

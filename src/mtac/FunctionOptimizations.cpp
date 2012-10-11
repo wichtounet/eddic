@@ -19,7 +19,7 @@ using namespace eddic;
 namespace {
 
 void remove_references(std::shared_ptr<mtac::Program> program, std::shared_ptr<mtac::Function> function){
-    for(auto& bb : function->getBasicBlocks()){
+    for(auto& bb : function){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
                 program->context->removeReference((*ptr)->function); 
@@ -68,11 +68,7 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
             continue;
         }
 
-        unsigned int statements = 0;
-
-        for(auto& block : function->getBasicBlocks()){
-            statements += block->statements.size();
-        }
+        unsigned int statements = function->size();
 
         if(statements == 0){
             removed_functions.push_back(function->getName());
@@ -84,13 +80,7 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
 
     if(!removed_functions.empty()){
         for(auto& function : program->functions){
-            auto& blocks = function->getBasicBlocks();
-
-            auto bit = blocks.begin();
-
-            while(bit != blocks.end()){
-                auto block = *bit;
-
+            for(auto& block : function){
                 auto fit = block->statements.begin();
 
                 while(fit != block->statements.end()){
@@ -105,9 +95,7 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
                             if(parameters > 0){
                                 //The parameters are in the previous block
                                 if(fit == block->statements.begin()){
-                                    auto pit = bit;
-                                    --pit;
-                                    auto previous = *pit;
+                                    auto previous = block->prev;
 
                                     auto fend = previous->statements.end();
                                     --fend;
@@ -141,8 +129,6 @@ bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> pro
 
                     ++fit;
                 }
-
-                ++bit;
             }
         }
     }
