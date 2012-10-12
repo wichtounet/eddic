@@ -19,25 +19,47 @@ class Context;
 
 namespace mtac {
 
+/*!
+ * \class BasicBlock
+ * \brief A basic block in the MTAC representation. 
+ * The basic blocks of a function are maintained in a doubly linked list. 
+ */
 class BasicBlock {
     public:
         typedef std::vector<mtac::Statement>::iterator iterator;
 
-        int index;
-        std::string label;
-
-        std::vector<mtac::Statement> statements;
-        std::shared_ptr<FunctionContext> context = nullptr;
+        /*!
+         * Create a new basic block with the given index. 
+         * \param The index of the basic block
+         */
+        BasicBlock(int index);
         
+        /*!
+         * Return an iterator to the first statement. 
+         * \return an iterator to the first statement.
+         */
         iterator begin();
+        
+        /*!
+         * Return an iterator one past the last statement. 
+         * \return an iterator one past the last statement.
+         */
         iterator end();
 
-        std::shared_ptr<BasicBlock> next = nullptr;
-        std::shared_ptr<BasicBlock> prev = nullptr;
-
-        BasicBlock(int index);
-
+        /*!
+         * Add a new statement to the basic block. 
+         * \param statement The statement to add. 
+         */
         void add(mtac::Statement statement);
+
+        const int index;    /*!< The index of the block */
+        std::string label;  /*!< The label of the block */
+        std::shared_ptr<FunctionContext> context = nullptr;     /*!< The context of the enclosing function. */
+
+        std::vector<mtac::Statement> statements;  /*!< The statements inside the basic block. */
+
+        std::shared_ptr<BasicBlock> next = nullptr;     /*!< The next basic block in the doubly-linked list. */
+        std::shared_ptr<BasicBlock> prev = nullptr;     /*!< The previous basic block in the doubly-linked list. */
 };
 
 std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
