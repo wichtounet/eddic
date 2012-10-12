@@ -58,8 +58,14 @@ class BasicBlock {
 
         std::vector<mtac::Statement> statements;  /*!< The statements inside the basic block. */
 
+        /* Doubly-linked list  */
+
         std::shared_ptr<BasicBlock> next = nullptr;     /*!< The next basic block in the doubly-linked list. */
         std::shared_ptr<BasicBlock> prev = nullptr;     /*!< The previous basic block in the doubly-linked list. */
+
+        /* Control Flow Graph */
+        std::vector<std::shared_ptr<BasicBlock>> successors;
+        std::vector<std::shared_ptr<BasicBlock>> predecessors;
 };
 
 std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
