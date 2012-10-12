@@ -13,12 +13,13 @@
 #include "boost_cfg.hpp"
 #include <boost/graph/adjacency_list.hpp>
 
-#include "mtac/Function.hpp"
 #include "mtac/BasicBlock.hpp"
 
 namespace eddic {
 
 namespace mtac {
+
+class Function;
 
 struct vertex_info {
     std::shared_ptr<BasicBlock> block;

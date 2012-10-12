@@ -17,7 +17,6 @@
 
 #include "mtac/loop_optimizations.hpp"
 #include "mtac/loop_analysis.hpp"
-#include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
@@ -965,7 +964,7 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
 } //end of anonymous namespace
 
 bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function> function){
-    auto graph = mtac::build_control_flow_graph(function);
+    auto graph = function->cfg(); 
     auto g = graph->get_graph();
 
     auto natural_loops = find_natural_loops(g);
@@ -989,7 +988,7 @@ bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function
 }
 
 bool mtac::loop_induction_variables_optimization::operator()(std::shared_ptr<mtac::Function> function){
-    auto graph = mtac::build_control_flow_graph(function);
+    auto graph = function->cfg(); 
     auto g = graph->get_graph();
     
     auto natural_loops = find_natural_loops(g);
@@ -1033,7 +1032,7 @@ std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std
 }
 
 bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> function){
-    auto graph = mtac::build_control_flow_graph(function);
+    auto graph = function->cfg(); 
     auto g = graph->get_graph();
     
     auto natural_loops = find_natural_loops(g);
@@ -1085,7 +1084,7 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
 }
 
 bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> function){
-    auto graph = mtac::build_control_flow_graph(function);
+    auto graph = function->cfg(); 
     auto g = graph->get_graph();
     
     auto natural_loops = find_natural_loops(g);

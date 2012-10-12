@@ -170,6 +170,11 @@ struct pass_runner {
     template<typename Pass>
     inline void apply_todo(){
         remove_nop<Pass>();
+
+        //TODO Verify if the if is removed at compile for passes
+        if(mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_INVALIDATE_CFG){
+            function->invalidate_cfg();            
+        }
     }
 
     template<typename Pass>
@@ -340,7 +345,9 @@ struct pass_runner {
             local = apply<Pass>();
         }
 
-        apply_todo<Pass>();
+        if(local){
+            apply_todo<Pass>();
+        }
 
         debug_local<Pass>(local);
 

@@ -8,11 +8,14 @@
 #ifndef MTAC_FUNCTION_H
 #define MTAC_FUNCTION_H
 
+#include <memory>
+
 #include "iterators.hpp"
 
 #include "mtac/BasicBlock.hpp"
 #include "mtac/Statement.hpp"
 #include "mtac/basic_block_iterator.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 namespace eddic {
 
@@ -20,7 +23,7 @@ class FunctionContext;
 
 namespace mtac {
 
-class Function {
+class Function : public std::enable_shared_from_this<Function> {
     public:
         typedef std::shared_ptr<BasicBlock> BlockPtr;
         typedef std::list<BlockPtr> BlockList;
@@ -60,6 +63,9 @@ class Function {
 
         std::size_t bb_count();
         std::size_t size();
+        
+        std::shared_ptr<ControlFlowGraph> cfg();
+        void invalidate_cfg();
 
     private:
         //Before being partitioned, the function has only statement
@@ -72,6 +78,8 @@ class Function {
         std::shared_ptr<BasicBlock> exit = nullptr;
 
         std::string name;
+
+        std::shared_ptr<ControlFlowGraph> _cfg;
 };
 
 basic_block_iterator begin(std::shared_ptr<mtac::Function> function);

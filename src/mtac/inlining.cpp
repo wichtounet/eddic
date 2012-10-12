@@ -390,6 +390,9 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                 if(will_inline(dest_function, source_function, call, basic_block)){
                     log::emit<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
+                    //Invalidate CFG
+                    dest_function->invalidate_cfg();
+
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
