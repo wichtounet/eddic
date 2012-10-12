@@ -43,8 +43,8 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::exit_bb(){
 
 std::shared_ptr<mtac::ControlFlowGraph> mtac::Function::cfg(){
     if(!_cfg){
-        log::emit<Debug>("CFG") << "Rebuild CFG for " << name << log::endl;
-        _cfg = mtac::build_control_flow_graph(shared_from_this());
+        log::emit<Debug>("CFG") << "Build CFG for " << name << log::endl;
+        mtac::build_control_flow_graph(shared_from_this());
     }
 
     return _cfg;

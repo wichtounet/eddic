@@ -69,7 +69,7 @@ class ControlFlowGraph {
         std::shared_ptr<BasicBlock> exit_block;
 };
 
-std::shared_ptr<ControlFlowGraph> build_control_flow_graph(std::shared_ptr<Function> function);
+void build_control_flow_graph(std::shared_ptr<Function> function);
 
 } //end of mtac
 

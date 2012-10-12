@@ -36,23 +36,12 @@ std::shared_ptr<mtac::BasicBlock>& mtac::ControlFlowGraph::exit(){
     return exit_block;
 }
 
-std::shared_ptr<mtac::ControlFlowGraph> mtac::build_control_flow_graph(std::shared_ptr<mtac::Function> function){
-    auto g = std::make_shared<mtac::ControlFlowGraph>();
-    auto& graph = g->get_graph();
+void make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to){
+    from->successors.push_back(to);
+    to->predecessors.push_back(from);
+}
 
-    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, mtac::ControlFlowGraph::BasicBlockInfo> infos;
-    
-    //Create all the vertices
-    for(auto& block : function){
-        auto block_vertex = boost::add_vertex(graph);
-        graph[block_vertex].block = block;
-        infos[block] = block_vertex;
-    }
-    
-    //Set the entry and exit blocks
-    g->entry() = function->entry_bb();
-    g->exit() = function->exit_bb();
-    
+void mtac::build_control_flow_graph(std::shared_ptr<mtac::Function> function){
     //Add the edges
     for(auto& block : function){
         //Get the following block
@@ -60,7 +49,7 @@ std::shared_ptr<mtac::ControlFlowGraph> mtac::build_control_flow_graph(std::shar
         
         //ENTRY
         if(block->index == -1){
-            boost::add_edge(infos[block], infos[next], graph);
+            make_edge(block, next);
         }
         //EXIT
         else if(block->index == -2){
@@ -68,7 +57,7 @@ std::shared_ptr<mtac::ControlFlowGraph> mtac::build_control_flow_graph(std::shar
         }
         //Empty block
         else if(block->statements.size() == 0){
-            boost::add_edge(infos[block], infos[next], graph);
+            make_edge(block, next);
         }
         //Standard block
         else {
@@ -76,22 +65,20 @@ std::shared_ptr<mtac::ControlFlowGraph> mtac::build_control_flow_graph(std::shar
 
             //If and IfFalse have two possible successors
             if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last_statement)){
-                boost::add_edge(infos[block], infos[(*ptr)->block], graph);
-                boost::add_edge(infos[block], infos[next], graph);
+                make_edge(block, (*ptr)->block);
+                make_edge(block, next);
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last_statement)){
-                boost::add_edge(infos[block], infos[(*ptr)->block], graph);
-                boost::add_edge(infos[block], infos[next], graph);
+                make_edge(block, (*ptr)->block);
+                make_edge(block, next);
             } 
-            //Goto has one possible sucessor
+            //Goto has one possible successor
             else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last_statement)){
-                boost::add_edge(infos[block], infos[(*ptr)->block], graph);
+                make_edge(block, (*ptr)->block);
             }
-            //All the other statements have only the fallback successor
+            //All the other statements have only the fall through successor
             else {
-                boost::add_edge(infos[block], infos[next], graph);
+                make_edge(block, next);
             }
         }
     }
-    
-    return g;
 }
