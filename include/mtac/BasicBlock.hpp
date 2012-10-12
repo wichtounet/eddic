@@ -66,6 +66,10 @@ class BasicBlock {
         /* Control Flow Graph */
         std::vector<std::shared_ptr<BasicBlock>> successors;
         std::vector<std::shared_ptr<BasicBlock>> predecessors;
+
+        /* Dominance tree */
+        
+        std::shared_ptr<BasicBlock> dominator = nullptr;     /*!< The immediate dominator of this basic block. */
 };
 
 std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);

@@ -30,6 +30,7 @@ struct dominators {
     std::shared_ptr<mtac::Function> function;
 
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, unsigned int> numbers;
+    std::unordered_map<unsigned int, std::shared_ptr<mtac::BasicBlock>> blocks;
 
     dominators(std::size_t cn, std::shared_ptr<mtac::Function>) : cn(cn), function(function) {
         parent = new unsigned int[cn+1];
@@ -139,6 +140,7 @@ struct dominators {
         unsigned int number = 0;
         for(auto& block : function){
             numbers[block] = ++number;
+            blocks[number] = block;
         }
         
         number = 0;
@@ -202,6 +204,20 @@ struct dominators {
         }
 
         dom[1] = 0;
+
+        /* Step 5 */
+
+        number = 0;
+        for(auto& block : function){
+            ++number;
+
+            if(number == 1){
+                block->dominator = nullptr;
+            }
+
+            //TODO Not sure if not necessary to use another array
+            block->dominator = blocks[dom[number]]; 
+        }
     }
 };
 
@@ -209,5 +225,5 @@ void mtac::compute_dominators(std::shared_ptr<Function> function){
     auto n = function->bb_count();
 
     dominators dom(n, function);
-
+    dom.compute_dominators();
 }
