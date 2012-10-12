@@ -21,11 +21,16 @@ namespace mtac {
 
 class BasicBlock {
     public:
+        typedef std::vector<mtac::Statement>::iterator iterator;
+
         int index;
         std::string label;
 
         std::vector<mtac::Statement> statements;
         std::shared_ptr<FunctionContext> context = nullptr;
+        
+        iterator begin();
+        iterator end();
 
         std::shared_ptr<BasicBlock> next = nullptr;
         std::shared_ptr<BasicBlock> prev = nullptr;
@@ -36,6 +41,9 @@ class BasicBlock {
 };
 
 std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
+
+mtac::BasicBlock::iterator begin(std::shared_ptr<mtac::BasicBlock> function);
+mtac::BasicBlock::iterator end(std::shared_ptr<mtac::BasicBlock> function);
 
 } //end of mtac
 
