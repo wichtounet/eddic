@@ -27,6 +27,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/TemporaryAllocator.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 //The custom optimizations
 #include "mtac/VariableOptimizations.hpp"
@@ -173,7 +174,7 @@ struct pass_runner {
 
         //TODO Verify if the if is removed at compile for passes
         if(mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_INVALIDATE_CFG){
-            function->invalidate_cfg();            
+            mtac::build_control_flow_graph(function);
         }
     }
 
@@ -361,6 +362,11 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
     PerfsTimer timer("Whole optimizations");
 
     if(configuration->option_defined("fglobal-optimization")){
+        //Build the CFG of each functions
+        for(auto& function : program->functions){
+            mtac::build_control_flow_graph(function);
+        }
+
         //Apply Interprocedural Optimizations
         pass_runner runner(program, string_pool, configuration, platform);
         do{

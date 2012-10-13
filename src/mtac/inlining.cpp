@@ -17,9 +17,9 @@
 #include "GlobalContext.hpp"
 
 #include "mtac/inlining.hpp"
-#include "mtac/Printer.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
@@ -390,9 +390,6 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                 if(will_inline(dest_function, source_function, call, basic_block)){
                     log::emit<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
-                    //Invalidate CFG
-                    dest_function->invalidate_cfg();
-
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
@@ -413,6 +410,9 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                     //The target function is called one less time
                     program->context->removeReference(source_definition->mangledName);
                     optimized = true;
+
+                    //Invalidate CFG
+                    mtac::build_control_flow_graph(dest_function);
 
                     continue;
                 }

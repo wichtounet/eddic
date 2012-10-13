@@ -13,7 +13,7 @@
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n), _cfg(nullptr) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {
     //Nothing to do   
 }
 
@@ -41,19 +41,6 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::exit_bb(){
     return exit;
 }
 
-std::shared_ptr<mtac::ControlFlowGraph> mtac::Function::cfg(){
-    if(!_cfg){
-        log::emit<Debug>("CFG") << "Build CFG for " << name << log::endl;
-        mtac::build_control_flow_graph(shared_from_this());
-    }
-
-    return _cfg;
-}
-
-void mtac::Function::invalidate_cfg(){
-    _cfg = nullptr;
-}
-        
 void mtac::Function::add(Statement statement){
     statements.push_back(statement);
 }
