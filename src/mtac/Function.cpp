@@ -5,11 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "likely.hpp"
 #include "assert.hpp"
 #include "logging.hpp"
 
 #include "mtac/Function.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
@@ -110,9 +110,47 @@ mtac::basic_block_iterator mtac::Function::remove(std::shared_ptr<mtac::BasicBlo
     ASSERT(block, "Cannot remove null block"); 
     ASSERT(block != exit, "Cannot remove exit"); 
 
+    log::emit<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
+
     auto& next = block->next;
 
     --count;
+
+    for(auto& succ : block->successors){
+        auto it = iterate(succ->predecessors);
+
+        while(it.has_next()){
+            auto pred = *it;
+
+            if(pred == block){
+                it.erase();
+            } else {
+                ++it;
+            }
+        }
+    }
+    
+    for(auto& pred : block->predecessors){
+        auto it = iterate(pred->successors);
+
+        while(it.has_next()){
+            auto succ = *it;
+
+            if(succ == block){
+                it.erase();
+            } else {
+                ++it;
+            }
+        }
+
+        //If there is a Fall through edge, redirect it
+        if(pred = block->prev){
+            mtac::make_edge(pred, block->next);
+        }
+    }
+
+    block->successors.clear();
+    block->predecessors.clear();
 
     block->prev->next = next;
     next->prev = block->prev;

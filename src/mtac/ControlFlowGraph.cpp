@@ -9,10 +9,11 @@
 
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Function.hpp"
+#include "mtac/BasicBlock.hpp"
 
 using namespace eddic;
         
-void make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to){
+void mtac::make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to){
     from->successors.push_back(to);
     to->predecessors.push_back(from);
 }

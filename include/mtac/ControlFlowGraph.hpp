@@ -10,16 +10,14 @@
 
 #include <memory>
 
-#include "boost_cfg.hpp"
-#include <boost/graph/adjacency_list.hpp>
-
-#include "mtac/BasicBlock.hpp"
-
 namespace eddic {
 
 namespace mtac {
 
 class Function;
+class BasicBlock;
+
+void make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to);
 
 void build_control_flow_graph(std::shared_ptr<Function> function);
 

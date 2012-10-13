@@ -38,7 +38,7 @@ struct pass_traits<remove_dead_basic_blocks> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "remove_dead_bb");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_INVALIDATE_CFG);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
 } //end of mtac

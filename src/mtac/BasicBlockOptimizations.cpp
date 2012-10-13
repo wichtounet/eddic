@@ -116,32 +116,16 @@ bool mtac::remove_dead_basic_blocks::operator()(std::shared_ptr<mtac::Function> 
     if(before <= 2){
         return false;
     }
-    
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
-    std::list<std::shared_ptr<mtac::BasicBlock>> queue;
-    
-    //ENTRY is always accessed
-    queue.push_back(function->entry_bb());
-
-    while(!queue.empty()){
-        auto block = queue.back();
-        queue.pop_back();
-
-        if(usage.find(block) == usage.end()){
-            usage.insert(block);
-        
-            for(auto& target : block->successors){
-                queue.push_back(target);
-            }
-        }
-    }
 
     auto it = iterate(function);
+
+    //ENTRY is always accessed
+    ++it;
 
     while(it.has_next()){
         auto& block = *it;
 
-        if(usage.find(block) == usage.end()){
+        if(block->predecessors.empty()){
             it.erase();
         } else {
             ++it;
