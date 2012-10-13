@@ -165,6 +165,37 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it)
     return remove(*it);
 }
 
+mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block){
+    auto source = *it; 
+
+    ASSERT(source->next == block || source->prev == block, "Can only merge sibling blocks");
+
+    log::emit<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
+
+    if(!source->statements.empty()){
+        //B can have some new successors
+        for(auto& succ : source->successors){
+            if(succ != source->next){
+                mtac::make_edge(block, succ);
+            }
+        }
+
+        //No need to remove the edges, they will be removed by remove call
+    }
+
+    //Insert the statements
+    if(source->next == block){
+        block->statements.insert(block->statements.begin(), source->statements.begin(), source->statements.end());
+    } else {
+        block->statements.insert(block->statements.end(), source->statements.begin(), source->statements.end());
+    }
+    
+    //Remove the source basic block
+    remove(source);
+
+    return at(block);
+}
+
 std::string mtac::Function::getName() const {
     return name;
 }

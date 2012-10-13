@@ -22,12 +22,12 @@ bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> functi
 
     computeBlockUsage(function, usage);
 
-    auto it = function->begin();
+    auto it = iterate(function);
 
     //The ENTRY Basic block should not be merged
     ++it;
 
-    while(it != function->end()){
+    while(it.has_next()){
         auto& block = *it;
         
         if(block->index == -1){
@@ -41,16 +41,14 @@ bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> functi
 
         if(unlikely(block->statements.empty())){
             if(usage.find(block) == usage.end()){
-                it = function->remove(it);
+                it.erase();
                 optimized = true;
 
                 --it;
                 continue;
             } else {
                 if(next && next->index != -2 && usage.find(next) == usage.end()){
-                    block->statements = next->statements;
-                    
-                    it = function->remove(next);
+                    it.merge_in(next);
                     optimized = true;
 
                     --it;
@@ -89,9 +87,8 @@ bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> functi
                         }
                     }
 
-                    block->statements.insert(block->statements.end(), next->statements.begin(), next->statements.end());
+                    it.merge_in(next);
 
-                    it = function->remove(next);
                     optimized = true;
 
                     --it;

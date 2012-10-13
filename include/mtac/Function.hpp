@@ -55,6 +55,7 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_iterator at(std::shared_ptr<BasicBlock> bb);
 
         basic_block_iterator insert_before(basic_block_iterator it, std::shared_ptr<BasicBlock> block);
+        basic_block_iterator merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block);
         basic_block_iterator remove(basic_block_iterator it);
         basic_block_iterator remove(std::shared_ptr<BasicBlock> bb);
 
@@ -109,6 +110,26 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
 
     void erase(){
         it = container->remove(it);
+        end = container->end();
+    }
+
+    /*!
+     * \brief Merge the current block into the specified one. 
+     * The current block will be removed.
+     * \return an iterator to the merged block 
+     */
+    void merge_to(std::shared_ptr<mtac::BasicBlock> bb){
+        it = container->merge_basic_blocks(it, bb);
+        end = container->end();
+    }
+    
+    /*!
+     * \brief Merge the specified block into the current one. 
+     * The specified block will be removed.
+     * \return an iterator to the merged block 
+     */
+    void merge_in(std::shared_ptr<mtac::BasicBlock> bb){
+        it = container->merge_basic_blocks(container->at(bb), *it);
         end = container->end();
     }
 
