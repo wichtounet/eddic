@@ -8,6 +8,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include "PerfsTimer.hpp"
+
 #include "mtac/dominators.hpp"
 
 using namespace eddic;
@@ -135,6 +137,8 @@ struct dominators {
     }
 
     void compute_dominators(){
+        PerfsTimer timer("Dominators");
+
         /* Step 0. Translate basic blocks to numbers */
 
         unsigned int number = 0;
