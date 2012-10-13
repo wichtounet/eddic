@@ -26,7 +26,7 @@ struct pass_traits<merge_basic_blocks> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "merge_bb");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_REMOVE_NOP | TODO_INVALIDATE_CFG);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_REMOVE_NOP);
 };
 
 struct remove_dead_basic_blocks {
