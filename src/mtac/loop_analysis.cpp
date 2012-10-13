@@ -8,22 +8,15 @@
 #include <vector>
 #include <stack>
 
-#include <boost/graph/dominator_tree.hpp>
-
 #include "VisitorUtils.hpp"
 #include "logging.hpp"
 
 #include "mtac/loop_analysis.hpp"
+#include "mtac/dominators.hpp"
 
 using namespace eddic;
 
 namespace {
-
-typedef mtac::ControlFlowGraph::InternalControlFlowGraph G;
-typedef mtac::ControlFlowGraph::EdgeInfo Edge;
-typedef mtac::ControlFlowGraph::BasicBlockInfo Vertex;
-typedef boost::property_map<mtac::ControlFlowGraph::InternalControlFlowGraph, boost::vertex_index_t>::type IndexMap;
-typedef boost::iterator_property_map<std::vector<Vertex>::iterator, IndexMap> PredMap;
 
 struct DepthInit : public boost::static_visitor<void> {
     void operator()(std::string){
@@ -76,81 +69,61 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Program> program){
 }
 
 void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
+    compute_dominators(function);
+
     for(auto& bb : function){
         init_depth(bb);
     }
-    
-    auto graph = function->cfg(); 
-    auto g = graph->get_graph();
 
-    auto natural_loops = find_natural_loops(g);
+    auto natural_loops = find_natural_loops(function);
 
     for(auto& loop : natural_loops){
-        for(auto& parts : loop){
-            auto bb = g[parts].block;
-
+        for(auto& bb : loop){
             increase_depth(bb);
         }
     }
 }
 
-std::vector<std::set<Vertex>> mtac::find_natural_loops(G& g){
-    std::vector<Vertex> domTreePredVector = std::vector<Vertex>(boost::num_vertices(g), boost::graph_traits<G>::null_vertex());
-    PredMap domTreePredMap = boost::make_iterator_property_map(domTreePredVector.begin(), boost::get(boost::vertex_index, g));
+std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> mtac::find_natural_loops(std::shared_ptr<mtac::Function> function){
+    std::vector<std::pair<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>>> back_edges;
 
-    boost::lengauer_tarjan_dominator_tree(g, boost::vertex(0, g), domTreePredMap);
-
-    std::vector<Edge> back_edges;
-
-    ControlFlowGraph::EdgeIterator it, end;
-    for(boost::tie(it,end) = boost::edges(g); it != end; ++it){
-        auto source = boost::source(*it, g);
-        auto target = boost::target(*it, g);
-
-        //A node dominates itself
-        if(source == target){
-            back_edges.push_back(*it);
-        } else {
-            if(boost::get(domTreePredMap, source) != boost::graph_traits<G>::null_vertex()){
-                auto dominator = boost::get(domTreePredMap,source);
-
-                if(dominator == target){
-                    back_edges.push_back(*it);
+    for(auto& block : function){
+        for(auto& succ : block->successors){
+            //A node dominates itself
+            if(block == succ){
+                back_edges.push_back(std::make_pair(block,succ));
+            } else {
+                if(block->dominator == succ){
+                    back_edges.push_back(std::make_pair(block,succ));
                 }
             }
         }
     }
 
-    std::vector<std::set<Vertex>> natural_loops;
+    std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> natural_loops;
 
     //Get all edges n -> d
     for(auto& back_edge : back_edges){
-        std::set<Vertex> natural_loop;
+        std::set<std::shared_ptr<mtac::BasicBlock>> natural_loop;
 
-        auto n = boost::source(back_edge, g);
-        auto d = boost::target(back_edge, g);
+        auto n = back_edge.first;
+        auto d = back_edge.first;
 
         natural_loop.insert(d);
         natural_loop.insert(n);
 
-        log::emit<Trace>("Control-Flow") << "Back edge n = B" << g[n].block->index << log::endl;
-        log::emit<Trace>("Control-Flow") << "Back edge d = B" << g[d].block->index << log::endl;
+        log::emit<Trace>("Control-Flow") << "Back edge n = B" << n->index << log::endl;
+        log::emit<Trace>("Control-Flow") << "Back edge d = B" << d->index << log::endl;
 
         if(n != d){
-            std::stack<Vertex> vertices;
+            std::stack<std::shared_ptr<mtac::BasicBlock>> vertices;
             vertices.push(n);
 
             while(!vertices.empty()){
-                auto vertex = vertices.top();
+                auto source = vertices.top();
                 vertices.pop();
 
-                ControlFlowGraph::InEdgeIterator iit, iend;
-                for(boost::tie(iit, iend) = boost::in_edges(vertex, g); iit != iend; ++iit){
-                    auto edge = *iit;
-
-                    auto target = boost::source(edge, g);
-                    auto source = boost::target(edge, g);
-
+                for(auto& target : source->predecessors){
                     if(target != source && target != d && !natural_loop.count(target)){
                         natural_loop.insert(target);
                         vertices.push(target);
