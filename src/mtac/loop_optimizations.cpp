@@ -227,9 +227,16 @@ bool use_variable(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable
  * An invariant defining v is valid if: 
  * 1. It is in a basic block that dominates all other uses of v
  * 2. It is in a basic block that dominates all exit blocks of the loop
+ * 3. It is not an NOP
  */
 bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::Statement statement, const Loop& loop){
     auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
+
+    //It is not necessary to move statements with no effects. 
+    if(quadruple->op == mtac::Operator::NOP){
+        return false;
+    }
+
     auto var = quadruple->result;
 
     for(auto& bb : loop){
