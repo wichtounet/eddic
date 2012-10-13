@@ -360,13 +360,13 @@ struct pass_runner {
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     PerfsTimer timer("Whole optimizations");
+        
+    //Build the CFG of each functions (also needed for register allocation)
+    for(auto& function : program->functions){
+        mtac::build_control_flow_graph(function);
+    }
 
     if(configuration->option_defined("fglobal-optimization")){
-        //Build the CFG of each functions
-        for(auto& function : program->functions){
-            mtac::build_control_flow_graph(function);
-        }
-
         //Apply Interprocedural Optimizations
         pass_runner runner(program, string_pool, configuration, platform);
         do{

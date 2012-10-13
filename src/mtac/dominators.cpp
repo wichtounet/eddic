@@ -32,7 +32,7 @@ struct dominators {
     std::unordered_map<std::shared_ptr<mtac::BasicBlock>, unsigned int> numbers;
     std::unordered_map<unsigned int, std::shared_ptr<mtac::BasicBlock>> blocks;
 
-    dominators(std::size_t cn, std::shared_ptr<mtac::Function>) : cn(cn), function(function) {
+    dominators(std::size_t cn, std::shared_ptr<mtac::Function> function) : cn(cn), function(function) {
         parent = new unsigned int[cn+1];
         semi = new unsigned int[cn+1];
         vertex = new unsigned int[cn+1];
