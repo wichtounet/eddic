@@ -130,24 +130,8 @@ bool mtac::remove_dead_basic_blocks::operator()(std::shared_ptr<mtac::Function> 
         if(usage.find(block) == usage.end()){
             usage.insert(block);
         
-            if(likely(!block->statements.empty())){
-                auto& last = block->statements.back();
-
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                    queue.push_back((*ptr)->block);
-
-                    continue;
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
-                    queue.push_back((*ptr)->block); 
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last)){
-                    queue.push_back((*ptr)->block); 
-                }
-            }
-
-            //EXIT has no next block
-            if(block->index != -2){
-                //Add the next block
-                queue.push_back(block->next);
+            for(auto& target : block->successors){
+                queue.push_back(target);
             }
         }
     }
