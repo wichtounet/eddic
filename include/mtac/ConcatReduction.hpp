@@ -32,7 +32,7 @@ struct pass_traits<optimize_concat> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "optimize_concat");
     STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_POOL);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_INVALIDATE_CFG);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
 } //end of mtac
