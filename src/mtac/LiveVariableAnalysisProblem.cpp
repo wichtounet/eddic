@@ -74,6 +74,11 @@ struct LivenessCollector : public boost::static_visitor<> {
     template<typename Arg>
     inline void update(Arg& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            if(in.top()){
+                ProblemDomain::Values values;
+                in.int_values = values;
+            }
+
             in.values().insert(*ptr);
         }
     }
