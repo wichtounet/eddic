@@ -24,17 +24,15 @@ bool mtac::dead_code_elimination::operator()(std::shared_ptr<mtac::Function> fun
     auto results = mtac::data_flow(function, problem);
 
     for(auto& block : function){
-        auto it = block->statements.begin();
-        auto end = block->statements.end();
+        auto it = iterate(block->statements);
 
-        while(it != end){
+        while(it.has_next()){
             auto statement = *it;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
                     if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
-                        it = block->statements.erase(it);
-                        end = block->statements.end();
+                        it.erase();
                         optimized=true;
                         continue;
                     }
