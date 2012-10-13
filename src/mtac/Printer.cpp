@@ -119,15 +119,50 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << endl;
     }
 
-    void operator()(std::shared_ptr<mtac::BasicBlock> block){
-        if(block->index == -1){
-            stream << "ENTRY" << endl;
-        } else if(block->index == -2){
-            stream << "EXIT" << endl;
+    void safe_print(std::shared_ptr<mtac::BasicBlock> block){
+        if(block){
+            if(block->index == -1){
+                stream << "ENTRY";
+            } else if(block->index == -2){
+                stream << "EXIT";
+            } else {
+                stream << "B" << block->index;
+            }
         } else {
-            stream << "B" << block->index << "->" << endl;
-            visit_each(*this, block->statements);     
+            stream << "null";
         }
+    }
+
+    void pretty_print(std::vector<std::shared_ptr<mtac::BasicBlock>> blocks){
+        if(blocks.empty()){
+            stream << "{}";
+        } else {
+            stream << "{";
+            safe_print(blocks[0]);
+
+            for(std::size_t i = 1; i < blocks.size(); ++i){
+                stream << ", ";
+                safe_print(blocks[i]);
+            }
+
+            stream << "}";
+        }
+    }
+
+    void operator()(std::shared_ptr<mtac::BasicBlock> block){
+        std::string sep(25, '-');
+
+        stream << sep << std::endl;
+        safe_print(block);
+
+        stream << " prev: "; safe_print(block->prev); std::cout << ", next: "; safe_print(block->next); std::cout << std::endl;
+        stream << "successors "; pretty_print(block->successors); std::cout << std::endl;;
+        stream << "predecessors "; pretty_print(block->predecessors); std::cout << std::endl;;
+        
+        stream << sep << std::endl;
+        
+        visit_each(*this, block->statements);     
+        
     }
 
     void operator()(mtac::Statement& statement){
