@@ -61,18 +61,53 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
 
     BBClones bb_clones;
 
+    std::vector<std::shared_ptr<mtac::BasicBlock>> cloned;
+
+    auto old_entry = source_function->entry_bb();
+    auto old_exit = source_function->exit_bb();
+
+    auto entry = bb->prev;
+    auto exit = bb;
+
     for(auto& block : source_function){
         //Copy all basic blocks except ENTRY and EXIT
         if(block->index >= 0){
             auto new_bb = dest_function->new_bb();
+
+            //Copy the control flow graph properties, they will be corrected after
+            new_bb->successors = block->successors;
+            new_bb->predecessors = block->predecessors;
     
             for(auto& statement : block->statements){
                 new_bb->statements.push_back(mtac::copy(statement, context));
             }
 
             bb_clones[block] = new_bb;
+            cloned.push_back(new_bb);
 
             dest_function->insert_before(dest_function->at(bb), new_bb);
+        }
+    }
+
+    mtac::remove_edge(entry, exit);
+    
+    for(auto& block : cloned){
+        for(auto& succ : block->successors){
+            if(succ == old_exit){
+                succ = exit;
+                exit->predecessors.push_back(block);
+            } else {
+                succ = bb_clones[succ];
+            }
+        }
+
+        for(auto& pred : block->predecessors){
+            if(pred == old_entry){
+                pred = entry;
+                entry->successors.push_back(block);
+            } else {
+                pred = bb_clones[pred];
+            }
         }
     }
     
@@ -248,6 +283,9 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
                     auto goto_ = std::make_shared<mtac::Goto>();
                     goto_->block = basic_block;
 
+                    mtac::remove_edge(new_bb, new_bb->next);
+                    mtac::make_edge(new_bb, basic_block);
+
                     if(!call->return_){
                         //If the caller does not care about the return value, return has no effect
                         ssit.erase();
@@ -410,9 +448,6 @@ bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shar
                     //The target function is called one less time
                     program->context->removeReference(source_definition->mangledName);
                     optimized = true;
-
-                    //Invalidate CFG
-                    mtac::build_control_flow_graph(dest_function);
 
                     continue;
                 }
