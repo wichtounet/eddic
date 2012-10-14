@@ -27,7 +27,7 @@ struct pass_traits<loop_invariant_code_motion> {
     STATIC_STRING(name, "loop_invariant_motion");
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_CONSTANT(unsigned int, property_flags, 0);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_INVALIDATE_CFG);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
 struct loop_induction_variables_optimization {
@@ -39,7 +39,7 @@ struct pass_traits<loop_induction_variables_optimization> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "loop_iv_optimization");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_INVALIDATE_CFG);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
 struct remove_empty_loops {

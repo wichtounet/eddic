@@ -161,6 +161,10 @@ std::shared_ptr<mtac::BasicBlock> create_pre_header(const Loop& loop, std::share
     
     auto first_bb = *loop.begin();
     function->insert_before(function->at(first_bb), pre_header);
+
+    //Create the fall through edges
+    mtac::make_edge(pre_header, pre_header->next);
+    mtac::make_edge(pre_header->prev, pre_header);
     
     return pre_header;
 }
