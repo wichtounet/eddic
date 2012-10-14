@@ -10,7 +10,7 @@ set(VERSION_PATCH 3)
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(COMMON_CXX_FLAGS          "-pipe -pthread -std=c++11")
-    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long")
+    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
     set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
 else()
