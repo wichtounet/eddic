@@ -5,10 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "likely.hpp"
 #include "assert.hpp"
+#include "logging.hpp"
 
 #include "mtac/Function.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
@@ -39,7 +40,7 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::entry_bb(){
 std::shared_ptr<mtac::BasicBlock> mtac::Function::exit_bb(){
     return exit;
 }
-        
+
 void mtac::Function::add(Statement statement){
     statements.push_back(statement);
 }
@@ -109,9 +110,47 @@ mtac::basic_block_iterator mtac::Function::remove(std::shared_ptr<mtac::BasicBlo
     ASSERT(block, "Cannot remove null block"); 
     ASSERT(block != exit, "Cannot remove exit"); 
 
+    log::emit<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
+
     auto& next = block->next;
 
     --count;
+
+    for(auto& succ : block->successors){
+        auto it = iterate(succ->predecessors);
+
+        while(it.has_next()){
+            auto pred = *it;
+
+            if(pred == block){
+                it.erase();
+            } else {
+                ++it;
+            }
+        }
+    }
+    
+    for(auto& pred : block->predecessors){
+        auto it = iterate(pred->successors);
+
+        while(it.has_next()){
+            auto succ = *it;
+
+            if(succ == block){
+                it.erase();
+            } else {
+                ++it;
+            }
+        }
+
+        //If there is a Fall through edge, redirect it
+        if(pred = block->prev){
+            mtac::make_edge(pred, block->next);
+        }
+    }
+
+    block->successors.clear();
+    block->predecessors.clear();
 
     block->prev->next = next;
     next->prev = block->prev;
@@ -124,6 +163,37 @@ mtac::basic_block_iterator mtac::Function::remove(std::shared_ptr<mtac::BasicBlo
 
 mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it){
     return remove(*it);
+}
+
+mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block){
+    auto source = *it; 
+
+    ASSERT(source->next == block || source->prev == block, "Can only merge sibling blocks");
+
+    log::emit<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
+
+    if(!source->statements.empty()){
+        //B can have some new successors
+        for(auto& succ : source->successors){
+            if(succ != source->next){
+                mtac::make_edge(block, succ);
+            }
+        }
+
+        //No need to remove the edges, they will be removed by remove call
+    }
+
+    //Insert the statements
+    if(source->next == block){
+        block->statements.insert(block->statements.begin(), source->statements.begin(), source->statements.end());
+    } else {
+        block->statements.insert(block->statements.end(), source->statements.begin(), source->statements.end());
+    }
+    
+    //Remove the source basic block
+    remove(source);
+
+    return at(block);
 }
 
 std::string mtac::Function::getName() const {

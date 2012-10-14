@@ -51,7 +51,7 @@ bool mtac::optimize_concat::operator()(std::shared_ptr<mtac::Function> function)
                                 firstValue.resize(firstValue.size() - 1);
                                 secondValue.erase(0, 1);
 
-                                //Compute the reuslt of the concatenation
+                                //Compute the result of the concatenation
                                 std::string result = firstValue + secondValue;
 
                                 std::string label = pool->label(result);

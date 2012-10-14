@@ -10,65 +10,17 @@
 
 #include <memory>
 
-#include "boost_cfg.hpp"
-#include <boost/graph/adjacency_list.hpp>
-
-#include "mtac/Function.hpp"
-#include "mtac/BasicBlock.hpp"
-
 namespace eddic {
 
 namespace mtac {
 
-struct vertex_info {
-    std::shared_ptr<BasicBlock> block;
-};
+class Function;
+class BasicBlock;
 
-enum class EdgeType : unsigned int {
-    COMMON
-};
+void make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to);
+void remove_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to);
 
-struct edge_info {
-    EdgeType type;
-};
-
-class ControlFlowGraph {
-    public:
-        typedef boost::property<boost::graph_name_t, std::string> GraphProperties;
-
-        typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, vertex_info, edge_info, GraphProperties> InternalControlFlowGraph;
-        
-        //Iterators
-        typedef boost::graph_traits<InternalControlFlowGraph>::edge_iterator EdgeIterator;
-        typedef boost::graph_traits<InternalControlFlowGraph>::vertex_iterator BasicBlockIterator;
-        typedef boost::graph_traits<InternalControlFlowGraph>::out_edge_iterator OutEdgeIterator;
-        typedef boost::graph_traits<InternalControlFlowGraph>::in_edge_iterator InEdgeIterator;
-        typedef boost::graph_traits<InternalControlFlowGraph>::adjacency_iterator AdjacentBasicBlockIterator;
-
-        //Descriptors
-        typedef boost::graph_traits<InternalControlFlowGraph>::vertex_descriptor BasicBlockInfo;
-        typedef boost::graph_traits<InternalControlFlowGraph>::edge_descriptor EdgeInfo;
-    
-    public:
-        ControlFlowGraph();
-
-        std::pair<BasicBlockIterator, BasicBlockIterator> blocks();
-        std::pair<EdgeIterator, EdgeIterator> edges();
-
-        //NOTE: Keep reference
-        std::shared_ptr<BasicBlock>& entry();
-        std::shared_ptr<BasicBlock>& exit();
-
-        InternalControlFlowGraph& get_graph();
-        
-    private:
-        InternalControlFlowGraph graph;
-        
-        std::shared_ptr<BasicBlock> entry_block;
-        std::shared_ptr<BasicBlock> exit_block;
-};
-
-std::shared_ptr<ControlFlowGraph> build_control_flow_graph(std::shared_ptr<Function> function);
+void build_control_flow_graph(std::shared_ptr<Function> function);
 
 } //end of mtac
 

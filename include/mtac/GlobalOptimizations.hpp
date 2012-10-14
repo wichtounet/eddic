@@ -14,7 +14,6 @@
 #include "assert.hpp"
 #include "logging.hpp"
 
-#include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/DataFlowProblem.hpp"
 
@@ -25,11 +24,9 @@ namespace mtac {
 template<DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     if(Type == DataFlowType::Forward){
-        auto graph = mtac::build_control_flow_graph(function);
-        return forward_data_flow(function, graph, problem);
+        return forward_data_flow(function, problem);
     } else if(Type == DataFlowType::Backward){
-        auto graph = mtac::build_control_flow_graph(function);
-        return backward_data_flow(function, graph, problem);
+        return backward_data_flow(function, problem);
     } else {
         ASSERT_PATH_NOT_TAKEN("This data-flow type is not handled");
     }
@@ -47,10 +44,8 @@ inline void assign(Left& old, Right&& value, bool& changes){
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<mtac::Function> function, std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
-
-    auto graph = cfg->get_graph();
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
     
@@ -60,15 +55,14 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
 
-    OUT[cfg->entry()] = problem.Boundary(function);
-    log::emit<Dev>("Data-Flow") << "OUT[" << *cfg->entry() << "] set to " << OUT[cfg->entry()] << log::endl;
+    OUT[function->entry_bb()] = problem.Boundary(function);
+    log::emit<Dev>("Data-Flow") << "OUT[" << *function->entry_bb() << "] set to " << OUT[function->entry_bb()] << log::endl;
 
-    ControlFlowGraph::BasicBlockIterator it, end;
-    for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
-        //Init all but ENTRY
-        if(graph[*it].block->index != -1){
-            OUT[graph[*it].block] = problem.Init(function);
-            log::emit<Dev>("Data-Flow") << "OUT[" << *graph[*it].block << "] set to " << OUT[graph[*it].block] << log::endl;
+    for(auto& block : function){
+        //Initialize all but ENTRY
+        if(block->index != -1){
+            OUT[block] = problem.Init(function);
+            log::emit<Dev>("Data-Flow") << "OUT[" << *block << "] set to " << OUT[block] << log::endl;
         }
     }
 
@@ -76,21 +70,13 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     while(changes){
         changes = false;
 
-        for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
-            auto vertex = *it;
-            auto B = graph[vertex].block;
-
+        for(auto& B : function){
             //Do not consider ENTRY
             if(B->index == -1){
                 continue;
             }
 
-            ControlFlowGraph::InEdgeIterator iit, iend;
-            for(boost::tie(iit, iend) = boost::in_edges(vertex, graph); iit != iend; ++iit){
-                auto edge = *iit;
-                auto predecessor = boost::source(edge, graph);
-                auto P = graph[predecessor].block;
-
+            for(auto& P : B->predecessors){
                 log::emit<Dev>("Data-Flow") << "Meet B = " << *B << " with P = " << *P << log::endl;
                 log::emit<Dev>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
                 log::emit<Dev>("Data-Flow") << "OUT[P] before " << OUT[P] << log::endl;
@@ -128,10 +114,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function> function, std::shared_ptr<ControlFlowGraph> cfg, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
-
-    auto graph = cfg->get_graph();
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
     
@@ -141,13 +125,10 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
 
-    IN[cfg->exit()] = problem.Boundary(function);
-    log::emit<Dev>("Data-Flow") << "IN[" << *cfg->exit() << "] set to " << IN[cfg->exit()] << log::endl;
-
-    ControlFlowGraph::BasicBlockIterator it, end;
-    for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
-        auto block = graph[*it].block;
-
+    IN[function->exit_bb()] = problem.Boundary(function);
+    log::emit<Dev>("Data-Flow") << "IN[" << *function->exit_bb() << "] set to " << IN[function->exit_bb()] << log::endl;
+    
+    for(auto& block : function){
         //Init all but EXIT
         if(block->index != -2){
             IN[block] = problem.Init(function);
@@ -159,25 +140,13 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     while(changes){
         changes = false;
 
-        for(boost::tie(it,end) = boost::vertices(graph); it != end; ++it){
-            auto vertex = *it;
-            auto B = graph[vertex].block;
-
+        for(auto& B : function){
             //Do not consider EXIT
             if(B->index == -2){
                 continue;
             }
 
-            ControlFlowGraph::OutEdgeIterator oit, oend;
-            for(boost::tie(oit, oend) = boost::out_edges(vertex, graph); oit != oend; ++oit){
-                auto edge = *oit;
-                auto successor = boost::target(edge, graph);
-                auto S = graph[successor].block;
-
-                /*if(S->index == B->index){
-                    continue;
-                }*/
-
+            for(auto& S : B->successors){
                 log::emit<Dev>("Data-Flow") << "Meet B = " << *B << " with S = " << *S << log::endl;
                 log::emit<Dev>("Data-Flow") << "OUT[B] before " << OUT[B] << log::endl;
                 log::emit<Dev>("Data-Flow") << "IN[S] before " << IN[S] << log::endl;
@@ -189,7 +158,9 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                 auto& statements = B->statements;
 
                 if(statements.size() > 0){
+                    log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
                     assign(OUT_S[statements.back()], OUT[B], changes);
+                    log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] after transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
 
                     for(unsigned i = statements.size() - 1; i > 0; --i){
                         auto& statement = statements[i];
@@ -197,11 +168,15 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                         log::emit<Dev>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement] << log::endl;
                         assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
                         log::emit<Dev>("Data-Flow") << "IN_S[" << i << "] after transfer " << IN_S[statement] << log::endl;
-                            
+                        
+                        log::emit<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] before transfer " << OUT_S[statements[i - 1]] << log::endl;
                         OUT_S[statements[i-1]] = IN_S[statement];
+                        log::emit<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] after transfer " << OUT_S[statements[i - 1]] << log::endl;
                     }
                         
+                    log::emit<Dev>("Data-Flow") << "IN_S[" << 0 << "] before transfer " << IN_S[statements[0]] << log::endl;
                     assign(IN_S[statements[0]], problem.transfer(B, statements[0], OUT_S[statements[0]]), changes);
+                    log::emit<Dev>("Data-Flow") << "IN_S[" << 0 << "] after transfer " << IN_S[statements[0]] << log::endl;
                     
                     assign(IN[B], IN_S[statements.front()], changes);
                 } else {

@@ -74,6 +74,11 @@ struct LivenessCollector : public boost::static_visitor<> {
     template<typename Arg>
     inline void update(Arg& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            if(in.top()){
+                ProblemDomain::Values values;
+                in.int_values = values;
+            }
+
             in.values().insert(*ptr);
         }
     }
@@ -86,14 +91,16 @@ struct LivenessCollector : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        if(mtac::erase_result(quadruple->op)){
-            in.values().erase(quadruple->result);
-        } else {
-            in.values().insert(quadruple->result);
-        }
+        if(quadruple->op != mtac::Operator::NOP){
+            if(mtac::erase_result(quadruple->op)){
+                in.values().erase(quadruple->result);
+            } else {
+                in.values().insert(quadruple->result);
+            }
 
-        update_optional(quadruple->arg1);
-        update_optional(quadruple->arg2);
+            update_optional(quadruple->arg1);
+            update_optional(quadruple->arg2);
+        }
     }
     
     void operator()(std::shared_ptr<mtac::Param> param){

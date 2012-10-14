@@ -27,6 +27,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/TemporaryAllocator.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 //The custom optimizations
 #include "mtac/VariableOptimizations.hpp"
@@ -340,7 +341,9 @@ struct pass_runner {
             local = apply<Pass>();
         }
 
-        apply_todo<Pass>();
+        if(local){
+            apply_todo<Pass>();
+        }
 
         debug_local<Pass>(local);
 
@@ -352,6 +355,11 @@ struct pass_runner {
 
 void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     PerfsTimer timer("Whole optimizations");
+        
+    //Build the CFG of each functions (also needed for register allocation)
+    for(auto& function : program->functions){
+        mtac::build_control_flow_graph(function);
+    }
 
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
