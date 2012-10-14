@@ -1039,6 +1039,9 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
 
                                     bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, initial_value.second + it * linear_equation.d, mtac::Operator::ASSIGN));
                                 }
+                        
+                                //It is not a loop anymore
+                                mtac::remove_edge(bb, bb);
                             }
                         }
                     }
