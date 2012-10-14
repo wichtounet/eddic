@@ -63,7 +63,7 @@ struct pass_traits<complete_loop_peeling> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "complete_loop_peeling");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_INVALIDATE_CFG);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
 } //end of mtac

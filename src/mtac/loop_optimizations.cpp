@@ -1092,6 +1092,9 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
                                bb->statements.push_back(mtac::copy(statement, function->context->global())); 
                             }
                         }
+
+                        //It is not a loop anymore
+                        mtac::remove_edge(bb, bb);
                     }
                 }
             }
