@@ -171,11 +171,6 @@ struct pass_runner {
     template<typename Pass>
     inline void apply_todo(){
         remove_nop<Pass>();
-
-        //TODO Verify if the if is removed at compile for passes
-        if(mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_INVALIDATE_CFG){
-            mtac::build_control_flow_graph(function);
-        }
     }
 
     template<typename Pass>

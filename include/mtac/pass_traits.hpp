@@ -28,8 +28,7 @@ enum class pass_type : unsigned int {
 };
 
 enum TODO {
-    TODO_REMOVE_NOP = 1,
-    TODO_INVALIDATE_CFG = 2
+    TODO_REMOVE_NOP = 1
 };
 
 enum PROPERTY {
