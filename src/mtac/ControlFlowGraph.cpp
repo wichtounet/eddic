@@ -18,6 +18,30 @@ void mtac::make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mta
     to->predecessors.push_back(from);
 }
 
+void mtac::remove_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to){
+    auto sit = iterate(from->successors);
+
+    while(sit.has_next()){
+        if(*sit == to){
+            sit.erase();
+            break;
+        }
+
+        ++sit;
+    }
+    
+    auto pit = iterate(to->predecessors);
+
+    while(pit.has_next()){
+        if(*pit == from){
+            pit.erase();
+            break;
+        }
+
+        ++pit;
+    }
+}
+
 void mtac::build_control_flow_graph(std::shared_ptr<mtac::Function> function){
     //Destroy the CFG
     for(auto& block : function){

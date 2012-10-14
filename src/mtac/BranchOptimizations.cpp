@@ -8,6 +8,8 @@
 #include "likely.hpp"
 
 #include "mtac/BranchOptimizations.hpp"
+#include "mtac/Function.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
@@ -28,7 +30,11 @@ bool mtac::optimize_branches::operator()(std::shared_ptr<mtac::Function> functio
 
                         statement = goto_;
                         optimized = true;
+
+                        mtac::remove_edge(block, block->next);
                     } else if(value == 1){
+                        mtac::remove_edge(block, (*ptr)->block);
+
                         statement = std::make_shared<mtac::NoOp>();
                         optimized = true;
                     }
@@ -38,6 +44,8 @@ bool mtac::optimize_branches::operator()(std::shared_ptr<mtac::Function> functio
                     int value = boost::get<int>((*ptr)->arg1);
 
                     if(value == 0){
+                        mtac::remove_edge(block, (*ptr)->block);
+
                         statement = std::make_shared<mtac::NoOp>();
                         optimized = true;
                     } else if(value == 1){
@@ -48,6 +56,8 @@ bool mtac::optimize_branches::operator()(std::shared_ptr<mtac::Function> functio
 
                         statement = goto_;
                         optimized = true;
+                        
+                        mtac::remove_edge(block, block->next);
                     }
                 }
             }
