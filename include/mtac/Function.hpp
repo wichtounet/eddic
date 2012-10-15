@@ -9,6 +9,7 @@
 #define MTAC_FUNCTION_H
 
 #include <memory>
+#include <vector>
 
 #include "iterators.hpp"
 
@@ -21,6 +22,8 @@ namespace eddic {
 class FunctionContext;
 
 namespace mtac {
+
+class Loop;
 
 class Function : public std::enable_shared_from_this<Function> {
     public:
@@ -61,6 +64,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
+        std::vector<std::shared_ptr<Loop>>& loops();
+
         std::size_t bb_count();
         std::size_t size();
 
@@ -73,6 +78,8 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t index = 0;
         std::shared_ptr<BasicBlock> entry = nullptr;
         std::shared_ptr<BasicBlock> exit = nullptr;
+
+        std::vector<std::shared_ptr<mtac::Loop>> m_loops;
 
         std::string name;
 };

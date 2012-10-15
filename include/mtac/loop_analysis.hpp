@@ -9,20 +9,31 @@
 #define MTAC_LOOP_ANALYSIS_H
 
 #include <memory>
-#include <vector>
 #include <set>
 
-#include "mtac/Program.hpp"
-#include "mtac/ControlFlowGraph.hpp"
+#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
+class Function;
+class Program;
+
 void full_loop_analysis(std::shared_ptr<mtac::Program> program);
 void full_loop_analysis(std::shared_ptr<mtac::Function> function);
 
-std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> find_natural_loops(std::shared_ptr<mtac::Function> function);
+struct loop_analysis {
+    bool operator()(std::shared_ptr<mtac::Function> function);
+};
+
+template<>
+struct pass_traits<loop_analysis> {
+    STATIC_STRING(name, "loop_analysis");
+    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+};
 
 } //end of mtac
 

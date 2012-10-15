@@ -13,6 +13,8 @@
 
 #include "mtac/loop_analysis.hpp"
 #include "mtac/dominators.hpp"
+#include "mtac/Loop.hpp"
+#include "mtac/Program.hpp"
 
 using namespace eddic;
 
@@ -75,16 +77,17 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
         init_depth(bb);
     }
 
-    auto natural_loops = find_natural_loops(function);
+    //Run the analysis on the function
+    mtac::loop_analysis()(function);
 
-    for(auto& loop : natural_loops){
+    for(auto& loop : function->loops()){
         for(auto& bb : loop){
             increase_depth(bb);
         }
     }
 }
 
-std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> mtac::find_natural_loops(std::shared_ptr<mtac::Function> function){
+bool mtac::loop_analysis::operator()(std::shared_ptr<mtac::Function> function){
     std::vector<std::pair<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>>> back_edges;
 
     for(auto& block : function){
@@ -100,7 +103,7 @@ std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> mtac::find_natural_loop
         }
     }
 
-    std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> natural_loops;
+    function->loops().clear();
 
     //Get all edges n -> d
     for(auto& back_edge : back_edges){
@@ -134,10 +137,12 @@ std::vector<std::set<std::shared_ptr<mtac::BasicBlock>>> mtac::find_natural_loop
 
         log::emit<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
 
-        natural_loops.push_back(natural_loop);
+        auto loop = std::make_shared<mtac::Loop>(natural_loop);
+        function->loops().push_back(loop);
     }
 
-    log::emit<Trace>("Control-Flow") << "Found " << natural_loops.size() << " natural loops" << log::endl;
+    log::emit<Trace>("Control-Flow") << "Found " << function->loops().size() << " natural loops" << log::endl;
 
-    return natural_loops;
+    //Analysis only
+    return false;
 }

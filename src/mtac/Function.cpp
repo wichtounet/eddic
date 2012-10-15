@@ -10,6 +10,7 @@
 
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Loop.hpp"
 
 using namespace eddic;
 
@@ -220,6 +221,10 @@ std::size_t mtac::Function::size(){
 
 std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function::blocks(){
     return std::make_pair(begin(), end());
+}
+
+std::vector<std::shared_ptr<mtac::Loop>>& mtac::Function::loops(){
+    return m_loops;
 }
 
 mtac::basic_block_iterator mtac::begin(std::shared_ptr<mtac::Function> function){
