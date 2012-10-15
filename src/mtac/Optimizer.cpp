@@ -37,6 +37,7 @@
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/ConcatReduction.hpp"
 #include "mtac/inlining.hpp"
+#include "mtac/loop_analysis.hpp"
 #include "mtac/loop_optimizations.hpp"
 
 //The optimization visitors
@@ -90,6 +91,7 @@ typedef boost::mpl::vector<
         mtac::merge_basic_blocks*,
         mtac::dead_code_elimination*,
         mtac::remove_aliases*,
+        mtac::loop_analysis*,
         mtac::loop_invariant_code_motion*,
         mtac::loop_induction_variables_optimization*,
         mtac::remove_empty_loops*,
