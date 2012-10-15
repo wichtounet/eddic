@@ -1008,7 +1008,11 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
 
     bool optimized = false;
     
-    for(auto& loop : function->loops()){
+    auto lit = iterate(function->loops());
+
+    while(lit.has_next()){
+        auto loop = *lit;
+
         if(loop->blocks().size() == 1){
             auto bb = *loop->begin();
 
@@ -1027,25 +1031,37 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
                                 auto linear_equation = basic_induction_variables[first->result];
                                 auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[1]);
                                 
+                                bool loop_removed = false;
+
                                 //The loop does not iterate
                                 if(it == 0){
                                     bb->statements.clear();
-                                    optimized = true;
+                                    loop_removed = true;
                                 } else if(it > 0){
                                     bb->statements.clear();
-                                    optimized = true;
+                                    loop_removed = true;
 
                                     bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, initial_value.second + it * linear_equation.d, mtac::Operator::ASSIGN));
                                 }
                         
-                                //It is not a loop anymore
-                                mtac::remove_edge(bb, bb);
+                                if(loop_removed){
+                                    //It is not a loop anymore
+                                    mtac::remove_edge(bb, bb);
+
+                                    lit.erase();
+
+                                    optimized = true;
+
+                                    continue;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+        ++lit;
     }
 
     return optimized;
@@ -1058,7 +1074,11 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
 
     bool optimized = false;
     
-    for(auto& loop : function->loops()){
+    auto lit = iterate(function->loops());
+
+    while(lit.has_next()){
+        auto loop = *lit;
+
         if(loop->blocks().size() == 1){
             auto bb = *loop->begin();
 
@@ -1094,10 +1114,14 @@ bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> fun
 
                         //It is not a loop anymore
                         mtac::remove_edge(bb, bb);
+
+                        lit.erase();
                     }
                 }
             }
         }
+
+        ++lit;
     }
 
     return optimized;
