@@ -17,7 +17,6 @@ namespace eddic {
 namespace mtac {
 
 void register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
-void register_variable_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
 
 } //end of mtac
 
