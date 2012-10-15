@@ -9,7 +9,7 @@
 #define MTAC_LOOP_H
 
 #include <memory>
-#include <vector>
+#include <set>
 
 namespace eddic {
 
@@ -19,9 +19,9 @@ class BasicBlock;
 
 class Loop {
     public:
-        typedef std::vector<std::shared_ptr<mtac::BasicBlock>>::iterator iterator;
+        typedef std::set<std::shared_ptr<mtac::BasicBlock>>::iterator iterator;
 
-        Loop(std::vector<std::shared_ptr<mtac::BasicBlock>> blocks);
+        Loop(const std::set<std::shared_ptr<mtac::BasicBlock>>& blocks);
 
         iterator begin();
         iterator end();
@@ -30,7 +30,7 @@ class Loop {
         void set_estimate(int estimate);
 
     private:
-        std::vector<std::shared_ptr<mtac::BasicBlock>> blocks;
+        std::set<std::shared_ptr<mtac::BasicBlock>> blocks;
 
         int m_estimate = -1;
 };
