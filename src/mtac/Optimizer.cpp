@@ -44,8 +44,6 @@
 #include "mtac/ArithmeticIdentities.hpp"
 #include "mtac/ReduceInStrength.hpp"
 #include "mtac/ConstantFolding.hpp"
-#include "mtac/RemoveAssign.hpp"
-#include "mtac/RemoveMultipleAssign.hpp"
 #include "mtac/MathPropagation.hpp"
 #include "mtac/PointerPropagation.hpp"
 
