@@ -104,11 +104,6 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
                 mtac::register_param_allocation(mtacProgram, platform);
             }
 
-            //Allocate variables into registers
-            if(configuration->option_defined("fvariable-allocation")){
-                mtac::register_variable_allocation(mtacProgram, platform);
-            }
-
             //If asked by the user, print the Three Address code representation
             if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
                 mtac::Printer printer;

@@ -83,7 +83,6 @@ void init_descriptions(){
         ("O2", "Enable all optimizations. This can be slow for big programs.")
         
         ("fglobal-optimization", "Enable optimizer engine")
-        ("fvariable-allocation", "Enable variable allocation in register")
         ("fparameter-allocation", "Enable parameter allocation in register")
         ("fpeephole-optimization", "Enable peephole optimizer")
         ("fomit-frame-pointer", "Omit frame pointer from functions")
@@ -105,7 +104,7 @@ void init_descriptions(){
     
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
-    add_trigger("__2", {"fglobal-optimization", "fvariable-allocation", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
+    add_trigger("__2", {"fglobal-optimization", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
 }
 
 inline void trigger_childs(std::shared_ptr<Configuration> configuration, const std::vector<std::string>& childs){
