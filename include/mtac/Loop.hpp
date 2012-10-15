@@ -25,12 +25,14 @@ class Loop {
 
         iterator begin();
         iterator end();
+        
+        std::set<std::shared_ptr<mtac::BasicBlock>>& blocks();
 
         int estimate();
         void set_estimate(int estimate);
 
     private:
-        std::set<std::shared_ptr<mtac::BasicBlock>> blocks;
+        std::set<std::shared_ptr<mtac::BasicBlock>> m_blocks;
 
         int m_estimate = -1;
 };

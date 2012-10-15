@@ -15,24 +15,24 @@
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 
+#include "mtac/Loop.hpp"
 #include "mtac/loop_optimizations.hpp"
 #include "mtac/loop_analysis.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
 namespace {
-
-typedef std::set<std::shared_ptr<mtac::BasicBlock>> Loop;
 
 struct Usage {
     std::unordered_map<std::shared_ptr<Variable>, unsigned int> written;
     std::unordered_map<std::shared_ptr<Variable>, unsigned int> read;
 };
 
-Usage compute_write_usage(const Loop& loop){
+Usage compute_write_usage(std::shared_ptr<mtac::Loop> loop){
     Usage usage;
 
     for(auto& bb : loop){
@@ -111,7 +111,7 @@ struct VariableReadCollector : public boost::static_visitor<> {
     }
 };
 
-Usage compute_read_usage(const Loop& loop){
+Usage compute_read_usage(std::shared_ptr<mtac::Loop> loop){
     Usage usage;
     VariableReadCollector collector(usage);
 
@@ -156,10 +156,10 @@ bool is_invariant(mtac::Statement& statement, Usage& usage){
     return false;
 }
 
-std::shared_ptr<mtac::BasicBlock> create_pre_header(const Loop& loop, std::shared_ptr<mtac::Function> function){
+std::shared_ptr<mtac::BasicBlock> create_pre_header(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
     auto pre_header = function->new_bb();
     
-    auto first_bb = *loop.begin();
+    auto first_bb = *loop->blocks().begin();
     function->insert_before(function->at(first_bb), pre_header);
 
     //Create the fall through edges
@@ -233,7 +233,7 @@ bool use_variable(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::Statement statement, const Loop& loop){
+bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::Statement statement, std::shared_ptr<mtac::Loop> loop){
     auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
 
     //It is not necessary to move statements with no effects. 
@@ -257,7 +257,7 @@ bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::State
         }
     }
     
-    auto exit_block = *loop.rbegin();
+    auto exit_block = *loop->blocks().rbegin();
 
     if(exit_block == source_bb){
         return true;
@@ -273,7 +273,7 @@ bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::State
     return true;
 }
 
-bool loop_invariant_code_motion(const Loop& loop, std::shared_ptr<mtac::Function> function){
+bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
     std::shared_ptr<mtac::BasicBlock> pre_header;
 
     bool optimized = false;
@@ -319,7 +319,7 @@ struct LinearEquation {
 
 typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
 
-InductionVariables find_all_candidates(const Loop& loop){
+InductionVariables find_all_candidates(std::shared_ptr<mtac::Loop> loop){
     InductionVariables candidates;
     
     for(auto& bb : loop){
@@ -351,7 +351,7 @@ void clean_defaults(InductionVariables& induction_variables){
     }
 }
 
-InductionVariables find_basic_induction_variables(const Loop& loop){
+InductionVariables find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
     auto basic_induction_variables = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -407,7 +407,7 @@ InductionVariables find_basic_induction_variables(const Loop& loop){
     return basic_induction_variables;
 }
 
-InductionVariables find_dependent_induction_variables(const Loop& loop, const InductionVariables& basic_induction_variables, std::shared_ptr<mtac::Function> function){
+InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, const InductionVariables& basic_induction_variables, std::shared_ptr<mtac::Function> function){
     auto dependent_induction_variables = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -599,7 +599,7 @@ InductionVariables find_dependent_induction_variables(const Loop& loop, const In
     return dependent_induction_variables;
 }
 
-bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
+bool strength_reduce(std::shared_ptr<mtac::Loop> loop, LinearEquation& basic_equation, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
     std::shared_ptr<mtac::BasicBlock> pre_header = nullptr;
     bool optimized = false;
 
@@ -678,7 +678,7 @@ bool strength_reduce(const Loop& loop, LinearEquation& basic_equation, Induction
     return optimized;
 }
 
-void induction_variable_removal(const Loop& loop, InductionVariables& dependent_induction_variables){
+void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, InductionVariables& dependent_induction_variables){
     Usage usage = compute_read_usage(loop);
 
     //Remove generated copy when useless
@@ -723,8 +723,8 @@ void induction_variable_removal(const Loop& loop, InductionVariables& dependent_
     }
 }
 
-void induction_variable_replace(const Loop& loop, InductionVariables& basic_induction_variables, InductionVariables& dependent_induction_variables){
-    auto exit_block = *loop.rbegin();
+void induction_variable_replace(std::shared_ptr<mtac::Loop> loop, InductionVariables& basic_induction_variables, InductionVariables& dependent_induction_variables){
+    auto exit_block = *loop->blocks().rbegin();
 
     auto exit_statement = exit_block->statements.back();
 
@@ -823,7 +823,7 @@ void induction_variable_replace(const Loop& loop, InductionVariables& basic_indu
     }
 }
 
-bool loop_induction_variables_optimization(const Loop& loop, std::shared_ptr<mtac::Function> function){
+bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
     //1. Identify all the induction variables
@@ -949,15 +949,13 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
 } //end of anonymous namespace
 
 bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function> function){
-    auto natural_loops = find_natural_loops(function);
-
-    if(natural_loops.empty()){
+    if(function->loops().empty()){
         return false;
     }
 
     bool optimized = false;
 
-    for(auto& loop : natural_loops){
+    for(auto& loop : function->loops()){
         optimized |= ::loop_invariant_code_motion(loop, function);
     }
     
@@ -965,15 +963,13 @@ bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function
 }
 
 bool mtac::loop_induction_variables_optimization::operator()(std::shared_ptr<mtac::Function> function){
-    auto natural_loops = find_natural_loops(function);
-
-    if(natural_loops.empty()){
+    if(function->loops().empty()){
         return false;
     }
 
     bool optimized = false;
     
-    for(auto& loop : natural_loops){
+    for(auto& loop : function->loops()){
         optimized |= ::loop_induction_variables_optimization(loop, function);
     }
 
@@ -1006,17 +1002,15 @@ std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std
 }
 
 bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> function){
-    auto natural_loops = find_natural_loops(function);
-
-    if(natural_loops.empty()){
+    if(function->loops().empty()){
         return false;
     }
 
     bool optimized = false;
     
-    for(auto& loop : natural_loops){
-        if(loop.size() == 1){
-            auto bb = *loop.begin();
+    for(auto& loop : function->loops()){
+        if(loop->blocks().size() == 1){
+            auto bb = *loop->begin();
 
             if(bb->statements.size() == 2){
                 if(auto* first_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&bb->statements[0])){
@@ -1058,17 +1052,15 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
 }
 
 bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> function){
-    auto natural_loops = find_natural_loops(function);
-
-    if(natural_loops.empty()){
+    if(function->loops().empty()){
         return false;
     }
 
     bool optimized = false;
     
-    for(auto& loop : natural_loops){
-        if(loop.size() == 1){
-            auto bb = *loop.begin();
+    for(auto& loop : function->loops()){
+        if(loop->blocks().size() == 1){
+            auto bb = *loop->begin();
 
             if(bb->statements.size() < 2 || bb->statements.size() > 100){
                 continue;
