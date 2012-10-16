@@ -19,8 +19,6 @@ using namespace eddic;
 
 FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration) : 
         Context(parent, global_context), platform(platform) {
-    currentPosition = -INT->size(platform); 
-    
     if(configuration->option_defined("fomit-frame-pointer")){
         currentParameter = INT->size(platform);
     } else {
@@ -36,6 +34,14 @@ int FunctionContext::size() const {
     }
 
     return size;
+}
+        
+int FunctionContext::stack_position(){
+    return currentPosition;
+}
+
+void FunctionContext::set_stack_position(int current){
+    currentPosition = current;
 }
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){

@@ -45,6 +45,9 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         
         int size() const;
 
+        int stack_position();
+        void set_stack_position(int current);
+
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type);
         std::shared_ptr<Variable> addVariable(const std::string& a, std::shared_ptr<const Type> type, ast::Value& value);
         
