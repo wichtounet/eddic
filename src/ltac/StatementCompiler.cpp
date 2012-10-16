@@ -1306,17 +1306,10 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
         }
     }
 
-    ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, function->context->size());
-    bp_offset -= function->context->size();
-
     //The basic block must be ended before the jump
     end_basic_block();
 
-    if(!configuration->option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(function, ltac::Operator::LEAVE);
-    }
-
-    ltac::add_instruction(function, ltac::Operator::RET);
+    //TODO Add a placeholder for NON-Resolved RET
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
