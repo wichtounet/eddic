@@ -68,21 +68,6 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     auto result = mtac::intersection_meet(in, out);
 
-    //Remove all the temporary
-    for(auto it = std::begin(result.values()); it != std::end(result.values());){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
-            auto variable = *ptr;
-
-            if (variable->position().is_temporary()){
-                it = result.values().erase(it);
-            } else {
-                ++it;
-            }
-        } else {
-            ++it;
-        }
-    }
-
     return result;
 }
 

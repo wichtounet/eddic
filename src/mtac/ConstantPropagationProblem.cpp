@@ -28,21 +28,6 @@ ProblemDomain mtac::ConstantPropagationProblem::Boundary(std::shared_ptr<mtac::F
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     auto result = mtac::intersection_meet(in, out);
 
-    //Remove all the temporary
-    for(auto it = std::begin(result.values()); it != std::end(result.values());){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
-            auto variable = *ptr;
-
-            if (variable->position().is_temporary()){
-                it = result.values().erase(it);
-            } else {
-                ++it;
-            }
-        } else {
-            ++it;
-        }
-    }
-
     return result;
 }
 
@@ -188,11 +173,7 @@ struct ConstantOptimizer : public boost::static_visitor<> {
         if(!mtac::erase_result(quadruple->op) && quadruple->result && quadruple->op != mtac::Operator::DOT_ASSIGN){
             if(results.find(quadruple->result) != results.end()){
                 if(mtac::isVariable(results[quadruple->result])){
-                    auto var = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
-
-                    if(!var->position().is_temporary()){
-                        quadruple->result = var;
-                    }
+                    quadruple->result = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
                 }
             }
         }
