@@ -26,7 +26,6 @@
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
-#include "mtac/TemporaryAllocator.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 
 //The custom optimizations
@@ -117,12 +116,10 @@ namespace {
 //TODO Find a more elegant way than using pointers
 
 typedef boost::mpl::vector<
-        mtac::all_basic_optimizations*,
-        mtac::allocate_temporary*
+        mtac::all_basic_optimizations*
     > ipa_basic_passes;
 
 typedef boost::mpl::vector<
-        mtac::allocate_temporary*,
         mtac::remove_unused_functions*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
@@ -369,7 +366,7 @@ void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shar
             boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
-        //Even if global optimizations are disabled, perform basic optimization (only constant folding and temporary cleaning)
+        //Even if global optimizations are disabled, perform basic optimization (only constant folding)
         pass_runner runner(program, string_pool, configuration, platform);
         boost::mpl::for_each<ipa_basic_passes>(boost::ref(runner));
     }

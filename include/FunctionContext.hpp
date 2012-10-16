@@ -61,8 +61,6 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         
         void removeVariable(std::shared_ptr<Variable> variable) override;
 
-        void storeTemporary(std::shared_ptr<Variable> temp);
-
         void allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_);
         void allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_);
 

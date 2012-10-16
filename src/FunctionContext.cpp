@@ -115,16 +115,6 @@ std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const T
     return variables[name] = var;
 }
 
-void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
-    currentPosition -= temp->type()->size(platform);
-
-    Position position(PositionType::STACK, currentPosition + INT->size(platform));
-    
-    log::emit<Info>("Variables") << "Store temporary " << temp->name() << " at " << position.offset() << log::endl;
-    
-    temp->setPosition(position); 
-}
-
 void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_){
     assert(variable->position().isStack()); 
 
