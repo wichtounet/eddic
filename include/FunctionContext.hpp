@@ -38,8 +38,6 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         //Refer all variables that are stored, including temporary
         Storage storage;
 
-        void reallocate_storage();
-
     public:
         FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration);
         

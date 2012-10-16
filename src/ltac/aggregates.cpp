@@ -6,7 +6,9 @@
 //=======================================================================
 
 #include "GlobalContext.hpp"
+#include "FunctionContext.hpp"
 #include "Platform.hpp"
+#include "Type.hpp"
 
 #include "ltac/aggregates.hpp"
 

@@ -19,6 +19,7 @@ using namespace eddic;
 
 FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration) : 
         Context(parent, global_context), platform(platform) {
+    //TODO Should not be done here
     if(configuration->option_defined("fomit-frame-pointer")){
         currentParameter = INT->size(platform);
     } else {
@@ -53,12 +54,7 @@ std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& varia
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<const Type> type){
-    currentPosition -= type->size(platform);
-
-    Position position(PositionType::STACK, currentPosition + INT->size(platform));
-    auto var = std::make_shared<Variable>(variable, type, position);
-
-    log::emit<Info>("Variables") << "Allocate " << variable << " at " << position.offset() << log::endl;
+    auto var = std::make_shared<Variable>(variable, type, Position(PositionType::VARIABLE));
 
     storage.push_back(var);
 
@@ -129,27 +125,11 @@ void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
     temp->setPosition(position); 
 }
 
-void FunctionContext::reallocate_storage(){
-    currentPosition = -INT->size(platform);
-
-    for(auto& v : storage){
-        if(v->position().isStack()){
-            currentPosition -= v->type()->size(platform);
-            Position position(PositionType::STACK, currentPosition + INT->size(platform));
-            v->setPosition(position);
-    
-            log::emit<Info>("Variables") << "Reallocate " << v->name() << " at " << position.offset() << log::endl;
-        }
-    }
-}
-
 void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_){
     assert(variable->position().isStack()); 
 
     Position position(PositionType::REGISTER, register_);
     variable->setPosition(position);
-
-    reallocate_storage();
 }
 
 void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_){
@@ -157,8 +137,6 @@ void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> varia
 
     Position position(PositionType::PARAM_REGISTER, register_);
     variable->setPosition(position);
-
-    reallocate_storage();
 }
 
 void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
@@ -168,11 +146,6 @@ void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
     storage.erase(iter_var);
     
     log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
-
-    //If its a temporary, no need to recalculate positions
-    if(!var->position().is_temporary()){
-        reallocate_storage();
-    }
 }
 
 std::shared_ptr<FunctionContext> FunctionContext::function(){
