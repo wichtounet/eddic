@@ -62,6 +62,8 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
                 return variable->name() + "(c," + type + ")";
             case PositionType::TEMPORARY:
                 return variable->name() + "(t," + type + ")";
+            case PositionType::VARIABLE:
+                return variable->name() + "(v," + type + ")";
             case PositionType::REGISTER:
                 return variable->name() + "(r," + type + ")";
             case PositionType::PARAM_REGISTER:
