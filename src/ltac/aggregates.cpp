@@ -25,6 +25,18 @@ void ltac::allocate_aggregates(std::shared_ptr<mtac::Program> program){
         if(function_context){
             int current_position = -INT->size(platform); 
 
+            for(auto variable : function_context->stored_variables()){
+                auto position = variable->position();
+                auto type = variable->type();
+
+                if((position.is_temporary() || position.is_variable()) && (type->is_template() || type->is_array() || type->is_custom_type())){
+                    current_position -= type->size(platform);
+
+                    Position position(PositionType::STACK, current_position + INT->size(platform));
+                    variable->setPosition(position);
+                }
+            }
+
             function_context->set_stack_position(current_position);
         }
     }

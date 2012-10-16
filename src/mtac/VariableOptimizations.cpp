@@ -251,7 +251,7 @@ bool mtac::remove_aliases::operator()(std::shared_ptr<mtac::Function> function){
     auto pointer_escaped = mtac::escape_analysis(function);
 
     for(auto& var : function->context->stored_variables()){
-        auto& position = var->position();
+        auto position = var->position();
         auto type = var->type();
 
         if((position.is_temporary() || position.is_variable() || position.isStack()) && (type->is_standard_type() || type->is_pointer()) && type != STRING){
